@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -30,7 +29,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.plumbing.TransactionBegin;
@@ -51,8 +49,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 
 /**
  * A GeoTools {@link DataStore} that serves and edits {@link SimpleFeature}s in a geogig repository.
@@ -121,7 +117,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
             allowTransactions = true; // when no branch name is set we assume we should make
             // transactions against the current HEAD
         } else {
-            final Context context = getCommandLocator(null);
+            final Context context = resolveContext(null);
             Optional<ObjectId> rev = context.command(RevParse.class).setRefSpec(refspec).call();
             if (!rev.isPresent()) {
                 throw new IllegalArgumentException("Bad ref spec: " + refspec);
@@ -182,8 +178,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      */
     @Nullable
     public String getCheckedOutBranch() {
-        Optional<Ref> head = getCommandLocator(null).command(RefParse.class).setName(Ref.HEAD)
-                .call();
+        Optional<Ref> head = resolveContext(null).command(RefParse.class).setName(Ref.HEAD).call();
         if (!head.isPresent()) {
             return null;
         }
@@ -197,35 +192,22 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return branchName;
     }
 
-    public ImmutableList<String> getAvailableBranches() {
-        ImmutableSet<Ref> heads = getCommandLocator(null).command(ForEachRef.class)
-                .setPrefixFilter(Ref.HEADS_PREFIX).call();
-        List<String> list = Lists.newArrayList(Collections2.transform(heads, (ref) -> {
-
-            String branchName = ref.getName().substring(Ref.HEADS_PREFIX.length());
-            return branchName;
-
-        }));
-        Collections.sort(list);
-        return ImmutableList.copyOf(list);
-    }
-
-    public Context getCommandLocator(@Nullable Transaction transaction) {
-        Context commandLocator = null;
+    public Context resolveContext(@Nullable Transaction transaction) {
+        Context context = null;
 
         if (transaction != null && !Transaction.AUTO_COMMIT.equals(transaction)) {
             GeogigTransactionState state;
             state = (GeogigTransactionState) transaction.getState(GeogigTransactionState.class);
             Optional<GeogigTransaction> geogigTransaction = state.getGeogigTransaction();
             if (geogigTransaction.isPresent()) {
-                commandLocator = geogigTransaction.get();
+                context = geogigTransaction.get();
             }
         }
 
-        if (commandLocator == null) {
-            commandLocator = geogig.context();
+        if (context == null) {
+            context = geogig.context();
         }
-        return commandLocator;
+        return context;
     }
 
     public Name getDescriptorName(NodeRef treeRef) {
@@ -275,7 +257,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     private List<NodeRef> findTypeRefs(@Nullable Transaction tx) {
 
         final String rootRef = getRootRef(tx);
-        Context commandLocator = getCommandLocator(tx);
+        Context commandLocator = resolveContext(tx);
         List<NodeRef> typeTrees = commandLocator.command(FindFeatureTypeTrees.class)
                 .setRootTreeRef(rootRef).call();
         return typeTrees;
@@ -310,7 +292,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
             throw new IllegalStateException("Configured head " + refspec
                     + " is not a branch; transactions are not supported.");
         }
-        GeogigTransaction tx = getCommandLocator(null).command(TransactionBegin.class).call();
+        GeogigTransaction tx = resolveContext(null).command(TransactionBegin.class).call();
         boolean abort = false;
         try {
             String treePath = featureType.getName().getLocalPart();

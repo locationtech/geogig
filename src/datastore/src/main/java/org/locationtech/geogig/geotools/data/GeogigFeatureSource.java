@@ -332,14 +332,13 @@ class GeogigFeatureSource extends ContentFeatureSource {
     }
 
     Context getCommandLocator() {
-        Context commandLocator = getDataStore().getCommandLocator(getTransaction());
+        Context commandLocator = getDataStore().resolveContext(getTransaction());
         return commandLocator;
     }
 
     SimpleFeatureType getNativeType() {
 
         final NodeRef typeRef = getTypeRef();
-        final String treePath = typeRef.path();
         final ObjectId metadataId = typeRef.getMetadataId();
 
         Context commandLocator = getCommandLocator();

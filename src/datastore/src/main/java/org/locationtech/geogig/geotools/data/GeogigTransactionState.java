@@ -86,7 +86,7 @@ class GeogigTransactionState implements State {
                 geogigTx.abort();
             }
             GeoGigDataStore dataStore = (GeoGigDataStore) entry.getDataStore();
-            Context commandLocator = dataStore.getCommandLocator(this.tx);
+            Context commandLocator = dataStore.resolveContext(this.tx);
             this.geogigTx = commandLocator.command(TransactionBegin.class).call();
             // checkout the working branch
             final String workingBranch = dataStore.getOrFigureOutHead();

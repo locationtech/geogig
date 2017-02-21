@@ -37,7 +37,6 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
@@ -235,65 +234,6 @@ class GeogigFeatureStore extends ContentFeatureStore {
         return writer;
     }
 
-    // @Override
-    // public final List<FeatureId> addFeatures(
-    // FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection)
-    // throws IOException {
-    //
-    // // Preconditions.checkState(getDataStore().isAllowTransactions(),
-    // // "Transactions not supported; head is not a local branch");
-    // final WorkingTree workingTree = delegate.getWorkingTree();
-    // final String path = delegate.getTypeTreePath();
-    //
-    // ProgressListener listener = new DefaultProgressListener();
-    //
-    // final List<FeatureId> insertedFids = Lists.newArrayList();
-    // List<Node> deferringTarget = new AbstractList<Node>() {
-    //
-    // @Override
-    // public boolean add(Node node) {
-    // String fid = node.getName();
-    // String version = node.getObjectId().toString();
-    // insertedFids.add(new FeatureIdVersionedImpl(fid, version));
-    // return true;
-    // }
-    //
-    // @Override
-    // public Node get(int index) {
-    // throw new UnsupportedOperationException();
-    // }
-    //
-    // @Override
-    // public int size() {
-    // return 0;
-    // }
-    // };
-    // Integer count = (Integer) null;
-    //
-    // FeatureIterator<SimpleFeature> featureIterator = featureCollection.features();
-    // try {
-    // Iterator<SimpleFeature> features;
-    // features = new FeatureIteratorIterator<SimpleFeature>(featureIterator);
-    // /*
-    // * Make sure to transform the incoming features to the native schema to avoid situations
-    // * where geogig would change the metadataId of the RevFeature nodes due to small
-    // * differences in the default and incoming schema such as namespace or missing
-    // * properties
-    // */
-    // final SimpleFeatureType nativeSchema = delegate.getNativeType();
-    //
-    // features = Iterators.transform(features, new SchemaInforcer(nativeSchema));
-    //
-    // workingTree.insert(path, features, listener, deferringTarget, count);
-    // } catch (Exception e) {
-    // throw new IOException(e);
-    // } finally {
-    // featureIterator.close();
-    // }
-    //
-    // return insertedFids;
-    // }
-
     @Override
     public final List<FeatureId> addFeatures(
             FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection)
@@ -302,7 +242,6 @@ class GeogigFeatureStore extends ContentFeatureStore {
         // Preconditions.checkState(getDataStore().isAllowTransactions(),
         // "Transactions not supported; head is not a local branch");
         final WorkingTree workingTree = delegate.getWorkingTree();
-        final RevTree currentWorkHead = workingTree.getTree();
 
         ProgressListener listener = new DefaultProgressListener();
 
@@ -310,8 +249,6 @@ class GeogigFeatureStore extends ContentFeatureStore {
         final NodeRef typeRef = delegate.getTypeRef();
         final String treePath = typeRef.path();
         final ObjectId featureTypeId = typeRef.getMetadataId();
-
-        final ObjectId newWorktreeId;
 
         List<FeatureId> insertedFids = new ArrayList<>();
 
@@ -337,7 +274,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
                 return FeatureInfo.insert(feature, featureTypeId, path);
             });
 
-            newWorktreeId = workingTree.insert(featureInfos, listener);
+            workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
             throw new IOException(e);
         }
@@ -419,7 +356,8 @@ class GeogigFeatureStore extends ContentFeatureStore {
             ProgressListener listener = new DefaultProgressListener();
 
             Iterator<FeatureInfo> featureInfos = Iterators.transform(schemaEnforced,
-                    (f) -> FeatureInfo.insert(RevFeatureBuilder.build(f), featureTypeId, NodeRef.appendChild(treePath, f.getID())));
+                    (f) -> FeatureInfo.insert(RevFeatureBuilder.build(f), featureTypeId,
+                            NodeRef.appendChild(treePath, f.getID())));
 
             workingTree.insert(featureInfos, listener);
         } catch (Exception e) {

@@ -191,4 +191,8 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     public boolean checkConfig() {
         return true;
     }
+
+    public void putAll(Map<String, String> all) {
+        this.refs.putAll(all);
+    }
 }

@@ -226,4 +226,9 @@ public class GeogigTransaction implements Context {
         return ImmutableSet.copyOf(changedRefs);
     }
 
+    @Override
+    public Context snapshot() {
+        return this;
+    }
+
 }

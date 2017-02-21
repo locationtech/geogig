@@ -18,6 +18,8 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 
+import com.google.common.annotations.Beta;
+
 /**
  * A context object for a single repository, provides access to the different repository objects,
  * and a factory method for commands.
@@ -101,4 +103,6 @@ public interface Context {
      */
     public PluginDefaults pluginDefaults();
 
+    @Beta
+    public Context snapshot();
 }

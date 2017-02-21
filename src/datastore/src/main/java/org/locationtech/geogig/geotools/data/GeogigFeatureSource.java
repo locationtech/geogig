@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.geotools.data;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 import java.util.Set;
 
@@ -63,18 +65,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
      * @param entry
      */
     public GeogigFeatureSource(ContentEntry entry) {
-        this(entry, (Query) null);
-    }
-
-    /**
-     * <b>Precondition</b>: {@code entry.getDataStore() instanceof GeoGigDataStore}
-     * 
-     * @param entry
-     * @param query optional "definition query" making this feature source a "view"
-     */
-    public GeogigFeatureSource(ContentEntry entry, @Nullable Query query) {
-        super(entry, query);
-        Preconditions.checkArgument(entry.getDataStore() instanceof GeoGigDataStore);
+        super(entry, Query.ALL);
+        checkArgument(entry.getDataStore() instanceof GeoGigDataStore);
     }
 
     /**
@@ -84,7 +76,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
     @Override
     protected void addHints(Set<Hints.Key> hints) {
         hints.add(Hints.FEATURE_DETACHED);
-        // if the user turned off the screenmap, then don't advertise it (the renderer will do its own)
+        // if the user turned off the screenmap, then don't advertise it (the renderer will do its
+        // own)
         final boolean ignorescreenmap = Boolean.getBoolean("geogig.ignorescreenmap");
         if (!ignorescreenmap)
             hints.add(Hints.SCREENMAP);

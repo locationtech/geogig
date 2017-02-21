@@ -17,7 +17,7 @@ import org.locationtech.geogig.storage.VersionedFormat;
 import com.google.common.base.Optional;
 import com.google.inject.Provider;
 
-public abstract class FormatSelector<T> implements Provider<T> {
+abstract class FormatSelector<T> implements Provider<T> {
     private final ConfigDatabase config;
 
     private final Map<VersionedFormat, Provider<T>> plugins;

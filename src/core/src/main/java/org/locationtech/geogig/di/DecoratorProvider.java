@@ -17,7 +17,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-public class DecoratorProvider {
+class DecoratorProvider {
 
     private Set<Decorator> decorators;
 

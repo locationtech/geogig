@@ -12,16 +12,20 @@ package org.locationtech.geogig.storage.memory;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeoutException;
 
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -95,7 +99,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
         checkNotNull(refName);
         String oldValue = refs.remove(refName);
         if (oldValue != null && oldValue.startsWith("ref: ")) {
-            oldValue = oldValue.substring("ref: ".length());
+            oldValue = unmask(oldValue);
         }
         return oldValue;
     }
@@ -114,7 +118,14 @@ public class HeapRefDatabase extends AbstractRefDatabase {
         if (!value.startsWith("ref: ")) {
             throw new IllegalArgumentException(name + " is not a symbolic ref: '" + value + "'");
         }
-        return value.substring("ref: ".length());
+        return unmask(value);
+    }
+
+    private String unmask(String value) {
+        if (value.startsWith("ref: ")) {
+            return value.substring("ref: ".length());
+        }
+        return value;
     }
 
     /**
@@ -152,16 +163,22 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     public Map<String, String> getAll() {
 
         Predicate<String> filter = Predicates.not(new RefPrefixPredicate(TRANSACTIONS_PREFIX));
-        Map<String, String> allButTransactions = Maps.filterKeys(ImmutableMap.copyOf(this.refs),
-                filter);
-        return allButTransactions;
+
+        return getAll(filter);
     }
 
     @Override
     public Map<String, String> getAll(final String prefix) {
         Preconditions.checkNotNull(prefix, "namespace can't be null");
         Predicate<String> filter = new RefPrefixPredicate(prefix);
-        return Maps.filterKeys(ImmutableMap.copyOf(this.refs), filter);
+        return getAll(filter);
+    }
+
+    private Map<String, String> getAll(Predicate<String> keyFilter) {
+        Map<String, String> all = new HashMap<>(Maps.filterKeys(this.refs, keyFilter));
+
+        all = Maps.transformValues(all, (v) -> unmask(v));
+        return all;
     }
 
     @Override
@@ -193,6 +210,21 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     }
 
     public void putAll(Map<String, String> all) {
-        this.refs.putAll(all);
+        try {
+            lock();
+        } catch (TimeoutException e) {
+            throw Throwables.propagate(e);
+        }
+        try {
+            all.forEach((name, value) -> {
+                if (value.startsWith(Ref.REFS_PREFIX)) {
+                    putSymRef(name, value);
+                } else {
+                    putRef(name, value);
+                }
+            });
+        } finally {
+            unlock();
+        }
     }
 }

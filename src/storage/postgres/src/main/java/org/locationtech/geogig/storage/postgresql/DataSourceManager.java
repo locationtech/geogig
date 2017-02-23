@@ -36,7 +36,8 @@ class DataSourceManager extends ConnectionManager<Environment, DataSource> {
     protected DataSource connect(Environment config) {
         HikariConfig hc = new HikariConfig();
         hc.setConnectionInitSql("SELECT NOW()");
-        hc.setConnectionTestQuery("SELECT NOW()");
+        // no need to set a validation query, connections auto validate
+        // hc.setConnectionTestQuery("SELECT NOW()");
         hc.setDriverClassName("org.postgresql.Driver");
 
         final String jdbcUrl = getUrl(config.connectionConfig);

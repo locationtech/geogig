@@ -77,7 +77,7 @@ public class GeogigModule extends AbstractModule {
 
         bind(ExecutorService.class).toProvider(fineGrainedExecutor).in(Scopes.SINGLETON);
 
-        bind(Context.class).to(GuiceInjector.class).in(Scopes.SINGLETON);
+        bind(Context.class).to(GuiceContext.class).in(Scopes.SINGLETON);
 
         Multibinder.newSetBinder(binder(), Decorator.class);
         bind(DecoratorProvider.class).in(Scopes.SINGLETON);

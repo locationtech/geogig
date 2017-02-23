@@ -56,6 +56,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class DataStoreConcurrencyTest {
 
+    private Context context;
+
     private GeoGigDataStore store;
 
     private static final SimpleFeatureType pointType;
@@ -88,7 +90,7 @@ public class DataStoreConcurrencyTest {
         platform.setUserHome(userHomeDirectory);
 
         GlobalContextBuilder.builder(new TestContextBuilder(platform));
-        Context context = GlobalContextBuilder.builder().build(new Hints().platform(platform));
+        context = GlobalContextBuilder.builder().build(new Hints().platform(platform));
 
         GeoGIG repo = new GeoGIG(context);
         repo.command(InitOp.class).call();
@@ -106,7 +108,7 @@ public class DataStoreConcurrencyTest {
 
         readThreads = Executors.newFixedThreadPool(readThreadCount,
                 new ThreadFactoryBuilder().setNameFormat("read-thread-%d").build());
-        initialCommitCount = copyOf(store.getGeogig().command(LogOp.class).call()).size();
+        initialCommitCount = copyOf(context.command(LogOp.class).call()).size();
     }
 
     @After
@@ -130,7 +132,7 @@ public class DataStoreConcurrencyTest {
             assertEquals(insertsPerTask, f.get().intValue());
         }
 
-        List<RevCommit> commits = copyOf(store.getGeogig().command(LogOp.class).call());
+        List<RevCommit> commits = copyOf(context.command(LogOp.class).call());
         final int expectedCommitCount = initialCommitCount + insertsPerTask * writeThreadCount;
         assertEquals(expectedCommitCount, commits.size());
     }
@@ -169,7 +171,7 @@ public class DataStoreConcurrencyTest {
             assertEquals(readsPerTask, f.get().intValue());
         }
 
-        List<RevCommit> commits = copyOf(store.getGeogig().command(LogOp.class).call());
+        List<RevCommit> commits = copyOf(context.command(LogOp.class).call());
         final int expectedCommitCount = insertsPerTask + initialCommitCount
                 + insertsPerTask * writeThreadCount;
         assertEquals(expectedCommitCount, commits.size());

@@ -10,8 +10,9 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -45,7 +46,6 @@ import org.opengis.feature.type.Name;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
@@ -78,7 +78,9 @@ import com.google.common.collect.ImmutableList;
  */
 public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
-    private final Repository geogig;
+    private final Repository repository;
+
+    private final Context _liveContext;
 
     /** @see #setHead(String) */
     private String refspec;
@@ -86,17 +88,18 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     /** When the configured head is not a branch, we disallow transactions */
     private boolean allowTransactions = true;
 
-    public GeoGigDataStore(Repository geogig) {
+    public GeoGigDataStore(Repository repository) {
         super();
-        Preconditions.checkNotNull(geogig);
+        Preconditions.checkNotNull(repository);
 
-        this.geogig = geogig;
+        this.repository = repository;
+        this._liveContext = repository.context();
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        geogig.close();
+        repository.close();
     }
 
     /**
@@ -150,10 +153,6 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return getCheckedOutBranch();
     }
 
-    public Repository getGeogig() {
-        return geogig;
-    }
-
     /**
      * @return the configured refspec of the commit this datastore works against, or {@code null} if
      *         no head in particular has been set, meaning the data store works against whatever the
@@ -201,11 +200,13 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
             Optional<GeogigTransaction> geogigTransaction = state.getGeogigTransaction();
             if (geogigTransaction.isPresent()) {
                 context = geogigTransaction.get();
+            } else {
+                context = this._liveContext;
             }
         }
 
         if (context == null) {
-            context = geogig.context();
+            context = this._liveContext.snapshot();
         }
         return context;
     }
@@ -223,23 +224,24 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         Preconditions.checkNotNull(typeName);
 
         final String localName = typeName.getLocalPart();
-        final List<NodeRef> typeRefs = findTypeRefs(tx);
-        Collection<NodeRef> matches = Collections2.filter(typeRefs, new Predicate<NodeRef>() {
-            @Override
-            public boolean apply(NodeRef input) {
-                return NodeRef.nodeFromPath(input.path()).equals(localName);
-            }
-        });
-        switch (matches.size()) {
-        case 0:
+        List<NodeRef> typeRefs = findTypeRefs(tx, false);
+        NodeRef typeRef = findTypeRef(typeRefs, localName);
+        if (typeRef == null) {
+            typeRefs = findTypeRefs(tx, true);
+            typeRef = findTypeRef(typeRefs, localName);
+        }
+        if (typeRef == null) {
             throw new NoSuchElementException(
                     String.format("No tree ref matched the name: %s", localName));
-        case 1:
-            return matches.iterator().next();
-        default:
-            throw new IllegalArgumentException(String
-                    .format("More than one tree ref matches the name %s: %s", localName, matches));
         }
+        return typeRef;
+    }
+
+    private @Nullable NodeRef findTypeRef(List<NodeRef> typeRefs, String localName) {
+        java.util.Optional<NodeRef> match = typeRefs.stream()
+                .filter((r) -> NodeRef.nodeFromPath(r.path()).equals(localName)).findFirst();
+
+        return match.orElse(null);
     }
 
     @Override
@@ -249,17 +251,31 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     @Override
     protected ImmutableList<Name> createTypeNames() throws IOException {
-        List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT);
+        List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT, true);
         return ImmutableList
                 .copyOf(Collections2.transform(typeTrees, (ref) -> getDescriptorName(ref)));
     }
 
-    private List<NodeRef> findTypeRefs(@Nullable Transaction tx) {
+    /**
+     * Cache type refs by repository head ref
+     */
+    private Map<String, List<NodeRef>> typeRefsByHead = new HashMap<>();
+
+    private List<NodeRef> findTypeRefs(@Nullable Transaction tx, boolean forceReload) {
+        List<NodeRef> typeTrees = null;
 
         final String rootRef = getRootRef(tx);
-        Context commandLocator = resolveContext(tx);
-        List<NodeRef> typeTrees = commandLocator.command(FindFeatureTypeTrees.class)
-                .setRootTreeRef(rootRef).call();
+        if (!forceReload) {
+            typeTrees = typeRefsByHead.get(rootRef);
+        }
+        if (typeTrees == null) {
+            Context commandLocator = resolveContext(tx);
+            typeTrees = commandLocator.command(FindFeatureTypeTrees.class).setRootTreeRef(rootRef)
+                    .call();
+            synchronized (typeRefsByHead) {
+                typeRefsByHead.put(rootRef, typeTrees);
+            }
+        }
         return typeTrees;
     }
 

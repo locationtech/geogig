@@ -107,6 +107,7 @@ public class SpatialOps {
      *         if the crs cannot be found
      */
     public @Nullable static Envelope boundsOf(CoordinateReferenceSystem crs) throws Exception {
+        crs = findKnownCrs(crs);
         return EPSGBoundsCalc.getExtents(crs);
     }
 
@@ -194,22 +195,28 @@ public class SpatialOps {
         return env;
     }
 
-    public static CoordinateReferenceSystem findIdentifier(GeometryDescriptor geometryDescriptor) throws FactoryException, CRSException {
-        CoordinateReferenceSystem crs = null;
+    public static CoordinateReferenceSystem findIdentifier(GeometryDescriptor geometryDescriptor)
+            throws FactoryException, CRSException {
         if (geometryDescriptor != null) {
-            crs = geometryDescriptor.getCoordinateReferenceSystem();
-            String srs = CRS.toSRS(crs);
-            if (srs != null && !srs.startsWith("EPSG:")) {
-                boolean fullScan = true;
-                String knownIdentifier;
-                knownIdentifier = CRS.lookupIdentifier(crs, fullScan);
-                if (knownIdentifier != null) {
-                    boolean longitudeFirst = CRS.getAxisOrder(crs).equals(CRS.AxisOrder.EAST_NORTH);
-                    crs = CRS.decode(knownIdentifier, longitudeFirst);
-                } else {
-                    throw new CRSException(
+            CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
+            return findKnownCrs(crs);
+        }
+        return null;
+    }
+
+    public static CoordinateReferenceSystem findKnownCrs(CoordinateReferenceSystem crs)
+            throws FactoryException, CRSException {
+        String srs = CRS.toSRS(crs);
+        if (srs != null && !srs.startsWith("EPSG:")) {
+            boolean fullScan = true;
+            String knownIdentifier;
+            knownIdentifier = CRS.lookupIdentifier(crs, fullScan);
+            if (knownIdentifier != null) {
+                boolean longitudeFirst = CRS.getAxisOrder(crs).equals(CRS.AxisOrder.EAST_NORTH);
+                crs = CRS.decode(knownIdentifier, longitudeFirst);
+            } else {
+                throw new CRSException(
                         "Could not find identifier associated with the defined CRS: \n" + crs);
-                }
             }
         }
         return crs;

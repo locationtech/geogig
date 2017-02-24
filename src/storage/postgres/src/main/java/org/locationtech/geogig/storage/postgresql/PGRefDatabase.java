@@ -192,7 +192,14 @@ public class PGRefDatabase implements RefDatabase {
         if (!value.startsWith("ref: ")) {
             throw new IllegalArgumentException(name + " is not a symbolic ref: '" + value + "'");
         }
-        value = value.substring("ref: ".length());
+        value = unmaskSymRef(value);
+        return value;
+    }
+
+    private String unmaskSymRef(String value) {
+        if (value.startsWith("ref: ")) {
+            value = value.substring("ref: ".length());
+        }
         return value;
     }
 
@@ -298,7 +305,7 @@ public class PGRefDatabase implements RefDatabase {
                     cx.rollback();
                 } else {
                     if (oldval.startsWith("ref: ")) {
-                        oldval = oldval.substring("ref: ".length());
+                        oldval = unmaskSymRef(oldval);
                     }
                     final String sql = format(
                             "DELETE FROM %s WHERE repository = ? AND path = ? AND name = ?",
@@ -366,7 +373,7 @@ public class PGRefDatabase implements RefDatabase {
                 while (rs.next()) {
                     String path = rs.getString(1);
                     String name = rs.getString(2);
-                    String val = rs.getString(3);
+                    String val = unmaskSymRef(rs.getString(3));
                     all.put(Ref.append(path, name), val);
                 }
             }

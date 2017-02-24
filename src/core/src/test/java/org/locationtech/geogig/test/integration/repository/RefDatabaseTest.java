@@ -233,7 +233,7 @@ public abstract class RefDatabaseTest {
         // known root refs
         putRef(Ref.CHERRY_PICK_HEAD, sampleId.toString(), refs);
         putRef(Ref.ORIG_HEAD, sampleId.toString(), refs);
-        putRef(Ref.HEAD, id("head"), refs);
+        putSymRef(Ref.HEAD, "refs/heads/master", refs);
         putRef(Ref.WORK_HEAD, sampleId.toString(), refs);
         putRef(Ref.STAGE_HEAD, sampleId.toString(), refs);
         putRef(Ref.MERGE_HEAD, sampleId.toString(), refs);
@@ -269,6 +269,11 @@ public abstract class RefDatabaseTest {
 
     private void putRef(String name, String value, Map<String, String> holder) {
         refDb.putRef(name, value);
+        holder.put(name, value);
+    }
+
+    private void putSymRef(String name, String value, Map<String, String> holder) {
+        refDb.putSymRef(name, value);
         holder.put(name, value);
     }
 }

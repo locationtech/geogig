@@ -1420,8 +1420,8 @@ public class PGObjectStore implements ObjectStore {
             SharedResourceReference ref = sharedResources.get(key);
             if (ref == null) {
                 int threadPoolSize;
-                Optional<Integer> tpoolSize = configdb.get(KEY_THREADPOOL_SIZE, Integer.class)
-                        .or(configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class));
+                Optional<Integer> tpoolSize = configdb.getGlobal(KEY_THREADPOOL_SIZE,
+                        Integer.class);
                 if (tpoolSize.isPresent()) {
                     Integer poolSize = tpoolSize.get();
                     Preconditions.checkState(poolSize.intValue() > 0,

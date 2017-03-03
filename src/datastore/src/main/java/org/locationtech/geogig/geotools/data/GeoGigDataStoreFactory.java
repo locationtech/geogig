@@ -80,6 +80,8 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             "Optional namespace for feature types that do not declare a Namespace themselves",
             false);
 
+    public static final Param AUTO_INDEXING = new Param("autoIndexing", Boolean.class, "Auto-indexing", false);
+
     @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
@@ -92,7 +94,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
 
     @Override
     public Param[] getParametersInfo() {
-        return new Param[] { REPOSITORY, BRANCH, HEAD, DEFAULT_NAMESPACE };
+        return new Param[] { REPOSITORY, BRANCH, HEAD, DEFAULT_NAMESPACE, AUTO_INDEXING };
     }
     
     private URI resolveURI(String repoParam) {
@@ -161,6 +163,9 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         final String head = (String) HEAD.lookUp(params);
 
         @Nullable
+        final Boolean autoIndex = (Boolean) AUTO_INDEXING.lookUp(params);
+
+        @Nullable
         final String effectiveHead = (head == null) ? branch : head;
 
         final URI repositoryUri = resolveURI(repositoryLocation);
@@ -185,6 +190,9 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         }
         if (effectiveHead != null) {
             store.setHead(effectiveHead);
+        }
+        if (autoIndex != null) {
+            store.setAutoIndexing(autoIndex.booleanValue());
         }
         return store;
     }

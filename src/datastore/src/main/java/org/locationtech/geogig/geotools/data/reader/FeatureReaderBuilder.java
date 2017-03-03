@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -332,6 +333,7 @@ public class FeatureReaderBuilder {
                     geometryFactory, nativeCrs);
         } else {
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
+            //using fullSchema here will build "normal" full-attribute lazy features
             features = retriever.getGeoToolsFeatures(featureRefs, fullSchema, geometryFactory);
         }
 
@@ -343,9 +345,13 @@ public class FeatureReaderBuilder {
             features = AutoCloseableIterator.transform(features, new ScreenMapGeometryReplacer(screenMap));
         }
 
+        //we only want a sub-set of the attributes provided - we need to re-type
+        // the features (either from the index or the full-feature)
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
-        featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(resultSchema,
+        featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(fullSchema,
                 features);
+
+        featureReader = new ReTypingFeatureReader(featureReader,fullSchema,resultSchema);
 
         return featureReader;
     }

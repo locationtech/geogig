@@ -17,10 +17,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -188,5 +191,27 @@ public class RevObjectTestSupport {
             }
         }
         return nodes;
+    }
+
+    /**
+     * Brute force lookup of nodes named {@code nodeName} on the {@code tree} from {@code store}
+     * <p>
+     * There shall always be one single node for a node name on a tree, this method can be used to
+     * identify such catastrophic errors
+     */
+    public static List<Node> findNode(String nodeName, RevTree tree, ObjectStore store) {
+        List<Node> matches = new ArrayList<>(2);
+        Iterator<Node> children = RevObjects.children(tree, CanonicalNodeOrder.INSTANCE);
+        while (children.hasNext()) {
+            Node node = children.next();
+            if (nodeName.equals(node.getName())) {
+                matches.add(node);
+            }
+        }
+        for (Bucket b : tree.buckets().values()) {
+            RevTree bt = store.getTree(b.getObjectId());
+            matches.addAll(findNode(nodeName, bt, store));
+        }
+        return matches;
     }
 }

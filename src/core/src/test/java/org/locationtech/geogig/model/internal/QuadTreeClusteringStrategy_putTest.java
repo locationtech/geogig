@@ -21,7 +21,13 @@ import java.util.List;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.internal.ClusteringStrategy.DAGCache;
+import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.memory.HeapObjectStore;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 public class QuadTreeClusteringStrategy_putTest {
 
@@ -213,6 +219,73 @@ public class QuadTreeClusteringStrategy_putTest {
                 return cache.treeBuff.get(id);
         }
         return null;
+    }
+
+    @Test
+    public void testCollapsedTreeUpdatesAsExpected() {
+        ObjectStore store = new HeapObjectStore();
+        store.open();
+
+        QuadTreeClusteringStrategy orig = ClusteringStrategyBuilder//
+                .quadTree(store)//
+                .original(RevTree.EMPTY)//
+                .maxBounds(MAX_BOUNDS_WGS84)//
+                .build();
+
+        // force a DAG split with nodes that fall on the NE quadrant...
+        for (int i = 1; i <= 129; i++) {
+            Envelope bounds = new Envelope(i, i, 1, 1);
+            Node node = createNode("node # " + i, bounds);
+            orig.put(node);
+        }
+
+        assertEquals("DAG depth should be 2 (root and one quad)", 2, orig.depth(orig.root));
+        assertEquals("DAG should have been collapsed", 1, orig.depth(orig.buildRoot()));
+
+        RevTree originalCollapsedTree = DAGTreeBuilder.build(orig, store);
+
+        // we know originalCollapsedTree has been collapsed to be shallower, make sure a new tree
+        // based on it would preserve its structure
+
+        QuadTreeClusteringStrategy update = ClusteringStrategyBuilder//
+                .quadTree(store)//
+                .original(originalCollapsedTree)//
+                .maxBounds(MAX_BOUNDS_WGS84)//
+                .build();
+
+        Node node1 = createNode("node # 1", new Envelope(1, 1, 1, 1));
+        Node node2 = createNode("node # 2", new Envelope(2, 2, 1, 1));
+        Node node3 = createNode("node # 3", new Envelope(3, 3, 1, 1));
+
+        // falls on the same bucket/quadrant
+        Node node1Update = createNode(node1.getName(), new Envelope(1.1, 1.1, 1, 1));
+
+        // changed, but same bounds
+        Node node2Update = node2.update(RevObjectTestSupport.hashString("node2update"));
+
+        // changed, falls on the opposite quadrant
+        Node node3Update = node3.update(RevObjectTestSupport.hashString("node3update"),
+                new Envelope(-3, -3, -1, -1));
+
+        // update the DAG with the changed nodes
+        update.update(node1, node1Update);
+        update.update(node2, node2Update);
+        update.update(node3, node3Update);
+
+        RevTree updatedTree = DAGTreeBuilder.build(update, store);
+
+        List<Node> node11 = RevObjectTestSupport.findNode(node1.getName(), updatedTree, store);
+        List<Node> node12 = RevObjectTestSupport.findNode(node2.getName(), updatedTree, store);
+        List<Node> node13 = RevObjectTestSupport.findNode(node3.getName(), updatedTree, store);
+        assertEquals(1, node11.size());
+        assertEquals(1, node12.size());
+        assertEquals(1, node13.size());
+
+        assertEquals(node1Update, node11.get(0));
+        assertEquals(node2Update, node12.get(0));
+        assertEquals(node3Update, node13.get(0));
+
+        assertEquals(originalCollapsedTree.size(), updatedTree.size());
     }
 
 }

@@ -137,8 +137,8 @@ public class DAGTreeBuilder {
 
         SharedState state = new SharedState(targetStore, clusteringStrategy, listener);
 
-        DAG root = clusteringStrategy.buildRoot();
-        TreeId rootId = clusteringStrategy.getRootId();
+        final DAG root = clusteringStrategy.buildRoot();
+        final TreeId rootId = root.getId();
         final int baseDepth = rootId.depthLength();
         TreeBuildTask task = new TreeBuildTask(state, root, baseDepth);
 

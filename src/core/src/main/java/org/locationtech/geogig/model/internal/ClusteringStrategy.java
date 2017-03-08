@@ -60,11 +60,9 @@ public abstract class ClusteringStrategy {
 
     private DAGStorageProvider storageProvider;
 
-    private static final TreeId ROOT_ID = new TreeId(new byte[0]);
+    protected static final TreeId ROOT_ID = new TreeId(new byte[0]);
 
     protected DAG root;
-
-    private TreeId rootId = ROOT_ID;
 
     @VisibleForTesting
     final DAGCache dagCache;
@@ -73,9 +71,16 @@ public abstract class ClusteringStrategy {
         checkNotNull(original);
         checkNotNull(storageProvider);
         this.storageProvider = storageProvider;
-        this.root = new DAG(ROOT_ID, original.getId());
-        this.root.setChildCount(original.size());
         this.dagCache = new DAGCache(storageProvider);
+        init(original, ROOT_ID);
+    }
+
+    /**
+     * Initialize the root DAG to point to the original {@link RevTree} and the given {@link TreeId}
+     */
+    protected final void init(RevTree original, TreeId rootId) {
+        this.root = new DAG(rootId, original.getId());
+        this.root.setChildCount(original.size());
     }
 
     abstract int normalizedSizeLimit(final int depthIndex);
@@ -205,6 +210,7 @@ public abstract class ClusteringStrategy {
         // feature in a spatial index)
         if (nodeId != null) {
             boolean remove = node.getObjectId().isNull();
+            TreeId rootId = root.getId();
             int rootDepth = rootId.depthLength();// usually zero, unless buildRoot() has already
                                                  // been called and it reset the root DAG to be
                                                  // _the_ single bucket root had (in case it had
@@ -223,19 +229,7 @@ public abstract class ClusteringStrategy {
 
     }
 
-    public TreeId getRootId() {
-        return rootId;
-    }
-
     public DAG buildRoot() {
-        while (1 == root.numBuckets()) {
-            root.forEachBucket((treeId) -> {
-                DAG actual = getOrCreateDAG(treeId);
-                root = actual;
-                rootId = treeId;
-            });
-        }
-
         return root;
     }
 

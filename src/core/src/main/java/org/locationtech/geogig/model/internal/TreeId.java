@@ -76,4 +76,15 @@ final class TreeId implements Comparable<TreeId>, Serializable {
     public String toString() {
         return Arrays.toString(bucketIndicesByDepth);
     }
+
+    /**
+     * Factory method to create a child tree id of this one at with the given bucket id
+     */
+    public TreeId newChild(int bucketId) {
+        int depthLength = depthLength();
+        byte[] childIndices = new byte[depthLength + 1];
+        System.arraycopy(this.bucketIndicesByDepth, 0, childIndices, 0, depthLength);
+        childIndices[depthLength] = (byte) bucketId;
+        return new TreeId(childIndices);
+    }
 }

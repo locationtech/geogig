@@ -322,9 +322,13 @@ public abstract class RevTreeBuilderTest {
      *         {@code bounds = [i, i+1, i, i+1]}
      */
     protected static Node node(int i) {
+        Envelope bounds = new Envelope(i, i + 1, i, i + 1);
+        return node(i, bounds);
+    }
+
+    protected static Node node(int i, Envelope bounds) {
         String key = "a" + String.valueOf(i);
         ObjectId oid = RevObjectTestSupport.hashString(key);
-        Envelope bounds = new Envelope(i, i + 1, i, i + 1);
         Node node = Node.create(key, oid, ObjectId.NULL, TYPE.FEATURE, bounds);
         return node;
     }

@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -63,10 +64,49 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
             Envelope maxBounds) {
         super(original, storageProvider);
         this.maxBounds = maxBounds;
+        init(original);
     }
 
-    public Envelope getMaxBound() {
-        return maxBounds;
+    /**
+     * may the original tree have been created by {@link #buildRoot()} collapsing a DAG whose root
+     * was one-single bucket? in that case make the initial structure match the original
+     * 
+     * @param original
+     */
+    private void init(RevTree original) {
+        final Envelope treeBounds = SpatialOps.boundsOf(original);
+        if (treeBounds.isNull()) {
+            return;
+        }
+
+        TreeId originalPathToRoot = ROOT_ID;
+
+        for (int depthIndex = 0;; depthIndex++) {
+            Quadrant quadrant = computeQuadrant(treeBounds, depthIndex);
+            if (quadrant == null) {
+                break;
+            }
+            int bucketId = quadrant.getBucketNumber();
+            originalPathToRoot = originalPathToRoot.newChild(bucketId);
+        }
+
+        super.init(original, originalPathToRoot);
+    }
+
+    /**
+     * Override to collapse root DAG's that are one single bucket to the first DAG that has more
+     * than one bucket
+     */
+    @Override
+    public DAG buildRoot() {
+        while (1 == root.numBuckets()) {
+            root.forEachBucket((treeId) -> {
+                DAG actual = getOrCreateDAG(treeId);
+                root = actual;
+            });
+        }
+
+        return root;
     }
 
     @Override
@@ -114,7 +154,9 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
      */
     @Override
     public void update(Node oldNode, Node newNode) {
-        if (oldNode.bounds().equals(newNode.bounds())) {
+        Optional<Envelope> oldBounds = oldNode.bounds();
+        Optional<Envelope> newBounds = newNode.bounds();
+        if (oldBounds.equals(newBounds)) {
             // in case the bounds didn't change, put will override the old value,
             // otherwise need to remove old and add new separately
             Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));

@@ -231,8 +231,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         final RevTree tree = createQuadTree(maxBounds, nodes).build();
 
-        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree,
-                maxBounds);
+        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree, maxBounds);
         // collect some keys to remove
         final Set<Node> removedNodes = new HashSet<>();
         {
@@ -268,8 +267,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         final RevTree tree = createQuadTree(maxBounds, origNodes).build();
 
-        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree,
-                maxBounds);
+        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree, maxBounds);
 
         final Set<Node> removedNodes = new HashSet<>();
         final Set<Node> addedNodes = new HashSet<>();
@@ -416,5 +414,4 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         }
         return qtree;
     }
-
 }

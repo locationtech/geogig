@@ -98,7 +98,7 @@ There are several configuration options for tuning the cacheing and threading of
 
 * ``postgres.maxConnections``: The maximum number of simultaneous idle and in-use connections to the database. Defaults to 10.
 * ``postgres.threadPoolSize``: The number of threads that the object database should use.  Defaults to the number of processors available to the virtual machine, or 2, whichever is higher.
-* ``postgres.bytecache.maxSize``: The maximum size of the object database cache in bytes. Defaults to 50% of the heap.
+* ``postgres.bytecache.maxSize``: The maximum size of the object database cache in bytes. Defaults to 10% of the heap.
 * ``postgres.bytecache.initialCapacity``: The minimum total size of the cache in bytes.  Defaults to 1,000,000 bytes.
 * ``postgres.bytecache.concurrencyLevel``: Hint to indicate the desired number of concurrent updates without contention. Actual concurrency may vary based on internal structure. Defaults to 16.
 * ``postgres.bytecache.expireSeconds``: If specified, cache entries will be removed after the given number of seconds have passed.  This is not set by default, so entries do not expire from the cache.

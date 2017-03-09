@@ -130,8 +130,8 @@ public class PGCache {
 
     private static long defaultCacheSize() {
         final long maxMemory = Runtime.getRuntime().maxMemory();
-        // Use up to 50% of the heap by default
-        return (long) (maxMemory * 0.5);
+        // Use up to 10% of the heap by default
+        return (long) (maxMemory * 0.1);
     }
 
     private Cache<ObjectId, byte[]> cache;

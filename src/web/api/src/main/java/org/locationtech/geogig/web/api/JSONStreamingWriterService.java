@@ -25,7 +25,8 @@ public class JSONStreamingWriterService implements StreamingWriterService {
 
     @Override
     public boolean handles(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON.equals(mediaType);
+        // true if the main/sub-types match, ignore extra parameters
+        return MediaType.APPLICATION_JSON.equals(mediaType, true);
     }
 
 }

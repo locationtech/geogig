@@ -14,6 +14,7 @@ import static org.locationtech.geogig.rest.repository.InitCommandResource.INIT_C
 import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.rest.repository.InitRequestUtil;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.restlet.data.Method;
 import org.restlet.data.Request;
@@ -227,4 +229,29 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         this.repositories.invalidate(repoName);
     }
 
+    private static class InitRequestHandler {
+
+        private static Optional<Repository> createGeoGIG(Request request) {
+            try {
+                final Hints hints = InitRequestUtil.createHintsFromRequest(request);
+                final Optional<Serializable> repositoryUri = hints.get(Hints.REPOSITORY_URL);
+                if (!repositoryUri.isPresent()) {
+                    // didn't successfully build a Repository URI
+                    return Optional.absent();
+                }
+                final URI repoUri = URI.create(repositoryUri.get().toString());
+                final RepositoryResolver resolver = RepositoryResolver.lookup(repoUri);
+                final Repository repository = GlobalContextBuilder.builder().build(hints).repository();
+                if (resolver.repoExists(repoUri)) {
+                    // open it
+                    repository.open();
+                }
+                // now build the repo with the Hints
+                return Optional.fromNullable(repository);
+            } catch (Exception ex) {
+                Throwables.propagate(ex);
+            }
+            return Optional.absent();
+        }
+    }
 }

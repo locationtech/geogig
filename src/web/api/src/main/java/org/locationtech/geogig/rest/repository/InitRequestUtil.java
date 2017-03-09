@@ -7,7 +7,7 @@
  * Contributors:
  * Erik Merkle (Boundless) - initial implementation
  */
-package org.locationtech.geogig.web;
+package org.locationtech.geogig.rest.repository;
 
 import static org.locationtech.geogig.rest.repository.InitCommandResource.AUTHOR_EMAIL;
 import static org.locationtech.geogig.rest.repository.InitCommandResource.AUTHOR_NAME;
@@ -16,7 +16,6 @@ import static org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -30,10 +29,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.rest.RestletException;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -41,9 +38,7 @@ import org.restlet.data.Request;
 import org.restlet.data.Status;
 import org.restlet.resource.Representation;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 
 /**
  * Utility for handling GeoGIG repository init requests. This class will pull repository creation
@@ -51,9 +46,9 @@ import com.google.common.base.Throwables;
  * and build a GeoGIG repository form them, by converting the request into a
  * {@link org.locationtech.geogig.repository.Hints Hints}.
  */
-public class InitRequestHandler {
+public class InitRequestUtil {
 
-    private static final InitRequestHandler INSTANCE = new InitRequestHandler();
+    private static final InitRequestUtil INSTANCE = new InitRequestUtil();
 
     private static final String SCHEME = "postgresql";
     private static final String USER = "user";
@@ -168,7 +163,7 @@ public class InitRequestHandler {
             Representation entity = request.getEntity();
             final MediaType reqMediaType = entity.getMediaType();
 
-            if (MediaType.APPLICATION_WWW_FORM.equals(reqMediaType)) {
+            if (MediaType.APPLICATION_WWW_FORM.equals(reqMediaType, true)) {
                 // URL encoded form parameters
                 try {
                     Form form = request.getEntityAsForm();
@@ -177,7 +172,7 @@ public class InitRequestHandler {
                     throw new RestletException("Error parsing URL encoded form request",
                             CLIENT_ERROR_BAD_REQUEST, ex);
                 }
-            } else if (MediaType.APPLICATION_JSON.equals(reqMediaType)) {
+            } else if (MediaType.APPLICATION_JSON.equals(reqMediaType, true)) {
                 // JSON encoded parameters
                 try {
                     String jsonRep = entity.getText();
@@ -256,8 +251,7 @@ public class InitRequestHandler {
         }
     }
 
-    @VisibleForTesting
-    Hints createHintsFromRequest(Request request) throws UnsupportedEncodingException, URISyntaxException, IOException,
+    public static Hints createHintsFromRequest(Request request) throws UnsupportedEncodingException, URISyntaxException, IOException,
             RepositoryConnectionException {
         // get the repository name from the request
         final Optional<String> nameOptional = Optional.fromNullable(getStringAttribute(request,
@@ -272,30 +266,8 @@ public class InitRequestHandler {
         final Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_NAME, repoName);
         // try to build the Repo URI from any Request parameters.
-        updateHintsWithParams(hints, getRequestParameters(request));
+        INSTANCE.updateHintsWithParams(hints, INSTANCE.getRequestParameters(request));
         return hints;
     }
 
-    static Optional<Repository> createGeoGIG(Request request) {
-        try {
-            final Hints hints = INSTANCE.createHintsFromRequest(request);
-            final Optional<Serializable> repositoryUri = hints.get(Hints.REPOSITORY_URL);
-            if (!repositoryUri.isPresent()) {
-                // didn't successfully build a Repository URI
-                return Optional.absent();
-            }
-            final URI repoUri = URI.create(repositoryUri.get().toString());
-            final RepositoryResolver resolver = RepositoryResolver.lookup(repoUri);
-            final Repository repository = GlobalContextBuilder.builder().build(hints).repository();
-            if (resolver.repoExists(repoUri)) {
-                // open it
-                repository.open();
-            }
-            // now build the repo with the Hints
-            return Optional.fromNullable(repository);
-        } catch (Exception ex) {
-            Throwables.propagate(ex);
-        }
-        return Optional.absent();
-    }
 }

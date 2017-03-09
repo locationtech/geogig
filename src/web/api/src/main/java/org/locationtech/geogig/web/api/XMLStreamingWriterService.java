@@ -28,7 +28,8 @@ public class XMLStreamingWriterService implements StreamingWriterService {
 
     @Override
     public boolean handles(MediaType mediaType) {
-        return APPLICATION_XML.equals(mediaType) || TEXT_XML.equals(mediaType);
+        // true if the main/sub-types match, ignore extra parameters
+        return APPLICATION_XML.equals(mediaType, true) || TEXT_XML.equals(mediaType, true);
     }
 
 }

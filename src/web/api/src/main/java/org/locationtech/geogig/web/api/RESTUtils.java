@@ -64,7 +64,7 @@ public class RESTUtils {
                 w.writeAttribute("type", format.toString());
             }
             w.writeEndElement();
-        } else if (MediaType.APPLICATION_JSON.equals(format)) {
+        } else if (MediaType.APPLICATION_JSON.equals(format, true)) {
             w.writeAttribute("href", href);
         }
     }

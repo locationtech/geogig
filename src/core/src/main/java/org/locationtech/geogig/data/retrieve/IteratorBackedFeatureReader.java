@@ -22,8 +22,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
  * This is a very simple Geotools utility class that allows a Iterator<SimpleFeature>
  * to "back" a FeatureReader.
  */
-public class IteratorBackedFeatureReader
-        implements FeatureReader<SimpleFeatureType, SimpleFeature> {
+class IteratorBackedFeatureReader implements FeatureReader<SimpleFeatureType, SimpleFeature> {
 
     SimpleFeatureType type;
 

@@ -28,9 +28,9 @@ class FeatureReaderAdapter<T extends FeatureType, F extends Feature>
     private final T schema;
 
     @VisibleForTesting
-    final AutoCloseableIterator<F> iterator;
+    final AutoCloseableIterator<? extends F> iterator;
 
-    public FeatureReaderAdapter(T schema, AutoCloseableIterator<F> iterator) {
+    public FeatureReaderAdapter(T schema, AutoCloseableIterator<? extends F> iterator) {
         this.schema = schema;
         this.iterator = iterator;
     }

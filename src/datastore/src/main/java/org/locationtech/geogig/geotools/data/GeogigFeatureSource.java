@@ -12,6 +12,9 @@ package org.locationtech.geogig.geotools.data;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -19,6 +22,7 @@ import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.geotools.data.QueryCapabilities;
+import org.geotools.data.ReTypeFeatureReader;
 import org.geotools.data.Transaction;
 import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentFeatureSource;
@@ -48,6 +52,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
@@ -94,9 +99,12 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return true;
     }
 
+    /**
+     * @return {@code true}
+     */
     @Override
     protected boolean canRetype() {
-        return false;
+        return true;
     }
 
     @Override
@@ -194,7 +202,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         query.setPropertyNames(Query.NO_NAMES);
 
         ReferencedEnvelope bounds = new ReferencedEnvelope(crs);
-        try (FeatureReader<SimpleFeatureType, SimpleFeature> features = getReaderInternal(query)) {
+        try (FeatureReader<SimpleFeatureType, SimpleFeature> features = getNativeReader(query,
+                false)) {
             while (features.hasNext()) {
                 bounds.expandToInclude((ReferencedEnvelope) features.next().getBounds());
             }
@@ -234,7 +243,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         query.setSortBy(null);
 
         int count = 0;
-        try (FeatureReader<SimpleFeatureType, SimpleFeature> features = getReaderInternal(query)) {
+        try (FeatureReader<SimpleFeatureType, SimpleFeature> features = getNativeReader(query,
+                false)) {
             while (features.hasNext()) {
                 features.next();
                 count++;
@@ -246,6 +256,51 @@ class GeogigFeatureSource extends ContentFeatureSource {
     @Override
     protected FeatureReader<SimpleFeatureType, SimpleFeature> getReaderInternal(final Query query)
             throws IOException {
+
+        FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
+        featureReader = getNativeReader(query, true);
+
+        // do retyping to satisfy the Query's requested set of properties in the requested order
+        final SimpleFeatureType resultSchema = featureReader.getFeatureType();
+        final boolean retypeRequired = isRetypeRequired(query, resultSchema);
+        if (retypeRequired) {
+            String[] propertyNames = query.getPropertyNames();
+            List<String> outputSchemaPropertyNames = propertyNames == null ? Collections.emptyList()
+                    : Lists.newArrayList(propertyNames);
+
+            SimpleFeatureType outputSchema;
+            outputSchema = SimpleFeatureTypeBuilder.retype(resultSchema, outputSchemaPropertyNames);
+
+            boolean cloneValues = false;
+            featureReader = new ReTypeFeatureReader(featureReader, outputSchema, cloneValues);
+        }
+
+        return featureReader;
+
+    }
+
+    private boolean isRetypeRequired(Query query, SimpleFeatureType resultSchema) {
+        final String[] queryProps = query.getPropertyNames();
+        if (Query.ALL_NAMES == queryProps) {
+            return false;
+        }
+
+        List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(),
+                (p) -> p.getLocalName());
+
+        boolean retypeRequired = !Arrays.asList(queryProps).equals(resultNames);
+        return retypeRequired;
+    }
+
+    /**
+     * @return a FeatureReader that can fully satisfy the Query's filter and who'se output schema
+     *         contains the subset of properties requested by the query's
+     *         {@link Query#getProperties() properties} plust any other one needed to evaluate the
+     *         filter. Also, the returned attributes are in the native schema's order, not the order
+     *         requested by the query.
+     */
+    private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(final Query query,
+            final boolean retypeIfNeeded) throws IOException {
 
         final Context context = getCommandLocator();
 
@@ -261,10 +316,10 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
         final Filter filter = query.getFilter();
 
-        final SimpleFeatureType fullSchema = getAbsoluteSchema();
+        final RevFeatureType nativeType = getNativeType();
         final NodeRef typeRef = this.getTypeRef();
 
-        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, fullSchema, typeRef);
+        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, nativeType, typeRef);
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = builder//
                 .filter(filter)//
@@ -277,18 +332,11 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .propertyNames(propertyNames)//
                 .screenMap(screenMap)//
                 .sortBy(sortBy)//
+                .retypeIfNeeded(retypeIfNeeded)//
                 .build();
 
         return featureReader;
 
-    }
-
-    private boolean isNaturalOrder(@Nullable SortBy[] sortBy) {
-        if (sortBy == null || sortBy.length == 0
-                || (sortBy.length == 1 && SortBy.NATURAL_ORDER.equals(sortBy[0]))) {
-            return true;
-        }
-        return false;
     }
 
     public void setChangeType(GeoGigDataStore.ChangeType changeType) {
@@ -310,7 +358,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
     @Override
     protected SimpleFeatureType buildFeatureType() throws IOException {
 
-        SimpleFeatureType featureType = getNativeType();
+        RevFeatureType nativeType = getNativeType();
+        SimpleFeatureType featureType = (SimpleFeatureType) nativeType.type();
 
         final Name name = featureType.getName();
         final Name assignedName = getEntry().getName();
@@ -329,15 +378,19 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return commandLocator;
     }
 
-    SimpleFeatureType getNativeType() {
+    RevFeatureType getNativeType() {
 
-        final NodeRef typeRef = getTypeRef();
-        final ObjectId metadataId = typeRef.getMetadataId();
+        GeogigContentState state = (GeogigContentState) getEntry().getState(getTransaction());
+        RevFeatureType nativeType = state.getNativeType();
+        if (nativeType == null) {
+            final NodeRef typeRef = getTypeRef();
+            final ObjectId metadataId = typeRef.getMetadataId();
 
-        Context commandLocator = getCommandLocator();
-        RevFeatureType revType = commandLocator.objectDatabase().getFeatureType(metadataId);
-        SimpleFeatureType featureType = (SimpleFeatureType) revType.type();
-        return featureType;
+            Context context = getCommandLocator();
+            nativeType = context.objectDatabase().getFeatureType(metadataId);
+            state.setNativeType(nativeType);
+        }
+        return nativeType;
     }
 
     String getTypeTreePath() {

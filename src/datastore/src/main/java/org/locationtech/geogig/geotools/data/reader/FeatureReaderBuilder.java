@@ -14,8 +14,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.notNull;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -25,8 +25,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.Query;
+import org.geotools.data.ReTypeFeatureReader;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.SchemaException;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.spatial.ReprojectingFilterVisitor;
 import org.geotools.filter.visitor.AbstractFilterVisitor;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
@@ -40,6 +42,7 @@ import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
@@ -98,6 +101,8 @@ public class FeatureReaderBuilder {
 
     private final Context repo;
 
+    private final RevFeatureType nativeType;
+
     private final SimpleFeatureType fullSchema;
 
     private final Set<String> fullSchemaAttributeNames;
@@ -126,9 +131,12 @@ public class FeatureReaderBuilder {
 
     private boolean ignoreIndex;
 
-    public FeatureReaderBuilder(Context repo, SimpleFeatureType fullSchema, NodeRef typeRef) {
+    private boolean retypeIfNeeded = true;
+
+    public FeatureReaderBuilder(Context repo, RevFeatureType nativeType, NodeRef typeRef) {
         this.repo = repo;
-        this.fullSchema = fullSchema;
+        this.nativeType = nativeType;
+        this.fullSchema = (SimpleFeatureType) nativeType.type();
         this.typeRef = typeRef;
         this.fullSchemaAttributeNames = Sets.newHashSet(
                 Lists.transform(fullSchema.getAttributeDescriptors(), (a) -> a.getLocalName()));
@@ -150,9 +158,9 @@ public class FeatureReaderBuilder {
         return this;
     }
 
-    public static FeatureReaderBuilder builder(Context repo, SimpleFeatureType fullSchema,
+    public static FeatureReaderBuilder builder(Context repo, RevFeatureType nativeType,
             NodeRef typeRef) {
-        return new FeatureReaderBuilder(repo, fullSchema, typeRef);
+        return new FeatureReaderBuilder(repo, nativeType, typeRef);
     }
 
     public FeatureReaderBuilder oldHeadRef(@Nullable String oldHeadRef) {
@@ -298,16 +306,17 @@ public class FeatureReaderBuilder {
         // though it's not really needed here because we have the FeatureType already. Nonetheless
         // this is strange and needs to be revisited.
         diffOp.setDefaultMetadataId(featureTypeId) //
-              .setPreserveIterationOrder(shallPreserveIterationOrder())//
-              .setPathFilter(createFidFilter(nativeFilter)) //
-              .setCustomFilter(createIndexPreFilter(nativeFilter, materializedIndexProperties,filterIsFullySupportedByIndex)) //
-              .setBoundsFilter(createBoundsFilter(nativeFilter, newFeatureTypeTree, treeSource)) //
-              .setChangeTypeFilter(resolveChangeType()) //
-              .setOldTree(oldFeatureTypeTree) //
-              .setNewTree(newFeatureTypeTree)  //
-              .setLeftSource(treeSource)   //
-              .setRightSource(treeSource) //
-              .recordStats();
+                .setPreserveIterationOrder(shallPreserveIterationOrder())//
+                .setPathFilter(createFidFilter(nativeFilter)) //
+                .setCustomFilter(createIndexPreFilter(nativeFilter, materializedIndexProperties,
+                        filterIsFullySupportedByIndex)) //
+                .setBoundsFilter(createBoundsFilter(nativeFilter, newFeatureTypeTree, treeSource)) //
+                .setChangeTypeFilter(resolveChangeType()) //
+                .setOldTree(oldFeatureTypeTree) //
+                .setNewTree(newFeatureTypeTree) //
+                .setLeftSource(treeSource) //
+                .setRightSource(treeSource) //
+                .recordStats();
 
         AutoCloseableIterator<DiffEntry> diffs;
         diffs = diffOp.call();
@@ -321,36 +330,78 @@ public class FeatureReaderBuilder {
 
         final ObjectStore featureSource = repo.objectDatabase();
 
-        AutoCloseableIterator<SimpleFeature> features;
+        AutoCloseableIterator<? extends SimpleFeature> features;
 
-        // contains only the required attributes
-        final SimpleFeatureType resultSchema = resolveOutputSchema(requiredProperties);
+        // contains only the attributes required to satisfy the output schema and the in-process
+        // filter
+        final SimpleFeatureType resultSchema;
 
         if (indexContainsAllRequiredProperties) {
+            resultSchema = resolveMinimalNativeSchema(requiredProperties);
             CoordinateReferenceSystem nativeCrs = fullSchema.getCoordinateReferenceSystem();
             features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
                     geometryFactory, nativeCrs);
         } else {
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
-            features = retriever.getGeoToolsFeatures(featureRefs, fullSchema, geometryFactory);
+            // using fullSchema here will build "normal" full-attribute lazy features
+            features = retriever.getGeoToolsFeatures(featureRefs, nativeType, geometryFactory);
+            resultSchema = fullSchema;
         }
 
         if (!filterIsFullySupportedByIndex) {
-            features = applyPostFilter(nativeFilter,features);
+            features = applyPostFilter(nativeFilter, features);
         }
 
         if (screenMap != null) {
-            features = AutoCloseableIterator.transform(features, new ScreenMapGeometryReplacer(screenMap));
+            features = AutoCloseableIterator.transform(features,
+                    new ScreenMapGeometryReplacer(screenMap));
         }
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
         featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(resultSchema,
                 features);
 
+        // we only want a sub-set of the attributes provided - we need to re-type
+        // the features (either from the index or the full-feature)
+        final boolean retypeRequired = isRetypeRequired(resultSchema);
+        if (retypeRequired) {
+            String[] propertyNames = outputSchemaPropertyNames;
+            List<String> outputSchemaPropertyNames = propertyNames == null ? Collections.emptyList()
+                    : Lists.newArrayList(propertyNames);
+
+            SimpleFeatureType outputSchema;
+            outputSchema = SimpleFeatureTypeBuilder.retype(resultSchema, outputSchemaPropertyNames);
+
+            boolean cloneValues = false;
+            featureReader = new ReTypeFeatureReader(featureReader, outputSchema, cloneValues);
+        }
+
         return featureReader;
     }
 
-    private AutoCloseableIterator<SimpleFeature> applyPostFilter(Filter nativeFilter, AutoCloseableIterator<SimpleFeature> features) {
+    public FeatureReaderBuilder retypeIfNeeded(boolean retype) {
+        this.retypeIfNeeded = retype;
+        return this;
+    }
+
+    private boolean isRetypeRequired(final SimpleFeatureType resultSchema) {
+        if (!retypeIfNeeded) {
+            return false;
+        }
+        final String[] queryProps = outputSchemaPropertyNames;
+        if (Query.ALL_NAMES == queryProps) {
+            return false;
+        }
+
+        List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(),
+                (p) -> p.getLocalName());
+
+        boolean retypeRequired = !Arrays.asList(queryProps).equals(resultNames);
+        return retypeRequired;
+    }
+
+    private AutoCloseableIterator<? extends SimpleFeature> applyPostFilter(Filter nativeFilter,
+            AutoCloseableIterator<? extends SimpleFeature> features) {
         PostFilter filterPredicate = new PostFilter(nativeFilter);
         features = AutoCloseableIterator.filter(features, filterPredicate);
         if (screenMap != null) {
@@ -362,7 +413,7 @@ public class FeatureReaderBuilder {
         return features;
     }
 
-    private SimpleFeatureType resolveOutputSchema(Set<String> requiredProperties) {
+    private SimpleFeatureType resolveMinimalNativeSchema(Set<String> requiredProperties) {
         SimpleFeatureType resultSchema;
 
         if (requiredProperties.equals(fullSchemaAttributeNames)) {
@@ -458,13 +509,11 @@ public class FeatureReaderBuilder {
         return Optional.fromNullable(index);
     }
 
-     static boolean filterIsFullySupported(Filter nativeFilter,
-                                    Set<String> materializedProperties,
-                                    Set<String> filterProperties) {
+    static boolean filterIsFullySupported(Filter nativeFilter, Set<String> materializedProperties,
+            Set<String> filterProperties) {
 
-        if (Filter.INCLUDE.equals(nativeFilter) ||
-                nativeFilter instanceof BBOX ||
-                nativeFilter instanceof Id) {
+        if (Filter.INCLUDE.equals(nativeFilter) || nativeFilter instanceof BBOX
+                || nativeFilter instanceof Id) {
             return true; // simple case
         }
 
@@ -472,17 +521,17 @@ public class FeatureReaderBuilder {
             return true; // this is unlikely to happen, unless geom is in index
         }
 
-         Set<String> missingAttributes = Sets.difference(filterProperties, materializedProperties);
+        Set<String> missingAttributes = Sets.difference(filterProperties, materializedProperties);
 
         if (missingAttributes.size() > 1) {
-            return false; // 2+ attributes missing.  We can possibly handle the geom, but not 2+
+            return false; // 2+ attributes missing. We can possibly handle the geom, but not 2+
         }
 
-        String missingAttribute = missingAttributes.iterator().next(); //there's exactly 1
+        String missingAttribute = missingAttributes.iterator().next(); // there's exactly 1
         VerifySimpleBBoxUsage visitor = new VerifySimpleBBoxUsage(missingAttribute);
         nativeFilter.accept(visitor, null);
 
-        return  visitor.isSimple();
+        return visitor.isSimple();
     }
 
     private Set<String> resolveMaterializedProperties(Optional<Index> index) {
@@ -499,7 +548,7 @@ public class FeatureReaderBuilder {
      * properties requested by {@link #propertyNames} and any other property needed to evaluate the
      * {@link #filter} in-process.
      */
-     Set<String> resolveRequiredProperties(Filter nativeFilter) {
+    Set<String> resolveRequiredProperties(Filter nativeFilter) {
         if (outputSchemaPropertyNames == Query.ALL_NAMES) {
             return fullSchemaAttributeNames;
         }
@@ -578,7 +627,7 @@ public class FeatureReaderBuilder {
     }
 
     private @Nullable ReferencedEnvelope createBoundsFilter(Filter filterInNativeCrs,
-                                                            ObjectId featureTypeTreeId, ObjectStore treeSource) {
+            ObjectId featureTypeTreeId, ObjectStore treeSource) {
         if (RevTree.EMPTY_TREE_ID.equals(featureTypeTreeId)) {
             return null;
         }
@@ -614,17 +663,17 @@ public class FeatureReaderBuilder {
      *
      * @param filter
      * @param materializedProperties
-     * @param indexFullySupportsQuery  -- if fully supported, use the screenmap
+     * @param indexFullySupportsQuery -- if fully supported, use the screenmap
      * @return
      */
     @VisibleForTesting
     Predicate<Bounded> createIndexPreFilter(final Filter filter,
-                                            final Set<String> materializedProperties, boolean indexFullySupportsQuery) {
+            final Set<String> materializedProperties, boolean indexFullySupportsQuery) {
 
         Predicate<Bounded> preFilter = new PreFilterBuilder(materializedProperties).build(filter);
 
         final boolean ignore = Boolean.getBoolean("geogig.ignorescreenmap");
-        //if the index is not fully supported, do not apply the screenmap filter at this stage
+        // if the index is not fully supported, do not apply the screenmap filter at this stage
         // otherwise we will remove too many features
         if (screenMap != null && !ignore && indexFullySupportsQuery) {
             Predicate<Bounded> screenMapFilter = new ScreenMapPredicate(screenMap);
@@ -667,11 +716,12 @@ public class FeatureReaderBuilder {
         return preserveIterationOrder;
     }
 
-
     public static class VerifySimpleBBoxUsage extends AbstractFilterVisitor {
 
         public boolean isUsedInGeometryExpression = false;
+
         public boolean isUsedInBBoxExpression = false;
+
         public boolean isUsedInNonBBoxExpression = false;
 
         public boolean isComplexGeomExpressions = false;
@@ -699,7 +749,7 @@ public class FeatureReaderBuilder {
             }
 
             if (attributes.length > 1) {
-                isComplexGeomExpressions = true; //fail -- to complex
+                isComplexGeomExpressions = true; // fail -- to complex
                 return filter;
             }
 
@@ -714,7 +764,7 @@ public class FeatureReaderBuilder {
                 isUsedInBBoxExpression = true;
                 return filter;
             }
-            //bad
+            // bad
             isUsedInNonBBoxExpression = true;
             return filter;
         }

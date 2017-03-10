@@ -11,7 +11,9 @@ package org.locationtech.geogig.data;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -26,7 +28,8 @@ public class FeatureBuilderTest extends RepositoryTestCase {
 
     @Test
     public void testFeatureBuilder() {
-        FeatureBuilder builder = new FeatureBuilder(pointsType);
+        RevFeatureType revPointsType = RevFeatureTypeBuilder.build(pointsType);
+        FeatureBuilder builder = new FeatureBuilder(revPointsType );
         RevFeature point1 = RevFeatureBuilder.build(points1);
 
         Feature test = builder.build(idP1, point1);

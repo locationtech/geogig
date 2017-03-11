@@ -24,6 +24,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -63,6 +64,10 @@ public class InitRequestUtil {
      * Directory option for Parent Directory.
      */
     static final String DIR_PARENT_DIR = "parentDirectory";
+    /**
+     * Directory of GeoGig repository
+     */
+    static final String GEOGIG_REPO_DIR = "leafDirectory";
     /**
      * Database option for Host.
      */
@@ -115,6 +120,7 @@ public class InitRequestUtil {
      */
     private void addParameters(Map<String, String> params, JsonObject json) {
         addParameter(params, DIR_PARENT_DIR, json.getString(DIR_PARENT_DIR, null));
+        addParameter(params, GEOGIG_REPO_DIR, json.getString(GEOGIG_REPO_DIR, null));
         addParameter(params, DB_HOST, json.getString(DB_HOST, null));
         addParameter(params, DB_PORT, json.getString(DB_PORT, null));
         addParameter(params, DB_NAME, json.getString(DB_NAME, null));
@@ -136,6 +142,7 @@ public class InitRequestUtil {
      */
     private void addParameters(Map<String, String> params, Form form) {
         addParameter(params, DIR_PARENT_DIR, form.getFirstValue(DIR_PARENT_DIR, null));
+        addParameter(params, GEOGIG_REPO_DIR, form.getFirstValue(GEOGIG_REPO_DIR, null));
         addParameter(params, DB_HOST, form.getFirstValue(DB_HOST, null));
         addParameter(params, DB_PORT, form.getFirstValue(DB_PORT, null));
         addParameter(params, DB_NAME, form.getFirstValue(DB_NAME, null));
@@ -210,6 +217,7 @@ public class InitRequestUtil {
             throws UnsupportedEncodingException, URISyntaxException, IOException, RepositoryConnectionException {
         // get parameters
         final String parentDir = params.get(DIR_PARENT_DIR);
+        final String repoDir = params.get(GEOGIG_REPO_DIR);
         final String dbHost = params.getOrDefault(DB_HOST, "localhost");
         final String dbPort = params.getOrDefault(DB_PORT, "5432");
         final String dbName = params.get(DB_NAME);
@@ -219,6 +227,7 @@ public class InitRequestUtil {
         // use parent directory if present
         if (parentDir != null) {
             final String newRepoName = hints.get(Hints.REPOSITORY_NAME).get().toString();
+            final String leafDir = repoDir != null ? repoDir : UUID.randomUUID().toString();
             final URI parentUri = new File(parentDir).getCanonicalFile().toURI();
             final RepositoryResolver resolver = RepositoryResolver.lookup(parentUri);
             // use the existing repo URI
@@ -243,7 +252,7 @@ public class InitRequestUtil {
             try {
                 port = Integer.parseInt(dbPort);
             } catch (NumberFormatException nfe) {
-                // just ues the default of 5432
+                // just use the default of 5432
             }
             final URI repoUri = new URI(
                     SCHEME, null, dbHost, port, pathBuilder.toString(), queryBuilder.toString(), null);

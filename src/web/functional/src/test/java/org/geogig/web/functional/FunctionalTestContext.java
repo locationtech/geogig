@@ -58,7 +58,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
     /**
      * A temporary folder to use for tests
      */
-    public TemporaryFolder tempFolder = null;
+    protected TemporaryFolder tempFolder = null;
 
     private Map<String, String> variables = new HashMap<>();
 

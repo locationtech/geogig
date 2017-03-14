@@ -14,7 +14,7 @@ Pre-built binaries are available for GeoGig.
 
 #. After the JDK is installed, navigate to http://geogig.org and click :guilabel:`Download`.
 
-#. Extract this archive to your preferred program directory. (For example, :file:`C:\\Program Files\\GeoGig` or :file:`/opt/geogig`.) 
+#. Extract this archive to your preferred program directory. (For example, :file:`C:\\Program Files\\GeoGig` or :file:`/opt/geogig`.)
 
    .. note:: The same packages can be used on Windows, OS X, and Linux.
 
@@ -25,9 +25,9 @@ When finished, you should be able to run the ``geogig --help`` and see the comma
 Building from source code
 -------------------------
 
-To build GeoGig and have an executable binary that you can run:
+To build GeoGig an executable binary that you can run:
 
-#. Clone the GeoGig source code repository. To do so, create a new folder where you want the GeoGig source code to be kept, open a terminal and move to that folder. Now type the following::
+#. Clone the GeoGig source code repository. To do so, create a new folder where you want the GeoGig source code to be kept, open a terminal and move to that folder, then type the following::
 
 	   git clone https://github.com/locationtech/geogig.git
 
@@ -41,9 +41,9 @@ To build GeoGig and have an executable binary that you can run:
 
    .. note:: To speed up the build process, you can skip tests:
 
-             ::
+   ::
 
-               mvn clean install -DskipTests
+     mvn clean install -DskipTests
 
 #. GeoGig will now build. Scripts ready to be run should be available in the :file:`src/cli-app/target/geogig/bin` directory. Add that directory to your ``PATH`` environment variable.
 
@@ -54,12 +54,12 @@ Running on Windows
 
 GeoGig uses `RocksDB <http://rocksdb.org/>`_ as the default storage backend.  On Windows machines, the libraries for RocksDB require the `Visual C++ Redistributable for Visual Studio 2015 <https://www.microsoft.com/en-us/download/details.aspx?id=48145>`_.  If you experience an ``UnsatisfiedLinkError`` exception when running GeoGig, make sure you have the above dependency installed on your system.
 
-Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing `ANSICON <http://adoxa.altervista.org/ansicon/>`_ and setting the ``ansi.enabled`` config parameter to ``true``. See the config section :ref:`repo.config`. 
+Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing `ANSICON <http://adoxa.altervista.org/ansicon/>`_ and setting the ``ansi.enabled`` config parameter to ``true``. See the config section :ref:`repo.config`.
 
 Installing ANSICON
 ==================
 
-#. Download the `ANSICON <http://adoxa.altervista.org/ansicon/>`_  zip. 
+#. Download the `ANSICON <http://adoxa.altervista.org/ansicon/>`_  zip.
 
 #. Unzip the file to it's own location, such as ``C:\Program Files\Ansicon\``
 
@@ -72,13 +72,13 @@ Installing ANSICON
    ansicon
    Microsoft Windows [Version 6.3.9600]
    (c) 2013 Microsoft Corporation. All rights reserved.
-   
+
 #. To make ANSICON load automatically with new terminals type:
 
 .. code-block:: console
 
-   ansicon -i 
-   
+   ansicon -i
+
 #. ANSICON is now enabled by default in all terminals.
 
 Uninstalling ANSICON
@@ -89,8 +89,7 @@ Uninstalling ANSICON
 .. code-block:: console
 
    ansicon -u
-   
+
 #. Remove ANSICON from the windows ``PATH``
 
 #. Delete the ANSICON folder from the location it was installed.
-

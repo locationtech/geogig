@@ -30,14 +30,14 @@ Modified features
 
 The above text indicates that 2 features under the ``parks`` tree (``12`` and ``22``) have been modified. The first line corresponding to each modification, they both have a similar syntax. Below is the explanation of each value in the case of the first difference.
 
-- ``6350a6...``: Id of the feature type of the 'old' version
-- ``6350a6...``: Id of the feature type of the 'new' version. Since the feature type hasn't changed, this is the same as the previous value.
-- ``887b4a...``: Id of the of the 'old' version of the feature
-- ``fad2fa...``: Id of the of the 'new' version of the feature
+- ``6350a6...``: ID of the feature type of the 'old' version
+- ``6350a6...``: ID of the feature type of the 'new' version. Since the feature type hasn't changed, this is the same as the previous value.
+- ``887b4a...``: ID of the of the 'old' version of the feature
+- ``fad2fa...``: ID of the of the 'new' version of the feature
 - ``M``. Type of difference. ``M`` indicates that the feature has been modified, that is, some of its attributes have changed or its feature type has changed. It can also be ``A``, which denotes an addition (a new feature that did not exist before on that path), or ``R``, which denotes a removal (a feature that existed on that path in the old version, but is not present in the new one)
 - ``parks/parks.12``: full path of the feature.
 
-All Id's are shortened to the first 6 characters.
+All IDs are shortened to the first 6 characters.
 
 After the header line, the following lines describe the changes in those attributes that have been modified. For each line, the name of the modified parameter is followed by the description of the modification. In the case of attributes that do not contain geometries, the modification is expressed showing the old and new values. From the two features modified in the above example, only ``parks.22`` contains a non-geometry field (named ``parktype``) which has been modified.
 
@@ -51,7 +51,7 @@ If the modification involves removing an attribute from the feature type, the wo
 
 	parktype: "Garden" -> [MISSING]
 
-If the terminal suports ANSI escape codes, that line will be shown in red.
+If the terminal supports ANSI escape codes, that line will be shown in red.
 
 If the modification involves adding an attribute from the feature type, the word ``[MISSING]`` is shown as the old value.
 
@@ -59,7 +59,7 @@ If the modification involves adding an attribute from the feature type, the word
 
 	parktype: [MISSING] -> "Park"
 
-If the terminal suports ANSI escape codes, that line will be shown in green.
+If the terminal supports ANSI escape codes, that line will be shown in green.
 
 In the case of fields containing geometries, a structured list of all coordinates defining the geometry are shown. Coordinates added are shown between brackets, while removed coordinates are shown between square brackets. In ANSI-supporting terminals, removals are shown in red and additions are shown in green.
 
@@ -105,7 +105,7 @@ In case the difference includes new features added or old ones removed, the synt
 
 	6350a6... 000000... 6997bd... 000000...   R  parks/23
 
-Removals are just indicated with the header line and no additional information. Notice the null Id of the new object.
+Removals are just indicated with the header line and no additional information. Notice the null ID of the new object.
 
 Additions are described with the full printing of the object added, represented as a list of ``(attribute_name, attribute_value)`` pairs, similar to the one produced by the ``show`` command. A raw description of the feature and its feature type can be obtained using the ``cat`` command and the feature and feature type Id's provided by the ``diff`` command. Notice that, in this case, the old object has null Id's for both the feature and feature type. The one corresponding to the feature type, however, doesn't have to be necessarily null, as it might already exist another feature with that feature type in the repository, prior to adding the one described by this ``diff`` output.
 
@@ -115,16 +115,16 @@ A summary mode is available, by using the ``--summary`` option. When used, only 
 Showing differences between specific commits
 ---------------------------------------------
 
-The default behaviour of the diff command is to take the working tree as the new version and the HEAD of the repository as the old version. This can be changed by specifying different references, as in the next example
+The default behavior of the diff command is to take the working tree as the new version and the HEAD of the repository as the old version. This can be changed by specifying different references, as in the next example.
 
 ::
 
 	$ geogig diff b2a780d7c0 HEAD
 	6350a6... 000000... 6997bd... 000000...   R  parks/23
 
-This will compare a previous commit (with the Id specified as the first reference) with the current head of the repository. Id's used with this syntax must resolve to a commit.
+This will compare a previous commit (with the ID specified as the first reference) with the current head of the repository. IDs used with this syntax must resolve to a commit.
 
-The first entered Id is used as the Id of the old version. Reversing the order of the references will describe the inverse difference.
+The first entered ID is used as the ID of the old version. Reversing the order of the references will describe the inverse difference.
 
 ::
 
@@ -163,6 +163,3 @@ The path can point to a single feature, as in the command line below
 
 
 Notice that, in this case, GeoGig will not complain if the path does not resolve to anything. It will tell you that there are no differences between the selected versions to compare, since the specified feature is missing in both of them.
-
-
-

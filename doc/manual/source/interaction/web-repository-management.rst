@@ -3,7 +3,7 @@
 Serving and Managing Repositories
 =================================
 
-The GeoGig Web-API allows you to serve up multiple repositories from a single endpoint via the ``geogig serve`` command.  The Web-Api documentation goes over using this command to serve a single repository, but this section will discuss using the command to serve and manage multiple repositories.
+The GeoGig Web-API allows you to serve up multiple repositories from a single endpoint via the ``geogig serve`` command.  The Web-API documentation goes over using this command to serve a single repository, but this section will discuss using the command to serve and manage multiple repositories.
 
 
 Serving Multiple Repositories

@@ -905,7 +905,7 @@ Plumbing Commands Supported
 
  .. note:: You must specify either delete OR newValue for the command to work.
 
-Web-Api Specific
+Web-API Specific
 -----------------------------
 
 - **GetCommitGraph**

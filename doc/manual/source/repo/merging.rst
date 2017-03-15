@@ -160,4 +160,4 @@ You can abort the merge operation and restore it to the original state it had be
    geogig reset --hard ORIG_HEAD
    geogig merge --abort
 
-.. warning:: This is not like git. The ``--abort``seen here is just a reset operation.
+.. warning:: This is not like git. The ``--abort`` seen here is just a reset operation.

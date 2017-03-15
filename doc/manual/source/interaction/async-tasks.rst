@@ -15,8 +15,7 @@ A running task can be canceled with the ``cancel=true`` argument. For example:
 
    http://localhost:8182/tasks/3?cancel=true
 
-This request will ask the operation to cancel and return immediately. Note, however, that the task may remain a while until the running task
-is actually canceled, as it may be blocking on I/O or being temporarily in a non cancelable state. Polling the task repeatedly with the
+This request will ask the operation to cancel and return immediately. Note, however, that it may take some time for the cancellation request to complete, as the running task may be blocking on I/O or in a temporarily non-cancelable state. Polling the task repeatedly with the
 ``cancel=true`` parameter is not a problem, though.
 
 Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes in order to allow their status to be queried.
@@ -105,7 +104,7 @@ Successfully finished tasks may contain a result summary which is specific to th
       </result>
    </task>
 
-And failed tasks, contain an exception report.
+And failed tasks contain an exception report.
 
 ::
 

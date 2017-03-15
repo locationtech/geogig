@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.notNull;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -332,6 +331,7 @@ public class FeatureReaderBuilder {
                     geometryFactory, nativeCrs);
         } else {
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
+            //using fullSchema here will build "normal" full-attribute lazy features
             features = retriever.getGeoToolsFeatures(featureRefs, fullSchema, geometryFactory);
         }
 
@@ -343,9 +343,13 @@ public class FeatureReaderBuilder {
             features = AutoCloseableIterator.transform(features, new ScreenMapGeometryReplacer(screenMap));
         }
 
+        //we only want a sub-set of the attributes provided - we need to re-type
+        // the features (either from the index or the full-feature)
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
-        featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(resultSchema,
+        featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(fullSchema,
                 features);
+
+        featureReader = new ReTypingFeatureReader(featureReader,fullSchema,resultSchema);
 
         return featureReader;
     }

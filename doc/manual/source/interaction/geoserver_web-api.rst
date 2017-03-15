@@ -206,7 +206,7 @@ That's all the information needed to create a GeoGig datastore.
 
 * ${datastore name} is the name to be given to the datastore, which then will be accessible through ``/workspaces/<ws>/datastores/<datastore name>``.
 * ${repository URI} is a GeoServer URI string that identifies the GeoGig repository in GeoServer. It should be in the form ``geoserver://<repository name>``
-* ${branch} is optional and represents the name of the branch the datastore is going to serve its data from. If not given, defaults to using whichever is the currently checked out branch in the repository while the datastore is used.
+* ${branch} is optional and represents the name of the branch the datastore is going to serve its data from. If not provided, the datastore will use whichever is the currently checked out branch in the repository each time it (or the datastore) is accessed.
 
 Quick example:
 --------------

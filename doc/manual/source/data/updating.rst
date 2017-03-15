@@ -33,7 +33,7 @@ Imagine that you export it to a GeoJSON file, make some changes and then re-impo
 ``Area`` : DOUBLE
 ``geom`` : MULTIPOLYGON
 
-Although the feature type is the same, the GeoTools library used by GeoGig understands the file to import in a different manner, putting the geometry field as last instead of first, and using a different name. GeoGig will, however, understand that the feature type is the same as the existing feature and will correctly set that existing feature type as the feature type of the imported feature.
+Although the feature type is the same, the GeoTools library used by GeoGig understands the file to import in a different manner, putting the geometry field as last instead of first, and using a different name. GeoGig will, however, understand that the feature type is the same as the existing feature type and will correctly set that existing feature type as the feature type of the imported feature types.
 
 If you do not use the "--add" option, the full destination tree is removed before importing and the new imported data is used to replace the previous data. Trees with mixed feature types cannot appear, in this case, but GeoGig will not let you import a layer with a different feature type, anyway. This is done to prevent unchanged features being reported as changed merely because the feature type (although being the same) has a different definition, as in the example above. If you really want to import something with a different feature type (as in the shapefile example mentioned, where a new area field is added), you must use the ``--force-featuretype`` switch.
 

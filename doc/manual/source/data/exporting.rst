@@ -29,9 +29,9 @@ If you want to export a path that contains features with different feature types
 
 - Use the ``--defaulttype`` switch to tell GeoGig that you want only those features with the feature type of the selected path.
 
-- Use the  ``--featuretype`` option followed by the Id of the feature type to export. GeoGig will only export those features that have the feature type defined by the specified Id
+- Use the  ``--featuretype`` option followed by the ID of the feature type to export. GeoGig will only export those features that have the feature type defined by the specified ID
 
-Remember that you can find the ID of the feature type of a given tree by using the ``command`` to describe that tree. To find the Id of the feature type of a given feature, also use the ``cat`` command, passing the path to the feature instead.
+Remember that you can find the ID of the feature type of a given tree by using the ``command`` to describe that tree. To find the ID of the feature type of a given feature, also use the ``cat`` command, passing the path to the feature instead.
 
 Another alternative for exporting when there are mixed feature types under a path is to use the ``--alter`` switch. This is similar to the ``--alter`` switch of the import operation, and it changes the feature attributes to make them match the output feature type.
 
@@ -63,7 +63,3 @@ Here is a quick summary with examples of all the option that can be used when a 
 	::
 
 		$ geogig shp export Points Points.shp --alter --featuretype 0a3ebd6a
-
-
-
-

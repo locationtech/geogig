@@ -7,7 +7,7 @@ GeoGig is a Distributed Version Control System (DVCS) for geospatial data.
 
 This document is a short introduction to the main ideas and elements of GeoGig. It describes how to set up and use GeoGig to version spatial data, introducing the following operations:
 
-* Importing unversioned spatial data into GeoGig
+* Importing unversioned spatial data into GeoGig ("import")
 * Making changes and storing snapshots ("commit")
 * Maintaining independent lines of modifications ("branch")
 * Integrating changes from separate branches ("merge")
@@ -26,11 +26,11 @@ Follow the instructions on the :ref:`start.installation` page to install GeoGig.
 Data
 ----
 
-The data used in the following examples was supplied by the City of Raleigh, and is available for download from the `City of Raleigh Open Data Portal. <https://data.raleighnc.gov/>`_ 
+The data used in the following examples was supplied by the City of Raleigh, and is available for download from the `City of Raleigh Open Data Portal. <https://data.raleighnc.gov/>`_
 
 For the purposes of this tutorial `download the sample data HERE. <https://s3.amazonaws.com/geogig-tutorial-data/geogig_tutorial_data.zip>`_
 
-This zip file contains point locations of parks maintained by the City of Raleigh, named ``Raleigh_Park_Locations``. Each version of the data has already been slightly modified in order to simulate an example workflow. 
+This zip file contains point locations of parks maintained by the City of Raleigh, named ``Raleigh_Park_Locations``. Each version of the data has already been slightly modified in order to simulate an example workflow.
 
 .. image:: img/parks_layer.png
       :scale: 75
@@ -38,7 +38,7 @@ This zip file contains point locations of parks maintained by the City of Raleig
 Configuration
 -------------
 
-Before we start working with geospatial data in GeoGig, you have to provide GeoGig with a user name and email, using the ``config`` command, substituting your name and email:
+Before we start working with geospatial data in GeoGig, you must provide GeoGig with a name and email, using the ``config`` command, substituting your name and email:
 
 .. code-block:: console
 
@@ -48,7 +48,7 @@ Before we start working with geospatial data in GeoGig, you have to provide GeoG
 Initialization
 --------------
 
-First, we must create a new repository. Create a new folder to contain the repository, and extract the data zip into that directory. Initialize the GeoGig repository by typing:
+We must create a new repository. Create a new folder to contain the repository and extract the data zip into that directory. Initialize the GeoGig repository by typing:
 
 .. code-block:: console
 
@@ -61,7 +61,7 @@ Importing data
 
 To work with data in GeoGig, it has to first be imported into the repository **working tree**.
 
-We will start by importing the ``Raleigh Park Locations`` shapefile, using the following command:
+We will start by importing the ``Raleigh Park Locations`` shapefile using the following command:
 
 .. code-block:: console
 
@@ -83,9 +83,9 @@ The response will look like this:
    100%
    parks/Raleigh_Park_Locations.shp imported successfully.
 
-The data from the shapefile is now in the working tree, but it is not yet versioned. However it is now in a format that GeoGig can understand, such that it may be aware of any changes to the data you might introduce.
+The data from the shapefile is now in the working tree, but it is not yet versioned. However, the data is now in a format that GeoGig can understand, such that it may be aware of any changes to the data you might introduce.
 
-Run the following command to verify that your data is in the working tree:
+Run the following command to verify that your data is in the working tree.
 
 .. code-block:: console
 
@@ -103,7 +103,7 @@ The response will look like this:
            11
            12
 
-Features from the shapefile are added to the working tree under a tree named ``Root tree``. A **tree** in a GeoGig repository is analogous to a directory in a filesystem. Features are named as numbers, reflecting the order in which they are found in the source data. It is not necesarily the same order in which they are listed by the ``ls`` command.
+Features from the shapefile are added to the working tree under a tree named ``Root tree``. A **tree** in a GeoGig repository is analogous to a directory in a filesystem. Features are named as numbers, reflecting the order in which they are found in the source data. It is not necessarily the same order in which they are listed by the ``ls`` command.
 
 .. todo:: Why the difference?
 
@@ -132,7 +132,7 @@ Running the ``status`` command will give you information about the data you have
 Adding data
 -----------
 
-To tell GeoGig that you want to version data in the working tree, you have to add it to the **staging area**. Do this by running the following command:
+To tell GeoGig that you want to version data in the working tree, you have to add it to the **staging area**. Do this by running the following command.
 
 .. code-block:: console
 
@@ -150,7 +150,7 @@ The response will look like this:
 
 Now your data is ready to be used to create a snapshot (a **commit** in GeoGig terminology).
 
-If you run the ``status`` command again, you will see a different output, since your data has now been added and is ready to be versioned. 
+If you run the ``status`` command again, you will see a different output, since your data has now been added and is ready to be versioned.
 
 .. code-block:: console
 
@@ -180,7 +180,7 @@ Committing
 
 Committing means to create a new version of the data which is in the staging area.
 
-Type the following command:
+Type the following command.
 
 .. code-block:: console
 
@@ -194,14 +194,14 @@ The response will look like this:
    [11b7058f4b8aaca98036f24c127e929281a01cce] first version
    Committed, counting objects...113 features added, 0 changed, 0 deleted.
 
-The text between quotes after the ``-m`` option is the commit message, which describes the snapshot in a human-readable format.
+The text between quotes after the ``-m`` option is the commit message, which should describe the snapshot in a human-readable format.
 
 Making edits
 ------------
 
-We will now simulate making an edit to our parks layer. The :file:`parks_plus_1feature/Raleigh_Park_Locations.shp` file contains the same data as the original parks file, but with an added feature. Import this file. 
+We will now simulate making an edit to our parks layer. The :file:`parks_plus_1feature/Raleigh_Park_Locations.shp` file contains the same data as the original parks file, but with an added feature. Import this file.
 
-To do this, follow the same procedure as before: import data, add, and then commit. 
+To do this, follow the same procedure as before: import data, add, and then commit.
 
 .. code-block:: console
 
@@ -292,11 +292,11 @@ The response will look like this:
 
    Created branch refs/heads/myedits
 
-The ``-c`` option tells GeoGig to not only create the branch, but also switch the repository to be working on that branch. Everything done now will be added to this new history line.
+The ``-c`` option tells GeoGig to not only create the branch, but also, to switch to that branch. Everything done will now be added to this new history line.
 
 .. note:: The default branch is named ``master``.
 
-Now use the :file:`parks_plus_2features/Raleigh_Park_Locations.shp` file. Once again - import, add, and then commit. This shapefile contains the same data as the last version, with yet another feature added on. 
+Now use the :file:`parks_plus_2features/Raleigh_Park_Locations.shp` file. Once again - import, add, and then commit. This shapefile contains the same data as the last version, with yet another feature added on.
 
 .. code-block:: console
 
@@ -326,11 +326,11 @@ The ``log`` command will show a history like this:
 Merging commits from a branch
 -----------------------------
 
-Our repository now has two branches: the one we just created (``myedits``) and the default branch (``master``). To see all the branches within a given repository, execute ``geogig branch``.
+Our repository now has two branches: the one we just created (``myedits``) and the default branch (``master``). To see all the branches within a given repository, execute the ``geogig branch`` command.
 
 Let's merge the changes we have just added from the ``myedits`` branch into the ``master`` branch.
 
-First **switch to the branch onto which you would like the changes to go to**, in this case it is ``master``. Execute the ``geogig checkout master`` command to switch to this branch.
+First **switch to the branch to which you would like to apply the changes**, in this case it is ``master``. Execute the ``geogig checkout master`` command to switch to the ``master`` branch.
 
 .. code-block:: console
 
@@ -345,7 +345,7 @@ The response will look like this:
 The ``log`` command will show the following history. Use the ``--oneline`` option to compact the output:
 
 .. code-block:: console
- 
+
    geogig log --oneline
 
 The response will look like this:
@@ -404,7 +404,7 @@ To see this in action, create a new branch named ``conflict_res``, and create a 
 
 This is the same data as ``parks_plus_2features/Raleigh_Park_Locations.shp``, however the new shapefile changes the name for 'Walnut Terrace Park' to 'Walnut Terrace Field'.
 
-Now go back to the ``master`` branch and create a new commit with the data in ``parks_2nd_change/Raleigh_Park_Locations.shp``. 
+Now go back to the ``master`` branch and create a new commit with the data in ``parks_2nd_change/Raleigh_Park_Locations.shp``.
 
 This is the same data as ``parks_plus_2features/Raleigh_Park_Locations.shp``, however the new shapefile changes the name for 'Walnut Terrace Park' to 'Walnut Terrace Grove'.
 
@@ -415,7 +415,7 @@ This is the same data as ``parks_plus_2features/Raleigh_Park_Locations.shp``, ho
    geogig add
    geogig commit -m "edits on the master branch"
 
-This is a conflict situation, as the same data has been changed differently in two branches. If you try to merge the ``fix`` branch into ``master``, GeoGig cannot automatically resolve this situation and so will fail.
+This is a conflict situation, as the same data has been changed in two different manners in the two branches. If you try to merge the ``fix`` branch into ``master``, GeoGig cannot automatically resolve this situation and will fail.
 
 .. code-block:: console
 
@@ -483,7 +483,7 @@ The response will look like this:
 
 .. code-block:: console
 
-   Objects in the working tree were updated to the specifed version.
+   Objects in the working tree were updated to the specified version.
 
 That puts the ``conflict_res`` branch version in the working tree, overwriting what was there. This removes the conflict.
 
@@ -544,7 +544,7 @@ To export a given tree to a shapefile, use the ``shp export`` command.
    100%
    Raleigh_Park_Locations exported successfully to my_parks.shp
 
-That will create a file named ``my_parks.shp`` in the current directory that contains the current state of the repository.
+This will create a file named ``my_parks.shp`` in the current directory that contains the current state of the repository.
 
 Past versions of the data can also be exported by prefixing the tree name with a commit ID and a colon, as in the following example:
 
@@ -589,7 +589,7 @@ The response will look like this:
    100%
    Done.
 
-With the repository cloned, you can work here as you would normally do, and the changes will be placed on top of the changes that already exist from the original repository.
+With the repository cloned, you can work here as you would normally and the changes will be placed on top of the changes that already exist from the original repository.
 
 You can merge commits from the ``origin`` repository to this new repository by using the ``pull`` command. This will update the current branch with changes that have been made on that branch in the remote repository since the last time both repositories were synchronized.
 
@@ -606,6 +606,6 @@ To move your local changes from your repository into ``origin``, use the ``push`
 Tutorial complete
 -----------------
 
-Congratulations! You now know the basics of managing data with GeoGig. 
+Congratulations! You now know the basics of managing data with GeoGig.
 
-Check out the rest of the GeoGig Manual in order to learn more!
+Check out the rest of the GeoGig manual in order to learn more!

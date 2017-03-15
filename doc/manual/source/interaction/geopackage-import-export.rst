@@ -1,10 +1,9 @@
-GeoPackage import and export Web-API 
+GeoPackage import and export Web-API
 ====================================
 
 `GeoPackage <http://www.geopackage.org/>`_ is an open, standards-based, platform-independent, portable, self-describing, compact format for transferring geospatial information.
 
-
-The GeoPackage import-export GeoGig Web-API allows for downloading a repository snapshot or a subset of it as a GeoPackage file, and for uploading a GeoPackage file and import its vector layers into the GeoGig repository.
+The GeoPackage import/export GeoGig Web-API allows for downloading a repository snapshot, or a subset of it, as a GeoPackage file and for uploading a GeoPackage file and importing its vector layers into the GeoGig repository.
 
 
 GeoPackage export
@@ -12,7 +11,7 @@ GeoPackage export
 
 Exports a repository snapshot or a subset of it as a GeoPackage file.
 
-A repository snaphot is the data (layers and their features) addressable from a certain commit.
+A repository snapshot is the data (layers and their features) addressable from a certain commit.
 
 ::
 
@@ -23,29 +22,21 @@ Parameters
 ^^^^^^^^^^
 
 **format:**
-Mandatory. Must be ``gpkg`` (case insensitive). Defines the output format of the export operation.
-   
+Mandatory. Must be ``gpkg`` (case-insensitive). Defines the output format of the export operation.
+
 **root:**
-Optional. Defaults to ``HEAD``. The ref spec that resolves to the root tree from
-where to export data (e.g. ``HEAD``, ``WORK_HEAD``, a branch name like ``master``,
-``refs/heads/master``, a commit id, possibly abbreviated like ``50e295dd``, a relative
-refspec like ``HEAD~2``, ``master^4``, etc)
+Optional. Defaults to ``HEAD``. The ref spec that resolves to the root tree from where to export data (e.g. ``HEAD``, ``WORK_HEAD``, a branch name like ``master``, ``refs/heads/master``, a commit ID, possibly abbreviated like ``50e295dd``, a relative ref spec like ``HEAD~2``, ``master^4``, etc)
 
 **path:**
-Optional. A comma separated list of layer names to export. Defaults to exporting all layers in the resolved root tree.
+Optional. A comma-separated list of layer names to export. Defaults to exporting all layers in the resolved root tree.
 
 **bbox:**
-Optional. A bounding box filter. If present, only features matching the
-indicated bounding box filter will be exported. Applies to all exported layers. Format is
-``minx,miny,maxx,maxy,<SRS>``, where ``SRS`` is the EPSG code for the coordinates (e.g.
-``EPSG:4326``, ``EPSG:26986``, etc), always using "longitude first" axis order.
+Optional. A bounding box filter. If present, only features matching the indicated bounding box filter will be exported. Applies to all exported layers. Format is ``minx,miny,maxx,maxy,<SRS>``, where ``SRS`` is the EPSG code for the coordinates (e.g. ``EPSG:4326``, ``EPSG:26986``, etc), always using "longitude first" axis order.
 
 **interchange:**
-Optional. Boolean indicating whether to enable GeoGig's interchange format extension for GeoPackage.
-The "GeoGig GeoPackage Extention" is an extension to the geopackage format that (transparently) records all changes made 
-to vector layers in hidden audit tables that can then be used to replay those changes on top of the repository.
+Optional. Boolean indicating whether to enable GeoGig's interchange format extension for GeoPackage. The "GeoGig GeoPackage Extension" is an extension to the GeoPackage format that (transparently) records all changes made to vector layers, in hidden audit tables, that can then be used to replay those changes on top of the repository.
 
-Examples   
+Examples
 ^^^^^^^^
 
 Missing format argument:
@@ -65,7 +56,7 @@ Missing format argument:
 Bad refspec:
 ************
 
-Note since the command is run asynchronously, you'll notice the error once the async task status is polled:
+Note, since the command is run asynchronously, you'll only see the error once the async task status is polled.
 
 ::
 
@@ -132,7 +123,7 @@ Poll task status until it's FINISHED:
 	    <amount>99.29507</amount>
 	  </progress>
 	</task>
-    
+
 
 	$ curl -v "http://localhost:8182/tasks/3.xml" | xmllint --format -
 	< HTTP/1.1 200 OK
@@ -148,7 +139,7 @@ Poll task status until it's FINISHED:
 	  </result>
 	</task>
 
-Note once the task is finished, the `result` element contains the download link for the generated geopackage file.
+Note, once the task is finished, the `result` element contains the download link for the generated GeoPackage file.
 
 Finally, download the GeoPackage:
 
@@ -162,7 +153,8 @@ Finally, download the GeoPackage:
 	* Connection #0 to host localhost left intact
 
 That `curl` command downloaded the geopackage to the `all_layers_current_head.gpkg` file.
-Now you can open it, for example, in QGGIS:
+
+Now you can open it, for example, in QGIS.
 
 ::
 
@@ -175,7 +167,7 @@ Now you can open it, for example, in QGGIS:
 GeoPackage import
 -----------------
 
-Imports features from a GeoPackage into the repository.  The GeoPackage file should be posted to the endpoint as ``fileUpload``.
+Imports features from a GeoPackage into the repository. The GeoPackage file should be posted to the endpoint as ``fileUpload``.
 
 ::
 
@@ -193,15 +185,15 @@ Mandatory. Must be ``gpkg`` (case insensitive). Defines the input format of the 
 
 **transactionId**
 Mandatory.  Import must be run on a transaction to preserve the stability of the repository.
-   
+
 **root:**
 Optional. Defaults to ``HEAD``. The branch onto which the imported features will be imported.
 
 **layer:**
-Optional. The layer from the GeoPackage to import.  If not specified, all features from the GeoPackage will be imported.  If using the interchange format, all layers must originate from the same commit.
+Optional. The layer from the GeoPackage to import. If not specified, all features from the GeoPackage will be imported.  If using the interchange format, all layers must originate from the same commit.
 
 **interchange:**
-Optional. Boolean indicating whether or not the GeoPackage has the GeoGig GeoPackage Extension.  If so, the changes will be imported on top of the commit they were exported from and merged into the branch specified by the ``root`` parameter or ``HEAD``.
+Optional. Boolean indicating whether or not the GeoPackage has the GeoGig GeoPackage Extension. If so, the changes will be imported on top of the commit they were exported from and merged into the branch specified by the ``root`` parameter or ``HEAD``.
 
 **add:**
 Optional: Boolean indicating if features should only be added (true) or replace the whole feature tree.  Not used with interchange import.
@@ -227,7 +219,7 @@ Optional: String indicating the author email to use for the resulting commit.  T
 **message:**
 Optional: String indicating the commit message to use for the resulting commit.
 
-Examples   
+Examples
 ^^^^^^^^
 
 Import without interchange format:
@@ -281,7 +273,7 @@ Import without interchange format:
 	    </commit>
 	  </result>
 	</task>
-    
+
 Import with interchange format:
 *******************************
 
@@ -337,11 +329,11 @@ Using the interchange format allows proper handling of features that were modifi
 	  </result>
 	</task>
 
-    
+
 Import with interchange format with conflicts:
 **********************************************
 
-When importing with the interchange format, it is possible that the same feature was modified in both the GeoPackage and in the main repository in the time since the export was performed.  In this case, merge conflicts will occur during the import.  They must be resolved before ending the transaction.
+When importing with the interchange format, it is possible that the same feature was modified in both the GeoPackage and in the main repository in the time since the export was performed.  In this case, merge conflicts will occur during the import. They must be resolved before ending the transaction.
 
 ::
 
@@ -389,5 +381,5 @@ When importing with the interchange format, it is possible that the same feature
 	    </Merge>
 	  </result>
 	</task>
-    
+
 .. note:: If you specify a root branch to import features onto, conflicts will leave the transaction on that branch.

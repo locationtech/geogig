@@ -21,25 +21,26 @@ The basic ``ls`` command takes the following form:
 
    geogig ls [ref]:[path]
 
-The ``[ref]:[path]`` parameter defines the path to be listed. If it contains no ``ref`` part, it will list the given path in the current working tree. To list the same path in a different reference, a full reference can be provided. For instance, to list the content of ``parks`` in the current HEAD, the following line should be used:
+The ``[ref]:[path]`` parameter defines the path to be listed. If it contains no ``ref`` part, it will list the given path in the current working tree. To list the same path in a different reference, a full reference can be provided. For instance, to list the content of ``parks`` in the current HEAD, the following line should be used.
 
 .. code-block:: console
-  
+
    geogig ls HEAD:parks
 
-The provided reference and path should resolve to a tree. Since features do not contains other elements, their content cannot be listed with the ``ls`` command, but instead must be used with the ``show`` command.
+The provided reference and path should resolve to a tree. Since features do not contains other elements, their content cannot be listed with the ``ls`` command, but instead must be examined with the ``show`` command.
 
-An object ID can be used directly instead of a ``[ref]:[path]``. So one can use the ID of a commit and list the contents of the tree corresponding to that commit.
+An object ID can be used directly, instead of a ``[ref]:[path]``, to list the contents of the tree corresponding to that commit.
 
-The options available for the ``ls`` command control how the list of elements under the given path is printed.
+The options available for the ``ls`` command control how the list of elements under the given path are printed.
 
-* The ``-v`` option (for "**verbose**") will list not just the name of the objects, but also the object's ID and the ID of the corresponding feature type.
-* The ``-r`` option will list the contents of subtrees **recursively**. The names of these subtrees are not shown in the listing, but you can specify GeoGig to add them by using the ``-t`` option along with ``-d``.
-* The ``-a`` option (for "**abbreviate**") will show IDs in their abbreviated form. Use a number to determine how many digits of the ID to display (``-a 7`` for seven digit IDs).
+* The ``-v`` option will display a **verbose** list of, not just the name of the objects, but also the object's ID and the ID of the corresponding feature type.
+* The ``-r`` option will list the contents of subtrees **recursively**. The names of these subtrees are not shown in the listing, but you can tell GeoGig to display them by using the ``-t`` option along with the ``-d`` option.
+* The ``-a`` option will show IDs in their **abbreviated** form. Use a number to determine how many digits of the ID to display (``-a 7`` for seven digit IDs).
 
 Here are some examples of the ``ls`` command:
 
-Recursive list:
+Recursive list
+~~~~~~~~~~~~~~
 
 .. code-block:: console
 
@@ -48,13 +49,14 @@ Recursive list:
 .. code-block:: console
 
    Root tree/
-       parks/ 
-           2 
-           3 
-           4 
-           1 
+       parks/
+           2
+           3
+           4
+           1
 
-Verbose list:
+Verbose list
+~~~~~~~~~~~~
 
 .. code-block:: console
 
@@ -68,7 +70,8 @@ Verbose list:
       4 49852c03b8dd3c93fcbda7137abda9ad53a9311a 5347d1b1b5d828f83e4065e227dcb848b4371637
       1 49852c03b8dd3c93fcbda7137abda9ad53a9311a ce3e836bcb64f1b647e3dc9dd97700c584063533
 
-Verbose and recursive list:
+Verbose and recursive list
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: console
 
@@ -83,7 +86,8 @@ Verbose and recursive list:
           4 49852c03b8dd3c93fcbda7137abda9ad53a9311a 5347d1b1b5d828f83e4065e227dcb848b4371637
           1 49852c03b8dd3c93fcbda7137abda9ad53a9311a ce3e836bcb64f1b647e3dc9dd97700c584063533
 
-Verbose and recursive list with seven digit IDs:
+Verbose and recursive list with seven-digit IDs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: console
 
@@ -104,13 +108,13 @@ Showing features
 
 Describing an element in a GeoGig repository is done using the ``show`` command. It can be used to describe any type of object, unlike ``ls`` which needs to resolve to a tree.
 
-The ``show`` command prints a formatted description of a given element. This description is a human-readable version of the element. 
+The ``show`` command prints a formatted description of a given element. This description is a human-readable version of the element.
 
-The command takes as input a string that defines the object to describe. All supported notations are allowed for both commands, as they are described in :ref:`referencing`.
+The command takes, as input, a string that defines the object to describe. All supported notations are allowed for both commands, as they are described in :ref:`referencing`.
 
-Below you can find the output of the  ``show`` command for certain types of objects.
+Below, you can find the output of the ``show`` command for certain types of objects.
 
-The example below shows the use of the ``show`` command with a tree:
+An exmplae of the ``show`` command with a tree:
 
 .. code-block:: console
 
@@ -135,11 +139,10 @@ The example below shows the use of the ``show`` command with a tree:
    the_geom: <MULTIPOLYGON>
    usage: <STRING>
 
-
-When specifying a single feature, the ``show`` command prints the values of all attributes, and their corresponding names taken from the associated feature type.
+When specifying a single feature, the ``show`` command prints the values of all attributes and their corresponding names taken from the associated feature type.
 
 .. code-block:: console
-  
+
    geogig show HEAD:parks/1
 
 .. code-block:: console
@@ -179,4 +182,3 @@ You can also use a reference like ``HEAD`` to show the current state of the repo
 .. code-block:: console
 
    geogig show HEAD
-

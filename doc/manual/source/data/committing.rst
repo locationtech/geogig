@@ -1,11 +1,11 @@
-.. _commiting:
+.. _committing:
 
-Commiting changes
+Committing changes
 ==================
 
 Once the data is in the staging area, it has to be committed to be finally stored in the database of the GeoGig repository and to create a persistent version of that data.
 
-Commiting data from the staging area to the database is done using the ``commit`` command, as shown below
+Committing data from the staging area to the database is done using the ``commit`` command, as shown below
 
 ::
 
@@ -14,7 +14,7 @@ Commiting data from the staging area to the database is done using the ``commit`
 	[5852e6949ba71039fded67e7f4980af4f8773869] First commit
 	Committed, counting objects...3 features added, 0 changed, 0 deleted.
 
-The ``-m`` option tells geogig that the string following it is to be used as the commit message. All commits must have a message that describe which kind of modifications you are commiting, so as to describe the difference that will exist between the new version you are creating and the latest one.
+The ``-m`` option tells geogig that the string following it is to be used as the commit message. All commits must have a message that describe which kind of modifications you are committing, so as to describe the difference that will exist between the new version you are creating and the latest one.
 
 .. note:: The ``-m`` option is mandatory. If not provided, GeoGig will not show the default editor, as Git does, but complain and tell you to provide a message instead.
 
@@ -41,4 +41,4 @@ If, after having committed your changes, you run the ``status`` command again, n
 
 	$gegoit status
 	# On branch master
-	nothing to commit (working directory clean)	
+	nothing to commit (working directory clean)

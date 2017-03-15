@@ -3,7 +3,7 @@ Hooks
 
 GeoGig supports the usage of **hooks**, commands that are executed before or after a given operation is run.
 
-Hooks are written in a supported scripting language, and stored in the ``hooks`` directory in the GeoGig repository directory (``.geogig``).
+Hooks are written in a supported scripting language and stored in the ``hooks`` directory in the GeoGig repository directory (``.geogig``).
 
 There are two types of hooks, **pre-execution** and **post-execution**, which happen before or after a given operation, respectively.
 
@@ -12,13 +12,13 @@ To prevent erroneous behavior, don't have multiple files containing the same typ
 Pre-execution
 -------------
 
-When an operation is executed, GeoGig searches for a corresponding hook to run **before** the actual operation is run.
+When an operation is executed, GeoGig searches for a corresponding hook to run **before** the operation is run.
 
-A pre-execution hook should have the prefix ``pre_`` and the name of the operation before which is to be executed, and the extension of the corresponding scripting language used. A Python hook to be run before executing a commit operation should be, hence, named ``pre_commit.py``.
+A pre-execution hook should have the prefix ``pre_`` and the name of the operation before which is to be executed, and the extension of the corresponding scripting language used. A Python hook to be run before executing a commit operation should be named ``pre_commit.py``.
 
-All hooks have a global variable named ``params`` that can be used to check the current operation parameters. It is a map containing the actual values of fields in the object representing the operation. Those values represent the arguments used when calling the the operation was invoked. Map keys are field names. 
+All hooks have a global variable named ``params`` that can be used to check the current operation parameters. It is a map containing the actual values of fields in the object representing the operation. Those values represent the arguments used when calling the operation was invoked. Map keys are field names.
 
-Here is an example of a Python pre-commit hook that illustrates the mechanism explained above. This hook ensures a minimum length for commit messages and convert the text to lower case. As is affects the ``commit`` operation, it should be named ``pre_commit.py``:
+Here is an example of a Python pre-commit hook that illustrates the mechanism explained above. This hook ensures a minimum length for commit messages and converts the text to lower case. As it affects the ``commit`` operation, it should be named ``pre_commit.py``.
 
 .. todo:: Above says JS is supported, but here is a Python example.
 
@@ -32,7 +32,7 @@ Here is an example of a Python pre-commit hook that illustrates the mechanism ex
 
    params.put("message", msg.toLowerCase());
 
-Pre-execution hooks can halt the normal execution of the operation, and thus be used to perform diagnostic checks. To indicate that the operation shouldn't be executed, a ``CannotRunGeogigOperationException`` has to be thrown. Any other exception type is assumed to be due to an error in the script and will not block the execution of the operation.
+Pre-execution hooks can halt the normal execution of the operation, and thus, be used to perform diagnostic checks. To indicate that the operation shouldn't be executed, a ``CannotRunGeogigOperationException`` has to be thrown. Any other exception type is assumed to be due to an error in the script and will not block the execution of the operation.
 
 
 
@@ -41,9 +41,9 @@ Post-execution
 
 GeoGig also supports post-execution hooks. Post-execution hooks run **after** the operation has been executed. Because of when they run, they are not expected to throw exceptions.
 
-Post execution hooks should be used to perform management tasks once the corresponding operation has been executed. for instance, a post-execution hook linked to the export operation (``post_export``) can be used to execute mantainence operations on the data exported from GeoGig, like building spatial indexes or vacuuming a PostGIS table whenever data is exported from GeoGig into it.
+Post-execution hooks should be used to perform management tasks once the corresponding operation has been executed. for instance, a post-execution hook linked to the export operation (``post_export``) can be used to execute maintenance operations on the data exported from GeoGig, like building spatial indexes or vacuuming a PostGIS table whenever data is exported from GeoGig into it.
 
-A post execution hook is named using the prefix ``post_`` and the name of the operation after which it is to be executed, and the extension of the corresponding scripting language used.
+A post-execution hook is named using the prefix ``post_``, the name of the operation after which it is to be executed, and the extension of the corresponding scripting language used.
 
 
 .. todo::
@@ -52,16 +52,13 @@ A post execution hook is named using the prefix ``post_`` and the name of the op
 
    GeoGig also supports git-like hooks, written as executable console scripts. They have the same naming as the hooks described above, but a different extension (or no extension at all). If GeoGig finds a hook corresponding to a given operation, but it doesn't have the extension of one of the supported scripting languages, it will try to execute it (so you should make sure the file can be executed). No parameters are passed as arguments to these scripts.
 
-   Pre-execution hooks written this way can also prevent the actual operation to be executed. If the exit code of the script is non-zero, the operation will not be run, having the same effect as throwing a ``CannotRunGeogigOperationException`` exception in the above Python example. 
+   Pre-execution hooks written this way can also prevent the actual operation to be executed. If the exit code of the script is non-zero, the operation will not be run, having the same effect as throwing a ``CannotRunGeogigOperationException`` exception in the above Python example.
 
 
 Samples
 -------
 
-GeoGig repositories contain a set of sample hooks. They are not active by default, but can be enabled by removing the ``.sample`` suffix from their filename. (For example, a hook named ``pre_commit.js.sample``.)
-
-
-
+GeoGig repositories contain a set of sample hooks. They are not active by default, but can be enabled by removing the ``.sample`` suffix from their filename.
 
 
 Supported hooks
@@ -75,15 +72,15 @@ GeoGig supports hooks for the following operations:
 * ``apply``
 * ``osmimport``
 * ``import``
-* ``export``  
+* ``export``
 
 ..  Commenting out the parameters until they can be fleshed out
 
   - ``commit``
     Parameters:
       - ``message``: the commit message.
-      - ``commiterName``: the name of the commiter.
-      - ``commiterEmail``: the email of the commiter.
+      - ``committerName``: the name of the committer.
+      - ``committerEmail``: the email of the committer.
   - ``rebase``
   - ``checkout``
   - ``apply`` (applying a patch)
@@ -93,7 +90,7 @@ GeoGig supports hooks for the following operations:
       - ``all``: true if it should import all tables from the datastore. It is always true in the case of importing from shapefiles
       - ``table``: the name of the single table to import.  It equals ``null`` in the case of importing from shapefiles
       - ``dataStore``: the GeoTools datastore to import from
-  - ``export``  
+  - ``export``
     Parameters:
       - ``featureTypeName``: the path of the feature type to export
       - ``featureStore``: an instance of ``Supplier<SimpleFeatureStore>`` containing the GeoTools feature store to export to
@@ -123,11 +120,11 @@ To illustrate the usage of this, below is an example of a hook that prevents com
      }
 
 
-More elaborate hooks can be created making use of the API along with the GeoTools classes that GeoGig uses internally, such as reprojecting geometries before importing them into the repository.
+More elaborate hooks can be created making use of the API along with the GeoTools classes that GeoGig uses internally, such as re-projecting geometries before importing them into the repository.
 
-Also, GeoGig commands can be called from the script, using the ``run()`` method from the ``geogig`` object. It takes the name of the class with the command to call as the first parameter. the second parameter contains the names and values of the parameters needed by that command to be executed.
+Also, GeoGig commands can be called from the script, using the ``run()`` method from the ``geogig`` object. It takes the name of the class with the command to call as the first parameter. the second parameter contains the names and values of the parameters needed by the command to be executed.
 
-The following is an example hook that triggers an OpenStreetMap "unmapping" operation whenever the ``mapped`` tree (which is supposed to contain mapped OSM data), is modified after a commit.
+The following is an example hook that triggers an OpenStreetMap "unmapping" operation whenever the ``mapped`` tree, which is supposed to contain mapped OSM data, is modified after a commit.
 
 .. todo:: It is not clear what an unmapping operation is from the context here. A little explanation would be good.
 
@@ -140,4 +137,3 @@ The following is an example hook that triggers an OpenStreetMap "unmapping" oper
     }
 
 The above code would be placed in a file named ``post_commit.js``
-

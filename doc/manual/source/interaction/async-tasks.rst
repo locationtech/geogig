@@ -1,37 +1,36 @@
-Web-API Asynchronous tasks 
+Web-API Asynchronous tasks
 ==========================
 
-Some Web-API commands can run for a long time depending on how much data they're dealing with, and hence
-are executed asynchronously. Meaning that once invoked, they start the job in a background thread and return immediately.
+Some Web-API commands can run for a long time depending on how much data they're dealing with, and hence,
+are executed asynchronously, meaning that, once invoked, they start the job in a background thread and return immediately.
 
 The response contains a unique identifier for the asynchronous task and information on the task's running status.
-This task identifier can then be used to poll the status of the task by querying the ``/tasks/<task id>`` API end point.
+This task identifier can then be used to poll the status of the task by querying the ``/tasks/<task id>`` API endpoint.
 
-If no task is given (e.g. by querying the ``/tasks`` endpoint), a list of all available tasks will be returned.
+If no task is given, e.g. by querying the ``/tasks`` endpoint, a list of all available tasks will be returned.
 
-A running task can be canceled with the ``cancel=true`` argument. For example: 
+A running task can be canceled with the ``cancel=true`` argument. For example:
 
 ::
 
    http://localhost:8182/tasks/3?cancel=true
 
-This request will ask the operation to cancel and return immediately. Note however that the task may take a while until the running task
-is actually canceled, as it may be blocking on I/O or being temporarily in a non cancelable state. Polling the task repeteadly with the
-``cancel=true`` parameter is not a problem though.
+This request will ask the operation to cancel and return immediately. Note, however, that it may take some time for the cancellation request to complete, as the running task may be blocking on I/O or in a temporarily non-cancelable state. Polling the task repeatedly with the
+``cancel=true`` parameter is not a problem, though.
 
-Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes to be queried.
+Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes in order to allow their status to be queried.
 Finished tasks can be explicitly pruned with the ``prune=true`` parameter. For example:
 
 ::
 
    http://localhost:8182/tasks/3?prune=true
-   
-Prune has no effect on non finished tasks.
+
+Prune has no effect on unfinished tasks.
 
 Examples
 ^^^^^^^^
 
-When the command is invoked, it returns a result like the following:
+When the command is invoked, it returns a result such as the following XML-formatted response.
 
 ::
 
@@ -46,7 +45,7 @@ When the command is invoked, it returns a result like the following:
       </progress>
    </task>
 
-Or in JSON format:
+Or the JSON format:
 
 ::
 
@@ -59,16 +58,16 @@ Or in JSON format:
       }
    }
 
-Note the ``atom:link`` in the XML response, and the ``href`` property in the JSON response, represent the status polling URL for the specific task ID.
+Note, the ``atom:link`` in the XML response and the ``href`` property in the JSON response, represent the status polling URL for the specific task ID.
 
 The ``status`` attribute will have one of the following values: ``WAITING``, ``RUNNING``, ``FINISHED``, ``FAILED``, ``CANCELLED``.
 
-``WAITING`` means that there are other tasks being run in the thread pool and hence this one has been scheduled to be run as soon
-as the thread pool gets a free spot. The other ones are quite self explanatory.
+``WAITING`` means that there are other tasks being run in the thread pool and this one has been scheduled to be run as soon
+as a spot frees up in the thread pool. The others are self-explanatory.
 
 The content of the task query response varies slightly depending on the task status.
 
-Running tasks may contain a progress indicator:
+Running tasks may contain a progress indicator.
 
 ::
 
@@ -84,7 +83,7 @@ Running tasks may contain a progress indicator:
    </task>
 
 
-Successfully finished tasks may contain a result summary, which is specific to the command executed. The following is an example of the result for a successfull osm import operation:
+Successfully finished tasks may contain a result summary which is specific to the command executed. The following is an example of the result for a successful OSM import operation.
 
 ::
 
@@ -105,7 +104,7 @@ Successfully finished tasks may contain a result summary, which is specific to t
       </result>
    </task>
 
-And failed tasks an exception report:
+And failed tasks contain an exception report.
 
 ::
 
@@ -118,21 +117,20 @@ And failed tasks an exception report:
          <message>Nothing to commit after bea73023a9452a9d64f64264d2911ce1ec2b47f2</message>
          <stackTrace>
          <![CDATA[
-            org.locationtech.geogig.api.porcelain.NothingToCommitException: Nothing to commit after bea73023a9452a9d64f64264d2911ce1ec2b47f2 
-            at org.locationtech.geogig.api.porcelain.CommitOp._call(CommitOp.java:320) 
-            at org.locationtech.geogig.api.porcelain.CommitOp._call(CommitOp.java:57) 
-            at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133) 
-            at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:234) 
-            at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:75) 
-            at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133) 
-            at org.locationtech.geogig.osm.internal.OSMDownloadOp._call(OSMDownloadOp.java:155) 
-            at org.locationtech.geogig.osm.internal.OSMDownloadOp._call(OSMDownloadOp.java:28) 
-            at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133) 
-            at org.locationtech.geogig.rest.AsyncContext$CommandCall.call(AsyncContext.java:192) 
+            org.locationtech.geogig.api.porcelain.NothingToCommitException: Nothing to commit after bea73023a9452a9d64f64264d2911ce1ec2b47f2
+            at org.locationtech.geogig.api.porcelain.CommitOp._call(CommitOp.java:320)
+            at org.locationtech.geogig.api.porcelain.CommitOp._call(CommitOp.java:57)
+            at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
+            at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:234)
+            at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:75)
+            at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
+            at org.locationtech.geogig.osm.internal.OSMDownloadOp._call(OSMDownloadOp.java:155)
+            at org.locationtech.geogig.osm.internal.OSMDownloadOp._call(OSMDownloadOp.java:28)
+            at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
+            at org.locationtech.geogig.rest.AsyncContext$CommandCall.call(AsyncContext.java:192)
             at java.util.concurrent.FutureTask.run(FutureTask.java:262)
-            ... 
+            ...
          ]]>
          </stackTrace>
       </error>
    </task>
-

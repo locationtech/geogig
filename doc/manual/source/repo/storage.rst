@@ -18,7 +18,7 @@ Default storage backend
 
 Up to 1.0-RC3, the default storage backend was a BerkeleyDB Java Edition key/value database for the main repository elements such as the revision and graph objects, and simple text files for configuration settings, refs, and merge conflicts.
 
-As of 1.0-RC4, the BerkeleyDB database was replaced by a better performing database, Rocksdb. Nonetheless, repositories created with the BerkeleyDB storage backend will still be supported through GeoGig's plug-in mechanism.
+As of 1.0-RC4, the BerkeleyDB database was replaced by a better performing database, RocksDB. Nonetheless, repositories created with the BerkeleyDB storage backend will still be supported through GeoGig's plug-in mechanism.
 
 When a repository is created in the local filesystem, it uses a directory structure like the following:
 
@@ -53,9 +53,9 @@ It stores everything that's needed in the database, making it "stateless" and he
 PostgreSQL repository URI
 -------------------------
 
-Since a repository stored in PostgreSQL is stateless as far as the local machine is concerned, you need to specify the repository location for every console command you want to execute against it.
+Since a repository stored in PostgreSQL is stateless, as far as the local machine is concerned, you need to specify the repository location for every console command you want to execute against it.
 
-This is done through a URI (Universal Resource Identifier) of the folloing form:
+This is done through a URI (Universal Resource Identifier) of the following form:
 
 ``postgresql://<server>[:<port>]/<database>[/<schema>]/<reponame>?user=<username>&password=<pwd>``
 
@@ -63,9 +63,9 @@ In the above URI scheme, parts enclosed between ``<>`` symbols are mandatory, an
 
 * ``<server>``: The PostgreSQL server host or IP address
 * ``[:port]``: The TCP port number the server is listening to for connections. Defaults to ``5432`` if not provided.
-* ``<database>``: The name of the database in the server where geogig will store the repositories
+* ``<database>``: The name of the database in the server where GeoGig will store the repositories
 * ``<schema>``: The PostgreSQL database schema, defaults to ``public``
-* ``<reponame``: The name of the geogig repository to create
+* ``<reponame``: The name of the GeoGig repository to create
 * ``<username>``: The PostgreSQL user name to connect as
 * ``<pwd>``: The PostgreSQL user's password to connect with
 
@@ -90,11 +90,11 @@ A nice trick is to use environment variables instead:
 
  user@localhost:/home/user$ geogig --repo $gold init
  user@localhost:/home/user$ geogig --repo $QA init
- 
+
 Performance Tuning
 ------------------
 
-There are several configuration options for tuning the cacheing and threading of the PostgreSQL backend.  The following configuration options should be set in the global config of the database:
+There are several configuration options for tuning the cacheing and threading of the PostgreSQL backend.  The following configuration options should be set in the global config of the database.
 
 * ``postgres.maxConnections``: The maximum number of simultaneous idle and in-use connections to the database. Defaults to 10.
 * ``postgres.threadPoolSize``: The number of threads that the object database should use.  Defaults to the number of processors available to the virtual machine, or 2, whichever is higher.
@@ -103,15 +103,15 @@ There are several configuration options for tuning the cacheing and threading of
 * ``postgres.bytecache.concurrencyLevel``: Hint to indicate the desired number of concurrent updates without contention. Actual concurrency may vary based on internal structure. Defaults to 16.
 * ``postgres.bytecache.expireSeconds``: If specified, cache entries will be removed after the given number of seconds have passed.  This is not set by default, so entries do not expire from the cache.
 
-Additionally, each repository can be tuned by adjusting the batch size of get and put requests by adjusting the following configuration options:
+Additionally, each repository can be tuned by adjusting the batch size of ``GET`` and ``PUT`` requests by adjusting the following configuration options.
 
-* ``postgres.getAllBatchSize``: The maximum number of objects to retrieve from the database in a single request. If the number of objects that need to be fetched exceed the batch size, the job will be split into multiple tasks that can be run on multiple threads if they are available.
-* ``postgres.putAllBatchSize``: The maximum number of objects to insert into the database in a single request. If the number of objects that need to be inserted exceed the batch size, the job will be split into multiple tasks that can be run on multiple threads if they are available.
+* ``postgres.getAllBatchSize``: The maximum number of objects to retrieve from the database in a single request. If the number of objects that need to be fetched exceed the batch size, the job will be split into multiple tasks that can be run on multiple threads, if they are available.
+* ``postgres.putAllBatchSize``: The maximum number of objects to insert into the database in a single request. If the number of objects that need to be inserted exceed the batch size, the job will be split into multiple tasks that can be run on multiple threads, if they are available.
 
 Database set up
 ---------------
 
-Geogig will create the needed tables the first time it's used against a given database. However, the database and user/role must already exist in PostgreSQL. You can use a pre-existing PostgreSQL role with administrative access to an existing database, or you can run the following steps and SQL script to create the geogig database and tables first:
+GeoGig will create the necessary tables the first time it's used against a given database. However, the database and user/role must already exist in PostgreSQL. You can use a pre-existing PostgreSQL role with administrative access to an existing database or you can run the following steps and SQL script to create the GeoGig database and tables first.
 
 :download:`geogig_postgres.sql <geogig_postgres.sql>`
 
@@ -122,13 +122,4 @@ Geogig will create the needed tables the first time it's used against a given da
  postgres@localhost: $ psql -d geogig -f geogig_postgres.sql
 
 
-Finally, refer to the :ref:`PostgreSQL backed GeoGig repository <configure-new-postgres-repo>` to learn how to configure a repository in GeoServer.
-
-
-
-
-
-
-
-
-
+Finally, refer to the :ref:`PostgreSQL-backed GeoGig repository <configure-new-postgres-repo>` to learn how to configure a repository in GeoServer.

@@ -1,9 +1,9 @@
-Web-Api Indexing Documentation
+Web-API indexing documentation
 ==============================
 
-The GeoGig indexing web API allows for the creation, updating, and listing of spatial indexes on feature trees within the repository.
+The GeoGig indexing web-API allows for the creation, updating, and listing of spatial indexes on feature trees within the repository.
 
-Index Create
+Index create
 ------------
 
 Creates a new index on a specified feature tree using a geometry attribute in that tree.  Extra attributes may also be specified in order to improve query performance when the data is filtered on those attributes.
@@ -18,7 +18,7 @@ Parameters
 
 **treeRefSpec:**
 Mandatory. Defines the ref spec that resolves to the feature tree that should be indexed (e.g. ``HEAD:Points``, ``Points``, etc).  If no commit is defined, ``HEAD`` will be used.
-   
+
 **geometryAttributeName:**
 Optional. Defaults to the primary geometry attribute on the feature type.  The name of the attribute that should be used for indexing.
 
@@ -31,10 +31,10 @@ Optional. Boolean indicating whether or not index trees should be built for ever
 **bounds:**
 Optional.  String indicating the max bounds of the spatial index.  If not specified, the bounds will be set to the extent of the coordinate reference system of the geometry attribute.
 
-Examples   
+Examples
 ^^^^^^^^
 
-Create an index on Points:
+Create an index on Points
 **************************
 
 ::
@@ -54,7 +54,7 @@ Create an index on Points:
         <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
     </response>
 
-Create an index with extra attributes:
+Create an index with extra attributes
 **************************************
 
 ::
@@ -75,8 +75,8 @@ Create an index with extra attributes:
         </index>
         <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
     </response>
-    
-Create an index with custom bounds:
+
+Create an index with custom bounds
 ***********************************
 
 ::
@@ -97,7 +97,7 @@ Create an index with custom bounds:
     </response>
 
 
-Index Update
+Index update
 ------------
 
 Updates an index to contain a different set of extra attributes.
@@ -112,29 +112,29 @@ Parameters
 
 **treeRefSpec:**
 Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. ``HEAD:Points``, ``Points``, etc).  If no commit is defined, ``HEAD`` will be used.
-   
+
 **geometryAttributeName:**
-Optional. Defaults to the primary geometry attribute on the feature type.  The name of the attribute that is used on the existing index.
+Optional. The name of the attribute that is used on the existing index. Defaults to the primary geometry attribute on the feature type.
 
 **extraAttributes:**
 Optional. An extra attribute that should be stored in the index to improve performance when filtering on those attributes.  This can be defined multiple times if there should be multiple extra attributes.
 
 **indexHistory:**
-Optional. Boolean indicating whether or not index trees should be rebuilt for every commit in the history of the repository.  By default only the feature tree in commit indicated by the ``treeRefSpec`` will be re-indexed.
+Optional. Boolean indicating whether or not index trees should be rebuilt for every commit in the history of the repository.  By default only the feature tree in the commit indicated by the ``treeRefSpec`` will be re-indexed.
 
 **add:**
-Optional. If extra attributes already exist on the index, you must specify either ``add`` or ``overwrite`` to inform the operation on how to handle combining the new attributes with the old.  If ``add`` is specified, any new attributes that do not already exist on the index will be added.
+Optional. If extra attributes already exist on the index, you must specify either ``add`` or ``overwrite`` to inform the operation how to handle combining the new attributes with the old.  If ``add`` is specified, any new attributes that do not already exist on the index will be added.
 
 **overwrite:**
-Optional: See ``add``.  If ``overwrite`` is specified, the extra attributes in the indexed will be replaced with those specified in the parameters.  If no extra attributes are supplied, all extra attributes will be removed from the index.
+Optional: See ``add``.  If ``overwrite`` is specified, the extra attributes in the index will be replaced with those specified in the parameters.  If no extra attributes are supplied, all extra attributes will be removed from the index.
 
 **bounds:**
-Optional.  String indicating the new max bounds of the spatial index.
+Optional.  String indicating the new maximum bounds of the spatial index.
 
-Examples   
+Examples
 ^^^^^^^^
 
-Update the Points index to have an extra attribute:
+Update the Points index to have an extra attribute
 ***************************************************
 
 If the index does not contain any extra attributes, you do not need to specify ``add`` or ``overwrite``.
@@ -157,7 +157,7 @@ If the index does not contain any extra attributes, you do not need to specify `
         <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
     </response>
 
-Update the Points index to add an extra attribute:
+Update the Points index to add an extra attribute
 **************************************************
 
 In this case Points already has an extra attribute of ``sp``.  If we want to add ``ip`` we need to specify the ``add`` parameter to indicate that we don't want to remove the existing extra attribute.
@@ -180,8 +180,8 @@ In this case Points already has an extra attribute of ``sp``.  If we want to add
         </index>
         <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
     </response>
-    
-Update the Points index to remove extra attributes:
+
+Update the Points index to remove extra attributes
 ***************************************************
 
 In this case Points already has an extra attribute of ``sp``.  If we want to remove all extra attributes, we can specify the ``overwrite`` parameter and not supply any extra attributes.
@@ -202,8 +202,8 @@ In this case Points already has an extra attribute of ``sp``.  If we want to rem
         </index>
         <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
     </response>
-    
-Update the max bounds of the Points index:
+
+Update the max bounds of the Points index
 ******************************************
 
 ::
@@ -224,7 +224,7 @@ Update the max bounds of the Points index:
     </response>
 
 
-Index Rebuild
+Index rebuild
 -------------
 
 Rebuilds the index trees for the full history of a feature type.  This is generally only used when an index has been created or updated without the ``indexHistory`` paramater.  This command provides a way to do that operation if the need arises after the index has been created.
@@ -239,14 +239,14 @@ Parameters
 
 **treeRefSpec:**
 Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. ``HEAD:Points``, ``Points``, etc).  If no commit is defined, ``HEAD`` will be used.
-   
-**geometryAttributeName:**
-Optional. Defaults to the primary geometry attribute on the feature type.  The name of the attribute that is used on the existing index.
 
-Examples   
+**geometryAttributeName:**
+Optional. The name of the attribute that is used on the existing index. Defaults to the primary geometry attribute on the feature type.
+
+Examples
 ^^^^^^^^
 
-Rebuild the index trees of an index:
+Rebuild the index trees of an index
 ************************************
 
 ::
@@ -261,7 +261,7 @@ Rebuild the index trees of an index:
     </response>
 
 
-Index List
+Index list
 ------------
 
 Lists the indexes that have been built for a repository.
@@ -278,10 +278,10 @@ Parameters
 Optional. Defines the tree name of a feature tree in the repository.  Only indexes on that feature tree will be listed.
 
 
-Examples   
+Examples
 ^^^^^^^^
 
-List all indexes in the repository:
+List all indexes in the repository
 ***********************************
 
 ::
@@ -305,8 +305,8 @@ List all indexes in the repository:
             <bounds>Env[-180,180,-90,90]</bounds>
         </index>
     </response>
-    
-List all indexes on the Points layer:
+
+List all indexes on the Points layer
 *************************************
 
 ::
@@ -324,4 +324,3 @@ List all indexes on the Points layer:
             <bounds>Env[-180,180,-90,90]</bounds>
         </index>
     </response>
-    

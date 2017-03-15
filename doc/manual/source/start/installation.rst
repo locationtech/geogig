@@ -37,13 +37,13 @@ To build GeoGig an executable binary that you can run:
 
 #. Move to the ``src/parent`` folder under the folder where you have cloned the GeoGig source code, and type the following::
 
-	   mvn clean install
+	 mvn clean install
 
    .. note:: To speed up the build process, you can skip tests:
 
-   ::
+      ::
 
-     mvn clean install -DskipTests
+        mvn clean install -DskipTests
 
 #. GeoGig will now build. Scripts ready to be run should be available in the :file:`src/cli-app/target/geogig/bin` directory. Add that directory to your ``PATH`` environment variable.
 

@@ -133,6 +133,8 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
         private ImmutableMap<String, Object> extraData;
 
+        Float32Bounds bounds;
+
         private BaseNode(final String name, final ObjectId oid, final ObjectId metadataId,
                 Map<String, Object> extraData) {
             checkNotNull(name);
@@ -166,13 +168,27 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
         @Override
         public boolean intersects(Envelope env) {
-            // override as needed
-            return false;
+            if (bounds == null)
+                return false;
+            return bounds.intersects(env);
         }
 
         @Override
         public void expand(Envelope env) {
-            // override as needed
+            if (bounds != null)
+                bounds.expand(env);
+        }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            if  ( (bounds == null) || (bounds.isNull()) )
+                return Optional.absent();
+
+            return Optional.of(bounds.asEnvelope());
+        }
+
+        void setBounds(Envelope env) {
+            bounds = new Float32Bounds(env);
         }
 
         @Override
@@ -262,61 +278,17 @@ public abstract class Node implements Bounded, Comparable<Node> {
             return TYPE.TREE;
         }
 
-        @Override
-        public Optional<Envelope> bounds() {
-            return Optional.absent();
-        }
+
     }
 
     private static final class BoundedTreeNode extends TreeNode {
 
         // dim0(0),dim0(1),dim1(0),dim1(1)
-        private float[] bounds;
-
         public BoundedTreeNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
                 Map<String, Object> extraData) {
             super(name, oid, mdid, extraData);
 
-            if (env.getWidth() == 0 && env.getHeight() == 0) {
-                bounds = new float[2];
-            } else {
-                bounds = new float[4];
-                bounds[2] = (float) env.getMaxX();
-                bounds[3] = (float) env.getMaxY();
-            }
-            bounds[0] = (float) env.getMinX();
-            bounds[1] = (float) env.getMinY();
-        }
-
-        @Override
-        public boolean intersects(Envelope env) {
-            if (env.isNull()) {
-                return false;
-            }
-            if (bounds.length == 2) {
-                return env.intersects(bounds[0], bounds[1]);
-            }
-            return !(env.getMinX() > bounds[2] || env.getMaxX() < bounds[0]
-                    || env.getMinY() > bounds[3] || env.getMaxY() < bounds[1]);
-        }
-
-        @Override
-        public void expand(Envelope env) {
-            env.expandToInclude(bounds[0], bounds[1]);
-            if (bounds.length > 2) {
-                env.expandToInclude(bounds[2], bounds[3]);
-            }
-        }
-
-        @Override
-        public Optional<Envelope> bounds() {
-            Envelope b;
-            if (bounds.length == 2) {
-                b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
-            } else {
-                b = new Envelope(bounds[0], bounds[2], bounds[1], bounds[3]);
-            }
-            return Optional.of(b);
+            setBounds(env);
         }
     }
 
@@ -331,64 +303,18 @@ public abstract class Node implements Bounded, Comparable<Node> {
         public final TYPE getType() {
             return TYPE.FEATURE;
         }
-
-        @Override
-        public Optional<Envelope> bounds() {
-            return Optional.absent();
-        }
-
     }
 
     private static final class BoundedFeatureNode extends FeatureNode {
 
         // dim0(0),dim1(0),dim0(1),dim1(1)
-        private float[] bounds;
-
         public BoundedFeatureNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
                 Map<String, Object> extraData) {
             super(name, oid, mdid, extraData);
 
-            if (env.getWidth() == 0 && env.getHeight() == 0) {
-                bounds = new float[2];
-            } else {
-                bounds = new float[4];
-                bounds[2] = (float) env.getMaxX();
-                bounds[3] = (float) env.getMaxY();
-            }
-            bounds[0] = (float) env.getMinX();
-            bounds[1] = (float) env.getMinY();
+            setBounds(env);
         }
 
-        @Override
-        public boolean intersects(Envelope env) {
-            if (env.isNull()) {
-                return false;
-            }
-            if (bounds.length == 2) {
-                return env.intersects(bounds[0], bounds[1]);
-            }
-            return !(env.getMinX() > bounds[2] || env.getMaxX() < bounds[0]
-                    || env.getMinY() > bounds[3] || env.getMaxY() < bounds[1]);
-        }
-
-        @Override
-        public void expand(Envelope env) {
-            env.expandToInclude(bounds[0], bounds[1]);
-            if (bounds.length > 2) {
-                env.expandToInclude(bounds[2], bounds[3]);
-            }
-        }
-
-        @Override
-        public Optional<Envelope> bounds() {
-            Envelope b;
-            if (bounds.length == 2) {
-                b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
-            } else {
-                b = new Envelope(bounds[0], bounds[2], bounds[1], bounds[3]);
-            }
-            return Optional.of(b);
-        }
     }
 
 }

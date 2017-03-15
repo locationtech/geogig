@@ -143,7 +143,7 @@ Just as when creating new repositories, you have the option to import existing D
    *PostgreSQL-backed Repository configuration*
 
 Cloning, Pushing, and Pulling
-----------------------------
+-----------------------------
 
 Once GeoServer is configured with a GeoGig repository, you can address it over the network at a URL path of the form::
 

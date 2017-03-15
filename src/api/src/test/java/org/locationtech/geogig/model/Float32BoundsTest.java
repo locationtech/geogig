@@ -22,36 +22,36 @@ public class Float32BoundsTest {
     @Test
     public void testSimple() {
         // 1,1 is the same in float4 and float8
-        Coordinate coord =  new Coordinate(1,1);
-        Float32Bounds bounds = new Float32Bounds( new Envelope( coord));
+        Coordinate coord = new Coordinate(1, 1);
+        Float32Bounds bounds = new Float32Bounds(new Envelope(coord));
         assertTrue(bounds.asEnvelope().contains(coord));
-        assertTrue(bounds.intersects( new Envelope(coord)));
+        assertTrue(bounds.intersects(new Envelope(coord)));
 
         Envelope testEnvelope = new Envelope();
-        bounds.expand(testEnvelope );
-        assertTrue( testEnvelope.covers( bounds.asEnvelope()));
+        bounds.expand(testEnvelope);
+        assertTrue(testEnvelope.covers(bounds.asEnvelope()));
 
 
-        coord =  new Coordinate( Math.PI, Math.E );
-        bounds = new Float32Bounds(  new Envelope( coord ));
+        coord = new Coordinate(Math.PI, Math.E);
+        bounds = new Float32Bounds(new Envelope(coord));
         assertTrue(bounds.asEnvelope().contains(coord));
-        assertTrue(bounds.intersects( new Envelope(coord)));
+        assertTrue(bounds.intersects(new Envelope(coord)));
 
         testEnvelope = new Envelope();
-        bounds.expand(testEnvelope );
-        assertTrue( testEnvelope.covers( bounds.asEnvelope()));
+        bounds.expand(testEnvelope);
+        assertTrue(testEnvelope.covers(bounds.asEnvelope()));
     }
 
     @Test
     public void testSerialization() {
-        Coordinate coord =  new Coordinate(1,1);
-        Float32Bounds bounds = new Float32Bounds( new Envelope( coord));
+        Coordinate coord = new Coordinate(1, 1);
+        Float32Bounds bounds = new Float32Bounds(new Envelope(coord));
         int[] serializedForm = bounds.toSerializedForm();
         Float32Bounds bounds2 = new Float32Bounds(serializedForm);
         assertEquals(bounds, bounds2);
 
-        coord =  new Coordinate( Math.PI, Math.E );
-        bounds = new Float32Bounds(  new Envelope( coord ));
+        coord = new Coordinate(Math.PI, Math.E);
+        bounds = new Float32Bounds(new Envelope(coord));
         serializedForm = bounds.toSerializedForm();
         bounds2 = new Float32Bounds(serializedForm);
         assertEquals(bounds, bounds2);

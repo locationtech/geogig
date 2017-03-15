@@ -1,3 +1,12 @@
+/* Copyright (c) 2017 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * David Blasby (Boundless) - initial implementation
+ */
 package org.locationtech.geogig.model;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -18,22 +27,23 @@ public class Float32Bounds {
     }
 
 
-
     public Float32Bounds(Envelope doublePrecisionEnv) {
-        if  ( (doublePrecisionEnv == null) || (doublePrecisionEnv.isNull()) )
+        if ((doublePrecisionEnv == null) || (doublePrecisionEnv.isNull()))
             return; //done!
         set(doublePrecisionEnv);
     }
 
     public Float32Bounds(double x, double y) {
-        set(new Envelope(new Coordinate(x,y)));
+        set(new Envelope(new Coordinate(x, y)));
     }
 
     private void set(Envelope doublePrecisionEnv) {
-        if  ( (doublePrecisionEnv == null) || (doublePrecisionEnv.isNull()) ) {
+        if ((doublePrecisionEnv == null) || (doublePrecisionEnv.isNull())) {
             isNull = true;
-            xmin =0; xmax=-1;
-            ymin =0; ymax=-1;
+            xmin = 0;
+            xmax = -1;
+            ymin = 0;
+            ymax = -1;
             return;
         }
 
@@ -43,22 +53,22 @@ public class Float32Bounds {
         //NOTE: every float32 can be exactly expressed as a double
 
         xmin = (float) doublePrecisionEnv.getMinX();
-        if ( ((double) xmin) > doublePrecisionEnv.getMinX()) {
+        if (((double) xmin) > doublePrecisionEnv.getMinX()) {
             xmin = Math.nextAfter(xmin, Double.NEGATIVE_INFINITY);
         }
 
         ymin = (float) doublePrecisionEnv.getMinY();
-        if ( ((double) ymin) > doublePrecisionEnv.getMinY()) {
-            ymin = Math.nextAfter(ymin,Double.NEGATIVE_INFINITY);
+        if (((double) ymin) > doublePrecisionEnv.getMinY()) {
+            ymin = Math.nextAfter(ymin, Double.NEGATIVE_INFINITY);
         }
 
         xmax = (float) doublePrecisionEnv.getMaxX();
-        if ( ((double) xmax) < doublePrecisionEnv.getMaxX()) {
+        if (((double) xmax) < doublePrecisionEnv.getMaxX()) {
             xmax = Math.nextAfter(xmax, Double.POSITIVE_INFINITY);
         }
 
         ymax = (float) doublePrecisionEnv.getMaxY();
-        if ( ((double) ymax) < doublePrecisionEnv.getMaxY()) {
+        if (((double) ymax) < doublePrecisionEnv.getMaxY()) {
             ymax = Math.nextAfter(ymax, Double.POSITIVE_INFINITY);
         }
     }
@@ -74,7 +84,7 @@ public class Float32Bounds {
         if (env.isNull()) {
             return false;
         }
-       return asEnvelope().intersects(env);
+        return asEnvelope().intersects(env);
     }
 
     //This will likely return a double (NON-float32) envelope
@@ -86,7 +96,7 @@ public class Float32Bounds {
         env.expandToInclude(xmax, ymax);
     }
 
-    public boolean isNull(){
+    public boolean isNull() {
         return isNull;
     }
 
@@ -103,16 +113,16 @@ public class Float32Bounds {
         if (isNull) {
             // xmin,ymin=0   xmax,ymax=-1
             result[0] = Float.floatToRawIntBits(0);
-            result[1] =  Float.floatToRawIntBits(-1) -  Float.floatToRawIntBits(0);
+            result[1] = Float.floatToRawIntBits(-1) - Float.floatToRawIntBits(0);
             result[2] = Float.floatToRawIntBits(0);
-            result[3] = Float.floatToRawIntBits(-1) -  Float.floatToRawIntBits(0);
+            result[3] = Float.floatToRawIntBits(-1) - Float.floatToRawIntBits(0);
             return result;
         }
 
         result[0] = Float.floatToRawIntBits(xmin);
-        result[1] =  Float.floatToRawIntBits(xmax) -  Float.floatToRawIntBits(xmin);
+        result[1] = Float.floatToRawIntBits(xmax) - Float.floatToRawIntBits(xmin);
         result[2] = Float.floatToRawIntBits(ymin);
-        result[3] =  Float.floatToRawIntBits(ymax) -  Float.floatToRawIntBits(ymin);
+        result[3] = Float.floatToRawIntBits(ymax) - Float.floatToRawIntBits(ymin);
         return result;
     }
 
@@ -126,7 +136,7 @@ public class Float32Bounds {
 
     @Override
     public String toString() {
-        return "["+xmin+","+xmax+","+ymin+","+ymax+"]";
+        return "[" + xmin + "," + xmax + "," + ymin + "," + ymax + "]";
     }
 
     @Override
@@ -147,7 +157,7 @@ public class Float32Bounds {
         return other.xmin == this.xmin &&
                 other.ymin == this.ymin &&
                 other.xmax == this.xmax &&
-                other.ymax == this.ymax ;
+                other.ymax == this.ymax;
 
     }
 
@@ -155,7 +165,7 @@ public class Float32Bounds {
     public int hashCode() {
         if (isNull)
             return 1;
-       return  Float.floatToRawIntBits(xmin) ^ Float.floatToRawIntBits(ymin) ^ Float.floatToRawIntBits(xmax) ^ Float.floatToRawIntBits(ymax);
+        return Float.floatToRawIntBits(xmin) ^ Float.floatToRawIntBits(ymin) ^ Float.floatToRawIntBits(xmax) ^ Float.floatToRawIntBits(ymax);
     }
 }
 

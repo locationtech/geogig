@@ -11,25 +11,31 @@ Building/installing the GeoServer GeoGig extension
 You can download the latest stable version of the GeoGig GeoServer plugin from the `GeoGig <http://www.geogig.org/>`_ home page.
 
 In order to build it from sources, a GeoGig module is currently included in the 2.8.x branch of GeoServer's community extensions. To build it, clone the GeoServer GitHub repository.
+
 ::
+
     git clone git@github.com:geoserver/geoserver.git
 
 Change into the ``geoserver`` directory:
+
 ::
 
     cd geoserver
 
 Checkout the 2.8.x branch:
+
 ::
 
     git checkout 2.8.x
 
 Change into the ``src`` directory:
+
 ::
 
     cd src
 
 Build the Community Modules:
+
 ::
 
     mvn clean install -DskipTests assembly:attached -f community/release/pom.xml -P communityRelease
@@ -40,6 +46,7 @@ This will build all of the GeoServer Community modules, including the plugin for
     geoserver/src/community/target/release/geoserver-2.8-SNAPSHOT-geogig-plugin.zip
 
 To install the GeoGig extension, unzip the above bundle into the GeoServer ``WEB-INF/lib`` folder of your GeoServer install and **restart** GeoServer.
+
 ::
 
     unzip geoserver/src/community/target/release/geoserver-2.8-SNAPSHOT-geogig-plugin.zip -d <GeoServer install dir>/webapps/geoserver/WEB-INF/lib/
@@ -192,8 +199,6 @@ When using Directory-backed GeoGig repositories, the default underlying object d
 
 ::
 
-com.sleepycat.je.EnvironmentLockedException: (JE 5.0.58) /Users/jj0hns0n/data/gisdata-repo/.geogig/objects The environment
-cannot be locked for single writer access. ENV_LOCKED: The je.lck file could not be locked. Environment is invalid and must
-be closed.
+    com.sleepycat.je.EnvironmentLockedException: (JE 5.0.58) /Users/jj0hns0n/data/gisdata-repo/.geogig/objects The environment cannot be locked for single writer access. ENV_LOCKED: The je.lck file could not be locked. Environment is invalid and must be closed.
 
 **GeoGig repositories backed by PostgreSQL do not have this limitation.**

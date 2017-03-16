@@ -44,7 +44,8 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     private static final ObjectSerializingFactory[] SUPPORTED_FORMATS = { //
             new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE), //
             new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE), //
-            new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
+            new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE),//
+            new LZFSerializationFactory(DataStreamSerializationFactoryV2_2.INSTANCE)//
     };
 
     private static final int MAX_FORMAT_CODE = SUPPORTED_FORMATS.length - 1;

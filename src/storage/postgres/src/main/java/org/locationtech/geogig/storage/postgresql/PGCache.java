@@ -20,7 +20,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
-import org.locationtech.geogig.storage.datastream.v2_2.DataStreamSerializationFactoryV2_2;
+import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -37,7 +37,7 @@ public class PGCache {
 
     private static final ObjectSerializingFactory ENCODER = //
             new LZ4SerializationFactory(//
-                    DataStreamSerializationFactoryV2_2.INSTANCE//
+                    DataStreamSerializationFactoryV2_3.INSTANCE//
             );
 
     protected static final int ESTIMATED_OBJECTID_SIZE = 28;

@@ -25,7 +25,7 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_1;
 import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
-import org.locationtech.geogig.storage.datastream.v2_2.DataStreamSerializationFactoryV2_2;
+import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.postgresql.PGCache;
 
@@ -56,17 +56,17 @@ public class PGCacheTest {
             DataStreamSerializationFactoryV1.INSTANCE //
             , DataStreamSerializationFactoryV2.INSTANCE //
             , DataStreamSerializationFactoryV2_1.INSTANCE//
-            , DataStreamSerializationFactoryV2_2.INSTANCE//
+            , DataStreamSerializationFactoryV2_3.INSTANCE//
             // LZF encoders
             , new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
             , new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
             , new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
-            , new LZFSerializationFactory(DataStreamSerializationFactoryV2_2.INSTANCE)//
+            , new LZFSerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
             // LZ4 encoders
             , new LZ4SerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
             , new LZ4SerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
             , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
-            , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_2.INSTANCE)//
+            , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
     );
 
     public static void main(String[] args) {

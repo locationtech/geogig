@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static org.junit.Assert.assertEquals;
 
@@ -17,7 +17,6 @@ import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
-import org.locationtech.geogig.storage.datastream.v2_2.Tail;
 
 public class TailTest {
 

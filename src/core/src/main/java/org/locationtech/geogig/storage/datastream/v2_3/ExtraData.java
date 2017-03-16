@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.datastream.ValueSerializer;
-import org.locationtech.geogig.storage.datastream.v2_2.NodeSet.NodesetHeader;
+import org.locationtech.geogig.storage.datastream.v2_3.NodeSet.NodesetHeader;
 
 class ExtraData {
 
@@ -26,7 +26,7 @@ class ExtraData {
             StringTable stringTable) throws IOException {
         checkNotNull(extraData);
 
-        ValueSerializer writer = DataStreamValueSerializerV2_2.create(() -> stringTable);
+        ValueSerializer writer = DataStreamValueSerializerV2_3.create(() -> stringTable);
         writer.writeMap(extraData, inline);
     }
 
@@ -54,7 +54,7 @@ class ExtraData {
             nodeExtraData = dataBuffer.asDataInput(nodeInlineExtraDataAbsoluteOffset);
         }
 
-        ValueSerializer reader = DataStreamValueSerializerV2_2.create(stringTable);
+        ValueSerializer reader = DataStreamValueSerializerV2_3.create(stringTable);
         Map<String, Object> extraData = reader.readMap(nodeExtraData);
         return extraData;
     }

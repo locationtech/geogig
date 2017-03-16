@@ -446,7 +446,7 @@ public class FormatCommonV2 {
     /**
      * Reads a bucket body (i.e assumes the head unsigned int "index" has been read already)
      */
-    private final Bucket readBucketBody(DataInput in) throws IOException {
+    protected  Bucket readBucketBody(DataInput in) throws IOException {
         ObjectId objectId = readObjectId(in);
         final int boundsMask = in.readByte() & 0xFF;
         @Nullable

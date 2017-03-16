@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.FieldType.BIG_DECIMAL;
@@ -58,16 +58,16 @@ import com.google.common.io.ByteStreams;
  * The {@link StringTable} is provided, hence it shall be encoded/decoded by this class' client
  * code.
  */
-class DataStreamValueSerializerV2_2 extends DataStreamValueSerializerV2 {
+class DataStreamValueSerializerV2_3 extends DataStreamValueSerializerV2 {
 
     final Supplier<StringTable> stringTable;
 
-    DataStreamValueSerializerV2_2(Supplier<StringTable> stringTable) {
+    DataStreamValueSerializerV2_3(Supplier<StringTable> stringTable) {
         this.stringTable = stringTable;
     }
 
     static ValueSerializer create(Supplier<StringTable> stringTable) {
-        return new DataStreamValueSerializerV2_2(stringTable);
+        return new DataStreamValueSerializerV2_3(stringTable);
     }
 
     @Override

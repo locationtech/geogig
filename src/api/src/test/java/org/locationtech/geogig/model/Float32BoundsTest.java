@@ -56,5 +56,14 @@ public class Float32BoundsTest {
         bounds2 = new Float32Bounds(serializedForm);
         assertEquals(bounds, bounds2);
     }
+    @Test
+    public void testSerializationNull() {
 
+        Float32Bounds bounds = new Float32Bounds( );
+        int[] serializedForm = bounds.toSerializedForm();
+        Float32Bounds bounds2 = new Float32Bounds(serializedForm);
+        assertEquals(bounds, bounds2);
+
+
+    }
 }

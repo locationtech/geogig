@@ -87,13 +87,15 @@ public class Float32Bounds {
         return asEnvelope().intersects(env);
     }
 
-    //This will likely return a double (NON-float32) envelope
-    // Be careful using it!
+    //To be careful, the resulting envelope is aligned with the float32 envelope!
     public void expand(Envelope env) {
         if (isNull)
             return;
         env.expandToInclude(xmin, ymin);
         env.expandToInclude(xmax, ymax);
+        Float32Bounds newEnv = new Float32Bounds(env);
+        Envelope float32Version = newEnv.asEnvelope();
+        env.init(float32Version);
     }
 
     public boolean isNull() {
@@ -111,11 +113,13 @@ public class Float32Bounds {
         int[] result = new int[4];
 
         if (isNull) {
-            // xmin,ymin=0   xmax,ymax=-1
-            result[0] = Float.floatToRawIntBits(0);
-            result[1] = Float.floatToRawIntBits(-1) - Float.floatToRawIntBits(0);
-            result[2] = Float.floatToRawIntBits(0);
-            result[3] = Float.floatToRawIntBits(-1) - Float.floatToRawIntBits(0);
+            // xmin,ymin=Float.MIN_VALUE  xmax,ymax=0
+            // xmin > xmax --> definition of Null
+            // these values chosen to so varint is very small
+            result[0] = 1;//Float.MIN_VALUE = 1.4E-45
+            result[1] = -1;
+            result[2] = 1;
+            result[3] = -1;
             return result;
         }
 

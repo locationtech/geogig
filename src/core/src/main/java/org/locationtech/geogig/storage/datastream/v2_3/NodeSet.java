@@ -7,14 +7,14 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.datastream.Varint.readUnsignedVarInt;
 import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVarInt;
-import static org.locationtech.geogig.storage.datastream.v2_2.InternalDataOutput.stream;
+import static org.locationtech.geogig.storage.datastream.v2_3.InternalDataOutput.stream;
 
 import java.io.DataInput;
 import java.io.DataOutput;

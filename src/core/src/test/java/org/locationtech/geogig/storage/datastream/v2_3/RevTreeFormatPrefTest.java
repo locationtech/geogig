@@ -7,15 +7,15 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.hashString;
-import static org.locationtech.geogig.storage.datastream.v2_2.TestSupport.assertEqualsFully;
-import static org.locationtech.geogig.storage.datastream.v2_2.TestSupport.nodes;
-import static org.locationtech.geogig.storage.datastream.v2_2.TestSupport.tree;
+import static org.locationtech.geogig.storage.datastream.v2_3.TestSupport.assertEqualsFully;
+import static org.locationtech.geogig.storage.datastream.v2_3.TestSupport.nodes;
+import static org.locationtech.geogig.storage.datastream.v2_3.TestSupport.tree;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

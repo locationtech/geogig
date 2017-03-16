@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -42,9 +42,9 @@ import org.locationtech.geogig.storage.datastream.FormatCommonV2_1;
  * </code>
  * </pre>
  */
-class FormatCommonV2_2 extends FormatCommonV2_1 {
+class FormatCommonV2_3 extends FormatCommonV2_1 {
 
-    public static final FormatCommonV2_2 INSTANCE = new FormatCommonV2_2();
+    public static final FormatCommonV2_3 INSTANCE = new FormatCommonV2_3();
 
     @Override
     public void writeTree(RevTree tree, DataOutput data) throws IOException {

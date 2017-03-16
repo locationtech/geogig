@@ -32,6 +32,7 @@ Contents:
     indexcreate.rst
     indexupdate.rst
     indexrebuild.rst
+    indexdrop.rst
     indexlist.rst
     init.rst
     log.rst

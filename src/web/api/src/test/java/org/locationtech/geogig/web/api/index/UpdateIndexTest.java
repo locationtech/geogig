@@ -275,7 +275,7 @@ public class UpdateIndexTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("treeRefSpec", "Points", "extraAttributes", "ip");
 
         ex.expect(IllegalStateException.class);
-        ex.expectMessage("No indexes could be found for the specified tree.");
+        ex.expectMessage("A matching index could not be found.");
         buildCommand(options).run(testContext.get());
     }
 

@@ -176,14 +176,14 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
         indexInfo = createIndex();
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("treeRefSpec not provided");
+        exception.expectMessage("Tree ref spec not provided");
         geogig.command(BuildFullHistoryIndexOp.class).call();
     }
 
     @Test
     public void testBuildFullHistoryNoIndex() {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("No indexes could be found for the specified tree.");
+        exception.expectMessage("A matching index could not be found.");
         geogig.command(BuildFullHistoryIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .call();

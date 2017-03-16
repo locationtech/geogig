@@ -11,6 +11,7 @@ package org.locationtech.geogig.web.api.index;
 
 import java.util.List;
 
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
@@ -61,9 +62,8 @@ public class ListIndexes extends AbstractWebAPICommand {
         if (treeName != null) {
             indexInfos = geogig.indexDatabase().getIndexInfos(treeName);
             if (indexInfos.size() == 0) {
-                try {
-                    IndexUtils.resolveTypeTreeRef(geogig, treeName);
-                } catch (IllegalArgumentException e) {
+                NodeRef treeRef = IndexUtils.resolveTypeTreeRef(geogig, treeName);
+                if (treeRef == null) {
                     throw new CommandSpecException(
                             "The provided tree name was not found in the HEAD commit.",
                             Status.CLIENT_ERROR_NOT_FOUND);

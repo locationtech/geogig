@@ -337,10 +337,18 @@ public class WebAPICucumberHooks {
             @Nullable String attributeName) {
         Repository repo = context.getRepo(repositoryName);
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
+        if (typeTreeRef == null) {
+            return Optional.absent();
+        }
         String treeName = typeTreeRef.path();
-        IndexInfo indexInfo = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
+        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
                 attributeName);
-        Optional<ObjectId> indexTreeId = repo.indexDatabase().resolveIndexedTree(indexInfo,
+        if (indexInfos.isEmpty()) {
+            return Optional.absent();
+        }
+        Preconditions.checkState(indexInfos.size() == 1,
+                "Multiple indexes found for given tree ref.");
+        Optional<ObjectId> indexTreeId = repo.indexDatabase().resolveIndexedTree(indexInfos.get(0),
                 typeTreeRef.getObjectId());
         return indexTreeId;
     }
@@ -417,8 +425,10 @@ public class WebAPICucumberHooks {
         Repository repo = context.getRepo(repositoryName);
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
         String treeName = typeTreeRef.path();
-        IndexInfo indexInfo = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName, null);
-        Map<String, Object> metadata = indexInfo.getMetadata();
+        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
+                null);
+        assertEquals(1, indexInfos.size());
+        Map<String, Object> metadata = indexInfos.get(0).getMetadata();
         assertTrue(metadata.containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
         Envelope indexBounds = (Envelope) metadata.get(IndexInfo.MD_QUAD_MAX_BOUNDS);
         Envelope expected = SpatialOps.parseNonReferencedBBOX(bbox);

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
@@ -130,13 +131,20 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
      */
     @Override
     protected Index _call() {
+        checkArgument(treeRefSpec != null, "Tree ref spec not provided.");
         final RevFeatureType featureType;
 
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);
+        checkArgument(typeTreeRef != null, "Can't find feature tree '%s'", treeRefSpec);
         featureType = objectDatabase().getFeatureType(typeTreeRef.getMetadataId());
         String treeName = typeTreeRef.path();
-        IndexInfo oldIndexInfo = IndexUtils.resolveIndexInfo(indexDatabase(), treeName,
+        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(indexDatabase(), treeName,
                 attributeName);
+        checkState(!indexInfos.isEmpty(), "A matching index could not be found.");
+        checkState(indexInfos.size() == 1,
+                "Multiple indexes were found for the specified tree, please specify the attribute.");
+
+        IndexInfo oldIndexInfo = indexInfos.get(0);
         
         final @Nullable String[] newAttributes = IndexUtils
                 .resolveMaterializedAttributeNames(featureType, extraAttributes);

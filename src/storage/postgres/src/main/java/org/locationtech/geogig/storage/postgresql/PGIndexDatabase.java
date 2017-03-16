@@ -242,7 +242,6 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return index;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         final String sql = format(
@@ -280,7 +279,6 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return Optional.fromNullable(index);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<IndexInfo> getIndexInfos(String treeName) {
         final String sql = format(
@@ -318,7 +316,6 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return indexes;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<IndexInfo> getIndexInfos() {
         final String sql = format(
@@ -353,6 +350,36 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         }
 
         return indexes;
+    }
+
+    @Override
+    public boolean dropIndex(IndexInfo index) {
+        final String deleteSql = format(
+                "DELETE FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
+                config.getTables().index());
+        int deletedRows = 0;
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
+            cx.setAutoCommit(false);
+            try (PreparedStatement ps = cx.prepareStatement(log(deleteSql, LOG, repositoryId,
+                    index.getTreeName(), index.getAttributeName()))) {
+                ps.setInt(1, repositoryId);
+                ps.setString(2, index.getTreeName());
+                ps.setString(3, index.getAttributeName());
+                deletedRows = ps.executeUpdate();
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+            } finally {
+                cx.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+        if (deletedRows > 0) {
+            clearIndex(index);
+            return true;
+        }
+        return false;
     }
 
     @Override

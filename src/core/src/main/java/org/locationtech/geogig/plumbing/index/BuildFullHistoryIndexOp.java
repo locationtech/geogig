@@ -10,8 +10,10 @@
 package org.locationtech.geogig.plumbing.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
@@ -65,11 +67,18 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
      */
     @Override
     protected Integer _call() {
-        checkArgument(treeRefSpec != null, "treeRefSpec not provided");
+        checkArgument(treeRefSpec != null, "Tree ref spec not provided.");
 
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);
+        checkArgument(typeTreeRef != null, "Can't find feature tree '%s'", treeRefSpec);
         String treeName = typeTreeRef.path();
-        IndexInfo index = IndexUtils.resolveIndexInfo(indexDatabase(), treeName, attributeName);
+        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(indexDatabase(), treeName,
+                attributeName);
+        checkState(!indexInfos.isEmpty(), "A matching index could not be found.");
+        checkState(indexInfos.size() == 1,
+                "Multiple indexes were found for the specified tree, please specify the attribute.");
+
+        IndexInfo index = indexInfos.get(0);
 
         indexDatabase().clearIndex(index);
         int builtTrees = indexHistory(index);

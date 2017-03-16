@@ -345,6 +345,70 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
     }
 
     @Test
+    public void testDropIndex() {
+        String treeName = "tree";
+        String attributeName = "attribute";
+        IndexInfo index = indexDb.createIndexInfo(treeName, attributeName, IndexType.QUADTREE,
+                null);
+
+        String attributeName2 = "attribute2";
+        IndexInfo index2 = indexDb.createIndexInfo(treeName, attributeName2, IndexType.QUADTREE,
+                null);
+
+        ObjectId originalTreeId1 = RevObjectTestSupport.hashString("fake1");
+        ObjectId originalTreeId2 = RevObjectTestSupport.hashString("fake2");
+        ObjectId indexedTreeId1 = RevObjectTestSupport.hashString("fake3");
+        ObjectId indexedTreeId2 = RevObjectTestSupport.hashString("fake4");
+
+        indexDb.addIndexedTree(index, originalTreeId1, indexedTreeId1);
+        indexDb.addIndexedTree(index, originalTreeId2, indexedTreeId2);
+        indexDb.addIndexedTree(index2, originalTreeId1, indexedTreeId1);
+        indexDb.addIndexedTree(index2, originalTreeId2, indexedTreeId2);
+
+        Optional<ObjectId> resolvedId = indexDb.resolveIndexedTree(index, originalTreeId1);
+        assertTrue(resolvedId.isPresent());
+        assertEquals(indexedTreeId1, resolvedId.get());
+
+        resolvedId = indexDb.resolveIndexedTree(index, originalTreeId2);
+        assertTrue(resolvedId.isPresent());
+        assertEquals(indexedTreeId2, resolvedId.get());
+
+        resolvedId = indexDb.resolveIndexedTree(index2, originalTreeId1);
+        assertTrue(resolvedId.isPresent());
+        assertEquals(indexedTreeId1, resolvedId.get());
+
+        resolvedId = indexDb.resolveIndexedTree(index2, originalTreeId2);
+        assertTrue(resolvedId.isPresent());
+        assertEquals(indexedTreeId2, resolvedId.get());
+
+        boolean dropped = indexDb.dropIndex(index);
+        assertTrue(dropped);
+
+        resolvedId = indexDb.resolveIndexedTree(index, originalTreeId1);
+        assertFalse(resolvedId.isPresent());
+
+        resolvedId = indexDb.resolveIndexedTree(index, originalTreeId2);
+        assertFalse(resolvedId.isPresent());
+
+        resolvedId = indexDb.resolveIndexedTree(index2, originalTreeId1);
+        assertTrue(resolvedId.isPresent());
+        assertEquals(indexedTreeId1, resolvedId.get());
+
+        resolvedId = indexDb.resolveIndexedTree(index2, originalTreeId2);
+        assertTrue(resolvedId.isPresent());
+        assertEquals(indexedTreeId2, resolvedId.get());
+
+        Optional<IndexInfo> indexInfo = indexDb.getIndexInfo(treeName, attributeName);
+        assertFalse(indexInfo.isPresent());
+
+        indexInfo = indexDb.getIndexInfo(treeName, attributeName2);
+        assertTrue(indexInfo.isPresent());
+
+        dropped = indexDb.dropIndex(index);
+        assertFalse(dropped);
+    }
+
+    @Test
     public void testClearIndex() {
         String treeName = "tree";
         String attributeName = "attribute";

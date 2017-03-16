@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,12 +119,14 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
      */
     @Override
     protected Index _call() {
+        checkArgument(typeTreeRef != null || treeRefSpec != null, "No tree was provided.");
 
         final RevTree canonicalTypeTree;
         final RevFeatureType featureType;
 
         final NodeRef typeTreeRef = this.typeTreeRef != null ? this.typeTreeRef
                 : IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);
+        checkArgument(typeTreeRef != null, "Can't find feature tree '%s'", treeRefSpec);
         canonicalTypeTree = objectDatabase().getTree(typeTreeRef.getObjectId());
         featureType = objectDatabase().getFeatureType(typeTreeRef.getMetadataId());
 

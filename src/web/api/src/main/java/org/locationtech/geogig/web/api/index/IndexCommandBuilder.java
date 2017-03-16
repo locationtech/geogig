@@ -30,6 +30,7 @@ public class IndexCommandBuilder {
         MAPPINGS.put("update", UpdateIndex::new);
         MAPPINGS.put("rebuild", RebuildIndex::new);
         MAPPINGS.put("list", ListIndexes::new);
+        MAPPINGS.put("drop", DropIndex::new);
     }
 
     /**

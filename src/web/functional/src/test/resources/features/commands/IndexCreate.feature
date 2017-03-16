@@ -128,3 +128,10 @@ Feature: IndexCreate
       And the repo1 repository's "master~2:Points" index should have the following features:
           |     index    | 
           |    Point.1   | 
+          
+  Scenario: Verify 400 status code when tree ref spec is not provided
+    Given There is a repo with some data
+     When I call "PUT /repos/repo1/index/create?extraAttributes=sp"
+     Then the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "No tree was provided."
+      And the response status should be '400'

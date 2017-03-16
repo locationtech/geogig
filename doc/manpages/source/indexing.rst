@@ -38,4 +38,6 @@ SEE ALSO
 
 :ref:`geogig-index-list`
 
+:ref:`geogig-index-drop`
+
 

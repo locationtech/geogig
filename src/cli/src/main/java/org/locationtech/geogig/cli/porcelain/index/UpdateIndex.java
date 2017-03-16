@@ -32,7 +32,7 @@ import com.vividsolutions.jts.geom.Envelope;
         "update" }, commandDescription = "Update the extra attributes of an index.")
 public class UpdateIndex extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--tree", required = true, description = "Name or path of the feature tree to create the index for.")
+    @Parameter(names = "--tree", required = true, description = "Name or path of the feature tree to update the index for.")
     private String treeRefSpec;
 
     @Parameter(names = { "-a",

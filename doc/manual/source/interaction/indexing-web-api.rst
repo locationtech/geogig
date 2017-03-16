@@ -261,6 +261,48 @@ Rebuild the index trees of an index
     </response>
 
 
+Index drop
+----------
+
+Removes an index from the repository.
+
+::
+
+   DELETE /repos/<repo>/index/drop[.xml|.json]?treeRefSpec=<treeRefSpec>[&geometryAttributeName=<attributeName>]
+
+
+Parameters
+^^^^^^^^^^
+
+**treeRefSpec:**
+Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. ``HEAD:Points``, ``Points``, etc).  If no commit is defined, ``HEAD`` will be used.
+   
+**geometryAttributeName:**
+Optional. Defaults to the primary geometry attribute on the feature type.  The name of the attribute that is used on the existing index.
+
+Examples
+^^^^^^^^
+
+Drop an index:
+**************
+
+::
+
+	$ curl -X DELETE -v "http://localhost:8182/repos/repo1/index/drop?treeRefSpec=Points" | xmllint --format -
+	< HTTP/1.1 200 OK
+	< Content-Type: application/xml
+	<?xml version="1.0" encoding="UTF-8"?>
+    <response>
+        <success>true</success>
+        <dropped>
+            <treeName>Points</treeName>
+            <attributeName>the_geom</attributeName>
+            <indexType>QUADTREE</indexType>
+            <bounds>Env[-180,180,-90,90]</bounds>
+        </dropped>
+    </response>
+
+
 Index list
 ------------
 

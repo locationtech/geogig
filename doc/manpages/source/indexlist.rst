@@ -30,6 +30,8 @@ SEE ALSO
 
 :ref:`geogig-index-rebuild`
 
+:ref:`geogig-index-drop`
+
 BUGS
 ****
 

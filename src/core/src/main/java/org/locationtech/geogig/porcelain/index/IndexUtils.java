@@ -10,7 +10,6 @@
 package org.locationtech.geogig.porcelain.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -44,7 +44,8 @@ public class IndexUtils {
      * 
      * @param context the command context
      * @param treeRefSpec the tree refspec
-     * @return the {@link NodeRef} that matched the given refspec
+     * @return the {@link NodeRef} that matched the given refspec, or {@code null} if it didn't
+     *         exist
      */
     public static NodeRef resolveTypeTreeRef(Context context, String treeRefSpec) {
         checkArgument(treeRefSpec != null, "type tree was not provided");
@@ -62,37 +63,29 @@ public class IndexUtils {
                 .call();
         ImmutableMap<String, NodeRef> map = Maps.uniqueIndex(treeRefs, (r) -> r.path());
         NodeRef treeRef = map.get(treePath);
-        checkArgument(treeRef != null, "Can't find feature tree '%s'", treeRefSpec);
         return treeRef;
     }
 
     /**
-     * Resolves a given tree and attribute name into an {@link IndexInfo}
+     * Resolves a given tree and attribute name into one or more {@link IndexInfo} objects
      * 
      * @param indexdb the index database
      * @param treeName the name of the feature tree
      * @param attributeName the name of the indexed attribute. If {@code null}, this function will
-     *        return the index info associated with the given tree name, as long as there is only
-     *        one.
-     * @return the resolved {@link IndexInfo}
+     *        return the index infos associated with the given tree name
+     * @return the resolved {@link IndexInfo} objects
      */
-    public static IndexInfo resolveIndexInfo(IndexDatabase indexdb, String treeName,
+    public static List<IndexInfo> resolveIndexInfo(IndexDatabase indexdb, String treeName,
             @Nullable String attributeName) {
-        IndexInfo indexInfo;
         if (attributeName == null) {
-            List<IndexInfo> indexInfos = indexdb.getIndexInfos(treeName);
-            checkState(!indexInfos.isEmpty(), "No indexes could be found for the specified tree.");
-            checkState(indexInfos.size() == 1,
-                    "Multiple indexes were found for the specified tree, please specify the attribute.");
-
-            attributeName = indexInfos.get(0).getAttributeName();
-            indexInfo = indexInfos.get(0);
+            return indexdb.getIndexInfos(treeName);
         } else {
             Optional<IndexInfo> indexInfoOpt = indexdb.getIndexInfo(treeName, attributeName);
-            checkState(indexInfoOpt.isPresent(), "A matching index could not be found.");
-            indexInfo = indexInfoOpt.get();
+            if (indexInfoOpt.isPresent()) {
+                return Lists.newArrayList(indexInfoOpt.get());
+            }
         }
-        return indexInfo;
+        return Lists.newArrayList();
     }
 
     /**

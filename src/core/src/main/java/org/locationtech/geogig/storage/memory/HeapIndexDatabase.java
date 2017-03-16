@@ -183,6 +183,19 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
+    public boolean dropIndex(IndexInfo index) {
+        List<IndexInfo> treeIndexes = indexes.get(index.getTreeName());
+        if (treeIndexes != null) {
+            if (treeIndexes.contains(index)) {
+                clearIndex(index);
+                treeIndexes.remove(index);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void clearIndex(IndexInfo index) {
         indexTreeMappings.remove(index.getId());
     }

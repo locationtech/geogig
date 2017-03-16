@@ -187,6 +187,33 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     @Override
+    public boolean dropIndex(IndexInfo index) {
+        checkOpen();
+        byte[] indexKey = indexKey(index.getTreeName(), index.getAttributeName());
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            try (RocksIterator it = dbRef.db().newIterator(indexMetadataColumn)) {
+                it.seek(indexKey);
+                if (it.isValid()) {
+                    byte[] key = it.key();
+                    if (key.length == indexKey.length) {
+                        for (int i = 0; i < indexKey.length; i++) {
+                            if (indexKey[i] != key[i]) {
+                                return false;
+                            }
+                        }
+                        dbRef.db().delete(indexMetadataColumn, key);
+                        clearIndex(index);
+                        return true;
+                    }
+                }
+            } catch (RocksDBException e) {
+                Throwables.propagate(e);
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void clearIndex(IndexInfo index) {
         checkOpen();
         byte[] mappingKey = computeIndexTreeLookupId(index.getId(), null);

@@ -47,7 +47,7 @@ Feature: "index rebuild" command
     Given I have a repository
       And I have several commits
       And I run the command "index rebuild --tree Points"
-     Then the response should contain "No indexes could be found for the specified tree."
+     Then the response should contain "A matching index could not be found."
 
   Scenario: I rebuild the index for an attribute on a tree
     Given I have a repository

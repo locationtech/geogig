@@ -97,6 +97,14 @@ public interface IndexDatabase extends ObjectStore {
     public List<IndexInfo> getIndexInfos();
 
     /**
+     * Drops the given index from the database.
+     * 
+     * @param index the index to drop
+     * @return {@code true} if the index was found and removed
+     */
+    public boolean dropIndex(IndexInfo index);
+
+    /**
      * Removes all canonical/index tree associations for the given index.
      * 
      * @Param index the index to clear

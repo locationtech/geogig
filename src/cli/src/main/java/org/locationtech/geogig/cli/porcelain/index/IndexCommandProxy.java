@@ -37,6 +37,7 @@ public class IndexCommandProxy implements CLICommandExtension {
         commander.addCommand("update", new UpdateIndex());
         commander.addCommand("list", new ListIndexes());
         commander.addCommand("rebuild", new RebuildIndex());
+        commander.addCommand("drop", new DropIndex());
 
         return commander;
     }

@@ -32,6 +32,8 @@ SEE ALSO
 
 :ref:`geogig-index-update`
 
+:ref:`geogig-index-drop`
+
 BUGS
 ****
 

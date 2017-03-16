@@ -5,18 +5,19 @@
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Gabriel Roldan (Boundless) - initial implementation
+ * David Blasby (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_3;
+package org.locationtech.geogig.storage.datastream;
 
 import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
-public class DataStreamSerializationFactoryV2_2Test extends ObjectSerializationFactoryTest {
+
+public class DataStreamSerializationFactoryV2_2Test  extends ObjectSerializationFactoryTest {
 
     @Override
     protected ObjectSerializingFactory getObjectSerializingFactory() {
-        return DataStreamSerializationFactoryV2_3.INSTANCE;
+        return DataStreamSerializationFactoryV2_2.INSTANCE;
     }
 
 }

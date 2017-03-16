@@ -50,6 +50,6 @@ public class DataStreamSerializationFactoryV2_3 extends DataStreamSerializationF
 
     @Override
     public String getDisplayName() {
-        return "Binary 2.2";
+        return "Binary 2.3";
     }
 }

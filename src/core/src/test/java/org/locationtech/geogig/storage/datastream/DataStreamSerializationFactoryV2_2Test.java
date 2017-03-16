@@ -32,12 +32,7 @@ public class DataStreamSerializationFactoryV2_2Test  extends ObjectSerialization
     //exact bounds check
     @Override
     public void assertTreesAreEqual(RevTree a, RevTree b) {
-        assertEquals(a.getId(), b.getId());
-        assertEquals(a.buckets(), b.buckets());
-        assertEquals(a.features(), b.features());
-        assertEquals(a.trees(), b.trees());
-        assertEquals(a.numTrees(), b.numTrees());
-        assertEquals(a.size(), b.size());
+        super.assertTreesAreEqual(a,b); // do the original impl checks
 
         Iterator<? extends Bounded> ia;
         Iterator<? extends Bounded> ib;

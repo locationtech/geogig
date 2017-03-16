@@ -501,4 +501,38 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         command.call();
     }
 
+    @Test
+    public void testRetype() throws Exception {
+        Query query = new Query();
+        query.setPropertyNames(new String[] { "sp", "ip", "pp" });
+        SimpleFeatureCollection collection = pointsSource.getFeatures(query);
+
+        // no retyping, requested all properties in same order
+        assertEquals(pointsSource.getSchema(), collection.getSchema());
+
+        testRetype(pointsSource, "pp", "ip");
+        testRetype(pointsSource, "pp");
+        testRetype(pointsSource, "sp");
+        testRetype(pointsSource, "pp", "sp");
+    }
+
+    private void testRetype(SimpleFeatureSource pointsSource, String... properties)
+            throws IOException {
+        
+        Query query = new Query();
+        query.setPropertyNames(properties);
+        
+        SimpleFeatureCollection collection = pointsSource.getFeatures(query);
+        
+        assertNotEquals(pointsSource.getSchema(), collection.getSchema());
+        assertEquals(properties.length, collection.getSchema().getAttributeCount());
+        for(int i = 0; i < properties.length; i++){
+            assertEquals(properties[i], collection.getSchema().getDescriptor(i).getLocalName());
+        }
+
+        SimpleFeature[] features = collection.toArray(new SimpleFeature[0]);
+        for (SimpleFeature f : features) {
+            assertEquals(collection.getSchema(), f.getFeatureType());
+        }
+    }
 }

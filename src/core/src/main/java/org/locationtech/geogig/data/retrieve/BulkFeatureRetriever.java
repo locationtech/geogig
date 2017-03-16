@@ -14,12 +14,12 @@ import java.util.Iterator;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -80,16 +80,17 @@ public class BulkFeatureRetriever {
      *
      * This DOES NOT retrieves FeatureType info from the ObjectDatabase.
      *
-     * @param refs
-     * @param schema
+     * @param refs list of node refs to fetch {@link RevFeature}s for
+     * @param nativeType the feature type the features adhere to
+     * @param geometryFactory the geometry factory to create geometry attributes with
      * @return
      */
     public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(
-            AutoCloseableIterator<NodeRef> refs, SimpleFeatureType schema,
+            AutoCloseableIterator<NodeRef> refs, RevFeatureType nativeType,
             GeometryFactory geometryFactory) {
 
         // builder for this particular schema
-        FeatureBuilder featureBuilder = new FeatureBuilder(schema);
+        FeatureBuilder featureBuilder = new FeatureBuilder(nativeType);
 
         // function that converts the FeatureInfo a feature of the given schema
         Function<ObjectInfo<RevFeature>, SimpleFeature> funcBuildFeature = (input -> MultiFeatureTypeBuilder

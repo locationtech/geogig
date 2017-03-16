@@ -127,7 +127,7 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
      * @param transformFunction the transformation function
      * @return an iterator with the type that matches the return type of the transformation function
      */
-    public static <T, C> AutoCloseableIterator<C> transform(AutoCloseableIterator<T> source,
+    public static <T, C> AutoCloseableIterator<C> transform(AutoCloseableIterator<? extends T> source,
             Function<T, C> transformFunction) {
         return new AutoCloseableIterator<C>() {
 
@@ -157,7 +157,7 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
      * @param filterFunction the predicate to test elements against
      * @return the filtered iterator
      */
-    public static <T> AutoCloseableIterator<T> filter(AutoCloseableIterator<T> source,
+    public static <T> AutoCloseableIterator<T> filter(AutoCloseableIterator<? extends T> source,
             Predicate<T> filterFunction) {
         return new AutoCloseableIterator<T>() {
 

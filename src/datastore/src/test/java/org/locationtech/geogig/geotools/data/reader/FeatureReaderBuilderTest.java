@@ -15,7 +15,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.validateMockitoUsage;
 import static org.mockito.Mockito.verify;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
@@ -31,6 +35,8 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.index.Index;
@@ -105,6 +111,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         commit("inital");
 
         SimpleFeatureType fullSchema = pointsType;
+        RevFeatureType nativeType = RevFeatureTypeBuilder.build(fullSchema);
         Context actualContext = repo.context();
         context = spy(actualContext);
 
@@ -113,7 +120,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
         NodeRef typeRef = context.workingTree().getFeatureTypeTrees().get(0);
 
-        FeatureReaderBuilder b = FeatureReaderBuilder.builder(context, fullSchema, typeRef);
+        FeatureReaderBuilder b = FeatureReaderBuilder.builder(context, nativeType, typeRef);
         builder = spy(b);
     }
 
@@ -190,13 +197,10 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
         assertEquals(1, reader.getFeatureType().getAttributeCount());
         assertEquals("ip", reader.getFeatureType().getDescriptor(0).getLocalName());
-
-        assertTrue(reader instanceof FeatureReaderAdapter);
-        assertEquals(3, Iterators.size(((FeatureReaderAdapter) reader).iterator));
     }
 
     @Test
-    public void testResultingSchemaIncludesFilterAttributes() {
+    public void testResultingSchemaDoesNotIncludeFilterAttributes() {
         Query query = new Query();
         query.setPropertyNames(Lists.newArrayList("ip"));
 
@@ -211,8 +215,8 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         List<String> resultatts = Lists.transform(resultType.getAttributeDescriptors(),
                 (d) -> d.getLocalName());
 
-        assertEquals(2, resultatts.size());
-        assertTrue(resultatts.contains("sp"));
+        assertEquals(1, resultatts.size());
+        assertFalse(resultatts.contains("sp"));
         assertTrue(resultatts.contains("ip"));
     }
 
@@ -273,16 +277,17 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
         PropertyIsNotEqualTo unsupported = ff.notEqual(ff.property("sp"),
                 ff.literal("StringProp1_1"));
-        
+
         PropertyIsEqualTo supported = ff.equals(ff.property("ip"),
                 ff.literal(Integer.valueOf(2000)));
 
         Filter filter = ff.and(unsupported, supported);
 
-        Predicate<Bounded> preFilter = builder.createIndexPreFilter(filter, ImmutableSet.of("ip"), true);
+        Predicate<Bounded> preFilter = builder.createIndexPreFilter(filter, ImmutableSet.of("ip"),
+                true);
         assertTrue(preFilter instanceof PreFilter);
-        assertEquals(supported, ((PreFilter)preFilter).filter);
-        
+        assertEquals(supported, ((PreFilter) preFilter).filter);
+
         query.setFilter(filter);
         verifyFeatures(query, points2);
         verifyUsesIndex(index);
@@ -349,54 +354,64 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         indexExtraProperties.add("extraattribute");
 
         Filter filter = ECQL.toFilter("BBOX(geom, 1,1,2,3)");
-        Set  filterProperties = new HashSet(Lists.newArrayList(DataUtilities.attributeNames(filter)));
-        boolean fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties, filterProperties);
+        Set filterProperties = new HashSet(
+                Lists.newArrayList(DataUtilities.attributeNames(filter)));
+        boolean fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter,
+                indexExtraProperties, filterProperties);
         assertTrue(fullySupported);
 
         filter = ECQL.toFilter("time=3 AND BBOX(geom, 1,1,2,3)");
         filterProperties = new HashSet(Lists.newArrayList(DataUtilities.attributeNames(filter)));
-        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties, filterProperties);
+        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties,
+                filterProperties);
         assertTrue(fullySupported);
 
         filter = ECQL.toFilter("time=3 AND extraattribute<3 AND BBOX(geom, 1,1,2,3)");
         filterProperties = new HashSet(Lists.newArrayList(DataUtilities.attributeNames(filter)));
-        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties, filterProperties);
+        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties,
+                filterProperties);
         assertTrue(fullySupported);
 
-        filter = ECQL.toFilter("time=3 AND extraattribute<3 AND unknownAtt=666 AND BBOX(geom, 1,1,2,3)");
+        filter = ECQL
+                .toFilter("time=3 AND extraattribute<3 AND unknownAtt=666 AND BBOX(geom, 1,1,2,3)");
         filterProperties = new HashSet(Lists.newArrayList(DataUtilities.attributeNames(filter)));
-        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties, filterProperties);
+        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties,
+                filterProperties);
         assertFalse(fullySupported);
 
         filter = ECQL.toFilter("OVERLAPS(ENVELOPE(1,2,3,5),geom)");
         filterProperties = new HashSet(Lists.newArrayList(DataUtilities.attributeNames(filter)));
-        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties, filterProperties);
+        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties,
+                filterProperties);
         assertFalse(fullySupported);
 
-        filter = ECQL.toFilter("time=3 AND extraattribute<3 AND OVERLAPS(geom, POLYGON ((1 5, 1 3, 2 3, 2 5, 1 5)))");
+        filter = ECQL.toFilter(
+                "time=3 AND extraattribute<3 AND OVERLAPS(geom, POLYGON ((1 5, 1 3, 2 3, 2 5, 1 5)))");
         filterProperties = new HashSet(Lists.newArrayList(DataUtilities.attributeNames(filter)));
-        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties, filterProperties);
+        fullySupported = FeatureReaderBuilder.filterIsFullySupported(filter, indexExtraProperties,
+                filterProperties);
         assertFalse(fullySupported);
     }
 
     @Test
     public void testVerifySimpleBBoxUsage() throws CQLException {
-        //simpliest case
+        // simpliest case
         Filter f = ECQL.toFilter("BBOX(geom, 1,1,2,3) ");
-        FeatureReaderBuilder.VerifySimpleBBoxUsage visitor = new FeatureReaderBuilder.VerifySimpleBBoxUsage("geom");
+        FeatureReaderBuilder.VerifySimpleBBoxUsage visitor = new FeatureReaderBuilder.VerifySimpleBBoxUsage(
+                "geom");
         f.accept(visitor, null);
         assertTrue(visitor.isUsedInGeometryExpression);
         assertTrue(visitor.isUsedInBBoxExpression);
         assertTrue(visitor.isSimple());
 
-        //its not used
+        // its not used
         f = ECQL.toFilter("BBOX(geom2, 1,1,2,3) ");
         visitor = new FeatureReaderBuilder.VerifySimpleBBoxUsage("geom");
         f.accept(visitor, null);
         assertFalse(visitor.isUsedInGeometryExpression);
         assertFalse(visitor.isSimple());
 
-        //not a BBOX op
+        // not a BBOX op
         f = ECQL.toFilter("OVERLAPS(ENVELOPE(1,2,3,5),geom) ");
         visitor = new FeatureReaderBuilder.VerifySimpleBBoxUsage("geom");
         f.accept(visitor, null);
@@ -404,7 +419,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         assertTrue(visitor.isUsedInNonBBoxExpression);
         assertFalse(visitor.isSimple());
 
-        //bad AND good = bad
+        // bad AND good = bad
         f = ECQL.toFilter("OVERLAPS(ENVELOPE(1,2,3,5),geom) AND BBOX(geom, 1,1,2,3)");
         visitor = new FeatureReaderBuilder.VerifySimpleBBoxUsage("geom");
         f.accept(visitor, null);
@@ -413,7 +428,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         assertTrue(visitor.isUsedInBBoxExpression);
         assertFalse(visitor.isSimple());
 
-        //not correct type
+        // not correct type
         f = ECQL.toFilter("geom=5");
         visitor = new FeatureReaderBuilder.VerifySimpleBBoxUsage("geom");
         f.accept(visitor, null);
@@ -422,7 +437,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         assertFalse(visitor.isUsedInBBoxExpression);
         assertFalse(visitor.isSimple());
 
-        //irrelevant AND good = good
+        // irrelevant AND good = good
         f = ECQL.toFilter("time=3 AND BBOX(geom, 1,1,2,3)");
         visitor = new FeatureReaderBuilder.VerifySimpleBBoxUsage("geom");
         f.accept(visitor, null);
@@ -431,6 +446,5 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         assertTrue(visitor.isUsedInBBoxExpression);
         assertTrue(visitor.isSimple());
     }
-
 
 }

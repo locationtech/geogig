@@ -20,13 +20,12 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Function;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-public class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, SimpleFeature> {
+class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, SimpleFeature> {
 
     Map<ObjectId, FeatureBuilder> cache = new HashMap<ObjectId, FeatureBuilder>();
 
@@ -57,11 +56,12 @@ public class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>,
 
         String fid = info.node().getName();
         RevFeature revFeature = info.object();
-        Feature feature = featureBuilder.build(fid, revFeature, geometryFactory);
+        SimpleFeature feature = (SimpleFeature) featureBuilder.build(fid, revFeature,
+                geometryFactory);
         feature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
         feature.getUserData().put(Hints.PROVIDED_FID, fid);
         feature.getUserData().put(RevFeature.class, revFeature);
         feature.getUserData().put(RevFeatureType.class, featureBuilder.getType());
-        return (SimpleFeature) feature;
+        return feature;
     }
 }

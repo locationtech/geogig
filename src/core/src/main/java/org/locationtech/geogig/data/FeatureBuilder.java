@@ -16,7 +16,6 @@ import org.geotools.filter.identity.FeatureIdVersionedImpl;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.identity.FeatureId;
@@ -50,16 +49,6 @@ public class FeatureBuilder {
 
     public RevFeatureType getType() {
         return type;
-    }
-
-    /**
-     * Constructs a new {@code FeatureBuilder} with the given {@link SimpleFeatureType feature type}
-     * .
-     * 
-     * @param type the feature type of the features that will be built
-     */
-    public FeatureBuilder(SimpleFeatureType type) {
-        this(RevFeatureTypeBuilder.build(type));
     }
 
     /**

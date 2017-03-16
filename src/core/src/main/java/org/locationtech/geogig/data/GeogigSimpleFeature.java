@@ -52,7 +52,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  */
-public class GeogigSimpleFeature implements SimpleFeature {
+class GeogigSimpleFeature implements SimpleFeature {
 
     static final class State {
         private static final Object NULL = new Object();
@@ -125,12 +125,12 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
     private @Nullable GeometryFactory geomFac;
 
-    public GeogigSimpleFeature(RevFeature feature, SimpleFeatureType featureType, FeatureId id,
+    GeogigSimpleFeature(RevFeature feature, SimpleFeatureType featureType, FeatureId id,
             Map<String, Integer> nameToRevTypeInded) {
         this(feature, featureType, id, nameToRevTypeInded, null);
     }
 
-    public GeogigSimpleFeature(RevFeature feature, SimpleFeatureType featureType, FeatureId id,
+    GeogigSimpleFeature(RevFeature feature, SimpleFeatureType featureType, FeatureId id,
             Map<String, Integer> nameToRevTypeInded, @Nullable GeometryFactory geomFac) {
         this.id = id;
         this.featureType = featureType;

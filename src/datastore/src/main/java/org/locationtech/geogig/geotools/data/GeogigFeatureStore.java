@@ -244,7 +244,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
 
         ProgressListener listener = new DefaultProgressListener();
 
-        final SimpleFeatureType nativeSchema = delegate.getNativeType();
+        final SimpleFeatureType nativeSchema = (SimpleFeatureType) delegate.getNativeType().type();
         final NodeRef typeRef = delegate.getTypeRef();
         final String treePath = typeRef.path();
         final ObjectId featureTypeId = typeRef.getMetadataId();
@@ -336,7 +336,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
                 "Transactions not supported; head is not a local branch");
 
         final WorkingTree workingTree = delegate.getWorkingTree();
-        final SimpleFeatureType nativeSchema = delegate.getNativeType();
+        final SimpleFeatureType nativeSchema = (SimpleFeatureType) delegate.getNativeType().type();
         final NodeRef typeRef = delegate.getTypeRef();
         final String treePath = typeRef.path();
         final ObjectId featureTypeId = typeRef.getMetadataId();

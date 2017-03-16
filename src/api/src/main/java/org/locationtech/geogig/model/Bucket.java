@@ -118,9 +118,13 @@ public abstract class Bucket implements Bounded {
         if (bounds == null || bounds.isNull()) {
             return new NonSpatialBucket(bucketTree);
         }
-        if (bounds.getWidth() == 0D && bounds.getHeight() == 0D) {
-            return new PointBucket(bucketTree, bounds.getMinX(), bounds.getMinY());
+
+        Float32Bounds b32 = new Float32Bounds(bounds);
+        Envelope bounds2 = b32.asEnvelope();
+
+        if (bounds2.getWidth() == 0D && bounds2.getHeight() == 0D) {
+            return new PointBucket(bucketTree, bounds2.getMinX(), bounds2.getMinY());
         }
-        return new RectangleBucket(bucketTree, new Envelope(bounds));
+        return new RectangleBucket(bucketTree, bounds2);
     }
 }

@@ -39,7 +39,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
 class MaterializedBuilderConsumer extends AbstractConsumer {
@@ -57,12 +56,12 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
         @Override
         public Iterator<Node> iterator() {
             return left == null ? singletonIterator(right)
-                    : (right == null ? singletonIterator(left)
-                            : Iterators.forArray(left, right));
+                    : (right == null ? singletonIterator(left) : Iterators.forArray(left, right));
         }
     }
 
-    private BlockingQueue<MaterializedBuilderConsumer.Tuple> nodes = new ArrayBlockingQueue<>(batchSize);
+    private BlockingQueue<MaterializedBuilderConsumer.Tuple> nodes = new ArrayBlockingQueue<>(
+            batchSize);
 
     final AtomicLong count = new AtomicLong();
 
@@ -115,13 +114,13 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
         List<MaterializedBuilderConsumer.Tuple> list = new ArrayList<>(batchSize);
         nodes.drainTo(list);
 
-        final Map<ObjectId, RevFeature> objects;
+        final Map<ObjectId, RevFeature> objects = new HashMap<>();
         {
             Iterable<Node> allNodes = Iterables.concat(list);
             Iterable<ObjectId> nodeIds = Iterables.transform(allNodes, (n) -> n.getObjectId());
             Iterator<RevFeature> objectsIt = featureSource.getAll(nodeIds,
                     BulkOpListener.NOOP_LISTENER, RevFeature.class);
-            objects = Maps.uniqueIndex(objectsIt, (o) -> o.getId());
+            objectsIt.forEachRemaining((o) -> objects.put(o.getId(), o));
         }
 
         for (MaterializedBuilderConsumer.Tuple t : list) {

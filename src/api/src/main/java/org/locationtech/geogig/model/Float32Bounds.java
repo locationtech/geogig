@@ -13,28 +13,43 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 
-public class Float32Bounds {
+/**
+ * This represents a bounds - much like a JTS Envelope.
+ * However, to save space, this uses Float32 numbers instead of Float64.
+ * The original Envelope will be contained by the Float32Bounds.
+ *
+ * NOTE:
+ *     * this will usually (not always) larger than the original envelope
+ *     * This bounds will always contain (or be equal to) the original envelope
+ *     * for every Float32 number, there is an exact Float64 representation
+ */
+class Float32Bounds {
 
     boolean isNull = true;
-    float xmin, xmax, ymin, ymax;
-
-    public Float32Bounds() {
-
-    }
-
-    public Float32Bounds(int[] serializedform) {
-        set(serializedform);
-    }
+    //defaults - xmin > xmax (no area)
+    float xmin = Float.MIN_VALUE;
+    float xmax = 0;
+    float ymin = Float.MIN_VALUE;
+    float ymax = 0;
 
 
     public Float32Bounds(Envelope doublePrecisionEnv) {
-        if ((doublePrecisionEnv == null) || (doublePrecisionEnv.isNull()))
+        if ((doublePrecisionEnv == null) || (doublePrecisionEnv.isNull())) {
             return; //done!
+        }
         set(doublePrecisionEnv);
     }
 
     public Float32Bounds(double x, double y) {
         set(new Envelope(new Coordinate(x, y)));
+    }
+
+    public Float32Bounds(float xmin, float xmax, float ymin, float ymax) {
+        this.xmin = xmin;
+        this.xmax = xmax;
+        this.ymin = ymin;
+        this.ymax = ymax;
+        this.isNull = (xmin > xmax);
     }
 
     private void set(Envelope doublePrecisionEnv) {
@@ -102,41 +117,6 @@ public class Float32Bounds {
         return isNull;
     }
 
-    // serialized form is 4 ints - representing the bounding box
-    // int[0] - direct representation of xmin (Float.floatToRawIntBits)
-    // int[1] - offset (in raw int) between xmin and xmax
-    // int[2] - direct representation of ymin (Float.floatToRawIntBits)
-    // int[3]-  offset (in raw int) between ymin and ymax
-    //
-    // we use the offset so that varint representation can more effectively compress
-    public int[] toSerializedForm() {
-        int[] result = new int[4];
-
-        if (isNull) {
-            // xmin,ymin=Float.MIN_VALUE  xmax,ymax=0
-            // xmin > xmax --> definition of Null
-            // these values chosen to so varint is very small
-            result[0] = 1;//Float.MIN_VALUE = 1.4E-45
-            result[1] = -1;
-            result[2] = 1;
-            result[3] = -1;
-            return result;
-        }
-
-        result[0] = Float.floatToRawIntBits(xmin);
-        result[1] = Float.floatToRawIntBits(xmax) - Float.floatToRawIntBits(xmin);
-        result[2] = Float.floatToRawIntBits(ymin);
-        result[3] = Float.floatToRawIntBits(ymax) - Float.floatToRawIntBits(ymin);
-        return result;
-    }
-
-    private void set(int[] serializedform) {
-        xmin = Float.intBitsToFloat(serializedform[0]);
-        xmax = Float.intBitsToFloat(serializedform[0] + serializedform[1]);
-        ymin = Float.intBitsToFloat(serializedform[2]);
-        ymax = Float.intBitsToFloat(serializedform[2] + serializedform[3]);
-        isNull = xmin > xmax;
-    }
 
     @Override
     public String toString() {

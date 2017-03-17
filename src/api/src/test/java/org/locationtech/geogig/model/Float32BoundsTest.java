@@ -14,7 +14,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class Float32BoundsTest {
@@ -42,28 +41,5 @@ public class Float32BoundsTest {
         assertTrue(testEnvelope.covers(bounds.asEnvelope()));
     }
 
-    @Test
-    public void testSerialization() {
-        Coordinate coord = new Coordinate(1, 1);
-        Float32Bounds bounds = new Float32Bounds(new Envelope(coord));
-        int[] serializedForm = bounds.toSerializedForm();
-        Float32Bounds bounds2 = new Float32Bounds(serializedForm);
-        assertEquals(bounds, bounds2);
 
-        coord = new Coordinate(Math.PI, Math.E);
-        bounds = new Float32Bounds(new Envelope(coord));
-        serializedForm = bounds.toSerializedForm();
-        bounds2 = new Float32Bounds(serializedForm);
-        assertEquals(bounds, bounds2);
-    }
-    @Test
-    public void testSerializationNull() {
-
-        Float32Bounds bounds = new Float32Bounds( );
-        int[] serializedForm = bounds.toSerializedForm();
-        Float32Bounds bounds2 = new Float32Bounds(serializedForm);
-        assertEquals(bounds, bounds2);
-
-
-    }
 }

@@ -6,7 +6,6 @@ import com.vividsolutions.jts.geom.Envelope;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
-import org.locationtech.geogig.model.Float32Bounds;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -119,10 +118,15 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
         }
     }
 
+    /**
+     * This assumes that envelope is on the float32 grid (should be the case with Bounded objects)
+     * @param envelope
+     * @param data
+     * @throws IOException
+     */
     private static void writeBounds(Envelope envelope, DataOutput data) throws IOException {
         //directly use the default encoding
-        Float32Bounds bounds = new Float32Bounds(envelope);
-        int[] serializedForm = bounds.toSerializedForm();
+        int[] serializedForm = Float32BoundsSerializer.serialize(envelope);
         writeSignedVarInt(serializedForm[0],data);
         writeSignedVarInt(serializedForm[1],data);
         writeSignedVarInt(serializedForm[2],data);
@@ -132,8 +136,7 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
     private static Envelope readBounds(DataInput in) throws IOException {
         //directly use the default encoding
         int[] serializedForm = new int[] { readSignedVarInt(in),readSignedVarInt(in),readSignedVarInt(in),readSignedVarInt(in)};
-        Float32Bounds bounds = new Float32Bounds(serializedForm);
-        return bounds.asEnvelope();
+        return Float32BoundsSerializer.deserialize(serializedForm);
     }
 
 }

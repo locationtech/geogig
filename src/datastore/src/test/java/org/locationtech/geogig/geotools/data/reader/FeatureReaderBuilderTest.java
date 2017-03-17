@@ -24,6 +24,8 @@ import org.geotools.data.FeatureReader;
 import org.geotools.data.Query;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
+import org.geotools.feature.NameImpl;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.renderer.ScreenMap;
 import org.junit.After;
 import org.junit.Test;
@@ -40,6 +42,8 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.PropertyIsEqualTo;
@@ -47,6 +51,7 @@ import org.opengis.filter.PropertyIsNotEqualTo;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.sort.SortBy;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
@@ -173,6 +178,56 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
     public void testResultingSchemaFullSchema() {
         FeatureReader<SimpleFeatureType, SimpleFeature> reader = builder.build();
         assertEquals(pointsType, reader.getFeatureType());
+    }
+
+    @Test
+    public void testResultingSchemaExplicitTargetSchema() throws Exception {
+        // as per ContentFeatureSource, the full schema may be a subset to start with, or it may
+        // just have the namespace changed
+        NameImpl namespaceRename = new NameImpl("http://geogig.org/testNamespace", pointsName);
+        NameImpl localNameRename = new NameImpl("PointsRenamed");
+        NameImpl namespaceAndLocalNameRename = new NameImpl("http://geogig.org/testNamespace",
+                "PointsRenamed");
+
+        testResultingSchemaExplicitTargetSchema(namespaceRename);
+        testResultingSchemaExplicitTargetSchema(localNameRename);
+        testResultingSchemaExplicitTargetSchema(namespaceAndLocalNameRename);
+
+        testResultingSchemaExplicitTargetSchema(namespaceRename, "sp", "ip");
+        testResultingSchemaExplicitTargetSchema(localNameRename, "ip", "sp");
+        testResultingSchemaExplicitTargetSchema(namespaceAndLocalNameRename, "pp", "sp");
+    }
+
+    public void testResultingSchemaExplicitTargetSchema(Name targetName,
+            @Nullable String... propertySubset) throws Exception {
+
+        SimpleFeatureType redefinedFullSchema;
+        {
+            SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+            builder.setName(targetName);
+            if (propertySubset == null || propertySubset.length == 0) {
+                builder.addAll(pointsType.getAttributeDescriptors());
+            } else {
+                for (String att : propertySubset) {
+                    AttributeDescriptor descriptor = pointsType.getDescriptor(att);
+                    Preconditions.checkArgument(descriptor != null);
+                    builder.add(descriptor);
+                }
+            }
+            redefinedFullSchema = builder.buildFeatureType();
+        }
+
+        builder.targetSchema(redefinedFullSchema);
+        FeatureReader<SimpleFeatureType, SimpleFeature> reader = builder.build();
+        assertEquals(redefinedFullSchema, reader.getFeatureType());
+        SimpleFeature f = reader.next();
+        assertNotNull(f);
+        assertEquals(redefinedFullSchema, f.getType());
+    }
+
+    private void assertEquals(SimpleFeatureType expected, SimpleFeatureType actual) {
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getAttributeDescriptors(), actual.getAttributeDescriptors());
     }
 
     @Test

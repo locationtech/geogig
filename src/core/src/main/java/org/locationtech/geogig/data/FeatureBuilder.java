@@ -12,12 +12,14 @@ package org.locationtech.geogig.data;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.identity.FeatureIdVersionedImpl;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.Name;
 import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.base.Preconditions;
@@ -37,14 +39,34 @@ public class FeatureBuilder {
 
     private RevFeatureType type;
 
+    private SimpleFeatureType featureType;
+
     /**
      * Constructs a new {@code FeatureBuilder} with the given {@link RevFeatureType feature type}.
      * 
      * @param type the feature type of the features that will be built
      */
     public FeatureBuilder(RevFeatureType type) {
+        this(type, null);
+    }
+
+    /**
+     * @param type the native type of the features buing built
+     * @param typeNameOverride if provided, the resulting feature type for the features will be
+     *        renamed as this
+     */
+    public FeatureBuilder(RevFeatureType type, @Nullable Name typeNameOverride) {
         this.type = type;
         this.attNameToRevTypeIndex = GeogigSimpleFeature.buildAttNameToRevTypeIndex(type);
+        SimpleFeatureType nativeType = (SimpleFeatureType) type.type();
+        if (null == typeNameOverride) {
+            this.featureType = nativeType;
+        } else {
+            SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+            builder.init(nativeType);
+            builder.setName(typeNameOverride);
+            this.featureType = builder.buildFeatureType();
+        }
     }
 
     public RevFeatureType getType() {
@@ -64,8 +86,6 @@ public class FeatureBuilder {
 
         final FeatureId fid = new LazyVersionedFeatureId(id, revFeature.getId());
 
-        SimpleFeatureType featureType = (SimpleFeatureType) type.type();
-
         GeogigSimpleFeature feature = new GeogigSimpleFeature(revFeature, featureType, fid,
                 attNameToRevTypeIndex);
         return feature;
@@ -77,8 +97,6 @@ public class FeatureBuilder {
         Preconditions.checkNotNull(revFeature);
 
         final FeatureId fid = new LazyVersionedFeatureId(id, revFeature.getId());
-
-        SimpleFeatureType featureType = (SimpleFeatureType) type.type();
 
         GeogigSimpleFeature feature = new GeogigSimpleFeature(revFeature, featureType, fid,
                 attNameToRevTypeIndex, geometryFactory);

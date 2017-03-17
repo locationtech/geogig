@@ -313,6 +313,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final @Nullable ScreenMap screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
         final @Nullable String[] propertyNames = query.getPropertyNames();
         final @Nullable SortBy[] sortBy = query.getSortBy();
+        final Name assignedName = getEntry().getName();
 
         final Filter filter = query.getFilter();
 
@@ -322,6 +323,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, nativeType, typeRef);
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = builder//
+                .targetSchema(getSchema())//
                 .filter(filter)//
                 .headRef(getRootRef())//
                 .oldHeadRef(oldRoot())//

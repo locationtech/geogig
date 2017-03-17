@@ -36,7 +36,6 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -240,6 +239,28 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testGetFeatureSourceProvidedNamespace() throws Exception {
+        String namespace = "http://www.geogig.org/test";
+        dataStore.setNamespaceURI(namespace);
+        insertAndAdd(lines1);
+        commit();
+        SimpleFeatureSource lines;
+        lines = dataStore.getFeatureSource(linesName);
+        Name expectedName = new NameImpl(namespace, linesName);
+
+        assertEquals(expectedName, lines.getName());
+        SimpleFeatureType schema = lines.getSchema();
+        assertEquals(expectedName, schema.getName());
+        
+        SimpleFeatureCollection features = lines.getFeatures();
+        assertEquals(expectedName, features.getSchema().getName());
+        try(SimpleFeatureIterator it = features.features()){
+            SimpleFeature feature = it.next();
+            assertEquals(expectedName, feature.getType().getName());
+        }
+    }
+
+    @Test
     public void testGetSchemaString() throws Exception {
         try {
             dataStore.getSchema(RepositoryTestCase.linesName);
@@ -438,8 +459,10 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         return list;
     }
 
-    private Optional<IndexInfo> createOrUpdateIndexAndVerify(String layerName, String... extraAttributes) throws Exception {
-        Optional<ObjectId> createOrUpdateIndex = dataStore.createOrUpdateIndex(layerName, extraAttributes);
+    private Optional<IndexInfo> createOrUpdateIndexAndVerify(String layerName,
+            String... extraAttributes) throws Exception {
+        Optional<ObjectId> createOrUpdateIndex = dataStore.createOrUpdateIndex(layerName,
+                extraAttributes);
         assertTrue("IndexInfo ObjectId should be present", createOrUpdateIndex.isPresent());
         ObjectId id = createOrUpdateIndex.get();
         Context resolveContext = dataStore.resolveContext(Transaction.AUTO_COMMIT);
@@ -451,15 +474,18 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         // verify the index contains all the extra Attributes
         Set<String> materializedAttributeNames = IndexInfo.getMaterializedAttributeNames(index);
         for (String attribute : extraAttributes) {
-            assertTrue("Index should have contained " + attribute, materializedAttributeNames.contains(attribute));
+            assertTrue("Index should have contained " + attribute,
+                    materializedAttributeNames.contains(attribute));
         }
         return Optional.of(index);
     }
 
-    private void verifyExtraAttributes(IndexInfo index, String... extraAttributes) throws Exception {
+    private void verifyExtraAttributes(IndexInfo index, String... extraAttributes)
+            throws Exception {
         Set<String> materializedAttributeNames = IndexInfo.getMaterializedAttributeNames(index);
         if (extraAttributes.length > 0) {
-            assertFalse("There should be extra attributes for the Index", materializedAttributeNames.isEmpty());
+            assertFalse("There should be extra attributes for the Index",
+                    materializedAttributeNames.isEmpty());
             for (String attr : extraAttributes) {
                 assertTrue("Attribute \"" + attr + "\" should be present in the Index",
                         materializedAttributeNames.contains(attr));
@@ -471,43 +497,47 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     public void testCreateOrUpdateIndex() throws Exception {
         insertAndAdd(lines1);
         commit();
-        IndexInfo createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[]{}).get();
+        IndexInfo createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {})
+                .get();
         ObjectId id = createOrUpdateIndex.getId();
         // Index should not have any extra attributes
-        Set<String> materializedAttributeNames = IndexInfo.getMaterializedAttributeNames(createOrUpdateIndex);
-        assertTrue("There should be no extra attributes for the Index", materializedAttributeNames.isEmpty());
+        Set<String> materializedAttributeNames = IndexInfo
+                .getMaterializedAttributeNames(createOrUpdateIndex);
+        assertTrue("There should be no extra attributes for the Index",
+                materializedAttributeNames.isEmpty());
 
         // now update the Index with a non-geometry attribute (sp)
-        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {"sp"}).get();
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] { "sp" }).get();
         // id should match the one we got when the Index was created above
         ObjectId secondId = createOrUpdateIndex.getId();
         assertEquals("Index does not match", id, secondId);
         // Index should have a single "sp" extra attribute
-        verifyExtraAttributes(createOrUpdateIndex, new String[] {"sp"});
+        verifyExtraAttributes(createOrUpdateIndex, new String[] { "sp" });
 
         // now update the Index with the same "sp" attribute
-        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {"sp"}).get();
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] { "sp" }).get();
         // id should match the one we got when the Index was created above
         ObjectId thirdId = createOrUpdateIndex.getId();
         assertEquals("Index does not match", id, thirdId);
         // Index should have a single "sp" extra attribute
-        verifyExtraAttributes(createOrUpdateIndex, new String[] {"sp"});
+        verifyExtraAttributes(createOrUpdateIndex, new String[] { "sp" });
 
         // update the Index with two attributes, "sp" and "ip"
-        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {"sp", "ip"}).get();
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] { "sp", "ip" })
+                .get();
         // id should match the one we got when the Index was created above
         ObjectId fourthId = createOrUpdateIndex.getId();
         assertEquals("Index does not match", id, fourthId);
         // Index should have a single "sp" extra attribute
-        verifyExtraAttributes(createOrUpdateIndex, new String[] {"ip", "sp"});
+        verifyExtraAttributes(createOrUpdateIndex, new String[] { "ip", "sp" });
 
         // now make sure a call with 1 attribute doesn't clear existing extra attributes
-        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {"ip"}).get();
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] { "ip" }).get();
         // id should match the one we got when the Index was created above
         ObjectId fifthId = createOrUpdateIndex.getId();
         assertEquals("Index does not match", id, fifthId);
         // Index should have a single "sp" extra attribute
-        verifyExtraAttributes(createOrUpdateIndex, new String[] {"sp", "ip"});
+        verifyExtraAttributes(createOrUpdateIndex, new String[] { "sp", "ip" });
 
         // lastly, update the index with no extra attributes and make sure there are still 2
         createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {}).get();
@@ -515,6 +545,6 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         ObjectId sixthId = createOrUpdateIndex.getId();
         assertEquals("Index does not match", id, sixthId);
         // Index should have a single "sp" extra attribute
-        verifyExtraAttributes(createOrUpdateIndex, new String[] {"ip", "sp"});
+        verifyExtraAttributes(createOrUpdateIndex, new String[] { "ip", "sp" });
     }
 }

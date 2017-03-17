@@ -20,6 +20,7 @@ import org.opengis.filter.spatial.BinarySpatialOperator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 /**
  * Adapts a GeoTools {@link Filter} to a {@link Predicate} to be applied over a {@link Bounded}
@@ -61,5 +62,15 @@ final class PreFilter implements Predicate<Bounded> {
     @Override
     public String toString() {
         return String.format("PreFilter(%s)", filter);
+    }
+
+    public static Predicate<Bounded> forFilter(Filter filter) {
+        if (Filter.INCLUDE.equals(filter)) {
+            return Predicates.alwaysTrue();
+        }
+        if (Filter.EXCLUDE.equals(filter)) {
+            return Predicates.alwaysFalse();
+        }
+        return new PreFilter(filter);
     }
 }

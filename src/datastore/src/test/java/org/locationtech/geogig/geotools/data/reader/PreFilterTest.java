@@ -29,6 +29,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.PropertyIsGreaterThan;
@@ -59,7 +60,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 
-public class PreFilterBuilderTest {
+public class PreFilterTest {
 
     private final Date DATE_VALUE = new Date(1486344231314L);
 
@@ -71,7 +72,7 @@ public class PreFilterBuilderTest {
 
     private Bucket testBucket;
 
-    private PreFilterBuilder builder;
+    private PrePostFilterSplitter filterSplitter;
 
     @Before
     public void before() {
@@ -86,6 +87,9 @@ public class PreFilterBuilderTest {
         materializedAttributes.put("string", "geogig");
         materializedAttributes.put("nullprop", null);
 
+        filterSplitter = new PrePostFilterSplitter()
+                .extraAttributes(materializedAttributes.keySet());
+
         Map<String, Object> extraData = ImmutableMap.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
                 materializedAttributes);
 
@@ -96,21 +100,17 @@ public class PreFilterBuilderTest {
         ObjectId bucketId = hashString("bucketId");
         testBucket = Bucket.create(bucketId, bounds);
 
-        builder = new PreFilterBuilder(materializedAttributes.keySet());
     }
 
-    @Test
-    public void testAttributeIsMaterialized() {
-        assertTrue(builder.isMaterialized(ff.property("int")));
-        assertTrue(builder.isMaterialized(ff.property("double")));
-        assertTrue(builder.isMaterialized(ff.property("date")));
-        assertTrue(builder.isMaterialized(ff.property("string")));
-        assertFalse(builder.isMaterialized(ff.property("somethingElse")));
+    private Predicate<Bounded> preFilter(Filter filter) {
+        filterSplitter.filter(filter).build();
+        Filter preFilter = filterSplitter.getPreFilter();
+        return PreFilter.forFilter(preFilter);
     }
 
     @Test
     public void excludeFilter() {
-        Predicate<Bounded> predicate = builder.build(Filter.EXCLUDE);
+        Predicate<Bounded> predicate = preFilter(Filter.EXCLUDE);
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
         assertFalse(predicate.apply(testBucket));
@@ -119,7 +119,7 @@ public class PreFilterBuilderTest {
 
     @Test
     public void includeFilter() {
-        Predicate<Bounded> predicate = builder.build(Filter.INCLUDE);
+        Predicate<Bounded> predicate = preFilter(Filter.INCLUDE);
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
@@ -129,10 +129,9 @@ public class PreFilterBuilderTest {
     @Test
     public void andFilter() throws Exception {
         Filter filter = toFilter("int = 1 AND string = 'geogig'");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
-
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -140,7 +139,7 @@ public class PreFilterBuilderTest {
         assertFalse(predicate.apply(null));
 
         filter = toFilter("int = 2 AND string = 'geogig'");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
         // when given a bucket, it just must evaluate to true for PreorderDiffWalk to continue
@@ -148,9 +147,9 @@ public class PreFilterBuilderTest {
         assertTrue(predicate.apply(testBucket));
 
         filter = toFilter("int = 2 AND string = 'geogig' AND nonExistent = 'something'");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -159,18 +158,18 @@ public class PreFilterBuilderTest {
     @Test
     public void orFilter() throws Exception {
         Filter filter = toFilter("int = 0 OR string = 'geogig'");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = toFilter("int = 2 OR string = 'something else'");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -179,31 +178,25 @@ public class PreFilterBuilderTest {
         assertTrue(predicate.apply(testBucket));
 
         filter = toFilter("int = 2 OR string = 'something else' OR nonmat ='xyz'");
-        predicate = builder.build(filter);
-        assertTrue(isAcceptEverything(predicate)); //cannot be optimized
+        predicate = preFilter(filter);
+        assertTrue(isAcceptEverything(predicate)); // cannot be optimized
 
     }
 
     @Test
     public void idFilter() throws Exception {
         Filter filter = toFilter("IN ('fake1', 'testFid', 'fake2')");
-        Predicate<Bounded> predicate = builder.build(filter);
-
-        assertTrue(isAcceptEverything(predicate));  // not optimized
+        Predicate<Bounded> predicate = preFilter(filter);
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = toFilter("IN ('fake1', 'fake2', 'fake3')");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertTrue(isAcceptEverything(predicate));
-
-        // Id filters short-circuit as TRUE because they're evaluated more efficiently by
-        // DiffTree.setPathFilter()
-        assertTrue(predicate.apply(testNode));
-        assertTrue(predicate.apply(testNodeRef));
+        assertFalse(predicate.apply(testNode));
+        assertFalse(predicate.apply(testNodeRef));
         // when given a bucket, it just must evaluate to true for PreorderDiffWalk to continue
         // traversal
         assertTrue(predicate.apply(testBucket));
@@ -212,16 +205,16 @@ public class PreFilterBuilderTest {
     @Test
     public void notFilter() throws Exception {
         Filter filter = toFilter("NOT(int = 1)");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = toFilter("NOT(double < 0)");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -230,19 +223,36 @@ public class PreFilterBuilderTest {
         assertTrue(predicate.apply(testBucket));
     }
 
+    private void testBinaryComparisonOperator(String cql, boolean expected) throws Exception {
+        BinaryComparisonOperator filter = (BinaryComparisonOperator) toFilter(cql);
+        Predicate<Bounded> predicate = preFilter(filter);
+        if (expected) {
+            assertTrue(predicate.apply(testNode));
+        } else {
+            assertFalse(predicate.apply(testNode));
+        }
+    }
+
+    @Test
+    public void testBinaryComparisonOperators() throws Exception {
+        testBinaryComparisonOperator("double > 0", true);
+        testBinaryComparisonOperator("0 < double", true);
+        testBinaryComparisonOperator("double < nonMaterialized", true);
+    }
+
     @Test
     public void propertyIsBetweenFilter() throws Exception {
         Filter filter = toFilter("double between 0.1 and 0.6");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = toFilter("double between 0.1 and 0.49999");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -253,10 +263,9 @@ public class PreFilterBuilderTest {
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = toFilter("nonMaterializedProperty between 0.1 and 0.5");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
-
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -264,17 +273,17 @@ public class PreFilterBuilderTest {
 
     @Test
     public void propertyIsEqualToFilter() throws Exception {
-        Predicate<Bounded> predicate = builder.build(toFilter("double = 0.5"));
+        Predicate<Bounded> predicate = preFilter(toFilter("double = 0.5"));
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
-        predicate = builder.build(toFilter("int = 1.0"));
+        predicate = preFilter(toFilter("int = 1.0"));
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -283,10 +292,9 @@ public class PreFilterBuilderTest {
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         Filter filter = toFilter("nonMaterializedProperty = 1");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
-
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -296,16 +304,16 @@ public class PreFilterBuilderTest {
     public void propertyIsNotEqualToFilter() throws Exception {
         // ECQL.toFilter("double <> 0.1") returns a NOT filter instead of a PropertyIsNotEqualTo
         PropertyIsNotEqualTo filter = ff.notEqual(ff.property("double"), ff.literal(0.1));
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = ff.notEqual(ff.property("int"), ff.literal(1));
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
@@ -313,10 +321,9 @@ public class PreFilterBuilderTest {
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = ff.notEqual(ff.property("nonMaterializedProperty"), ff.literal(0.5));
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
-
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -325,18 +332,19 @@ public class PreFilterBuilderTest {
     @Test
     public void propertyIsGreaterThanFilter() throws Exception {
         PropertyIsGreaterThan filter = (PropertyIsGreaterThan) toFilter("double > 0.4");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = (PropertyIsGreaterThan) toFilter("int > 0");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(predicate.toString().contains("always")); //verify its not just passing everything
+        assertFalse(predicate.toString().contains("always")); // verify its not just passing
+                                                              // everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -345,10 +353,9 @@ public class PreFilterBuilderTest {
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = (PropertyIsGreaterThan) toFilter("nonMaterializedProperty > 1");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertTrue(isAcceptEverything(predicate)); //cannot pre-filter
-
+        assertTrue(isAcceptEverything(predicate)); // cannot pre-filter
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -358,18 +365,18 @@ public class PreFilterBuilderTest {
     public void propertyIsGreaterThanOrEqualToFilter() throws Exception {
         PropertyIsGreaterThanOrEqualTo filter = (PropertyIsGreaterThanOrEqualTo) toFilter(
                 "double >= 0.4");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = (PropertyIsGreaterThanOrEqualTo) toFilter("int >= 1");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -378,7 +385,7 @@ public class PreFilterBuilderTest {
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = (PropertyIsGreaterThanOrEqualTo) toFilter("nonMaterializedProperty >= 1");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
 
@@ -389,32 +396,31 @@ public class PreFilterBuilderTest {
     @Test
     public void propertyIsLessThanFilter() throws Exception {
         PropertyIsLessThan filter = (PropertyIsLessThan) toFilter("double < 5.1");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = (PropertyIsLessThan) toFilter("int < 1000");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
-        assertFalse(builder.build(toFilter("int < 1")).apply(testNode));
+        assertFalse(preFilter(toFilter("int < 1")).apply(testNode));
 
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = (PropertyIsLessThan) toFilter("nonMaterializedProperty < 1");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
-
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -424,24 +430,23 @@ public class PreFilterBuilderTest {
     public void propertyIsLessThanOrEqualToFilter() throws Exception {
         PropertyIsLessThanOrEqualTo filter = (PropertyIsLessThanOrEqualTo) toFilter(
                 "double <= 5.1");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
-        assertFalse(builder.build(toFilter("int <= 0.99")).apply(testNode));
-        assertFalse(builder.build(toFilter("double <= 0.499")).apply(testNode));
+        assertFalse(preFilter(toFilter("int <= 0.99")).apply(testNode));
+        assertFalse(preFilter(toFilter("double <= 0.499")).apply(testNode));
 
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = (PropertyIsLessThanOrEqualTo) toFilter("nonMaterializedProperty <= 1");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
-
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -450,10 +455,9 @@ public class PreFilterBuilderTest {
     @Test
     public void propertyIsLikeFilter() throws Exception {
         PropertyIsLike filter = (PropertyIsLike) toFilter("string like '%gig'");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
-
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -462,10 +466,9 @@ public class PreFilterBuilderTest {
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = (PropertyIsLike) toFilter("nonMaterializedProperty like 'something%'");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
-
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -474,16 +477,16 @@ public class PreFilterBuilderTest {
     @Test
     public void propertyIsNullFilter() throws Exception {
         PropertyIsNull filter = (PropertyIsNull) toFilter("nullprop is null");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = (PropertyIsNull) toFilter("int is null");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
@@ -491,7 +494,7 @@ public class PreFilterBuilderTest {
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = (PropertyIsNull) toFilter("nonMaterializedProperty is null");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
 
@@ -502,16 +505,16 @@ public class PreFilterBuilderTest {
     @Test
     public void propertyIsNilFilter() throws Exception {
         PropertyIsNil filter = ff.isNil(ff.property("nullprop"), "notAvail");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = ff.isNil(ff.property("string"), "notAvail");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
@@ -519,10 +522,9 @@ public class PreFilterBuilderTest {
         // if the property being tested is not materialized, pre-filter evaluates to true, in order
         // for the post-filtering to proceed
         filter = ff.isNil(ff.property("nonMaterializedAttribute"), "notAvail");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
-
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -531,7 +533,7 @@ public class PreFilterBuilderTest {
     @Test
     public void bboxFilter() throws Exception {
         BBOX filter = ff.bbox("the_geom", 0, 0, 180, 90, "EPSG:4326");
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
 
@@ -540,7 +542,7 @@ public class PreFilterBuilderTest {
         assertTrue(predicate.apply(testBucket));
 
         filter = ff.bbox("the_geom", -10, -10, -1, -1, "EPSG:4326");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
         // BBOX filters are short-circuited to TRUE because they're evaluated more efficiently by
         // DiffTree.setBoundsFilter
 
@@ -558,18 +560,18 @@ public class PreFilterBuilderTest {
         Contains filter;
         filter = (Contains) toFilter("contains(the_geom, POLYGON((1 1, 1 2, 2 2, 2 1, 1 1)) )");
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
         assertTrue(predicate.apply(testBucket));
 
         filter = (Contains) toFilter("contains(the_geom, POLYGON((-1 -1, 1 2, 2 2, 2 1, -1 -1)) )");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -583,12 +585,11 @@ public class PreFilterBuilderTest {
         Crosses filter;
         filter = (Crosses) toFilter("crosses(the_geom, POLYGON((1 1, 1 2, 2 2, 2 1, 1 1)) )");
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
         assertTrue("crosses should have been simplified to intersects for pre-filtering",
                 ((PreFilter) predicate).filter instanceof Intersects);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
-
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -596,9 +597,9 @@ public class PreFilterBuilderTest {
 
         filter = (Crosses) toFilter(
                 "crosses(the_geom, POLYGON((-1 -1, -1 -2, -2 -2, -2 -1, -1 -1)) )");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -613,8 +614,8 @@ public class PreFilterBuilderTest {
         Polygon bounds = JTS.toGeometry(testNode.bounds().get());
         filter = (Equals) toFilter(String.format("equals(the_geom, %s)", bounds));
 
-        Predicate<Bounded> predicate = builder.build(filter);
-        assertTrue(((PreFilter) predicate).filter instanceof Equals);
+        Predicate<Bounded> predicate = preFilter(filter);
+        assertTrue(((PreFilter) predicate).filter instanceof Intersects);
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -622,10 +623,9 @@ public class PreFilterBuilderTest {
 
         filter = (Equals) toFilter(
                 "equals(the_geom, POLYGON((-1 -1, -1 -2, -2 -2, -2 -1, -1 -1)) )");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
-
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -639,7 +639,7 @@ public class PreFilterBuilderTest {
         Intersects filter;
         filter = (Intersects) toFilter("Intersects(the_geom, POLYGON((1 1, 1 2, 2 2, 2 1, 1 1)) )");
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
         assertTrue(((PreFilter) predicate).filter instanceof Intersects);
 
         assertTrue(predicate.apply(testNode));
@@ -648,9 +648,9 @@ public class PreFilterBuilderTest {
 
         filter = (Intersects) toFilter(
                 "Intersects(the_geom, POLYGON((-1 -1, -1 -2, -2 -2, -2 -1, -1 -1)) )");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -664,7 +664,7 @@ public class PreFilterBuilderTest {
         Overlaps filter;
         filter = (Overlaps) toFilter("Overlaps(the_geom, POLYGON((1 1, 1 2, 2 2, 2 1, 1 1)) )");
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
         assertTrue("Overlaps should have been simplified to intersects for pre-filtering",
                 ((PreFilter) predicate).filter instanceof Intersects);
 
@@ -674,9 +674,9 @@ public class PreFilterBuilderTest {
 
         filter = (Overlaps) toFilter(
                 "Overlaps(the_geom, POLYGON((-1 -1, -1 -2, -2 -2, -2 -1, -1 -1)) )");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -694,8 +694,7 @@ public class PreFilterBuilderTest {
         Touches filter;
         filter = (Touches) toFilter(String.format("Touches(the_geom, %s)", touching));
 
-        Predicate<Bounded> predicate = builder.build(filter);
-        assertTrue(((PreFilter) predicate).filter instanceof Touches);
+        Predicate<Bounded> predicate = preFilter(filter);
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -703,9 +702,9 @@ public class PreFilterBuilderTest {
 
         filter = (Touches) toFilter(
                 "Touches(the_geom, POLYGON((-1 -1, -1 -2, -2 -2, -2 -1, -1 -1)) )");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -723,9 +722,7 @@ public class PreFilterBuilderTest {
         Within filter;
         filter = (Within) toFilter(String.format("Within(the_geom, %s)", container));
 
-        Predicate<Bounded> predicate = builder.build(filter);
-        assertTrue("Within should have been simplified to intersects for pre-filtering",
-                ((PreFilter) predicate).filter instanceof Intersects);
+        Predicate<Bounded> predicate = preFilter(filter);
 
         assertTrue(predicate.apply(testNode));
         assertTrue(predicate.apply(testNodeRef));
@@ -733,9 +730,9 @@ public class PreFilterBuilderTest {
 
         filter = (Within) toFilter(
                 "Within(the_geom, POLYGON((-1 -1, -1 -2, -2 -2, -2 -1, -1 -1)) )");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -753,7 +750,7 @@ public class PreFilterBuilderTest {
         Disjoint filter;
         filter = (Disjoint) toFilter(String.format("Disjoint(the_geom, %s)", container));
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
         assertTrue("Disjoint should have been simplified to intersects for pre-filtering",
                 ((PreFilter) predicate).filter instanceof Intersects);
 
@@ -763,9 +760,9 @@ public class PreFilterBuilderTest {
 
         filter = (Disjoint) toFilter(
                 "Disjoint(the_geom, POLYGON((-1 -1, -1 -2, -2 -2, -2 -1, -1 -1)) )");
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -780,7 +777,7 @@ public class PreFilterBuilderTest {
         filter = ff.dwithin(ff.property("the_geom"),
                 ff.literal(new WKTReader().read("POINT(0 -1)")), 1.5, "m");
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
         assertTrue(((PreFilter) predicate).filter instanceof DWithin);
 
         assertTrue(predicate.apply(testNode));
@@ -790,9 +787,9 @@ public class PreFilterBuilderTest {
         filter = ff.dwithin(ff.property("the_geom"),
                 ff.literal(new WKTReader().read("POINT(-180 -90)")), 0.5, "m");
 
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -807,7 +804,7 @@ public class PreFilterBuilderTest {
         filter = ff.beyond(ff.property("the_geom"),
                 ff.literal(new WKTReader().read("POINT(-180 0)")), 179, "m");
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
         assertTrue(((PreFilter) predicate).filter instanceof Beyond);
 
         assertTrue(predicate.apply(testNode));
@@ -817,9 +814,9 @@ public class PreFilterBuilderTest {
         filter = ff.beyond(ff.property("the_geom"),
                 ff.literal(new WKTReader().read("POINT(-45 0)")), 50, "m");
 
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
-        assertFalse(isAcceptEverything(predicate)); //verify its not just passing everything
+        assertFalse(isAcceptEverything(predicate)); // verify its not just passing everything
 
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
@@ -835,7 +832,7 @@ public class PreFilterBuilderTest {
 
         After filter = ff.after(ff.property("date"), ff.literal(previousDate));
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
         assertTrue(((PreFilter) predicate).filter instanceof After);
 
         assertTrue(predicate.apply(testNode));
@@ -844,14 +841,14 @@ public class PreFilterBuilderTest {
 
         filter = ff.after(ff.property("date"), ff.literal(DATE_VALUE));
 
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
         // buckets are evaluated to true for the traversal to continue to its leaf nodes
         assertTrue(predicate.apply(testBucket));
 
         filter = ff.after(ff.property("nonMaterializedProp"), ff.literal(DATE_VALUE));
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
 
@@ -866,7 +863,7 @@ public class PreFilterBuilderTest {
 
         AnyInteracts filter = ff.anyInteracts(ff.property("date"), ff.literal(DATE_VALUE));
 
-        Predicate<Bounded> predicate = builder.build(filter);
+        Predicate<Bounded> predicate = preFilter(filter);
         assertTrue(((PreFilter) predicate).filter instanceof AnyInteracts);
 
         assertTrue(predicate.apply(testNode));
@@ -875,14 +872,14 @@ public class PreFilterBuilderTest {
 
         filter = ff.anyInteracts(ff.property("date"), ff.literal(previousDate));
 
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
         assertFalse(predicate.apply(testNode));
         assertFalse(predicate.apply(testNodeRef));
         // buckets are evaluated to true for the traversal to continue to its leaf nodes
         assertTrue(predicate.apply(testBucket));
 
         filter = ff.anyInteracts(ff.property("nonMaterializedProp"), ff.literal(DATE_VALUE));
-        predicate = builder.build(filter);
+        predicate = preFilter(filter);
 
         assertTrue(isAcceptEverything(predicate));
 

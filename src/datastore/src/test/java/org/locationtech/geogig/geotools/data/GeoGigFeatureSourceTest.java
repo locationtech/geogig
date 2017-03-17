@@ -22,8 +22,10 @@ import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
+import org.geotools.feature.NameImpl;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -41,6 +43,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.identity.FeatureId;
@@ -67,6 +70,8 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
     private SimpleFeatureSource linesSource;
 
+    private final String namespace = "http://geogig.org/test";
+
     @Override
     protected void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(geogig.getRepository());
@@ -89,9 +94,37 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testGetName() {
+    public void testGetLocalName() {
         assertEquals(pointsName, pointsSource.getName().getLocalPart());
         assertEquals(linesName, linesSource.getName().getLocalPart());
+    }
+
+    @Test
+    public void testGetName() throws Exception {
+        dataStore.setNamespaceURI(namespace);
+        insertAndAdd(poly1, poly2, poly3);
+        commit("added polygons layer");
+
+        ContentFeatureSource polySource = dataStore.getFeatureSource(polyName);
+        Name polys = new NameImpl(namespace, polyName);
+        assertEquals(polys, polySource.getName());
+
+        assertEquals(polys, polySource.getSchema().getName());
+       // testGetName(polys, polySource, new Query(polyName));
+        testGetName(polys, polySource,
+                new Query(polyName, Filter.INCLUDE, new String[] { "ip", "sp" }));
+    }
+
+    private void testGetName(Name expected, ContentFeatureSource source, Query query)
+            throws IOException {
+        SimpleFeatureCollection collection = source.getFeatures(query);
+        SimpleFeatureType schema = collection.getSchema();
+        assertEquals(expected, schema.getName());
+        try (SimpleFeatureIterator it = collection.features()) {
+            SimpleFeature f = it.next();
+            assertEquals(expected, f.getName());
+            assertEquals(expected, it.next().getName());
+        }
     }
 
     @Test
@@ -463,7 +496,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
         SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
         assertNull(source.getSchema().getGeometryDescriptor().getCoordinateReferenceSystem());
-        
+
         Filter bbox;
         SimpleFeatureCollection coll;
 
@@ -518,15 +551,15 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
     private void testRetype(SimpleFeatureSource pointsSource, String... properties)
             throws IOException {
-        
+
         Query query = new Query();
         query.setPropertyNames(properties);
-        
+
         SimpleFeatureCollection collection = pointsSource.getFeatures(query);
-        
+
         assertNotEquals(pointsSource.getSchema(), collection.getSchema());
         assertEquals(properties.length, collection.getSchema().getAttributeCount());
-        for(int i = 0; i < properties.length; i++){
+        for (int i = 0; i < properties.length; i++) {
             assertEquals(properties[i], collection.getSchema().getDescriptor(i).getLocalName());
         }
 

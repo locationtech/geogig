@@ -26,6 +26,8 @@ import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.Query;
 import org.geotools.data.ReTypeFeatureReader;
+import org.geotools.data.store.ContentDataStore;
+import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -58,6 +60,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Id;
@@ -99,11 +102,29 @@ public class FeatureReaderBuilder {
 
     private final Context repo;
 
+    /**
+     * The feature tree's geogig type
+     */
     private final RevFeatureType nativeType;
 
-    private final SimpleFeatureType fullSchema;
+    /**
+     * The absolute GeoGig native type, coming from {@link #nativeType}
+     */
+    private final SimpleFeatureType nativeSchema;
 
-    private final Set<String> fullSchemaAttributeNames;
+    /**
+     * The set of attribute names from {@link #nativeSchema}
+     */
+    private final Set<String> nativeSchemaAttributeNames;
+
+    /**
+     * The required full schema, might differ from {@link #nativeSchema} in the type name or the
+     * list and/or order of properties, as requested by {@link #targetSchema(SimpleFeatureType)}.
+     * This happens when the ContentDataStore is assigned a different
+     * {@link ContentDataStore#setNamespaceURI(String) namespace} or the
+     * {@link ContentFeatureSource} has been given a "definition query" on its constructor.
+     */
+    private SimpleFeatureType fullSchema;
 
     private @Nullable String oldHeadRef;
 
@@ -134,10 +155,10 @@ public class FeatureReaderBuilder {
     public FeatureReaderBuilder(Context repo, RevFeatureType nativeType, NodeRef typeRef) {
         this.repo = repo;
         this.nativeType = nativeType;
-        this.fullSchema = (SimpleFeatureType) nativeType.type();
+        this.nativeSchema = (SimpleFeatureType) nativeType.type();
         this.typeRef = typeRef;
-        this.fullSchemaAttributeNames = Sets.newHashSet(
-                Lists.transform(fullSchema.getAttributeDescriptors(), (a) -> a.getLocalName()));
+        this.nativeSchemaAttributeNames = Sets.newHashSet(
+                Lists.transform(nativeSchema.getAttributeDescriptors(), (a) -> a.getLocalName()));
     }
 
     /**
@@ -219,7 +240,7 @@ public class FeatureReaderBuilder {
     }
 
     public FeatureReader<SimpleFeatureType, SimpleFeature> build() {
-        final String typeName = fullSchema.getTypeName();
+        fullSchema = resolveFullSchema();
 
         // query filter in native CRS
         final Filter nativeFilter = resolveNativeFilter();
@@ -249,15 +270,19 @@ public class FeatureReaderBuilder {
         // where to get RevTree instances from (either the object or the index database)
         final ObjectStore treeSource;
         {
+            final String nativeTypeName = nativeSchema.getTypeName();
 
             // TODO: resolve based on filter, in case the feature type has more than one geometry
             // attribute
-            final GeometryDescriptor geometryAttribute = fullSchema.getGeometryDescriptor();
+            final @Nullable GeometryDescriptor geometryAttribute = nativeSchema
+                    .getGeometryDescriptor();
             final Optional<Index> oldHeadIndex;
             final Optional<Index> headIndex;
 
-            final Optional<NodeRef> oldCanonicalTree = resolveCanonicalTree(oldHeadRef, typeName);
-            final Optional<NodeRef> newCanonicalTree = resolveCanonicalTree(headRef, typeName);
+            final Optional<NodeRef> oldCanonicalTree = resolveCanonicalTree(oldHeadRef,
+                    nativeTypeName);
+            final Optional<NodeRef> newCanonicalTree = resolveCanonicalTree(headRef,
+                    nativeTypeName);
             final ObjectId oldCanonicalTreeId = oldCanonicalTree.isPresent()
                     ? oldCanonicalTree.get().getObjectId() : RevTree.EMPTY_TREE_ID;
             final ObjectId newCanonicalTreeId = newCanonicalTree.isPresent()
@@ -270,11 +295,12 @@ public class FeatureReaderBuilder {
 
             // if native filter is a simple "fid filter" then force ignoring the index for a faster
             // look-up (looking up for a fid in the canonical tree is much faster)
-            final boolean ignoreIndex = this.ignoreIndex || nativeFilter instanceof Id;
+            final boolean ignoreIndex = geometryAttribute == null || this.ignoreIndex
+                    || nativeFilter instanceof Id;
             if (ignoreIndex) {
                 indexes = NO_INDEX;
             } else {
-                indexes = resolveIndex(oldCanonicalTreeId, newCanonicalTreeId, typeName,
+                indexes = resolveIndex(oldCanonicalTreeId, newCanonicalTreeId, nativeTypeName,
                         geometryAttribute.getLocalName());
             }
             oldHeadIndex = indexes[0];
@@ -335,7 +361,7 @@ public class FeatureReaderBuilder {
             featureRefs = applyOffsetAndLimit(featureRefs);
         }
 
-        final ObjectStore featureSource = repo.objectDatabase();
+        final ObjectStore revFeatureSource = repo.objectDatabase();
 
         AutoCloseableIterator<? extends SimpleFeature> features;
 
@@ -349,10 +375,18 @@ public class FeatureReaderBuilder {
             features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
                     geometryFactory, nativeCrs);
         } else {
-            BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
+            BulkFeatureRetriever retriever = new BulkFeatureRetriever(revFeatureSource);
+            Name typeNameOverride;
+            if (simpleNames(nativeSchema).equals(simpleNames(fullSchema))) {
+                resultSchema = fullSchema;
+                typeNameOverride = fullSchema.getName();
+            } else {
+                resultSchema = nativeSchema;
+                typeNameOverride = null;
+            }
             // using fullSchema here will build "normal" full-attribute lazy features
-            features = retriever.getGeoToolsFeatures(featureRefs, nativeType, geometryFactory);
-            resultSchema = fullSchema;
+            features = retriever.getGeoToolsFeatures(featureRefs, nativeType, typeNameOverride,
+                    geometryFactory);
         }
 
         if (!filterIsFullySupportedByIndex) {
@@ -373,18 +407,33 @@ public class FeatureReaderBuilder {
         // the features (either from the index or the full-feature)
         final boolean retypeRequired = isRetypeRequired(resultSchema);
         if (retypeRequired) {
-            String[] propertyNames = outputSchemaPropertyNames;
-            List<String> outputSchemaPropertyNames = propertyNames == null ? Collections.emptyList()
-                    : Lists.newArrayList(propertyNames);
-
+            List<String> outputSchemaProperties;
+            if (this.outputSchemaPropertyNames == Query.ALL_NAMES) {
+                outputSchemaProperties = simpleNames(fullSchema);
+            } else {
+                outputSchemaProperties = Lists.newArrayList(this.outputSchemaPropertyNames);
+            }
             SimpleFeatureType outputSchema;
-            outputSchema = SimpleFeatureTypeBuilder.retype(resultSchema, outputSchemaPropertyNames);
+            outputSchema = SimpleFeatureTypeBuilder.retype(fullSchema, outputSchemaProperties);
 
             boolean cloneValues = false;
             featureReader = new ReTypeFeatureReader(featureReader, outputSchema, cloneValues);
         }
 
         return featureReader;
+    }
+
+    private SimpleFeatureType resolveFullSchema() {
+        SimpleFeatureType targetSchema = fullSchema;
+        if (targetSchema == null) {
+            targetSchema = (SimpleFeatureType) nativeType.type();
+        }
+        return targetSchema;
+    }
+
+    public FeatureReaderBuilder targetSchema(@Nullable SimpleFeatureType targetSchema) {
+        this.fullSchema = targetSchema;
+        return this;
     }
 
     public FeatureReaderBuilder retypeIfNeeded(boolean retype) {
@@ -396,16 +445,21 @@ public class FeatureReaderBuilder {
         if (!retypeIfNeeded) {
             return false;
         }
+
+        List<String> fullSchemaNames = simpleNames(fullSchema);
+        List<String> resultNames = simpleNames(resultSchema);
+
         final String[] queryProps = outputSchemaPropertyNames;
         if (Query.ALL_NAMES == queryProps) {
-            return false;
+            return !fullSchemaNames.equals(resultNames);
         }
-
-        List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(),
-                (p) -> p.getLocalName());
 
         boolean retypeRequired = !Arrays.asList(queryProps).equals(resultNames);
         return retypeRequired;
+    }
+
+    private List<String> simpleNames(SimpleFeatureType type) {
+        return Lists.transform(type.getAttributeDescriptors(), (ad) -> ad.getLocalName());
     }
 
     private AutoCloseableIterator<? extends SimpleFeature> applyPostFilter(Filter postFilter,
@@ -424,7 +478,7 @@ public class FeatureReaderBuilder {
     private SimpleFeatureType resolveMinimalNativeSchema(Set<String> requiredProperties) {
         SimpleFeatureType resultSchema;
 
-        if (requiredProperties.equals(fullSchemaAttributeNames)) {
+        if (requiredProperties.equals(nativeSchemaAttributeNames)) {
             resultSchema = fullSchema;
         } else {
             List<String> atts = new ArrayList<>();
@@ -533,7 +587,7 @@ public class FeatureReaderBuilder {
      */
     Set<String> resolveRequiredProperties(Filter nativeFilter) {
         if (outputSchemaPropertyNames == Query.ALL_NAMES) {
-            return fullSchemaAttributeNames;
+            return nativeSchemaAttributeNames;
         }
 
         final Set<String> filterAttributes = requiredAttributes(nativeFilter);
@@ -578,7 +632,7 @@ public class FeatureReaderBuilder {
 
     private Filter resolveNativeFilter() {
         Filter nativeFilter = this.filter;
-        nativeFilter = SimplifyingFilterVisitor.simplify(nativeFilter, fullSchema);
+        nativeFilter = SimplifyingFilterVisitor.simplify(nativeFilter, nativeSchema);
         nativeFilter = reprojectFilter(this.filter);
         return nativeFilter;
     }
@@ -586,7 +640,7 @@ public class FeatureReaderBuilder {
     private Filter reprojectFilter(Filter filter) {
         if (hasSpatialFilter(filter)) {
             ReprojectingFilterVisitor visitor;
-            visitor = new ReprojectingFilterVisitor(filterFactory, fullSchema);
+            visitor = new ReprojectingFilterVisitor(filterFactory, nativeSchema);
             filter = (Filter) filter.accept(visitor, null);
         }
         return filter;

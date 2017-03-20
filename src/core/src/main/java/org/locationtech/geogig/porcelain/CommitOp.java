@@ -261,14 +261,14 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         String commitMessage = message;
 
         getProgressListener().started();
-        float writeTreeProgress = 99f;
+        float writeTreeProgress = 98f;
         if (all) {
             writeTreeProgress = 50f;
             AddOp op = command(AddOp.class);
             for (String st : pathFilters) {
                 op.addPattern(st);
             }
-            op.setUpdateOnly(true).setProgressListener(subProgress(49f)).call();
+            op.setUpdateOnly(true).setProgressListener(subProgress(48f)).call();
         }
         if (getProgressListener().isCanceled()) {
             return null;
@@ -376,9 +376,10 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         }
         final ObjectStore objectDb = objectDatabase();
         objectDb.put(commit);
-        // set the HEAD pointing to the new commit
         final Optional<Ref> branchHead = command(UpdateRef.class).setName(currentBranch)
-                .setNewValue(commit.getId()).call();
+            .setNewValue(commit.getId()).setProgressListener(subProgress(1f)).call();
+
+
         checkState(commit.getId().equals(branchHead.get().getObjectId()));
 
         final Optional<Ref> newHead = command(UpdateSymRef.class).setName(Ref.HEAD)

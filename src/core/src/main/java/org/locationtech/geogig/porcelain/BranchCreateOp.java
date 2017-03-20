@@ -103,14 +103,14 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
         Optional<Ref> branchRef;
         if (orphan) {
             branchRef = command(UpdateRef.class).setName(branchRefPath).setNewValue(ObjectId.NULL)
-                    .call();
+                    .setProgressListener(getProgressListener()).call();
         } else {
             final String branchOrigin = Optional.fromNullable(commit_ish).or(Ref.HEAD);
 
             final ObjectId branchOriginCommitId = resolveOriginCommitId(branchOrigin);
 
             branchRef = command(UpdateRef.class).setName(branchRefPath)
-                    .setNewValue(branchOriginCommitId).call();
+                    .setNewValue(branchOriginCommitId).setProgressListener(getProgressListener()).call();
             checkState(branchRef.isPresent());
         }
 

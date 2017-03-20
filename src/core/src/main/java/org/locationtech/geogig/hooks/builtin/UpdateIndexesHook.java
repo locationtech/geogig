@@ -56,7 +56,6 @@ public class UpdateIndexesHook implements CommandHook {
                             .setProgressListener(listener)//
                             .call();
                     if (!updates.isEmpty()) {
-                        System.err.println("***" + updates);
                         listener.setDescription(String.format("updated indexes: %s\n", updates));
                     }
                 } catch (Exception e) {

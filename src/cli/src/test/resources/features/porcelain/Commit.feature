@@ -6,19 +6,19 @@ Feature: "commit" command
     
   Scenario: Try to commit with timestamp
     Given I have a repository
-     And I have staged "points1"     
-     And I run the command "commit -t 2010-04-22T19:53:23Z -m msg"
-    When I run the command "log --utc"
-    Then the response should contain "2010-04-22"
-     And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+      And I have staged "points1"
+      And I run the command "commit -t 2010-04-22T19:53:23Z -m msg"
+     When I run the command "log --utc"
+     Then the response should contain "2010-04-22"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
     
   Scenario: Try to commit with timestamp in millisecs
     Given I have a repository
-     And I have staged "points1"     
-     And I run the command "commit -t 1000000000 -m msg"
-    When I run the command "log"
-    Then the response should contain "1970-01"
-     And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+      And I have staged "points1"
+      And I run the command "commit -t 1000000000 -m msg"
+     When I run the command "log"
+     Then the response should contain "1970-01"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
 
   Scenario: Try to commit current staged features
     Given I have a repository
@@ -114,14 +114,21 @@ Feature: "commit" command
      
   Scenario: Try to commit only points
     Given I have a repository
-     And I have unstaged "points1"
-     And I have unstaged "points2"
-     And I have unstaged "lines1"
-     And I have staged "lines2"
-    When I run the command "commit -m Test Points"
-    Then the response should contain "2 features added"
-     And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+      And I have unstaged "points1"
+      And I have unstaged "points2"
+      And I have unstaged "lines1"
+      And I have staged "lines2"
+     When I run the command "commit -m Test Points"
+     Then the response should contain "2 features added"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
 
-    
-
-         
+  Scenario: Committing a modified indexed feature updates the indexes
+    Given I have a repository
+      And I have staged "points1"
+     When I run the command "commit -m noIndex"
+      And the response should contain "1 features added"
+     When I run the command "index create --tree Points"
+     Then the response should contain "Index created successfully"
+      And I have staged "points1_modified"
+     When I run the command "commit -m withIndex"
+      And the response should contain "Updated index"

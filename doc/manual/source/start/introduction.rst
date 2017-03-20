@@ -7,9 +7,7 @@ GeoGig is **a Distributed Version Control System (DVCS) specifically designed to
 
 Users familiar with Git should find it easy to use GeoGig, though some commands and ideas differ. For users new to version control systems, this document provides a complete description without assuming familiarity.
 
-This user guide does not cover all possible uses of each GeoGig command, but instead introduces the most common operations and workflows. For more information, explore the GeoGig manpages to learn about options not covered here.
-
-.. todo:: Need link to GeoGig manpages.
+This user guide does not cover all possible uses of each GeoGig command, but instead introduces the most common operations and workflows. For more information, explore the `GeoGig manpages </manpages/>`_ to learn about options not covered here.
 
 .. note:: GeoGig development is ongoing and still considered unstable, so functionality is subject to change. This documentation reflects the planned functionality that should be available once a stable version is released. While almost everything described here is implemented and functioning, deviations may occur.
 

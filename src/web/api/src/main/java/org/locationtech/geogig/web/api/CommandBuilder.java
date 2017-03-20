@@ -95,6 +95,7 @@ public class CommandBuilder {
         MAPPINGS.put("export", Export::new);
         MAPPINGS.put("export-diff", ExportDiff::new);
         MAPPINGS.put("import", Import::new);
+        MAPPINGS.put("importExistingRepo", Import::new);
     }
 
     /**

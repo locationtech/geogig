@@ -9,11 +9,7 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import static org.locationtech.geogig.rest.Variants.CSV;
-import static org.locationtech.geogig.rest.Variants.CSV_MEDIA_TYPE;
-import static org.locationtech.geogig.rest.Variants.JSON;
-import static org.locationtech.geogig.rest.Variants.XML;
-import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
+import static org.locationtech.geogig.rest.Variants.*;
 import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
 
 import java.util.List;
@@ -25,23 +21,9 @@ import java.util.logging.Logger;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.locationtech.geogig.rest.RestletException;
-import org.locationtech.geogig.web.api.CommandBuilder;
-import org.locationtech.geogig.web.api.CommandContext;
-import org.locationtech.geogig.web.api.CommandResponse;
-import org.locationtech.geogig.web.api.CommandResponseStreamingWriterRepresentation;
-import org.locationtech.geogig.web.api.CommandSpecException;
-import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.RESTUtils;
-import org.locationtech.geogig.web.api.StreamResponse;
-import org.locationtech.geogig.web.api.StreamWriterRepresentation;
-import org.locationtech.geogig.web.api.WebAPICommand;
+import org.locationtech.geogig.web.api.*;
 import org.restlet.Context;
-import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.data.Status;
+import org.restlet.data.*;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
@@ -54,9 +36,9 @@ import com.google.common.base.Preconditions;
  */
 public class CommandResource extends Resource {
 
-    private Form options;
+    protected Form options;
 
-    private WebAPICommand command;
+    protected WebAPICommand command;
 
     protected WebAPICommand buildCommand(String commandName, ParameterSet params) {
         return CommandBuilder.build(commandName, params);
@@ -76,6 +58,10 @@ public class CommandResource extends Resource {
         ParameterSet params = buildParameterSet(options);
         command = buildCommand(commandName, params);
         assert command != null;
+    }
+
+    protected Form getOptions() {
+        return options;
     }
 
     protected String getCommandName() {
@@ -265,7 +251,7 @@ public class CommandResource extends Resource {
         return retval;
     }
 
-    static class RestletContext implements CommandContext {
+    public static class RestletContext implements CommandContext {
 
         CommandResponse responseContent = null;
 
@@ -277,7 +263,7 @@ public class CommandResource extends Resource {
 
         private Function<MediaType, Representation> representation;
 
-        RestletContext(Repository geogig, Request request) {
+        public RestletContext(Repository geogig, Request request) {
             this.geogig = geogig;
             this.request = request;
         }

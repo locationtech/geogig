@@ -63,7 +63,6 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
     protected List<Index> _call() {
         checkNotNull(rootRefSpec, "rootRefSpec not provided");
 
-        getProgressListener().setDescription("Updating indexes at " + rootRefSpec);
         final Ref branchRef = this.rootRefSpec;
 
         final List<NodeRef> featureTypeTreeRefs;

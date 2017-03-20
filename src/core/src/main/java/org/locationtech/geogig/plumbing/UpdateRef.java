@@ -107,7 +107,7 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
             try {
                 storedValue = refDatabase.getRef(name);
             } catch (IllegalArgumentException e) {
-                // may be updating what used to be a symred to be a direct ref
+                // may be updating what used to be a symref to be a direct ref
                 storedValue = refDatabase.getSymRef(name);
             }
             checkState(oldValue.equals(storedValue), "Old value (" + storedValue
@@ -123,7 +123,7 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
         }
 
         checkState(newValue.isNull() || objectDatabase().exists(newValue),
-                "Tried to update Ref %s to an obect that doesn't exist: %s", name, newValue);
+                "Tried to update Ref %s to an object that doesn't exist: %s", name, newValue);
 
         refDatabase.putRef(name, newValue.toString());
         Optional<Ref> newRef = command(RefParse.class).setName(name).call();

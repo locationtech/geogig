@@ -74,6 +74,9 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
      * @param original
      */
     private void init(RevTree original) {
+        if(original.buckets().isEmpty()){
+            return;
+        }
         final Envelope treeBounds = SpatialOps.boundsOf(original);
         if (treeBounds.isNull()) {
             return;

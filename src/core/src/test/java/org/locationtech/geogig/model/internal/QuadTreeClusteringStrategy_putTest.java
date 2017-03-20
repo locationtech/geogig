@@ -12,13 +12,15 @@ package org.locationtech.geogig.model.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.findNode;
 import static org.locationtech.geogig.model.internal.QuadTreeClusteringStrategy_computeIdTest.MAX_BOUNDS_WGS84;
 import static org.locationtech.geogig.model.internal.QuadTreeClusteringStrategy_computeIdTest.createNode;
-import static org.locationtech.geogig.model.internal.QuadTreeClusteringStrategy_computeIdTest.createQuadStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
@@ -31,9 +33,22 @@ import com.vividsolutions.jts.geom.Envelope;
 
 public class QuadTreeClusteringStrategy_putTest {
 
+    private ObjectStore store;
+
+    @Before
+    public void before() {
+        store = new HeapObjectStore();
+        store.open();
+    }
+
+    @After
+    public void after() {
+        store.close();
+    }
+
     @Test
     public void testSimpleSplitting() {
-        QuadTreeClusteringStrategy quadStrategy = createQuadStrategy();
+        QuadTreeClusteringStrategy quadStrategy = createStrategy(RevTree.EMPTY);
 
         // giant one at the root
         putNode(quadStrategy, new Quadrant[] {}); // world node
@@ -222,15 +237,47 @@ public class QuadTreeClusteringStrategy_putTest {
     }
 
     @Test
-    public void testCollapsedTreeUpdatesAsExpected() {
-        ObjectStore store = new HeapObjectStore();
-        store.open();
+    public void testInitOriginalEmpty() {
+        QuadTreeClusteringStrategy strategy = createStrategy(RevTree.EMPTY);
+        RevTree quadTree = DAGTreeBuilder.build(strategy, store);
+        assertEquals(RevTree.EMPTY, quadTree);
+    }
 
-        QuadTreeClusteringStrategy orig = ClusteringStrategyBuilder//
+    @Test
+    public void testInitOriginalSinglePointFeature() {
+        QuadTreeClusteringStrategy orig = createStrategy(RevTree.EMPTY);
+        Node node = createNode("1", new Envelope(1, 1, 1, 1));
+        orig.put(node);
+
+        RevTree quadTree = DAGTreeBuilder.build(orig, store);
+        assertEquals(1, quadTree.size());
+
+        QuadTreeClusteringStrategy update = createStrategy(quadTree);
+        Node node2 = createNode("2", new Envelope(2, 2, 2, 2));
+        update.remove(node);
+        update.put(node2);
+        RevTree quadTree2 = DAGTreeBuilder.build(update, store);
+        assertEquals(1, quadTree2.size());
+
+        List<Node> lnodes = findNode("2", quadTree2, store);
+        assertEquals(1, lnodes.size());
+        assertEquals(node2, lnodes.get(0));
+    }
+
+    private QuadTreeClusteringStrategy createStrategy(RevTree original) {
+
+        QuadTreeClusteringStrategy quadStrategy = ClusteringStrategyBuilder//
                 .quadTree(store)//
-                .original(RevTree.EMPTY)//
+                .original(original)//
                 .maxBounds(MAX_BOUNDS_WGS84)//
                 .build();
+        return quadStrategy;
+    }
+
+    @Test
+    public void testCollapsedTreeUpdatesAsExpected() {
+
+        QuadTreeClusteringStrategy orig = createStrategy(RevTree.EMPTY);
 
         // force a DAG split with nodes that fall on the NE quadrant...
         for (int i = 1; i <= 129; i++) {
@@ -274,9 +321,9 @@ public class QuadTreeClusteringStrategy_putTest {
 
         RevTree updatedTree = DAGTreeBuilder.build(update, store);
 
-        List<Node> node11 = RevObjectTestSupport.findNode(node1.getName(), updatedTree, store);
-        List<Node> node12 = RevObjectTestSupport.findNode(node2.getName(), updatedTree, store);
-        List<Node> node13 = RevObjectTestSupport.findNode(node3.getName(), updatedTree, store);
+        List<Node> node11 = findNode(node1.getName(), updatedTree, store);
+        List<Node> node12 = findNode(node2.getName(), updatedTree, store);
+        List<Node> node13 = findNode(node3.getName(), updatedTree, store);
         assertEquals(1, node11.size());
         assertEquals(1, node12.size());
         assertEquals(1, node13.size());

@@ -32,8 +32,8 @@ public class Push extends AbstractWebAPICommand {
 
     String refSpec;
 
-    public Push(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setPushAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setRefSpec(options.getFirstValue("ref", null));
         setRemoteName(options.getFirstValue("remoteName", null));

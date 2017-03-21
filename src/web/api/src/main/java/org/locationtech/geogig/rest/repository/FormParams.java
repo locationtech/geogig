@@ -11,33 +11,25 @@ package org.locationtech.geogig.rest.repository;
 
 import java.io.File;
 
-import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.Form;
 
 /**
  *
  */
-class FormParams implements ParameterSet {
+class FormParams extends AbstractParameterSet {
 
     private Form options;
-
-    private File uploadFile;
 
     /**
      * @param options
      */
     public FormParams(Form options) {
+        this(options, null);
+    }
+
+    public FormParams(Form options, File uploadedFile) {
+        super(uploadedFile);
         this.options = options;
-    }
-
-    public FormParams(Form options, File uploadFile) {
-        this(options);
-        this.uploadFile = uploadFile;
-    }
-
-    @Override
-    public String getFirstValue(String key) {
-        return options.getFirstValue(key);
     }
 
     @Override
@@ -53,10 +45,5 @@ class FormParams implements ParameterSet {
     @Override
     public String getFirstValue(String key, String defaultValue) {
         return options.getFirstValue(key, defaultValue);
-    }
-
-    @Override
-    public File getUploadedFile() {
-        return this.uploadFile;
     }
 }

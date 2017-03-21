@@ -27,8 +27,8 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 
 public class BeginTransaction extends AbstractWebAPICommand {
 
-    public BeginTransaction(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
     }
 
     @Override

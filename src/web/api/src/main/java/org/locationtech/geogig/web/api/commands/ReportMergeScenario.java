@@ -38,10 +38,10 @@ public class ReportMergeScenario extends AbstractWebAPICommand {
 
     int elementsPerPage;
 
-    public ReportMergeScenario(ParameterSet options) {
-        super(options);
-        setTheirCommit(options.getFirstValue("theirCommit", null));
-        setOurCommit(options.getFirstValue("ourCommit", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setTheirCommit(options.getRequiredValue("theirCommit"));
+        setOurCommit(options.getRequiredValue("ourCommit"));
         setPageNumber(Integer.parseInt(options.getFirstValue("page", "0")));
         setElementsPerPage(Integer.parseInt(options.getFirstValue("elementsPerPage",
                 Integer.toString(DEFAULT_MERGE_SCENARIO_PAGE_SIZE))));
@@ -97,13 +97,6 @@ public class ReportMergeScenario extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (ourCommit == null) {
-            throw new CommandSpecException("No 'our' commit was specified.");
-        }
-        if (theirCommit == null) {
-            throw new CommandSpecException("No 'their' commit was specified.");
-        }
-
         final Context geogig = this.getRepositoryContext(context);
         final Optional<RevCommit> ours = geogig.command(RevObjectParse.class).setRefSpec(ourCommit)
                 .call(RevCommit.class);

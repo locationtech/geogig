@@ -39,8 +39,8 @@ import com.google.common.base.Preconditions;
 
 public class Init extends AbstractWebAPICommand {
 
-    public Init(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
     }
 
     @Override

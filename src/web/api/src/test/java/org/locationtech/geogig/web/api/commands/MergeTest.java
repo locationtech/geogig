@@ -13,6 +13,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -51,7 +53,8 @@ public class MergeTest extends AbstractWebOpTest {
     @Test
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("noCommit", "true", "commit", "master", "authorName",
-                "Tester", "authorEmail", "tester@example.com");
+                "Tester", "authorEmail", "tester@example.com", "transactionId",
+                UUID.randomUUID().toString());
 
         Merge op = (Merge) buildCommand(options);
         assertEquals("master", op.commit);
@@ -68,7 +71,7 @@ public class MergeTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("transactionId",
                 transaction.getTransactionId().toString());
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No commits were specified for merging.");
+        ex.expectMessage("Required parameter 'commit' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

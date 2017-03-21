@@ -69,8 +69,8 @@ public class Branch extends AbstractWebAPICommand {
         return false;
     }
 
-    public Branch(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setList(Boolean.valueOf(options.getFirstValue("list", "false")));
         setRemotes(Boolean.valueOf(options.getFirstValue("remotes", "false")));
         setBranchName(options.getFirstValue("branchName", null));

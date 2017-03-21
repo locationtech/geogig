@@ -41,7 +41,6 @@ import java.util.concurrent.ExecutionException;
 
 import javax.json.JsonObject;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -61,7 +60,9 @@ import org.locationtech.geogig.rest.geotools.Export;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
+import org.locationtech.geogig.web.api.TestParams;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.geometry.BoundingBox;
 
@@ -90,8 +91,8 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
     }
 
     @Override
-    protected Export buildCommand(@Nullable String... optionsKvp) {
-        Export o = super.buildCommand(optionsKvp);
+    protected Export buildCommand(ParameterSet params) {
+        Export o = super.buildCommand(params);
         o.asyncContext = testAsyncContext;
         return o;
     }
@@ -117,7 +118,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        Export op = buildCommand("format", "gpkg");
+        Export op = buildCommand(TestParams.of("format", "gpkg"));
 
         File result = run(op);
         DataStore store = store(result);
@@ -136,7 +137,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        Export op = buildCommand("format", "gpkg", "interchange", "true");
+        Export op = buildCommand(TestParams.of("format", "gpkg", "interchange", "true"));
 
         File result = run(op);
         DataStore store = store(result);
@@ -160,7 +161,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         testData.init().loadDefaultData().checkout("branch1");
 
         // but we request branch2
-        Export op = buildCommand("format", "GPKG", "root", "branch2");
+        Export op = buildCommand(TestParams.of("format", "GPKG", "root", "branch2"));
 
         File result = run(op);
         DataStore store = store(result);
@@ -180,7 +181,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
         // but we request branch2
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
-        Export op = buildCommand("format", "gpkg", "path", layerFilter);
+        Export op = buildCommand(TestParams.of("format", "gpkg", "path", layerFilter));
 
         File result = run(op);
         DataStore store = store(result);
@@ -206,7 +207,8 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         String bboxStr = String.format("%f,%f,%f,%f,EPSG:4326", bounds.getMinX(), bounds.getMinY(),
                 bounds.getMaxX(), bounds.getMaxY());
         // but we request branch2
-        Export op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxStr);
+        Export op = buildCommand(
+                TestParams.of("format", "gpkg", "root", "branch2", "bbox", bboxStr));
 
         File result = run(op);
         DataStore store = store(result);
@@ -231,8 +233,8 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
                 bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY());
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
         // but we request branch2
-        Export op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxFilter,
-                "path", layerFilter);
+        Export op = buildCommand(TestParams.of("format", "gpkg", "root", "branch2", "bbox",
+                bboxFilter, "path", layerFilter));
 
         File result = run(op);
         DataStore store = store(result);
@@ -259,8 +261,8 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
                 bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY());
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
         // but we request branch2
-        Export op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxFilter,
-                "path", layerFilter, "interchange", "true");
+        Export op = buildCommand(TestParams.of("format", "gpkg", "root", "branch2", "bbox",
+                bboxFilter, "path", layerFilter, "interchange", "true"));
 
         final File result = run(op);
         final DataStore store = store(result);

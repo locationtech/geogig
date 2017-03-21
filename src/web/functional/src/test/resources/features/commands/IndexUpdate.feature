@@ -221,7 +221,7 @@ Feature: IndexUpdate
       And the response status should be '201'
       
    
-  Scenario: Verify 400 status code when tree ref spec is not provided
+  Scenario: Verify 500 status code when tree ref spec is not provided
     Given There is a repo with some data
      When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"
      Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
@@ -232,7 +232,7 @@ Feature: IndexUpdate
           |    Point.1   | 
      When I call "POST /repos/repo1/index/update"
      Then the xpath "/response/success/text()" equals "false"
-      And the xpath "/response/error/text()" equals "Tree ref spec not provided."
-      And the response status should be '400'
+      And the xpath "/response/error/text()" equals "Required parameter 'treeRefSpec' was not provided."
+      And the response status should be '500'
 
 

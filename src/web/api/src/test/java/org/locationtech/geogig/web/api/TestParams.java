@@ -15,46 +15,27 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.rest.repository.MultiMapParams;
 import org.restlet.util.ByteUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 
-public class TestParams implements ParameterSet {
+public class TestParams extends MultiMapParams {
 
-    private ArrayListMultimap<String, String> params = ArrayListMultimap.create();
-
-    private File fileUpload;
-
-    @Override
-    @Nullable
-    public String getFirstValue(String key) {
-        return getFirstValue(key, null);
-    }
-
-    @Override
-    public String getFirstValue(String key, String defaultValue) {
-        String[] array = getValuesArray(key);
-        return array.length == 0 ? defaultValue : array[0];
-    }
-
-    @Override
-    @Nullable
-    public String[] getValuesArray(String key) {
-        List<String> list = params.get(key);
-        return list.toArray(new String[list.size()]);
+    public TestParams(ArrayListMultimap<String, String> options) {
+        super(options);
     }
 
     public static ParameterSet of(@Nullable final String... kvp) {
         Preconditions.checkArgument(kvp == null || kvp.length % 2 == 0);
 
-        TestParams params = new TestParams();
+        TestParams params = new TestParams(null);
         for (int i = 0; kvp != null && i < kvp.length; i += 2) {
-            params.params.put(kvp[i], kvp[i + 1]);
+            params.options.put(kvp[i], kvp[i + 1]);
         }
         params.setFileUpload();
         return params;
@@ -73,19 +54,14 @@ public class TestParams implements ParameterSet {
                     ByteUtils.write(bais, fos);
                     fos.flush();
                 }
-                fileUpload = tempFile;
+                this.uploadedFile = tempFile;
             } catch (IOException ioe) {
                 // eat it
             }
         }
     }
 
-    @Override
-    public File getUploadedFile() {
-        return this.fileUpload;
-    }
-
     public void setFileUpload(File upload) {
-        this.fileUpload = upload;
+        this.uploadedFile = upload;
     }
 }

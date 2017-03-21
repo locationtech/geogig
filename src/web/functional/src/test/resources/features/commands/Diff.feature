@@ -11,7 +11,7 @@ Feature: Diff
     
   Scenario: Diff outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/diff"
+     When I call "GET /repos/repo1/diff?oldRefSpec=someRefSpec"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
@@ -20,13 +20,13 @@ Feature: Diff
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/diff"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No old ref spec"
+      And the xpath "/response/error/text()" contains "Required parameter 'oldRefSpec' was not provided."
       
   Scenario: Calling diff with an empty old ref spec issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/diff?oldRefSpec=%20"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No old ref spec"
+      And the xpath "/response/error/text()" contains "Invalid old ref spec"
       
   Scenario: Calling diff with an old ref spec returns all of the changes since that commit
     Given There is a default multirepo server

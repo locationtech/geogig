@@ -115,8 +115,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
         GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
 
-        Import op = buildCommand("format", "gpkg", "transactionId",
-                transaction.getTransactionId().toString());
+        Import op = buildCommand(TestParams.of("format", "gpkg", "transactionId",
+                transaction.getTransactionId().toString()));
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
@@ -134,8 +134,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
         GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
 
-        Import op = buildCommand("format", "gpkg", "mockFileUpload", "blah", "transactionId",
-                transaction.getTransactionId().toString());
+        Import op = buildCommand(TestParams.of("format", "gpkg", "mockFileUpload", "blah",
+                "transactionId", transaction.getTransactionId().toString()));
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);

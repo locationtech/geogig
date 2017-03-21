@@ -19,7 +19,6 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -51,25 +50,36 @@ public abstract class AbstractWebOpTest {
 
     @Test
     public void testSPI() {
-        ParameterSet options = TestParams.of();
-        WebAPICommand cmd = (AbstractWebAPICommand) buildCommand(options);
+        WebAPICommand cmd = (AbstractWebAPICommand) buildCommand(null);
         assertTrue(getCommandClass().isInstance(cmd));
     }
 
     @Test
     public void testBuildTxId() {
         UUID txId = UUID.randomUUID();
+        AbstractWebAPICommand testCommand = new AbstractWebAPICommand() {
+
+            @Override
+            protected void setParametersInternal(ParameterSet options) {
+                // do nothing
+            }
+
+            @Override
+            protected void runInternal(CommandContext context) {
+                // do nothing
+            }
+
+        };
         ParameterSet options = TestParams.of("transactionId", txId.toString());
-        AbstractWebAPICommand cmd = (AbstractWebAPICommand) buildCommand(options);
-        assertEquals(txId, cmd.getTransactionId());
+        testCommand.setParameters(options);
+        assertEquals(txId, testCommand.getTransactionId());
     }
 
     @Test
     public void testRequireRepository() {
         if (requiresRepository()) {
             testContext.createUninitializedRepo();
-            ParameterSet options = TestParams.of();
-            WebAPICommand cmd = buildCommand(options);
+            WebAPICommand cmd = buildCommand(null);
 
             ex.expect(RestletException.class);
             ex.expectMessage("Repository not found.");
@@ -80,8 +90,7 @@ public abstract class AbstractWebOpTest {
     @Test
     public void testRequireTransaction() {
         if (requiresTransaction()) {
-            ParameterSet options = TestParams.of();
-            WebAPICommand cmd = buildCommand(options);
+            WebAPICommand cmd = buildCommand(null);
 
             ex.expect(CommandSpecException.class);
             ex.expectMessage("No transaction was specified");
@@ -89,13 +98,13 @@ public abstract class AbstractWebOpTest {
         }
     }
 
-    protected <T extends WebAPICommand> T buildCommand(@Nullable String... optionsKvp) {
-        return buildCommand(TestParams.of(optionsKvp));
-    }
-
     @SuppressWarnings("unchecked")
-    protected <T extends WebAPICommand> T buildCommand(ParameterSet options) {
-        return (T) CommandBuilder.build(getRoute(), options);
+    protected <T extends AbstractWebAPICommand> T buildCommand(ParameterSet options) {
+        T command = (T) CommandBuilder.build(getRoute());
+        if (options != null) {
+            command.setParameters(options);
+        }
+        return command;
     }
 
     public Representation getResponseRepresentation(MediaType mediaType) {

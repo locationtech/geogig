@@ -11,37 +11,37 @@ Feature: RevertFeature
       
   Scenario: RevertFeature outside of a transaction issues 500 "Transaction required"
     Given There is an empty repository named repo1
-     When I call "GET /repos/repo1/revertfeature"
+     When I call "GET /repos/repo1/revertfeature?path=somePath/1&newCommitId=someId&oldCommitId=someId"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "No transaction was specified"
       
   Scenario: RevertFeature outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/revertfeature"
+     When I call "GET /repos/repo1/revertfeature?path=somePath/1&newCommitId=someId&oldCommitId=someId"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
       
   Scenario: RevertFeature without a path issues a 500 status code
-    Given There is an empty repository named repo1
+    Given There is a default multirepo server
       And I have a transaction as "@txId" on the "repo1" repo
-     When I call "GET /repos/repo1/revertfeature?transactionId={@txId}"
+     When I call "GET /repos/repo1/revertfeature?transactionId={@txId}&oldCommitId={@ObjectId|repo1|master}&newCommitId={@ObjectId|repo1|master}"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No path was given."
+      And the xpath "/response/error/text()" contains "Required parameter 'path' was not provided."
       
   Scenario: RevertFeature without a new commit ID issues a 500 status code
-    Given There is an empty repository named repo1
+    Given There is a default multirepo server
       And I have a transaction as "@txId" on the "repo1" repo
-     When I call "GET /repos/repo1/revertfeature?transactionId={@txId}&path=Points/Point.1"
+     When I call "GET /repos/repo1/revertfeature?transactionId={@txId}&path=Points/Point.1&oldCommitId={@ObjectId|repo1|master}"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No 'new' commit ID was given."
+      And the xpath "/response/error/text()" contains "Required parameter 'newCommitId' was not provided."
       
   Scenario: RevertFeature without an old commit ID issues a 500 status code
     Given There is a default multirepo server
       And I have a transaction as "@txId" on the "repo1" repo
      When I call "GET /repos/repo1/revertfeature?transactionId={@txId}&path=Points/Point.1&newCommitId={@ObjectId|repo1|master}"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No 'old' commit ID was given."
+      And the xpath "/response/error/text()" contains "Required parameter 'oldCommitId' was not provided."
          
   Scenario: RevertFeature with an invalid path issues a 500 status code
     Given There is a default multirepo server

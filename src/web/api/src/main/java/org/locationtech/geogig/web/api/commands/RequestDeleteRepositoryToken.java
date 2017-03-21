@@ -36,8 +36,8 @@ public class RequestDeleteRepositoryToken extends AbstractWebAPICommand {
     private static ScheduledExecutorService deleteTokenExecutor = Executors
             .newSingleThreadScheduledExecutor();
 
-    public RequestDeleteRepositoryToken(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
     }
 
     @Override

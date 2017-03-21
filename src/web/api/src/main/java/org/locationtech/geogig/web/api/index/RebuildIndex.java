@@ -32,9 +32,9 @@ public class RebuildIndex extends AbstractWebAPICommand {
 
     String geometryAttributeName;
 
-    public RebuildIndex(ParameterSet options) {
-        super(options);
-        setTreeRefSpec(options.getFirstValue("treeRefSpec", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setTreeRefSpec(options.getRequiredValue("treeRefSpec"));
         setGeometryAttributeName(options.getFirstValue("geometryAttributeName", null));
     }
 

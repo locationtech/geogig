@@ -125,7 +125,7 @@ public class ExportTest extends AbstractWebOpTest {
         testData.init().loadDefaultData().checkout("branch1");
 
         // but we request branch2
-        Export op = buildCommand("root", "branch2");
+        Export op = buildCommand(TestParams.of("root", "branch2"));
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 
@@ -147,7 +147,7 @@ public class ExportTest extends AbstractWebOpTest {
 
         // but we request branch2
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
-        Export op = buildCommand("path", layerFilter);
+        Export op = buildCommand(TestParams.of("path", layerFilter));
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 
@@ -174,7 +174,7 @@ public class ExportTest extends AbstractWebOpTest {
         String bboxStr = String.format("%f,%f,%f,%f,EPSG:4326", bounds.getMinX(), bounds.getMinY(),
                 bounds.getMaxX(), bounds.getMaxY());
         // but we request branch2
-        Export op = buildCommand("root", "branch2", "bbox", bboxStr);
+        Export op = buildCommand(TestParams.of("root", "branch2", "bbox", bboxStr));
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 
@@ -200,7 +200,8 @@ public class ExportTest extends AbstractWebOpTest {
                 bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY());
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
         // but we request branch2
-        Export op = buildCommand("root", "branch2", "bbox", bboxFilter, "path", layerFilter);
+        Export op = buildCommand(
+                TestParams.of("root", "branch2", "bbox", bboxFilter, "path", layerFilter));
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 

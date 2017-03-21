@@ -71,20 +71,25 @@ public class ExportDiff extends AbstractWebAPICommand {
     private String format, oldRef, newRef, path;
 
     @VisibleForTesting
-    public final ParameterSet options;
+    public ParameterSet options;
 
     private OutputFormat outputFormat;
 
     @VisibleForTesting
     public AsyncContext asyncContext;
 
-    public ExportDiff(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         this.options = options;
         setOutputFormat(options.getFirstValue(FORMAT_PARAM));
         setOldRef(options.getFirstValue(OLD_REF_PARAM));
         setNewRef(options.getFirstValue(NEW_REF_PARAM));
         setPath(options.getFirstValue(PATH_PARAM));
+    }
+
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
     }
 
     /**

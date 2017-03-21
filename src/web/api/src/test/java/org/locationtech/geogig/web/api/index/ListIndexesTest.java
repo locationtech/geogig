@@ -20,26 +20,18 @@ import org.junit.Test;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
-import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.locationtech.geogig.web.api.WebAPICommand;
 
 import com.google.common.collect.Lists;
 
-public class ListIndexesTest extends AbstractWebOpTest {
+public class ListIndexesTest extends AbstractIndexWebOpTest {
 
     @Override
     protected String getRoute() {
         return "list";
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    protected <T extends WebAPICommand> T buildCommand(ParameterSet options) {
-        return (T) IndexCommandBuilder.build(getRoute(), options);
     }
 
     @Override

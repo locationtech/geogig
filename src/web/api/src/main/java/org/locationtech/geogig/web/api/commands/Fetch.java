@@ -33,8 +33,8 @@ public class Fetch extends AbstractWebAPICommand {
 
     String remote;
 
-    public Fetch(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setPrune(Boolean.valueOf(options.getFirstValue("prune", "false")));
         setRemote(options.getFirstValue("remote", null));

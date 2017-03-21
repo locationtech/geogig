@@ -11,7 +11,7 @@ Feature: GetCommitGraph
     
   Scenario: Getting the commit graph outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/getCommitGraph"
+     When I call "GET /repos/repo1/getCommitGraph?commitId=someId"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
@@ -20,7 +20,7 @@ Feature: GetCommitGraph
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/getCommitGraph"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No commitId was given."
+      And the xpath "/response/error/text()" contains "Required parameter 'commitId' was not provided."
       
   Scenario: Getting the commit graph without specifying a depth returns the full graph
     Given There is a default multirepo server

@@ -66,7 +66,7 @@ public class DiffTest extends AbstractWebOpTest {
                 "showGeometryChanges", "true", "page", "3", "show", "10");
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No old ref spec");
+        ex.expectMessage("Required parameter 'oldRefSpec' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 
@@ -76,7 +76,7 @@ public class DiffTest extends AbstractWebOpTest {
                 "pathFilter", "Points", "showGeometryChanges", "true", "page", "3", "show", "10");
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No old ref spec");
+        ex.expectMessage("Invalid old ref spec");
         buildCommand(options).run(testContext.get());
     }
 

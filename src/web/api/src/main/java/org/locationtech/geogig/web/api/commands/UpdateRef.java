@@ -39,9 +39,9 @@ public class UpdateRef extends AbstractWebAPICommand {
 
     boolean delete;
 
-    public UpdateRef(ParameterSet options) {
-        super(options);
-        setName(options.getFirstValue("name", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setName(options.getRequiredValue("name"));
         setDelete(Boolean.valueOf(options.getFirstValue("delete", "false")));
         setNewValue(options.getFirstValue("newValue", null));
     }
@@ -87,9 +87,7 @@ public class UpdateRef extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (name == null) {
-            throw new CommandSpecException("No name was given.");
-        } else if (!(delete) && newValue == null) {
+        if (!(delete) && newValue == null) {
             throw new CommandSpecException(
                     "Nothing specified to update with, must specify either deletion or new value to update to.");
         }

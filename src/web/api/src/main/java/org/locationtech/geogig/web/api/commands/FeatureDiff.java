@@ -45,9 +45,9 @@ public class FeatureDiff extends AbstractWebAPICommand {
 
     boolean all;
 
-    public FeatureDiff(ParameterSet options) {
-        super(options);
-        setPath(options.getFirstValue("path", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setPath(options.getRequiredValue("path"));
         setOldTreeish(options.getFirstValue("oldTreeish", ObjectId.NULL.toString()));
         setNewTreeish(options.getFirstValue("newTreeish", ObjectId.NULL.toString()));
         setAll(Boolean.valueOf(options.getFirstValue("all", "false")));
@@ -120,8 +120,8 @@ public class FeatureDiff extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (path == null || path.trim().isEmpty()) {
-            throw new CommandSpecException("No feature path was specified");
+        if (path.trim().isEmpty()) {
+            throw new CommandSpecException("Invalid path was specified");
         }
 
         final Context geogig = this.getRepositoryContext(context);

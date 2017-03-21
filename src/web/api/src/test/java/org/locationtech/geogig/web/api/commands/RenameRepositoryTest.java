@@ -16,11 +16,12 @@ import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
-import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.TestRepository;
@@ -82,11 +83,11 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
     @Test
     public void testRenameNoName() throws Exception {
         ParameterSet options = TestParams.of();
-        WebAPICommand cmd = buildCommand(options);
+        WebAPICommand cmd = buildCommand(null);
         testContext.setRequestMethod(Method.POST);
 
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("You must specify a new name for the repository.");
-        cmd.run(testContext.get());
+        ex.expect(CommandSpecException.class);
+        ex.expectMessage("Required parameter 'name' was not provided.");
+        cmd.setParameters(options);
     }
 }

@@ -23,7 +23,7 @@ import org.locationtech.geogig.model.ObjectId;
 /**
  *
  */
-abstract class AbstractStreamingWriterTest {
+public abstract class AbstractStreamingWriterTest {
 
     protected static final String CDATA1 = "\n" +
             "    Since this is a CDATA section\n" +

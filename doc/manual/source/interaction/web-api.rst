@@ -11,6 +11,29 @@ All web-API commands have transaction support, which means you can run the web-A
 
 .. note:: All web-API commands have a variable at the top of the response indicating success or failure, so you can still have a 200 status on the request and have a failure. This can happen when the command runs into an internal error.
 
+Parameters
+----------
+
+Parameters can be supplied to the various commands through URL encoding, JSON, or XML.
+
+- **URL Encoded**
+
+::
+
+  curl -X POST "http://localhost:8182/repos/<repo name>/config?name=user.name&value=John%20Doe"
+  
+- **JSON**
+
+::
+
+  curl -X POST -H "Content-Type: application/json" -d '{"name":"user.name","value":"John Doe"}' "http://localhost:8182/repos/<repo name>/config"
+  
+- **XML**
+
+::
+
+  curl -X POST -H "Content-Type: application/xml" -d "<params><name>user.name</name><value>John Doe</value></params>" "http://localhost:8182/repos/<repo name>/config"
+
 Porcelain commands supported
 -----------------------------------------------
 

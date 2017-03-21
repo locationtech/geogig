@@ -1100,9 +1100,9 @@ public class WebAPICucumberHooks {
         context.postFile(targetURI, formFieldName, file);
     }
 
-    @When("^I post to \"([^\"]*)\" with$")
-    public void post_text(String targetURI, String postText) {
-        context.postText(targetURI, postText);
+    @When("^I post content-type \"([^\"]*)\" to \"([^\"]*)\" with$")
+    public void post_content(String contentType, String targetURI, String postContent) {
+        context.postContent(contentType, targetURI, postContent);
     }
 
     /**

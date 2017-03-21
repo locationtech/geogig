@@ -37,8 +37,8 @@ public class LsTree extends AbstractWebAPICommand {
 
     String ref;
 
-    public LsTree(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setIncludeTrees(Boolean.valueOf(options.getFirstValue("showTree", "false")));
         setOnlyTrees(Boolean.valueOf(options.getFirstValue("onlyTree", "false")));
         setRecursive(Boolean.valueOf(options.getFirstValue("recursive", "false")));

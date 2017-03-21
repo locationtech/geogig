@@ -39,9 +39,9 @@ public class Diff extends AbstractWebAPICommand {
 
     int elementsPerPage;
 
-    public Diff(ParameterSet options) {
-        super(options);
-        setOldRefSpec(options.getFirstValue("oldRefSpec", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setOldRefSpec(options.getRequiredValue("oldRefSpec"));
         setNewRefSpec(options.getFirstValue("newRefSpec", null));
         setPathFilter(options.getFirstValue("pathFilter", null));
         setShowGeometryChanges(Boolean.parseBoolean(options.getFirstValue("showGeometryChanges",
@@ -118,8 +118,8 @@ public class Diff extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (oldRefSpec == null || oldRefSpec.trim().isEmpty()) {
-            throw new CommandSpecException("No old ref spec");
+        if (oldRefSpec.trim().isEmpty()) {
+            throw new CommandSpecException("Invalid old ref spec");
         }
 
         final Context geogig = this.getRepositoryContext(context);

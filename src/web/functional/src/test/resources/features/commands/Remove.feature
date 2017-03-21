@@ -11,13 +11,13 @@ Feature: Remove
     
   Scenario: Removing outside of a transaction issues 500 "Transaction required"
     Given There is an empty repository named repo1
-     When I call "GET /repos/repo1/remove"
+     When I call "GET /repos/repo1/remove?path=somePath"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "No transaction was specified"
     
   Scenario: Removing outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/remove"
+     When I call "GET /repos/repo1/remove?path=somePath"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
@@ -27,7 +27,7 @@ Feature: Remove
       And I have a transaction as "@txId" on the "repo1" repo
      When I call "GET /repos/repo1/remove?transactionId={@txId}"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" equals "No path was specified for removal."
+      And the xpath "/response/error/text()" equals "Required parameter 'path' was not provided."
           
   Scenario: Removing with a feature path removes the specified feature
     Given There is a default multirepo server

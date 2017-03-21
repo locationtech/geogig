@@ -31,9 +31,9 @@ public class Remove extends AbstractWebAPICommand {
 
     boolean recursive;
 
-    public Remove(ParameterSet options) {
-        super(options);
-        setPath(options.getFirstValue("path", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setPath(options.getRequiredValue("path"));
         setRecursive(Boolean.valueOf(options.getFirstValue("recursive", "false")));
     }
 
@@ -65,10 +65,6 @@ public class Remove extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
-
-        if (this.path == null) {
-            throw new CommandSpecException("No path was specified for removal.");
-        }
 
         NodeRef.checkValidPath(path);
 

@@ -13,6 +13,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -45,7 +47,8 @@ public class RemoveTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ParameterSet options = TestParams.of("path", "some/path", "recursive", "true");
+        ParameterSet options = TestParams.of("path", "some/path", "recursive", "true",
+                "transactionId", UUID.randomUUID().toString());
 
         Remove op = (Remove) buildCommand(options);
         assertEquals("some/path", op.path);
@@ -60,7 +63,7 @@ public class RemoveTest extends AbstractWebOpTest {
                 transaction.getTransactionId().toString());
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No path was specified for removal.");
+        ex.expectMessage("Required parameter 'path' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

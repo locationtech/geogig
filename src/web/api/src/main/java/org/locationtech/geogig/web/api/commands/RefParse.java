@@ -30,9 +30,9 @@ public class RefParse extends AbstractWebAPICommand {
 
     String refSpec;
 
-    public RefParse(ParameterSet options) {
-        super(options);
-        setName(options.getFirstValue("name", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setName(options.getRequiredValue("name"));
     }
 
     @Override
@@ -58,10 +58,6 @@ public class RefParse extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (refSpec == null) {
-            throw new CommandSpecException("No name was given.");
-        }
-
         final Context geogig = this.getRepositoryContext(context);
         Optional<Ref> ref = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                     .setName(refSpec).call();

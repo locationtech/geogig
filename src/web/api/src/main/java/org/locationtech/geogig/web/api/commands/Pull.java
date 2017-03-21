@@ -55,8 +55,8 @@ public class Pull extends AbstractWebAPICommand {
 
     Optional<String> authorEmail = Optional.absent();
 
-    public Pull(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setRefSpec(options.getFirstValue("ref", null));
         setRemoteName(options.getFirstValue("remoteName", null));

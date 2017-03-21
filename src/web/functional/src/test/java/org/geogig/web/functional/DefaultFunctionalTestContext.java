@@ -179,15 +179,18 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     }
 
     /**
-     * Issue a POST request to the provided URL with the given text as post data.
+     * Issue a POST request to the provided URL with the given content as post data.
      * 
+     * @param contentType the content type of the data
      * @param url the url to issue the request to
-     * @param postText the text to post
+     * @param postContent the content to post
      */
     @Override
-    protected void postTextInternal(final String resourceUri, final String postText) {
-        Representation text = new StringRepresentation(postText);
-        Request request = new Request(Method.POST, resourceUri, text);
+    protected void postContentInternal(final String contentType, final String resourceUri,
+            final String postContent) {
+        StringRepresentation content = new StringRepresentation(postContent);
+        content.setMediaType(MediaType.valueOf(contentType));
+        Request request = new Request(Method.POST, resourceUri, content);
         request.setRootRef(new Reference(""));
 
         setLastResponse(app.handle(request));

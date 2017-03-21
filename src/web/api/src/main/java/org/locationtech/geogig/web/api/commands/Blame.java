@@ -36,10 +36,10 @@ public class Blame extends AbstractWebAPICommand {
 
     String branchOrCommit;
 
-    public Blame(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setCommit(options.getFirstValue("commit", null));
-        setPath(options.getFirstValue("path", null));
+        setPath(options.getRequiredValue("path"));
     }
 
     @Override
@@ -80,9 +80,6 @@ public class Blame extends AbstractWebAPICommand {
             if (!commit.isPresent()) {
                 throw new CommandSpecException("Could not resolve branch or commit");
             }
-        }
-        if (path == null) {
-            throw new CommandSpecException("Blame requires the path of a feature.");
         }
 
         try {

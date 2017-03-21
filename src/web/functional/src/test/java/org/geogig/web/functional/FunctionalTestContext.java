@@ -322,13 +322,14 @@ public abstract class FunctionalTestContext extends ExternalResource {
     }
 
     /**
-     * Issue a POST request to the provided URL with the given text as post data.
+     * Issue a POST request to the provided URL with the given post data.
      * 
+     * @param contentType the content type of the post content
      * @param url the url to issue the request to
-     * @param postText the text to post
+     * @param postContent the content to post
      */
-    public void postText(final String url, final String postText) {
-        postTextInternal(replaceVariables(url), replaceVariables(postText));
+    public void postContent(final String contentType, final String url, final String postContent) {
+        postContentInternal(contentType, replaceVariables(url), replaceVariables(postContent));
     }
 
     /**
@@ -344,10 +345,12 @@ public abstract class FunctionalTestContext extends ExternalResource {
     /**
      * Issue a POST request to the provided URL with the given text as post data.
      * 
+     * @param contentType the content type of the post content
      * @param url the url to issue the request to
-     * @param postText the text to post
+     * @param postContent the content to post
      */
-    protected abstract void postTextInternal(final String resourceUri, final String postText);
+    protected abstract void postContentInternal(final String contentType, final String resourceUri,
+            final String postContent);
 
     /**
      * @return the content of the last response as text

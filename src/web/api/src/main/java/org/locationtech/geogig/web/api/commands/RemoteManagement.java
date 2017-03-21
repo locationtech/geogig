@@ -60,8 +60,8 @@ public class RemoteManagement extends AbstractWebAPICommand {
 
     String password = null;
 
-    public RemoteManagement(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setList(Boolean.valueOf(options.getFirstValue("list", "false")));
         setRemove(Boolean.valueOf(options.getFirstValue("remove", "false")));
         setPing(Boolean.valueOf(options.getFirstValue("ping", "false")));

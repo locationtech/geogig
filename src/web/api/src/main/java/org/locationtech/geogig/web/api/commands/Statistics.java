@@ -48,8 +48,8 @@ public class Statistics extends AbstractWebAPICommand {
 
     String until;
 
-    public Statistics(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setPath(options.getFirstValue("path", null));
         setSince(options.getFirstValue("since", null));
         setUntil(options.getFirstValue("branch", null));

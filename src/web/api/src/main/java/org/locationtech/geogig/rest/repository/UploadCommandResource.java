@@ -11,21 +11,27 @@ package org.locationtech.geogig.rest.repository;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.restlet.data.Form;
 import org.restlet.data.MediaType;
+import org.restlet.data.Request;
+import org.restlet.data.Status;
 import org.restlet.ext.fileupload.RepresentationContext;
 import org.restlet.ext.fileupload.RestletFileUpload;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Variant;
 import org.restlet.util.ByteUtils;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.io.CharStreams;
 
 /**
  * CommandResource extension that allows for POSTing file uploads.
@@ -57,6 +63,8 @@ public class UploadCommandResource extends CommandResource {
 
     private static final String FILE_UPLOAD_ERROR_TMPL = "There must be one and only one <%s> specified in the request";
 
+    protected File uploadFile = null;
+
     @Override
     protected String getCommandName() {
         // Overriding the getCommandName as this Resource is bound only to "import" context.
@@ -64,13 +72,26 @@ public class UploadCommandResource extends CommandResource {
     }
 
     @Override
-    protected ParameterSet buildParameterSet(Form options) {
-        // Override the default ParameterSet to include the uploaded file.
-        return new FormParams(options, consumeFileUpload(this.getRequest().getEntity()));
+    protected ParameterSet handleRequestEntity(Request request) {
+        ParameterSet entityParams = null;
+        if (request.isEntityAvailable()) {
+            Representation entity = request.getEntity();
+            final MediaType reqMediaType = entity.getMediaType();
+
+            if (MediaType.MULTIPART_FORM_DATA.equals(reqMediaType, true)) {
+                try {
+                    entityParams = consumeFileUpload(request.getEntity());
+                } catch (Exception ex) {
+                    throw new RestletException("Error processing form data.",
+                            Status.CLIENT_ERROR_BAD_REQUEST, ex);
+                }
+            }
+        }
+        return entityParams;
     }
 
     @Override
-    protected MediaType resolveFormat(Form options, Variant variant) {
+    protected MediaType resolveFormat(ParameterSet options, Variant variant) {
         if (options.getFirstValue("output_format") != null) {
             // requested output format exists, use that
             return super.resolveFormat(options, variant);
@@ -95,13 +116,6 @@ public class UploadCommandResource extends CommandResource {
         super.handlePost();
     }
 
-    @Override
-    public void post(Representation entity) {
-        // invoke the runCommand method on the parent and get the representation
-        // set the representation on the response
-        getResponse().setEntity(runCommand(entity, getRequest()));
-    }
-
     /**
      * Consumes the data sent from the client and stores it into a temporary file to be processed.
      * This method is just looking through the request entity for form data named
@@ -110,10 +124,11 @@ public class UploadCommandResource extends CommandResource {
      *
      * @param entity POSTed entity containing binary data to be processed.
      *
-     * @return local File representation of the data streamed form the client.
+     * @return the paramaters for this multipart form data
      */
-    private File consumeFileUpload(Representation entity) {
+    private ParameterSet consumeFileUpload(Representation entity) {
         File uploadedFile = null;
+        ArrayListMultimap<String, String> params = ArrayListMultimap.create();
         // get a File item factory
         final DiskFileItemFactory factory = new DiskFileItemFactory();
         // set the threshold
@@ -129,19 +144,27 @@ public class UploadCommandResource extends CommandResource {
             // look for the the "fileUpload" form data
             while (iterator.hasNext()) {
                 final FileItemStream fis = iterator.next();
-                // see if this is the data we are looking for
-                if (UPLOAD_FILE_KEY.equals(fis.getFieldName())) {
-                    // if we've already ingested a fileUpload, then the request had more than one.
-                    Preconditions.checkState(uploadedFile == null, FILE_UPLOAD_ERROR_TMPL,
-                            UPLOAD_FILE_KEY);
-                    // found it, create a temp file
-                    uploadedFile = File.createTempFile("geogig-" + UPLOAD_FILE_KEY + "-", ".tmp");
-                    uploadedFile.deleteOnExit();
-                    // consume the streamed contetn into the temp file
-                    try (FileOutputStream fos = new FileOutputStream(uploadedFile)) {
-                        ByteUtils.write(fis.openStream(), fos);
-                        // flush the output stream
-                        fos.flush();
+                if (fis.isFormField()) {
+                    String value = CharStreams
+                            .toString(new InputStreamReader(fis.openStream(), Charsets.UTF_8));
+                    params.put(fis.getFieldName(), value);
+                } else {
+                    // see if this is the data we are looking for
+                    if (UPLOAD_FILE_KEY.equals(fis.getFieldName())) {
+                        // if we've already ingested a fileUpload, then the request had more than
+                        // one.
+                        Preconditions.checkState(uploadedFile == null, FILE_UPLOAD_ERROR_TMPL,
+                                UPLOAD_FILE_KEY);
+                        // found it, create a temp file
+                        uploadedFile = File.createTempFile("geogig-" + UPLOAD_FILE_KEY + "-",
+                                ".tmp");
+                        uploadedFile.deleteOnExit();
+                        // consume the streamed content into the temp file
+                        try (FileOutputStream fos = new FileOutputStream(uploadedFile)) {
+                            ByteUtils.write(fis.openStream(), fos);
+                            // flush the output stream
+                            fos.flush();
+                        }
                     }
                 }
             }
@@ -155,7 +178,7 @@ public class UploadCommandResource extends CommandResource {
             // null out the file
             uploadedFile = null;
         }
-        // return the uploaded entity data as a file
-        return uploadedFile;
+        // return the uploaded data
+        return new MultiMapParams(params, uploadedFile);
     }
 }

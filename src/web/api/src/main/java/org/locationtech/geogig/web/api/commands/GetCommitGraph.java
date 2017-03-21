@@ -40,10 +40,10 @@ public class GetCommitGraph extends AbstractWebAPICommand {
 
     int elementsPerPage;
 
-    public GetCommitGraph(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setDepth(parseInt(options, "depth", 0));
-        setCommitId(options.getFirstValue("commitId", ObjectId.NULL.toString()));
+        setCommitId(options.getRequiredValue("commitId"));
         setPage(parseInt(options, "page", 0));
         setElementsPerPage(parseInt(options, "show", 30));
     }
@@ -99,7 +99,7 @@ public class GetCommitGraph extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         if (commitId.equals(ObjectId.NULL.toString())) {
-            throw new CommandSpecException("No commitId was given.");
+            throw new CommandSpecException("Invalid commitId was given.");
         }
         final Repository geogig = context.getRepository();
         RevCommit commit = geogig.getCommit(ObjectId.valueOf(commitId));

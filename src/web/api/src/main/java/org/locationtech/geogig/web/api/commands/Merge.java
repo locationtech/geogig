@@ -48,10 +48,10 @@ public class Merge extends AbstractWebAPICommand {
 
     Optional<String> authorEmail = Optional.absent();
 
-    public Merge(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setNoCommit(Boolean.valueOf(options.getFirstValue("noCommit", "false")));
-        setCommit(options.getFirstValue("commit", null));
+        setCommit(options.getRequiredValue("commit"));
         setAuthorName(options.getFirstValue("authorName", null));
         setAuthorEmail(options.getFirstValue("authorEmail", null));
     }
@@ -98,10 +98,6 @@ public class Merge extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
-
-        if (this.commit == null) {
-            throw new CommandSpecException("No commits were specified for merging.");
-        }
 
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
         if (!currHead.isPresent()) {

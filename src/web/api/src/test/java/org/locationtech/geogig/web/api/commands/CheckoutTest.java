@@ -12,6 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -42,7 +44,7 @@ public class CheckoutTest extends AbstractWebOpTest {
     @Test
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("branch", "branch1", "ours", "true", "theirs", "true",
-                "path", "Points/1");
+                "path", "Points/1", "transactionId", UUID.randomUUID().toString());
 
         Checkout op = (Checkout) buildCommand(options);
         assertEquals("branch1", op.branchOrCommit);

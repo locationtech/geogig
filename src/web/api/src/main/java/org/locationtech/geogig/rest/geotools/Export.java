@@ -91,20 +91,25 @@ public class Export extends AbstractWebAPICommand {
     private String format, root, path, bbox;
 
     @VisibleForTesting
-    public final ParameterSet options;
+    public ParameterSet options;
 
     private OutputFormat outputFormat;
 
     @VisibleForTesting
     public AsyncContext asyncContext;
 
-    public Export(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         this.options = options;
         setOutputFormat(options.getFirstValue(FORMAT_PARAM));
         setRoot(options.getFirstValue(ROOT_PARAM));
         setPath(options.getFirstValue(PATH_PARAM));
         setBBox(options.getFirstValue(BBOX_PARAM));
+    }
+
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
     }
 
     /**

@@ -65,7 +65,7 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("depth", "5", "page", "3", "show", "11");
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No commitId was given.");
+        ex.expectMessage("Required parameter 'commitId' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

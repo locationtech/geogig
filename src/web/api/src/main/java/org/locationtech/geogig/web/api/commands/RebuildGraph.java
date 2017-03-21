@@ -30,8 +30,8 @@ public class RebuildGraph extends AbstractWebAPICommand {
 
     boolean quiet = false;
 
-    public RebuildGraph(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setQuiet(Boolean.valueOf(options.getFirstValue("quiet", "false")));
     }
 

@@ -11,7 +11,7 @@ package org.locationtech.geogig.web.api;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.rest.geotools.Export;
 import org.locationtech.geogig.rest.geotools.ExportDiff;
@@ -56,8 +56,8 @@ import org.locationtech.geogig.web.api.commands.Version;
  */
 public class CommandBuilder {
 
-    private final static Map<String, Function<ParameterSet, WebAPICommand>> MAPPINGS =
-            new HashMap<>(30);
+    private final static Map<String, Supplier<WebAPICommand>> MAPPINGS =
+            new HashMap<>(36);
     static {
         MAPPINGS.put("init", Init::new);
         MAPPINGS.put("delete", RequestDeleteRepositoryToken::new);
@@ -105,14 +105,14 @@ public class CommandBuilder {
      * @return the command that was built
      * @throws CommandSpecException
      */
-    public static WebAPICommand build(final String commandName, final ParameterSet options)
+    public static WebAPICommand build(final String commandName)
             throws CommandSpecException {
 
         if (!MAPPINGS.containsKey(commandName)) {
             throw new CommandSpecException("'" + commandName + "' is not a geogig command");
         }
 
-        WebAPICommand command = MAPPINGS.get(commandName).apply(options);
+        WebAPICommand command = MAPPINGS.get(commandName).get();
 
         return command;
     }

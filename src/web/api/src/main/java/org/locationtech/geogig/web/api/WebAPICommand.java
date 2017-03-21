@@ -24,6 +24,8 @@ public interface WebAPICommand {
      */
     void run(CommandContext context);
 
+    public void setParameters(ParameterSet options);
+
     boolean supports(Method method);
 
     Status getStatus();

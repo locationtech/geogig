@@ -31,9 +31,20 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
 
     private Status commandStatus = Status.SUCCESS_OK;
 
-    protected AbstractWebAPICommand(ParameterSet options) {
-        setTransactionId(options.getFirstValue("transactionId", null));
+    protected AbstractWebAPICommand() {
     }
+
+    protected AbstractWebAPICommand(ParameterSet options) {
+        setParameters(options);
+    }
+
+    @Override
+    public void setParameters(ParameterSet options) {
+        setTransactionId(options.getFirstValue("transactionId", null));
+        setParametersInternal(options);
+    }
+
+    protected abstract void setParametersInternal(ParameterSet options);
 
     @Override
     public boolean supports(final Method method) {

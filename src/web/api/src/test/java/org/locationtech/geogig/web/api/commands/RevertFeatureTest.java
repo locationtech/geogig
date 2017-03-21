@@ -12,6 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -48,12 +50,13 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId oldCommitId = RevObjectTestSupport.hashString("old");
-        ObjectId newCommitId = RevObjectTestSupport.hashString("new");
+        String oldCommitId = RevObjectTestSupport.hashString("old").toString();
+        String newCommitId = RevObjectTestSupport.hashString("new").toString();
         ParameterSet options = TestParams.of("authorName", "Tester", "authorEmail",
                 "tester@example.com", "commitMessage", "someCommitMessage", "mergeMessage",
-                "someMergeMessage", "oldCommitId", oldCommitId.toString(), "newCommitId",
-                newCommitId.toString(), "path", "some/path");
+                "someMergeMessage", "oldCommitId", oldCommitId, "newCommitId", newCommitId, "path",
+                "some/path", "transactionId",
+                UUID.randomUUID().toString());
 
         RevertFeature op = (RevertFeature) buildCommand(options);
         assertEquals("some/path", op.featurePath);

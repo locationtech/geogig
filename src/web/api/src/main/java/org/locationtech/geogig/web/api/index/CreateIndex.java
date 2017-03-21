@@ -45,9 +45,9 @@ public class CreateIndex extends AbstractWebAPICommand {
 
     String bbox;
 
-    public CreateIndex(ParameterSet options) {
-        super(options);
-        setTreeRefSpec(options.getFirstValue("treeRefSpec", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setTreeRefSpec(options.getRequiredValue("treeRefSpec"));
         setGeometryAttributeName(options.getFirstValue("geometryAttributeName", null));
         String[] extraAttributes = options.getValuesArray("extraAttributes");
         if (extraAttributes == null) {

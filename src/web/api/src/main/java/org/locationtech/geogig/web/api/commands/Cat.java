@@ -36,9 +36,9 @@ public class Cat extends AbstractWebAPICommand {
 
     String object;
 
-    public Cat(ParameterSet options) {
-        super(options);
-        setObjectId(options.getFirstValue("objectid", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setObjectId(options.getRequiredValue("objectid"));
     }
 
     @Override

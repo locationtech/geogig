@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model;
 
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
@@ -118,25 +119,25 @@ public abstract class Node implements Bounded, Comparable<Node> {
         /**
          * The name of the element
          */
-        private String name;
+        private final String name;
 
         /**
          * Optional ID corresponding to metadata for the element
          */
         @Nullable
-        private ObjectId metadataId;
+        private final ObjectId metadataId;
 
         /**
          * Id of the object this ref points to
          */
-        private ObjectId objectId;
+        private final ObjectId objectId;
 
-        private ImmutableMap<String, Object> extraData;
+        private final ImmutableMap<String, Object> extraData;
 
-        Float32Bounds bounds;
+        private final Float32Bounds bounds;
 
         private BaseNode(final String name, final ObjectId oid, final ObjectId metadataId,
-                Map<String, Object> extraData) {
+                @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
             checkNotNull(name);
             checkNotNull(oid);
             checkNotNull(metadataId);
@@ -144,6 +145,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
             this.objectId = oid;
             this.metadataId = metadataId.isNull() ? null : metadataId;
             this.extraData = shadowNullValues(extraData);
+            this.bounds = Float32Bounds.valueOf(bounds);
         }
 
         @Override
@@ -168,27 +170,17 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
         @Override
         public boolean intersects(Envelope env) {
-            if (bounds == null)
-                return false;
             return bounds.intersects(env);
         }
 
         @Override
         public void expand(Envelope env) {
-            if (bounds != null)
-                bounds.expand(env);
+            bounds.expand(env);
         }
 
         @Override
         public Optional<Envelope> bounds() {
-            if  ( (bounds == null) || (bounds.isNull()) )
-                return Optional.absent();
-
-            return Optional.of(bounds.asEnvelope());
-        }
-
-        void setBounds(Envelope env) {
-            bounds = new Float32Bounds(env);
+            return fromNullable(bounds.isNull() ? null : bounds.asEnvelope());
         }
 
         @Override
@@ -241,36 +233,31 @@ public abstract class Node implements Bounded, Comparable<Node> {
     }
 
     public static Node create(final String name, final ObjectId oid, final ObjectId metadataId,
-            final TYPE type, @Nullable final Envelope bounds,
-            @Nullable Map<String, Object> extraData) {
+            final TYPE type, @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
         checkNotNull(name, "name");
         checkNotNull(oid, "oid");
         checkNotNull(metadataId, "metadataId");
         checkNotNull(type, "type");
 
+        bounds = bounds == null || bounds.isNull() ? null : bounds;
+
         switch (type) {
         case FEATURE:
-            if (bounds == null || bounds.isNull()) {
-                return new FeatureNode(name, oid, metadataId, extraData);
-            } else {
-                return new BoundedFeatureNode(name, oid, metadataId, bounds, extraData);
-            }
+            return new FeatureNode(name, oid, metadataId, bounds, extraData);
         case TREE:
-            if (bounds == null || bounds.isNull()) {
-                return new TreeNode(name, oid, metadataId, extraData);
-            } else {
-                return new BoundedTreeNode(name, oid, metadataId, bounds, extraData);
-            }
+            return new TreeNode(name, oid, metadataId, bounds, extraData);
         default:
             throw new IllegalArgumentException(
                     "Only FEATURE and TREE nodes can be created, got type " + type);
         }
     }
 
-    private static class TreeNode extends BaseNode {
+    private static final class TreeNode extends BaseNode {
 
-        public TreeNode(String name, ObjectId oid, ObjectId mdid, Map<String, Object> extraData) {
-            super(name, oid, mdid, extraData);
+        // dim0(0),dim0(1),dim1(0),dim1(1)
+        public TreeNode(String name, ObjectId oid, ObjectId mdid, @Nullable Envelope env,
+                @Nullable Map<String, Object> extraData) {
+            super(name, oid, mdid, env, extraData);
         }
 
         @Override
@@ -278,41 +265,19 @@ public abstract class Node implements Bounded, Comparable<Node> {
             return TYPE.TREE;
         }
 
-
     }
 
-    private static final class BoundedTreeNode extends TreeNode {
+    private static final class FeatureNode extends BaseNode {
 
-        // dim0(0),dim0(1),dim1(0),dim1(1)
-        public BoundedTreeNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
-                Map<String, Object> extraData) {
-            super(name, oid, mdid, extraData);
-
-            setBounds(env);
-        }
-    }
-
-    private static class FeatureNode extends BaseNode {
-
-        public FeatureNode(String name, ObjectId oid, ObjectId mdid,
-                Map<String, Object> extraData) {
-            super(name, oid, mdid, extraData);
+        // dim0(0),dim1(0),dim0(1),dim1(1)
+        public FeatureNode(String name, ObjectId oid, ObjectId mdid, @Nullable Envelope env,
+                @Nullable Map<String, Object> extraData) {
+            super(name, oid, mdid, env, extraData);
         }
 
         @Override
         public final TYPE getType() {
             return TYPE.FEATURE;
-        }
-    }
-
-    private static final class BoundedFeatureNode extends FeatureNode {
-
-        // dim0(0),dim1(0),dim0(1),dim1(1)
-        public BoundedFeatureNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
-                Map<String, Object> extraData) {
-            super(name, oid, mdid, extraData);
-
-            setBounds(env);
         }
 
     }

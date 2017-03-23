@@ -22,7 +22,7 @@ public class Float32BoundsTest {
     public void testSimple() {
         // 1,1 is the same in float4 and float8
         Coordinate coord = new Coordinate(1, 1);
-        Float32Bounds bounds = new Float32Bounds(new Envelope(coord));
+        Float32Bounds bounds = Float32Bounds.valueOf(new Envelope(coord));
         assertTrue(bounds.asEnvelope().contains(coord));
         assertTrue(bounds.intersects(new Envelope(coord)));
 
@@ -32,7 +32,7 @@ public class Float32BoundsTest {
 
 
         coord = new Coordinate(Math.PI, Math.E);
-        bounds = new Float32Bounds(new Envelope(coord));
+        bounds = Float32Bounds.valueOf(new Envelope(coord));
         assertTrue(bounds.asEnvelope().contains(coord));
         assertTrue(bounds.intersects(new Envelope(coord)));
 

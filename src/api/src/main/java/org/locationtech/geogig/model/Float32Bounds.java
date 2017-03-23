@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.model;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -24,8 +26,14 @@ import com.vividsolutions.jts.geom.Envelope;
  *     * for every Float32 number, there is an exact Float64 representation
  */
 class Float32Bounds {
+    
+    /**
+     * The "null object" to represent an empty node
+     * 
+     * @see #valueOf(Envelope)
+     */
+    private static final Float32Bounds EMPTY = new Float32Bounds(new Envelope());
 
-    boolean isNull = true;
     //defaults - xmin > xmax (no area)
     float xmin = Float.MIN_VALUE;
     float xmax = 0;
@@ -33,7 +41,7 @@ class Float32Bounds {
     float ymax = 0;
 
 
-    public Float32Bounds(Envelope doublePrecisionEnv) {
+    private Float32Bounds(Envelope doublePrecisionEnv) {
         if ((doublePrecisionEnv == null) || (doublePrecisionEnv.isNull())) {
             return; //done!
         }
@@ -49,20 +57,16 @@ class Float32Bounds {
         this.xmax = xmax;
         this.ymin = ymin;
         this.ymax = ymax;
-        this.isNull = (xmin > xmax);
     }
 
     private void set(Envelope doublePrecisionEnv) {
         if ((doublePrecisionEnv == null) || (doublePrecisionEnv.isNull())) {
-            isNull = true;
             xmin = 0;
             xmax = -1;
             ymin = 0;
             ymax = -1;
             return;
         }
-
-        isNull = false;
 
         //convert to float32, but ensure that the new bounds contain the old bounds
         //NOTE: every float32 can be exactly expressed as a double
@@ -90,31 +94,37 @@ class Float32Bounds {
 
 
     public Envelope asEnvelope() {
-        if (isNull)
+        if (isNull())
             return new Envelope();
         return new Envelope(xmin, xmax, ymin, ymax);
     }
 
     public boolean intersects(Envelope env) {
-        if (env.isNull()) {
+        if (isNull() || env.isNull()) {
             return false;
         }
-        return asEnvelope().intersects(env);
+        // make the intersects check here matching the logic in Envelope and avoid creating lots of
+        // Envelope objects since this method is going to be called for each Node in a tree
+        // traversal
+        return !(env.getMinX() > xmax || //
+                env.getMaxX() < xmin || //
+                env.getMinY() > ymax || //
+                env.getMaxY() < ymin);
     }
 
     //To be careful, the resulting envelope is aligned with the float32 envelope!
     public void expand(Envelope env) {
-        if (isNull)
+        if (isNull())
             return;
         env.expandToInclude(xmin, ymin);
         env.expandToInclude(xmax, ymax);
-        Float32Bounds newEnv = new Float32Bounds(env);
+        Float32Bounds newEnv = Float32Bounds.valueOf(env);
         Envelope float32Version = newEnv.asEnvelope();
         env.init(float32Version);
     }
 
     public boolean isNull() {
-        return isNull;
+        return xmin > xmax;
     }
 
 
@@ -131,11 +141,14 @@ class Float32Bounds {
         if (!(obj instanceof Float32Bounds)) {
             return false;
         }
+        if (obj == this) {
+            return true;
+        }
         Float32Bounds other = (Float32Bounds) obj;
-        if (other.isNull && this.isNull)
+        if (other.isNull() && this.isNull())
             return true;
 
-        if (other.isNull != this.isNull)
+        if (other.isNull() != this.isNull())
             return false;
 
         return other.xmin == this.xmin &&
@@ -147,9 +160,18 @@ class Float32Bounds {
 
     @Override
     public int hashCode() {
-        if (isNull)
+        if (isNull())
             return 1;
         return Float.floatToRawIntBits(xmin) ^ Float.floatToRawIntBits(ymin) ^ Float.floatToRawIntBits(xmax) ^ Float.floatToRawIntBits(ymax);
+    }
+
+    /**
+     * Factory method, returns an empty Float32Bounds if {@code bounds} is {@code null} or
+     * {@link Envelope#isNull() empty}, otherwise a Float32Bounds that's guaranteed to contain
+     * {@code bounds}
+     */
+    public static Float32Bounds valueOf(@Nullable Envelope bounds) {
+        return bounds == null || bounds.isNull() ? EMPTY : new Float32Bounds(bounds);
     }
 }
 

@@ -33,7 +33,6 @@ public class BucketTest {
         assertTrue(pointBucket.intersects(env));
         assertFalse(pointBucket.intersects(new Envelope(0, 5, 0, 0)));
 
-        assertTrue(pointBucket.toString().contains("PointBucket"));
         assertTrue(pointBucket.toString().contains(oId.toString()));
     }
 
@@ -54,13 +53,10 @@ public class BucketTest {
         assertTrue(rectangleBucket.intersects(env));
         assertFalse(rectangleBucket.intersects(new Envelope(5, 5, 7, 7)));
 
-        assertTrue(rectangleBucket.toString().contains("RectangleBucket"));
         assertTrue(rectangleBucket.toString().contains(oId.toString()));
 
-        assertTrue(noWidthBucket.toString().contains("RectangleBucket"));
         assertTrue(noWidthBucket.toString().contains(oId.toString()));
 
-        assertTrue(noHeightBucket.toString().contains("RectangleBucket"));
         assertTrue(noHeightBucket.toString().contains(oId.toString()));
     }
 
@@ -83,7 +79,6 @@ public class BucketTest {
 
         assertFalse(nonspatialBucket.intersects(env));
         assertFalse(nonspatialBucket.intersects(new Envelope(0, 0, 100, 100)));
-        assertTrue(nonspatialBucket.toString().contains("NonSpatialBucket"));
         assertTrue(nonspatialBucket.toString().contains(oId.toString()));
     }
 

@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,12 +25,12 @@ import com.google.common.primitives.Ints;
  * Serialization factory for serial version 2.2
  */
 @Beta
-public class DataStreamSerializationFactoryV2_2 extends DataStreamSerializationFactoryV2 {
+public class DataStreamSerializationFactoryV2_3 extends DataStreamSerializationFactoryV2 {
 
-    public static final DataStreamSerializationFactoryV2_2 INSTANCE = new DataStreamSerializationFactoryV2_2();
+    public static final DataStreamSerializationFactoryV2_3 INSTANCE = new DataStreamSerializationFactoryV2_3();
 
-    public DataStreamSerializationFactoryV2_2() {
-        super(FormatCommonV2_2.INSTANCE);
+    public DataStreamSerializationFactoryV2_3() {
+        super(FormatCommonV2_3.INSTANCE);
     }
 
     @Override
@@ -43,13 +43,13 @@ public class DataStreamSerializationFactoryV2_2 extends DataStreamSerializationF
             offset += 1 + Integer.BYTES;// skip size header
             length -= 1 + Integer.BYTES;
             Preconditions.checkState(size == length, "expected %s, got %s", size, length);
-            return FormatCommonV2_2.INSTANCE.readTree(id, data, offset, length);
+            return FormatCommonV2_3.INSTANCE.readTree(id, data, offset, length);
         }
         return super.read(id, new ByteArrayInputStream(data, offset, length));
     }
 
     @Override
     public String getDisplayName() {
-        return "Binary 2.2";
+        return "Binary 2.3";
     }
 }

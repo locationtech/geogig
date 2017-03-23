@@ -22,7 +22,10 @@ public class DataStreamSerializationFactoryV2_1 extends DataStreamSerializationF
         super(FormatCommonV2_1.INSTANCE);
     }
 
-    @Override
+    protected DataStreamSerializationFactoryV2_1(FormatCommonV2 format) {
+        super(format);
+    }
+        @Override
     public String getDisplayName() {
         return "Binary 2.1";
     }

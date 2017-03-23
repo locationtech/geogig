@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
@@ -27,6 +28,8 @@ import com.vividsolutions.jts.geom.Envelope;
 public abstract class Bucket implements Bounded {
 
     private final ObjectId bucketTree;
+    Float32Bounds bounds;
+
 
     private Bucket(ObjectId id) {
         this.bucketTree = id;
@@ -59,57 +62,48 @@ public abstract class Bucket implements Bounded {
         return getObjectId().equals(((Bucket) o).getObjectId());
     }
 
+    @Override
+    public boolean intersects(Envelope env) {
+        if (bounds == null)
+            return false;
+        return bounds.intersects(env);
+    }
+
+    @Override
+    public void expand(Envelope env) {
+        if (bounds != null)
+            bounds.expand(env);
+    }
+
+    @Override
+    public Optional<Envelope> bounds() {
+        if  ( (bounds == null) || (bounds.isNull()) )
+            return Optional.absent();
+
+        return Optional.of(bounds.asEnvelope());
+    }
+
+    void setBounds(Envelope env) {
+        bounds = new Float32Bounds(env);
+    }
+
     private static class PointBucket extends Bucket {
 
-        private final double x;
-
-        private final double y;
 
         public PointBucket(ObjectId id, double x, double y) {
             super(id);
-            this.x = x;
-            this.y = y;
+            setBounds(new Envelope(new Coordinate(x,y)));
         }
 
-        @Override
-        public boolean intersects(Envelope env) {
-            return env.intersects(x, y);
-        }
-
-        @Override
-        public void expand(Envelope env) {
-            env.expandToInclude(x, y);
-        }
-
-        @Override
-        public Optional<Envelope> bounds() {
-            return Optional.of(new Envelope(x, x, y, y));
-        }
     }
 
     private static class RectangleBucket extends Bucket {
 
-        private Envelope bucketBounds;
-
         public RectangleBucket(ObjectId id, Envelope env) {
             super(id);
-            this.bucketBounds = env;
+            setBounds(env);
         }
 
-        @Override
-        public boolean intersects(Envelope env) {
-            return env.intersects(this.bucketBounds);
-        }
-
-        @Override
-        public void expand(Envelope env) {
-            env.expandToInclude(this.bucketBounds);
-        }
-
-        @Override
-        public Optional<Envelope> bounds() {
-            return Optional.of(new Envelope(bucketBounds));
-        }
     }
 
     private static class NonSpatialBucket extends Bucket {
@@ -118,29 +112,19 @@ public abstract class Bucket implements Bounded {
             super(id);
         }
 
-        @Override
-        public boolean intersects(Envelope env) {
-            return false;
-        }
-
-        @Override
-        public void expand(Envelope env) {
-            // nothing to do
-        }
-
-        @Override
-        public Optional<Envelope> bounds() {
-            return Optional.absent();
-        }
     }
 
     public static Bucket create(final ObjectId bucketTree, final @Nullable Envelope bounds) {
         if (bounds == null || bounds.isNull()) {
             return new NonSpatialBucket(bucketTree);
         }
-        if (bounds.getWidth() == 0D && bounds.getHeight() == 0D) {
-            return new PointBucket(bucketTree, bounds.getMinX(), bounds.getMinY());
+
+        Float32Bounds b32 = new Float32Bounds(bounds);
+        Envelope bounds2 = b32.asEnvelope();
+
+        if (bounds2.getWidth() == 0D && bounds2.getHeight() == 0D) {
+            return new PointBucket(bucketTree, bounds2.getMinX(), bounds2.getMinY());
         }
-        return new RectangleBucket(bucketTree, new Envelope(bounds));
+        return new RectangleBucket(bucketTree, bounds2);
     }
 }

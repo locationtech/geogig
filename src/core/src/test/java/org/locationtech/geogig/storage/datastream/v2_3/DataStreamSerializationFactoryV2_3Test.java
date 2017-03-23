@@ -7,16 +7,26 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
+import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.geogig.model.Bounded;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_2Test;
 import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
-public class DataStreamSerializationFactoryV2_2Test extends ObjectSerializationFactoryTest {
+import java.util.Iterator;
+
+import static org.junit.Assert.assertEquals;
+
+public class DataStreamSerializationFactoryV2_3Test extends DataStreamSerializationFactoryV2_2Test {
 
     @Override
     protected ObjectSerializingFactory getObjectSerializingFactory() {
-        return DataStreamSerializationFactoryV2_2.INSTANCE;
+        return DataStreamSerializationFactoryV2_3.INSTANCE;
     }
 
 }

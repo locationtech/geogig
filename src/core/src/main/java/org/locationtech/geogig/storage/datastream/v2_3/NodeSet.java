@@ -7,14 +7,14 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_2;
+package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.datastream.Varint.readUnsignedVarInt;
 import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVarInt;
-import static org.locationtech.geogig.storage.datastream.v2_2.InternalDataOutput.stream;
+import static org.locationtech.geogig.storage.datastream.v2_3.InternalDataOutput.stream;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -270,12 +270,13 @@ class NodeSet {
         int oidSectionSize = objectIds.size();
         writeUnsignedVarInt(oidSectionSize, header);
         // bounds
-        IntCoordinateSequence boundsSeq = new IntCoordinateSequence(2, boundsCoords);
+        FloatPackedCoordinateSequence boundsSeq = new FloatPackedCoordinateSequence(2, boundsCoords);
         InternalDataOutput boundsStream = stream(boundsSeq.size() * 4);
-        long[] xordinates = boundsSeq.ordinates()[0];
-        long[] yordinates = boundsSeq.ordinates()[1];
-        Varints.writeLongArrayDeltaEncoded(xordinates, boundsStream);
-        Varints.writeLongArrayDeltaEncoded(yordinates, boundsStream);
+        int[][] allOrdinates = boundsSeq.toSerializedForm();
+        int[] xordinates = allOrdinates[0];
+        int[] yordinates = allOrdinates[1];
+        Varints.writeSignedIntArray(xordinates, boundsStream);
+        Varints.writeSignedIntArray(yordinates, boundsStream);
         final int coordsSectionSzie = boundsStream.size();
         writeUnsignedVarInt(coordsSectionSzie, header);// bounds
 
@@ -322,20 +323,20 @@ class NodeSet {
     CoordinateSequence parseBoundsCoordinates() {
         final int boundsSectionSize = header.boundsSize;
         if (0 == boundsSectionSize) {
-            return IntCoordinateSequence.EMPTY_2D;
+            return FloatPackedCoordinateSequence.EMPTY_2D;
         }
         final int boundsOffset = header.boundsOffset();
         DataInput in = data.asDataInput(boundsOffset);
-        long[] x;
-        long[] y;
+        int[] x;
+        int[] y;
         try {
-            x = Varints.readLongArrayDeltaEncoded(in);
-            y = Varints.readLongArrayDeltaEncoded(in);
+            x = Varints.readSignedIntArray(in);
+            y = Varints.readSignedIntArray(in);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
-        long[][] coords = new long[][] { x, y };
-        return new IntCoordinateSequence(coords);
+        int[][] coords = new int[][] { x, y };
+        return new FloatPackedCoordinateSequence(coords);
     }
 
     // * HEADER = <int>, // size of this header

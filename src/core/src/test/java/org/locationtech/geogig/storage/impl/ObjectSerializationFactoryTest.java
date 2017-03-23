@@ -645,7 +645,7 @@ public abstract class ObjectSerializationFactoryTest {
         }
     }
 
-    private void assertTreesAreEqual(RevTree a, RevTree b) {
+    public void assertTreesAreEqual(RevTree a, RevTree b) {
         assertEquals(a.getId(), b.getId());
         assertEquals(a.buckets(), b.buckets());
         assertEquals(a.features(), b.features());

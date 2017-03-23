@@ -15,6 +15,7 @@ import static org.locationtech.geogig.porcelain.ConfigOp.ConfigScope.LOCAL;
 import java.util.Map;
 
 import org.locationtech.geogig.porcelain.ConfigOp;
+import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Status;
 import org.restlet.resource.Representation;
@@ -45,8 +46,8 @@ public class InitCommandResource extends CommandResource {
     }
 
     @Override
-    protected Representation runCommand(Variant variant, Request request) {
-        Representation representation = super.runCommand(variant, request);
+    protected Representation runCommand(Variant variant, Request request, MediaType outputFormat) {
+        Representation representation = super.runCommand(variant, request, outputFormat);
 
         if (getResponse().getStatus() == Status.SUCCESS_CREATED) {
             // set the Author name and email from the Init request

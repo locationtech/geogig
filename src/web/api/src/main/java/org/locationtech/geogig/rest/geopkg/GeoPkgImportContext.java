@@ -43,11 +43,10 @@ import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamWriterException;
+import org.locationtech.geogig.web.api.StreamingWriter;
 import org.restlet.data.MediaType;
 
 import com.google.common.base.Optional;
-
-import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Geopackage specific implementation of {@link DataStoreImportContextService}.

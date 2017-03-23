@@ -61,7 +61,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("newValue", "newValue");
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No name was given.");
+        ex.expectMessage("Required parameter 'name' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

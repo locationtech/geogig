@@ -30,8 +30,8 @@ public class ListIndexes extends AbstractWebAPICommand {
 
     String treeName;
 
-    public ListIndexes(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setTreeName(options.getFirstValue("treeName", null));
     }
 

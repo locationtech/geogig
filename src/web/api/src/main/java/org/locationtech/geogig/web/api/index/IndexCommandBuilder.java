@@ -11,10 +11,9 @@ package org.locationtech.geogig.web.api.index;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.web.api.CommandSpecException;
-import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
 /**
@@ -23,7 +22,7 @@ import org.locationtech.geogig.web.api.WebAPICommand;
  */
 public class IndexCommandBuilder {
 
-    private final static Map<String, Function<ParameterSet, WebAPICommand>> MAPPINGS =
+    private final static Map<String, Supplier<WebAPICommand>> MAPPINGS =
             new HashMap<>(30);
     static {
         MAPPINGS.put("create", CreateIndex::new);
@@ -41,14 +40,14 @@ public class IndexCommandBuilder {
      * @return the command that was built
      * @throws CommandSpecException
      */
-    public static WebAPICommand build(final String commandName, final ParameterSet options)
+    public static WebAPICommand build(final String commandName)
             throws CommandSpecException {
 
         if (!MAPPINGS.containsKey(commandName)) {
             throw new CommandSpecException("'" + commandName + "' is not a geogig command");
         }
 
-        WebAPICommand command = MAPPINGS.get(commandName).apply(options);
+        WebAPICommand command = MAPPINGS.get(commandName).get();
 
         return command;
     }

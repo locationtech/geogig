@@ -12,6 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -40,7 +42,8 @@ public class CommitTest extends AbstractWebOpTest {
     @Test
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("all", "true", "authorName", "Test Name",
-                "authorEmail", "test@example.com", "message", "Commit message");
+                "authorEmail", "test@example.com", "message", "Commit message", "transactionId",
+                UUID.randomUUID().toString());
 
         Commit op = (Commit) buildCommand(options);
         assertTrue(op.all);

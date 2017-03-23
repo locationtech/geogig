@@ -16,11 +16,19 @@ import static org.locationtech.geogig.rest.Variants.XML;
 import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
 import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
@@ -45,6 +53,9 @@ import org.restlet.data.Status;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -54,12 +65,10 @@ import com.google.common.base.Preconditions;
  */
 public class CommandResource extends Resource {
 
-    private Form options;
-
     private WebAPICommand command;
 
-    protected WebAPICommand buildCommand(String commandName, ParameterSet params) {
-        return CommandBuilder.build(commandName, params);
+    protected WebAPICommand buildCommand(String commandName) {
+        return CommandBuilder.build(commandName);
     }
 
     @Override
@@ -71,10 +80,7 @@ public class CommandResource extends Resource {
         variants.add(CSV);
 
         final String commandName = getCommandName();
-
-        options = getRequest().getResourceRef().getQueryAsForm();
-        ParameterSet params = buildParameterSet(options);
-        command = buildCommand(commandName, params);
+        command = buildCommand(commandName);
         assert command != null;
     }
 
@@ -85,6 +91,65 @@ public class CommandResource extends Resource {
     @Override
     public Variant getPreferredVariant() {
         return getVariantByExtension(getRequest(), getVariants()).or(super.getPreferredVariant());
+    }
+
+    protected ParameterSet getRequestParams() {
+        Request request = getRequest();
+        ParameterSet params = new FormParams(request.getResourceRef().getQueryAsForm());
+        ParameterSet entityParams = handleRequestEntity(request);
+        if (entityParams != null) {
+            params = ParameterSet.concat(params, entityParams);
+        }
+
+        return params;
+    }
+
+    protected ParameterSet handleRequestEntity(Request request) {
+        ParameterSet entityParams = null;
+        if (request.isEntityAvailable()) {
+            Representation entity = request.getEntity();
+            final MediaType reqMediaType = entity.getMediaType();
+
+            if (MediaType.APPLICATION_WWW_FORM.equals(reqMediaType, true)) {
+                // URL encoded form parameters
+                try {
+                    Form form = request.getEntityAsForm();
+                    entityParams = new FormParams(form);
+                } catch (Exception ex) {
+                    throw new RestletException("Error parsing URL encoded form request",
+                            Status.CLIENT_ERROR_BAD_REQUEST, ex);
+                }
+            } else if (MediaType.APPLICATION_JSON.equals(reqMediaType, true)) {
+                // JSON encoded parameters
+                try {
+                    String jsonRep = entity.getText();
+                    JsonObject jsonObj = Json.createReader(new StringReader(jsonRep)).readObject();
+                    entityParams = new JsonParams(jsonObj);
+                } catch (IOException ex) {
+                    throw new RestletException("Error parsing JSON request",
+                            Status.CLIENT_ERROR_BAD_REQUEST, ex);
+                }
+            } else if (MediaType.APPLICATION_XML.equals(reqMediaType, true)) {
+                try {
+                    String xmlRep = entity.getText();
+                    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                    InputSource xmlIn = new InputSource(new StringReader(xmlRep));
+                    Document doc = dBuilder.parse(xmlIn);
+                    doc.getDocumentElement().normalize();
+                    entityParams = new XmlParams(doc);
+                } catch (IOException | SAXException | ParserConfigurationException ex) {
+                    throw new RestletException("Error parsing XML request",
+                            Status.CLIENT_ERROR_BAD_REQUEST, ex);
+                }
+            } else if (null != reqMediaType) {
+                // unsupported MediaType
+                throw new RestletException("Unsupported Request MediaType: " + reqMediaType,
+                        Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+            // no parameters specified
+        }
+        return entityParams;
     }
 
     @Override
@@ -116,36 +181,51 @@ public class CommandResource extends Resource {
         return allowed;
     }
 
+    private Representation processRequest(Method method) {
+        Representation representation = null;
+        MediaType format = MediaType.TEXT_PLAIN;
+        try {
+            ParameterSet options = getRequestParams();
+            Variant variant = getPreferredVariant();
+            format = resolveFormat(options, variant);
+            if (checkMethod(command.supports(method), format)) {
+                command.setParameters(options);
+                representation = runCommand(variant, getRequest(), format);
+            }
+        } catch (RepositoryBusyException ex) {
+            representation = formatBusyException(ex, format);
+            getResponse().setStatus(Status.SERVER_ERROR_SERVICE_UNAVAILABLE);
+        } catch (CommandSpecException ex) {
+            representation = formatException(ex, format);
+            getResponse().setStatus(ex.getStatus());
+        } catch (RestletException ex) {
+            representation = ex.getRepresentation();
+            getResponse().setStatus(ex.getStatus());
+        } catch (IllegalArgumentException ex) {
+            representation = formatException(ex, format);
+            getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        } catch (Exception ex) {
+            representation = formatUnexpectedException(ex, format);
+            getResponse().setStatus(Status.SERVER_ERROR_INTERNAL);
+        }
+        return representation;
+    }
+
     @Override
     public void put(Representation entity) {
-        Variant variant = getPreferredVariant();
-        MediaType format = resolveFormat(options, variant);
-        if (!checkMethod(allowPut(), format)) {
-            return;
-        }
-        Representation representation = runCommand(variant, getRequest());
+        Representation representation = processRequest(Method.PUT);
         getResponse().setEntity(representation);
     }
 
     @Override
     public void post(Representation entity) {
-        Variant variant = getPreferredVariant();
-        MediaType format = resolveFormat(options, variant);
-        if (!checkMethod(allowPost(), format)) {
-            return;
-        }
-        Representation representation = runCommand(variant, getRequest());
+        Representation representation = processRequest(Method.POST);
         getResponse().setEntity(representation);
     }
 
     @Override
     public void delete() {
-        Variant variant = getPreferredVariant();
-        MediaType format = resolveFormat(options, variant);
-        if (!checkMethod(allowDelete(), format)) {
-            return;
-        }
-        Representation representation = runCommand(variant, getRequest());
+        Representation representation = processRequest(Method.DELETE);
         getResponse().setEntity(representation);
     }
 
@@ -156,9 +236,7 @@ public class CommandResource extends Resource {
      */
     @Override
     public Representation getRepresentation(Variant variant) {
-        Request request = getRequest();
-        Representation representation = runCommand(variant, request);
-        return representation;
+        return processRequest(Method.GET);
     }
 
     protected ParameterSet buildParameterSet(final Form options) {
@@ -167,32 +245,13 @@ public class CommandResource extends Resource {
 
     protected Optional<Repository> geogig = null;
 
-    protected Representation runCommand(Variant variant, Request request) {
-        Representation rep;
-        MediaType format = resolveFormat(options, variant);
-        try {
-            geogig = getGeogig(request);
-            Preconditions.checkState(geogig.isPresent());
-            RestletContext ctx = new RestletContext(geogig.get(), request);
-            command.run(ctx);
-            rep = ctx.getRepresentation(format, getJSONPCallback());
-            getResponse().setStatus(command.getStatus());
-        } catch (RepositoryBusyException ex) {
-            rep = formatBusyException(ex, format);
-            getResponse().setStatus(Status.SERVER_ERROR_SERVICE_UNAVAILABLE);
-        } catch (CommandSpecException ex) {
-            rep = formatException(ex, format);
-            getResponse().setStatus(ex.getStatus());
-        } catch (RestletException ex) {
-            rep = ex.getRepresentation();
-            getResponse().setStatus(ex.getStatus());
-        } catch (IllegalArgumentException ex) {
-            rep = formatException(ex, format);
-            getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-        } catch (Exception ex) {
-            rep = formatUnexpectedException(ex, format);
-            getResponse().setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
+    protected Representation runCommand(Variant variant, Request request, MediaType outputFormat) {
+        geogig = getGeogig(request);
+        Preconditions.checkState(geogig.isPresent());
+        RestletContext ctx = new RestletContext(geogig.get(), request);
+        command.run(ctx);
+        Representation rep = ctx.getRepresentation(outputFormat, getJSONPCallback());
+        getResponse().setStatus(command.getStatus());
 
         return rep;
     }
@@ -247,7 +306,7 @@ public class CommandResource extends Resource {
         return form.getFirstValue("callback", null);
     }
 
-    protected MediaType resolveFormat(Form options, Variant variant) {
+    protected MediaType resolveFormat(ParameterSet options, Variant variant) {
         MediaType retval = variant.getMediaType();
         String requested = options.getFirstValue("output_format");
         if (requested != null) {

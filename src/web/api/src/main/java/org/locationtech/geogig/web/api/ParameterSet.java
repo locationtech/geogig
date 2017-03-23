@@ -11,6 +11,7 @@ package org.locationtech.geogig.web.api;
 
 import java.io.File;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.jdt.annotation.Nullable;
 
 
@@ -20,6 +21,15 @@ import org.eclipse.jdt.annotation.Nullable;
  * where a single key can be used multiple times.
  */
 public interface ParameterSet {
+
+    /**
+     * Returns the value of the parameter with the given key.
+     * 
+     * @param key the key to search for
+     * @return the value for the key
+     * @throws InvalidArgumentException if the key was not found
+     */
+    public String getRequiredValue(String key);
 
     /**
      * Returns the value of the parameter with the given key, or {@code null} if the key wasn't
@@ -57,5 +67,53 @@ public interface ParameterSet {
      */
     @Nullable
     public File getUploadedFile();
+
+    public static ParameterSet concat(final ParameterSet first, final ParameterSet second) {
+        return new ParameterSet() {
+
+            @Override
+            public String getRequiredValue(String key) {
+                String value = getFirstValue(key);
+                if (value == null) {
+                    throw new CommandSpecException(
+                            String.format("Required parameter '%s' was not provided.", key));
+                }
+                return value;
+            }
+
+            @Override
+            @Nullable
+            public String getFirstValue(String key) {
+                return getFirstValue(key, null);
+            }
+
+            @Override
+            public String getFirstValue(String key, String defaultValue) {
+                String value = first.getFirstValue(key);
+                if (value == null) {
+                    value = second.getFirstValue(key, defaultValue);
+                }
+                return value;
+            }
+
+            @Override
+            @Nullable
+            public String[] getValuesArray(String key) {
+                String[] firstValues = first.getValuesArray(key);
+                String[] secondValues = second.getValuesArray(key);
+                return (String[]) ArrayUtils.addAll(firstValues, secondValues);
+            }
+
+            @Override
+            @Nullable
+            public File getUploadedFile() {
+                File file = first.getUploadedFile();
+                if (file == null) {
+                    file = second.getUploadedFile();
+                }
+                return file;
+            }
+        };
+    }
 
 }

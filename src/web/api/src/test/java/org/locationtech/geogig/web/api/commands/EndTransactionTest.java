@@ -13,6 +13,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -47,7 +49,8 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ParameterSet options = TestParams.of("cancel", "true");
+        ParameterSet options = TestParams.of("cancel", "true", "transactionId",
+                UUID.randomUUID().toString());
 
         EndTransaction op = (EndTransaction) buildCommand(options);
         assertTrue(op.cancel);

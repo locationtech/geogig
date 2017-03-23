@@ -39,8 +39,8 @@ public class Checkout extends AbstractWebAPICommand {
 
     String path;
 
-    public Checkout(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setName(options.getFirstValue("branch", null));
         setOurs(Boolean.valueOf(options.getFirstValue("ours", "false")));
         setTheirs(Boolean.valueOf(options.getFirstValue("theirs", "false")));

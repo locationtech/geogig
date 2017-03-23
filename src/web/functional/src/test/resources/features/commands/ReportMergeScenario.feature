@@ -11,22 +11,22 @@ Feature: ReportMergeScenario
       
   Scenario: ReportMergeScenario outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/reportMergeScenario"
+     When I call "GET /repos/repo1/reportMergeScenario?ourCommit=master&theirCommit=branch1"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
       
   Scenario: Calling ReportMergeScenario with no "our" commit issues a 500 status code
     Given There is an empty repository named repo1
-     When I call "GET /repos/repo1/reportMergeScenario"
+     When I call "GET /repos/repo1/reportMergeScenario?theirCommit=branch1"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" equals "No 'our' commit was specified."
+      And the xpath "/response/error/text()" equals "Required parameter 'ourCommit' was not provided."
       
   Scenario: Calling ReportMergeScenario with no "their" commit issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/reportMergeScenario?ourCommit=master"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" equals "No 'their' commit was specified."
+      And the xpath "/response/error/text()" equals "Required parameter 'theirCommit' was not provided."
       
   Scenario: Calling ReportMergeScenario with an invalid "our" commit issues a 500 status code
     Given There is a repository with multiple branches named repo1

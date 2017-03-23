@@ -63,7 +63,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
     public void testNoOurCommit() throws Exception {
         ParameterSet options = TestParams.of("theirCommit", "branch1");
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No 'our' commit was specified.");
+        ex.expectMessage("Required parameter 'ourCommit' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 
@@ -71,7 +71,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
     public void testNoTheirCommit() throws Exception {
         ParameterSet options = TestParams.of("ourCommit", "branch1");
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No 'their' commit was specified.");
+        ex.expectMessage("Required parameter 'theirCommit' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

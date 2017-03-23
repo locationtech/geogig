@@ -22,25 +22,17 @@ import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
-import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.locationtech.geogig.web.api.WebAPICommand;
 
 import com.google.common.base.Optional;
 
-public class RebuildIndexTest extends AbstractWebOpTest {
+public class RebuildIndexTest extends AbstractIndexWebOpTest {
 
     @Override
     protected String getRoute() {
         return "rebuild";
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    protected <T extends WebAPICommand> T buildCommand(ParameterSet options) {
-        return (T) IndexCommandBuilder.build(getRoute(), options);
     }
 
     @Override

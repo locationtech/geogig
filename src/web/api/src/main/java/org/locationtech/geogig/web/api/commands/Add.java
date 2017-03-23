@@ -28,8 +28,8 @@ public class Add extends AbstractWebAPICommand {
 
     String path;
 
-    public Add(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setPath(options.getFirstValue("path", null));
     }
 

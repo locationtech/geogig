@@ -11,7 +11,6 @@ package org.locationtech.geogig.web.api.commands;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import org.locationtech.geogig.porcelain.ConfigOp;
@@ -40,8 +39,8 @@ public class Config extends AbstractWebAPICommand {
 
     String value;
 
-    public Config(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setName(options.getFirstValue("name", null));
         setValue(options.getFirstValue("value", null));
     }

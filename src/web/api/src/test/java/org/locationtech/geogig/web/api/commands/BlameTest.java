@@ -73,7 +73,7 @@ public class BlameTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("commit", "branch1");
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("Blame requires the path of a feature.");
+        ex.expectMessage("Required parameter 'path' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

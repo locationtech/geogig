@@ -162,13 +162,13 @@ public class Import extends AbstractWebAPICommand {
      */
     public static final String ROOT_KEY = "root";
 
-    private final ParameterSet options;
+    private ParameterSet options;
 
     @VisibleForTesting
     public AsyncContext asyncContext;
 
-    public Import(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         this.options = options;
     }
 

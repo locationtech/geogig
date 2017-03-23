@@ -40,7 +40,6 @@ import java.util.concurrent.ExecutionException;
 
 import javax.json.JsonObject;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -63,7 +62,9 @@ import org.locationtech.geogig.rest.geotools.ExportDiff;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
+import org.locationtech.geogig.web.api.TestParams;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Optional;
@@ -90,8 +91,8 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
     }
 
     @Override
-    protected ExportDiff buildCommand(@Nullable String... optionsKvp) {
-        ExportDiff o = super.buildCommand(optionsKvp);
+    protected ExportDiff buildCommand(ParameterSet params) {
+        ExportDiff o = super.buildCommand(params);
         o.asyncContext = testAsyncContext;
         return o;
     }
@@ -131,9 +132,8 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
                 .call();
         testData.checkout("master");
 
-        ExportDiff op = buildCommand("format", "gpkg", "oldRef", commit1.getId().toString(),
-                "newRef",
-                commit3.getId().toString());
+        ExportDiff op = buildCommand(TestParams.of("format", "gpkg", "oldRef",
+                commit1.getId().toString(), "newRef", commit3.getId().toString()));
 
         File result = run(op);
         DataStore store = store(result);

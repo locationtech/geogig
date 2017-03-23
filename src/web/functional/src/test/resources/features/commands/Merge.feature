@@ -11,13 +11,13 @@ Feature: Merge
       
   Scenario: Merge outside of a transaction issues 500 "Transaction required"
     Given There is an empty repository named repo1
-     When I call "GET /repos/repo1/merge"
+     When I call "GET /repos/repo1/merge?commit=branch1"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "No transaction was specified"
       
   Scenario: Merge outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/merge"
+     When I call "GET /repos/repo1/merge?commit=branch1"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
@@ -27,7 +27,7 @@ Feature: Merge
       And I have a transaction as "@txId" on the "repo1" repo
      When I call "GET /repos/repo1/merge?transactionId={@txId}"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" equals "No commits were specified for merging."
+      And the xpath "/response/error/text()" equals "Required parameter 'commit' was not provided."
     
   Scenario: Merging two branches returns the details of the merge
     Given There is a repository with multiple branches named repo1

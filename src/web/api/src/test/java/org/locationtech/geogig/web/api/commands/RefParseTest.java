@@ -54,7 +54,7 @@ public class RefParseTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No name was given.");
+        ex.expectMessage("Required parameter 'name' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

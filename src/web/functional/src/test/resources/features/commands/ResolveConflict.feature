@@ -11,13 +11,13 @@ Feature: ResolveConflict
       
   Scenario: ResolveConflict outside of a transaction issues 500 "Transaction required"
     Given There is an empty repository named repo1
-     When I call "GET /repos/repo1/resolveconflict"
+     When I call "GET /repos/repo1/resolveconflict?path=somePath/1&objectid=someId"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "No transaction was specified"
       
   Scenario: ResolveConflict outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/resolveconflict"
+     When I call "GET /repos/repo1/resolveconflict?path=somePath/1&objectid=someId"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
@@ -25,16 +25,16 @@ Feature: ResolveConflict
   Scenario: ResolveConflict without a path issues a 500 status code
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
-     When I call "GET /repos/repo1/resolveconflict?transactionId={@txId}"
+     When I call "GET /repos/repo1/resolveconflict?transactionId={@txId}&objectid=someId"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No path was given."
+      And the xpath "/response/error/text()" contains "Required parameter 'path' was not provided."
       
   Scenario: ResolveConflict without an object ID issues a 500 status code
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
      When I call "GET /repos/repo1/resolveconflict?transactionId={@txId}&path=Points/Point.1"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No object ID was given."
+      And the xpath "/response/error/text()" contains "Required parameter 'objectid' was not provided."
          
   Scenario: ResolveConflict with an invalid path issues a 400 status code
     Given There is an empty repository named repo1

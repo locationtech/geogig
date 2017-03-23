@@ -11,14 +11,13 @@
 package org.locationtech.geogig.web.api.index;
 
 import org.locationtech.geogig.rest.repository.CommandResource;
-import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
 public class IndexCommandResource extends CommandResource {
 
     @Override
-    protected WebAPICommand buildCommand(String commandName, ParameterSet params) {
-        return IndexCommandBuilder.build(commandName, params);
+    protected WebAPICommand buildCommand(String commandName) {
+        return IndexCommandBuilder.build(commandName);
     }
 
 }

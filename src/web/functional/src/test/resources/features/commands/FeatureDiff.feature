@@ -11,7 +11,7 @@ Feature: FeatureDiff
     
   Scenario: Feature diff outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/featurediff"
+     When I call "GET /repos/repo1/featurediff?path=somePath"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
@@ -20,13 +20,13 @@ Feature: FeatureDiff
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/featurediff"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No feature path was specified"
+      And the xpath "/response/error/text()" contains "Required parameter 'path' was not provided."
       
   Scenario: Calling feature diff with an empty path issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/featurediff?path=%20"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "No feature path was specified"
+      And the xpath "/response/error/text()" contains "Invalid path was specified"
       
   Scenario: Feature diff should work for an added feature
     Given There is a default multirepo server

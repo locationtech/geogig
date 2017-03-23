@@ -12,6 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -47,9 +49,9 @@ public class ResolveConflictTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId someObjectId = RevObjectTestSupport.hashString("object");
+        String someObjectId = RevObjectTestSupport.hashString("object").toString();
         ParameterSet options = TestParams.of("path", "some/path", "objectid",
-                someObjectId.toString());
+                someObjectId, "transactionId", UUID.randomUUID().toString());
 
         ResolveConflict op = (ResolveConflict) buildCommand(options);
         assertEquals("some/path", op.path);
@@ -67,7 +69,7 @@ public class ResolveConflictTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("objectid", point1_id.toString(), "transactionId",
                 transaction.getTransactionId().toString());
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No path was given.");
+        ex.expectMessage("Required parameter 'path' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 
@@ -83,7 +85,7 @@ public class ResolveConflictTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("path", path, "transactionId",
                 transaction.getTransactionId().toString());
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No object ID was given.");
+        ex.expectMessage("Required parameter 'objectid' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

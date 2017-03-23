@@ -11,7 +11,7 @@ Feature: UpdateRef
     
   Scenario: UpdateRef outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /repos/repo1/updateref"
+     When I call "GET /repos/repo1/updateref?name=master"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
@@ -20,7 +20,7 @@ Feature: UpdateRef
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/updateref"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" equals "No name was given."
+      And the xpath "/response/error/text()" equals "Required parameter 'name' was not provided."
       
   Scenario: Calling UpdateRef without a new value or delete specified issues a 500 status code
     Given There is an empty repository named repo1

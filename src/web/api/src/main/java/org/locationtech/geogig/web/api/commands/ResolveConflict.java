@@ -47,12 +47,12 @@ public class ResolveConflict extends AbstractWebAPICommand {
 
     String path;
 
-    ObjectId objectId;
+    String objectId;
 
-    public ResolveConflict(ParameterSet options) {
-        super(options);
-        setPath(options.getFirstValue("path", null));
-        setFeatureObjectId(options.getFirstValue("objectid", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setPath(options.getRequiredValue("path"));
+        setFeatureObjectId(options.getRequiredValue("objectid"));
     }
 
     /**
@@ -65,11 +65,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
     }
 
     public void setFeatureObjectId(String objectId) {
-        if (objectId == null) {
-            this.objectId = null;
-        } else {
-            this.objectId = ObjectId.valueOf(objectId);
-        }
+        this.objectId = objectId;
     }
 
     /**
@@ -82,14 +78,10 @@ public class ResolveConflict extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
-        if (path == null) {
-            throw new CommandSpecException("No path was given.");
-        }
-        if (objectId == null) {
-            throw new CommandSpecException("No object ID was given.");
-        }
 
         RevTree revTree = geogig.workingTree().getTree();
+
+        ObjectId featureObjectId = ObjectId.valueOf(objectId);
 
         Optional<NodeRef> nodeRef = geogig.command(FindTreeChild.class).setParent(revTree)
                 .setChildPath(NodeRef.parentPath(path)).call();
@@ -99,8 +91,8 @@ public class ResolveConflict extends AbstractWebAPICommand {
         RevFeatureType revFeatureType = geogig.command(RevObjectParse.class)
                 .setObjectId(nodeRef.get().getMetadataId()).call(RevFeatureType.class).get();
 
-        Optional<RevFeature> object = geogig.command(RevObjectParse.class).setObjectId(objectId)
-                .call(RevFeature.class);
+        Optional<RevFeature> object = geogig.command(RevObjectParse.class)
+                .setObjectId(featureObjectId).call(RevFeature.class);
         
         if (!object.isPresent()) {
             throw new CommandSpecException("Object ID could not be resolved to a feature.");
@@ -124,8 +116,9 @@ public class ResolveConflict extends AbstractWebAPICommand {
             }
         }
 
-        NodeRef newFeatureNode = new NodeRef(Node.create(NodeRef.nodeFromPath(path), objectId,
-                ObjectId.NULL, TYPE.FEATURE, bounds), NodeRef.parentPath(path), ObjectId.NULL);
+        NodeRef newFeatureNode = new NodeRef(Node.create(NodeRef.nodeFromPath(path),
+                featureObjectId, ObjectId.NULL, TYPE.FEATURE, bounds), NodeRef.parentPath(path),
+                ObjectId.NULL);
 
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class)
                 .setParent(geogig.workingTree().getTree())

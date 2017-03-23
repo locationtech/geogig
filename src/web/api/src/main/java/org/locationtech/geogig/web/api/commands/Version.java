@@ -28,8 +28,8 @@ import org.restlet.data.Status;
 
 public class Version extends AbstractWebAPICommand {
 
-    public Version(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
     }
 
     @Override

@@ -28,9 +28,39 @@ Feature: Config
      Then the response status should be '400'
       And the xpath "/response/error/text()" contains "You must specify the value when setting a config key."
       
-  Scenario: Config POST with a name and value sets the config entry and GET retrieves the set value
+  Scenario: Config POST with a name and value in the url sets the config entry and GET retrieves the set value
     Given There is an empty repository named repo1
      When I call "POST /repos/repo1/config?name=user.name&value=myUser"
+     Then the response status should be '200'
+      And the xpath "/response/success/text()" equals "true"
+     When I call "GET /repos/repo1/config?name=user.name"
+     Then the response status should be '200'
+      And the xpath "/response/value/text()" equals "myUser"
+      
+  Scenario: Config POST with a name and value as json sets the config entry and GET retrieves the set value
+    Given There is an empty repository named repo1
+     When I post content-type "application/json" to "/repos/repo1/config" with
+       """
+       {
+         "name":"user.name",
+         "value":"myUser"
+       }
+       """
+     Then the response status should be '200'
+      And the xpath "/response/success/text()" equals "true"
+     When I call "GET /repos/repo1/config?name=user.name"
+     Then the response status should be '200'
+      And the xpath "/response/value/text()" equals "myUser"
+      
+  Scenario: Config POST with a name and value as xml sets the config entry and GET retrieves the set value
+    Given There is an empty repository named repo1
+     When I post content-type "application/xml" to "/repos/repo1/config" with
+       """
+       <params>
+         <name>user.name</name>
+         <value>myUser</value>
+       </params>
+       """
      Then the response status should be '200'
       And the xpath "/response/success/text()" equals "true"
      When I call "GET /repos/repo1/config?name=user.name"

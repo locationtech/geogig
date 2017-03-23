@@ -9,11 +9,11 @@ Feature: Cat
      Then the response status should be '405'
       And the response allowed methods should be "GET"
     
-  Scenario: Calling cat without specifying an object id issues a 400 status code
+  Scenario: Calling cat without specifying an object id issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/cat"
-     Then the response status should be '400'
-      And the xpath "/response/error/text()" contains "You must specify a valid non-null ObjectId."
+     Then the response status should be '500'
+      And the xpath "/response/error/text()" contains "Required parameter 'objectid' was not provided."
       
   Scenario: Calling cat with an invalid object id issues a 400 status code
     Given There is an empty repository named repo1

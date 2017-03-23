@@ -51,9 +51,9 @@ public class RevertFeature extends AbstractWebAPICommand {
 
     String featurePath;
 
-    ObjectId oldCommitId;
+    String oldCommitId;
 
-    ObjectId newCommitId;
+    String newCommitId;
 
     Optional<String> authorName = Optional.absent();
 
@@ -63,15 +63,15 @@ public class RevertFeature extends AbstractWebAPICommand {
 
     Optional<String> mergeMessage = Optional.absent();
 
-    public RevertFeature(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setAuthorName(options.getFirstValue("authorName", null));
         setAuthorEmail(options.getFirstValue("authorEmail", null));
         setCommitMessage(options.getFirstValue("commitMessage", null));
         setMergeMessage(options.getFirstValue("mergeMessage", null));
-        setNewCommitId(options.getFirstValue("newCommitId", null));
-        setOldCommitId(options.getFirstValue("oldCommitId", null));
-        setPath(options.getFirstValue("path", null));
+        setNewCommitId(options.getRequiredValue("newCommitId"));
+        setOldCommitId(options.getRequiredValue("oldCommitId"));
+        setPath(options.getRequiredValue("path"));
     }
 
     /**
@@ -89,11 +89,7 @@ public class RevertFeature extends AbstractWebAPICommand {
      * @param oldCommitId - the commit that contains the version of the feature to revert to
      */
     public void setOldCommitId(String oldCommitId) {
-        if (oldCommitId == null) {
-            this.oldCommitId = null;
-        } else {
-            this.oldCommitId = ObjectId.valueOf(oldCommitId);
-        }
+        this.oldCommitId = oldCommitId;
     }
 
     /**
@@ -102,11 +98,7 @@ public class RevertFeature extends AbstractWebAPICommand {
      * @param newCommitId - the commit that contains the version of the feature that we want to undo
      */
     public void setNewCommitId(String newCommitId) {
-        if (newCommitId == null) {
-            this.newCommitId = null;
-        } else {
-            this.newCommitId = ObjectId.valueOf(newCommitId);
-        }
+        this.newCommitId = newCommitId;
     }
 
     /**
@@ -148,45 +140,33 @@ public class RevertFeature extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
 
-        if (featurePath == null) {
-            throw new CommandSpecException("No path was given.");
-        }
-        if (newCommitId == null) {
-            throw new CommandSpecException("No 'new' commit ID was given.");
-        }
-        if (oldCommitId == null) {
-            throw new CommandSpecException("No 'old' commit ID was given.");
-        }
-
-        Optional<RevTree> newTree;
-        Optional<RevTree> oldTree;
+        ObjectId newCommitObjectId = ObjectId.valueOf(newCommitId);
 
         // get tree from new commit
-        Optional<ObjectId> treeId = geogig.command(ResolveTreeish.class).setTreeish(newCommitId)
+        Optional<ObjectId> treeId = geogig.command(ResolveTreeish.class)
+                .setTreeish(newCommitObjectId)
                 .call();
 
         Preconditions.checkState(treeId.isPresent(),
                 "New commit id did not resolve to a valid tree.");
-        newTree = geogig.command(RevObjectParse.class).setRefSpec(treeId.get().toString())
-                .call(RevTree.class);
-        Preconditions.checkState(newTree.isPresent(), "Unable to read the new commit tree.");
+        final RevTree newTree = geogig.objectDatabase().getTree(treeId.get());
+
+        ObjectId oldCommitObjectId = ObjectId.valueOf(oldCommitId);
 
         // get tree from old commit
-        treeId = geogig.command(ResolveTreeish.class).setTreeish(oldCommitId).call();
+        treeId = geogig.command(ResolveTreeish.class).setTreeish(oldCommitObjectId).call();
 
         Preconditions.checkState(treeId.isPresent(),
                 "Old commit id did not resolve to a valid tree.");
-        oldTree = geogig.command(RevObjectParse.class).setRefSpec(treeId.get().toString())
-                .call(RevTree.class);
-        Preconditions.checkState(newTree.isPresent(), "Unable to read the old commit tree.");
+        final RevTree oldTree = geogig.objectDatabase().getTree(treeId.get());
 
         // get feature from old tree
-        NodeRef node = geogig.command(FindTreeChild.class).setParent(oldTree.get())
+        NodeRef node = geogig.command(FindTreeChild.class).setParent(oldTree)
                 .setChildPath(featurePath).call().orNull();
         boolean delete = false;
         if (node == null) {
             delete = true;
-            node = geogig.command(FindTreeChild.class).setParent(newTree.get())
+            node = geogig.command(FindTreeChild.class).setParent(newTree)
                     .setChildPath(featurePath).call().orNull();
             if (node == null) {
                 throw new CommandSpecException("The feature was not found in either commit tree.");
@@ -195,7 +175,7 @@ public class RevertFeature extends AbstractWebAPICommand {
 
         // get the new parent tree
         ObjectId metadataId = ObjectId.NULL;
-        Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class).setParent(newTree.get())
+        Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class).setParent(newTree)
                 .setChildPath(node.getParentPath()).call();
 
         CanonicalTreeBuilder treeBuilder;
@@ -218,13 +198,13 @@ public class RevertFeature extends AbstractWebAPICommand {
 
         NodeRef newTreeNode = NodeRef.tree(node.getParentPath(), newFeatureTree.getId(),
                 metadataId);
-        RevTree newRoot = geogig.command(UpdateTree.class).setRoot(newTree.get())
+        RevTree newRoot = geogig.command(UpdateTree.class).setRoot(newTree)
                 .setChild(newTreeNode).call();
 
         // build new commit with parent of new commit and the newly built tree
         CommitBuilder builder = new CommitBuilder();
 
-        builder.setParentIds(Lists.newArrayList(newCommitId));
+        builder.setParentIds(Lists.newArrayList(newCommitObjectId));
         builder.setTreeId(newRoot.getId());
         builder.setAuthor(authorName.orNull());
         builder.setAuthorEmail(authorEmail.orNull());

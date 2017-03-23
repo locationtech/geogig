@@ -35,9 +35,9 @@ import org.restlet.data.Status;
 public class RenameRepository extends AbstractWebAPICommand {
     String name;
 
-    public RenameRepository(ParameterSet options) {
-        super(options);
-        setName(options.getFirstValue("name", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setName(options.getRequiredValue("name"));
     }
 
     @Override
@@ -69,7 +69,6 @@ public class RenameRepository extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
-        checkArgument(name != null, "You must specify a new name for the repository.");
 
         String oldRepoName = geogig.command(ResolveRepositoryName.class).call();
         checkArgument(!name.equals(oldRepoName),

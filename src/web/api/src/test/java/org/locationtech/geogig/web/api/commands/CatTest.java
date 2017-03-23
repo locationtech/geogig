@@ -68,7 +68,7 @@ public class CatTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
 
         ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("You must specify a valid non-null ObjectId.");
+        ex.expectMessage("Required parameter 'objectid' was not provided.");
         buildCommand(options).run(testContext.get());
     }
 

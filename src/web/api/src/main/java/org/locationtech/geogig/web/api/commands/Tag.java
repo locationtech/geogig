@@ -43,8 +43,8 @@ public class Tag extends AbstractWebAPICommand {
 
     String message;
 
-    public Tag(ParameterSet options) {
-        super(options);
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
         setName(options.getFirstValue("name", null));
         setCommit(options.getFirstValue("commit", null));
         setMessage(options.getFirstValue("message", null));

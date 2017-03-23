@@ -13,11 +13,11 @@ Feature: Blame
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/blame"
      Then the response status should be '500'
-      And the xpath "/response/error/text()" contains "Blame requires the path of a feature."
+      And the xpath "/response/error/text()" contains "Required parameter 'path' was not provided."
       
   Scenario: Calling blame with an invalid commit issues a 500 status code
     Given There is an empty repository named repo1
-     When I call "GET /repos/repo1/blame?commit=nonexistent"
+     When I call "GET /repos/repo1/blame?commit=nonexistent&path=somePath"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "Could not resolve branch or commit"
       

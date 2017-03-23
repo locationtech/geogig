@@ -32,9 +32,9 @@ public class DropIndex extends AbstractWebAPICommand {
 
     String geometryAttributeName;
 
-    public DropIndex(ParameterSet options) {
-        super(options);
-        setTreeRefSpec(options.getFirstValue("treeRefSpec", null));
+    @Override
+    protected void setParametersInternal(ParameterSet options) {
+        setTreeRefSpec(options.getRequiredValue("treeRefSpec"));
         setGeometryAttributeName(options.getFirstValue("geometryAttributeName", null));
     }
 

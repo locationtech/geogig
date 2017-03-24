@@ -44,7 +44,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     private static final ObjectSerializingFactory[] SUPPORTED_FORMATS = { //
             new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE), //
             new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE), //
-            new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE),//
+            new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE), //
             new LZFSerializationFactory(DataStreamSerializationFactoryV2_2.INSTANCE)//
     };
 
@@ -66,7 +66,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     public RevObject read(ObjectId id, InputStream in) throws IOException {
         final int serialVersionHeader = in.read();
         assert serialVersionHeader >= 0 && serialVersionHeader <= MAX_FORMAT_CODE;
-        final ObjectSerializingFactory serializer = SUPPORTED_FORMATS[serialVersionHeader];
+        final ObjectSerializingFactory serializer = serializer(id, serialVersionHeader);
         RevObject revObject = serializer.read(id, in);
         return revObject;
     }
@@ -75,7 +75,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) {
         final int serialVersionHeader = data[offset] & 0xFF;
         assert serialVersionHeader >= 0 && serialVersionHeader <= MAX_FORMAT_CODE;
-        final ObjectSerializingFactory serializer = SUPPORTED_FORMATS[serialVersionHeader];
+        final ObjectSerializingFactory serializer = serializer(id, serialVersionHeader);
         RevObject revObject;
         try {
             revObject = serializer.read(id, data, offset + 1, length - 1);
@@ -83,6 +83,24 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
             throw new RuntimeException("Error reading object " + id, e);
         }
         return revObject;
+    }
+
+    private ObjectSerializingFactory serializer(final @Nullable ObjectId id,
+            final int serializerIndex) {
+        if (serializerIndex < 0) {
+            throw new RuntimeException(
+                    String.format("Serializer header shall be between 0 and %d, got %d",
+                            MAX_FORMAT_CODE, serializerIndex));
+        }
+        if (serializerIndex > MAX_FORMAT_CODE) {
+            throw new RuntimeException(String.format(
+                    "Object %s was created with serial format %d, which is unsupported by "
+                            + "this geogig version (max format supported: %d)", //
+                    (id == null ? "" : id.toString()), //
+                    serializerIndex, //
+                    MAX_FORMAT_CODE));
+        }
+        return SUPPORTED_FORMATS[serializerIndex];
     }
 
     /**

@@ -67,7 +67,7 @@ You can configure a store by:
 
 .. _configure-datastore-create-new:
 
-- Creating a brand new GeoGig repository (see :ref:`configure-new-repo`):
+- Creating a brand new GeoGig repository (see :ref:`create-new-repo`):
 
 .. figure:: ../img/configure-geogig-repo-store-addNew.png
 
@@ -89,10 +89,10 @@ It may be necessary to specify the SRS for your data if it is not recognized by 
 
 .. figure:: ../img/configure-layer-declared-srs.png
 
-.. _configure-new-repo:
+.. _create-new-repo:
 
-Configuring a new GeoGig repository in GeoServer
-------------------------------------------------
+Creating a new GeoGig repository in GeoServer
+---------------------------------------------
 
 You can create new GeoGig repositories through the :ref:`Create new GeoGig datastore <configure-datastore-create-new>` page or by navigating to the `GeoGig Repositories` configuration page in the admin bar.
 
@@ -102,14 +102,14 @@ and selecting `Create new repository`
 
 .. figure:: ../img/create-new-geogig-repo.png
 
-On the GeoGig repository configuration page, you can choose which type of repository you want, either a :ref:`directory-backed GeoGig repository <configure-new-directory-repo>`, or a :ref:`PostgreSQL-backed GeoGig repository <configure-new-postgres-repo>`. A directory-backed repository will store GeoGig data in a directory on the GeoServer filesystem, while a PostgreSQL-backed repository will store the GeoGig information in a PostgreSQL database. The database can be running on the same server as GeoServer or it can be remote.
+On the GeoGig repository configuration page, you can choose which type of repository you want, either a :ref:`directory-backed GeoGig repository <create-new-directory-repo>`, or a :ref:`PostgreSQL-backed GeoGig repository <create-new-postgres-repo>`. A directory-backed repository will store GeoGig data in a directory on the GeoServer filesystem, while a PostgreSQL-backed repository will store the GeoGig information in a PostgreSQL database. The database can be running on the same server as GeoServer or it can be remote.
 
-.. _configure-new-directory-repo:
+.. _create-new-directory-repo:
 
-Configuring a new directory-backed GeoGig repository
-----------------------------------------------------
+Creating a new directory-backed GeoGig repository
+-------------------------------------------------
 
-To configure a new GeoGig repository that is backed by the filesystem, select **Directory** from the **Repository Type** pull-down, enter a **Repository Name**, a **Parent Directory** and click "Save":
+To create a new GeoGig repository that is backed by the filesystem, select **Directory** from the **Repository Type** pull-down, enter a **Repository Name**, a **Parent Directory** and click "Save":
 
 .. figure:: ../img/create-new-geogig-repo-directory.png
 
@@ -117,12 +117,12 @@ You can enter the parent directory manually or select one from a directory choos
 
 .. figure:: ../img/create-new-geogig-repo-directory-chooser.png
 
-.. _configure-new-postgres-repo:
+.. _create-new-postgres-repo:
 
-Configuring a new PostgreSQL-backed GeoGig repository
------------------------------------------------------
+Creating a new PostgreSQL-backed GeoGig repository
+--------------------------------------------------
 
-To configure a new GeoGig repository that is backed by a PostgreSQL database, select **PostgreSQL** from the **Repository Type** pull-down, enter the relevant database connection parameters and click "Save".
+To create a new GeoGig repository that is backed by a PostgreSQL database, select **PostgreSQL** from the **Repository Type** pull-down, enter the relevant database connection parameters and click "Save".
 
 .. figure:: ../img/create-new-geogig-repo-postgres.png
 
@@ -148,6 +148,35 @@ Just as when creating new repositories, you have the option to import existing D
 .. figure:: ../img/import-existing-geogig-repo-postgres.png
 
    *PostgreSQL-backed Repository configuration*
+   
+.. _configure-repo:
+   
+Configuring a GeoGig repository in GeoServer
+--------------------------------------------
+
+You can set both global and local repository config settings through the repository configuration page.  This is accessed by navigating to the `GeoGig Repositories` configuration page in the admin bar.
+
+.. figure::  ../img/configure-new-geogig-repo.png
+
+From here, click on an existing repository to go to the configuration page.  Existing configuration settings will be listed in local and global tables.  Local settings are only applied to the repository that is being configured.  Global settings, however, apply to all repositories on the file system (in the case of a directory-backed repository) or the database (in the case of a PostgreSQL-backed repository).
+
+.. figure:: ../img/geogig-repo-config.png
+
+Settings with a clickable name link can be changed through this interface.  Settings indicated by a non-clickable name cannot be changed through this interface to preserve the stability of the repository.  To add a new local or global configuration setting, click the `Add new local config entry` or `Add new global config entry` link.
+
+Each of these will present a dialog to enter the new configuration entry.
+
+.. figure:: ../img/geogig-config-edit.png
+
+Enter the key and value for the entry and press `Save`.
+
+See the :ref:`Postgres Performance Tuning <postgres-performance-tuning>` section of the manual for some examples of configuration keys for PostgreSQL-backed repositories.
+
+Press `Save` again on the repository configuration page to save the changes to the repository.
+
+::
+
+    Note: Some configuration settings will not take effect until the repository is re-opened.  In this case, you may need to restart GeoServer.
 
 Cloning, Pushing, and Pulling
 -----------------------------

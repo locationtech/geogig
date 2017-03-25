@@ -91,6 +91,8 @@ A nice trick is to use environment variables instead:
  user@localhost:/home/user$ geogig --repo $gold init
  user@localhost:/home/user$ geogig --repo $QA init
 
+.. _postgres-performance-tuning:
+
 Performance Tuning
 ------------------
 
@@ -122,4 +124,4 @@ GeoGig will create the necessary tables the first time it's used against a given
  postgres@localhost: $ psql -d geogig -f geogig_postgres.sql
 
 
-Finally, refer to the :ref:`PostgreSQL-backed GeoGig repository <configure-new-postgres-repo>` to learn how to configure a repository in GeoServer.
+Finally, refer to the :ref:`PostgreSQL-backed GeoGig repository <create-new-postgres-repo>` to learn how to configure a repository in GeoServer.

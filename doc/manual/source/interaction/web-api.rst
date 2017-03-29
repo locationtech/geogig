@@ -21,13 +21,13 @@ Parameters can be supplied to the various commands through URL encoding, JSON, o
 ::
 
   curl -X POST "http://localhost:8182/repos/<repo name>/config?name=user.name&value=John%20Doe"
-  
+
 - **JSON**
 
 ::
 
   curl -X POST -H "Content-Type: application/json" -d '{"name":"user.name","value":"John Doe"}' "http://localhost:8182/repos/<repo name>/config"
-  
+
 - **XML**
 
 ::
@@ -41,7 +41,7 @@ Porcelain commands supported
 
 	 **Currently Supported Options:**
 
-		1) **path** - the path to the feature you want to add
+		a) **path** - the path to the feature you want to add
 
 			**Type:** String
 
@@ -117,46 +117,46 @@ Porcelain commands supported
 
 - **Checkout** (-T)
 
-	 **Currently Supported Options:**
+    **Currently Supported Options:**
 
-		a) **branch*** - the name of the branch to checkout
+      a) **branch** - the name of the branch to checkout
 
-			**Type:** String
+      	**Type:** String
 
-			**Default:** null
+      	**Default:** null
 
-		b) **ours*** - set ``true`` to use "our" version of the feature specified
+      b) **ours** - set ``true`` to use "our" version of the feature specified
 
-			**Type:** Boolean
+      	**Type:** Boolean
 
-			**Default:** false
+      	**Default:** false
 
-		c) **theirs*** - set ``true`` to use "their" version of the feature specified
+      c) **theirs** - set ``true`` to use "their" version of the feature specified
 
-			**Type:** Boolean
+      	**Type:** Boolean
 
-			**Default:** false
+      	**Default:** false
 
-		d) **path*** - the path to the feature that will be updated
+      d) **path** - the path to the feature that will be updated
 
-			**Type:** String
+      	**Type:** String
 
-			**Default:** null
+      	**Default:** null
 
-	 **Examples:**
+    **Examples:**
 
- 	 ::
+    ::
 
-	   localhost:8182/repos/<repo name>/checkout?branch=master&transactionId=id
-	       	  localhost:8182/checkout?path=tree/fid&ours=true&transactionId=id
+       localhost:8182/repos/<repo name>/checkout?branch=master&transactionId=id
+           	  localhost:8182/checkout?path=tree/fid&ours=true&transactionId=id
 
-	 **Output:**
+    **Output:**
 
-	 ::
+    ::
 
-	   Returns the branch you were on and the branch you checked out, if path was specified it returns the path and the strategy chosen.
+       Returns the branch you were on and the branch you checked out, if path was specified it returns the path and the strategy chosen.
 
- .. note:: You must specify either branch OR path, not both. If path is specified then you MUST specify either "ours" or "theirs".
+    .. note:: You must specify either branch OR path, not both. If path is specified then you MUST specify either "ours" or "theirs".
 
 - **Commit** (-T)
 
@@ -266,7 +266,7 @@ Porcelain commands supported
 
 			**Default:** false
 
-		c) **remote*** - the remote to fetch from
+		c) **remote** - the remote to fetch from
 
 			**Type:** String
 
@@ -284,7 +284,7 @@ Porcelain commands supported
 
 	   Returns the name of the remote, the branch name before and after, and the value before and after.
 
- .. note:: If remote is not specified it will try to fetch from a remote named origin.
+  .. note:: If remote is not specified it will try to fetch from a remote named origin.
 
 - **Log**
 
@@ -381,7 +381,7 @@ Porcelain commands supported
 
 	   Returns a list of the commits within a given range. If countChanges is specified, it also returns the number of adds, modifies, and deletes for each commit. If summary with CSV output format is specified, it prompts for download a summary file of changes for each commit in CSV format.
 
- .. note:: You can get the summary downloaded as a CSV file by specifying ``output_format=csv``, this is the only option in the web-API that supports this format.
+     .. note:: You can get the summary downloaded as a CSV file by specifying ``output_format=csv``, this is the only option in the web-API that supports this format.
 
 - **Merge** (-T)
 
@@ -423,7 +423,7 @@ Porcelain commands supported
 
 	   Returns the object ID of both branches being merged and the common ancestor's ID as well as the merge commit ID, if one was made, the number of conflicts there were, if there were any, and the list of changes that resulted from the merge.
 
- .. note:: You can also pass a ref name for the commit option, instead of a commit hash.
+     .. note:: You can also pass a ref name for the commit option, instead of a commit hash.
 
 - **Pull**
 
@@ -471,7 +471,7 @@ Porcelain commands supported
 
 	   Returns the result of Fetch, the remote name, the ref name, the number of adds, modifies and removes and the merge result if one was made.
 
- .. note:: If you don't specify the remoteName it will try to pull from a remote named   origin. Also, if ref is not specified it will try to pull the currently checked out branch. The ref option should be in this format remoteref:localref, with the localref portion being optional. If you should opt out of specifying the localref it will just use the same name as the remoteref.
+     .. note:: If you don't specify the remoteName it will try to pull from a remote named   origin. Also, if ref is not specified it will try to pull the currently checked out branch. The ref option should be in this format remoteref:localref, with the localref portion being optional. If you should opt out of specifying the localref it will just use the same name as the remoteref.
 
 - **Push**
 
@@ -508,7 +508,7 @@ Porcelain commands supported
 
 	   Returns whether or not it succeeded in pushing data.
 
- .. note:: If you don't specify the remoteName it will try to push to a remote named origin. Also, if ref is not specified it will try to push the currently checked out branch. The ref option should be in this format localref:remoteref, with the remoteref portion being optional. If you should opt out of specifying the remoteref it will just use the same name as the localref.
+     .. note:: If you don't specify the remoteName it will try to push to a remote named origin. Also, if ref is not specified it will try to push the currently checked out branch. The ref option should be in this format localref:remoteref, with the remoteref portion being optional. If you should opt out of specifying the remoteref it will just use the same name as the localref.
 
 - **Remote**
 
@@ -798,7 +798,7 @@ Plumbing Commands Supported
 
 	   Returns the list of attributes for that feature with the before and after values, the changetype, and, if it is the geometry, it returns the CRS with it.
 
- .. note:: If no newTreeish is specified, then it will use the commit that HEAD is pointing to. If no oldTreeish is specified, then it will assume you want the diff to include the initial commit.
+     .. note:: If no newTreeish is specified, then it will use the commit that HEAD is pointing to. If no oldTreeish is specified, then it will assume you want the diff to include the initial commit.
 
 - **LsTree**
 
@@ -846,7 +846,7 @@ Plumbing Commands Supported
 
 	   Returns the path to each node and, if verbose is specified, it returns the metadataId, type, and objectId.
 
- .. note:: If path is not specified it will use the WORK_HEAD.
+     .. note:: If path is not specified it will use the WORK_HEAD.
 
 - **RebuildGraph**
 
@@ -926,7 +926,7 @@ Plumbing Commands Supported
 
 	   Returns the same things as ref parse
 
- .. note:: You must specify either delete OR newValue for the command to work.
+     .. note:: You must specify either delete OR newValue for the command to work.
 
 Web-API Specific
 -----------------------------
@@ -1063,13 +1063,13 @@ Web-API Specific
 
 	   Returns the same format as Merge.
 
+
 Repo Commands
 -----------------------------
 
-These commands can be used by using the ``repos/<repo name>/repo/`` endpoint, instead of the standard ``repos/<repo name>/`` endpoint.
+These commands can be used via the ``repos/<repo name>/repo/`` endpoint, instead of the standard ``repos/<repo name>/`` endpoint.
 
- .. note:: The output format for all repo commands is plain text.
-
+.. note:: The output format for all repo commands is plain text.
 
 - **MergeFeature**
 

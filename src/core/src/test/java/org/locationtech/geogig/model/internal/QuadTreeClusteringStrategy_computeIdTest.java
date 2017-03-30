@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model.internal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
@@ -37,11 +38,13 @@ public class QuadTreeClusteringStrategy_computeIdTest {
 
         Node n = createNode("empty envelope", new Envelope());
         NodeId quadID = quadStrategy.computeId(n);
-        assertNull(quadID);
+        assertNotNull(quadID);
+        assertNull(quadID.value());
 
         n = createNode("empty envelope", null);
         quadID = quadStrategy.computeId(n);
-        assertNull(quadID);
+        assertNotNull(quadID);
+        assertNull(quadID.value());
     }
 
     // this polygon should go it the root node

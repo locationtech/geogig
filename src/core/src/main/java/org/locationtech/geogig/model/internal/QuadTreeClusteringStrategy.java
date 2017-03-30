@@ -141,13 +141,15 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         return Quadrant.VALUES.length;
     }
 
+    /**
+     * @return a {@link NodeId} whose {@link NodeId#value() value} is the node's
+     *         {@link Node#bounds() bounds} {@link Envelope} or {@code null}
+     */
     @Override
     public NodeId computeId(final Node node) {
-        Optional<Envelope> bounds = node.bounds();
-        if (!bounds.isPresent() || bounds.get().isNull()) {
-            return null; // no bounds -> not in quad tree
-        }
-        return new NodeId(node.getName(), bounds.get());
+        @Nullable
+        Envelope bounds = node.bounds().orNull();
+        return new NodeId(node.getName(), bounds);
     }
 
     /**

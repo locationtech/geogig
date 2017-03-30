@@ -12,6 +12,7 @@ package org.locationtech.geogig.model.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.findNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -307,6 +308,28 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         assertEquals(addedNodes, added);
     }
 
+    public @Test void testNullGeometriesGoToRootUnpromotablesTree() {
+        Envelope maxBounds = new Envelope(-180, 180, -90, 90);
+        int size = 128;
+        List<Node> nodes = createPointNodes(nodeRange(size), maxBounds);
+        RevTreeBuilder builder = createQuadTree(maxBounds, nodes);
+
+        Node nullEnvNode = node(10000, null);
+        builder.put(nullEnvNode);
+        RevTree tree = builder.build();
+        assertFalse(tree.buckets().isEmpty());
+        List<Node> matches = findNode(nullEnvNode.getName(), tree, objectStore);
+        assertEquals(1, matches.size());
+
+        Integer unpromotablesBucketIndex = Integer.valueOf(4);
+        assertTrue(tree.buckets().keySet().contains(unpromotablesBucketIndex));
+
+        RevTree unpromotables = objectStore
+                .getTree(tree.buckets().get(unpromotablesBucketIndex).getObjectId());
+        matches = findNode(nullEnvNode.getName(), unpromotables, objectStore);
+        assertEquals(1, matches.size());
+    }
+
     private List<Integer> nodeRange(final int ncount) {
         List<Integer> nodeIds = new ArrayList<>(ContiguousSet
                 .create(Range.closedOpen(0, ncount), DiscreteDomain.integers()).asList());
@@ -322,16 +345,12 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         Random random = new Random();
         for (Integer intId : nodeIds) {
-            String nodeName = String.valueOf(intId);
-            String sid = "a" + Strings.padStart(nodeName, 39, '0');// avoid creating ObjectId.NULL
-            ObjectId oid = ObjectId.valueOf(sid);
-
             double x = minX + maxBounds.getWidth() * random.nextDouble();
             double y = minY + maxBounds.getHeight() * random.nextDouble();
 
             Envelope bounds = new Envelope(x, x, y, y);
 
-            Node node = Node.create(nodeName, oid, ObjectId.NULL, TYPE.FEATURE, bounds);
+            Node node = node(intId, bounds);
             nodes.add(node);
         }
 

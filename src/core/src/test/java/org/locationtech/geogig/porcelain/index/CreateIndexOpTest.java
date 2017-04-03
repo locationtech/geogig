@@ -11,6 +11,12 @@ package org.locationtech.geogig.porcelain.index;
 
 import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.createWorldPointsLayer;
 import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.getPointFid;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +29,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.index.BuildIndexOp;
 import org.locationtech.geogig.plumbing.index.IndexTestSupport;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
@@ -109,7 +116,40 @@ public class CreateIndexOpTest extends RepositoryTestCase {
 
         IndexTestSupport.verifyIndex(geogig, index.indexTreeId(), worldPointsTree.getId());
     }
+    
+    
+    public @Test void testAbortsCleanly() {
 
+        RuntimeException expected = new RuntimeException("expected");
+
+        BuildIndexOp failingOp = mock(BuildIndexOp.class);
+        when(failingOp.setIndex(any(IndexInfo.class))).thenThrow(expected);
+
+        Envelope bounds = new Envelope(-180, 180, -90, 90);
+        Map<String, Object> metadata = new HashMap<String, Object>();
+        metadata.put(IndexInfo.MD_QUAD_MAX_BOUNDS, bounds);
+
+        final String treeName = worldPointsLayer.getName();
+        final String attributeName = "geom";
+        try {
+            CreateIndexOp createIndex = geogig.command(CreateIndexOp.class);
+            createIndex = spy(createIndex);
+            doReturn(failingOp).when(createIndex).command(eq(BuildIndexOp.class));
+            
+            createIndex.setTreeName(treeName)//
+                    .setCanonicalTypeTree(worldPointsTree)//
+                    .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
+                    .setAttributeName(attributeName)//
+                    .setIndexType(IndexType.QUADTREE)//
+                    .setMetadata(metadata)//
+                    .call();
+        } catch (Exception e) {
+            assertSame(expected, e);
+        }
+
+        assertFalse(indexdb.getIndexInfo(treeName, attributeName).isPresent());
+    }
+    
     @Test
     public void testCreateIndexMetadata() {
         Envelope bounds = new Envelope(-180, 180, -90, 90);

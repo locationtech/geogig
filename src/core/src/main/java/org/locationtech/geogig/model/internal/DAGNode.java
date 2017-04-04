@@ -17,7 +17,7 @@ import java.io.IOException;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.storage.datastream.FormatCommonV2;
+import org.locationtech.geogig.storage.datastream.FormatCommonV2_2;
 import org.locationtech.geogig.storage.datastream.Varint;
 
 import com.google.common.base.Preconditions;
@@ -43,7 +43,7 @@ abstract class DAGNode {
 
         if (node instanceof DirectDAGNode) {
             output.writeByte(MAGIC_DIRECT);
-            FormatCommonV2.INSTANCE.writeNode(((DirectDAGNode) node).node, output);
+            FormatCommonV2_2.INSTANCE.writeNode(((DirectDAGNode) node).node, output);
         } else {
             LazyDAGNode ln = (LazyDAGNode) node;
             if (ln instanceof TreeDAGNode) {
@@ -63,7 +63,7 @@ abstract class DAGNode {
         final byte magic = in.readByte();
         switch (magic) {
         case MAGIC_DIRECT: {
-            Node node = FormatCommonV2.INSTANCE.readNode(in);
+            Node node = FormatCommonV2_2.INSTANCE.readNode(in);
             return DAGNode.of(node);
         }
         case MAGIC_LAZY_TREE: {

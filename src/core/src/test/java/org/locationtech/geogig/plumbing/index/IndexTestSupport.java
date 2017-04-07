@@ -31,6 +31,7 @@ import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -49,13 +50,18 @@ public class IndexTestSupport {
 
     public static void verifyIndex(GeoGIG geogig, ObjectId indexTreeId, ObjectId canonicalTreeId,
             String... extraAttributes) {
-        Iterator<NodeRef> canonicalFeatures = geogig.command(LsTreeOp.class)
-                .setReference(canonicalTreeId.toString())
-                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
+        verifyIndex(geogig.getContext(), indexTreeId, canonicalTreeId, extraAttributes);
+    }
 
-        Iterator<NodeRef> indexFeatures = geogig.command(LsTreeOp.class)
+    public static void verifyIndex(Context context, ObjectId indexTreeId, ObjectId canonicalTreeId,
+            String... extraAttributes) {
+        Iterator<NodeRef> canonicalFeatures = context.command(LsTreeOp.class)
+                .setReference(canonicalTreeId.toString()).setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES)
+                .call();
+
+        Iterator<NodeRef> indexFeatures = context.command(LsTreeOp.class)
                 .setReference(indexTreeId.toString()).setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES)
-                .setSource(geogig.getRepository().indexDatabase()).call();
+                .setSource(context.indexDatabase()).call();
 
         List<NodeRef> canonicalFeaturesList = Lists.newArrayList(canonicalFeatures);
         while (indexFeatures.hasNext()) {
@@ -144,17 +150,20 @@ public class IndexTestSupport {
         return nodes;
     }
 
+    public static SimpleFeatureType featureType = null;
+
     public static NodeRef createWorldPointsLayer(Repository repository) {
-        String typeSpec = "geom:Point:srid=4326,x:Double,y:Double,xystr:String";
-        SimpleFeatureType type;
-        try {
-            type = DataUtilities.createType("worldpoints", typeSpec);
-        } catch (SchemaException e) {
-            throw Throwables.propagate(e);
+        if (featureType == null) {
+            String typeSpec = "geom:Point:srid=4326,x:Double,y:Double,xystr:String";
+            try {
+                featureType = DataUtilities.createType("worldpoints", typeSpec);
+            } catch (SchemaException e) {
+                throw Throwables.propagate(e);
+            }
         }
         RevTree tree = createWorldPointsTree(repository);
         WorkingTree workingTree = repository.workingTree();
-        NodeRef typeTreeRef = workingTree.createTypeTree(type.getTypeName(), type);
+        NodeRef typeTreeRef = workingTree.createTypeTree(featureType.getTypeName(), featureType);
 
         ObjectStore store = repository.objectDatabase();
         CanonicalTreeBuilder newRootBuilder = CanonicalTreeBuilder.create(store,

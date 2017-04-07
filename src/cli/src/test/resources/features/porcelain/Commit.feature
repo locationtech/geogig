@@ -121,14 +121,3 @@ Feature: "commit" command
      When I run the command "commit -m Test Points"
      Then the response should contain "2 features added"
       And the response should contain variable "{@ObjectId|localrepo|HEAD}"
-
-  Scenario: Committing a modified indexed feature updates the indexes
-    Given I have a repository
-      And I have staged "points1"
-     When I run the command "commit -m noIndex"
-      And the response should contain "1 features added"
-     When I run the command "index create --tree Points"
-     Then the response should contain "Index created successfully"
-      And I have staged "points1_modified"
-     When I run the command "commit -m withIndex"
-      And the response should contain "Updated index"

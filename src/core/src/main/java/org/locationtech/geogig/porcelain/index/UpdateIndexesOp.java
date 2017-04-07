@@ -116,8 +116,13 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
 
                 final ObjectId revTypeId = newTreeRef.getMetadataId();
 
-                final RevTree oldCanonicalTree = oldTreeRef == null ? RevTree.EMPTY
-                        : objectDatabase().getTree(oldTreeRef.getObjectId());
+                final RevTree oldCanonicalTree;
+                if (oldTreeRef != null && indexDatabase
+                        .resolveIndexedTree(index, oldTreeRef.getObjectId()).isPresent()) {
+                    oldCanonicalTree = objectDatabase().getTree(oldTreeRef.getObjectId());
+                } else {
+                    oldCanonicalTree = RevTree.EMPTY;
+                }
                 final RevTree newCanonicalTree = newCanonicalTreeId.equals(RevTree.EMPTY_TREE_ID)
                         ? RevTree.EMPTY : objectDatabase().getTree(newCanonicalTreeId);
 

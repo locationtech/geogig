@@ -28,8 +28,6 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.model.internal.DAGNode;
-import org.locationtech.geogig.model.internal.TreeCache;
 import org.locationtech.geogig.model.internal.DAGNode.FeatureDAGNode;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;

@@ -57,8 +57,7 @@ public class UpdateTreeTest extends Assert {
 
     @Test
     public void testSimple() {
-
-        RevTree tree = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree = createTree("blob");
         NodeRef child = NodeRef.tree("subtree", tree.getId(), ObjectId.NULL);
         RevTree newRoot = context.command(UpdateTree.class).setRoot(RevTree.EMPTY).setChild(child)
                 .call();
@@ -69,10 +68,19 @@ public class UpdateTreeTest extends Assert {
         assertEquals(child, ref.get());
     }
 
+    private RevTree createTree(String... blobs) {
+        CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(odb);
+        for (String blob : blobs) {
+            builder.put(blob(blob));
+        }
+        RevTree tree = builder.build();
+        return tree;
+    }
+
     @Test
     public void testSingleLevel() {
 
-        RevTree tree = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree = createTree("blob");
 
         NodeRef level1 = NodeRef.tree("level1", tree.getId(), hashString("fake"));
         RevTree newRoot = context.command(UpdateTree.class).setRoot(RevTree.EMPTY).setChild(level1)
@@ -92,7 +100,7 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testSingleNested() {
 
-        RevTree tree = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree = createTree("blob");
 
         NodeRef level2 = NodeRef.tree("level1/level2", tree.getId(), hashString("fake"));
 
@@ -115,8 +123,8 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testSiblingsSingleLevel() {
 
-        RevTree tree1 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
-        RevTree tree2 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree1 = createTree("blob");
+        RevTree tree2 = createTree("blob");
 
         NodeRef subtree1 = NodeRef.tree("subtree1", tree1.getId(), hashString("md1"));
         RevTree newRoot1 = context.command(UpdateTree.class).setRoot(RevTree.EMPTY)
@@ -137,8 +145,8 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testSiblingsNested() {
 
-        RevTree tree1 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
-        RevTree tree2 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree1 = createTree("blob");
+        RevTree tree2 = createTree("blob");
 
         Preconditions.checkState(odb.isOpen());
 
@@ -168,8 +176,8 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testRemove() {
 
-        RevTree tree1 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
-        RevTree tree2 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree1 = createTree("blob");
+        RevTree tree2 = createTree("blob");
 
         NodeRef level2 = NodeRef.tree("subtree1/level2", tree1.getId(), hashString("tree1"));
         NodeRef level3 = NodeRef.tree("subtree2/level2/level3", tree2.getId(), hashString("tree2"));
@@ -209,7 +217,7 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testPreserveMetadataId() {
 
-        RevTree tree = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree = createTree("blob");
 
         final ObjectId treeMetadataId = hashString("fakeMdId");
 

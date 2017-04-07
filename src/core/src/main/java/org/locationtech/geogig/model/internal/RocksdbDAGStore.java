@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -105,7 +106,7 @@ class RocksdbDAGStore {
         return dag;
     }
 
-    public List<DAG> getTrees(final Set<TreeId> ids) {
+    public List<DAG> getTrees(final Set<TreeId> ids) throws NoSuchElementException {
         try {
             return getInternal(ids);
         } catch (Exception e) {
@@ -113,7 +114,7 @@ class RocksdbDAGStore {
         }
     }
 
-    private List<DAG> getInternal(final Set<TreeId> ids) {
+    private List<DAG> getInternal(final Set<TreeId> ids) throws NoSuchElementException {
         List<DAG> res = new ArrayList<>(ids.size());
         byte[] valueBuff = new byte[16 * 1024];
         ids.forEach((id) -> {
@@ -121,7 +122,9 @@ class RocksdbDAGStore {
             byte[] val = valueBuff;
             try {
                 int size = db.get(column, readOptions, key, val);
-                Preconditions.checkState(RocksDB.NOT_FOUND != size);
+                if (RocksDB.NOT_FOUND == size) {
+                    throw new NoSuchElementException("TreeId " + id + " not found");
+                }
                 if (size > valueBuff.length) {
                     val = db.get(column, readOptions, key);
                 }

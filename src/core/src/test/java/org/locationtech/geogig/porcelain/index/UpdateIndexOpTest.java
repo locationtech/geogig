@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
-import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.createWorldPointsLayer;
-import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.getPointFid;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,22 +49,22 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
         Repository repository = getRepository();
         indexdb = repository.indexDatabase();
-        worldPointsLayer = createWorldPointsLayer(repository);
+        worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
         super.add();
         super.commit("created world points layer");
-        String fid1 = getPointFid(5, 10);
+        String fid1 = IndexTestSupport.getPointFid(5, 10);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid1)).call();
         repository.command(BranchCreateOp.class).setName("branch1").call();
         super.add();
         super.commit("deleted 5, 10");
-        String fid2 = getPointFid(35, -40);
+        String fid2 = IndexTestSupport.getPointFid(35, -40);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid2)).call();
         super.add();
         super.commit("deleted 35, -40");
         repository.command(CheckoutOp.class).setSource("branch1").call();
-        String fid3 = getPointFid(-10, 65);
+        String fid3 = IndexTestSupport.getPointFid(-10, 65);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid3)).call();
         super.add();

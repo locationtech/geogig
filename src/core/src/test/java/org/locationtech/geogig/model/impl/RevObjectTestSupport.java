@@ -214,4 +214,15 @@ public class RevObjectTestSupport {
         }
         return matches;
     }
+
+    public static int depth(ObjectStore store, RevTree tree) {
+
+        int depth = 0;
+
+        for (Bucket b : tree.buckets().values()) {
+            RevTree btree = store.getTree(b.getObjectId());
+            depth = Math.max(depth, 1 + depth(store, btree));
+        }
+        return depth;
+    }
 }

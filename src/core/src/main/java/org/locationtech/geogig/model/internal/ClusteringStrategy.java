@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -58,11 +57,14 @@ import com.google.common.collect.ListMultimap;
  */
 public abstract class ClusteringStrategy {
 
-    private DAGStorageProvider storageProvider;
+    final DAGStorageProvider storageProvider;
 
     protected static final TreeId ROOT_ID = new TreeId(new byte[0]);
 
-    protected DAG root;
+    protected final DAG root;
+
+    @VisibleForTesting
+    final RevTree original;
 
     @VisibleForTesting
     final DAGCache dagCache;
@@ -70,17 +72,11 @@ public abstract class ClusteringStrategy {
     protected ClusteringStrategy(RevTree original, DAGStorageProvider storageProvider) {
         checkNotNull(original);
         checkNotNull(storageProvider);
+        this.original = original;
         this.storageProvider = storageProvider;
         this.dagCache = new DAGCache(storageProvider);
-        init(original, ROOT_ID);
-    }
-
-    /**
-     * Initialize the root DAG to point to the original {@link RevTree} and the given {@link TreeId}
-     */
-    protected final void init(RevTree original, TreeId rootId) {
-        this.root = new DAG(rootId, original.getId());
-        this.root.setChildCount(original.size());
+        this.root = new DAG(ROOT_ID, original.getId());
+        this.root.setTotalChildCount(original.size());
     }
 
     abstract int normalizedSizeLimit(final int depthIndex);
@@ -121,7 +117,7 @@ public abstract class ClusteringStrategy {
      * Returns the mutable tree (DAG) associated to the given {@link TreeId}, creating it if it
      * doesn't exist and setting it's original {@link RevTree} identifier as {@code originalTreeId}
      */
-    private DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
+    protected DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
         DAG dag = dagCache.getOrCreate(treeId, originalTreeId);
         return dag;
     }
@@ -181,11 +177,12 @@ public abstract class ClusteringStrategy {
         return 1 + maxDepth.get();
     }
 
-    public void remove(Node node) {
+    public boolean remove(Node node) {
         if (!node.getObjectId().isNull()) {
             node = node.update(ObjectId.NULL);
         }
-        put(node);
+        int delta = put(node);
+        return -1 == delta;
     }
 
     /**
@@ -194,64 +191,84 @@ public abstract class ClusteringStrategy {
      * This default implemetation just calls {@link #remove(Node) remove(oldNode)} and then
      * {@link #put(Node) put(newNode)}. Subclasses are encouraged to override with optimized
      * versions whenever possible.
+     * 
+     * @return {@code 0} if the operation resulted in no change, {@code 1} if the node was
+     *         inserted/updated, {@code -1} if the node was deleted
      */
-    public void update(Node oldNode, Node newNode) {
+    public int update(Node oldNode, Node newNode) {
         Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));
-        remove(oldNode);
-        put(newNode);
+        if (remove(oldNode)) {
+            return put(newNode);
+        }
+        return 0;
     }
 
     private Lock writeLock = new ReentrantLock();
 
-    public void put(final Node node) {
+    /**
+     * @param
+     * @return {@code 0} if the operation resulted in no change, {@code 1} if the node was
+     *         inserted/updated, {@code -1} if the node was deleted
+     */
+    public int put(final Node node) {
         @Nullable
         final NodeId nodeId = computeId(node);
+        if (null == nodeId) {
+            return 0;
+        }
         // nodeId can be null if it's not to be added to the tree at all (e.g. a non spatial
         // feature in a spatial index)
-        if (nodeId != null) {
-            boolean remove = node.getObjectId().isNull();
-            TreeId rootId = root.getId();
-            int rootDepth = rootId.depthLength();// usually zero, unless buildRoot() has already
-                                                 // been called and it reset the root DAG to be
-                                                 // _the_ single bucket root had (in case it had
-                                                 // only one)
-            writeLock.lock();
-            try {
-                put(rootId, root, nodeId, remove, rootDepth);
-                dagCache.prune();
-            } finally {
-                writeLock.unlock();
-            }
-            if (!remove) {
-                storageProvider.saveNode(nodeId, node);
-            }
-        }
 
+        boolean remove = node.getObjectId().isNull();
+        int delta;
+        writeLock.lock();
+        try {
+            delta = put(root, nodeId, remove);
+            dagCache.prune();
+        } finally {
+            writeLock.unlock();
+        }
+        if (!remove) {
+            storageProvider.saveNode(nodeId, node);
+        }
+        return delta;
     }
 
     public DAG buildRoot() {
         return root;
     }
 
-    private int put(final TreeId dagId, final DAG dag, final NodeId nodeId, final boolean remove,
-            final int dagDepth) {
+    /**
+     * @param dagId
+     * @param dag
+     * @param nodeId
+     * @param remove
+     * @param dagDepth zero based depth of {@code dag} (not a depth index, which is
+     *        {@code depth - 1}
+     * @return
+     */
+    private int put(final DAG dag, final NodeId nodeId, final boolean remove) {
         checkNotNull(dag);
         checkNotNull(nodeId);
-        checkArgument(dagDepth > -1);
 
-        mergeRoot(dag, nodeId, dagDepth);
+        final int dagDepth = dag.getId().depthLength();
+
+        mergeRoot(dag, nodeId);
 
         boolean changed = false;
         final int deltaSize;
         final int normalizedSizeLimit = normalizedSizeLimit(dagDepth);
 
         if (dag.numBuckets() > 0) {
-            final @Nullable TreeId bucketId = computeBucketId(nodeId, dagDepth);
+            final @Nullable TreeId bucketId = computeBucketId(nodeId, dagDepth + 1);
             if (bucketId != null) {
                 DAG bucketDAG = getOrCreateDAG(bucketId);
                 dag.addBucket(bucketId);
-                deltaSize = put(bucketId, bucketDAG, nodeId, remove, dagDepth + 1);
+                deltaSize = put(bucketDAG, nodeId, remove);
                 changed = bucketDAG.getState() == STATE.CHANGED;
+                if (bucketDAG.getTotalChildCount() == 0) {
+                    dag.removeBucket(bucketId);
+                }
             } else {
                 deltaSize = 0;
             }
@@ -268,17 +285,16 @@ public abstract class ClusteringStrategy {
             if (size > normalizedSizeLimit) {
                 ListMultimap<TreeId, NodeId> promotions = ArrayListMultimap.create();
                 dag.forEachChild((childId) -> {
-                    TreeId bucketId = computeBucketId(childId, dagDepth);
+                    TreeId bucketId = computeBucketId(childId, dagDepth + 1);
                     checkNotNull(bucketId);
                     promotions.put(bucketId, childId);
                 });
 
-                final int childDepthIndex = dagDepth + 1;
                 promotions.asMap().forEach((bucketId, childIds) -> {
                     DAG bucketDAG = getOrCreateDAG(bucketId);
                     dag.addBucket(bucketId);
                     for (NodeId childId : childIds) {
-                        put(bucketId, bucketDAG, childId, remove, childDepthIndex);
+                        put(bucketDAG, childId, remove);
                     }
                 });
 
@@ -288,7 +304,7 @@ public abstract class ClusteringStrategy {
 
         if (deltaSize != 0) {
             changed = true;
-            dag.setChildCount(dag.getChildCount() + deltaSize);
+            dag.setTotalChildCount(dag.getTotalChildCount() + deltaSize);
             shrinkIfUnderflow(dag, nodeId, dagDepth);
         }
         if (changed) {
@@ -298,13 +314,13 @@ public abstract class ClusteringStrategy {
     }
 
     private void shrinkIfUnderflow(final DAG bucketsDAG, NodeId nodeId, int depth) {
-        final long childCount = bucketsDAG.getChildCount();
+        final long childCount = bucketsDAG.getTotalChildCount();
         final int normalizedSizeLimit = normalizedSizeLimit(depth);
 
         if (childCount <= normalizedSizeLimit && bucketsDAG.numBuckets() > 0) {
             Set<NodeId> childrenRecursive = getChildrenRecursive(bucketsDAG, nodeId, depth);
-            checkState(childrenRecursive.size() == childCount, "expected %s, got %s", childCount,
-                    childrenRecursive.size());
+            checkState(childrenRecursive.size() == childCount, "expected %s, got %s, at: %s",
+                    childCount, childrenRecursive.size(), bucketsDAG);
 
             bucketsDAG.clearBuckets();
             childrenRecursive.forEach((id) -> bucketsDAG.addChild(id));
@@ -322,7 +338,7 @@ public abstract class ClusteringStrategy {
 
         dag.forEachBucket((bucketId) -> {
             DAG bucket = getOrCreateDAG(bucketId);
-            mergeRoot(bucket, nodeId, depth);
+            mergeRoot(bucket, nodeId);
             Set<NodeId> bucketChildren = getChildrenRecursive(bucket, nodeId, depth + 1);
             children.addAll(bucketChildren);
         });
@@ -336,18 +352,18 @@ public abstract class ClusteringStrategy {
      * 
      * @param root
      * @param nodeId
-     * @param depthIndex
+     * @param nodeDepth depth, not depth index
      * @return
      * @return
      */
-    private void mergeRoot(DAG root, final NodeId nodeId, final int depthIndex) {
+    protected void mergeRoot(DAG root, final NodeId nodeId) {
         checkNotNull(root);
         checkNotNull(nodeId);
 
         if (root.getState() == STATE.INITIALIZED) {
 
-            final RevTree original = getOriginalTree(root.originalTreeId);
-            root.setChildCount(original.size());
+            final RevTree original = getOriginalTree(root.originalTreeId());
+            root.setTotalChildCount(original.size());
 
             final boolean originalIsLeaf = original.buckets().isEmpty();
 
@@ -360,8 +376,8 @@ public abstract class ClusteringStrategy {
                 }
 
             } else {
-
-                final TreeId nodeBucketId = computeBucketId(nodeId, depthIndex);
+                final int dagDepth = root.getId().depthLength();
+                final TreeId nodeBucketId = computeBucketId(nodeId, dagDepth + 1);
                 final ImmutableSortedMap<Integer, Bucket> buckets = original.buckets();
 
                 if (root.getState() == STATE.INITIALIZED) {
@@ -390,7 +406,7 @@ public abstract class ClusteringStrategy {
                 .preload(Iterables.transform(values, (b) -> b.getObjectId()));
     }
 
-    private RevTree getOriginalTree(@Nullable ObjectId originalId) {
+    protected RevTree getOriginalTree(@Nullable ObjectId originalId) {
         final RevTree original;
         if (originalId == null || RevTree.EMPTY_TREE_ID.equals(originalId)) {
             original = RevTree.EMPTY;
@@ -401,28 +417,28 @@ public abstract class ClusteringStrategy {
         return original;
     }
 
-    TreeId computeBucketId(final NodeId nodeId, final int childDepthIndex) {
-        byte[] treeId = new byte[childDepthIndex + 1];
+    TreeId computeBucketId(final NodeId nodeId, final int childDepth) {
+        byte[] treeId = new byte[childDepth];
 
-        int unpromotableDepth = -1;
+        int unpromotableDepthIndex = -1;
 
-        for (int depthIndex = 0; depthIndex <= childDepthIndex; depthIndex++) {
+        for (int depthIndex = 0; depthIndex < childDepth; depthIndex++) {
             int bucketIndex = bucket(nodeId, depthIndex);
             if (bucketIndex == -1) {
-                unpromotableDepth = depthIndex;
+                unpromotableDepthIndex = depthIndex;
                 break;
             }
             treeId[depthIndex] = (byte) bucketIndex;
         }
 
-        if (unpromotableDepth > -1) {
-            final int extraBucketIndex = unpromotableBucketIndex(unpromotableDepth);
-            treeId[unpromotableDepth] = (byte) extraBucketIndex;
-            unpromotableDepth++;
-            final int missingDepthCount = 1 + childDepthIndex - unpromotableDepth;
-            for (int i = 0; i < missingDepthCount; i++, unpromotableDepth++) {
+        if (unpromotableDepthIndex > -1) {
+            final int extraBucketIndex = unpromotableBucketIndex(unpromotableDepthIndex);
+            treeId[unpromotableDepthIndex] = (byte) extraBucketIndex;
+            unpromotableDepthIndex++;
+            final int missingDepthCount = childDepth - unpromotableDepthIndex;
+            for (int i = 0; i < missingDepthCount; i++, unpromotableDepthIndex++) {
                 int bucketIndex = canonicalBucket(nodeId, i);
-                treeId[unpromotableDepth] = (byte) bucketIndex;
+                treeId[unpromotableDepthIndex] = (byte) bucketIndex;
             }
         }
 
@@ -466,7 +482,7 @@ public abstract class ClusteringStrategy {
     }
 
     @VisibleForTesting
-    static class DAGCache {
+    class DAGCache {
         private DAGStorageProvider store;
 
         @VisibleForTesting
@@ -489,7 +505,12 @@ public abstract class ClusteringStrategy {
             List<DAG> all = new ArrayList<>();
             Set<TreeId> missing = new HashSet<>();
             for (TreeId id : ids) {
-                DAG dag = treeBuff.get(id);
+                DAG dag;
+                if (ROOT_ID.equals(id)) {
+                    dag = ClusteringStrategy.this.root;
+                } else {
+                    dag = treeBuff.get(id);
+                }
                 if (dag == null) {
                     missing.add(id);
                 } else {
@@ -543,6 +564,11 @@ public abstract class ClusteringStrategy {
             store.save(toSave);
             // System.err.printf("Saved %,d dirty DAGs in %s, remaining %,d\n", toSave.size(),
             // sw.stop(), treeBuff.size());
+        }
+
+        @VisibleForTesting
+        public void add(DAG dag) {
+            treeBuff.put(dag.getId(), dag);
         }
     }
 }

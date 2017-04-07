@@ -9,18 +9,28 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.internal.DAG.STATE;
 import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSortedMap;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -56,44 +66,71 @@ import com.vividsolutions.jts.geom.Envelope;
  *
  *
  */
-class QuadTreeClusteringStrategy extends ClusteringStrategy {
+final class QuadTreeClusteringStrategy extends ClusteringStrategy {
+
+    private static final Logger LOG = LoggerFactory.getLogger(QuadTreeClusteringStrategy.class);
 
     private final Envelope maxBounds;
 
-    public QuadTreeClusteringStrategy(RevTree original, DAGStorageProvider storageProvider,
-            Envelope maxBounds) {
-        super(original, storageProvider);
-        this.maxBounds = maxBounds;
-        init(original);
-    }
+    private final int maxDepth;
 
     /**
-     * may the original tree have been created by {@link #buildRoot()} collapsing a DAG whose root
-     * was one-single bucket? in that case make the initial structure match the original
-     * 
-     * @param original
+     * Enable/disable the experimental feature to collapse and expand DAGs
      */
-    private void init(RevTree original) {
-        if(original.buckets().isEmpty()){
+    public static final boolean ENABLE_EXPAND_COLLAPSE = false;
+
+    QuadTreeClusteringStrategy(RevTree original, DAGStorageProvider storageProvider,
+            Envelope maxBounds, int maxDepth) {
+        super(original, storageProvider);
+        this.maxBounds = maxBounds;
+        this.maxDepth = maxDepth;
+    }
+
+    public Envelope getMaxBounds() {
+        return new Envelope(maxBounds);
+    }
+
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    @Override
+    protected void mergeRoot(final DAG root, final NodeId nodeId) {
+        if (!ENABLE_EXPAND_COLLAPSE) {
+            super.mergeRoot(root, nodeId);
             return;
         }
-        final Envelope treeBounds = SpatialOps.boundsOf(original);
-        if (treeBounds.isNull()) {
-            return;
-        }
+        checkNotNull(root);
+        checkNotNull(nodeId);
+        if (root.getState() == STATE.INITIALIZED) {
+            final ObjectId originalTreeId = root.originalTreeId();
+            final RevTree originalTree = getOriginalTree(originalTreeId);
 
-        TreeId originalPathToRoot = ROOT_ID;
-
-        for (int depthIndex = 0;; depthIndex++) {
-            Quadrant quadrant = computeQuadrant(treeBounds, depthIndex);
-            if (quadrant == null) {
-                break;
+            final TreeId rootId = root.getId();
+            final TreeId expandedTreeId = computeExpandedChildId(originalTree, rootId);
+            if (rootId.equals(expandedTreeId)) {
+                super.mergeRoot(root, nodeId);
+            } else {
+                expand(root, expandedTreeId, originalTree, nodeId);
+                // System.err.println(rootId + " expanded to " + expandedTreeId);
             }
-            int bucketId = quadrant.getBucketNumber();
-            originalPathToRoot = originalPathToRoot.newChild(bucketId);
         }
+    }
 
-        super.init(original, originalPathToRoot);
+    private void expand(DAG parent, TreeId expandToChild, RevTree originalTree, NodeId nodeId) {
+        Preconditions.checkArgument(parent.getId().depthLength() < expandToChild.depthLength());
+
+        // initialize leaf to match originalTree
+        final DAG child = getOrCreateDAG(expandToChild, originalTree.getId());
+        child.reset(originalTree.getId());
+        super.mergeRoot(child, nodeId);
+        child.setInitialized();
+
+        // add parents up to root
+        parent.reset(RevTree.EMPTY_TREE_ID);
+        parent.addBucket(expandToChild);
+        parent.setTotalChildCount(child.getTotalChildCount());
+        parent.setMirrored();
     }
 
     /**
@@ -102,19 +139,191 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
      */
     @Override
     public DAG buildRoot() {
-        while (1 == root.numBuckets()) {
-            root.forEachBucket((treeId) -> {
-                DAG actual = getOrCreateDAG(treeId);
-                root = actual;
-            });
+        if (ENABLE_EXPAND_COLLAPSE) {
+            final long size = root.getTotalChildCount();
+            collapse(root);
+            final long resultSize = root.getTotalChildCount();
+            checkState(size == resultSize, "expected size of %s, but got %s after collapse()", size,
+                    resultSize);
         }
-
         return root;
     }
 
+    public void collapse(final DAG dag) {
+        if (dag.getState() != STATE.CHANGED) {
+            return;
+        }
+
+        final int numBuckets = dag.numBuckets();
+        if (numBuckets == 0) {
+            return;
+        }
+
+        final List<TreeId> bucketIds = dag.bucketList();
+        if (numBuckets == 1) {
+            final TreeId replaceId = bucketIds.get(0);
+            DAG child = getOrCreateDAG(replaceId);
+            setParent(child, dag);
+            // for (TreeId childId : dag.bucketList()) {
+            // child = getOrCreateDAG(childId);
+            // collapse(dag, child);
+            // }
+        } else {
+            for (TreeId bucketId : bucketIds) {
+                DAG child = getOrCreateDAG(bucketId);
+                collapse(child);
+            }
+        }
+    }
+
+    /**
+     * Parent becomes child
+     */
+    private void setParent(DAG child, DAG parent) {
+        // find deepest 1-bucket child
+        while (child.numBuckets() == 1) {
+            child = getOrCreateDAG(child.bucketList().get(0));
+        }
+        // replace contents of parent with the contents of child
+        parent.init(child);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("{} collapsed to {}", child.getId(), parent.getId());
+        }
+        // System.err.println(child.getId() + " collapsed to " + parent.getId());
+        List<TreeId> buckets = parent.bucketList();
+        parent.clearBuckets();
+
+        for (TreeId id : buckets) {
+            DAG deepChild = getOrCreateDAG(id);
+            TreeId newChildId = parent.getId().newChild(id.leafBucket());
+            DAG newChild = getOrCreateDAG(newChildId);
+            parent.addBucket(newChildId);
+            setParent(deepChild, newChild);
+        }
+    }
+
+    private TreeId computeExpandedChildId(RevTree originalTree, TreeId rootId) {
+        final long size = originalTree.size();
+        final Envelope treeBounds = SpatialOps.boundsOf(original);
+
+        final int childDepthIndex = rootId.depthLength();
+
+        final TreeId expandsTo;
+        @Nullable
+        Quadrant quadrant = computeQuadrant(treeBounds, childDepthIndex);
+        if (quadrant == null) {
+            final int unpromotableBucketIndex = unpromotableBucketIndex();
+            final boolean rootIsCanonical = rootId.contains(unpromotableBucketIndex);
+            final int normalizedSizeLimit;
+            if (rootIsCanonical) {
+                // already know we're inside a canonical (unpromotables) tree
+                normalizedSizeLimit = 512;
+            } else {
+                normalizedSizeLimit = normalizedSizeLimit();
+                // it may be a quad wit sub-quads instead of an unpromotables tree
+                ImmutableSortedMap<Integer, Bucket> buckets = originalTree.buckets();
+                boolean isValidQuad = !buckets.isEmpty();
+                for (Quadrant q : Quadrant.VALUES) {
+                    Bucket treeBucket = buckets.get(Integer.valueOf(q.getBucketNumber()));
+                    if (treeBucket != null) {
+                        Envelope bucketBounds = treeBucket.bounds().orNull();
+                        Quadrant bucketQuad = computeQuadrant(bucketBounds, childDepthIndex);
+                        if (bucketQuad == null) {
+                            isValidQuad = false;
+                            break;
+                        }
+                    }
+                }
+                if (isValidQuad) {
+                    return rootId;
+                }
+            }
+            boolean overflowed = size > normalizedSizeLimit;
+            if (overflowed) {
+                expandsTo = rootId.newChild(unpromotableBucketIndex);
+            } else {
+                expandsTo = rootId;
+            }
+        } else {
+            expandsTo = rootId.newChild(quadrant.getBucketNumber());
+        }
+        return expandsTo;
+    }
+
+    /**
+     * To be called by {@link #mergeRoot}, figures out if the {@link TreeId} for a DAG whose
+     * {@link DAG#originalTreeId() RevTree} is {@code original} was {@link #collapse collapsed} and
+     * hence needs to be expanded, returning the {@link TreeId} the DAG should have instead.
+     * 
+     * @param original
+     * @param dagId
+     * @return
+     */
+    public TreeId computeExpandedTreeId(RevTree original, TreeId dagId) {
+        final long size = original.size();
+        final Envelope treeBounds = SpatialOps.boundsOf(original);
+        final List<Integer> quadrantsByDepth = bucketsByDepth(treeBounds, maxDepth);
+        TreeId targetId;
+        if (quadrantsByDepth.size() <= dagId.depthLength()) {
+            targetId = dagId;
+        } else {
+            targetId = TreeId.valueOf(quadrantsByDepth);
+            boolean overflown = size > normalizedSizeLimit();
+            if (overflown) {
+                int unpromotableBucketIndex = unpromotableBucketIndex();
+                if (targetId.leafBucket() != unpromotableBucketIndex) {
+                    targetId = targetId.newChild(unpromotableBucketIndex);
+                }
+            }
+        }
+        if (true) {
+            return targetId;
+        }
+        if (original.buckets().isEmpty()) {
+            return dagId;
+        }
+        if (treeBounds.isNull()) {
+            return dagId;
+        }
+
+        TreeId originalPathToRoot = dagId;
+        final int startDepthIndex = originalPathToRoot.depthIndex() + 1;
+
+        for (int depthIndex = startDepthIndex; depthIndex < maxDepth; depthIndex++) {
+            Quadrant quadrant = computeQuadrant(treeBounds, depthIndex);
+            if (quadrant == null) {
+                break;
+            }
+            int bucketId = quadrant.getBucketNumber();
+            originalPathToRoot = originalPathToRoot.newChild(bucketId);
+        }
+        int depthLength = originalPathToRoot.depthLength();
+        if (depthLength == maxDepth) {
+            int normalizedSizeLimit = normalizedSizeLimit(maxDepth - 1);
+            if (size > normalizedSizeLimit) {
+                // couldn't fit all nodes in the DAG at maxDepth depth, so they shall have been
+                // moved to unpromotable
+                originalPathToRoot = originalPathToRoot.newChild(unpromotableBucketIndex(maxDepth));
+            }
+        }
+        return originalPathToRoot;
+    }
+
+    /**
+     * The fixed maximun size of a leaf {@link RevTree}, at any depth, when built as a quad-tree.
+     * 
+     * @return {@code 128}
+     */
+    public int normalizedSizeLimit() {
+        return 128;
+    }
+
+    /**
+     * @see #normalizedSizeLimit()
+     */
     @Override
     public int normalizedSizeLimit(final int depthIndex) {
-        return 128;
+        return normalizedSizeLimit();
     }
 
     @Override
@@ -133,11 +342,18 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         final Envelope nodeBounds = nodeId.value();
         final Quadrant quadrantAtDepth = computeQuadrant(nodeBounds, depthIndex);
 
-        return quadrantAtDepth == null ? -1 : quadrantAtDepth.ordinal();
+        if (quadrantAtDepth == null) {
+            return -1;
+        }
+        return quadrantAtDepth.ordinal();
     }
 
     @Override
     protected int unpromotableBucketIndex(final int depthIndex) {
+        return unpromotableBucketIndex();
+    }
+
+    public int unpromotableBucketIndex() {
         return Quadrant.VALUES.length;
     }
 
@@ -158,51 +374,87 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
      * {@code NodeId} is guaranteed to lay on the same bucket at any depth.
      */
     @Override
-    public void update(Node oldNode, Node newNode) {
+    public int update(Node oldNode, Node newNode) {
         Optional<Envelope> oldBounds = oldNode.bounds();
         Optional<Envelope> newBounds = newNode.bounds();
         if (oldBounds.equals(newBounds)) {
             // in case the bounds didn't change, put will override the old value,
             // otherwise need to remove old and add new separately
             Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));
-            put(newNode);
-        } else {
-            super.update(oldNode, newNode);
+            int delta = put(newNode);
+            if (delta == 0 && !oldNode.equals(newNode)) {
+                delta = 1;
+            }
         }
+        return super.update(oldNode, newNode);
     }
 
+    /**
+     * Computes the quadrant {@code nodeBounds} fall into at the given {@code depthIndex}.
+     * 
+     * @return the quadrant the bounds fall into, or {@code null} if bounds can't be fully contained
+     *         by a quadrant at the given depth, or {@link #maxDepth} has been reached.
+     */
     @Nullable
-    Quadrant computeQuadrant(@Nullable final Envelope nodeBounds, int depthIndex) {
-        if (nodeBounds != null && !nodeBounds.isNull()) {
+    Quadrant computeQuadrant(@Nullable Envelope nodeBounds, final int depthIndex) {
+        if (depthIndex >= maxDepth || nodeBounds == null || nodeBounds.isNull()) {
+            return null;
+        }
 
-            final Envelope parentQuadrantBounds = new Envelope(this.maxBounds);
+        final Envelope parentQuadrantBounds = new Envelope(this.maxBounds);
 
-            Envelope qBounds = new Envelope();
+        Envelope qBounds = new Envelope();
 
-            for (int depth = 0; depth <= depthIndex; depth++) {
-                for (int q = 0; q < Quadrant.VALUES.length; q++) {
-                    Quadrant quadrant = Quadrant.VALUES[q];
-                    quadrant.slice(parentQuadrantBounds, qBounds);
-                    if (qBounds.contains(nodeBounds)) {
-                        if (depth == depthIndex) {
-                            return quadrant;
-                        }
-                        parentQuadrantBounds.init(qBounds);
-                        break;
+        for (int depth = 0; depth <= depthIndex; depth++) {
+            for (int q = 0; q < Quadrant.VALUES.length; q++) {
+                Quadrant quadrant = Quadrant.VALUES[q];
+                quadrant.slice(parentQuadrantBounds, qBounds);
+                if (qBounds.contains(nodeBounds)) {
+                    if (depth == depthIndex) {
+                        return quadrant;
                     }
+                    parentQuadrantBounds.init(qBounds);
+                    break;
                 }
             }
         }
+
         return null;
     }
 
-    List<Quadrant> quadrantsByDepth(NodeId node, int maxDepth) {
+    @VisibleForTesting
+    List<Quadrant> quadrantsByDepth(NodeId node, final int maxDepth) {
         final Envelope nodeBounds = node.value();
+        List<Integer> bucketsByDepth = bucketsByDepth(nodeBounds, maxDepth);
+        List<Quadrant> quads = new ArrayList<>(bucketsByDepth.size());
+        for (int depthIndex = 0; depthIndex < bucketsByDepth.size(); depthIndex++) {
+            int bucket = bucketsByDepth.get(depthIndex).intValue();
+            if (bucket == unpromotableBucketIndex(depthIndex)) {
+                break;
+            }
+            Quadrant quad = Quadrant.VALUES[bucket];
+            quads.add(quad);
+        }
+        return quads;
+    }
+
+    /**
+     * Computes the bucket numbers (range {@code [0-4]} that correspond to the given bounds,
+     * stopping at the depth index where a {@code 4} (unpromotable) is found, so the result has at
+     * least one element (in case the bounds are unpromotable at the root), and at most
+     * {@code maxDepth} element.
+     * 
+     * @param nodeBounds
+     * @param maxDepth
+     * @return
+     */
+    @VisibleForTesting
+    List<Integer> bucketsByDepth(final Envelope nodeBounds, final int maxDepth) {
         if (nodeBounds == null || nodeBounds.isNull()) {
             return Collections.emptyList();
         }
 
-        List<Quadrant> quadrantsByDepth = new ArrayList<>(maxDepth);
+        List<Integer> bucketsByDepth = new ArrayList<>(maxDepth);
 
         final Quadrant[] quadrants = Quadrant.VALUES;
 
@@ -210,18 +462,24 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
 
         Envelope qBounds = new Envelope();
 
-        for (int depth = 0; depth < maxDepth; depth++) {
-            for (int q = 0; q < 4; q++) {
-                Quadrant quadrant = quadrants[q];
+        for (int depthIndex = 0; depthIndex < maxDepth; depthIndex++) {
+            boolean unpromotable = true;
+            for (int quadIndex = 0; quadIndex < 4; quadIndex++) {
+                Quadrant quadrant = quadrants[quadIndex];
                 quadrant.slice(parentQuadrantBounds, qBounds);
                 if (qBounds.contains(nodeBounds)) {
-                    quadrantsByDepth.add(quadrant);
+                    unpromotable = false;
+                    bucketsByDepth.add(Integer.valueOf(quadrant.getBucketNumber()));
                     parentQuadrantBounds.init(qBounds);
                     break;
                 }
             }
+            if (unpromotable) {
+                bucketsByDepth.add(Integer.valueOf(unpromotableBucketIndex(depthIndex)));
+                break;
+            }
         }
-        return quadrantsByDepth;
+        return bucketsByDepth;
     }
 
 }

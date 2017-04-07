@@ -9,10 +9,12 @@
  */
 package org.locationtech.geogig.plumbing.index;
 
+import static com.google.common.base.Preconditions.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.AbstractConsumer;
@@ -49,11 +51,20 @@ class SimpleTreeBuilderConsumer extends AbstractConsumer implements Consumer {
         final boolean cancelled = progress.isCanceled();
         if (!cancelled) {
             if (left == null) {
-                builder.put(right.getNode());
+                Node node = right.getNode();
+                boolean put = builder.put(node);
+                checkState(put, "Node was not added to index: %s", node);
             } else if (right == null) {
-                builder.remove(left.getNode());
+                Node node = left.getNode();
+                boolean removed = builder.remove(node);
+                checkState(removed, "Node was not removed from index: %s", node);
             } else {
-                builder.update(left.getNode(), right.getNode());
+                Node lnode = left.getNode();
+                Node rnode = right.getNode();
+                boolean updated = builder.update(lnode, rnode);
+                if (!lnode.equals(rnode)) {
+                    checkState(updated, "Node %s was not updated to %s", lnode, rnode);
+                }
             }
             progress.setProgress(count.incrementAndGet());
         }

@@ -64,9 +64,13 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
      * to fall on the same bucket as mandated by the canonical node order.
      */
     @Override
-    public void update(Node oldNode, Node newNode) {
+    public int update(Node oldNode, Node newNode) {
         Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));
-        put(newNode);
+        int delta = put(newNode);
+        if (delta == 0 && !oldNode.equals(newNode)) {
+            delta = 1;
+        }
+        return delta;
     }
 
 }

@@ -13,9 +13,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.vividsolutions.jts.geom.Envelope;
 
 public abstract class ClusteringStrategyBuilder {
@@ -84,6 +86,23 @@ public abstract class ClusteringStrategyBuilder {
 
         private Envelope maxBounds;
 
+        private int maxDepth = -1;
+
+        /**
+         * Absolute max depth, to set a hard limit for when too many nodes fall on the same bucket
+         * indefinitely or almost indefinitely.
+         * <p>
+         * An overflowed DAG that reaches this depth (i.e. deph index 19) will have all it's nodes moved
+         * to a canonical (i.e. unpromotables) tree at depth index 20.
+         * 
+         * NOTE: this constant is the maximum depth at which a WGS84 bounds can be split into quadrants
+         * that fully contains the envelope for a point when converted to a {@code Float32Bounds} by
+         * {@link Node#create}
+         * 
+         * @see #computeQuadrant(Envelope, int)
+         */
+        static final int ABSOLUTE_MAX_DEPTH = 35;
+
         QuadTreeClusteringStrategyBuilder(ObjectStore treeStore) {
             super(treeStore);
         }
@@ -102,13 +121,28 @@ public abstract class ClusteringStrategyBuilder {
         @Override
         protected ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider) {
             checkState(maxBounds != null, "QuadTree max bounds was not set");
-            return new QuadTreeClusteringStrategy(original, dagStoreProvider, maxBounds);
+            Envelope preciseBounds = Node.makePrecise(maxBounds);
+            int maxDepth;
+            if (this.maxDepth > -1) {
+                maxDepth = this.maxDepth;
+            } else {
+                maxDepth = Quadrant.findMaxDepth(preciseBounds,
+                        QuadTreeClusteringStrategyBuilder.ABSOLUTE_MAX_DEPTH);
+            }
+            return new QuadTreeClusteringStrategy(original, dagStoreProvider, preciseBounds,
+                    maxDepth);
         }
 
         public QuadTreeClusteringStrategyBuilder maxBounds(Envelope maxBounds) {
             checkNotNull(maxBounds, "maxBounds is null");
             checkArgument(!maxBounds.isNull(), "maxBounds is not initialized");
             this.maxBounds = new Envelope(maxBounds);
+            return this;
+        }
+
+        @VisibleForTesting
+        public QuadTreeClusteringStrategyBuilder maxDepth(int maxDepth) {
+            this.maxDepth = maxDepth;
             return this;
         }
     }

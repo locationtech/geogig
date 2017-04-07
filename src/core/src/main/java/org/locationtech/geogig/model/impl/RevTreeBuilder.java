@@ -44,12 +44,12 @@ public interface RevTreeBuilder {
     /**
      * Add a node to the mutable tree representation.
      */
-    public RevTreeBuilder put(Node node);
+    public boolean put(Node node);
 
     /**
      * Removes a node to the mutable tree representation.
      */
-    public RevTreeBuilder remove(Node node);
+    public boolean remove(Node node);
 
     /**
      * Replace {@code oldNode} by {@code newNode} in the mutable tree representation.
@@ -62,7 +62,7 @@ public interface RevTreeBuilder {
      * node name.
      * 
      */
-    public RevTreeBuilder update(Node oldNode, Node newNode);
+    public boolean update(Node oldNode, Node newNode);
 
     /**
      * Builds a final immutable tree out of the current state of this tree builder.

@@ -1,9 +1,6 @@
 package org.locationtech.geogig.plumbing.index;
 
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.getTreeNodes;
-import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.createPointFeature;
-import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.createWorldPointsLayer;
-import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.getPointFid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +53,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
         Repository repository = getRepository();
         indexdb = repository.indexDatabase();
-        worldPointsLayer = createWorldPointsLayer(repository);
+        worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
         super.add();
         super.commit("created world points layer");
         this.worldPointsTree = repository.getTree(worldPointsLayer.getObjectId());
@@ -229,7 +226,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         List<RevTree> branchTrees = new ArrayList<RevTree>(4);
         // Make different changes on each branch
         repository.command(CheckoutOp.class).setSource("branch1").call();
-        String fid1 = getPointFid(0, 0);
+        String fid1 = IndexTestSupport.getPointFid(0, 0);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid1)).call();
         super.add();
@@ -238,7 +235,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                 "branch1:" + worldPointsLayer.getName());
         branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch2").call();
-        String fid2 = getPointFid(0, 5);
+        String fid2 = IndexTestSupport.getPointFid(0, 5);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid2)).call();
         super.add();
@@ -247,7 +244,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                 "branch2:" + worldPointsLayer.getName());
         branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch3").call();
-        String fid3 = getPointFid(0, 10);
+        String fid3 = IndexTestSupport.getPointFid(0, 10);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid3)).call();
         super.add();
@@ -256,7 +253,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                 "branch3:" + worldPointsLayer.getName());
         branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch4").call();
-        String fid4 = getPointFid(0, 15);
+        String fid4 = IndexTestSupport.getPointFid(0, 15);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid4)).call();
         super.add();
@@ -320,7 +317,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                     double y = b.getMinY();
                     Envelope newBounds = new Envelope(x, x, y, y);
 
-                    RevFeature updatedFeature = createPointFeature(x, y, x, y,
+                    RevFeature updatedFeature = IndexTestSupport.createPointFeature(x, y, x, y,
                             ("modified: " + x + "," + y));
                     objectStore.put(updatedFeature);
 

@@ -294,9 +294,4 @@ public class HashObjectTest extends RepositoryTestCase {
         assertNotSame(tagId, tagId2);
 
     }
-
-    private Geometry geom(String wkt) throws ParseException {
-        Geometry value = new WKTReader2().read(wkt);
-        return value;
-    }
 }

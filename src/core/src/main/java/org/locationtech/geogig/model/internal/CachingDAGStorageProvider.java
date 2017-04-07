@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.internal;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -96,12 +98,18 @@ final class CachingDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public List<DAG> getTrees(Set<TreeId> ids) {
+    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
         List<DAG> cached = heap.getTrees(Sets.filter(ids, heapTrees));
         List<DAG> res = cached;
-        if (disk != null && cached.size() < ids.size()) {
-            List<DAG> stored = disk.getTrees(Sets.filter(ids, diskTrees));
-            res.addAll(stored);
+        if (cached.size() < ids.size()) {
+            if (disk != null) {
+                List<DAG> stored = disk.getTrees(Sets.filter(ids, diskTrees));
+                res.addAll(stored);
+            }
+        }
+        if (res.size() < ids.size()) {
+            Set<TreeId> resids = Sets.newHashSet(Iterables.transform(res, (d) -> d.getId()));
+            throw new NoSuchElementException(Sets.difference(ids, resids).toString());
         }
         return res;
     }

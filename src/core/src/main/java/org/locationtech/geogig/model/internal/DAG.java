@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -30,6 +31,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 class DAG implements Cloneable, Serializable {
@@ -42,7 +44,7 @@ class DAG implements Cloneable, Serializable {
          */
         INITIALIZED,
         /**
-         * The DAG structre mirrors the original RevTree
+         * The DAG structure mirrors the original RevTree
          */
         MIRRORED,
         /**
@@ -66,7 +68,7 @@ class DAG implements Cloneable, Serializable {
      * The object identifier for the {@link RevTree} this DAG was created from, or
      * {@link RevTree#EMPTY} if created from scratch.
      */
-    public final ObjectId originalTreeId;
+    private ObjectId originalTreeId;
 
     private STATE state;
 
@@ -86,16 +88,17 @@ class DAG implements Cloneable, Serializable {
     @Override
     public DAG clone() {
         DAG c = new DAG(id, originalTreeId);
-        if (!children.isEmpty()) {
-            c.children = new HashMap<>(children);
-        }
-        if (!buckets.isEmpty()) {
-            c.buckets = new HashSet<>(buckets);
-        }
-        c.state = state;
-        c.setChildCount(childCount);
-        c.mutated = this.mutated;
+        c.init(this);
         return c;
+    }
+
+    public void init(DAG from) {
+        this.originalTreeId = from.originalTreeId;
+        this.setTotalChildCount(from.childCount);
+        this.state = from.state;
+        this.children = new HashMap<>(from.children);
+        this.buckets = new HashSet<>(from.buckets);
+        this.mutated = from.mutated;
     }
 
     public DAG(TreeId id) {
@@ -109,7 +112,7 @@ class DAG implements Cloneable, Serializable {
             Set<NodeId> children, Set<TreeId> buckets) {
         this.id = id;
         this.originalTreeId = originalTreeId;
-        this.setChildCount(childCount);
+        this.setTotalChildCount(childCount);
         this.state = state;
         this.children = new HashMap<>(Maps.uniqueIndex(children, (n) -> n.name()));
         this.buckets = buckets;
@@ -124,8 +127,28 @@ class DAG implements Cloneable, Serializable {
         this.buckets = ImmutableSet.of();
     }
 
+    public void reset(ObjectId originalTreeId) {
+        clearChildren();
+        clearBuckets();
+        this.childCount = 0L;
+        this.originalTreeId = originalTreeId;
+        this.state = STATE.INITIALIZED;
+        this.mutated = true;
+    }
+
     public TreeId getId() {
         return id;
+    }
+
+    public ObjectId originalTreeId() {
+        return originalTreeId;
+    }
+
+    public void setOriginalTreeId(ObjectId treeId) {
+        if (!treeId.equals(originalTreeId)) {
+            this.originalTreeId = treeId;
+            setMutated();
+        }
     }
 
     public void setMirrored() {
@@ -189,25 +212,30 @@ class DAG implements Cloneable, Serializable {
             return false;
         }
         DAG d = (DAG) o;
-        return equal(originalTreeId, d.originalTreeId) && equal(getChildCount(), d.getChildCount())
-                && equal(state, d.state) && equal(children, d.children)
-                && equal(buckets, d.buckets);
+        return equal(originalTreeId, d.originalTreeId)
+                && equal(getTotalChildCount(), d.getTotalChildCount()) && equal(state, d.state)
+                && equal(children, d.children) && equal(buckets, d.buckets);
     }
 
     @Override
     public String toString() {
-        return "DAG[features: " + children + ", buckets: " + buckets + "]";
+        String revTreeId = originalTreeId.equals(RevTree.EMPTY_TREE_ID) ? "EMPTY"
+                : originalTreeId.toString().substring(0, 6);
+        return String.format(
+                "DAG[id:%s, orig:%s, status: %s, size: %,d, children: %,d, buckets: %,d)[children: %s, buckets: %s]",
+                id, revTreeId, state, childCount, children.size(), buckets.size(), children,
+                buckets);
     }
 
     public boolean isEmpty() {
         return children.isEmpty() && buckets.isEmpty();
     }
 
-    public long getChildCount() {
+    public long getTotalChildCount() {
         return childCount;
     }
 
-    public void setChildCount(long childCount) {
+    public void setTotalChildCount(long childCount) {
         if (this.childCount != childCount) {
             setMutated();
         }
@@ -262,7 +290,7 @@ class DAG implements Cloneable, Serializable {
     public static void serialize(DAG dag, DataOutput out) throws IOException {
         final ObjectId treeId = dag.originalTreeId;
         final STATE state = dag.getState();
-        final long childCount = dag.getChildCount();
+        final long childCount = dag.getTotalChildCount();
         final Collection<NodeId> children = dag.children.values();
         final Set<TreeId> buckets = dag.buckets;
 
@@ -313,5 +341,30 @@ class DAG implements Cloneable, Serializable {
 
         DAG dag = new DAG(id, treeId, childCount, state, children, buckets);
         return dag;
+    }
+
+    public List<TreeId> bucketList() {
+        return Lists.newArrayList(buckets);
+    }
+
+    public List<NodeId> childrenList() {
+        return Lists.newArrayList(children.values());
+    }
+
+    public void removeBucket(TreeId id) {
+        buckets.remove(id);
+    }
+
+    public boolean containsBucket(TreeId bucketId) {
+        boolean contains = this.buckets.contains(bucketId);
+        return contains;
+    }
+
+    public boolean containsNode(NodeId node) {
+        return children.containsKey(node.name());
+    }
+
+    public void setInitialized() {
+        this.state = STATE.INITIALIZED;
     }
 }

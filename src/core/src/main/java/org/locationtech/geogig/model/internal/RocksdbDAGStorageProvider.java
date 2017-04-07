@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -75,7 +76,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public List<DAG> getTrees(Set<TreeId> ids) {
+    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException{
         return dagStore.getTrees(ids);
     }
 

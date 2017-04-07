@@ -40,20 +40,21 @@ import org.opengis.filter.identity.ResourceId;
 
 public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
-    private static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
+    protected static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
 
     @Rule
     public ExpectedException expected = ExpectedException.none();
 
-    private GeoGigDataStore dataStore;
+    protected GeoGigDataStore dataStore;
 
-    private GeogigFeatureStore points;
+    protected GeogigFeatureStore points;
 
     @Override
     protected void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(geogig.getRepository());
         dataStore.createSchema(super.pointsType);
         dataStore.createSchema(super.linesType);
+        dataStore.createSchema(super.polyType);
 
         points = (GeogigFeatureStore) dataStore.getFeatureSource(pointsName);
     }
@@ -302,8 +303,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     @Test
     public void testRemoveFeatures() throws Exception {
         // add features circumventing FeatureStore.addFeatures to keep the test
-        // independent of the
-        // addFeatures functionality
+        // independent of the addFeatures functionality
         insertAndAdd(lines1, lines2, lines3);
         insertAndAdd(points1, points2, points3);
         geogig.command(CommitOp.class).call();
@@ -401,4 +401,5 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         assertEquals("John Doe", commits.get(0).getAuthor().getName().orNull());
         assertEquals("jd@example.com", commits.get(0).getAuthor().getEmail().orNull());
     }
+
 }

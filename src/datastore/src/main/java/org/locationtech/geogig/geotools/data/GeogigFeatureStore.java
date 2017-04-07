@@ -68,7 +68,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
      * geogig feature source to delegate to, we do this b/c we can't inherit from both
      * ContentFeatureStore and {@link GeogigFeatureSource} at the same time
      */
-    private GeogigFeatureSource delegate;
+    final GeogigFeatureSource delegate;
 
     /**
      * @param entry

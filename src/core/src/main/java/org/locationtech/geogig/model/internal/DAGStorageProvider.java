@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.internal;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,7 +23,7 @@ interface DAGStorageProvider {
 
     public TreeCache getTreeCache();
 
-    public List<DAG> getTrees(Set<TreeId> ids);
+    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException;
 
     public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId);
 

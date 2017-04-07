@@ -113,17 +113,15 @@ public class DiffCountConsumerTest extends Assert {
         assertEquals(1, count(changed, childrenFeatureTree).featureCount());
 
         builder = CanonicalTreeBuilder.create(odb, changed);
-        changed = builder
-                .put(Node.create("new", FAKE_FEATURE_ID, ObjectId.NULL, TYPE.FEATURE, null))
-                .build();
+        builder.put(Node.create("new", FAKE_FEATURE_ID, ObjectId.NULL, TYPE.FEATURE, null));
+        changed = builder.build();
 
         assertEquals(2, count(childrenFeatureTree, changed).featureCount());
         assertEquals(2, count(changed, childrenFeatureTree).featureCount());
 
         builder = CanonicalTreeBuilder.create(odb, changed);
-        changed = builder
-                .put(Node.create("1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null))
-                .build();
+        builder.put(Node.create("1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null));
+        changed = builder.build();
 
         assertEquals(3, count(childrenFeatureTree, changed).featureCount());
         assertEquals(3, count(changed, childrenFeatureTree).featureCount());
@@ -241,9 +239,9 @@ public class DiffCountConsumerTest extends Assert {
 
         builder = CanonicalTreeBuilder.create(odb, bucketsFeatureTree);
 
-        changed = builder.put(
-                Node.create("1023", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null))
-                .build();
+        builder.put(
+                Node.create("1023", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null));
+        changed = builder.build();
         odb.put(changed);
 
         DiffObjectCount count = count(bucketsFeatureTree, changed);

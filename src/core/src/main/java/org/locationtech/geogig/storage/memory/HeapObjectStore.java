@@ -27,8 +27,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectInfo;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
-import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
+import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -48,7 +47,7 @@ public class HeapObjectStore extends AbstractObjectStore {
     private ConcurrentMap<ObjectId, byte[]> objects;
 
     public HeapObjectStore() {
-        super(new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE));
+        super(new SerializationFactoryProxy());
     }
 
     /**

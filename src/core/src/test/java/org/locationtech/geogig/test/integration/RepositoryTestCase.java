@@ -59,6 +59,7 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.test.TestPlatform;
 import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -72,6 +73,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RepositoryTestCase extends Assert {
@@ -303,22 +305,26 @@ public abstract class RepositoryTestCase extends Assert {
         return Iterators.transform(features, (f) -> featureInfo(f));
     }
 
-    protected Feature feature(SimpleFeatureType type, String id, Object... values) {
+    protected SimpleFeature feature(SimpleFeatureType type, String id, Object... values) {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
             if (type.getDescriptor(i) instanceof GeometryDescriptor) {
                 if (value instanceof String) {
-                    try {
-                        value = new WKTReader2().read((String) value);
-                    } catch (ParseException e) {
-                        throw Throwables.propagate(e);
-                    }
+                    value = geom((String) value);
                 }
             }
             builder.set(i, value);
         }
         return builder.buildFeature(id);
+    }
+
+    protected Geometry geom(String wkt) {
+        try {
+            return new WKTReader2().read(wkt);
+        } catch (ParseException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     protected List<RevCommit> populate(boolean oneCommitPerFeature, Feature... features)

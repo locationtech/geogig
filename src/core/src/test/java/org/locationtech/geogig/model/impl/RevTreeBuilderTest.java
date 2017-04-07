@@ -15,6 +15,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -172,10 +174,17 @@ public abstract class RevTreeBuilderTest {
             for (; it.hasNext(); i++) {
                 NodeRef entry = it.next();
                 if (i % 10 == 0) {
-                    ObjectId oid = RevObjectTestSupport.hashString("updated" + i);
-                    Node update = Node.create(entry.name(), oid, entry.getMetadataId(),
-                            TYPE.FEATURE, entry.bounds().orNull());
-                    oldValues.put(entry.name(), entry.getNode());
+                    Node oldNode = entry.getNode();
+                    Envelope oldBounds = oldNode.bounds().orNull();
+                    Envelope newBounds = null;
+                    if (oldBounds != null) {
+                        newBounds = new Envelope(oldBounds);
+                        newBounds.translate(1, 1);
+                    }
+                    ObjectId newId = RevObjectTestSupport.hashString("updated" + i);
+                    Node update = oldNode.update(newId, newBounds);
+
+                    oldValues.put(oldNode.getName(), oldNode);
                     newValues.put(update.getName(), update);
                 }
             }
@@ -184,7 +193,9 @@ public abstract class RevTreeBuilderTest {
 
         RevTreeBuilder builder = createBuiler(tree);
         for (Node change : newValues.values()) {
-            builder.put(change);
+            Node oldNode = oldValues.get(change.getName());
+            assertNotNull(oldNode);
+            builder.update(oldNode, change);
         }
 
         final RevTree result = builder.build();
@@ -225,25 +236,47 @@ public abstract class RevTreeBuilderTest {
     private void testEquality(final int numEntries) throws Exception {
         final ObjectId treeId1;
         final ObjectId treeId2;
-        treeId1 = createAndSaveTree(numEntries, true);
-        treeId2 = createAndSaveTree(numEntries, false);
+        List<Node> nodes = createNodes(numEntries);
+        treeId1 = createAndSaveTree(nodes, true);
+        treeId2 = createAndSaveTree(nodes, false);
 
         assertEquals(treeId1, treeId2);
     }
 
+    protected List<Node> createNodes(int numEntries) {
+        List<Node> nodes = new ArrayList<>(numEntries);
+        for (int i = 0; i < numEntries; i++) {
+            nodes.add(createNode(i));
+        }
+        return nodes;
+    }
+
     protected ObjectId createAndSaveTree(final int numEntries,
             final boolean insertInAscendingKeyOrder) throws Exception {
+        List<Node> nodes = createNodes(numEntries);
+        ObjectId treeId = createAndSaveTree(nodes, insertInAscendingKeyOrder);
+        return treeId;
+    }
 
-        RevTreeBuilder treeBuilder = createTree(numEntries, insertInAscendingKeyOrder);
+    protected ObjectId createAndSaveTree(final List<Node> nodes, final boolean insertInListOrder)
+            throws Exception {
+
+        List<Node> insert = nodes;
+        if (!insertInListOrder) {
+            insert = new ArrayList<>(nodes);
+            Collections.shuffle(insert);
+        }
+        RevTreeBuilder treeBuilder = createBuiler();
+        nodes.forEach((n) -> treeBuilder.put(n));
         RevTree tree = treeBuilder.build();
-        objectStore.put(tree);
+        assertTrue(objectStore.exists(tree.getId()));
 
-        assertEquals(numEntries, tree.size());
+        assertEquals(nodes.size(), tree.size());
 
         return tree.getId();
     }
 
-    protected RevTreeBuilder createTree(final int numEntries,
+    private RevTreeBuilder createTree(final int numEntries,
             final boolean insertInAscendingKeyOrder) {
         RevTreeBuilder tree = createBuiler();
 
@@ -260,6 +293,11 @@ public abstract class RevTreeBuilderTest {
     private static final ObjectId FAKE_ID = RevObjectTestSupport.hashString("fake");
 
     private void addNode(RevTreeBuilder tree, int i) {
+        Node ref = createNode(i);
+        tree.put(ref);
+    }
+
+    protected Node createNode(int i) {
         String key = "Feature." + i;
         // ObjectId oid = ObjectId.forString(key);
         // ObjectId metadataId = ObjectId.forString("FeatureType");
@@ -267,26 +305,34 @@ public abstract class RevTreeBuilderTest {
 
         Node ref = Node.create(key, FAKE_ID, FAKE_ID, TYPE.FEATURE,
                 new Envelope(i, i + 1, i, i + 1));
-        tree.put(ref);
+        return ref;
     }
 
     @Test
     public void testResultingTreeBounds() throws Exception {
         checkTreeBounds(10);
         checkTreeBounds(100);
-        checkTreeBounds(1000);
-        checkTreeBounds(10 * 1000);
-        checkTreeBounds(100 * 1000);
+        checkTreeBounds(1_000);
+        checkTreeBounds(10_000);
+        checkTreeBounds(100_000);
     }
 
     private void checkTreeBounds(int size) {
-        RevTree tree;
-        Envelope bounds;
-        tree = tree(size).build();
+        RevTreeBuilder b = createBuiler();
+        List<Node> nodes = createNodes(size);
+        Envelope expectedBounds = new Envelope();
+
+        for (Node n : nodes) {
+            b.put(n);
+            n.expand(expectedBounds);
+        }
+        expectedBounds = Node.makePrecise(expectedBounds);
+
+        RevTree tree = b.build();
         assertEquals(size, tree.size());
-        bounds = SpatialOps.boundsOf(tree);
-        Envelope expected = new Envelope(0, size, 0, size);
-        assertEquals(expected, bounds);
+        Envelope bounds = SpatialOps.boundsOf(tree);
+        bounds = Node.makePrecise(bounds);
+        assertEquals(expectedBounds, bounds);
     }
 
     protected List<Node> lstree(RevTree tree) {
@@ -298,39 +344,6 @@ public abstract class RevTreeBuilderTest {
         };
         List<Node> nodes = Lists.newArrayList(Iterators.transform(it, asNode));
         return nodes;
-    }
-
-    private RevTreeBuilder tree(int nfeatures) {
-        RevTreeBuilder b = createBuiler();
-        for (Node n : nodes(nfeatures)) {
-            b.put(n);
-        }
-        return b;
-    }
-
-    protected List<Node> nodes(int size) {
-        List<Node> nodes = Lists.newArrayListWithCapacity(size);
-        for (int i = 0; i < size; i++) {
-            nodes.add(node(i));
-        }
-        return nodes;
-    }
-
-    /**
-     * @return a feature node named {@code i}, with
-     *         {@code id = ObjectId.forString(String.valueOf(i))}, null metadata id, and
-     *         {@code bounds = [i, i+1, i, i+1]}
-     */
-    protected static Node node(int i) {
-        Envelope bounds = new Envelope(i, i + 1, i, i + 1);
-        return node(i, bounds);
-    }
-
-    protected static Node node(int i, Envelope bounds) {
-        String key = "a" + String.valueOf(i);
-        ObjectId oid = RevObjectTestSupport.hashString(key);
-        Node node = Node.create(key, oid, ObjectId.NULL, TYPE.FEATURE, bounds);
-        return node;
     }
 
     protected void print(RevTree root) {

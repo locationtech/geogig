@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -61,11 +62,13 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public List<DAG> getTrees(Set<TreeId> ids) {
+    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
         List<DAG> res = new ArrayList<>(ids.size());
         ids.forEach((id) -> {
             DAG dag = trees.get(id);
-            Preconditions.checkState(dag != null);
+            if (dag == null) {
+                throw new NoSuchElementException(id.toString());
+            }
             res.add(dag);
         });
         return res;

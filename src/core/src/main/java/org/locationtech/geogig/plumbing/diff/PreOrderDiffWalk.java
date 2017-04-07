@@ -324,7 +324,7 @@ public class PreOrderDiffWalk {
             if (!(leftSource.isOpen() && rightSource.isOpen())) {
                 // someone closed the repo, we're ok.
             } else {
-                System.err.println("Excaption caught executing task: ");
+                System.err.println("Exception caught executing task: ");
                 e.printStackTrace();
                 Throwables.propagate(e);
             }

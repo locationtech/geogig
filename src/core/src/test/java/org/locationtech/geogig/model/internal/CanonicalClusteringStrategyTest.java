@@ -352,7 +352,7 @@ public abstract class CanonicalClusteringStrategyTest {
         System.err.printf("Removed %,d nodes in %s\n", removeNodes.size(), sw.stop());
 
         DAG root = strategy.buildRoot();
-        assertEquals(nodes.size() - removeNodes.size(), root.getChildCount());
+        assertEquals(nodes.size() - removeNodes.size(), root.getTotalChildCount());
         assertFalse(children(root).isEmpty());
         assertTrue(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());

@@ -208,14 +208,6 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
         assertFeatures(inserted, expected);
     }
 
-    private Geometry geom(String wkt) {
-        try {
-            return new WKTReader().read(wkt);
-        } catch (ParseException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     private void assertFeatures(Map<String/* fid */, SimpleFeature> actual,
             Map<String/* fid */, SimpleFeature> expected) {
 

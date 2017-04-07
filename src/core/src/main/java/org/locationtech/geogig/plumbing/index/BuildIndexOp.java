@@ -128,6 +128,14 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
             throw Throwables.propagate(Throwables.getRootCause(e));
         }
         revTreeTime.stop();
+
+        final long canonicalSize = newCanonicalTree.size();
+        final long indexSize = indexTree.size();
+        checkState(canonicalSize == indexSize,
+                "ERROR: Canonical tree size: %s (%s), Index tree size: %s (%s)",
+                newCanonicalTree.size(), newCanonicalTree.getId(), indexTree.size(),
+                indexTree.getId());
+
         indexDatabase().addIndexedTree(index, newCanonicalTree.getId(), indexTree.getId());
         progress.setDescription(String.format("QuadTree created. Size: %,d, time: %s",
                 indexTree.size(), revTreeTime));

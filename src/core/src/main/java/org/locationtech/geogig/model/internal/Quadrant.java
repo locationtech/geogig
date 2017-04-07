@@ -9,7 +9,10 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import org.locationtech.geogig.model.Node;
+
 import com.google.common.annotations.VisibleForTesting;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 enum Quadrant {
@@ -46,16 +49,80 @@ enum Quadrant {
      * @param target output argument where to store the bounds of the child quadrant this
      *        {@code Quadrant} represents
      */
-    public void slice(Envelope parent, Envelope target) {
+    public void slice(Envelope maxBounds, Envelope target) {
+        final Coordinate centre = maxBounds.centre();
 
-        double w = parent.getWidth() / 2.0;
-        double h = parent.getHeight() / 2.0;
-
-        double x1 = parent.getMinX() + offsetX * w;
-        double x2 = x1 + w;
-        double y1 = parent.getMinY() + offsetY * h;
-        double y2 = y1 + h;
+        double x1;
+        double y1;
+        double x2;
+        double y2;
+        if (0 == offsetX) {
+            x1 = maxBounds.getMinX();
+            x2 = centre.x;
+        } else {
+            x2 = maxBounds.getMaxX();
+            x1 = centre.x;
+        }
+        if (0 == offsetY) {
+            y1 = maxBounds.getMinY();
+            y2 = centre.y;
+        } else {
+            y2 = maxBounds.getMaxY();
+            y1 = centre.y;
+        }
 
         target.init(x1, x2, y1, y2);
+        Envelope precise = Node.makePrecise(target);
+        target.init(precise);
+    }
+
+    public static int findMaxDepth(Envelope maxBounds, final int absoluteMaxDepth) {
+        // choose the quad that tends to the biggest abs value
+        maxBounds = Node.makePrecise(maxBounds);
+        final Quadrant testQuad = findBiggestMagnitudeQuad(maxBounds);
+
+        Envelope parent = new Envelope(maxBounds);
+        Envelope child = new Envelope();
+        Envelope float32Center = new Envelope();
+
+        for (int d = 0; d < absoluteMaxDepth; d++) {
+            testQuad.slice(parent, child);
+            Coordinate center = child.centre();
+            toFloat32(center, float32Center);
+            if (!child.contains(float32Center)) {
+                return d;
+            }
+            parent.init(child);
+        }
+        return absoluteMaxDepth;
+    }
+
+    /**
+     * @param maxBounds
+     * @return
+     */
+    @VisibleForTesting
+    static Quadrant findBiggestMagnitudeQuad(Envelope maxBounds) {
+        boolean west = Math.abs(maxBounds.getMinX()) > Math.abs(maxBounds.getMaxX());
+        boolean south = Math.abs(maxBounds.getMinY()) > Math.abs(maxBounds.getMaxY());
+        Quadrant q;
+        if (west) {
+            q = south ? SW : NW;
+        } else {
+            q = south ? SE : NE;
+        }
+        return q;
+    }
+
+    private static void toFloat32(Coordinate center, Envelope target) {
+        float centerX = (float) center.x;
+        float centerY = (float) center.y;
+
+        float xmin = Math.nextAfter(centerX, Double.NEGATIVE_INFINITY);
+        float ymin = Math.nextAfter(centerY, Double.NEGATIVE_INFINITY);
+        float xmax = Math.nextAfter(centerX, Double.POSITIVE_INFINITY);
+        float ymax = Math.nextAfter(centerY, Double.POSITIVE_INFINITY);
+
+        target.init(xmin, xmax, ymin, ymax);
     }
 }

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing.index;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.singletonIterator;
 
 import java.util.ArrayList;
@@ -129,11 +130,27 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
             @Nullable
             Node right = materialize(t.right, objects);
             if (left == null) {
-                builder.put(right);
+                // if (!right.getExtraData().isEmpty()) {
+                // System.err.printf(">>>> PUT: %s (%s)\n", right.getName(), right.getExtraData());
+                // }
+                boolean put = builder.put(right);
+                checkState(put, "Node was not added to index: %s", right);
             } else if (right == null) {
-                builder.remove(left);
+                // if (!left.getExtraData().isEmpty()) {
+                // System.err.printf("<<<< REMOVE: %s (%s)\n", left.getName(),
+                // left.getExtraData());
+                // }
+                boolean removed = builder.remove(left);
+                checkState(removed, "Node was not removed from index: %s", left);
             } else {
-                builder.update(left, right);
+                // if (!right.getExtraData().isEmpty() || !left.getExtraData().isEmpty()) {
+                // System.err.printf("<<>>> UPDATE: %s (%s)->(%s)\n", right.getName(),
+                // left.getExtraData(), right.getExtraData());
+                // }
+                boolean updated = builder.update(left, right);
+                if (!left.equals(right)) {
+                    checkState(updated, "Node %s was not updated to %s", left, right);
+                }
             }
         }
     }

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import static com.google.common.base.Preconditions.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -138,6 +139,7 @@ public class DAGTreeBuilder {
         SharedState state = new SharedState(targetStore, clusteringStrategy, listener);
 
         final DAG root = clusteringStrategy.buildRoot();
+
         final TreeId rootId = root.getId();
         final int baseDepth = rootId.depthLength();
         TreeBuildTask task = new TreeBuildTask(state, root, baseDepth);
@@ -177,14 +179,16 @@ public class DAGTreeBuilder {
 
             try {
                 final DAG root = this.root;
-                if (root.getState().equals(STATE.CHANGED)) {
+                final STATE rootState = root.getState();
+                if (rootState.equals(STATE.CHANGED)) {
                     if (0 == root.numBuckets()) {
                         result = buildLeafTree(root);
                     } else {
                         result = buildBucketsTree(root);
                     }
                 } else {
-                    ObjectId treeId = root.originalTreeId;
+                    checkState(rootState == STATE.INITIALIZED || rootState == STATE.MIRRORED);
+                    ObjectId treeId = root.originalTreeId();
                     result = state.getTree(treeId);
                 }
             } catch (RuntimeException e) {
@@ -202,9 +206,9 @@ public class DAGTreeBuilder {
             {
                 final Set<TreeId> dagBuckets = new HashSet<>();
                 root.forEachBucket((b) -> dagBuckets.add(b));
-                Preconditions.checkNotNull(dagBuckets);
+                checkNotNull(dagBuckets);
                 mutableBuckets = this.state.clusteringStrategy.getDagTrees(dagBuckets);
-                Preconditions.checkState(dagBuckets.size() == mutableBuckets.size());
+                checkState(dagBuckets.size() == mutableBuckets.size());
             }
 
             Map<Integer, ForkJoinTask<RevTree>> subtasks = new HashMap<>();
@@ -252,7 +256,7 @@ public class DAGTreeBuilder {
         }
 
         private RevTree buildLeafTree(DAG root) {
-            Preconditions.checkState(root.numBuckets() == 0);
+            checkState(root.numBuckets() == 0);
 
             final ImmutableList<Node> children;
             {

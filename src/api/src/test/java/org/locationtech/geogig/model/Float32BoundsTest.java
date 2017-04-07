@@ -10,11 +10,13 @@
 package org.locationtech.geogig.model;
 
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class Float32BoundsTest {
 
@@ -33,6 +35,7 @@ public class Float32BoundsTest {
 
         coord = new Coordinate(Math.PI, Math.E);
         bounds = Float32Bounds.valueOf(new Envelope(coord));
+        assertNotEquals(bounds, new Envelope(coord));
         assertTrue(bounds.asEnvelope().contains(coord));
         assertTrue(bounds.intersects(new Envelope(coord)));
 

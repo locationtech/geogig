@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
-import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.createWorldPointsLayer;
-import static org.locationtech.geogig.plumbing.index.QuadTreeTestSupport.getPointFid;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,22 +47,22 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
         Repository repository = getRepository();
         indexdb = repository.indexDatabase();
-        worldPointsLayer = createWorldPointsLayer(repository);
+        worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
         super.add();
         super.commit("created world points layer");
-        String fid1 = getPointFid(0, 0);
+        String fid1 = IndexTestSupport.getPointFid(0, 0);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid1)).call();
         repository.command(BranchCreateOp.class).setName("branch1").call();
         super.add();
         super.commit("deleted 0, 0");
-        String fid2 = getPointFid(0, 5);
+        String fid2 = IndexTestSupport.getPointFid(0, 5);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid2)).call();
         super.add();
         super.commit("deleted 0, 5");
         repository.command(CheckoutOp.class).setSource("branch1").call();
-        String fid3 = getPointFid(0, 10);
+        String fid3 = IndexTestSupport.getPointFid(0, 10);
         repository.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid3)).call();
         super.add();
@@ -89,7 +86,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
     public void testUpdateIndexesHook() {
         IndexInfo indexInfo = createIndex("x");
 
-        String fid = getPointFid(5, 5);
+        String fid = IndexTestSupport.getPointFid(5, 5);
         geogig.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
@@ -109,7 +106,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
     public void testUpdateIndexesHookBranch() {
         IndexInfo indexInfo = createIndex("x", "y");
 
-        String fid = getPointFid(5, 5);
+        String fid = IndexTestSupport.getPointFid(5, 5);
         geogig.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
@@ -128,7 +125,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         branch("testbranch1");
         checkout("testbranch1");
 
-        fid = getPointFid(10, 5);
+        fid = IndexTestSupport.getPointFid(10, 5);
         geogig.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
@@ -149,7 +146,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         branch("testbranch1");
 
-        String fid = getPointFid(5, 5);
+        String fid = IndexTestSupport.getPointFid(5, 5);
         geogig.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
@@ -166,7 +163,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         checkout("testbranch1");
 
-        fid = getPointFid(10, 5);
+        fid = IndexTestSupport.getPointFid(10, 5);
         geogig.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
@@ -198,7 +195,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         branch("testbranch1");
 
-        String fid = getPointFid(5, 5);
+        String fid = IndexTestSupport.getPointFid(5, 5);
         geogig.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
@@ -215,7 +212,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         checkout("testbranch1");
 
-        fid = getPointFid(10, 5);
+        fid = IndexTestSupport.getPointFid(10, 5);
         geogig.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
@@ -229,7 +226,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         IndexTestSupport.verifyIndex(geogig, branchIndex.get(), featureTree.getObjectId(), "xystr");
 
-        fid = getPointFid(10, 10);
+        fid = IndexTestSupport.getPointFid(10, 10);
         geogig.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();

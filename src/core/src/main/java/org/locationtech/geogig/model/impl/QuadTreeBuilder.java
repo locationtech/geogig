@@ -28,21 +28,18 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
     }
 
     @Override
-    public QuadTreeBuilder put(Node node) {
-        super.put(node);
-        return this;
+    public boolean put(Node node) {
+        return super.put(node);
     }
 
     @Override
-    public QuadTreeBuilder remove(Node node) {
-        super.remove(node);
-        return this;
+    public boolean remove(Node node) {
+        return super.remove(node);
     }
 
     @Override
-    public QuadTreeBuilder update(Node oldNode, Node newNode) {
-        super.update(oldNode, newNode);
-        return this;
+    public boolean update(Node oldNode, Node newNode) {
+        return super.update(oldNode, newNode);
     }
 
     @Override
@@ -50,27 +47,18 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         return clusteringStrategy;
     }
 
-    public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target) {
-        return QuadTreeBuilder.create(source, target, RevTree.EMPTY);
-    }
-
-    public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target,
-            final RevTree original) {
-        Preconditions.checkNotNull(source);
-        Preconditions.checkNotNull(target);
-        Preconditions.checkNotNull(original);
-        final Envelope MAX_BOUNDS_WGS84 = new Envelope(-180, 180, -90, 90);
-        return QuadTreeBuilder.create(source, target, original, MAX_BOUNDS_WGS84);
-    }
-
     public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target,
             final RevTree original, final Envelope maxBounds) {
         Preconditions.checkNotNull(source);
         Preconditions.checkNotNull(target);
+        Preconditions.checkNotNull(original);
         Preconditions.checkNotNull(maxBounds);
 
-        ClusteringStrategy strategy = ClusteringStrategyBuilder.quadTree(source).original(original)
-                .maxBounds(maxBounds).build();
+        ClusteringStrategy strategy = ClusteringStrategyBuilder//
+                .quadTree(source)//
+                .original(original)//
+                .maxBounds(maxBounds)//
+                .build();
         QuadTreeBuilder builder = new QuadTreeBuilder(target, RevTree.EMPTY, strategy);
         return builder;
     }

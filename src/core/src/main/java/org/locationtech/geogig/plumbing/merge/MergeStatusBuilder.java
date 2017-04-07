@@ -32,7 +32,7 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
-import org.locationtech.geogig.storage.datastream.FormatCommonV2;
+import org.locationtech.geogig.storage.datastream.FormatCommonV2_2;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.geogig.storage.impl.PersistedIterable.Serializer;
 
@@ -315,11 +315,11 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         }
 
         private void writeNode(DataOutputStream out, Node node) throws IOException {
-            FormatCommonV2.INSTANCE.writeNode(node, out);
+            FormatCommonV2_2.INSTANCE.writeNode(node, out);
         }
 
         private Node readNode(DataInputStream in) throws IOException {
-            return FormatCommonV2.INSTANCE.readNode(in);
+            return FormatCommonV2_2.INSTANCE.readNode(in);
         }
 
     }

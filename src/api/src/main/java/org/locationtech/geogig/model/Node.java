@@ -252,6 +252,11 @@ public abstract class Node implements Bounded, Comparable<Node> {
         }
     }
 
+    public static @Nullable Envelope makePrecise(@Nullable Envelope bounds) {
+        Envelope float32Bounds = Float32Bounds.valueOf(bounds).asEnvelope();
+        return float32Bounds.isNull() ? null : float32Bounds;
+    }
+
     private static final class TreeNode extends BaseNode {
 
         // dim0(0),dim0(1),dim1(0),dim1(1)

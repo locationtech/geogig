@@ -25,6 +25,7 @@ import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 
 /**
  * Creates a new index using the provided parameters and metadata.
@@ -67,25 +68,32 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
 
         final ObjectId indexedTreeId;
 
-        if (indexHistory) {
-            command(BuildFullHistoryIndexOp.class)//
-                    .setTreeRefSpec(treeName)//
-                    .setAttributeName(attributeName)//
-                    .setProgressListener(getProgressListener())//
+        try {
+            if (indexHistory) {
+                command(BuildFullHistoryIndexOp.class)//
+                        .setTreeRefSpec(treeName)//
+                        .setAttributeName(attributeName)//
+                        .setProgressListener(getProgressListener())//
+                        .call();
+                Optional<ObjectId> headIndexedTreeId = indexDatabase().resolveIndexedTree(indexInfo,
+                        canonicalTypeTree.getId());
+                checkState(headIndexedTreeId.isPresent(),
+                        "HEAD indexed tree could not be resolved after building history indexes.");
+                indexedTreeId = headIndexedTreeId.get();
+            } else {
+                indexedTreeId = command(BuildIndexOp.class)//
+                        .setIndex(indexInfo)//
+                        .setOldCanonicalTree(RevTree.EMPTY)//
+                        .setNewCanonicalTree(canonicalTypeTree)//
+                        .setRevFeatureTypeId(featureTypeId)//
+                        .setProgressListener(getProgressListener())//
+                        .call().getId();
+            }
+        } catch (Exception e) {
+            // rollback
+            command(DropIndexOp.class).setTreeRefSpec(treeName).setAttributeName(attributeName)
                     .call();
-            Optional<ObjectId> headIndexedTreeId = indexDatabase().resolveIndexedTree(indexInfo,
-                    canonicalTypeTree.getId());
-            checkState(headIndexedTreeId.isPresent(),
-                    "HEAD indexed tree could not be resolved after building history indexes.");
-            indexedTreeId = headIndexedTreeId.get();
-        } else {
-            indexedTreeId = command(BuildIndexOp.class)//
-                    .setIndex(indexInfo)//
-                    .setOldCanonicalTree(RevTree.EMPTY)//
-                    .setNewCanonicalTree(canonicalTypeTree)//
-                    .setRevFeatureTypeId(featureTypeId)//
-                    .setProgressListener(getProgressListener())//
-                    .call().getId();
+            throw Throwables.propagate(e);
         }
 
         return new Index(indexInfo, indexedTreeId, indexDatabase());

@@ -176,7 +176,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             LegacyTreeBuilder legacy = createLegacyBuilder(RevTree.EMPTY);
             RevTreeBuilder builder = createBuiler();
             for (int i = 0; i < CanonicalNodeNameOrder.normalizedSizeLimit(0); i++) {
-                Node node = node(i);
+                Node node = createNode(i);
                 builder.put(node);
                 legacy.put(node);
             }
@@ -194,7 +194,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             RevTreeBuilder builder = createBuiler(leafFull);
             for (int i = CanonicalNodeNameOrder.normalizedSizeLimit(0); i < 2
                     * CanonicalNodeNameOrder.normalizedSizeLimit(0); i++) {
-                Node node = node(i);
+                Node node = createNode(i);
                 builder.put(node);
                 legacy.put(node);
             }
@@ -213,7 +213,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
     @Test
     public void testNodeOrderPassSplitThreshold() {
         final int splitThreshold = CanonicalNodeNameOrder.normalizedSizeLimit(0);
-        List<Node> expectedOrder = nodes(splitThreshold + 1);
+        List<Node> expectedOrder = createNodes(splitThreshold + 1);
         Collections.sort(expectedOrder, CanonicalNodeOrder.INSTANCE);
 
         final List<Node> flat = expectedOrder.subList(0, splitThreshold);

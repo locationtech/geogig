@@ -24,7 +24,6 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
@@ -68,28 +67,35 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
         Preconditions.checkState(reference != null, "Reference not provided");
         Preconditions.checkState(listener != null, "Listener not provided");
 
-        final ObjectDatabase odb = objectDatabase();
-
         Optional<ObjectId> oid = command(RevParse.class).setRefSpec(reference).call();
+
+        ObjectStore source = objectDatabase();
+        if (!oid.isPresent()) {
+            source = indexDatabase();
+            oid = command(RevParse.class).setRefSpec(reference).setSource(source).call();
+        }
+
         Preconditions.checkArgument(oid.isPresent(), "Can't resolve reference '%s' at %s",
                 reference, repository().getLocation());
 
         RevTree left = RevTree.EMPTY;
         RevTree right;
 
-        RevObject revObject = odb.get(oid.get());
+        RevObject revObject = source.get(oid.get());
         Preconditions.checkArgument(revObject instanceof RevCommit || revObject instanceof RevTree,
                 "'%s' can't be resolved to a tree: %s", reference, revObject.getType());
 
         if (revObject instanceof RevCommit) {
             RevCommit c = (RevCommit) revObject;
             listener.commit(c);
-            right = odb.getTree(c.getTreeId());
+            right = source.getTree(c.getTreeId());
         } else {
             right = (RevTree) revObject;
         }
 
-        PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, odb, odb);
+        PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source, true);
+        
+        final ObjectStore treeSource = source;
         Consumer consumer = new Consumer() {
 
             private WalkGraphOp.Listener listener = WalkGraphOp.this.listener;
@@ -107,19 +113,19 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
                         visitedTypes.add(featureTypeId);
                         listener.featureType(odb.getFeatureType(featureTypeId));
                         if (!featureTypeId.isNull()) {
-                            checkExists(featureTypeId, right);
+                            checkExists(featureTypeId, featureTypeId, odb);
                         }
                     }
                 }
                 listener.starTree(right);
-                checkExists(right.getObjectId(), right);
+                checkExists(right.getObjectId(), right, treeSource);
                 return true;
             }
 
             @Override
             public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
                 listener.feature(right);
-                checkExists(right.getObjectId(), right);
+                checkExists(right.getObjectId(), right, odb);
                 return true;
             }
 
@@ -133,7 +139,7 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
                     @Nullable Bucket left, @Nullable Bucket right) {
 
                 listener.bucket(bucketIndex, right);
-                checkExists(right.getObjectId(), right);
+                checkExists(right.getObjectId(), right, treeSource);
                 return true;
             }
 
@@ -144,8 +150,8 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
                 listener.endBucket(bucketIndex, right);
             }
 
-            private void checkExists(ObjectId id, Object o) {
-                if (!odb.exists(id)) {
+            private void checkExists(ObjectId id, Object o, ObjectStore store) {
+                if (!store.exists(id)) {
                     throw new IllegalStateException("Object " + o + " not found.");
                 }
             }

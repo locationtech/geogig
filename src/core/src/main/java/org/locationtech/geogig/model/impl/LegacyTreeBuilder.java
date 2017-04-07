@@ -588,7 +588,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
      * @return a reference to this {@link org.locationtech.geogig.model.impl.RevTreeBuilder
      *         RevTreeBuilder}
      */
-    public synchronized RevTreeBuilder put(final Node node) {
+    public synchronized boolean put(final Node node) {
         Preconditions.checkNotNull(node, "node can't be null");
 
         putInternal(node);
@@ -596,7 +596,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
             // hit the split factor modification tolerance, lets normalize
             normalize();
         }
-        return this;
+        return true;
     }
 
     /**
@@ -605,18 +605,18 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
      * @param childName the name of the child to remove
      * @return {@code this}
      */
-    public RevTreeBuilder remove(final String childName) {
+    public boolean remove(final String childName) {
         Preconditions.checkNotNull(childName, "key can't be null");
         if (null == featureChanges.remove(childName)) {
             treeChanges.remove(childName);
         }
 
         deletes.add(childName);
-        return this;
+        return true;
     }
 
     @Override
-    public RevTreeBuilder remove(final Node node) {
+    public boolean remove(final Node node) {
         Preconditions.checkNotNull(node, "key can't be null");
         return remove(node.getName());
     }
@@ -665,8 +665,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     }
 
     @Override
-    public RevTreeBuilder update(Node oldNode, Node newNode) {
-        put(newNode);
-        return this;
+    public boolean update(Node oldNode, Node newNode) {
+        return put(newNode);
     }
 }

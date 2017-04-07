@@ -404,7 +404,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
     /**
      * @return
      */
-    NodeRef getTypeRef() {
+    public NodeRef getTypeRef() {
         GeoGigDataStore dataStore = getDataStore();
         Name name = getName();
         Transaction transaction = getTransaction();

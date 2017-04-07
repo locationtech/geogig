@@ -41,24 +41,6 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
         this.clusteringStrategy = canonical;
     }
 
-    @Override
-    public CanonicalTreeBuilder put(Node node) {
-        super.put(node);
-        return this;
-    }
-
-    @Override
-    public CanonicalTreeBuilder update(Node oldNode, Node newNode) {
-        super.update(oldNode, newNode);
-        return this;
-    }
-
-    @Override
-    public CanonicalTreeBuilder remove(Node node) {
-        super.remove(node);
-        return this;
-    }
-
     /**
      * Removes a node from the builder given its {@link Node#getName() name}
      * <p>

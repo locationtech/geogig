@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +28,7 @@ import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
@@ -39,25 +41,43 @@ import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 import com.vividsolutions.jts.geom.Envelope;
 
-public class QuadTreeBuilderTest extends RevTreeBuilderTest {
+public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
+
+    private Envelope maxBounds;
+
+    private Random random;
+
+    @Before
+    public void before() {
+        maxBounds = createMaxBounds();
+        random = new Random();
+    }
+
+    protected abstract Envelope createMaxBounds();
 
     @Override
     protected RevTreeBuilder createBuiler() {
-        return QuadTreeBuilder.create(objectStore, objectStore);
+        return createBuiler(RevTree.EMPTY);
     }
 
     @Override
     protected RevTreeBuilder createBuiler(RevTree original) {
-        return QuadTreeBuilder.create(objectStore, objectStore, original);
+        return QuadTreeBuilder.create(objectStore, objectStore, original, maxBounds);
+    }
+
+    @Override
+    protected Node createNode(int i) {
+        Node node = createRandomSmallRectNode(i);
+        return node;
     }
 
     @Test
@@ -67,11 +87,11 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         testPoints(128);
         testPoints(129);
         testPoints(1000);
+        testPoints(10000);
     }
 
     private void testPoints(final int size) {
-        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
-        List<Node> nodes = createPointNodes(nodeRange(size), maxBounds);
+        List<Node> nodes = createPointNodes(nodeRange(size));
         testCreateQuadTree(maxBounds, nodes);
     }
 
@@ -82,10 +102,10 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         testSmallRects(128);
         testSmallRects(129);
         testSmallRects(1000);
+        testSmallRects(10000);
     }
 
     private void testSmallRects(final int size) {
-        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
         List<Node> nodes = createSmallRectNodes(nodeRange(size), maxBounds);
         testCreateQuadTree(maxBounds, nodes);
     }
@@ -100,7 +120,6 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
     }
 
     private void testRandomRects(final int size) {
-        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
         List<Node> nodes = createRandomRectNodes(nodeRange(size), maxBounds);
         testCreateQuadTree(maxBounds, nodes);
     }
@@ -157,10 +176,9 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     @Test
     public void diffQuadTreeTest() throws Exception {
-        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
         final int ncount = 1000;
 
-        final List<Node> oldNodes = createPointNodes(nodeRange(ncount), maxBounds);
+        final List<Node> oldNodes = createPointNodes(nodeRange(ncount));
         final List<Node> newNodes = new ArrayList<>(oldNodes);
         final Set<Node> expectedRemoves = new HashSet<>();
         final Map<Node, Node> expectedChanges = new HashMap<>();
@@ -186,7 +204,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
             for (int i = 0; i < 10; i++) {
                 newNodeIds.add(ncount + i);
             }
-            expectedAdditions.addAll(createPointNodes(newNodeIds, maxBounds));
+            expectedAdditions.addAll(createPointNodes(newNodeIds));
             newNodes.addAll(expectedAdditions);
         }
 
@@ -224,28 +242,41 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         assertEquals(expectedRemoves, new HashSet<>(removed.values()));
     }
 
-    @Test
-    public void testRemove() throws Exception {
-        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
-        final int ncount = 1000;
-        final Set<Node> nodes = new HashSet<>(createPointNodes(nodeRange(ncount), maxBounds));
+    public @Test void testRemove10() throws Exception {
+        testRemove(10);
+    }
 
-        final RevTree tree = createQuadTree(maxBounds, nodes).build();
+    public @Test void testRemove128() throws Exception {
+        testRemove(128);
+    }
+
+    public @Test void testRemove129() throws Exception {
+        testRemove(129);
+    }
+
+    private void testRemove(final int ncount) {
+        final Set<Node> nodes = new HashSet<>(createPointNodes(nodeRange(ncount)));
+
+        QuadTreeBuilder initialTreeBuilder = createQuadTree(maxBounds, nodes);
+        initialTreeBuilder.clusteringStrategy();
+
+        final RevTree tree = initialTreeBuilder.build();
+
+        final Set<Node> removedNodes;
 
         QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree, maxBounds);
         // collect some keys to remove
-        final Set<Node> removedNodes = new HashSet<>();
         {
-            int i = 0;
-            DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
-                    Strategy.CHILDREN);
-            for (; it.hasNext(); i++) {
-                NodeRef entry = it.next();
-                if (i % 10 == 0) {
-                    Node node = entry.getNode();
-                    builder.remove(node);
-                    removedNodes.add(node);
-                }
+            Set<Node> treeNodes = RevObjectTestSupport.getTreeNodes(tree, objectStore);
+            assertEquals(nodes, treeNodes);
+
+            List<Node> list = new ArrayList<>(treeNodes);
+            Collections.shuffle(list);
+            int removeCount = ncount / 10;
+            removedNodes = ImmutableSet.copyOf(list.subList(0, removeCount));
+            for (Node node : removedNodes) {
+                boolean removed = builder.remove(node);
+                assertTrue("Not removed: " + node, removed);
             }
             assertFalse(removedNodes.isEmpty());
         }
@@ -262,9 +293,8 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     @Test
     public void testUpdate() throws Exception {
-        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
         final int ncount = 1000;
-        final Set<Node> origNodes = new HashSet<>(createPointNodes(nodeRange(ncount), maxBounds));
+        final Set<Node> origNodes = new HashSet<>(createPointNodes(nodeRange(ncount)));
 
         final RevTree tree = createQuadTree(maxBounds, origNodes).build();
 
@@ -309,12 +339,11 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
     }
 
     public @Test void testNullGeometriesGoToRootUnpromotablesTree() {
-        Envelope maxBounds = new Envelope(-180, 180, -90, 90);
         int size = 128;
-        List<Node> nodes = createPointNodes(nodeRange(size), maxBounds);
+        List<Node> nodes = createPointNodes(nodeRange(size));
         RevTreeBuilder builder = createQuadTree(maxBounds, nodes);
 
-        Node nullEnvNode = node(10000, null);
+        Node nullEnvNode = createNode(10000, null);
         builder.put(nullEnvNode);
         RevTree tree = builder.build();
         assertFalse(tree.buckets().isEmpty());
@@ -336,56 +365,75 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         return nodeIds;
     }
 
-    private List<Node> createPointNodes(List<Integer> nodeIds, Envelope maxBounds) {
-
-        final double minX = maxBounds.getMinX();
-        final double minY = maxBounds.getMinY();
+    private List<Node> createPointNodes(List<Integer> nodeIds) {
 
         List<Node> nodes = new ArrayList<Node>(nodeIds.size());
 
-        Random random = new Random();
         for (Integer intId : nodeIds) {
-            double x = minX + maxBounds.getWidth() * random.nextDouble();
-            double y = minY + maxBounds.getHeight() * random.nextDouble();
-
-            Envelope bounds = new Envelope(x, x, y, y);
-
-            Node node = node(intId, bounds);
+            Node node = createRandomPointNode(intId);
             nodes.add(node);
         }
 
         return nodes;
     }
 
-    private List<Node> createSmallRectNodes(List<Integer> nodeIds, Envelope maxBounds) {
-
+    private Node createRandomPointNode(Integer intId) {
         final double minX = maxBounds.getMinX();
         final double minY = maxBounds.getMinY();
-        final double stepx = maxBounds.getWidth() / nodeIds.size();
-        final double stepy = maxBounds.getHeight() / nodeIds.size();
+
+        double x = minX + maxBounds.getWidth() * random.nextDouble();
+        double y = minY + maxBounds.getHeight() * random.nextDouble();
+
+        Envelope bounds = new Envelope(x, x, y, y);
+
+        Node node = createNode(intId, bounds);
+        return node;
+    }
+
+    private List<Node> createSmallRectNodes(List<Integer> nodeIds, Envelope maxBounds) {
 
         List<Node> nodes = new ArrayList<Node>(nodeIds.size());
 
-        Random random = new Random();
-
         for (Integer intId : nodeIds) {
-            String nodeName = String.valueOf(intId);
-            String sid = Strings.padStart(nodeName, 40, '0');
-            ObjectId oid = RevObjectTestSupport.hashString(sid);
-
-            double x1 = Math.min(maxBounds.getMaxX(), minX + (intId * stepx));
-            double x2 = Math.min(maxBounds.getMaxX(), minX + (intId * stepx) + stepx);
-            double y1 = Math.min(maxBounds.getMaxY(),
-                    minY + maxBounds.getHeight() * random.nextDouble());
-            double y2 = Math.min(maxBounds.getMaxY(), y1 + stepy);
-            Envelope bounds = new Envelope(x1, x2, y1, y2);
-
-            Preconditions.checkState(!bounds.isNull() && maxBounds.contains(bounds));
-
-            Node node = Node.create(nodeName, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
+            Node node = createRandomSmallRectNode(intId);
             nodes.add(node);
         }
         return nodes;
+    }
+
+    private Node createRandomSmallRectNode(int intId) {
+        final double minX = maxBounds.getMinX();
+        final double minY = maxBounds.getMinY();
+
+        final double x1 = minX + maxBounds.getWidth() * random.nextDouble();
+        final double y1 = minY + maxBounds.getHeight() * random.nextDouble();
+        final double stepx = (maxBounds.getWidth() / 1000) * random.nextDouble();
+        final double stepy = (maxBounds.getHeight() / 1000) * random.nextDouble();
+
+        final double x2 = Math.min(maxBounds.getMaxX(), x1 + stepx);
+        final double y2 = Math.min(maxBounds.getMaxY(), y1 + stepy);
+
+        Envelope bounds = new Envelope(x1, x2, y1, y2);
+
+        return createNode(intId, bounds);
+    }
+
+    private Node createNode(int intId, final @Nullable Envelope bounds) {
+        String nodeName = String.valueOf(intId);
+        String sid = Strings.padStart(nodeName, 40, '0');
+        ObjectId oid = RevObjectTestSupport.hashString(sid);
+
+        checkState(bounds == null || (!bounds.isNull() && maxBounds.contains(bounds)));
+
+        Node node = Node.create(nodeName, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
+
+        Envelope nodeBounds = node.bounds().orNull();
+        if (bounds != null) {
+            checkState(nodeBounds.contains(bounds));
+            checkState(maxBounds.contains(nodeBounds));
+        }
+
+        return node;
     }
 
     private List<Node> createRandomRectNodes(List<Integer> nodeIds, Envelope maxBounds) {
@@ -397,7 +445,6 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         final double maxWidth = maxBounds.getWidth();
         final double maxHeight = maxBounds.getHeight();
 
-        Random random = new Random();
         List<Node> nodes = new ArrayList<Node>(nodeIds.size());
 
         for (Integer intId : nodeIds) {
@@ -418,18 +465,18 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         return nodes;
     }
 
-    private RevTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes) {
+    private QuadTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes) {
         return createQuadTree(maxBounds, nodes, this.objectStore);
     }
 
-    private RevTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes,
+    private QuadTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes,
             final ObjectStore objectStore) {
 
-        RevTreeBuilder qtree = QuadTreeBuilder.create(objectStore, objectStore, RevTree.EMPTY,
+        QuadTreeBuilder qtree = QuadTreeBuilder.create(objectStore, objectStore, RevTree.EMPTY,
                 maxBounds);
 
         for (Node node : nodes) {
-            qtree.put(node);
+            assertTrue(qtree.put(node));
         }
         return qtree;
     }

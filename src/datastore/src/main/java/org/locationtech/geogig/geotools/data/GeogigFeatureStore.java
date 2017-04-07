@@ -293,7 +293,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
 
         private SimpleFeatureBuilder builder;
 
-        private final AtomicLong seq = new AtomicLong();
+        private static final AtomicLong seq = new AtomicLong();
 
         private final String baseId;
 

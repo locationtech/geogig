@@ -157,11 +157,13 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
             store.setTransaction(tx);
             store.modifyFeatures(geometryAttribute, updateGeom, Filter.INCLUDE);
             tx.commit();
+            tx.close();
 
             tx = new DefaultTransaction();
             store.setTransaction(tx);
             store.modifyFeatures(type.getDescriptor("ip").getName(), 2, Filter.INCLUDE);
             tx.commit();
+            tx.close();
 
             tx = new DefaultTransaction();
             store.setTransaction(tx);

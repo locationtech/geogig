@@ -11,6 +11,8 @@ package org.locationtech.geogig.geotools.data.stresstest;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
@@ -50,9 +53,13 @@ import org.locationtech.geogig.test.integration.TestContextBuilder;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 
 public class DataStoreConcurrencyTest {
 
@@ -147,7 +154,29 @@ public class DataStoreConcurrencyTest {
         List<Future<Integer>> readResults = runReads(readThreadCount, readsPerTask);
 
         for (Future<Integer> f : readResults) {
-            assertEquals(readsPerTask, f.get().intValue());
+            assertEquals(insertsPerTask * readsPerTask, f.get().intValue());
+        }
+    }
+
+    @Test
+    public void testConcurrentReadsWithIndex() throws Exception {
+
+        final int insertsPerTask = 20;
+        List<Future<Integer>> runInserts = runInserts(1, insertsPerTask);
+        assertEquals(1, runInserts.size());
+        Integer inserts = runInserts.get(0).get();
+        assertEquals(insertsPerTask, inserts.intValue());
+
+        // create an index
+        Optional<ObjectId> createOrUpdateIndex = store.createOrUpdateIndex(pointType.getTypeName());
+        assertTrue(createOrUpdateIndex.isPresent());
+        ObjectId indexId = createOrUpdateIndex.get();
+        assertNotNull(indexId);
+
+        final int readsPerTask = 20;
+        List<Future<Integer>> readResults = runReads(1, readsPerTask);
+        for (Future<Integer> f : readResults) {
+            assertEquals(insertsPerTask * readsPerTask, f.get().intValue());
         }
     }
 
@@ -168,7 +197,8 @@ public class DataStoreConcurrencyTest {
             assertEquals(insertsPerTask, f.get().intValue());
         }
         for (Future<Integer> f : readResults) {
-            assertEquals(readsPerTask, f.get().intValue());
+            assertEquals((insertsPerTask + writeThreadCount * insertsPerTask) * readsPerTask,
+                    f.get().intValue());
         }
 
         List<RevCommit> commits = copyOf(context.command(LogOp.class).call());
@@ -191,6 +221,12 @@ public class DataStoreConcurrencyTest {
             readResults.add(readThreads.submit(new ReadTask(store, readsPerTask)));
         }
         return readResults;
+    }
+
+    private static GeometryFactory gf = new GeometryFactory();
+
+    private static Point createRandomPoint() {
+        return gf.createPoint(new Coordinate(Math.random() * 358 - 179, Math.random() * 178 - 89));
     }
 
     public static class InsertTask implements Callable<Integer> {
@@ -221,6 +257,7 @@ public class DataStoreConcurrencyTest {
             try {
                 for (int i = 0; i < numInserts; i++) {
                     builder.reset();
+                    builder.set("pp", createRandomPoint());
                     builder.set("sp", String.valueOf(random));
                     builder.set("ip", Integer.valueOf(random));
                     SimpleFeature feature = builder.buildFeature(String.valueOf(random));
@@ -240,7 +277,6 @@ public class DataStoreConcurrencyTest {
                 e.printStackTrace();
                 throw Throwables.propagate(e);
             }
-            // System.err.printf("Thread %s finished\n", Thread.currentThread().getName());
             return insertCount;
         }
     }
@@ -261,27 +297,28 @@ public class DataStoreConcurrencyTest {
             int readCount = 0;
             try {
                 for (int i = 0; i < numReads; i++) {
-                    doRead();
-                    readCount++;
+                    readCount += doRead();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 throw Throwables.propagate(e);
             }
-            System.err.printf("Thread %s finished\n", Thread.currentThread().getName());
             return readCount;
         }
 
-        private void doRead() throws IOException {
+        private int doRead() throws IOException {
             final String typeName = pointType.getTypeName();
             SimpleFeatureSource featureSource;
             featureSource = dataStore.getFeatureSource(typeName);
             SimpleFeatureCollection fc = featureSource.getFeatures();
             SimpleFeatureIterator features = fc.features();
+            int count = 0;
             while (features.hasNext()) {
                 SimpleFeature next = features.next();
+                count++;
             }
             features.close();
+            return count;
         }
     }
 

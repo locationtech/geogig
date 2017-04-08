@@ -369,6 +369,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         fw.close();
 
         tx.commit();
+        tx.close();
 
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore
                 .getFeatureSource(linesName);

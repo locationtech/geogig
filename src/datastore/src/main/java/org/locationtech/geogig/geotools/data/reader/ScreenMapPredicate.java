@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.model.Bounded;
@@ -20,8 +24,6 @@ import org.opengis.referencing.operation.TransformException;
 import com.google.common.base.Predicate;
 import com.vividsolutions.jts.geom.Envelope;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 /**
  * Filters out {@link Bounded} ({@link NodeRef node refs} and {@link Bucket buckets}) based on a
  * geotools {@link ScreenMap}
@@ -30,9 +32,11 @@ import java.util.concurrent.atomic.AtomicLong;
 class ScreenMapPredicate implements Predicate<Bounded> {
 
     static final class Stats {
-        private AtomicLong skippedTrees = new AtomicLong(), skippedBuckets = new AtomicLong(), skippedFeatures = new AtomicLong();
+        private AtomicLong skippedTrees = new AtomicLong(), skippedBuckets = new AtomicLong(),
+                skippedFeatures = new AtomicLong();
 
-        private AtomicLong acceptedTrees = new AtomicLong(), acceptedBuckets = new AtomicLong(), acceptedFeatures = new AtomicLong();
+        private AtomicLong acceptedTrees = new AtomicLong(), acceptedBuckets = new AtomicLong(),
+                acceptedFeatures = new AtomicLong();
 
         void add(final Bounded b, final boolean skip) {
             NodeRef n = b instanceof NodeRef ? (NodeRef) b : null;
@@ -88,12 +92,14 @@ class ScreenMapPredicate implements Predicate<Bounded> {
         return stats;
     }
 
+    private Lock lock = new ReentrantLock();
+
     @Override
     public boolean apply(@Nullable Bounded b) {
         if (b == null) {
             return false;
         }
-        Envelope envelope = new Envelope( );
+        Envelope envelope = new Envelope();
 
         b.expand(envelope);
         if (envelope.isNull()) {
@@ -101,20 +107,21 @@ class ScreenMapPredicate implements Predicate<Bounded> {
         }
 
         boolean skip = false;
-        //canSimplify is thread-safe
+        // canSimplify is thread-safe
         if (screenMap.canSimplify(envelope)) {
-            //these aren't thread safe
-            synchronized (screenMap) {
-                try {
-                    if (b instanceof NodeRef && ((NodeRef) b).getType() == TYPE.FEATURE) {
+            // these aren't thread safe
+            lock.lock();
+            try {
+                if (b instanceof NodeRef && ((NodeRef) b).getType() == TYPE.FEATURE) {
                         skip = screenMap.checkAndSet(envelope);
-                    } else {
-                        skip = screenMap.get(envelope);
-                    }
-                } catch (TransformException e) {
-                    e.printStackTrace();
-                    return true;
+                } else {
+                    skip = screenMap.get(envelope);
                 }
+            } catch (TransformException e) {
+                e.printStackTrace();
+                return true;
+            } finally {
+                lock.unlock();
             }
         }
         if (collectStats)

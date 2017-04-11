@@ -53,9 +53,28 @@ public class BulkFeatureRetriever {
      */
     public AutoCloseableIterator<ObjectInfo<RevFeature>> getGeoGIGFeatures(Iterator<NodeRef> refs) {
         AutoCloseableIterator<ObjectInfo<RevFeature>> objects;
+
+        AutoCloseableIterator<NodeRef> closeableRefs = AutoCloseableIterator.fromIterator(refs);
         objects = odb.getObjects(refs, BulkOpListener.NOOP_LISTENER, RevFeature.class);
 
-        return objects;
+        return new AutoCloseableIterator<ObjectInfo<RevFeature>>() {
+
+            @Override
+            public void close() {
+                objects.close();
+                closeableRefs.close();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return objects.hasNext();
+            }
+
+            @Override
+            public ObjectInfo<RevFeature> next() {
+                return objects.next();
+            }
+        };
     }
 
     /**

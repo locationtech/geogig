@@ -77,6 +77,9 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
      * @return an {@code AutoCloseableIterator} that wraps the original
      */
     public static <T> AutoCloseableIterator<T> fromIterator(Iterator<T> source) {
+        if (source instanceof AutoCloseableIterator) {
+            return (AutoCloseableIterator<T>) source;
+        }
         return new AutoCloseableIterator<T>() {
 
             @Override
@@ -127,8 +130,8 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
      * @param transformFunction the transformation function
      * @return an iterator with the type that matches the return type of the transformation function
      */
-    public static <T, C> AutoCloseableIterator<C> transform(AutoCloseableIterator<? extends T> source,
-            Function<T, C> transformFunction) {
+    public static <T, C> AutoCloseableIterator<C> transform(
+            AutoCloseableIterator<? extends T> source, Function<T, C> transformFunction) {
         return new AutoCloseableIterator<C>() {
 
             @Override
@@ -198,15 +201,14 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
         };
     }
 
-    public static <T> AutoCloseableIterator<T> concat(AutoCloseableIterator<Iterator<T>> its)
-    {
+    public static <T> AutoCloseableIterator<T> concat(AutoCloseableIterator<Iterator<T>> its) {
         Iterator<T> result = Iterators.concat(its);
 
         return new AutoCloseableIterator<T>() {
 
             @Override
             public boolean hasNext() {
-               return result.hasNext();
+                return result.hasNext();
             }
 
             @Override
@@ -221,7 +223,6 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
 
         };
     }
-
 
     /**
      * Concatenates two {@code AutoCloseableIterators} into a single one, closing both when closed.

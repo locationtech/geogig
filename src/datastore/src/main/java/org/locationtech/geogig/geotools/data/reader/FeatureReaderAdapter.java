@@ -18,6 +18,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 
 /**
  * Adapts a closeable iterator of features as a {@link FeatureReader}
@@ -42,16 +43,26 @@ class FeatureReaderAdapter<T extends FeatureType, F extends Feature>
 
     @Override
     public F next() throws NoSuchElementException {
-        return iterator.next();
+        try {
+            return iterator.next();
+        } catch (RuntimeException e) {
+            close();
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
     public boolean hasNext() throws IOException {
-        return iterator.hasNext();
+        try {
+            return iterator.hasNext();
+        } catch (RuntimeException e) {
+            close();
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         iterator.close();
     }
 

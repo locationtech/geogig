@@ -16,8 +16,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Before;
@@ -355,5 +360,189 @@ public abstract class GraphDatabaseTest {
 
         node = database.getNode(nodeId);
         assertFalse(node.isSparse());
+    }
+
+    @Test
+    public void testPutConcurrency() throws InterruptedException, ExecutionException {
+        final int threadCount = 4;
+        final int taskCount = 64;
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        List<Future<?>> futures = new ArrayList<>();
+
+        final ObjectId rootId = RevObjectTestSupport.hashString("root");
+        final ObjectId commit1 = RevObjectTestSupport.hashString("c1");
+        final ObjectId commit2 = RevObjectTestSupport.hashString("c2");
+
+        for (int t = 0; t < taskCount; t++) {
+            Future<?> future = executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    database.put(rootId, ImmutableList.of());
+                    database.put(commit1, ImmutableList.of(rootId));
+                    database.put(commit2, ImmutableList.of(commit1, rootId));
+                }
+            });
+            futures.add(future);
+        }
+
+        for (Future<?> f : futures) {
+            f.get();
+        }
+
+        GraphNode node;
+        List<GraphEdge> edges;
+
+        node = database.getNode(commit2);
+        assertNotNull(node);
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        assertTrue(edges.isEmpty());
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        assertEquals(2, edges.size());
+        assertEquals(commit1, edges.get(0).getToNode().getIdentifier());
+        assertEquals(rootId, edges.get(1).getToNode().getIdentifier());
+
+        node = database.getNode(commit1);
+        assertNotNull(node);
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        assertEquals(1, edges.size());
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        assertEquals(1, edges.size());
+
+        node = database.getNode(rootId);
+        assertNotNull(node);
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        assertEquals(2, edges.size());
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        assertTrue(edges.isEmpty());
+    }
+
+    @Test
+    public void testUpdateConcurrency() throws InterruptedException, ExecutionException {
+        final int threadCount = 4;
+        final int taskCount = 64;
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        List<Future<?>> futures = new ArrayList<>();
+
+        final ObjectId rootId = RevObjectTestSupport.hashString("root");
+        final ObjectId commit1 = RevObjectTestSupport.hashString("c1");
+        final ObjectId commit2 = RevObjectTestSupport.hashString("c2");
+
+        database.put(rootId, ImmutableList.of());
+        database.put(commit1, ImmutableList.of());
+        database.put(commit2, ImmutableList.of());
+
+        for (int t = 0; t < taskCount; t++) {
+            Future<?> future = executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    database.put(rootId, ImmutableList.of());
+                    database.put(commit1, ImmutableList.of(rootId));
+                    database.put(commit2, ImmutableList.of(commit1, rootId));
+                }
+            });
+            futures.add(future);
+        }
+
+        for (Future<?> f : futures) {
+            f.get();
+        }
+
+        GraphNode node;
+        List<GraphEdge> edges;
+
+        node = database.getNode(commit2);
+        assertNotNull(node);
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        assertTrue(edges.isEmpty());
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        assertEquals(2, edges.size());
+        assertEquals(commit1, edges.get(0).getToNode().getIdentifier());
+        assertEquals(rootId, edges.get(1).getToNode().getIdentifier());
+
+        node = database.getNode(commit1);
+        assertNotNull(node);
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        assertEquals(1, edges.size());
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        assertEquals(1, edges.size());
+
+        node = database.getNode(rootId);
+        assertNotNull(node);
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        assertEquals(2, edges.size());
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        assertTrue(edges.isEmpty());
+    }
+
+    @Test
+    public void testGetConcurrency() throws InterruptedException, ExecutionException {
+        final int threadCount = 4;
+        final int taskCount = 64;
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        List<Future<?>> futures = new ArrayList<>();
+
+        final ObjectId rootId = RevObjectTestSupport.hashString("root");
+        final ObjectId commit1 = RevObjectTestSupport.hashString("c1");
+        final ObjectId commit2 = RevObjectTestSupport.hashString("c2");
+
+        database.put(rootId, ImmutableList.of());
+        database.put(commit1, ImmutableList.of(rootId));
+        database.put(commit2, ImmutableList.of(commit1, rootId));
+
+        for (int t = 0; t < taskCount; t++) {
+            Future<?> future = executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    GraphNode commit2Node = database.getNode(commit2);
+                    GraphNode commit1Node = database.getNode(commit1);
+                    GraphNode rootNode = database.getNode(rootId);
+                    List<GraphEdge> edges;
+
+                    assertNotNull(commit2Node);
+                    assertNotNull(commit1Node);
+                    assertNotNull(rootNode);
+
+                    edges = ImmutableList.copyOf(commit2Node.getEdges(Direction.IN));
+                    assertTrue(edges.isEmpty());
+
+                    edges = ImmutableList.copyOf(commit2Node.getEdges(Direction.OUT));
+                    assertEquals(2, edges.size());
+                    assertEquals(commit1, edges.get(0).getToNode().getIdentifier());
+                    assertEquals(rootId, edges.get(1).getToNode().getIdentifier());
+
+                    edges = ImmutableList.copyOf(commit1Node.getEdges(Direction.IN));
+                    assertEquals(1, edges.size());
+
+                    edges = ImmutableList.copyOf(commit1Node.getEdges(Direction.OUT));
+                    assertEquals(1, edges.size());
+
+                    edges = ImmutableList.copyOf(rootNode.getEdges(Direction.IN));
+                    assertEquals(2, edges.size());
+
+                    edges = ImmutableList.copyOf(rootNode.getEdges(Direction.OUT));
+                    assertTrue(edges.isEmpty());
+                }
+            });
+            futures.add(future);
+        }
+
+        for (Future<?> f : futures) {
+            f.get();
+        }
     }
 }

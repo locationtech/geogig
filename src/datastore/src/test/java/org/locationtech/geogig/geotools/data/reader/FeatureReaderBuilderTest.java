@@ -11,10 +11,14 @@ package org.locationtech.geogig.geotools.data.reader;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.validateMockitoUsage;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +42,10 @@ import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.mockito.Mockito;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -71,6 +78,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
     // reader resulting from calling builder.build()
     private FeatureReader<SimpleFeatureType, SimpleFeature> reader;
 
+    // spy'ed DiffTree command
     private DiffTree difftree;
 
     /**
@@ -342,6 +350,42 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         query.setFilter(filter);
         verifyFeatures(query, points2);
         verifyUsesIndex(index);
+    }
+
+    public @Test void testDiffTreeIteratorIsClosedOnError() throws IOException {
+        RuntimeException expected = new RuntimeException();
+        AutoCloseableIterator<DiffEntry> mockIt = mock(AutoCloseableIterator.class);
+        when(mockIt.hasNext()).thenReturn(true);
+        when(mockIt.next()).thenThrow(expected);
+        doReturn(mockIt).when(difftree).call();
+
+        FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = builder.build();
+        assertNotNull(featureReader);
+        try {
+            featureReader.hasNext();
+            featureReader.next();
+            fail("Expected RuntimeException");
+        } catch (RuntimeException e) {
+            assertTrue(true);
+        }
+        Mockito.verify(mockIt, times(1)).close();
+    }
+
+    public @Test void testDiffTreeIteratorIsClosedOnPrematureFeatureIteratorClose()
+            throws IOException {
+
+        AutoCloseableIterator<DiffEntry> mockIt = mock(AutoCloseableIterator.class);
+        when(mockIt.hasNext()).thenReturn(true);
+        when(mockIt.next()).thenReturn(mock(DiffEntry.class));
+        doReturn(mockIt).when(difftree).call();
+
+        FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = builder.build();
+        // close the feature reader before being fully consumed
+        featureReader.close();
+
+        Mockito.verify(mockIt, times(0)).hasNext();
+        Mockito.verify(mockIt, times(0)).next();
+        Mockito.verify(mockIt, times(1)).close();
     }
 
     private Map<FeatureId, SimpleFeature> verifyFeatures(Query query, Feature... expectedFeatures)

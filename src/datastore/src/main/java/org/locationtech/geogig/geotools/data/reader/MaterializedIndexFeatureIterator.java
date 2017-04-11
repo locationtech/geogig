@@ -34,6 +34,7 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -80,17 +81,27 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
 
     @Override
     public boolean hasNext() {
-        return nodes.hasNext();
+        try {
+            return nodes.hasNext();
+        } catch (RuntimeException e) {
+            close();
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
     public SimpleFeature next() {
-        if (!nodes.hasNext()) {
-            throw new NoSuchElementException();
+        try {
+            if (!nodes.hasNext()) {
+                throw new NoSuchElementException();
+            }
+            NodeRef node = nodes.next();
+            SimpleFeature feature = adapt(node);
+            return feature;
+        } catch (RuntimeException e) {
+            close();
+            throw Throwables.propagate(e);
         }
-        NodeRef node = nodes.next();
-        SimpleFeature feature = adapt(node);
-        return feature;
     }
 
     /**

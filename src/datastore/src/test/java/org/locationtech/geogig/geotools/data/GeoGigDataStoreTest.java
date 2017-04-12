@@ -14,8 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
@@ -25,6 +27,7 @@ import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.NameImpl;
 import org.geotools.geometry.jts.GeometryBuilder;
 import org.junit.Test;
@@ -32,6 +35,7 @@ import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
@@ -251,10 +255,10 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         assertEquals(expectedName, lines.getName());
         SimpleFeatureType schema = lines.getSchema();
         assertEquals(expectedName, schema.getName());
-        
+
         SimpleFeatureCollection features = lines.getFeatures();
         assertEquals(expectedName, features.getSchema().getName());
-        try(SimpleFeatureIterator it = features.features()){
+        try (SimpleFeatureIterator it = features.features()) {
             SimpleFeature feature = it.next();
             assertEquals(expectedName, feature.getType().getName());
         }
@@ -407,6 +411,44 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
         testDiffFeatures(c2, c4, 0, 1, 1);
         testDiffFeatures(c4, c2, 1, 0, 1);
+    }
+
+    public @Test void testFindTypeRef() throws Exception {
+        Name typeName = new NameImpl(pointsName);
+        final Transaction autoCommit = Transaction.AUTO_COMMIT;
+        final Transaction tx = new DefaultTransaction();
+        try {
+            dataStore.findTypeRef(typeName, autoCommit);
+            fail("Expected NoSuchElementException");
+        } catch (NoSuchElementException e) {
+            assertTrue(true);
+        }
+        dataStore.createSchema(pointsType);
+
+        final NodeRef firstRef = dataStore.findTypeRef(typeName, autoCommit);
+        assertNotNull(firstRef);
+        assertEquals(RevTree.EMPTY_TREE_ID, firstRef.getObjectId());
+
+        insertAndAdd(points1);
+        commit("commit outside datastore");
+
+        final NodeRef secondRef = dataStore.findTypeRef(typeName, autoCommit);
+        assertNotNull(secondRef);
+        assertNotEquals(RevTree.EMPTY_TREE_ID, secondRef.getObjectId());
+
+        SimpleFeatureStore store = (SimpleFeatureStore) dataStore.getFeatureSource(typeName);
+        store.setTransaction(tx);
+        store.addFeatures(DataUtilities.collection((SimpleFeature) points2));
+
+        assertEquals(secondRef, dataStore.findTypeRef(typeName, autoCommit));
+        final NodeRef txRef = dataStore.findTypeRef(typeName, tx);
+        assertNotNull(txRef);
+        assertNotEquals(secondRef, txRef);
+
+        tx.commit();
+        tx.close();
+
+        assertEquals(txRef, dataStore.findTypeRef(typeName, autoCommit));
     }
 
     private void testDiffFeatures(ObjectId oldRoot, ObjectId newRoot, int expectedAdded,

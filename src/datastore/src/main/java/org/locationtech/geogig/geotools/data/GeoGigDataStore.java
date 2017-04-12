@@ -10,9 +10,7 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -234,16 +232,13 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return new NameImpl(getNamespaceURI(), NodeRef.nodeFromPath(treeRef.path()));
     }
 
-    public NodeRef findTypeRef(Name typeName, @Nullable Transaction tx) {
+    public NodeRef findTypeRef(Name typeName, @Nullable Transaction tx)
+            throws NoSuchElementException {
         Preconditions.checkNotNull(typeName);
 
         final String localName = typeName.getLocalPart();
-        List<NodeRef> typeRefs = findTypeRefs(tx, false);
+        List<NodeRef> typeRefs = findTypeRefs(tx);
         NodeRef typeRef = findTypeRef(typeRefs, localName);
-        if (typeRef == null) {
-            typeRefs = findTypeRefs(tx, true);
-            typeRef = findTypeRef(typeRefs, localName);
-        }
         if (typeRef == null) {
             throw new NoSuchElementException(
                     String.format("No tree ref matched the name: %s", localName));
@@ -265,31 +260,19 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     @Override
     protected ImmutableList<Name> createTypeNames() throws IOException {
-        List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT, true);
+        List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT);
         return ImmutableList
                 .copyOf(Collections2.transform(typeTrees, (ref) -> getDescriptorName(ref)));
     }
 
-    /**
-     * Cache type refs by repository head ref
-     */
-    private Map<String, List<NodeRef>> typeRefsByHead = new HashMap<>();
-
-    private List<NodeRef> findTypeRefs(@Nullable Transaction tx, boolean forceReload) {
-        List<NodeRef> typeTrees = null;
+    private List<NodeRef> findTypeRefs(@Nullable Transaction tx) {
 
         final String rootRef = getRootRef(tx);
-        if (!forceReload) {
-            typeTrees = typeRefsByHead.get(rootRef);
-        }
-        if (typeTrees == null) {
-            Context commandLocator = resolveContext(tx);
-            typeTrees = commandLocator.command(FindFeatureTypeTrees.class).setRootTreeRef(rootRef)
-                    .call();
-            synchronized (typeRefsByHead) {
-                typeRefsByHead.put(rootRef, typeTrees);
-            }
-        }
+
+        Context commandLocator = resolveContext(tx);
+        List<NodeRef> typeTrees = commandLocator.command(FindFeatureTypeTrees.class)
+                .setRootTreeRef(rootRef).call();
+
         return typeTrees;
     }
 

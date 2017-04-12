@@ -54,6 +54,7 @@ import org.opengis.filter.identity.FeatureId;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
@@ -275,6 +276,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
 
             workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
+            Throwables.propagateIfInstanceOf(e, IOException.class);
             throw new IOException(e);
         }
         return insertedFids;
@@ -297,7 +299,10 @@ class GeogigFeatureStore extends ContentFeatureStore {
 
         private final String baseId;
 
+        private final String nativeTypeName;
+
         public SchemaInforcer(final SimpleFeatureType targetSchema) {
+            this.nativeTypeName = targetSchema.getTypeName();
             this.builder = new SimpleFeatureBuilder(targetSchema);
             Hasher hasher = Hashing.murmur3_32().newHasher();
             hasher.putString(targetSchema.getName().getLocalPart(), Charsets.UTF_8);
@@ -310,8 +315,14 @@ class GeogigFeatureStore extends ContentFeatureStore {
         public SimpleFeature apply(SimpleFeature input) {
             builder.reset();
 
-            for (int i = 0; i < input.getType().getAttributeCount(); i++) {
-                String name = input.getType().getDescriptor(i).getLocalName();
+            final SimpleFeatureType featureType = input.getType();
+            final String typeName = featureType.getTypeName();
+            Preconditions.checkArgument(nativeTypeName.equals(typeName),
+                    "Tried to insert features of type '%s' into '%s'", featureType.getTypeName(),
+                    nativeTypeName);
+
+            for (int i = 0; i < featureType.getAttributeCount(); i++) {
+                String name = featureType.getDescriptor(i).getLocalName();
                 builder.set(name, input.getAttribute(name));
             }
 

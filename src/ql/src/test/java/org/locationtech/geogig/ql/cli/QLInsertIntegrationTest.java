@@ -26,6 +26,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.store.FeatureIteratorIterator;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -193,6 +194,7 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
         insert(sql);
     }
 
+    @Ignore
     @Test
     public void insertSelectAllOntoEmptyTree() throws Exception {
         SimpleFeatureType newType = DataUtilities.createType("Points2", pointsTypeSpec);

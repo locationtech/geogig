@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Partial cloning &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>Partial cloning &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,12 +17,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Command aliases" href="commandaliases.html" />
       <link rel="prev" title="Hooks" href="hooks.html" />
@@ -78,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Partial cloning</li>
 </ul>
@@ -150,7 +150,7 @@ bb0c0b6e18f88e1871cacf98489d9df10418a22d Added Roads4
 58dc80ae8c2656e4affba30ccbb89d526743c3d8 Added Roads1
 </pre></div>
 </div>
-<p>Althought the depth of the clone is just 3, you can, however, see more that 3 commits. That is because the two last commits are not actually part of the shallow clone of the <code class="docutils literal"><span class="pre">master</span></code> branch, but part of the cloned <code class="docutils literal"><span class="pre">branch1</span></code> branch.</p>
+<p>Although the depth of the clone is just 3, you can, however, see more that 3 commits. That is because the two last commits are not actually part of the shallow clone of the <code class="docutils literal"><span class="pre">master</span></code> branch, but part of the cloned <code class="docutils literal"><span class="pre">branch1</span></code> branch.</p>
 <div class="section" id="working-with-a-shallow-clone">
 <h3>Working with a shallow clone<a class="headerlink" href="#working-with-a-shallow-clone" title="Permalink to this headline">¶</a></h3>
 <p>On a shallow clone, operations such as <code class="docutils literal"><span class="pre">pull</span></code> and <code class="docutils literal"><span class="pre">push</span></code> can be performed as usual, since they all work on the tip of the branches (the most recent commits). A shallow clone always contains those commits, and ignores the older ones beyond the specified depth, so it should have no problems when pushing and pulling to the full remote repository from which it has been cloned, or to any other clone, whether regular or shallow.</p>
@@ -171,18 +171,18 @@ XXXXX
 a76c6550cd45d84df09088f6efdd6747c3755643 Added Roads3
 </pre></div>
 </div>
-<p>Looking at the corresponding history figure above you can see that the specified path was, however, not affected by that commit in the original repo. The very first commit, with the <em>Added Roads1</em> message, was the one that added the specified path. Since that commit is beyond the reach of the shallow clone, it is included as part of the changes introduced by the first commit of that shallow clone, assumming that, for that repository, there was nothing in stored before that commit.</p>
-<p>Notice that GeoGig cannot modify the commit messages to actually reflect the situation in this part of the repository history, and the messages do not actually reflect the changes that are reported by the <code class="docutils literal"><span class="pre">log</span></code> command.</p>
+<p>Looking at the corresponding history figure above you can see that the specified path was, however, not affected by that commit in the original repo. The very first commit, with the <em>Added Roads1</em> message, was the one that added the specified path. Since that commit is beyond the reach of the shallow clone it is included as part of the changes introduced by the first commit of that shallow clone, assuming that, for that repository, there was nothing stored before that commit.</p>
+<p>Note that GeoGig cannot modify the commit messages to actually reflect the situation in this part of the repository history and the messages do not actually reflect the changes that are reported by the <code class="docutils literal"><span class="pre">log</span></code> command.</p>
 </div>
 <div class="section" id="extending-the-depth-of-a-shallow-clone">
 <h3>Extending the depth of a shallow clone<a class="headerlink" href="#extending-the-depth-of-a-shallow-clone" title="Permalink to this headline">¶</a></h3>
-<p>If anytime you want to turn your shallow clone into a regular one that contains all the history from the original repository, you can do it by calling the <code class="docutils literal"><span class="pre">fetch</span></code> command with the <code class="docutils literal"><span class="pre">--full-depth</span></code> switch.</p>
+<p>If, any time you want to turn your shallow clone into a regular clone that contains all the history from the original repository, you can do it by calling the <code class="docutils literal"><span class="pre">fetch</span></code> command with the <code class="docutils literal"><span class="pre">--full-depth</span></code> switch.</p>
 <div class="highlight-python"><div class="highlight"><pre>$geogig fetch origin --full-depth
 </pre></div>
 </div>
-<p>That will get not only the new commits that might exist in the remote repository, but also the full history.</p>
-<p>to extend the shallow clone up to a certain number of commits, but not to its full history, a given depth can be specified using the <code class="docutils literal"><span class="pre">--depth</span></code> parameter.</p>
-<p>For example, if the shallow clone has a depth of 2, the following call will turn it into a repository with a depth of 3:</p>
+<p>This will get not only the new commits that might exist in the remote repository, but also the full history.</p>
+<p>To extend the shallow clone up to a certain number of commits, but not to its full history, a given depth can be specified using the <code class="docutils literal"><span class="pre">--depth</span></code> parameter.</p>
+<p>For example, if the shallow clone has a depth of 2, the following call will turn it into a repository with a depth of 3.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig fetch --depth 3
 </pre></div>
 </div>
@@ -190,13 +190,13 @@ a76c6550cd45d84df09088f6efdd6747c3755643 Added Roads3
 </div>
 <div class="section" id="sparse-cloning">
 <h2>Sparse cloning<a class="headerlink" href="#sparse-cloning" title="Permalink to this headline">¶</a></h2>
-<p>From the user&#8217;s point of view, a sparse clone looks similar to a shallow clone: they both create a clone of a repository which contains a subset of its data. However, their mechanisms are different. This is due to the fact that a GeoGig repository is basically created as a set of commits, so any partial clone will also have a set of commits. The difference is that in the case of the shallow clone, the actual commits that constitute the original repository can be <em>reused</em>, while in the case of a sparse clone new commits have to be created to replace those original ones. This is because a commit can add or modify both features that pass the filter and features that don&#8217;t pass it, so it cannot be fully added to the partial clone or completely discarded. Instead, a <em>partial commit</em> is generated and commited in the cloned repo, which replaces the original commit.</p>
+<p>From the user&#8217;s point of view, a sparse clone looks similar to a shallow clone: they both create a clone of a repository which contains a subset of its data, however, their mechanisms are different. This is due to the fact that a GeoGig repository is basically created as a set of commits, so any partial clone will also have a set of commits. The difference is that in the case of the shallow clone, the actual commits that constitute the original repository can be <em>reused</em>, while in the case of a sparse clone new commits have to be created to replace those original ones. This is because a commit can add or modify both features that pass the filter and features that don&#8217;t pass it, so it cannot be fully added to the partial clone or completely discarded. Instead, a <em>partial commit</em> is generated and committed in the cloned repo, which replaces the original commit.</p>
 <p>This can be seen more clearly with an example.</p>
 <div class="figure">
 <img alt="../_images/sparse_clone.png" src="../_images/sparse_clone.png" />
 </div>
 <p>The number in each feature indicates the commit in which that feature was added.</p>
-<p>The history of the original repository just has two commits. Both of them add two new features, and in each case only one of those features falls within a given region, which is the one used to define a filter and create a shallow clone.</p>
+<p>The history of the original repository just has two commits. Both of them add two new features and in each case, only one of those features falls within a given region, which is the one used to define a filter and create a shallow clone.</p>
 <p>In the cloned repository, each commit is replaced by a new one that just adds the feature that falls in the filtered area.</p>
 <p>The number of commits doesn&#8217;t have to be identical in both the original and the sparse clone. Usually, the case will not be as simple as in the example above, and some commits might not affect any of the features in the area of interest defined by the filter. These commits will not be added to the cloned repository.</p>
 <p>Let&#8217;s suppose a different history in the original repository, this time with three commits. The first one adds two features, with only one of them being within the filter bounding box. The second one adds a new feature outside that bounding box, and finally the third one modifies all of the features.</p>
@@ -205,10 +205,10 @@ a76c6550cd45d84df09088f6efdd6747c3755643 Added Roads3
 <img alt="../_images/sparse_clone_2.png" src="../_images/sparse_clone_2.png" />
 </div>
 <p>Numbers indicate the commits that affect each feature.</p>
-<p>In the cloned repo, the first commit (1) is replaced by a new one (1&#8217;) that just adds one of the features. The second commit (2) is not applied at all, since none of the changes it introduces affect the cloned repository, so it is skipped. The third one (3) is replaced by a new commit (3&#8217;) that just modifies the only feature in the cloned repository. In this case, the original commit could not be applied, and it also has to be modified. The original commit (3) changed both features that were in the database after commit 2, but in the sparse clone, only one of those features is found, since the other one was not added, as it falls outside the are of interest. Since comit 3 modifies a feature that does not exist in the sparse clone, it cannot be applied, and it is replaced by 3&#8217;, which just contains the changes that affect the feature that is available.</p>
-<p>If your cloned repository was to be used just by itself and never had any interaction with the original repository from where it comes from, or with other cloned ones (whether partial or complete), then a partial clone could be created just creating new commits that resulted in a partial repository. However, since interaction is important, a partial clone has to keep track of commits in the original repository, because otherwise it wouldn&#8217;t be able to interact with it.</p>
-<p>The explanations that follow assume that you understand the structure of a GeoGig repository and you are familiar with the concepts introduced in the <a class="reference internal" href="../start/intro.html#start-intro"><span>Introduction</span></a> section, since they are basically an extension of those ideas. Please review the corresponding chapter in case you need to refresh those concepts.</p>
-<p>Let&#8217;s see why additional information is needed to keep the link between the original and the partially cloned repository. We will go back to the first example with just two commits. Here you can see the two histories, with the corresponding abbreviated Id&#8217;s of their commits.</p>
+<p>In the cloned repo, the first commit (1) is replaced by a new one (1&#8217;) that just adds one of the features. The second commit (2) is not applied at all, since none of the changes it introduces affect the cloned repository, so it is skipped. The third one (3) is replaced by a new commit (3&#8217;) that just modifies the only feature in the cloned repository. In this case, the original commit could not be applied, and it also has to be modified. The original commit (3) changed both features that were in the database after commit 2, but in the sparse clone, only one of those features is found, since the other one was not added, as it falls outside the are of interest. Since commit 3 modifies a feature that does not exist in the sparse clone, it cannot be applied, and it is replaced by 3&#8217;, which just contains the changes that affect the feature that is available.</p>
+<p>If your cloned repository was to be used just by itself and never had any interaction with the original repository from where it originates or with other cloned repositories (whether partial or complete), then a partial clone could be created, only creating new commits that resulted in a partial repository. However, since interaction is important, a partial clone has to keep track of commits in the original repository, because otherwise, it wouldn&#8217;t be able to interact with it.</p>
+<p>The explanations that follow assume that you understand the structure of a GeoGig repository and you are familiar with the concepts introduced in the <a class="reference internal" href="../start/introduction.html#start-introduction"><span>Introduction</span></a> section, since they are basically an extension of those ideas. Please review the corresponding chapter in case you need to refresh those concepts.</p>
+<p>Let&#8217;s see why additional information is needed to keep the link between the original and the partially cloned repository. We will go back to the first example with just two commits. Here you can see the two histories, with the corresponding abbreviated IDs of their commits.</p>
 <div class="figure">
 <img alt="../_images/sparse_clone_ids.png" src="../_images/sparse_clone_ids.png" />
 </div>
@@ -278,7 +278,7 @@ message    Modified feature
 <span class="nb">filter</span> <span class="o">=</span> <span class="n">BBOX</span><span class="p">(</span><span class="n">way</span><span class="p">,</span><span class="o">-</span><span class="mi">9532345</span><span class="p">,</span><span class="mi">1223411</span><span class="p">,</span><span class="o">-</span><span class="mi">9325678</span><span class="p">,</span><span class="mi">1632340</span><span class="p">,</span><span class="s1">&#39;EPSG:900913&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>There are two filters in this file. Both filters are CQL (Common Query Language) filters. The first one will be applied to all features, while the second one will only be appplied to features with the <code class="docutils literal"><span class="pre">roads</span></code> feature type.</p>
+<p>There are two filters in this file. Both filters are CQL (Common Query Language) filters. The first one will be applied to all features, while the second one will only be applied to features with the <code class="docutils literal"><span class="pre">roads</span></code> feature type.</p>
 <p>Notice that filtering is done based on attributes, in this case a geometry attribute named <code class="docutils literal"><span class="pre">way</span></code>. In case you need more information, remember that you can run the <code class="docutils literal"><span class="pre">show</span></code> command passing a tree path as parameter, and you will get a description of the feature type of that tree, which includes information about its attributes.</p>
 <p>You can find more information about the CQL syntax in the <a class="reference external" href="http://docs.geoserver.org/latest/en/user/tutorials/cql/cql_tutorial.html">this page</a> at the GeoServer website.</p>
 <p>To know more about Ini files, check the corresponding <a class="reference external" href="http://en.wikipedia.org/wiki/INI_file">Wikipedia entry</a>.</p>
@@ -309,7 +309,7 @@ message    Modified feature
 <li>Regular clones can synchronize with their remote repository without limitations, and parent repositories can do the same with all their regular clones. That is true if the original repository is a regular one (for instance, 3 being a full clone of 0) or a sparse one (for instance, 6 being a full clone of 2, which is itself sparse, as it was mentioned in the previous point)</li>
 <li>Sparse clones can synchronize with their remote repositories. However, the remote repository cannot synchronize with a sparse clone of itself. This is because the original repository doesn&#8217;t have the history mappings (they are created by the cloned repository), so it will understand a sparse clone as a different repo. No information is kept in a repository about other repositories cloned from it, so it is not aware of sparse clones and the relationship between sparse commits and original commits. All operations between a repository and a sparse clone created from it have to be run from the sparse clone, which is the only one that contains the additional information needed to correctly synchronize both original and sparse history.</li>
 <li>Sparse clones cannot synchronize between them, as it was explained before.</li>
-<li>In most cases, a sparse clone cannot interact with a regular clone of its parent remote repository. for instance, in the diagram above, 7 can not pull and push from 4. This would be possible only if no additional history had been added in 4. Repository number 4 has to be identical to repository 6 when it was cloned into 7. Otherwise, althought they were both cloned from the same repository (2), they would be different and the sparse clone will not have mapping information for the new commits introduced in 4. Since this situation might work in a very limited context, and is likely to cause conflicting situations in most others, it is not recommended, and a sparse clone should be considered as not able to synchronize with regular clones or its parent repository, but just with the parent repository itself.</li>
+<li>In most cases, a sparse clone cannot interact with a regular clone of its parent remote repository. for instance, in the diagram above, 7 can not pull and push from 4. This would be possible only if no additional history had been added in 4. Repository number 4 has to be identical to repository 6 when it was cloned into 7. Otherwise, although they were both cloned from the same repository (2), they would be different and the sparse clone will not have mapping information for the new commits introduced in 4. Since this situation might work in a very limited context, and is likely to cause conflicting situations in most others, it is not recommended, and a sparse clone should be considered as not able to synchronize with regular clones or its parent repository, but just with the parent repository itself.</li>
 </ul>
 <p>Shallow clones are less limited than sparse clones, and they do not involve the same complexity, since they do not rewrite the history and use the original commits instead, like a regular clone does. Basically, you can create shallow clones of both regular and sparse repositories, and they will behave like regular clones of those repositories. That means that you will have the same types of interaction that are shown in the figure above for the case of regular clones.</p>
 </div>
@@ -346,10 +346,10 @@ message    Modified feature
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>

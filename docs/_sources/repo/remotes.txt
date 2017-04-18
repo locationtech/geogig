@@ -5,7 +5,7 @@ Interacting with remote repositories
 
 A GeoGig repository contains a full history and it is completely autonomous. However, it is possible and useful to interact with remote copies of the same repository, as it allows different people to work collaborateively. By having a designated central repository which keeps a reference history, others can clone it, work on a cloned repo and then add their changes back to the central repository. While designating a repository as "central", it is in fact no different from the other cloned copies.
 
-All copies of a repository relatvie to the local copy are known as **remotes**.
+All copies of a repository relative to the local copy are known as **remotes**.
 
 Cloning a repository
 --------------------
@@ -90,4 +90,3 @@ The ``fetch`` command is used with only the name of the remote repository:
 .. code-block:: console
 
    geogig fetch origin
-

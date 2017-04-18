@@ -1,15 +1,15 @@
 .. _web_repository_management:
 
-Serving and Managing Repositories  
+Serving and Managing Repositories
 =================================
 
-The GeoGig Web-API allows you to serve up multiple repositories from a single endpoint via the ``geogig serve`` command.  The Web-Api documentation goes over using this command to serve a single repository, but this section will discuss using the command to serve and manage multiple repositories.
+The GeoGig Web-API allows you to serve up multiple repositories from a single endpoint via the ``geogig serve`` command.  The Web-API documentation goes over using this command to serve a single repository, but this section will discuss using the command to serve and manage multiple repositories.
 
 
 Serving Multiple Repositories
 -----------------------------
 
-When ``geogig serve`` is run from within a geogig repository directory, it will serve only that repository.  However, if it is run from a directory containing zero or more GeoGig repositories while using the ``--multirepo`` parameter, all repositories within that directory will be served through the endpoint.
+When ``geogig serve`` is run from within a GeoGig repository directory, it will serve only that repository.  However, if it is run from a directory containing zero or more GeoGig repositories while using the ``--multirepo`` parameter, all repositories within that directory will be served through the endpoint.
 
 Given the following directory structure:
 
@@ -40,7 +40,7 @@ You can also serve Postgres repositories by providing the repository URI to the 
 ::
 
     $ geogig serve "postgresql://localhost/<database>/<repoName>?user=<postgres_username>&password=<postgres_password>"
-    
+
 Or multiple by specifying the root URI:
 
 ::
@@ -134,7 +134,7 @@ Sending the request:
 Init Request With Optional Location Config
 ++++++++++++++++++++++++++++++++++++++++++
 
-You can also create a new repository and specify options that can dictate the repository's location. This allows you to initialize a repository, for example, that is stored in a PostgreSQL database, or a different directory location than the working directory of the GeoGig multirepo server. To specify a different parent directory location, set the ``parentDirectory`` value in the JSON request body:
+You can also create a new repository and specify options that can dictate the repository's location. This allows you to initialize a repository, for example, that is stored in a PostgreSQL database, or a different directory location than the working directory of the GeoGig multi-repo server. To specify a different parent directory location, set the ``parentDirectory`` value in the JSON request body:
 
 ::
 
@@ -259,7 +259,7 @@ If a repository is no longer needed, you may wish to delete it.  You may do this
 	  <success>true</success>
       <token>db431217519a4c72</token>
 	</response>
-	
+
 Now that we have the delete token, we can issue a ``DELETE`` request to the repository endpoint.
 
 ::
@@ -269,7 +269,7 @@ Now that we have the delete token, we can issue a ``DELETE`` request to the repo
 	< Content-Type: application/xml
 	<?xml version="1.0" encoding="UTF-8"?>
 	<deleted>betterName</deleted>
-	
+
 The repository has now been deleted.
 
 Asynchronous Requests
@@ -284,5 +284,5 @@ Just like when serving a single repository, asynchronous web-api tasks can be po
 	< Content-Type: application/xml
 	<?xml version="1.0" encoding="UTF-8"?>
 	<tasks/>
-	
-In this example, no asynchronous tasks have been run, but if they had been, they would be listed here with their corresponding task id.
+
+In this example, no asynchronous tasks have been run, but if they had been, they would be listed here with their corresponding task ID.

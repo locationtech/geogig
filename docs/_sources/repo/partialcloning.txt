@@ -17,13 +17,12 @@ There are two ways of partially cloning a repository:
 
 The first type of partial clone is the **shallow clone**. A shallow clone contains *all of the features* currently stored in the most recent revision, but only a subset of the *history* of the repository. If you are not interested in having all the history of the repository features and trees, then a shallow clone will reduce the size of the cloned repository, but will have full detail in those snapshots that are within the selected history range.
 
-
 The second type of partial clone is the **sparse clone**. A sparse clone of a repository contains *a subset of the features*  contained in the full repository, as defined by a filter, most often a spatial filter.
 
 Shallow cloning
 ---------------
 
-A shallow clone is a repository created by limiting the depth of the history that is cloned from an original repository. The depth of the cloned repository, which is selected when the cloning operation is performed, is defined as the number of total commits that the linear history of the repository will contain. 
+A shallow clone is a repository created by limiting the depth of the history that is cloned from an original repository. The depth of the cloned repository, which is selected when the cloning operation is performed, is defined as the number of total commits that the linear history of the repository will contain.
 
 A shallow clone is created using the ``--depth`` option when calling the ``clone`` command, followed by the number of commits that you want to retrieve from the remote repository.
 
@@ -41,7 +40,7 @@ If cloning the repository with the history graph shown above, the history of the
 
 .. figure:: ../img/shallow_clone.png
 
-The depth of the cloning is taken into account when fetching the commits and corresponding data for each branch. Starting from the tip of the branch, all commits at a distance of less than the specified depth are fetched. 
+The depth of the cloning is taken into account when fetching the commits and corresponding data for each branch. Starting from the tip of the branch, all commits at a distance of less than the specified depth are fetched.
 
 If your repository has branches other than ``master``, that can cause some special situations in the cloned repository. For instance, if branches are longer that the specified depth, they will become orphaned branches in the cloned repo, since the depth is not enough to reach the point in the history where the branch was created.
 
@@ -75,9 +74,9 @@ If you run the ``log`` command on the master branch of that repository, you will
 	720b29a382486b573b6529acbb8d80bb7c6ab378 Added Roads3
 	86a90f34f9809f3e06a2398c97f9b6556be7f489 Added Roads2
 	58dc80ae8c2656e4affba30ccbb89d526743c3d8 Added Roads1
-	
 
-Althought the depth of the clone is just 3, you can, however, see more that 3 commits. That is because the two last commits are not actually part of the shallow clone of the ``master`` branch, but part of the cloned ``branch1`` branch.
+
+Although the depth of the clone is just 3, you can, however, see more that 3 commits. That is because the two last commits are not actually part of the shallow clone of the ``master`` branch, but part of the cloned ``branch1`` branch.
 
 Working with a shallow clone
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,7 +92,7 @@ You can see this by running the log command with the ``--changed`` option. When 
 ::
 
 	$log --changed
-	
+
 	XXXXX
 
 The differences reported by the command for the first commit of the shallow clone are not the actual changes introduced by that commit, but the differences between the snapshot represented by that commit and the empty repository before any commit was made.
@@ -105,26 +104,26 @@ If you run the ``log`` command using a path, to see which commits have affected 
 	$log --online Roads1
 	a76c6550cd45d84df09088f6efdd6747c3755643 Added Roads3
 
-Looking at the corresponding history figure above you can see that the specified path was, however, not affected by that commit in the original repo. The very first commit, with the *Added Roads1* message, was the one that added the specified path. Since that commit is beyond the reach of the shallow clone, it is included as part of the changes introduced by the first commit of that shallow clone, assumming that, for that repository, there was nothing in stored before that commit.
+Looking at the corresponding history figure above you can see that the specified path was, however, not affected by that commit in the original repo. The very first commit, with the *Added Roads1* message, was the one that added the specified path. Since that commit is beyond the reach of the shallow clone it is included as part of the changes introduced by the first commit of that shallow clone, assuming that, for that repository, there was nothing stored before that commit.
 
-Notice that GeoGig cannot modify the commit messages to actually reflect the situation in this part of the repository history, and the messages do not actually reflect the changes that are reported by the ``log`` command.
+Note that GeoGig cannot modify the commit messages to actually reflect the situation in this part of the repository history and the messages do not actually reflect the changes that are reported by the ``log`` command.
 
 
 Extending the depth of a shallow clone
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If anytime you want to turn your shallow clone into a regular one that contains all the history from the original repository, you can do it by calling the ``fetch`` command with the ``--full-depth`` switch. 
+If, any time you want to turn your shallow clone into a regular clone that contains all the history from the original repository, you can do it by calling the ``fetch`` command with the ``--full-depth`` switch.
 
 ::
 
 	$geogig fetch origin --full-depth
 
-That will get not only the new commits that might exist in the remote repository, but also the full history.
+This will get not only the new commits that might exist in the remote repository, but also the full history.
 
 
-to extend the shallow clone up to a certain number of commits, but not to its full history, a given depth can be specified using the ``--depth`` parameter. 
+To extend the shallow clone up to a certain number of commits, but not to its full history, a given depth can be specified using the ``--depth`` parameter.
 
-For example, if the shallow clone has a depth of 2, the following call will turn it into a repository with a depth of 3:
+For example, if the shallow clone has a depth of 2, the following call will turn it into a repository with a depth of 3.
 
 ::
 
@@ -134,15 +133,15 @@ For example, if the shallow clone has a depth of 2, the following call will turn
 Sparse cloning
 ---------------
 
-From the user's point of view, a sparse clone looks similar to a shallow clone: they both create a clone of a repository which contains a subset of its data. However, their mechanisms are different. This is due to the fact that a GeoGig repository is basically created as a set of commits, so any partial clone will also have a set of commits. The difference is that in the case of the shallow clone, the actual commits that constitute the original repository can be *reused*, while in the case of a sparse clone new commits have to be created to replace those original ones. This is because a commit can add or modify both features that pass the filter and features that don't pass it, so it cannot be fully added to the partial clone or completely discarded. Instead, a *partial commit* is generated and commited in the cloned repo, which replaces the original commit.
+From the user's point of view, a sparse clone looks similar to a shallow clone: they both create a clone of a repository which contains a subset of its data, however, their mechanisms are different. This is due to the fact that a GeoGig repository is basically created as a set of commits, so any partial clone will also have a set of commits. The difference is that in the case of the shallow clone, the actual commits that constitute the original repository can be *reused*, while in the case of a sparse clone new commits have to be created to replace those original ones. This is because a commit can add or modify both features that pass the filter and features that don't pass it, so it cannot be fully added to the partial clone or completely discarded. Instead, a *partial commit* is generated and committed in the cloned repo, which replaces the original commit.
 
 This can be seen more clearly with an example.
 
-.. figure:: ../img/sparse_clone.png 
+.. figure:: ../img/sparse_clone.png
 
 The number in each feature indicates the commit in which that feature was added.
 
-The history of the original repository just has two commits. Both of them add two new features, and in each case only one of those features falls within a given region, which is the one used to define a filter and create a shallow clone.
+The history of the original repository just has two commits. Both of them add two new features and in each case, only one of those features falls within a given region, which is the one used to define a filter and create a shallow clone.
 
 In the cloned repository, each commit is replaced by a new one that just adds the feature that falls in the filtered area.
 
@@ -152,22 +151,21 @@ Let's suppose a different history in the original repository, this time with thr
 
 The picture below depicts the original and sparse clone for this case.
 
-.. figure:: ../img/sparse_clone_2.png 
+.. figure:: ../img/sparse_clone_2.png
 
 Numbers indicate the commits that affect each feature.
 
-In the cloned repo, the first commit (1) is replaced by a new one (1') that just adds one of the features. The second commit (2) is not applied at all, since none of the changes it introduces affect the cloned repository, so it is skipped. The third one (3) is replaced by a new commit (3') that just modifies the only feature in the cloned repository. In this case, the original commit could not be applied, and it also has to be modified. The original commit (3) changed both features that were in the database after commit 2, but in the sparse clone, only one of those features is found, since the other one was not added, as it falls outside the are of interest. Since comit 3 modifies a feature that does not exist in the sparse clone, it cannot be applied, and it is replaced by 3', which just contains the changes that affect the feature that is available.
+In the cloned repo, the first commit (1) is replaced by a new one (1') that just adds one of the features. The second commit (2) is not applied at all, since none of the changes it introduces affect the cloned repository, so it is skipped. The third one (3) is replaced by a new commit (3') that just modifies the only feature in the cloned repository. In this case, the original commit could not be applied, and it also has to be modified. The original commit (3) changed both features that were in the database after commit 2, but in the sparse clone, only one of those features is found, since the other one was not added, as it falls outside the are of interest. Since commit 3 modifies a feature that does not exist in the sparse clone, it cannot be applied, and it is replaced by 3', which just contains the changes that affect the feature that is available.
 
-If your cloned repository was to be used just by itself and never had any interaction with the original repository from where it comes from, or with other cloned ones (whether partial or complete), then a partial clone could be created just creating new commits that resulted in a partial repository. However, since interaction is important, a partial clone has to keep track of commits in the original repository, because otherwise it wouldn't be able to interact with it. 
+If your cloned repository was to be used just by itself and never had any interaction with the original repository from where it originates or with other cloned repositories (whether partial or complete), then a partial clone could be created, only creating new commits that resulted in a partial repository. However, since interaction is important, a partial clone has to keep track of commits in the original repository, because otherwise, it wouldn't be able to interact with it.
 
-The explanations that follow assume that you understand the structure of a GeoGig repository and you are familiar with the concepts introduced in the :ref:`start.intro` section, since they are basically an extension of those ideas. Please review the corresponding chapter in case you need to refresh those concepts.
+The explanations that follow assume that you understand the structure of a GeoGig repository and you are familiar with the concepts introduced in the :ref:`start.introduction` section, since they are basically an extension of those ideas. Please review the corresponding chapter in case you need to refresh those concepts.
 
-Let's see why additional information is needed to keep the link between the original and the partially cloned repository. We will go back to the first example with just two commits. Here you can see the two histories, with the corresponding abbreviated Id's of their commits.
+Let's see why additional information is needed to keep the link between the original and the partially cloned repository. We will go back to the first example with just two commits. Here you can see the two histories, with the corresponding abbreviated IDs of their commits.
 
 .. figure:: ../img/sparse_clone_ids.png
 
-
-The original repository had two commits, and so does the cloned one. However, if you have a look at the Id's of the commits, you will notice that they are different. 
+The original repository had two commits, and so does the cloned one. However, if you have a look at the Id's of the commits, you will notice that they are different.
 
 If you remember, every element in a GeoGig repository has an Id to identify it. This Id is unique, and it's based on the characteristics of the element. If a commit has a different commit time or a different set of changes, then its Id will also be different.  Since commits in the cloned repository have been modified, their Id's will not match those of the original repository.
 
@@ -178,7 +176,7 @@ Now imagine that you modify a feature in the cloned repo and add a new commit wi
 If you run the ``cat`` command to describe the commit that you have added, it will output something like this.
 
 ::
-	
+
 	$geogig cat HEAD
 	id aa4f6bd33d45d84df09088f6efdd6747c3755643
 	COMMIT
@@ -190,7 +188,7 @@ If you run the ``cat`` command to describe the commit that you have added, it wi
 
 The ``parent`` property links a commit to the one (or several ones if it is a merge commit) that it derives from. This is what allows a GeoGig repository to communicate with other repositories and push and pull commits and data, knowing when is it possible to push and when a cloned repository is outdated and its changes cannot be pushed without risking losing data.
 
-If we had done a regular cloning, the new commit would have a parent that actually exist in the original repository, and which is in fact its HEAD. GeoGig would recognize that situation when pushing changes, and it would add just that last commit, ignoring the previous ones, since they are already in the original repository. In our case, however, the parent of the new commit (``00f6bd73f``) does not exist in the original repository. 
+If we had done a regular cloning, the new commit would have a parent that actually exist in the original repository, and which is in fact its HEAD. GeoGig would recognize that situation when pushing changes, and it would add just that last commit, ignoring the previous ones, since they are already in the original repository. In our case, however, the parent of the new commit (``00f6bd73f``) does not exist in the original repository.
 
 In the case of a shallow clone, as we have already seen, there are also some missing commits, but the situation is different, since they are missing in the local cloned repository, not in the original one. All the commits that are found in the shallow cloned repository are also found in the original repository, and have the same Id's in both repositories. In other words, the commits are exactly the same. In the case of a sparse clone, however, that is not true, and all commits have different Id's than the original commits upon which they have been created.
 
@@ -233,7 +231,7 @@ For instance, let's suppose that a new commit is introduced in our example remot
 
 .. figure:: ../img/sparse_moving_out.png
 
-If we pull from our sparse clone, the new commit will be added, and that feature that is now outside will still be tracked and not deleted, even though it now falls outside the filter area. 
+If we pull from our sparse clone, the new commit will be added, and that feature that is now outside will still be tracked and not deleted, even though it now falls outside the filter area.
 
 The opposite case is also possible: a feature that was outside the filter area but has been modified and now falls within it. In this case, the feature will be tracked in the sparse clone starting from the commit that introduced the changed that put it into the filter area. Although that commit made a modification on a feature that already existed in the original remote, that same feature did not exist in the sparse clone. For this reason, the corresponding sparse commit to be applied to the sparse clone will not report a modification, but a new added feature instead.
 
@@ -262,7 +260,7 @@ The filter file is an Ini file which contains filters to be applied to all featu
 	type = CQL
 	filter = BBOX(way,-9532345,1223411,-9325678,1632340,'EPSG:900913')
 
-There are two filters in this file. Both filters are CQL (Common Query Language) filters. The first one will be applied to all features, while the second one will only be appplied to features with the ``roads`` feature type.
+There are two filters in this file. Both filters are CQL (Common Query Language) filters. The first one will be applied to all features, while the second one will only be applied to features with the ``roads`` feature type.
 
 Notice that filtering is done based on attributes, in this case a geometry attribute named ``way``. In case you need more information, remember that you can run the ``show`` command passing a tree path as parameter, and you will get a description of the feature type of that tree, which includes information about its attributes.
 
@@ -301,11 +299,11 @@ Here are some notes about which operations are possible depending on the type of
 
 - In general, a sparse clone can act as a normal parent repository, and be cloned, whether fully and sparsely. It will behave with those cloned repositories like any other regular repository.
 - A full clone can do anything that its original remote repository can do, since it contains exactly the same data. That means that a full regular clone can also interact with all the clones of the original repository in the same way the original repository does. Sparse and shallow clones are not exactly like the original repository, but a regular clone is, literally, a clone of it, so it can replace the original repository in any situation.
-- An exception to the above is the case of a full clone of a sparse clone. Although the clone contains exactly the same data as the original sparse clone, it does not contain the mappings. That means that it cannot synchronize with a parent repository in the same way as the original sparse clone does. For instance, 6 is a regular clone of 2, but, unlike 2, cannot synchronize with 0. The only possible synchronization is between 6 and 2, which needs no mapping at all, since both repositories contain the same data. 
+- An exception to the above is the case of a full clone of a sparse clone. Although the clone contains exactly the same data as the original sparse clone, it does not contain the mappings. That means that it cannot synchronize with a parent repository in the same way as the original sparse clone does. For instance, 6 is a regular clone of 2, but, unlike 2, cannot synchronize with 0. The only possible synchronization is between 6 and 2, which needs no mapping at all, since both repositories contain the same data.
 - Regular clones can synchronize with their remote repository without limitations, and parent repositories can do the same with all their regular clones. That is true if the original repository is a regular one (for instance, 3 being a full clone of 0) or a sparse one (for instance, 6 being a full clone of 2, which is itself sparse, as it was mentioned in the previous point)
 - Sparse clones can synchronize with their remote repositories. However, the remote repository cannot synchronize with a sparse clone of itself. This is because the original repository doesn't have the history mappings (they are created by the cloned repository), so it will understand a sparse clone as a different repo. No information is kept in a repository about other repositories cloned from it, so it is not aware of sparse clones and the relationship between sparse commits and original commits. All operations between a repository and a sparse clone created from it have to be run from the sparse clone, which is the only one that contains the additional information needed to correctly synchronize both original and sparse history.
 - Sparse clones cannot synchronize between them, as it was explained before.
-- In most cases, a sparse clone cannot interact with a regular clone of its parent remote repository. for instance, in the diagram above, 7 can not pull and push from 4. This would be possible only if no additional history had been added in 4. Repository number 4 has to be identical to repository 6 when it was cloned into 7. Otherwise, althought they were both cloned from the same repository (2), they would be different and the sparse clone will not have mapping information for the new commits introduced in 4. Since this situation might work in a very limited context, and is likely to cause conflicting situations in most others, it is not recommended, and a sparse clone should be considered as not able to synchronize with regular clones or its parent repository, but just with the parent repository itself.
+- In most cases, a sparse clone cannot interact with a regular clone of its parent remote repository. for instance, in the diagram above, 7 can not pull and push from 4. This would be possible only if no additional history had been added in 4. Repository number 4 has to be identical to repository 6 when it was cloned into 7. Otherwise, although they were both cloned from the same repository (2), they would be different and the sparse clone will not have mapping information for the new commits introduced in 4. Since this situation might work in a very limited context, and is likely to cause conflicting situations in most others, it is not recommended, and a sparse clone should be considered as not able to synchronize with regular clones or its parent repository, but just with the parent repository itself.
 
 Shallow clones are less limited than sparse clones, and they do not involve the same complexity, since they do not rewrite the history and use the original commits instead, like a regular clone does. Basically, you can create shallow clones of both regular and sparse repositories, and they will behave like regular clones of those repositories. That means that you will have the same types of interaction that are shown in the figure above for the case of regular clones.
 

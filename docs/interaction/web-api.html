@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web-Api Documentation &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>Web-API Documentation &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
-      <link rel="next" title="Web-API Asynchronous tasks" href="async-tasks.html" />
+      <link rel="next" title="Web-API indexing documentation" href="indexing-web-api.html" />
       <link rel="prev" title="GeoServer REST configuration integration" href="geoserver_web-api.html" />
 </head>
 <body class="interaction/web-api">
@@ -78,16 +78,16 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
-  <li>Web-Api Documentation</li>
+  <li>Web-API Documentation</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
   <li class="first">
     <a href="../genindex.html" title="General Index"
        accesskey="I">index</a></li>
   <li>
-    <a href="async-tasks.html" title="Web-API Asynchronous tasks"
+    <a href="indexing-web-api.html" title="Web-API indexing documentation"
        accesskey="N">next</a>|</li>
   <li>
     <a href="geoserver_web-api.html" title="GeoServer REST configuration integration"
@@ -95,20 +95,42 @@
 </ul>
         
   <div class="section" id="web-api-documentation">
-<h1>Web-Api Documentation<a class="headerlink" href="#web-api-documentation" title="Permalink to this headline">¶</a></h1>
-<p>This will walk you through GeoGig&#8217;s web-api and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands. First I will explain an easy way to get the web-api up and running.</p>
-<p>If you don&#8217;t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-api up and running after you have built the latest GeoGig go into your repository and run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>. This will set up a jetty server with your repository and give you access to the web-api. Now you just need to open up a web browser and go to localhost:8182/repos/&lt;repo name&gt;/log to make sure it comes up. After you have gotten it up and running now you can test any of the commands listed here.</p>
-<p>All web-api commands have transaction support, which means you can run the web-api commands beginTransaction to start a transaction and then use the id that is returned to do other commands on that transaction instead of the actual repository. After you are done with everything on the transaction you just have call endTransaction through the web-api and pass it the transaction id. Some commands require a transaction to preserve the stability of the repository, those that require it will have <code class="docutils literal"><span class="pre">(-T)</span></code> next to the name of the command in this doc. To pass the transaction id you just need to use the transactionId option and set it equal to the id that beginTransaction returns. Some commands also have other options that are required for that command to work they will have a <code class="docutils literal"><span class="pre">(-R)</span></code> next to them. Any options that have notes associated with them have and asterisk next to them.</p>
+<h1>Web-API Documentation<a class="headerlink" href="#web-api-documentation" title="Permalink to this headline">¶</a></h1>
+<p>This will walk you through GeoGig&#8217;s web-API and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands.</p>
+<p>If you don&#8217;t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-API up and running after you have built the latest GeoGig, <code class="docutils literal"><span class="pre">cd</span></code> into your repository and run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>. This will set up a jetty server for your repository and give you access to the web-API. Now you just need to open up a web browser and go to <code class="docutils literal"><span class="pre">localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> to make sure the server starts up. After you have gotten the web server up and running, you can test any of the commands listed here.</p>
+<p>All web-API commands have transaction support, which means you can run the web-API commands beginTransaction, to start a transaction, and then use the ID that is returned to do other commands on that transaction instead of the actual repository. After you are done with everything on the transaction you just have call endTransaction through the web-API and pass it the transaction ID. Some commands require a transaction to preserve the stability of the repository. Those that require it will have <code class="docutils literal"><span class="pre">(-T)</span></code> next to the name of the command in this doc. To pass the transaction ID you just need to use the transactionId option and set it equal to the ID that beginTransaction returns. Some commands also have other options that are required for that command to work they will have a <code class="docutils literal"><span class="pre">(-R)</span></code> next to them. Any options that have notes associated with them have an asterisk next to them.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">All web-api command response are formatted for xml by default, however you can get a JSON response by adding this option to the url <code class="docutils literal"><span class="pre">output_format=JSON</span></code>.</p>
+<p class="last">All web-API command response are formatted for xml by default, however you can get a JSON response by adding <code class="docutils literal"><span class="pre">output_format=JSON</span></code> to the URL parameters.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">All web-api commands have a variable at the top of the response indicating success or failure, so you can still have a 200 status on the request and have a failure. This can happen when the command runs into an internal error.</p>
+<p class="last">All web-API commands have a variable at the top of the response indicating success or failure, so you can still have a 200 status on the request and have a failure. This can happen when the command runs into an internal error.</p>
+</div>
+<div class="section" id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<p>Parameters can be supplied to the various commands through URL encoding, JSON, or XML.</p>
+<ul class="simple">
+<li><strong>URL Encoded</strong></li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>curl -X POST &quot;http://localhost:8182/repos/&lt;repo name&gt;/config?name=user.name&amp;value=John%20Doe&quot;
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>JSON</strong></li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>curl -X POST -H &quot;Content-Type: application/json&quot; -d &#39;{&quot;name&quot;:&quot;user.name&quot;,&quot;value&quot;:&quot;John Doe&quot;}&#39; &quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;
+</pre></div>
+</div>
+<ul class="simple">
+<li><strong>XML</strong></li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>curl -X POST -H &quot;Content-Type: application/xml&quot; -d &quot;&lt;params&gt;&lt;name&gt;user.name&lt;/name&gt;&lt;value&gt;John Doe&lt;/value&gt;&lt;/params&gt;&quot; &quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;
+</pre></div>
+</div>
 </div>
 <div class="section" id="porcelain-commands-supported">
-<h2>Porcelain Commands Supported<a class="headerlink" href="#porcelain-commands-supported" title="Permalink to this headline">¶</a></h2>
+<h2>Porcelain commands supported<a class="headerlink" href="#porcelain-commands-supported" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first"><strong>Add</strong> (-T)</p>
 <blockquote>
@@ -128,14 +150,14 @@
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns whether or not the add succeeded or not.
+<div class="highlight-python"><div class="highlight"><pre>Returns whether or not the add succeeded.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>Blame</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>commit</strong> - the branch or commit to blame from</p>
@@ -157,23 +179,23 @@
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns all of the attribute values of a feature and the commit that they were last changed.
+<div class="highlight-python"><div class="highlight"><pre>Returns all of the attribute values of a feature and the commit within which they were last changed.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>Branch</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
-<li><p class="first"><strong>list</strong> (-R) - true to list any branches</p>
+<li><p class="first"><strong>list</strong> (-R) - set <code class="docutils literal"><span class="pre">true</span></code> to list any branches</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>remotes</strong> - true to list remote branches</p>
+<li><p class="first"><strong>remotes</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to list remote branches</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -186,7 +208,7 @@
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns a list of all the branches on the repo, if remote is specified it lists remote branches and the name of the remote they belong to.
+<div class="highlight-python"><div class="highlight"><pre>Returns a list of all the branches on the repo, if remote is specified, it lists remote branches and the name of the remote they belong to.
 </pre></div>
 </div>
 </div></blockquote>
@@ -202,13 +224,13 @@
 <p><strong>Default:</strong> null</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>ours*</strong> - true to use our version of the feature specified</p>
+<li><p class="first"><strong>ours*</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to use &#8220;our&#8221; version of the feature specified</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>theirs*</strong> - true to use their version of the feature specified</p>
+<li><p class="first"><strong>theirs*</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to use &#8220;their&#8221; version of the feature specified</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -228,7 +250,7 @@
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the branch you were one and the branch you checked out, if path was specified it returns the path and the strategy chosen.
+<div class="highlight-python"><div class="highlight"><pre>Returns the branch you were on and the branch you checked out, if path was specified it returns the path and the strategy chosen.
 </pre></div>
 </div>
 </div></blockquote>
@@ -237,7 +259,7 @@
 <blockquote>
 <div><div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">You must specify either branch OR path not both. If path is specified then you MUST specify either ours or theirs.</p>
+<p class="last">You must specify either branch OR path, not both. If path is specified then you MUST specify either &#8220;ours&#8221; or &#8220;theirs&#8221;.</p>
 </div>
 </div></blockquote>
 <ul>
@@ -252,7 +274,7 @@
 <p><strong>Default:</strong> null</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>all</strong> - true to commit everything in the working tree</p>
+<li><p class="first"><strong>all</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to commit everything in the working tree</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -277,14 +299,14 @@
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the commit id and a count of the things that were added, changed and deleted.
+<div class="highlight-python"><div class="highlight"><pre>Returns the commit ID and a count of the things that were added, changed, and deleted.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>Diff</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>oldRefSpec</strong> (-R) - the old ref spec to diff against</p>
@@ -317,7 +339,7 @@
 <p><strong>Default:</strong> 0</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>show</strong> - the number of elements to display in the response per page</p>
+<li><p class="first"><strong>show</strong> - the number of elements to display per page in the response</p>
 <blockquote>
 <div><p><strong>Type:</strong> Integer</p>
 <p><strong>Default:</strong> 30</p>
@@ -330,23 +352,23 @@
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the path of the feature before and after as well as the object id before and after, if showGeometryChanges is specified it will also return the geometry of the feature.
+<div class="highlight-python"><div class="highlight"><pre>Returns the path of the feature before and after, as well as the object ID before and after. If showGeometryChanges is specified, it will also return the geometry of the feature.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>Fetch</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
-<li><p class="first"><strong>prune</strong> - true to prune remote tracking branches locally that no longer exist</p>
+<li><p class="first"><strong>prune</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to prune remote tracking branches locally that no longer exist</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>all</strong> - true to fetch from all remotes</p>
+<li><p class="first"><strong>all</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to fetch from all remotes</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -365,7 +387,7 @@
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the name of the remote, the branch name before and after and the value before and after.
+<div class="highlight-python"><div class="highlight"><pre>Returns the name of the remote, the branch name before and after, and the value before and after.
 </pre></div>
 </div>
 </div></blockquote>
@@ -380,7 +402,7 @@
 <ul>
 <li><p class="first"><strong>Log</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>limit</strong> - the number of commits to print</p>
@@ -401,13 +423,13 @@
 <p><strong>Default:</strong> Empty List</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>since</strong> - the start commit id to list commits</p>
+<li><p class="first"><strong>since</strong> - the start commit ID to list commits</p>
 <blockquote>
 <div><p><strong>Type:</strong> String</p>
 <p><strong>Default:</strong> null</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>until</strong> - the end commit id to list commits</p>
+<li><p class="first"><strong>until</strong> - the end commit ID to list commits</p>
 <blockquote>
 <div><p><strong>Type:</strong> String</p>
 <p><strong>Default:</strong> null</p>
@@ -431,31 +453,31 @@
 <p><strong>Default:</strong> 0</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>show</strong> - the number of elements to display in the response per page</p>
+<li><p class="first"><strong>show</strong> - the number of elements to display per page in the response</p>
 <blockquote>
 <div><p><strong>Type:</strong> Integer</p>
 <p><strong>Default:</strong> 30</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>firstParentOnly</strong> - true to only show the first parent of a commit</p>
+<li><p class="first"><strong>firstParentOnly</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to only show the first parent of a commit</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>countChanges</strong> - if true, each commit will include a count of each change type compared to its first parent</p>
+<li><p class="first"><strong>countChanges</strong> - if <code class="docutils literal"><span class="pre">true</span></code>, each commit will include a count of each change type compared to its first parent</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>returnRange</strong> - true to only show the first and last commit of the log, as well as a count of the commits in the range</p>
+<li><p class="first"><strong>returnRange</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to show only the first and last commit of the log, as well as a count of the commits in the range</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>summary*</strong> - if true, return all changes from each commit</p>
+<li><p class="first"><strong>summary*</strong> - if <code class="docutils literal"><span class="pre">true</span></code>, returns all changes from each commit</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -469,7 +491,7 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns a list of the commits with a given range, if countChanges is specified it also returns the number of adds, modifies and deletes for each commit, if summary with csv output_format specified it downloads a file in csv format of a summary of changes for each commit.
+<div class="highlight-python"><div class="highlight"><pre>Returns a list of the commits within a given range. If countChanges is specified, it also returns the number of adds, modifies, and deletes for each commit. If summary with CSV output format is specified, it prompts for download a summary file of changes for each commit in CSV format.
 </pre></div>
 </div>
 </div></blockquote>
@@ -478,13 +500,13 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 <blockquote>
 <div><div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">You can get the summary downloaded as a .csv file by specifying <code class="docutils literal"><span class="pre">output_format=csv</span></code>, this is the only option in the web-api that supports this format.</p>
+<p class="last">You can get the summary downloaded as a CSV file by specifying <code class="docutils literal"><span class="pre">output_format=csv</span></code>, this is the only option in the web-API that supports this format.</p>
 </div>
 </div></blockquote>
 <ul>
 <li><p class="first"><strong>Merge</strong> (-T)</p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>noCommit</strong> - true to merge without creating a commit afterwards</p>
@@ -518,7 +540,7 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the object id of both branches being merged and the common ancestor&#39;s id as well as the merge commit id if one was made, the number of conflicts there were if there were any, the list of changes that resulted from the merge.
+<div class="highlight-python"><div class="highlight"><pre>Returns the object ID of both branches being merged and the common ancestor&#39;s ID as well as the merge commit ID, if one was made, the number of conflicts there were, if there were any, and the list of changes that resulted from the merge.
 </pre></div>
 </div>
 </div></blockquote>
@@ -533,7 +555,7 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 <ul>
 <li><p class="first"><strong>Pull</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>remoteName*</strong> - the name of the remote to pull from</p>
@@ -588,7 +610,7 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 <ul>
 <li><p class="first"><strong>Push</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>all</strong> - true to push all refs</p>
@@ -631,7 +653,7 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 <ul>
 <li><p class="first"><strong>Remote</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>list*</strong> - true to list the names of your remotes</p>
@@ -705,14 +727,14 @@ localhost:8182/repos/&lt;repo name&gt;/remote?update=true&amp;newName=origin&amp
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns a list of remotes, if verbose was specified it returns the remote url and username, if ping was specified it returns whether or not the ping was a success, if remove was specified it returns the name of the remote that was removed, if update was specified it returns the name of the remote that was updated, if a remote was created it returns the name of the new remote.
+<div class="highlight-python"><div class="highlight"><pre>Returns a list of remotes. If verbose was specified, it returns the remote url and username. If ping was specified, it returns whether or not the ping was a success. If remove was specified, it returns the name of the remote that was removed If update was specified, it returns the name of the remote that was updated If a remote was created, it returns the name of the new remote.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>Remove</strong> (-T)</p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>path</strong> (-R) - the path to the feature to be removed</p>
@@ -764,7 +786,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the branch name of the currently checked out branch as well as a list of the staged, unstaged and unmerged features.
+<div class="highlight-python"><div class="highlight"><pre>Returns the branch name of the currently checked out branch as well as a list of the staged, unstaged, and unmerged features.
 </pre></div>
 </div>
 </div></blockquote>
@@ -827,7 +849,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </li>
 <li><p class="first"><strong>Version</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><p>none</p>
 </div></blockquote>
@@ -848,7 +870,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <ul>
 <li><p class="first"><strong>BeginTransaction</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><p>none</p>
 </div></blockquote>
@@ -857,17 +879,17 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the id of the transaction that was started.
+<div class="highlight-python"><div class="highlight"><pre>Returns the ID of the transaction that was started.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>EndTransaction</strong> (-T)</p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
-<li><p class="first"><strong>cancel</strong> - true to abort all changes made in this transaction</p>
+<li><p class="first"><strong>cancel</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to abort all changes made in this transaction</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -880,14 +902,14 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns nothing if it succeeded or the transaction id if it failed.
+<div class="highlight-python"><div class="highlight"><pre>Returns nothing if it succeeded or the transaction ID if it failed.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>FeatureDiff</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>path</strong> (-R) - the path to feature</p>
@@ -896,19 +918,19 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <p><strong>Default:</strong> null</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>newTreeish*</strong> - the id or branch of the newer commit</p>
+<li><p class="first"><strong>newTreeish*</strong> - the ID or branch name of the newer commit</p>
 <blockquote>
 <div><p><strong>Type:</strong> String</p>
 <p><strong>Default:</strong> ObjectId.NULL</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>oldTreeish*</strong> - the id or branch of the older commit</p>
+<li><p class="first"><strong>oldTreeish*</strong> - the ID or branch name of the older commit</p>
 <blockquote>
 <div><p><strong>Type:</strong> String</p>
 <p><strong>Default:</strong> ObjectId.NULL</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>all</strong> - true to show all attributes not just changed ones</p>
+<li><p class="first"><strong>all</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to show all attributes not just changed ones</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -921,7 +943,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the list of attributes for that feature with the before and after values, the changetype and if it is the geometry it returns the CRS with it.
+<div class="highlight-python"><div class="highlight"><pre>Returns the list of attributes for that feature with the before and after values, the changetype, and, if it is the geometry, it returns the CRS with it.
 </pre></div>
 </div>
 </div></blockquote>
@@ -930,7 +952,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <blockquote>
 <div><div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If no newTreeish is specified then it will use the commit that HEAD is pointing to. If no oldTreeish is specified then it will assume you want the diff to include the initial commit.</p>
+<p class="last">If no newTreeish is specified, then it will use the commit that HEAD is pointing to. If no oldTreeish is specified, then it will assume you want the diff to include the initial commit.</p>
 </div>
 </div></blockquote>
 <ul>
@@ -976,7 +998,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the path to each node and if verbose is specified it returns the metadataId, type and objectId.
+<div class="highlight-python"><div class="highlight"><pre>Returns the path to each node and, if verbose is specified, it returns the metadataId, type, and objectId.
 </pre></div>
 </div>
 </div></blockquote>
@@ -994,7 +1016,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <div><p><strong>Currently Supported Options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
-<li><p class="first"><strong>quiet</strong> - If true, limit the output of the command</p>
+<li><p class="first"><strong>quiet</strong> - If <code class="docutils literal"><span class="pre">true</span></code>, limit the output of the command</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -1007,14 +1029,14 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the number of updated graph elements, if quiet is not specified it returns the objectId of each updated node.
+<div class="highlight-python"><div class="highlight"><pre>Returns the number of updated graph elements. If quiet is not specified, it returns the objectId of each updated node.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>RefParse</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>name</strong> (-R) - the name of the ref to parse</p>
@@ -1030,14 +1052,14 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the ref name and objectId, if it is a symbolic ref it returns the target as well.
+<div class="highlight-python"><div class="highlight"><pre>Returns the ref name and objectId. If it is a symbolic ref, it returns the target as well.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>UpdateRef</strong></p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>name</strong> (-R) - the name of the ref to update</p>
@@ -1065,7 +1087,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the same things as Ref parse
+<div class="highlight-python"><div class="highlight"><pre>Returns the same things as ref parse
 </pre></div>
 </div>
 </div></blockquote>
@@ -1079,13 +1101,13 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </div></blockquote>
 </div>
 <div class="section" id="web-api-specific">
-<h2>Web-Api Specific<a class="headerlink" href="#web-api-specific" title="Permalink to this headline">¶</a></h2>
+<h2>Web-API Specific<a class="headerlink" href="#web-api-specific" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first"><strong>GetCommitGraph</strong></p>
 <blockquote>
 <div><p>The purpose of the GetCommitGraph function is to traverse the entire commit graph. It starts at the specified commitId and works its way down the graph to either the initial commit or the specified depth. Since it traverses the actual commit graph, unlike log, it will display multiple parents and will list every single commit that runs down each parents history.</p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>depth</strong> - the depth to search to</p>
@@ -1094,7 +1116,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <p><strong>Default:</strong> 0</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>commitId</strong> (-R) - the id of the commit to start at</p>
+<li><p class="first"><strong>commitId</strong> (-R) - the ID of the commit to start at</p>
 <blockquote>
 <div><p><strong>Type:</strong> String</p>
 <p><strong>Default:</strong> ObjectId.NULL</p>
@@ -1129,7 +1151,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <blockquote>
 <div><p>This command is used to resolve a conflict at the provided path with the provided feature objectId.  This can be used in conjunction with the output response of a MergeFeature request.</p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>path</strong> (-R) - the path to the feature you want to add</p>
@@ -1138,7 +1160,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <p><strong>Default:</strong> null</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>objectid</strong> (-R) - the object id of the feature</p>
+<li><p class="first"><strong>objectid</strong> (-R) - the object ID of the feature</p>
 <blockquote>
 <div><p><strong>Type:</strong> String</p>
 <p><strong>Default:</strong> null</p>
@@ -1161,7 +1183,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <blockquote>
 <div><p>This command can be used to revert the changes to a single feature in a commit.</p>
 <blockquote>
-<div><p><strong>Currently Supported Options:</strong></p>
+<div><p><strong>Currently-supported options:</strong></p>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first"><strong>authorName</strong> - the author of the merge commit</p>
@@ -1233,7 +1255,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <ul>
 <li><p class="first"><strong>MergeFeature</strong></p>
 <blockquote>
-<div><p>This endpoint can be used to merge two features into a new one.  It will return the ObjectId of the new feature when the operation completes.  This endpoint must be accessed by using a POST request that contains a json object to tell GeoGig how to merge the feature.  The following is an example of the json POST data to merge a feature with 3 attributes.</p>
+<div><p>This endpoint can be used to merge two features into a new one.  It will return the ObjectId of the new feature when the operation completes. This endpoint must be accessed by using a POST request that contains a JSON object to tell GeoGig how to merge the feature. The following is an example of the JSON POST data to merge a feature with three attributes.</p>
 <div class="highlight-none"><div class="highlight"><pre>{
   path: &#39;featureType/feature&#39;,
   ours: &#39;commitId that contains the left feature&#39;,
@@ -1257,20 +1279,20 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the id of the merged feature.
+<div class="highlight-python"><div class="highlight"><pre>Returns the ID of the merged feature.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first"><strong>Manifest</strong></p>
 <blockquote>
-<div><p>This endpoint can be used to get a list of all refs in the repository and what they point to.  Similar to the Branch command with the list option from above.</p>
+<div><p>This endpoint can be used to get a list of all refs in the repository and what they point to.  Similar to the <code class="docutils literal"><span class="pre">branch</span></code> command with the list option from above.</p>
 <p><strong>Example:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/repo/manifest
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the list of refs and the ids they point to.
+<div class="highlight-python"><div class="highlight"><pre>Returns the list of refs and the IDs they point to.
 </pre></div>
 </div>
 </div></blockquote>
@@ -1279,15 +1301,15 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </div>
 <div class="section" id="issues">
 <h2>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h2>
-<p>The main concern with the web-api currently is that it doesn&#8217;t have any kind of authentication on it, which means that anyone with the url can potentially destroy your repo or steal you data with commands like updateref and pull.</p>
-<p>There is also a lot of room for improvement and optimization. There are also several commands that still need to be exposed through the web-api.</p>
+<p>The main concern with the web-API currently is that it doesn&#8217;t have any kind of authentication on it, which means that anyone with the url can potentially destroy your repo or steal you data with commands like <code class="docutils literal"><span class="pre">updateref</span></code> and <code class="docutils literal"><span class="pre">pull</span></code>.</p>
+<p>There are several commands that still need to be exposed through the web-API. There is a lot of room for improvement and optimization.</p>
 </div>
 </div>
 
 
       <div class="selfclear pagination-nav">
           <div class="leftwise"><strong>Previous</strong>: <a href="geoserver_web-api.html" title="previous chapter">GeoServer REST configuration integration</a></div>
-          <div class="rightwise"><strong>Next</strong>: <a href="async-tasks.html" title="next chapter">Web-API Asynchronous tasks</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="indexing-web-api.html" title="next chapter">Web-API indexing documentation</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
       </div><!-- /#content> -->
@@ -1304,17 +1326,18 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
-<li><a class="reference internal" href="#">Web-Api Documentation</a><ul>
-<li><a class="reference internal" href="#porcelain-commands-supported">Porcelain Commands Supported</a></li>
+<li><a class="reference internal" href="#">Web-API Documentation</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#porcelain-commands-supported">Porcelain commands supported</a></li>
 <li><a class="reference internal" href="#plumbing-commands-supported">Plumbing Commands Supported</a></li>
-<li><a class="reference internal" href="#web-api-specific">Web-Api Specific</a></li>
+<li><a class="reference internal" href="#web-api-specific">Web-API Specific</a></li>
 <li><a class="reference internal" href="#repo-commands">Repo Commands</a></li>
 <li><a class="reference internal" href="#issues">Issues</a></li>
 </ul>
@@ -1327,7 +1350,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
           <h3>Continue Reading</h3>
           <ul>
             <li>Previous: <a href="geoserver_web-api.html" title="previous chapter">GeoServer REST configuration integration</a></li>
-            <li>Next: <a href="async-tasks.html" title="next chapter">Web-API Asynchronous tasks</a></li>
+            <li>Next: <a href="indexing-web-api.html" title="next chapter">Web-API indexing documentation</a></li>
           </ul>
         </div>
         <div class="section">

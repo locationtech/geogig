@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig User Manual &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>GeoGig User Manual &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,12 +17,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="#" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="#" />
       <link rel="next" title="Starting out with GeoGig" href="start/index.html" />
 </head>
 <body class="index">
@@ -76,7 +76,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li>GeoGig 1.0-RC4 User Manual</li>
+  <li>GeoGig 1.1 User Manual</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
   <li class="first">
@@ -92,10 +92,11 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="start/index.html">Starting out with GeoGig</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="start/intro.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start/introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="start/installation.html">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="start/installation.html#installing-ansicon">Installing ANSICON</a></li>
 <li class="toctree-l2"><a class="reference internal" href="start/installation.html#uninstalling-ansicon">Uninstalling ANSICON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start/tutorial.html">GeoGig tutorial</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="repo/index.html">Working with repositories</a><ul>
@@ -119,7 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="data/index.html">Data and commits</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="data/adding.html">Staging data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="data/checkout.html">Checking out a previous version</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/commiting.html">Commiting changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/committing.html">Committing changes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="data/diffs.html">Showing differences</a></li>
 <li class="toctree-l2"><a class="reference internal" href="data/exporting.html">Exporting from a GeoGig repository</a></li>
 <li class="toctree-l2"><a class="reference internal" href="data/history.html">Exploring your history</a></li>
@@ -135,12 +136,11 @@
 <li class="toctree-l1"><a class="reference internal" href="interaction/index.html">Other ways to interact with GeoGig</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="interaction/networking.html">GeoGig Networking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="interaction/web-repository-management.html">Serving and Managing Repositories</a></li>
-<li class="toctree-l2"><a class="reference internal" href="interaction/geoserver_ui.html">GeoServer GUI Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interaction/geoserver_ui.html">GeoServer GUI configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="interaction/geoserver_web-api.html">GeoServer REST configuration integration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="interaction/web-api.html">Web-Api Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interaction/web-api.html">Web-API Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interaction/indexing-web-api.html">Web-API indexing documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="interaction/async-tasks.html">Web-API Asynchronous tasks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="interaction/osm.html">Using GeoGig with OpenStreetMap data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="interaction/osm-web-api.html">OpenStreetMap Web-Api Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="interaction/geopackage-import-export.html">GeoPackage import and export Web-API</a></li>
 </ul>
 </li>
@@ -172,10 +172,10 @@
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>

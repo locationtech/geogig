@@ -342,7 +342,8 @@ Sidebar
   width: 100%;
 }
 #docs_toc .btn-default {
-  color: #333333;
+  color: #28728d;
+  text-decoration: none;
   background-color: #cccccc;
   border-color: #cccccc;
   text-transform: uppercase;
@@ -351,13 +352,10 @@ Sidebar
 }
 #docs_toc .btn-default:hover {
   background-color: #7eb5d3;
-}
-#docs_toc .btn-default:hover a {
+  text-decoration: none;
   color: #000;
 }
-#docs_toc .btn-default:hover a:hover {
-  text-decoration: none;
-}
+
 .admonition {
   border: 1px solid #ccc;
   padding: 5px 10px;

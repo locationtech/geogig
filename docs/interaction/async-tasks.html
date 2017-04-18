@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web-API Asynchronous tasks &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>Web-API Asynchronous tasks &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,15 +17,15 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
-      <link rel="next" title="Using GeoGig with OpenStreetMap data" href="osm.html" />
-      <link rel="prev" title="Web-Api Documentation" href="web-api.html" />
+      <link rel="next" title="GeoPackage import and export Web-API" href="geopackage-import-export.html" />
+      <link rel="prev" title="Web-API indexing documentation" href="indexing-web-api.html" />
 </head>
 <body class="interaction/async-tasks">
     <div id="blacktop"></div>
@@ -78,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web-API Asynchronous tasks</li>
 </ul>
@@ -87,36 +87,35 @@
     <a href="../genindex.html" title="General Index"
        accesskey="I">index</a></li>
   <li>
-    <a href="osm.html" title="Using GeoGig with OpenStreetMap data"
+    <a href="geopackage-import-export.html" title="GeoPackage import and export Web-API"
        accesskey="N">next</a>|</li>
   <li>
-    <a href="web-api.html" title="Web-Api Documentation"
+    <a href="indexing-web-api.html" title="Web-API indexing documentation"
        accesskey="P">previous</a>|</li>
 </ul>
         
   <div class="section" id="web-api-asynchronous-tasks">
 <h1>Web-API Asynchronous tasks<a class="headerlink" href="#web-api-asynchronous-tasks" title="Permalink to this headline">¶</a></h1>
-<p>Some Web-API commands can run for a long time depending on how much data they&#8217;re dealing with, and hence
-are executed asynchronously. Meaning that once invoked, they start the job in a background thread and return immediately.</p>
+<p>Some Web-API commands can run for a long time depending on how much data they&#8217;re dealing with, and hence,
+are executed asynchronously, meaning that, once invoked, they start the job in a background thread and return immediately.</p>
 <p>The response contains a unique identifier for the asynchronous task and information on the task&#8217;s running status.
-This task identifier can then be used to poll the status of the task by querying the <code class="docutils literal"><span class="pre">/tasks/&lt;task</span> <span class="pre">id&gt;</span></code> API end point.</p>
-<p>If no task is given (e.g. by querying the <code class="docutils literal"><span class="pre">/tasks</span></code> endpoint), a list of all available tasks will be returned.</p>
+This task identifier can then be used to poll the status of the task by querying the <code class="docutils literal"><span class="pre">/tasks/&lt;task</span> <span class="pre">id&gt;</span></code> API endpoint.</p>
+<p>If no task is given, e.g. by querying the <code class="docutils literal"><span class="pre">/tasks</span></code> endpoint, a list of all available tasks will be returned.</p>
 <p>A running task can be canceled with the <code class="docutils literal"><span class="pre">cancel=true</span></code> argument. For example:</p>
 <div class="highlight-python"><div class="highlight"><pre>http://localhost:8182/tasks/3?cancel=true
 </pre></div>
 </div>
-<p>This request will ask the operation to cancel and return immediately. Note however that the task may take a while until the running task
-is actually canceled, as it may be blocking on I/O or being temporarily in a non cancelable state. Polling the task repeteadly with the
-<code class="docutils literal"><span class="pre">cancel=true</span></code> parameter is not a problem though.</p>
-<p>Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes to be queried.
+<p>This request will ask the operation to cancel and return immediately. Note, however, that it may take some time for the cancellation request to complete, as the running task may be blocking on I/O or in a temporarily non-cancelable state. Polling the task repeatedly with the
+<code class="docutils literal"><span class="pre">cancel=true</span></code> parameter is not a problem, though.</p>
+<p>Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes in order to allow their status to be queried.
 Finished tasks can be explicitly pruned with the <code class="docutils literal"><span class="pre">prune=true</span></code> parameter. For example:</p>
 <div class="highlight-python"><div class="highlight"><pre>http://localhost:8182/tasks/3?prune=true
 </pre></div>
 </div>
-<p>Prune has no effect on non finished tasks.</p>
+<p>Prune has no effect on unfinished tasks.</p>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<p>When the command is invoked, it returns a result like the following:</p>
+<p>When the command is invoked, it returns a result such as the following XML-formatted response.</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
    &lt;id&gt;5&lt;/id&gt;
    &lt;status&gt;RUNNING&lt;/status&gt;
@@ -129,7 +128,7 @@ Finished tasks can be explicitly pruned with the <code class="docutils literal">
 &lt;/task&gt;
 </pre></div>
 </div>
-<p>Or in JSON format:</p>
+<p>Or the JSON format:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s2">&quot;task&quot;</span><span class="p">:</span>
    <span class="p">{</span>
       <span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
@@ -140,12 +139,12 @@ Finished tasks can be explicitly pruned with the <code class="docutils literal">
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Note the <code class="docutils literal"><span class="pre">atom:link</span></code> in the XML response, and the <code class="docutils literal"><span class="pre">href</span></code> property in the JSON response, represent the status polling URL for the specific task ID.</p>
+<p>Note, the <code class="docutils literal"><span class="pre">atom:link</span></code> in the XML response and the <code class="docutils literal"><span class="pre">href</span></code> property in the JSON response, represent the status polling URL for the specific task ID.</p>
 <p>The <code class="docutils literal"><span class="pre">status</span></code> attribute will have one of the following values: <code class="docutils literal"><span class="pre">WAITING</span></code>, <code class="docutils literal"><span class="pre">RUNNING</span></code>, <code class="docutils literal"><span class="pre">FINISHED</span></code>, <code class="docutils literal"><span class="pre">FAILED</span></code>, <code class="docutils literal"><span class="pre">CANCELLED</span></code>.</p>
-<p><code class="docutils literal"><span class="pre">WAITING</span></code> means that there are other tasks being run in the thread pool and hence this one has been scheduled to be run as soon
-as the thread pool gets a free spot. The other ones are quite self explanatory.</p>
+<p><code class="docutils literal"><span class="pre">WAITING</span></code> means that there are other tasks being run in the thread pool and this one has been scheduled to be run as soon
+as a spot frees up in the thread pool. The others are self-explanatory.</p>
 <p>The content of the task query response varies slightly depending on the task status.</p>
-<p>Running tasks may contain a progress indicator:</p>
+<p>Running tasks may contain a progress indicator.</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
    &lt;id&gt;4&lt;/id&gt;
    &lt;status&gt;RUNNING&lt;/status&gt;
@@ -158,7 +157,7 @@ as the thread pool gets a free spot. The other ones are quite self explanatory.<
 &lt;/task&gt;
 </pre></div>
 </div>
-<p>Successfully finished tasks may contain a result summary, which is specific to the command executed. The following is an example of the result for a successfull osm import operation:</p>
+<p>Successfully finished tasks may contain a result summary which is specific to the command executed. The following is an example of the result for a successful OSM import operation.</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
    &lt;id&gt;5&lt;/id&gt;
    &lt;status&gt;FINISHED&lt;/status&gt;
@@ -177,7 +176,7 @@ as the thread pool gets a free spot. The other ones are quite self explanatory.<
 &lt;/task&gt;
 </pre></div>
 </div>
-<p>And failed tasks an exception report:</p>
+<p>And failed tasks contain an exception report.</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
    &lt;id&gt;7&lt;/id&gt;
    &lt;status&gt;FAILED&lt;/status&gt;
@@ -211,8 +210,8 @@ as the thread pool gets a free spot. The other ones are quite self explanatory.<
 
 
       <div class="selfclear pagination-nav">
-          <div class="leftwise"><strong>Previous</strong>: <a href="web-api.html" title="previous chapter">Web-Api Documentation</a></div>
-          <div class="rightwise"><strong>Next</strong>: <a href="osm.html" title="next chapter">Using GeoGig with OpenStreetMap data</a></div>
+          <div class="leftwise"><strong>Previous</strong>: <a href="indexing-web-api.html" title="previous chapter">Web-API indexing documentation</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="geopackage-import-export.html" title="next chapter">GeoPackage import and export Web-API</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
       </div><!-- /#content> -->
@@ -229,10 +228,10 @@ as the thread pool gets a free spot. The other ones are quite self explanatory.<
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -247,8 +246,8 @@ as the thread pool gets a free spot. The other ones are quite self explanatory.<
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
           <ul>
-            <li>Previous: <a href="web-api.html" title="previous chapter">Web-Api Documentation</a></li>
-            <li>Next: <a href="osm.html" title="next chapter">Using GeoGig with OpenStreetMap data</a></li>
+            <li>Previous: <a href="indexing-web-api.html" title="previous chapter">Web-API indexing documentation</a></li>
+            <li>Next: <a href="geopackage-import-export.html" title="next chapter">GeoPackage import and export Web-API</a></li>
           </ul>
         </div>
         <div class="section">

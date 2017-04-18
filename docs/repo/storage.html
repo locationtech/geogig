@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Storage Back-ends &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>Storage Back-ends &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,12 +17,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Initializing a repository" href="init.html" />
       <link rel="prev" title="Repository elements" href="elements.html" />
@@ -78,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Storage Back-ends</li>
 </ul>
@@ -104,11 +104,8 @@
 </div>
 <div class="section" id="default-storage-backend">
 <h1>Default storage backend<a class="headerlink" href="#default-storage-backend" title="Permalink to this headline">¶</a></h1>
-<p>As of 1.0-RC3, the default storage backend uses a BerkeleyDB Java Edition key/value database for the main repository elements such as the revision and graph objects, and simple text files for configuration settings, refs, and merge conflicts.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">However, the BerkeleyDB database will be replaced by the GeoGig 1.0 final release, by a better performing database. Nonetheless, repositories created with the BerkeleyDB storage backend will still be supported through GeoGig&#8217;s plug-in mechanism.</p>
-</div>
+<p>Up to 1.0-RC3, the default storage backend was a BerkeleyDB Java Edition key/value database for the main repository elements such as the revision and graph objects, and simple text files for configuration settings, refs, and merge conflicts.</p>
+<p>As of 1.0-RC4, the BerkeleyDB database was replaced by a better performing database, RocksDB. Nonetheless, repositories created with the BerkeleyDB storage backend will still be supported through GeoGig&#8217;s plug-in mechanism.</p>
 <p>When a repository is created in the local filesystem, it uses a directory structure like the following:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="gp">user@localhost:/data/myrepository$</span> ls .geogig/ -F1
 <span class="go">config</span>
@@ -138,16 +135,16 @@
 </div>
 <div class="section" id="postgresql-repository-uri">
 <h2>PostgreSQL repository URI<a class="headerlink" href="#postgresql-repository-uri" title="Permalink to this headline">¶</a></h2>
-<p>Since a repository stored in PostgreSQL is stateless as far as the local machine is concerned, you need to specify the repository location for every console command you want to execute against it.</p>
-<p>This is done through a URI (Universal Resource Identifier) of the folloing form:</p>
+<p>Since a repository stored in PostgreSQL is stateless, as far as the local machine is concerned, you need to specify the repository location for every console command you want to execute against it.</p>
+<p>This is done through a URI (Universal Resource Identifier) of the following form:</p>
 <p><code class="docutils literal"><span class="pre">postgresql://&lt;server&gt;[:&lt;port&gt;]/&lt;database&gt;[/&lt;schema&gt;]/&lt;reponame&gt;?user=&lt;username&gt;&amp;password=&lt;pwd&gt;</span></code></p>
 <p>In the above URI scheme, parts enclosed between <code class="docutils literal"><span class="pre">&lt;&gt;</span></code> symbols are mandatory, and parts enclosed between <code class="docutils literal"><span class="pre">[]</span></code> symbols are optional. These symbols do not have to be written as part of the actual URI.</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">&lt;server&gt;</span></code>: The PostgreSQL server host or IP address</li>
 <li><code class="docutils literal"><span class="pre">[:port]</span></code>: The TCP port number the server is listening to for connections. Defaults to <code class="docutils literal"><span class="pre">5432</span></code> if not provided.</li>
-<li><code class="docutils literal"><span class="pre">&lt;database&gt;</span></code>: The name of the database in the server where geogig will store the repositories</li>
+<li><code class="docutils literal"><span class="pre">&lt;database&gt;</span></code>: The name of the database in the server where GeoGig will store the repositories</li>
 <li><code class="docutils literal"><span class="pre">&lt;schema&gt;</span></code>: The PostgreSQL database schema, defaults to <code class="docutils literal"><span class="pre">public</span></code></li>
-<li><code class="docutils literal"><span class="pre">&lt;reponame</span></code>: The name of the geogig repository to create</li>
+<li><code class="docutils literal"><span class="pre">&lt;reponame</span></code>: The name of the GeoGig repository to create</li>
 <li><code class="docutils literal"><span class="pre">&lt;username&gt;</span></code>: The PostgreSQL user name to connect as</li>
 <li><code class="docutils literal"><span class="pre">&lt;pwd&gt;</span></code>: The PostgreSQL user&#8217;s password to connect with</li>
 </ul>
@@ -168,16 +165,33 @@ A nice trick is to use environment variables instead:</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="performance-tuning">
+<span id="postgres-performance-tuning"></span><h2>Performance Tuning<a class="headerlink" href="#performance-tuning" title="Permalink to this headline">¶</a></h2>
+<p>There are several configuration options for tuning the cacheing and threading of the PostgreSQL backend.  The following configuration options should be set in the global config of the database.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">postgres.maxConnections</span></code>: The maximum number of simultaneous idle and in-use connections to the database. Defaults to 10.</li>
+<li><code class="docutils literal"><span class="pre">postgres.threadPoolSize</span></code>: The number of threads that the object database should use.  Defaults to the number of processors available to the virtual machine, or 2, whichever is higher.</li>
+<li><code class="docutils literal"><span class="pre">postgres.bytecache.maxSize</span></code>: The maximum size of the object database cache in bytes. Defaults to 10% of the heap.</li>
+<li><code class="docutils literal"><span class="pre">postgres.bytecache.initialCapacity</span></code>: The minimum total size of the cache in bytes.  Defaults to 1,000,000 bytes.</li>
+<li><code class="docutils literal"><span class="pre">postgres.bytecache.concurrencyLevel</span></code>: Hint to indicate the desired number of concurrent updates without contention. Actual concurrency may vary based on internal structure. Defaults to 16.</li>
+<li><code class="docutils literal"><span class="pre">postgres.bytecache.expireSeconds</span></code>: If specified, cache entries will be removed after the given number of seconds have passed.  This is not set by default, so entries do not expire from the cache.</li>
+</ul>
+<p>Additionally, each repository can be tuned by adjusting the batch size of <code class="docutils literal"><span class="pre">GET</span></code> and <code class="docutils literal"><span class="pre">PUT</span></code> requests by adjusting the following configuration options.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">postgres.getAllBatchSize</span></code>: The maximum number of objects to retrieve from the database in a single request. If the number of objects that need to be fetched exceed the batch size, the job will be split into multiple tasks that can be run on multiple threads, if they are available.</li>
+<li><code class="docutils literal"><span class="pre">postgres.putAllBatchSize</span></code>: The maximum number of objects to insert into the database in a single request. If the number of objects that need to be inserted exceed the batch size, the job will be split into multiple tasks that can be run on multiple threads, if they are available.</li>
+</ul>
+</div>
 <div class="section" id="database-set-up">
 <h2>Database set up<a class="headerlink" href="#database-set-up" title="Permalink to this headline">¶</a></h2>
-<p>Geogig will create the needed tables the first time it&#8217;s used against a given database. However, the database and user/role must already exist in PostgreSQL. You can use a pre-existing PostgreSQL role with administrative access to an existing database, or you can run the following steps and SQL script to create the geogig database and tables first:</p>
+<p>GeoGig will create the necessary tables the first time it&#8217;s used against a given database. However, the database and user/role must already exist in PostgreSQL. You can use a pre-existing PostgreSQL role with administrative access to an existing database or you can run the following steps and SQL script to create the GeoGig database and tables first.</p>
 <p><a class="reference download internal" href="../_downloads/geogig_postgres.sql" download=""><code class="xref download docutils literal"><span class="pre">geogig_postgres.sql</span></code></a></p>
 <div class="highlight-console"><div class="highlight"><pre><span class="gp">user@localhost:/home/user$</span> su - postgres
 <span class="gp">postgres@localhost: $</span> createdb geogig
 <span class="gp">postgres@localhost: $</span> psql -d geogig -f geogig_postgres.sql
 </pre></div>
 </div>
-<p>Finally, refer to the <a class="reference internal" href="../interaction/geoserver_ui.html#configure-new-postgres-repo"><span>PostgreSQL backed GeoGig repository</span></a> to learn how to configure a repository in GeoServer.</p>
+<p>Finally, refer to the <a class="reference internal" href="../interaction/geoserver_ui.html#create-new-postgres-repo"><span>PostgreSQL-backed GeoGig repository</span></a> to learn how to configure a repository in GeoServer.</p>
 </div>
 </div>
 
@@ -201,10 +215,10 @@ A nice trick is to use environment variables instead:</p>
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -212,6 +226,7 @@ A nice trick is to use environment variables instead:</p>
 <li><a class="reference internal" href="#default-storage-backend">Default storage backend</a></li>
 <li><a class="reference internal" href="#postgresql-storage-backend">PostgreSQL storage backend</a><ul>
 <li><a class="reference internal" href="#postgresql-repository-uri">PostgreSQL repository URI</a></li>
+<li><a class="reference internal" href="#performance-tuning">Performance Tuning</a></li>
 <li><a class="reference internal" href="#database-set-up">Database set up</a></li>
 </ul>
 </li>

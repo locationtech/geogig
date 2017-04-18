@@ -13,16 +13,16 @@ GeoGig configuration parameters are set using the ``geogig config`` command, whi
 
 Parameters are divided in sections, and they are referred to in the form ``section.parameter``.
 
-When creating a new repository, we recommend that you set two parameters in the ``user`` section, which will identify you as the user of the repository. This is especially useful when sharing changes with others. When you later add changes to the repository to create new versions of your data, GeoGig will know who you are, so you will not have to enter this information manually each time. 
+When creating a new repository, we recommend that you set two parameters in the ``user`` section, which will identify you as the user of the repository. This is especially useful when sharing changes with others. When you later add changes to the repository to create new versions of your data, GeoGig will know who you are, so you will not have to enter this information manually each time.
 
-To define your user, you have to configure a name and an email address, using the ``user.name`` and ``user.email`` parameter.  Substitute the values in quotes with your own name and email address.
+To define your user, you must configure a name and an email address using the ``user.name`` and ``user.email`` parameters.  Substitute the values in quotes with your own name and email address.
 
 .. code-block:: console
 
    geogig config user.name "Author"
    geogig config user.email "author@example.com"
 
-You can get a display of all the configured values by using the ``-l`` option. 
+You can get a display of all the configured values by using the ``-l`` option.
 
 .. code-block:: console
 
@@ -33,7 +33,7 @@ You can get a display of all the configured values by using the ``-l`` option.
    user.name=Author
    user.email=author@example.com
 
-These parameters are valid just for this particular repository. You can also configure global parameters as well, which will apply to all repositories created, unless overwritten by a local parameter.
+These parameters are valid just for this particular repository. You can also configure global parameters which will apply to all repositories created, unless overwritten by a local parameter.
 
 To set the global value of a parameter, use the ``--global`` option.
 
@@ -41,8 +41,8 @@ To set the global value of a parameter, use the ``--global`` option.
 
    geogig config --global user.name "Author"
    geogig config --global user.email "author@example.com"
-   
-You can also get a display of all the configured global values by using the ``-l`` option. 
+
+You can also get a display of all the configured global values by using the ``-l`` option.
 
 .. code-block:: console
 
@@ -58,7 +58,7 @@ Console text colouring can be set using the ``ansi.enabled`` parameter. Set the 
 .. code-block:: console
 
    geogig config ansi.enabled true
-  
+
 To use auto-detection of ANSI support use the ``--unset`` flag to remove the ``ansi.enabled`` parameter.
 
 .. code-block:: console

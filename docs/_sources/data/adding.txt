@@ -11,7 +11,7 @@ To add all unstaged features in the working tree, just use the ``add`` command w
 
 ::
 
-	$ geogig add	
+	$ geogig add
 	Counting unstaged features...3
 	Staging changes...
 	100%
@@ -48,5 +48,5 @@ After staging, you can run the ``status`` command to check that the 3 features t
 	#      added  parks/3
 	#      added  parks/1
 	# 3 total.
-	
-Changes after importing were "not staged for commit", while now they are "to be commited". The ``status`` command will show both unstaged and uncommited changes if they both exist at the same time in the repository. Since we have staged all changes (by using the ``add`` command without options), there are no unstaged files now.
+
+Changes after importing were "not staged for commit", while now they are "to be committed". The ``status`` command will show both unstaged and uncommitted changes if they both exist at the same time in the repository. Since we have staged all changes (by using the ``add`` command without options), there are no unstaged files now.

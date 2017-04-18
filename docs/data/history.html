@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Exploring your history &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>Exploring your history &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,12 +17,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Import data" href="import.html" />
       <link rel="prev" title="Exporting from a GeoGig repository" href="exporting.html" />
@@ -78,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Exploring your history</li>
 </ul>
@@ -202,7 +202,7 @@ da1534a4aae8a1b29974c040c9fb44be426c58f8 (refs/heads/branch1) Added missing feat
 6cda554ac1af6c0fad1841b5b36018bd107d926d First import
 </pre></div>
 </div>
-<p>If you prefer to show shortened Ids, use the <code class="docutils literal"><span class="pre">abbrev-commit</span></code> option</p>
+<p>If you prefer to show shortened IDs, use the <code class="docutils literal"><span class="pre">abbrev-commit</span></code> option</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig log --oneline -all --decoration --abbrev-commit
 adf66fe (refs/heads/branch2) Edited wrong geometries
 6f250c0 (HEAD, refs/heads/master) Merge branch1
@@ -233,22 +233,22 @@ da1534a4aae8a1b29974c040c9fb44be426c58f8 (refs/heads/branch1) Added missing feat
 </pre></div>
 </div>
 <p>There is no need to use both of them, you can just use one of them and a single limit date.</p>
-<p>If instead of dates you want to use commit Id&#8217;s as limits of the history to display, then the syntax is different. Just enter the references separated by two points (<code class="docutils literal"><span class="pre">..</span></code>), with no additional command option needed.</p>
+<p>If instead of dates you want to use commit IDs as limits of the history to display, then the syntax is different. Just enter the references separated by two points (<code class="docutils literal"><span class="pre">..</span></code>), with no additional command option needed.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig log --oneline HEAD~1..HEAD~3
 7844674611811fe888852ca9418028dd900f4a8e Changed unit in area field
 d0bb10b4aee5fe9961d361031d548df3136cada2 Minor changes
 a87bc4f1725115d5cbdcf22a1b9914cf37911e18 First import
 </pre></div>
 </div>
-<p>Commits can also be filtered by author and committer, using the <code class="docutils literal"><span class="pre">--author</span></code> and <code class="docutils literal"><span class="pre">--committer</span></code> options respectively. The value after them is a regular expression that is used to filter the commits. For instance, to show just the commits made by a user named &#8220;geogiguser&#8221;, use the following line</p>
+<p>Commits can also be filtered by author and committer using the <code class="docutils literal"><span class="pre">--author</span></code> and <code class="docutils literal"><span class="pre">--committer</span></code> options, respectively. The value following them is a regular expression that is used to filter the commits. For instance, to show just the commits made by a user named &#8220;geogiguser&#8221;, use the following command.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig log --author geogiguser
 </pre></div>
 </div>
-<p>All the above options can be combined to filter the resulting list of commits according to several different criteria.</p>
+<p>The above options can be combined to filter the resulting list of commits according to several different criteria.</p>
 </div>
 <div class="section" id="exploring-the-history-of-a-single-feature">
 <h2>Exploring the history of a single feature<a class="headerlink" href="#exploring-the-history-of-a-single-feature" title="Permalink to this headline">¶</a></h2>
-<p>If instead of studying the history of the whole repository, you want to see who introduced changes in a certain feature, GeoGig provides an additional command. Using the <code class="docutils literal"><span class="pre">blame</span></code> command you will get a list of the commits that introduced the last change for each attribute, including the default geometry.</p>
+<p>If, instead of studying the history of the whole repository, you want to see who introduced changes in a certain feature, GeoGig provides an additional command. Using the <code class="docutils literal"><span class="pre">blame</span></code> command you will get a list of the commits that introduced the last change for each attribute, including the default geometry.</p>
 <p>The command takes a single parameter, which is the path to the feature to analyze. Its output is a list of all the attributes in the feature, each one with a description of the commit that was the last one to change it, as shown in the example below.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig blame parks/1
 parktype: 2d13209 volaya volaya@boundlessgeo.com 2013-12-29 03:57:08
@@ -286,10 +286,10 @@ agency: 2d13209 volaya volaya@boundlessgeo.com 2013-12-29 03:57:08
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>

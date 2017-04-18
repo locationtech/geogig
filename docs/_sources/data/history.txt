@@ -137,7 +137,7 @@ Some of the commits in that history correspond to the tips of its branches, so i
 	159b517523e05083a18f5626439017663610deeb Minor changes
 	6cda554ac1af6c0fad1841b5b36018bd107d926d First import
 
-If you prefer to show shortened Ids, use the ``abbrev-commit`` option 
+If you prefer to show shortened IDs, use the ``abbrev-commit`` option
 
 ::
 
@@ -157,7 +157,7 @@ You can see that, in both cases, the history is displayed in chronological order
 	adf66fe8b06bd810767de4222b387c7b2a18233f (refs/heads/branch2) Edited wrong geometries
 	da1534a4aae8a1b29974c040c9fb44be426c58f8 (refs/heads/branch1) Added missing feature
 	6f250c0c74d9cb852405818f4a5e50aa971d543c (HEAD, refs/heads/master) Merge branch1
-	7aa528d3d3437ca8015f1dcfb8a61e197aa09dbe Changed unit in area field	
+	7aa528d3d3437ca8015f1dcfb8a61e197aa09dbe Changed unit in area field
 	159b517523e05083a18f5626439017663610deeb Minor changes
 	6cda554ac1af6c0fad1841b5b36018bd107d926d First import
 
@@ -180,28 +180,28 @@ To set a date range, use the ``--since`` and ``--until`` commands, followed by t
 
 There is no need to use both of them, you can just use one of them and a single limit date.
 
-If instead of dates you want to use commit Id's as limits of the history to display, then the syntax is different. Just enter the references separated by two points (``..``), with no additional command option needed.
+If instead of dates you want to use commit IDs as limits of the history to display, then the syntax is different. Just enter the references separated by two points (``..``), with no additional command option needed.
 
 ::
 
 	$ geogig log --oneline HEAD~1..HEAD~3
-	7844674611811fe888852ca9418028dd900f4a8e Changed unit in area field	
+	7844674611811fe888852ca9418028dd900f4a8e Changed unit in area field
 	d0bb10b4aee5fe9961d361031d548df3136cada2 Minor changes
 	a87bc4f1725115d5cbdcf22a1b9914cf37911e18 First import
 
 
-Commits can also be filtered by author and committer, using the ``--author`` and ``--committer`` options respectively. The value after them is a regular expression that is used to filter the commits. For instance, to show just the commits made by a user named "geogiguser", use the following line
+Commits can also be filtered by author and committer using the ``--author`` and ``--committer`` options, respectively. The value following them is a regular expression that is used to filter the commits. For instance, to show just the commits made by a user named "geogiguser", use the following command.
 
 ::
 
 	$ geogig log --author geogiguser
 
-All the above options can be combined to filter the resulting list of commits according to several different criteria.	
+The above options can be combined to filter the resulting list of commits according to several different criteria.
 
 Exploring the history of a single feature
 ------------------------------------------
 
-If instead of studying the history of the whole repository, you want to see who introduced changes in a certain feature, GeoGig provides an additional command. Using the ``blame`` command you will get a list of the commits that introduced the last change for each attribute, including the default geometry.
+If, instead of studying the history of the whole repository, you want to see who introduced changes in a certain feature, GeoGig provides an additional command. Using the ``blame`` command you will get a list of the commits that introduced the last change for each attribute, including the default geometry.
 
 The command takes a single parameter, which is the path to the feature to analyze. Its output is a list of all the attributes in the feature, each one with a description of the commit that was the last one to change it, as shown in the example below.
 
@@ -220,4 +220,3 @@ The command takes a single parameter, which is the path to the feature to analyz
 You can see that, along with the commit ID, the information about the corresponding author and commit time is displayed.
 
 The list contains all attributes that currently exist in the feature. For attributes that might not exist because there were removed and a feature type change was introduced, no information is provided.
-

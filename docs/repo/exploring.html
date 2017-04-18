@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Exploring a repository &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>Exploring a repository &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,12 +17,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Branches" href="branches.html" />
       <link rel="prev" title="Configuring a GeoGig repository" href="config.html" />
@@ -78,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Exploring a repository</li>
 </ul>
@@ -109,20 +109,21 @@
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls [ref]:[path]</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">[ref]:[path]</span></code> parameter defines the path to be listed. If it contains no <code class="docutils literal"><span class="pre">ref</span></code> part, it will list the given path in the current working tree. To list the same path in a different reference, a full reference can be provided. For instance, to list the content of <code class="docutils literal"><span class="pre">parks</span></code> in the current HEAD, the following line should be used:</p>
+<p>The <code class="docutils literal"><span class="pre">[ref]:[path]</span></code> parameter defines the path to be listed. If it contains no <code class="docutils literal"><span class="pre">ref</span></code> part, it will list the given path in the current working tree. To list the same path in a different reference, a full reference can be provided. For instance, to list the content of <code class="docutils literal"><span class="pre">parks</span></code> in the current HEAD, the following line should be used.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls HEAD:parks</span>
 </pre></div>
 </div>
-<p>The provided reference and path should resolve to a tree. Since features do not contains other elements, their content cannot be listed with the <code class="docutils literal"><span class="pre">ls</span></code> command, but instead must be used with the <code class="docutils literal"><span class="pre">show</span></code> command.</p>
-<p>An object ID can be used directly instead of a <code class="docutils literal"><span class="pre">[ref]:[path]</span></code>. So one can use the ID of a commit and list the contents of the tree corresponding to that commit.</p>
-<p>The options available for the <code class="docutils literal"><span class="pre">ls</span></code> command control how the list of elements under the given path is printed.</p>
+<p>The provided reference and path should resolve to a tree. Since features do not contains other elements, their content cannot be listed with the <code class="docutils literal"><span class="pre">ls</span></code> command, but instead must be examined with the <code class="docutils literal"><span class="pre">show</span></code> command.</p>
+<p>An object ID can be used directly, instead of a <code class="docutils literal"><span class="pre">[ref]:[path]</span></code>, to list the contents of the tree corresponding to that commit.</p>
+<p>The options available for the <code class="docutils literal"><span class="pre">ls</span></code> command control how the list of elements under the given path are printed.</p>
 <ul class="simple">
-<li>The <code class="docutils literal"><span class="pre">-v</span></code> option (for &#8220;<strong>verbose</strong>&#8221;) will list not just the name of the objects, but also the object&#8217;s ID and the ID of the corresponding feature type.</li>
-<li>The <code class="docutils literal"><span class="pre">-r</span></code> option will list the contents of subtrees <strong>recursively</strong>. The names of these subtrees are not shown in the listing, but you can specify GeoGig to add them by using the <code class="docutils literal"><span class="pre">-t</span></code> option along with <code class="docutils literal"><span class="pre">-d</span></code>.</li>
-<li>The <code class="docutils literal"><span class="pre">-a</span></code> option (for &#8220;<strong>abbreviate</strong>&#8221;) will show IDs in their abbreviated form. Use a number to determine how many digits of the ID to display (<code class="docutils literal"><span class="pre">-a</span> <span class="pre">7</span></code> for seven digit IDs).</li>
+<li>The <code class="docutils literal"><span class="pre">-v</span></code> option will display a <strong>verbose</strong> list of, not just the name of the objects, but also the object&#8217;s ID and the ID of the corresponding feature type.</li>
+<li>The <code class="docutils literal"><span class="pre">-r</span></code> option will list the contents of subtrees <strong>recursively</strong>. The names of these subtrees are not shown in the listing, but you can tell GeoGig to display them by using the <code class="docutils literal"><span class="pre">-t</span></code> option along with the <code class="docutils literal"><span class="pre">-d</span></code> option.</li>
+<li>The <code class="docutils literal"><span class="pre">-a</span></code> option will show IDs in their <strong>abbreviated</strong> form. Use a number to determine how many digits of the ID to display (<code class="docutils literal"><span class="pre">-a</span> <span class="pre">7</span></code> for seven digit IDs).</li>
 </ul>
 <p>Here are some examples of the <code class="docutils literal"><span class="pre">ls</span></code> command:</p>
-<p>Recursive list:</p>
+<div class="section" id="recursive-list">
+<h3>Recursive list<a class="headerlink" href="#recursive-list" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls -r -t</span>
 </pre></div>
 </div>
@@ -134,7 +135,9 @@
 <span class="go">        1</span>
 </pre></div>
 </div>
-<p>Verbose list:</p>
+</div>
+<div class="section" id="verbose-list">
+<h3>Verbose list<a class="headerlink" href="#verbose-list" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls -v parks</span>
 </pre></div>
 </div>
@@ -145,7 +148,9 @@
 <span class="go">    1 49852c03b8dd3c93fcbda7137abda9ad53a9311a ce3e836bcb64f1b647e3dc9dd97700c584063533</span>
 </pre></div>
 </div>
-<p>Verbose and recursive list:</p>
+</div>
+<div class="section" id="verbose-and-recursive-list">
+<h3>Verbose and recursive list<a class="headerlink" href="#verbose-and-recursive-list" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls -v -r -t</span>
 </pre></div>
 </div>
@@ -157,7 +162,9 @@
 <span class="go">       1 49852c03b8dd3c93fcbda7137abda9ad53a9311a ce3e836bcb64f1b647e3dc9dd97700c584063533</span>
 </pre></div>
 </div>
-<p>Verbose and recursive list with seven digit IDs:</p>
+</div>
+<div class="section" id="verbose-and-recursive-list-with-seven-digit-ids">
+<h3>Verbose and recursive list with seven-digit IDs<a class="headerlink" href="#verbose-and-recursive-list-with-seven-digit-ids" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls -v -r -t -a 7</span>
 </pre></div>
 </div>
@@ -170,13 +177,14 @@
 </pre></div>
 </div>
 </div>
+</div>
 <div class="section" id="showing-features">
 <h2>Showing features<a class="headerlink" href="#showing-features" title="Permalink to this headline">¶</a></h2>
 <p>Describing an element in a GeoGig repository is done using the <code class="docutils literal"><span class="pre">show</span></code> command. It can be used to describe any type of object, unlike <code class="docutils literal"><span class="pre">ls</span></code> which needs to resolve to a tree.</p>
 <p>The <code class="docutils literal"><span class="pre">show</span></code> command prints a formatted description of a given element. This description is a human-readable version of the element.</p>
-<p>The command takes as input a string that defines the object to describe. All supported notations are allowed for both commands, as they are described in <a class="reference internal" href="../data/referencing.html#referencing"><span>Referencing a GeoGig element</span></a>.</p>
-<p>Below you can find the output of the  <code class="docutils literal"><span class="pre">show</span></code> command for certain types of objects.</p>
-<p>The example below shows the use of the <code class="docutils literal"><span class="pre">show</span></code> command with a tree:</p>
+<p>The command takes, as input, a string that defines the object to describe. All supported notations are allowed for both commands, as they are described in <a class="reference internal" href="../data/referencing.html#referencing"><span>Referencing a GeoGig element</span></a>.</p>
+<p>Below, you can find the output of the <code class="docutils literal"><span class="pre">show</span></code> command for certain types of objects.</p>
+<p>An exmplae of the <code class="docutils literal"><span class="pre">show</span></code> command with a tree:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig show parks</span>
 </pre></div>
 </div>
@@ -198,7 +206,7 @@
 <span class="go">usage: &lt;STRING&gt;</span>
 </pre></div>
 </div>
-<p>When specifying a single feature, the <code class="docutils literal"><span class="pre">show</span></code> command prints the values of all attributes, and their corresponding names taken from the associated feature type.</p>
+<p>When specifying a single feature, the <code class="docutils literal"><span class="pre">show</span></code> command prints the values of all attributes and their corresponding names taken from the associated feature type.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig show HEAD:parks/1</span>
 </pre></div>
 </div>
@@ -256,15 +264,21 @@
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
 <li><a class="reference internal" href="#">Exploring a repository</a><ul>
-<li><a class="reference internal" href="#listing-trees">Listing trees</a></li>
+<li><a class="reference internal" href="#listing-trees">Listing trees</a><ul>
+<li><a class="reference internal" href="#recursive-list">Recursive list</a></li>
+<li><a class="reference internal" href="#verbose-list">Verbose list</a></li>
+<li><a class="reference internal" href="#verbose-and-recursive-list">Verbose and recursive list</a></li>
+<li><a class="reference internal" href="#verbose-and-recursive-list-with-seven-digit-ids">Verbose and recursive list with seven-digit IDs</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#showing-features">Showing features</a></li>
 </ul>
 </li>

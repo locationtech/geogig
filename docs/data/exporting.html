@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Exporting from a GeoGig repository &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>Exporting from a GeoGig repository &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,12 +17,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Exploring your history" href="history.html" />
       <link rel="prev" title="Showing differences" href="diffs.html" />
@@ -78,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Exporting from a GeoGig repository</li>
 </ul>
@@ -112,9 +112,9 @@ This also allows to export changes that have been incorporated into the working 
 <p>If you want to export a path that contains features with different feature types, you have two options to select which features should be exported</p>
 <ul class="simple">
 <li>Use the <code class="docutils literal"><span class="pre">--defaulttype</span></code> switch to tell GeoGig that you want only those features with the feature type of the selected path.</li>
-<li>Use the  <code class="docutils literal"><span class="pre">--featuretype</span></code> option followed by the Id of the feature type to export. GeoGig will only export those features that have the feature type defined by the specified Id</li>
+<li>Use the  <code class="docutils literal"><span class="pre">--featuretype</span></code> option followed by the ID of the feature type to export. GeoGig will only export those features that have the feature type defined by the specified ID</li>
 </ul>
-<p>Remember that you can find the ID of the feature type of a given tree by using the <code class="docutils literal"><span class="pre">command</span></code> to describe that tree. To find the Id of the feature type of a given feature, also use the <code class="docutils literal"><span class="pre">cat</span></code> command, passing the path to the feature instead.</p>
+<p>Remember that you can find the ID of the feature type of a given tree by using the <code class="docutils literal"><span class="pre">command</span></code> to describe that tree. To find the ID of the feature type of a given feature, also use the <code class="docutils literal"><span class="pre">cat</span></code> command, passing the path to the feature instead.</p>
 <p>Another alternative for exporting when there are mixed feature types under a path is to use the <code class="docutils literal"><span class="pre">--alter</span></code> switch. This is similar to the <code class="docutils literal"><span class="pre">--alter</span></code> switch of the import operation, and it changes the feature attributes to make them match the output feature type.</p>
 <p>The output feature type is selected with the <code class="docutils literal"><span class="pre">--featuretype</span></code> option. If no feature type is specified using this option, the default feature type from the path to export is used. Using the <code class="docutils literal"><span class="pre">--defaulttype</span></code> option has the same effect.</p>
 <p>Here is a quick summary with examples of all the option that can be used when a path to export contain mixed feature types</p>
@@ -170,10 +170,10 @@ This also allows to export changes that have been incorporated into the working 
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>

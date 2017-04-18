@@ -33,7 +33,7 @@ To install GeoGig, follow these steps.
 
 #. After the JDK is installed, navigate to http://geogig.org and click :guilabel:`Download`.
 
-#. Extract this archive to your preferred program directory. (For example, :file:`C:\\Program Files\\GeoGig` or :file:`/opt/geogig`.) 
+#. Extract this archive to your preferred program directory. (For example, :file:`C:\\Program Files\\GeoGig` or :file:`/opt/geogig`.)
 
    .. note:: The same packages can be used on Windows, OS X, and Linux.
 
@@ -44,7 +44,7 @@ When finished, you should be able to run the ``geogig --help`` and see the comma
 Installing GeoServer with GeoGig extension
 --------------------------------------------
 
-You need to have GeoServer installed in your system, with a version higher or equal to 2.3. 
+You need to have GeoServer installed in your system, with a version higher or equal to 2.3.
 
 Installation instructions can be found in the `GeoServer documentation <http://docs.geoserver.org/stable/en/user/installation/index.html>`_.
 
@@ -90,8 +90,8 @@ To define a new user, open a console and type the following.
    geogig config --global user.name "Author"
    geogig config --global user.email "author@example.com"
 
-    
-Replace the user name and user email with your own credentials 
+
+Replace the user name and user email with your own credentials
 
 All commits that you do now will be contain that author information. Individual user name and email can be defined for a give repository, but if those are not defined, GeoGig will use the global value that we have set up with the above commands.
 
@@ -156,7 +156,7 @@ Click the Play button in the toolbar (or press F5) to *Execute the query.*
 
 The database is now created and we can already add data to it and create new tables in it.
 
-Preparing and importing the data 
+Preparing and importing the data
 **********************************
 
 The sample data zip file contains several shapefiles that we can import into the PostGIS database that we have just created.
@@ -202,7 +202,7 @@ Click on *OK* and the files will be imported, creating a separate table for each
 Exploring the data in QGIS
 ***************************
 
-You can open any of these tables in QGIS to visualize it and explore it. To do it, just drag and drop the corresponing table item into the QGIS canvas and a new layer will be created. Add the *buildings* layer.
+You can open any of these tables in QGIS to visualize it and explore it. To do it, just drag and drop the corresponding table item into the QGIS canvas and a new layer will be created. Add the *buildings* layer.
 
 .. figure:: ../img/drag_layer_to_canvas.png
 
@@ -257,11 +257,11 @@ To import the data from the PostGIS database, run the following commands:
 
 ::
 
-    $ geogig pg import --database geogig_ethiopia --port 54321 --user geogig --password geogig --all 
+    $ geogig pg import --database geogig_ethiopia --port 54321 --user geogig --password geogig --all
 
-This tells GeoGig that you want all tables in the geogig database, and uses the credentials of the ``geogig`` user that we created to connect to the database. For each table in the PostGIS database, it will create a new tree in the repository. 
+This tells GeoGig that you want all tables in the geogig database, and uses the credentials of the ``geogig`` user that we created to connect to the database. For each table in the PostGIS database, it will create a new tree in the repository.
 
-Oonce imported, the data will be in the so called *working tree*. It is not yet stored in the repository database and it does not constitute a version of the data, but you can see that there are changes in the working tree by running the ``status`` command.
+Once imported, the data will be in the so called *working tree*. It is not yet stored in the repository database and it does not constitute a version of the data, but you can see that there are changes in the working tree by running the ``status`` command.
 
 ::
 
@@ -305,7 +305,7 @@ Each one of the trees above correspond to one of the tables that have been impor
 Creating a new snapshot in the repository
 ******************************************
 
-You can add the feature in the wroking tree to the staging area by using the ``add`` command. From there, they are ready to be used to create a new version.
+You can add the feature in the working tree to the staging area by using the ``add`` command. From there, they are ready to be used to create a new version.
 
 ::
 
@@ -351,7 +351,7 @@ Make sure you have the *building* layer opened in QGIS, based on a connection to
 
 The Bing image that we have added as base layer shows some building that are not digitized and included in the *buildings* vector layer. We will digitize one of them and then create a new snapshot in the GeoGig repository with the updated data.
 
-Open the attributes table of the *buildings* layer and locate the feature with the identifier ``10011`` (features are ordered by ID by default). Select the corresponding row and then click on the *Zoom map to the selected rows* button. This will zoom your view to an area where there is a large building that is missing in the *buildings* layer and we can digitize. 
+Open the attributes table of the *buildings* layer and locate the feature with the identifier ``10011`` (features are ordered by ID by default). Select the corresponding row and then click on the *Zoom map to the selected rows* button. This will zoom your view to an area where there is a large building that is missing in the *buildings* layer and we can digitize.
 
 .. figure:: ../img/10011.png
 
@@ -359,7 +359,7 @@ You can zoom out one level to see it more clearly.
 
 .. figure:: ../img/to_digitize.png
 
-Right click on the layer name in the layers list and select *Toggle editing*. That will put the layer in edit mode, so you can add new features, delete them, or edit them.
+Right click on the layer name in the layers list and select *Toggle editing*. This will put the layer in edit mode so you can add new features, delete them, or edit them.
 
 Select *Add feature* from the *Edit* menu.
 
@@ -369,9 +369,9 @@ Now you can click on the canvas to add points to delineate the building that we 
 
 .. figure:: ../img/new_feature_attributes.png
 
-Since we do not know the ``osm_id``, you can leave that field blank. The expression in the first field will assign a correlative id to the feature based on the id's used by the other features in the layer. Click on *OK* an the new feature will be added.
+Since we do not know the ``osm_id``, you can leave that field blank. The expression in the first field will assign a correlative id to the feature based on the id's used by the other features in the layer. Click on *OK* and the new feature will be added.
 
-that feature is still only in the editing buffer, and hasn't been stored in the database that contains the layer data. To store the changes, right-click on the layer name and select *Toggle editing* again. QGIS will ask you if you want to save your edits.
+That feature is still only in the editing buffer and hasn't been stored in the database that contains the layer data. To store the changes, right-click on the layer name and select *Toggle editing* again. QGIS will ask you if you want to save your edits.
 
 .. figure:: ../img/save_edits.png
 
@@ -382,9 +382,9 @@ Click on *Yes* and your PostGIS database will be updated.
 Commit changes from PostGIS to GeoGig repository
 *************************************************
 
-The database now contains different data to the one that we imported into GeoGig and used to create the first snapshot. We can create a new snapshot by reimporting the modified database and following a process similar to the one we followed for the first import.
+The database now contains different data to the one that we imported into GeoGig and used to create the first snapshot. We can create a new snapshot by re-importing the modified database and following a process similar to the one we followed for the first import.
 
-First, import the data entering the following command ini the console.
+First, import the data by entering the following command in the console.
 
 ::
 
@@ -395,9 +395,9 @@ First, import the data entering the following command ini the console.
     100%
     Import successful.
 
-We have just modified the *buildings* table, so there is not need to reimport all the rest of tables. The ``--all`` argument has been replaced by ``--table buildings`` to indicate that we just want to import the *buildings* table.
+We have only modified the *buildings* table, so there is no need to re-import the rest of the tables. The ``--all`` argument has been replaced by ``--table buildings`` to indicate that we only want to import the *buildings* table.
 
-We can check that the imported table is different from the one in the repository, by running the ``status`` command.
+We can check that the imported table is different from the one in the repository by running the ``status`` command.
 
 ::
 
@@ -410,10 +410,10 @@ We can check that the imported table is different from the one in the repository
     #      added  buildings/12976
     # 1 total.
 
-It reports that a new feature has been added. 
+It reports that a new feature has been added.
 
-To put that new feature in the stagin area, run the ``add`` command.
-    
+To put that new feature in the staging area, run the ``add`` command.
+
 ::
 
     $ geogig add
@@ -434,12 +434,12 @@ And then use the ``commit`` command to create a new snapshot.
 
 Inspecting the log and the differences between snapshots
 ********************************************************
-    
+
 The history of the repository now contains two different snapshots. The output of the ``log`` command will now show something like this:
 
 ::
 
-    $ geogig log    
+    $ geogig log
     Commit:  c1a072734c9de17dc98dfec74d8ce169b94b90c2
     Author:  volaya <volaya@boundlessgeo.com>
     Date:    (1 minutes ago) 2013-10-31 11:45:07 +0100
@@ -454,32 +454,32 @@ The differences between any two commits can be inspected using the ``diff`` comm
 
 ::
 
-    $ geogig diff fc9e9e6d97e979293a028857d275eef31e8a0ce5 c1a072734c9de17dc98dfec74d8ce169b94b90c2 
+    $ geogig diff fc9e9e6d97e979293a028857d275eef31e8a0ce5 c1a072734c9de17dc98dfec74d8ce169b94b90c2
     000000... 9efbde... 000000... e0c8d1...   A  buildings/12976
     geom    MULTIPOLYGON (((38.7636514300226 9.059704893617495, 38.764011782062425 9.059795013128007, 38.764053901132016 9.059554694383088, 38.7639837026827 9.059543140593222, 38.76399774237257 9.05946226405379, 38.763838625887445 9.059432224191653, 38.76382692614589 9.05950154694665, 38.76368652924725 9.059471507087796, 38.7636514300226 9.059704893617495)))
     osm_id
     name
     type
-        
 
-It reports that this commit introduced a new feature (``building/12976``), with the above attributes (which are empty except for the goemetry itself, since we did not specify them).
 
-There is actually no need to use the full identifiers of the commits. You can abbreviate them, for instance using the first five digits, as in the next example.
+It reports that this commit introduced a new feature (``building/12976``) with the above attributes (which are empty except for the geometry, itself, since we did not specify them).
 
-::
-
-    $ geogig diff fc9e9 c1a07     
-
-If there is ambiguity and any of those shortened identifiers cannot be resolved to one and only one full identifier, GeoGig will tell you to enter a more detailed one.
-
-The first identifier is the original version, while the second one is the final version. Reversing them will give you the opposite difference
+There is no need to use the full identifiers of the commits. You can abbreviate them, e.g. using the first five digits, as in the next example.
 
 ::
 
-    $ geogig diff c1a07 fc9e9 
+    $ geogig diff fc9e9 c1a07
+
+If there is ambiguity and any of those shortened identifiers cannot be resolved to one and only one full identifier, GeoGig will tell you to enter a more detailed identifier.
+
+The first identifier is the original version, while the second is the final version. Reversing them will give you the opposite difference.
+
+::
+
+    $ geogig diff c1a07 fc9e9
     9efbde... 000000... e0c8d1... 000000...   R  buildings/12976
 
-Removals (``R``) are not detailed like in the case of additions (``A``). Just the name of the removed feature is shown instead.
+Removals (``R``) are not detailed as in the case of additions (``A``). Only the name of the removed feature is shown.
 
 GeoGig support several syntaxes to specify the commits you want to compare with the ``diff`` command or any other command that takes a commit as input. The next line will produce the same output as the one using the full identifiers.
 
@@ -499,7 +499,7 @@ One of the most important features of GeoGig is that data can be synchronized be
 You can create a new local copy of your repository by running the ``clone``. Move to the parent directory of your repository folder and enter this in the console:
 
 ::
-    
+
     $geogig clone ./geogig-ethiopia geogig-ethiopia-clone
     Cloning into 'geogig-ethiopia-clone'...
     100%
@@ -534,10 +534,10 @@ Go back to QGIS and make some more edits. You can add a new building from the on
 Save the changes to the PostGIS database as it has already been explained.
 
 
-Commiting edits to original GeoGig Repo
+Committing edits to original GeoGig Repo
 *****************************************
 
-Go to the console and create a new version by importing, adding and commiting your changes. Make sure you are under the ``geogig-ethiopia`` folder, so you are commiting to the original repository, not the cloned one.
+Go to the console and create a new version by importing, adding and committing your changes. Make sure you are under the ``geogig-ethiopia`` folder, so you are committing to the original repository, not the cloned one.
 
 The commands are the same one that we used for creating our second commit, except for the commit message.
 
@@ -551,7 +551,7 @@ The differences between the two last commits now look like this.
 
 ::
 
-    $ geogig diff HEAD~1 HEAD 
+    $ geogig diff HEAD~1 HEAD
     9efbde... 9efbde... 546e31... 62c2e8...   M  buildings/8868
     type: [MISSING] -> administrative
 
@@ -559,14 +559,14 @@ The differences between the two last commits now look like this.
     geom    MULTIPOLYGON (((38.75429818070351 9.061127964604221, 38.75435886071902 9.060998131885604, 38.7545105607578 9.061028093286371, 38.754490334085965 9.061147938864453, 38.75429818070351 9.061127964604221)))
     osm_id
     name
-    type       
+    type
 
-It shows the modifications done to the attributes of a existing feature, and the description of a newly added feature.
+It shows the modifications done to the attributes of a existing feature and the description of a newly added feature.
 
 Pulling changes into the cloned repository
 *******************************************
 
-If you move to the ``geogig-ethiopia`` folder and see the log of the repository, you will see that the last commit that we made is not here. Repositories are independent, and the changes were only commited to the original repository. However, we can bring those changes to the cloned repository, by using the ``pull`` command.
+If you move to the ``geogig-ethiopia`` folder and see the log of the repository, you will see that the last commit that we made is not here. Repositories are independent and the changes were only committed to the original repository. However, we can bring those changes to the cloned repository by using the ``pull`` command.
 
 ::
 
@@ -576,15 +576,15 @@ If you move to the ``geogig-ethiopia`` folder and see the log of the repository,
        c1a0727..82c4634     master -> refs/heads/master
     Features Added: 1 Removed: 0 Modified: 1
 
-If you now run the ``log`` command you will see that there are 3 commits in the cloned repository, and it has the same history as the original one.
+If you now run the ``log`` command you will see that there are 3 commits in the cloned repository and it has the same history as the original.
 
-Running the ``diff`` command will also produce the same results as in the original repository.
+Running the ``diff`` command will also produce the same result as in the original repository.
 
-You can pull changes from any repository that versions the same data. In that case, you should tell the ``pull`` command how to find that repository. In this case, however, we are pulling from the default parent repository, which is the original one. When a repository is cloned, GeoGig saves a reference to the original repository, which is used by the pull command to pull changes from in case that no repository has been specified when calling it.
+You can pull changes from any repository that versions the same data. In that case, you should tell the ``pull`` command how to find that repository. In this case, however, we are pulling from the default parent repository, which is the original. When a repository is cloned, GeoGig saves a reference to the original repository, which the pull command defaults to in the case that no repository is specified.
 
 
 Expose Clone with Webservices using GeoServer
-**********************************************   
+**********************************************
 
 Add the clone as a remote to the original repo:
 
@@ -611,20 +611,19 @@ Import Edits to original repo:
 
 Push edits to clone via remote API
 ***********************************
-    
-    To pass changes from one repository, you can use the ``pull`` command as we have already seen, or you can *send* changes to a remote repository with the push command. Let's see how to move the latest changes in the original repository, to the clone repository.
 
-    the original repository doesn't know anything about the clone one, so you have to add a reference to it, using the ``remote add`` command.
+    To pass changes from one repository, you can use the ``pull`` command as we have already seen, or you can *send* changes to a remote repository with the push command. Let's see how to move the latest changes in the original repository to the clone repository.
+
+    The original repository doesn't know anything about the clone, so you have to add a reference to it using the ``remote add`` command.
 
 ::
 
     $ geogig remote add cloned http://localhost:8080/geoserver/geogig/opengeo:ethiopia
 
-You can check that the remote reference has been added, by listing all available remotes
+You can check that the remote reference has been added by listing all available remotes.
 
 ::
 
     $ geogig remote list -v
     clone http://localhost:8080/geoserver/geogig/opengeo:ethiopia (fetch)
     clone http://localhost:8080/geoserver/geogig/opengeo:ethiopia (push)
-

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoPackage import and export Web-API &mdash; GeoGig 1.0-RC4 User Manual</title>
+  <title>GeoPackage import and export Web-API &mdash; GeoGig 1.1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,15 +17,15 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC4',
+        VERSION:     '1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="License" href="../license/index.html" />
-      <link rel="prev" title="OpenStreetMap Web-Api Documentation" href="osm-web-api.html" />
+      <link rel="prev" title="Web-API Asynchronous tasks" href="async-tasks.html" />
 </head>
 <body class="interaction/geopackage-import-export">
     <div id="blacktop"></div>
@@ -78,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>GeoPackage import and export Web-API</li>
 </ul>
@@ -90,41 +90,33 @@
     <a href="../license/index.html" title="License"
        accesskey="N">next</a>|</li>
   <li>
-    <a href="osm-web-api.html" title="OpenStreetMap Web-Api Documentation"
+    <a href="async-tasks.html" title="Web-API Asynchronous tasks"
        accesskey="P">previous</a>|</li>
 </ul>
         
   <div class="section" id="geopackage-import-and-export-web-api">
 <h1>GeoPackage import and export Web-API<a class="headerlink" href="#geopackage-import-and-export-web-api" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="http://www.geopackage.org/">GeoPackage</a> is an open, standards-based, platform-independent, portable, self-describing, compact format for transferring geospatial information.</p>
-<p>The GeoPackage import-export GeoGig Web-API allows for downloading a repository snapshot or a subset of it as a GeoPackage file, and for uploading a GeoPackage file and import its vector layers into the GeoGig repository.</p>
+<p>The GeoPackage import/export GeoGig Web-API allows for downloading a repository snapshot, or a subset of it, as a GeoPackage file and for uploading a GeoPackage file and importing its vector layers into the GeoGig repository.</p>
 <div class="section" id="geopackage-export">
 <h2>GeoPackage export<a class="headerlink" href="#geopackage-export" title="Permalink to this headline">¶</a></h2>
 <p>Exports a repository snapshot or a subset of it as a GeoPackage file.</p>
-<p>A repository snaphot is the data (layers and their features) addressable from a certain commit.</p>
+<p>A repository snapshot is the data (layers and their features) addressable from a certain commit.</p>
 <div class="highlight-python"><div class="highlight"><pre>GET /repos/&lt;repo&gt;/export[.xml|.json]?format=gpkg[&amp;root=&lt;refspec&gt;][&amp;path=&lt;layerName&gt;[,&lt;layerName&gt;]+][&amp;bbox=&lt;boundingBox&gt;][&amp;interchange=&lt;true|false&gt;]
 </pre></div>
 </div>
 <div class="section" id="parameters">
 <h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
 <p><strong>format:</strong>
-Mandatory. Must be <code class="docutils literal"><span class="pre">gpkg</span></code> (case insensitive). Defines the output format of the export operation.</p>
+Mandatory. Must be <code class="docutils literal"><span class="pre">gpkg</span></code> (case-insensitive). Defines the output format of the export operation.</p>
 <p><strong>root:</strong>
-Optional. Defaults to <code class="docutils literal"><span class="pre">HEAD</span></code>. The ref spec that resolves to the root tree from
-where to export data (e.g. <code class="docutils literal"><span class="pre">HEAD</span></code>, <code class="docutils literal"><span class="pre">WORK_HEAD</span></code>, a branch name like <code class="docutils literal"><span class="pre">master</span></code>,
-<code class="docutils literal"><span class="pre">refs/heads/master</span></code>, a commit id, possibly abbreviated like <code class="docutils literal"><span class="pre">50e295dd</span></code>, a relative
-refspec like <code class="docutils literal"><span class="pre">HEAD~2</span></code>, <code class="docutils literal"><span class="pre">master^4</span></code>, etc)</p>
+Optional. Defaults to <code class="docutils literal"><span class="pre">HEAD</span></code>. The ref spec that resolves to the root tree from where to export data (e.g. <code class="docutils literal"><span class="pre">HEAD</span></code>, <code class="docutils literal"><span class="pre">WORK_HEAD</span></code>, a branch name like <code class="docutils literal"><span class="pre">master</span></code>, <code class="docutils literal"><span class="pre">refs/heads/master</span></code>, a commit ID, possibly abbreviated like <code class="docutils literal"><span class="pre">50e295dd</span></code>, a relative ref spec like <code class="docutils literal"><span class="pre">HEAD~2</span></code>, <code class="docutils literal"><span class="pre">master^4</span></code>, etc)</p>
 <p><strong>path:</strong>
-Optional. A comma separated list of layer names to export. Defaults to exporting all layers in the resolved root tree.</p>
+Optional. A comma-separated list of layer names to export. Defaults to exporting all layers in the resolved root tree.</p>
 <p><strong>bbox:</strong>
-Optional. A bounding box filter. If present, only features matching the
-indicated bounding box filter will be exported. Applies to all exported layers. Format is
-<code class="docutils literal"><span class="pre">minx,miny,maxx,maxy,&lt;SRS&gt;</span></code>, where <code class="docutils literal"><span class="pre">SRS</span></code> is the EPSG code for the coordinates (e.g.
-<code class="docutils literal"><span class="pre">EPSG:4326</span></code>, <code class="docutils literal"><span class="pre">EPSG:26986</span></code>, etc), always using &#8220;longitude first&#8221; axis order.</p>
+Optional. A bounding box filter. If present, only features matching the indicated bounding box filter will be exported. Applies to all exported layers. Format is <code class="docutils literal"><span class="pre">minx,miny,maxx,maxy,&lt;SRS&gt;</span></code>, where <code class="docutils literal"><span class="pre">SRS</span></code> is the EPSG code for the coordinates (e.g. <code class="docutils literal"><span class="pre">EPSG:4326</span></code>, <code class="docutils literal"><span class="pre">EPSG:26986</span></code>, etc), always using &#8220;longitude first&#8221; axis order.</p>
 <p><strong>interchange:</strong>
-Optional. Boolean indicating whether to enable GeoGig&#8217;s interchange format extension for GeoPackage.
-The &#8220;GeoGig GeoPackage Extention&#8221; is an extension to the geopackage format that (transparently) records all changes made
-to vector layers in hidden audit tables that can then be used to replay those changes on top of the repository.</p>
+Optional. Boolean indicating whether to enable GeoGig&#8217;s interchange format extension for GeoPackage. The &#8220;GeoGig GeoPackage Extension&#8221; is an extension to the GeoPackage format that (transparently) records all changes made to vector layers, in hidden audit tables, that can then be used to replay those changes on top of the repository.</p>
 </div>
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
@@ -143,7 +135,7 @@ to vector layers in hidden audit tables that can then be used to replay those ch
 </div>
 <div class="section" id="bad-refspec">
 <h4>Bad refspec:<a class="headerlink" href="#bad-refspec" title="Permalink to this headline">¶</a></h4>
-<p>Note since the command is run asynchronously, you&#8217;ll notice the error once the async task status is polled:</p>
+<p>Note, since the command is run asynchronously, you&#8217;ll only see the error once the async task status is polled.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/repo1/export?format=GPKG&amp;root=nonExistingBranch&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
@@ -221,7 +213,7 @@ $ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
 &lt;/task&gt;
 </pre></div>
 </div>
-<p>Note once the task is finished, the <cite>result</cite> element contains the download link for the generated geopackage file.</p>
+<p>Note, once the task is finished, the <cite>result</cite> element contains the download link for the generated GeoPackage file.</p>
 <p>Finally, download the GeoPackage:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/tasks/3/download&quot; &gt; all_layers_current_head.gpkg
 &lt; HTTP/1.1 200 OK
@@ -231,8 +223,8 @@ $ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
 * Connection #0 to host localhost left intact
 </pre></div>
 </div>
-<p>That <cite>curl</cite> command downloaded the geopackage to the <cite>all_layers_current_head.gpkg</cite> file.
-Now you can open it, for example, in QGGIS:</p>
+<p>That <cite>curl</cite> command downloaded the geopackage to the <cite>all_layers_current_head.gpkg</cite> file.</p>
+<p>Now you can open it, for example, in QGIS.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ qgis all_layers_current_head.gpkg
 </pre></div>
 </div>
@@ -244,7 +236,7 @@ Now you can open it, for example, in QGGIS:</p>
 </div>
 <div class="section" id="geopackage-import">
 <h2>GeoPackage import<a class="headerlink" href="#geopackage-import" title="Permalink to this headline">¶</a></h2>
-<p>Imports features from a GeoPackage into the repository.  The GeoPackage file should be posted to the endpoint as <code class="docutils literal"><span class="pre">fileUpload</span></code>.</p>
+<p>Imports features from a GeoPackage into the repository. The GeoPackage file should be posted to the endpoint as <code class="docutils literal"><span class="pre">fileUpload</span></code>.</p>
 <div class="highlight-python"><div class="highlight"><pre>POST /repos/&lt;repo&gt;/import[.xml|.json]?format=gpkg&amp;transactionId=&lt;transactionId&gt;[&amp;root=&lt;refspec&gt;][&amp;layer=&lt;layerName&gt;][&amp;interchange=&lt;true|false&gt;][&amp;add=&lt;true|false&gt;][&amp;alter=&lt;true|false&gt;][&amp;forceFeatureType=&lt;true|false&gt;][&amp;dest=&lt;destPath&gt;][&amp;fidAttribute=&lt;fidAttribute&gt;][&amp;authorName=&lt;name&gt;][&amp;authorEmail=&lt;email&gt;][&amp;message=&lt;message&gt;]
 </pre></div>
 </div>
@@ -259,9 +251,9 @@ Mandatory.  Import must be run on a transaction to preserve the stability of the
 <p><strong>root:</strong>
 Optional. Defaults to <code class="docutils literal"><span class="pre">HEAD</span></code>. The branch onto which the imported features will be imported.</p>
 <p><strong>layer:</strong>
-Optional. The layer from the GeoPackage to import.  If not specified, all features from the GeoPackage will be imported.  If using the interchange format, all layers must originate from the same commit.</p>
+Optional. The layer from the GeoPackage to import. If not specified, all features from the GeoPackage will be imported.  If using the interchange format, all layers must originate from the same commit.</p>
 <p><strong>interchange:</strong>
-Optional. Boolean indicating whether or not the GeoPackage has the GeoGig GeoPackage Extension.  If so, the changes will be imported on top of the commit they were exported from and merged into the branch specified by the <code class="docutils literal"><span class="pre">root</span></code> parameter or <code class="docutils literal"><span class="pre">HEAD</span></code>.</p>
+Optional. Boolean indicating whether or not the GeoPackage has the GeoGig GeoPackage Extension. If so, the changes will be imported on top of the commit they were exported from and merged into the branch specified by the <code class="docutils literal"><span class="pre">root</span></code> parameter or <code class="docutils literal"><span class="pre">HEAD</span></code>.</p>
 <p><strong>add:</strong>
 Optional: Boolean indicating if features should only be added (true) or replace the whole feature tree.  Not used with interchange import.</p>
 <p><strong>alter:</strong>
@@ -387,7 +379,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
 </div>
 <div class="section" id="import-with-interchange-format-with-conflicts">
 <h4>Import with interchange format with conflicts:<a class="headerlink" href="#import-with-interchange-format-with-conflicts" title="Permalink to this headline">¶</a></h4>
-<p>When importing with the interchange format, it is possible that the same feature was modified in both the GeoPackage and in the main repository in the time since the export was performed.  In this case, merge conflicts will occur during the import.  They must be resolved before ending the transaction.</p>
+<p>When importing with the interchange format, it is possible that the same feature was modified in both the GeoPackage and in the main repository in the time since the export was performed.  In this case, merge conflicts will occur during the import. They must be resolved before ending the transaction.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;interchange=true&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=aa58fce6-df67-4f87-90f3-d8d684bef52a&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
@@ -445,7 +437,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
 
 
       <div class="selfclear pagination-nav">
-          <div class="leftwise"><strong>Previous</strong>: <a href="osm-web-api.html" title="previous chapter">OpenStreetMap Web-Api Documentation</a></div>
+          <div class="leftwise"><strong>Previous</strong>: <a href="async-tasks.html" title="previous chapter">Web-API Asynchronous tasks</a></div>
           <div class="rightwise"><strong>Next</strong>: <a href="../license/index.html" title="next chapter">License</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
@@ -463,10 +455,10 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
 
 
         <div class="btn-group-vertical" id="docs_toc">
-          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
-          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
-          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -500,7 +492,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
           <ul>
-            <li>Previous: <a href="osm-web-api.html" title="previous chapter">OpenStreetMap Web-Api Documentation</a></li>
+            <li>Previous: <a href="async-tasks.html" title="previous chapter">Web-API Asynchronous tasks</a></li>
             <li>Next: <a href="../license/index.html" title="next chapter">License</a></li>
           </ul>
         </div>

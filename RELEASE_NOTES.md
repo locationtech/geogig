@@ -1,3 +1,49 @@
+GeoGig 1.1-beta1 Release Notes
+==============================
+
+April 18, 2017.
+
+This release introduces the long awaited spatial indexing capabilities to GeoGig.
+
+GeoGig's spatial index can index the whole history of a repository's datasets. It was
+developed from scratch to take advantage of geogig's core design principle to efficiently
+store large amounts of features and quickly compute the differences between any two
+snapshots, the Merkle Tree (a.k.a. Hash Tree), that allows us to create a DAG (Directed
+Acyclic Graph) where each data snapshot is an entry point to the graph, while they share
+all but what changes internally.
+
+To the best of our knowledge, this is the first spatial index that can effectively
+work on such a graph of data.
+
+When an index is created for a feature tree (i.e. layer), a new tree is created mirroring
+the canonical tree contents, but using a quad-tree clustering strategy for its non terminal
+nodes.
+
+Spatial indexing capabilities:
+
+* Indexes are automatically updated on commits. Create an index for a layer, and any operation
+that creates a new commit will trigger the update of the index (i.e. commit, rebase, merge, etc).
+* Materialized attributes: the spatial index can materialize any spatial or non spatial attribute
+of the FeatureType being indexed, in order to speed up attribute queries as well as spatial ones.
+For example, you might want to include the attributes needed by the Styled Layer Descriptor to properly
+filter out Features for rendering on a WMS; or include the time/elevation attributes to speed up
+queries on time series in GeoServer. 
+
+* Spatial indexing command set: the geogig command line and its WEB API include a full set of
+commands to manage the indexes. Run `geogig index --help` or browse the online documentation at
+http://geogig.org/docs for more information.
+
+
+Other improvements in this release:
+
+* Better support for foreign CRS definitions. Importing from datasets that define its coordinate
+reference system in non OGC WKT formats (e.g. most shapefiles) are now correctly matches to their
+corresponding CRS from the EPSG database, providing extra CRS metadata such as area of validity.
+
+* Better PostgreSQL backend caching. The PostgreSQL backend's internal cache uses an improved
+serialization format that's a lot faster to decode, while still allowing to control the cache
+size by storing serialized objects instead of Java objects.
+
 GeoGig 1.0.0 Release Notes
 ==========================
 
@@ -25,7 +71,7 @@ dependencies and have now [LocationTech](https://locationtech.org/) blessing to 
 a sponsored release!
 Thanks to LocationTech, Eclipse Foundation's geospatial branch, for their
 continued support and commitment to the success of this and the other projects
-under it's umbrella.
+under its umbrella.
 
 * The new RevTreeBuilder infrastructure became mainstream. It replaces the
 legacy tree builder in order to generate revision trees faster, create no

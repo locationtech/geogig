@@ -1,3 +1,12 @@
+GeoGig 1.0.0 Release Notes
+==========================
+
+December 21, 2016.
+
+The GeoGig team is proud to announce the graduation of Release Candidate 1.0-RC4 to 1.0!
+Only one minor bug was found in RC4 (related to deriving its version) that needed to be 
+fixed for the 1.0 release. Please see the Release Notes for RC4 below for more.
+
 GeoGig 1.0-RC4 Release Notes
 ============================
 

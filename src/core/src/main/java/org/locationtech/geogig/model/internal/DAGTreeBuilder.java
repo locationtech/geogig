@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.ForkJoinWorkerThread;
@@ -205,16 +206,17 @@ public class DAGTreeBuilder {
                     ObjectId treeId = root.originalTreeId();
                     result = state.getTree(treeId);
                 }
-            } catch (RuntimeException e) {
+            } catch (RuntimeException | InterruptedException | ExecutionException e) {
                 state.listener.cancel();// let any other running task abort asap
-                throw e;
+                throw Throwables.propagate(e);
             }
 
             state.addNewTree(result);
             return result;
         }
 
-        private RevTree buildBucketsTree(final DAG root) {
+        private RevTree buildBucketsTree(final DAG root)
+                throws InterruptedException, ExecutionException {
 
             final List<DAG> mutableBuckets;
             {
@@ -232,9 +234,11 @@ public class DAGTreeBuilder {
 
                 final Integer bucketIndex = dagBucketId.bucketIndex(depth);
                 TreeBuildTask subtask = new TreeBuildTask(state, bucketDAG, this.depth + 1);
-                ForkJoinTask<RevTree> fork = subtask.fork();
-                subtasks.put(bucketIndex, fork);
+                subtasks.put(bucketIndex, subtask);
             }
+
+            // forks all subtasks and return when they're all done
+            invokeAll(subtasks.values());
 
             long size = 0;
             int childTreeCount = 0;
@@ -246,7 +250,7 @@ public class DAGTreeBuilder {
 
                 Integer bucketIndex = e.getKey();
                 ForkJoinTask<RevTree> task = e.getValue();
-                RevTree bucketTree = task.join();
+                RevTree bucketTree = task.get();
 
                 if (!bucketTree.isEmpty()) {
 

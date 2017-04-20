@@ -9,7 +9,10 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -36,7 +40,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -56,8 +59,19 @@ public class DAGTreeBuilder {
     private static final ForkJoinPool FORK_JOIN_POOL;
 
     static {
+        ForkJoinPool.ForkJoinWorkerThreadFactory threadFactoryShared = pool -> {
+            final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory
+                    .newThread(pool);
+            worker.setName("DAGTreeBuilder-shared-" + worker.getPoolIndex());
+            return worker;
+        };
+
         int parallelism = Math.max(2, Runtime.getRuntime().availableProcessors());
-        FORK_JOIN_POOL = new ForkJoinPool(parallelism);
+        UncaughtExceptionHandler eh = (t, e) -> {
+            System.err.println("Uncaught ForkJoinPool exception at thread " + t.getName());
+            e.printStackTrace();
+        };
+        FORK_JOIN_POOL = new ForkJoinPool(parallelism, threadFactoryShared, eh, false);
     }
 
     private static class SharedState {

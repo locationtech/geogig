@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model.impl;
 
 import java.util.SortedMap;
+import java.util.function.BooleanSupplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -38,6 +39,8 @@ import com.google.common.collect.ImmutableSortedMap;
  * resulting {@code RevTree} and any internal {@code RevTree} the built tree is to be split into. So
  * when {@link #build()} returns, the resulting {@code RevTree} is guaranteed to be fully stored on
  * the provided {@code ObjectStore}.
+ * 
+ * @since 1.0
  */
 public interface RevTreeBuilder {
 
@@ -74,6 +77,19 @@ public interface RevTreeBuilder {
      * @return the created tree
      */
     public RevTree build();
+
+    /**
+     * Builds a final immutable tree out of the current state of this tree builder.
+     * <p>
+     * The builder is disposed after this method is called, so calling any of the mutator methods
+     * after calling build leads to an unspecified behavior, most probably throwing an unchecked
+     * exception.
+     * 
+     * @since 1.1
+     * @return the created tree, or {@code null} if {@link BooleanSupplier#getAsBoolean()
+     *         abortFlag.getAsBoolean() == true}
+     */
+    public @Nullable RevTree build(BooleanSupplier abortFlag);
 
     static RevTree build(final long size, final int childTreeCount,
             @Nullable ImmutableList<Node> trees, @Nullable ImmutableList<Node> features,

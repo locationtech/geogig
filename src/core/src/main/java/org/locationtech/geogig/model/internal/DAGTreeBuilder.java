@@ -25,8 +25,10 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BooleanSupplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -36,8 +38,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
-import org.locationtech.geogig.repository.DefaultProgressListener;
-import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -76,9 +76,6 @@ public class DAGTreeBuilder {
     }
 
     private static class SharedState {
-
-        public final ProgressListener listener;
-
         public final ObjectStore targetStore;
 
         private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
@@ -87,9 +84,13 @@ public class DAGTreeBuilder {
 
         public final ClusteringStrategy clusteringStrategy;
 
+        private final BooleanSupplier externalCancelFlag;
+
+        private final AtomicBoolean internalAbortFlag = new AtomicBoolean();
+
         SharedState(final ObjectStore targetStore, final ClusteringStrategy clusteringStrategy,
-                final ProgressListener listener) {
-            this.listener = listener;
+                BooleanSupplier abortFlag) {
+            this.externalCancelFlag = abortFlag;
             this.newTrees = new HashMap<>();
             this.targetStore = targetStore;
             this.clusteringStrategy = clusteringStrategy;
@@ -116,9 +117,11 @@ public class DAGTreeBuilder {
         public SharedState saveTrees(final int minSize) {
             cacheLock.writeLock().lock();
             try {
-                if (newTrees.size() >= minSize) {
-                    targetStore.putAll(newTrees.values().iterator());
-                    newTrees.clear();
+                if (!isCancelled()) {
+                    if (newTrees.size() >= minSize) {
+                        targetStore.putAll(newTrees.values().iterator());
+                        newTrees.clear();
+                    }
                 }
             } finally {
                 cacheLock.writeLock().unlock();
@@ -127,6 +130,9 @@ public class DAGTreeBuilder {
         }
 
         public RevTree getTree(ObjectId treeId) {
+            if (isCancelled()) {
+                return null;
+            }
             if (RevTree.EMPTY_TREE_ID.equals(treeId)) {
                 return RevTree.EMPTY;
             }
@@ -139,19 +145,40 @@ public class DAGTreeBuilder {
                 cacheLock.readLock().unlock();
             }
             if (tree == null) {
-                tree = targetStore.getTree(treeId);
+                try {
+                    tree = targetStore.getTree(treeId);
+                } catch (RuntimeException e) {
+                    if (!isCancelled()) {
+                        throw e;
+                    }
+                }
             }
             return tree;
+        }
+
+        public boolean isCancelled() {
+            boolean externalCancelRequest = externalCancelFlag.getAsBoolean();
+            boolean internalAbortRequest = internalAbortFlag.get();
+            return externalCancelRequest || internalAbortRequest;
+        }
+
+        public void abort() {
+            internalAbortFlag.set(true);
         }
     }
 
     public static RevTree build(final ClusteringStrategy clusteringStrategy,
             final ObjectStore targetStore) {
+        return build(clusteringStrategy, targetStore, () -> false);
+    }
 
-        // ExecutorService executor = BUILDER_POOL;
-        ProgressListener listener = new DefaultProgressListener();
+    public static @Nullable RevTree build(final ClusteringStrategy clusteringStrategy,
+            final ObjectStore targetStore, final BooleanSupplier abortFlag) {
+        checkNotNull(clusteringStrategy);
+        checkNotNull(targetStore);
+        checkNotNull(abortFlag);
 
-        SharedState state = new SharedState(targetStore, clusteringStrategy, listener);
+        SharedState state = new SharedState(targetStore, clusteringStrategy, abortFlag);
 
         final DAG root = clusteringStrategy.buildRoot();
 
@@ -159,15 +186,18 @@ public class DAGTreeBuilder {
         final int baseDepth = rootId.depthLength();
         TreeBuildTask task = new TreeBuildTask(state, root, baseDepth);
 
+        @Nullable
         RevTree tree;
         try {
             ForkJoinPool forkJoinPool = FORK_JOIN_POOL;
             tree = forkJoinPool.invoke(task);
         } catch (Exception e) {
             throw Throwables.propagate(e);
-        } finally {
-            state.saveTrees();
         }
+        if (state.isCancelled()) {
+            return null;
+        }
+        state.saveTrees();
 
         return tree;
     }
@@ -189,9 +219,10 @@ public class DAGTreeBuilder {
 
         @Override
         protected RevTree compute() {
-
             final RevTree result;
-
+            if (state.isCancelled()) {
+                return null;
+            }
             try {
                 final DAG root = this.root;
                 final STATE rootState = root.getState();
@@ -204,14 +235,19 @@ public class DAGTreeBuilder {
                 } else {
                     checkState(rootState == STATE.INITIALIZED || rootState == STATE.MIRRORED);
                     ObjectId treeId = root.originalTreeId();
-                    result = state.getTree(treeId);
+                    if (state.isCancelled()) {
+                        result = null;
+                    } else {
+                        result = state.getTree(treeId);
+                    }
                 }
             } catch (RuntimeException | InterruptedException | ExecutionException e) {
-                state.listener.cancel();// let any other running task abort asap
+                state.abort();// let any other running task abort asap
                 throw Throwables.propagate(e);
             }
-
-            state.addNewTree(result);
+            if (!state.isCancelled()) {
+                state.addNewTree(result);
+            }
             return result;
         }
 
@@ -226,7 +262,9 @@ public class DAGTreeBuilder {
                 mutableBuckets = this.state.clusteringStrategy.getDagTrees(dagBuckets);
                 checkState(dagBuckets.size() == mutableBuckets.size());
             }
-
+            if (state.isCancelled()) {
+                return null;
+            }
             Map<Integer, ForkJoinTask<RevTree>> subtasks = new HashMap<>();
 
             for (DAG bucketDAG : mutableBuckets) {
@@ -235,6 +273,10 @@ public class DAGTreeBuilder {
                 final Integer bucketIndex = dagBucketId.bucketIndex(depth);
                 TreeBuildTask subtask = new TreeBuildTask(state, bucketDAG, this.depth + 1);
                 subtasks.put(bucketIndex, subtask);
+            }
+
+            if (state.isCancelled()) {
+                return null;
             }
 
             // forks all subtasks and return when they're all done
@@ -250,7 +292,12 @@ public class DAGTreeBuilder {
 
                 Integer bucketIndex = e.getKey();
                 ForkJoinTask<RevTree> task = e.getValue();
+
                 RevTree bucketTree = task.get();
+
+                if (state.isCancelled()) {
+                    return null;
+                }
 
                 if (!bucketTree.isEmpty()) {
 
@@ -270,10 +317,13 @@ public class DAGTreeBuilder {
 
             RevTree result = RevTreeBuilder.build(size, childTreeCount, treeNodes, featureNodes,
                     buckets);
-            return result;
+            return state.isCancelled() ? null : result;
         }
 
         private RevTree buildLeafTree(DAG root) {
+            if (state.isCancelled()) {
+                return null;
+            }
             checkState(root.numBuckets() == 0);
 
             final ImmutableList<Node> children;
@@ -295,6 +345,9 @@ public class DAGTreeBuilder {
 
             ImmutableSortedMap<Integer, Bucket> buckets = null;
 
+            if (state.isCancelled()) {
+                return null;
+            }
             RevTree tree = RevTreeBuilder.build(size, childTreeCount, treesList, featuresList,
                     buckets);
 
@@ -316,6 +369,9 @@ public class DAGTreeBuilder {
             long size = 0;
             for (Node n : trees) {
                 RevTree tree = state.getTree(n.getObjectId());
+                if (state.isCancelled()) {
+                    return -1L;
+                }
                 size += tree.size();
             }
             return size;

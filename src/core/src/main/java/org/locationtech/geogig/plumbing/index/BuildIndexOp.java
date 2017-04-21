@@ -100,14 +100,14 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
         checkState(revFeatureTypeId != null, "FeatureType id was not provided");
 
         final RevTreeBuilder builder = resolveTreeBuilder();
-        final PreOrderDiffWalk.Consumer builderConsumer = resolveConsumer(builder);
+        final ProgressListener progress = getProgressListener();
+        final PreOrderDiffWalk.Consumer builderConsumer = resolveConsumer(builder, progress);
 
         boolean preserveIterationOrder = true;
         final ObjectDatabase canonicalStore = objectDatabase();
         PreOrderDiffWalk walk = new PreOrderDiffWalk(oldCanonicalTree, newCanonicalTree,
                 canonicalStore, canonicalStore, preserveIterationOrder);
 
-        final ProgressListener progress = getProgressListener();
         final Stopwatch dagTime = Stopwatch.createStarted();
         walk.walk(builderConsumer);
         dagTime.stop();
@@ -120,14 +120,18 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
                 String.format("Index updated in %s. Building final tree...", dagTime));
 
         final Stopwatch revTreeTime = Stopwatch.createStarted();
-        RevTree indexTree;
+        final RevTree indexTree;
         try {
-            indexTree = builder.build();
+            indexTree = builder.build(() -> progress.isCanceled());
         } catch (Exception e) {
             e.printStackTrace();
             throw Throwables.propagate(Throwables.getRootCause(e));
         }
         revTreeTime.stop();
+
+        if (progress.isCanceled()) {
+            return null;
+        }
 
         final long canonicalSize = newCanonicalTree.size();
         final long indexSize = indexTree.size();
@@ -146,13 +150,13 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
 
     }
 
-    private Consumer resolveConsumer(RevTreeBuilder builder) {
+    private Consumer resolveConsumer(RevTreeBuilder builder,
+            final ProgressListener progressListener) {
         final Set<String> attNames = IndexInfo.getMaterializedAttributeNames(index);
 
         final boolean isMaterialized = !attNames.isEmpty();
         final Consumer consumer;
 
-        final ProgressListener progressListener = getProgressListener();
         if (isMaterialized) {
             Map<String, Integer> extraDataProperties = attributeIndexMapping(attNames);
 

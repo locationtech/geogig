@@ -13,7 +13,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
@@ -71,14 +73,27 @@ public abstract class AbstractTreeBuilder implements RevTreeBuilder {
 
     @Override
     public RevTree build() {
+        return build(() -> false);
+    }
+
+    @Override
+    public @Nullable RevTree build(BooleanSupplier abortFlag) {
+        Preconditions.checkNotNull(abortFlag);
         boolean alreadyDisposed = disposed.getAndSet(true);
+
         checkState(!alreadyDisposed, "TreeBuilder is already disposed");
         RevTree tree;
-        ClusteringStrategy clusteringStrategy = clusteringStrategy();
-        tree = DAGTreeBuilder.build(clusteringStrategy, target);
-        Preconditions.checkState(target.exists(tree.getId()), "tree not saved %s", tree);
-        this.original = tree;
-        clusteringStrategy().dispose();
+        final ClusteringStrategy clusteringStrategy = clusteringStrategy();
+        try {
+            tree = DAGTreeBuilder.build(clusteringStrategy, target, abortFlag);
+            if (!abortFlag.getAsBoolean()) {
+                Preconditions.checkState(tree != null);
+                Preconditions.checkState(target.exists(tree.getId()), "tree not saved %s", tree);
+                this.original = tree;
+            }
+        } finally {
+            clusteringStrategy.dispose();
+        }
         return tree;
     }
 

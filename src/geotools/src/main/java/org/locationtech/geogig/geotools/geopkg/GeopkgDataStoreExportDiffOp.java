@@ -23,8 +23,8 @@ import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -49,8 +49,6 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
 
     private String oldRef = null;
 
-    private String newRef = null;
-
     private Map<String, ChangeType> changedNodes = new HashMap<String, ChangeType>();
 
     /**
@@ -67,7 +65,7 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
      * @return {@code this}
      */
     public GeopkgDataStoreExportDiffOp setNewRef(String newRef) {
-        this.newRef = newRef;
+        this.setSourceCommitish(newRef);
         return this;
     }
 
@@ -84,14 +82,15 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
     protected void export(final String refSpec, final DataStore targetStore,
             final String targetTableName, final ProgressListener progress) {
         Preconditions.checkArgument(oldRef != null, "Old ref not specified.");
-        Preconditions.checkArgument(newRef != null, "New ref not specified.");
+        Preconditions.checkArgument(getSourceCommitish() != null, "New ref not specified.");
 
         changedNodes.clear();
 
         InterchangeFormat format = new InterchangeFormat(geopackage, context());
 
         try (final AutoCloseableIterator<DiffEntry> diff = context.command(DiffOp.class)
-                .setOldVersion(oldRef).setNewVersion(newRef).setFilter(targetTableName).call()) {
+                .setOldVersion(oldRef).setNewVersion(getSourceCommitish())
+                .setFilter(targetTableName).call()) {
             while (diff.hasNext()) {
                 DiffEntry entry = diff.next();
                 changedNodes.put(entry.newName() != null ? entry.newName() : entry.oldName(),

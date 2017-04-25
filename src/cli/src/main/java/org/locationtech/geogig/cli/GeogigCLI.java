@@ -405,7 +405,9 @@ public class GeogigCLI {
         } finally {
             // close after executing a command for the next one to reopen with its own hints and not
             // to keep the db's open for write meanwhile
-            close();
+            if (isExitOnFinish()) {
+                close();
+            }
         }
         if (printError) {
             try {

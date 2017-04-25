@@ -93,6 +93,10 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
         return this;
     }
 
+    public String getSourceCommitish() {
+        return this.commitIsh;
+    }
+
     /**
      * @param treePaths Optional list of feature tree names to export, if not provided, exports all
      *        feature trees in the resolved commit

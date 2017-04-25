@@ -79,9 +79,8 @@ public class CLI {
         addShutdownHook(cli);
         int exitCode = cli.execute(args);
 
-        cli.close();
-
         if (exitCode != 0 || cli.isExitOnFinish()) {
+            cli.close();
             System.exit(exitCode);
         }
     }

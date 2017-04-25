@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.web.api.TestData.line2;
 import static org.locationtech.geogig.web.api.TestData.line3;
 import static org.locationtech.geogig.web.api.TestData.linesType;
+import static org.locationtech.geogig.web.api.TestData.point1;
 import static org.locationtech.geogig.web.api.TestData.point1_modified;
 import static org.locationtech.geogig.web.api.TestData.point2;
 import static org.locationtech.geogig.web.api.TestData.point3;
@@ -162,6 +163,63 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
             assertEquals(ChangeType.REMOVED, polyChanges.get(poly1.getIdentifier().getID()));
             assertEquals(ChangeType.ADDED, polyChanges.get(poly2.getIdentifier().getID()));
             assertEquals(ChangeType.ADDED, polyChanges.get(poly3.getIdentifier().getID()));
+        } finally {
+            store.dispose();
+        }
+    }
+
+    @Test
+    public void testExportDiffInverse() throws Exception {
+        // Same as #testExportDiff, but reversing the diff so that commit1 is the newRef and commit3
+        // is the oldRef
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        testData.checkout("master");
+        testData.insert(TestData.point1, TestData.line1, TestData.poly1);
+        testData.add();
+        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("point1, line1, poly1")
+                .call();
+        testData.addAndCommit("modify point1; add point2, line2, poly2", TestData.point1_modified,
+                TestData.point2, TestData.line2, TestData.poly2);
+        testData.insert(TestData.point3, TestData.line3, TestData.poly3);
+        testData.remove(TestData.poly1);
+        testData.add();
+        RevCommit commit3 = geogig.command(CommitOp.class)
+                .setMessage("remove poly1; add point3, line3, poly3").call();
+        testData.checkout("master");
+
+        ExportDiff op = buildCommand(TestParams.of("format", "gpkg", "oldRef",
+                commit3.getId().toString(), "newRef", commit1.getId().toString()));
+
+        File result = run(op);
+        DataStore store = store(result);
+        try {
+            assertFeatures(store, pointsType.getTypeName(), point1);
+            assertFeatures(store, linesType.getTypeName());
+            assertFeatures(store, polysType.getTypeName(), poly1);
+
+            // Check _changes table to make sure all the changes are properly recorded
+            Map<String, ChangeType> pointChanges = getChangesForTable(pointsType.getTypeName(),
+                    result);
+            assertEquals(3, pointChanges.size());
+            assertEquals(ChangeType.MODIFIED,
+                    pointChanges.get(point1.getIdentifier().getID()));
+            assertEquals(ChangeType.REMOVED, pointChanges.get(point2.getIdentifier().getID()));
+            assertEquals(ChangeType.REMOVED, pointChanges.get(point3.getIdentifier().getID()));
+
+            Map<String, ChangeType> lineChanges = getChangesForTable(linesType.getTypeName(),
+                    result);
+            assertEquals(2, lineChanges.size());
+            assertEquals(ChangeType.REMOVED, lineChanges.get(line2.getIdentifier().getID()));
+            assertEquals(ChangeType.REMOVED, lineChanges.get(line3.getIdentifier().getID()));
+
+            Map<String, ChangeType> polyChanges = getChangesForTable(polysType.getTypeName(),
+                    result);
+            assertEquals(3, polyChanges.size());
+            assertEquals(ChangeType.ADDED, polyChanges.get(poly1.getIdentifier().getID()));
+            assertEquals(ChangeType.REMOVED, polyChanges.get(poly2.getIdentifier().getID()));
+            assertEquals(ChangeType.REMOVED, polyChanges.get(poly3.getIdentifier().getID()));
         } finally {
             store.dispose();
         }

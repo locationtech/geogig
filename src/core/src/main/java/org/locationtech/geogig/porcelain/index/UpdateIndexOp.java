@@ -25,6 +25,7 @@ import org.locationtech.geogig.plumbing.index.BuildFullHistoryIndexOp;
 import org.locationtech.geogig.plumbing.index.BuildIndexOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
@@ -205,12 +206,13 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
 
         ObjectId indexedTreeId;
 
+        final ProgressListener listener = getProgressListener();
         try {
             if (indexHistory) {
                 command(BuildFullHistoryIndexOp.class)//
                         .setTreeRefSpec(treeRefSpec)//
                         .setAttributeName(oldIndexInfo.getAttributeName())//
-                        .setProgressListener(getProgressListener())//
+                        .setProgressListener(listener)//
                         .call();
                 Optional<ObjectId> headIndexedTreeId = indexDatabase
                         .resolveIndexedTree(newIndexInfo, canonicalTree.getId());
@@ -218,13 +220,17 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
                         "HEAD indexed tree could not be resolved after building history indexes.");
                 indexedTreeId = headIndexedTreeId.get();
             } else {
-                indexedTreeId = command(BuildIndexOp.class)//
+                RevTree indexedTree = command(BuildIndexOp.class)//
                         .setIndex(newIndexInfo)//
                         .setOldCanonicalTree(RevTree.EMPTY)//
                         .setNewCanonicalTree(canonicalTree)//
                         .setRevFeatureTypeId(featureType.getId())//
-                        .setProgressListener(getProgressListener())//
-                        .call().getId();
+                        .setProgressListener(listener)//
+                        .call();
+                if (listener.isCanceled()) {
+                    return null;
+                }
+                indexedTreeId = indexedTree.getId();
             }
         } catch (Exception e) {
             // "rollback"
@@ -233,6 +239,9 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
             throw Throwables.propagate(e);
         }
 
+        if (listener.isCanceled()) {
+            return null;
+        }
         return new Index(newIndexInfo, indexedTreeId, indexDatabase);
     }
 

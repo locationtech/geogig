@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 import org.locationtech.geogig.repository.impl.SpatialOps;
@@ -95,13 +96,13 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
     }
 
     @Override
-    protected void mergeRoot(final DAG root, final NodeId nodeId) {
+    protected void mergeRoot(final DAG root) {
         if (!ENABLE_EXPAND_COLLAPSE) {
-            super.mergeRoot(root, nodeId);
+            super.mergeRoot(root);
             return;
         }
         checkNotNull(root);
-        checkNotNull(nodeId);
+
         if (root.getState() == STATE.INITIALIZED) {
             final ObjectId originalTreeId = root.originalTreeId();
             final RevTree originalTree = getOriginalTree(originalTreeId);
@@ -109,29 +110,29 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
             final TreeId rootId = root.getId();
             final TreeId expandedTreeId = computeExpandedChildId(originalTree, rootId);
             if (rootId.equals(expandedTreeId)) {
-                super.mergeRoot(root, nodeId);
+                super.mergeRoot(root);
             } else {
-                expand(root, expandedTreeId, originalTree, nodeId);
+                // expand(root, expandedTreeId, originalTree);
                 // System.err.println(rootId + " expanded to " + expandedTreeId);
             }
         }
     }
 
-    private void expand(DAG parent, TreeId expandToChild, RevTree originalTree, NodeId nodeId) {
-        Preconditions.checkArgument(parent.getId().depthLength() < expandToChild.depthLength());
-
-        // initialize leaf to match originalTree
-        final DAG child = getOrCreateDAG(expandToChild, originalTree.getId());
-        child.reset(originalTree.getId());
-        super.mergeRoot(child, nodeId);
-        child.setInitialized();
-
-        // add parents up to root
-        parent.reset(RevTree.EMPTY_TREE_ID);
-        parent.addBucket(expandToChild);
-        parent.setTotalChildCount(child.getTotalChildCount());
-        parent.setMirrored();
-    }
+    // private void expand(DAG parent, TreeId expandToChild, RevTree originalTree, NodeId nodeId) {
+    // Preconditions.checkArgument(parent.getId().depthLength() < expandToChild.depthLength());
+    //
+    // // initialize leaf to match originalTree
+    // final DAG child = getOrCreateDAG(expandToChild, originalTree.getId());
+    // child.reset(originalTree.getId());
+    // super.mergeRoot(child, nodeId);
+    // child.setInitialized();
+    //
+    // // add parents up to root
+    // parent.reset(RevTree.EMPTY_TREE_ID);
+    // parent.addBucket(expandToChild);
+    // parent.setTotalChildCount(child.getTotalChildCount());
+    // parent.setMirrored();
+    // }
 
     /**
      * Override to collapse root DAG's that are one single bucket to the first DAG that has more
@@ -366,6 +367,13 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
         @Nullable
         Envelope bounds = node.bounds().orNull();
         return new NodeId(node.getName(), bounds);
+    }
+
+    @Override
+    public int put(final Node node) {
+        Preconditions.checkArgument(TYPE.FEATURE == node.getType(),
+                "Can't add non feature nodes to quad-tree: %s", node);
+        return super.put(node);
     }
 
     /**

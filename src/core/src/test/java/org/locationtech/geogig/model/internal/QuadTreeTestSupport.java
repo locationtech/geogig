@@ -298,15 +298,7 @@ public class QuadTreeTestSupport extends ExternalResource {
     public Node putNode(QuadTreeClusteringStrategy quad, Quadrant... location) {
         Preconditions.checkNotNull(location);
         long fnumb = quad.root == null ? 0 : quad.root.getTotalChildCount();
-        String quadInfo = "[";
-        for (Quadrant q : location) {
-            quadInfo += q.name() + ",";
-        }
-        quadInfo += "] - [";
-        for (Quadrant q : location) {
-            quadInfo += q.getBucketNumber() + ",";
-        }
-        quadInfo += "]";
+        String quadInfo = Arrays.toString(location);
 
         Node n = createNode("node # " + fnumb + ", at " + quadInfo, location);
 

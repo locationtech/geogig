@@ -12,12 +12,15 @@ package org.locationtech.geogig.model.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.findNode;
 import static org.locationtech.geogig.model.internal.Quadrant.NE;
 import static org.locationtech.geogig.model.internal.Quadrant.NW;
 import static org.locationtech.geogig.model.internal.Quadrant.SE;
 import static org.locationtech.geogig.model.internal.Quadrant.SW;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -29,6 +32,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class QuadTreeClusteringStrategy_putTest {
@@ -274,6 +278,52 @@ public class QuadTreeClusteringStrategy_putTest {
         assertEquals(originalCollapsedTree.size(), updatedTree.size());
     }
 
+    public @Test void testUpdatesShrinksAndExpand() {
+
+        final ArrayList<Quadrant> targetQuadrant = Lists.newArrayList(NW, NE, NE, SE);
+        // create a buckets node at some depth
+        final List<Node> origNodes;
+        RevTree origTree;
+        DAG dag;
+        {
+            QuadTreeClusteringStrategy origTreeBuilder = support.newStrategy();
+            origNodes = support.putNodes(1000, origTreeBuilder, targetQuadrant);
+            dag = support.findDAG(origTreeBuilder, targetQuadrant);
+            assertNotNull(dag);
+
+            // build the tree
+            origTree = DAGTreeBuilder.build(origTreeBuilder, support.store());
+        }
+
+        // create a new builder based on the original tree
+        QuadTreeClusteringStrategy updateBuilder = support.newStrategy(origTree);
+
+        // force the [NW, NE, NE, SE] node to shrink to a leaf DAG
+        List<Node> removeNodes = origNodes.subList(10, origNodes.size());
+        removeNodes.forEach((n) -> assertTrue(updateBuilder.remove(n)));
+
+        assertNull(support.findDAG(updateBuilder, targetQuadrant));
+
+        dag = updateBuilder.root;
+        assertNotNull(dag);
+        assertEquals(10, dag.getTotalChildCount());
+        assertEquals(0, dag.numBuckets());
+        assertEquals(10, dag.numChildren());
+
+        // force the quad DAG to re-expand to buckets
+        List<Node> newNodes = support.createNodes(1000, "new-", targetQuadrant);
+        newNodes.forEach((n) -> assertEquals(1, updateBuilder.put(n)));
+
+        final int expectedSize = newNodes.size() + 10;
+        dag = support.findDAG(updateBuilder, targetQuadrant);
+        assertEquals(expectedSize, dag.getTotalChildCount());
+        assertTrue(dag.numBuckets() > 0);
+        assertEquals(0, dag.numChildren());
+
+        RevTree newTree = DAGTreeBuilder.build(updateBuilder, support.store());
+        assertEquals(expectedSize, newTree.size());
+    }
+
     private void print(ClusteringStrategy st, DAG root) {
         int indent = root.getId().depthLength();
         System.err.print(Strings.padStart("", indent, ' '));
@@ -286,5 +336,4 @@ public class QuadTreeClusteringStrategy_putTest {
         }
     }
 
-   
 }

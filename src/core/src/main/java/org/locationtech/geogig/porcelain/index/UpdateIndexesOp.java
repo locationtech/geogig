@@ -88,6 +88,9 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
                 final @Nullable NodeRef oldTreeRef = previousTreeRefs.get(treePath);
 
                 List<Index> updated = updateIndexes(oldTreeRef, treeRef, layerIndexes);
+                if(getProgressListener().isCanceled()){
+                    return null;
+                }
                 result.addAll(updated);
             }
         }
@@ -104,13 +107,16 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
         final ObjectId newCanonicalTreeId = newTreeRef.getObjectId();
         Optional<ObjectId> indexTreeId;
 
+        final ProgressListener progress = getProgressListener();
         for (IndexInfo index : indexes) {
             indexTreeId = indexDatabase.resolveIndexedTree(index, newCanonicalTreeId);
             if (indexTreeId.isPresent()) {
                 LOG.debug("Index for tree {}({}) exists: {}", newTreeRef.path(), newCanonicalTreeId,
                         indexTreeId.get());
             } else {
-                ProgressListener progress = getProgressListener();
+                if (progress.isCanceled()) {
+                    return null;
+                }
                 progress.setDescription(String.format("Updating index %s(%s) on %s...",
                         index.getAttributeName(), index.getIndexType(), newTreeRef.path()));
 
@@ -132,6 +138,9 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
                 cmd.setNewCanonicalTree(newCanonicalTree);
                 cmd.setRevFeatureTypeId(revTypeId);
                 RevTree indexTree = cmd.call();
+                if (progress.isCanceled()) {
+                    return null;
+                }
 
                 String id = indexTree.getId().toString().substring(0, 8);
                 long size = indexTree.size();
@@ -142,6 +151,9 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
 
                 updated.add(new Index(index, indexTree.getId(), indexDatabase));
             }
+        }
+        if (progress.isCanceled()) {
+            return null;
         }
         return updated;
     }

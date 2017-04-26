@@ -213,8 +213,7 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
         final RevTreeBuilder builder;
         switch (indexType) {
         case QUADTREE:
-            final Envelope maxBounds;
-            maxBounds = (Envelope) index.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS);
+            final Envelope maxBounds = IndexInfo.getMaxBounds(index);
             checkState(null != maxBounds, "QuadTree index does not contain max bounds");
 
             ObjectStore source = indexDatabase();

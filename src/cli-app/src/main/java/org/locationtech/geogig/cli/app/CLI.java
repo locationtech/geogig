@@ -96,6 +96,12 @@ public class CLI {
                 if (cli.isRunning()) {
                     System.err.println("Forced shut down, wait for geogig to be closed...");
                     System.err.flush();
+                    geogig.getProgressListener().cancel();
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     geogig.close();
                     System.err.println("geogig closed.");
                     System.err.flush();

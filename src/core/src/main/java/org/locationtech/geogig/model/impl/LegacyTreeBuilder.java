@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BooleanSupplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -667,5 +668,10 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     @Override
     public boolean update(Node oldNode, Node newNode) {
         return put(newNode);
+    }
+
+    @Override
+    public @Nullable RevTree build(BooleanSupplier abortFlag) {
+        return build();
     }
 }

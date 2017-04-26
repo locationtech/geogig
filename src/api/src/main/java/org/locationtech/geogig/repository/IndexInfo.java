@@ -136,4 +136,9 @@ public final class IndexInfo {
         Object o = atts.get(attName);
         return o;
     }
+
+    public static @Nullable Envelope getMaxBounds(IndexInfo info) {
+        Envelope maxBounds = (Envelope) info.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS);
+        return maxBounds;
+    }
 }

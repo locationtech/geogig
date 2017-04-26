@@ -16,12 +16,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
@@ -34,7 +36,6 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -89,6 +90,11 @@ public class DataStoreConcurrencyTest {
 
     private int initialCommitCount;
 
+    // Feature insert counter
+    private static final AtomicInteger CONCURRENT_INSERT_COUNT = new AtomicInteger(0);
+    // List of Feature counts read by ReadTask instances
+    private static final ArrayList<Integer> READ_COUNT_LIST = new ArrayList<>(4);
+
     @Before
     public void beforeTest() throws Exception {
 
@@ -117,6 +123,11 @@ public class DataStoreConcurrencyTest {
         readThreads = Executors.newFixedThreadPool(readThreadCount,
                 new ThreadFactoryBuilder().setNameFormat("read-thread-%d").build());
         initialCommitCount = copyOf(context.command(LogOp.class).call()).size();
+
+        // reset Insert counter each scenario
+        CONCURRENT_INSERT_COUNT.set(0);
+        // clear ReadTask counts each scenario
+        READ_COUNT_LIST.clear();
     }
 
     @After
@@ -181,7 +192,6 @@ public class DataStoreConcurrencyTest {
         }
     }
 
-    @Ignore //this test is flawed (the test itself), ignoring until it's fixed
     @Test
     public void testConcurrentEditsAndReads() throws Exception {
 
@@ -192,15 +202,22 @@ public class DataStoreConcurrencyTest {
         runInserts(1, insertsPerTask).get(0).get();
 
         List<Future<Integer>> insertResults = runInserts(writeThreadCount, insertsPerTask);
-        Thread.sleep(3000);
+        // a small sleep here allows the InsertTasks to get a head-start on the ReadTasks,
+        // making it much more likely that the ReadTasks read more than the initial set
+        // of inserts above. The faster the machine, the quicker the ReadTasks will cmplete,
+        // meaning they will read fewer Features as the InserTasks have less time to insert
+        // new features.
+        Thread.sleep(300);
         List<Future<Integer>> readResults = runReads(readThreadCount, readsPerTask);
 
         for (Future<Integer> f : insertResults) {
             assertEquals(insertsPerTask, f.get().intValue());
         }
         for (Future<Integer> f : readResults) {
-            assertEquals((insertsPerTask + writeThreadCount * insertsPerTask) * readsPerTask,
-                    f.get().intValue());
+            // ensure the READ_COUNT_LIST has a matching count for each ReadTask Future
+            final Integer readCount = f.get();
+            assertTrue(String.format("Unexpected read count: %s", readCount),
+                    READ_COUNT_LIST.contains(readCount));
         }
 
         List<RevCommit> commits = copyOf(context.command(LogOp.class).call());
@@ -269,8 +286,12 @@ public class DataStoreConcurrencyTest {
                     featureSource.setTransaction(tx);
                     try {
                         featureSource.addFeatures(DataUtilities.collection(feature));
-                        tx.commit();
-                        insertCount++;
+                        // ensure the insert and count increment are atomic
+                        synchronized (CONCURRENT_INSERT_COUNT) {
+                            tx.commit();
+                            insertCount++;
+                            CONCURRENT_INSERT_COUNT.getAndIncrement();
+                        }
                     } finally {
                         tx.close();
                     }
@@ -299,8 +320,14 @@ public class DataStoreConcurrencyTest {
             int readCount = 0;
             try {
                 for (int i = 0; i < numReads; i++) {
-                    readCount += doRead();
+                    // ensure the read and readCount increment are atomic
+                    synchronized( CONCURRENT_INSERT_COUNT) {
+                        assertEquals(CONCURRENT_INSERT_COUNT.get(), doRead());
+                        readCount += CONCURRENT_INSERT_COUNT.get();
+                    }
                 }
+                // set the total number of features read for this Task on the READ_COUNT_LIST
+                READ_COUNT_LIST.add(readCount);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw Throwables.propagate(e);

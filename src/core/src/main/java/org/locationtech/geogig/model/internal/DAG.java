@@ -220,7 +220,7 @@ class DAG implements Cloneable, Serializable {
     @Override
     public String toString() {
         String revTreeId = originalTreeId.equals(RevTree.EMPTY_TREE_ID) ? "EMPTY"
-                : originalTreeId.toString().substring(0, 6);
+                : originalTreeId.toString().substring(0, 8);
         return String.format(
                 "DAG[id:%s, orig:%s, status: %s, size: %,d, children: %,d, buckets: %,d)[children: %s, buckets: %s]",
                 id, revTreeId, state, childCount, children.size(), buckets.size(), children,

@@ -21,12 +21,16 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Resolves the reference given by a ref spec to the {@link ObjectId} it finally points to,
@@ -173,15 +177,12 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
         if (path != null) {
             NodeRef.checkValidPath(path);
             Optional<ObjectId> treeId = command(ResolveTreeish.class).setSource(source)
-                    .setTreeish(resolved.get())
-                    .call();
+                    .setTreeish(resolved.get()).call();
             if (!treeId.isPresent() || treeId.get().isNull()) {
                 return Optional.absent();
             }
-            Optional<RevTree> revTree = command(RevObjectParse.class).setSource(source)
-                    .setObjectId(treeId.get())
-                    .call(RevTree.class);
-            Optional<NodeRef> ref = command(FindTreeChild.class).setParent(revTree.get())
+            RevTree revTree = source.getTree(treeId.get());
+            Optional<NodeRef> ref = command(FindTreeChild.class).setParent(revTree)
                     .setChildPath(path).call();
 
             if (!ref.isPresent()) {
@@ -200,11 +201,10 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
         }
         if (parentN == 0) {
             // 0 == check id is a commit
-            Optional<RevObject> object = command(RevObjectParse.class).setSource(source)
-                    .setObjectId(objectId).call();
-            checkArgument(object.isPresent() && object.get() instanceof RevCommit,
+            RevObject object = source.getIfPresent(objectId);
+            checkArgument(object != null && object.getType() == TYPE.COMMIT,
                     "%s is not a commit: %s", objectId,
-                    (object.isPresent() ? object.get().getType() : "null"));
+                    (object == null ? "null" : object.getType()));
             return Optional.of(objectId);
         }
 
@@ -222,11 +222,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
      */
     private RevCommit resolveCommit(ObjectId objectId) {
 
-        final Optional<RevObject> object = command(RevObjectParse.class).setSource(source)
-                .setObjectId(objectId)
-                .call();
-        checkArgument(object.isPresent(), "No object named %s could be found", objectId);
-        final RevObject revObject = object.get();
+        final RevObject revObject = source.getIfPresent(objectId);
+        checkArgument(revObject != null, "No object named %s could be found", objectId);
         RevCommit commit;
         switch (revObject.getType()) {
         case COMMIT:
@@ -234,9 +231,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
             break;
         case TAG:
             ObjectId commitId = ((RevTag) revObject).getCommitId();
-            commit = command(RevObjectParse.class).setSource(source).setObjectId(commitId)
-                    .call(RevCommit.class)
-                    .get();
+            commit = source.getCommit(commitId);
             break;
         default:
             throw new IllegalArgumentException(String.format(
@@ -246,33 +241,29 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
     }
 
     private Optional<ObjectId> resolveAncestor(ObjectId objectId, int ancestorN) {
-        RevCommit commit;
-        try {
-            commit = resolveCommit(objectId);
-        } catch (IllegalArgumentException e) {
-            // This is throw when an ancestor exist, but is not in the repo in the case of a shallow
-            // clone. We capture the eexception and return an Absent value, to have the same
-            // behaviour
-            // as in the case of parsing an ancestor that doesn't really exist.
-            return Optional.absent();
+        GraphDatabase graph = graphDatabase();
+
+        ObjectId ancestor = objectId;
+        for (int i = 0; i < ancestorN; i++) {
+            ImmutableList<ObjectId> parents = graph.getParents(ancestor);
+            if (parents.isEmpty()) {
+                return Optional.absent();
+            }
+            ancestor = parents.get(0);// use first parent
         }
-        if (ancestorN == 0) {
-            return Optional.of(commit.getId());
+
+        ObjectDatabase odb = objectDatabase();
+        if (!odb.exists(ancestor)) {
+            // the ancestor might not exist in case the commit was the origin of a shallow clone
+            ancestor = null;
         }
-        Optional<ObjectId> firstParent = commit.parentN(0);
-        if (!firstParent.isPresent()) {
-            return Optional.absent();
-        }
-        return resolveAncestor(firstParent.get(), ancestorN - 1);
+        return Optional.fromNullable(ancestor);
     }
 
     private Optional<ObjectId> verifyId(ObjectId objectId, RevObject.TYPE type) {
-        final Optional<RevObject> object = command(RevObjectParse.class).setSource(source)
-                .setObjectId(objectId)
-                .call();
+        final RevObject revObject = source.getIfPresent(objectId);
 
-        checkArgument(object.isPresent(), "No object named %s could be found", objectId);
-        final RevObject revObject = object.get();
+        checkArgument(revObject != null, "No object named %s could be found", objectId);
 
         if (type.equals(revObject.getType())) {
             return Optional.of(revObject.getId());

@@ -15,15 +15,13 @@ import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
 
 /**
- * Single cucumber test runner. Its sole purpose is to serve as an entry point for junit. Step
- * definitions and hooks are defined in their own classes so they can be reused across features.
  *
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = { "pretty", "html:cucumber-report-general" }
-        , strict = true
-        , features = { "classpath:features/index/" })
-public class RunIDataStoreFunctionalTest {
+        plugin = {"pretty", "html:cucumber-report-general"},
+         strict = true,
+         features = {"classpath:features/dimension/"})
+public class RunDataStoreDimensionTest {
 
 }

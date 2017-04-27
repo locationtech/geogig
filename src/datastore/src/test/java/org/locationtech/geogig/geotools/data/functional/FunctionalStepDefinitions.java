@@ -11,15 +11,21 @@ package org.locationtech.geogig.geotools.data.functional;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -79,14 +85,22 @@ public class FunctionalStepDefinitions {
     private static final Random RANDOM = new Random(System.nanoTime());
 
     // Feature Types
-    private static final SimpleFeatureType POINT_TYPE, POLY_TYPE;
+    private static final SimpleFeatureType POINT_TYPE, POLY_TYPE, POINT_WITH_TIME_TYPE;
+
+    private static final String POINT_TYPE_NAME = "point";
+    private static final String POLY_TYPE_NAME = "polygon";
+    private static final String POINT_WITH_TIME_TYPE_NAME = "pointTime";
 
     static {
         final String pointsTypeSpec = "the_geom:Point:srid=4326,sp:String,ip:Integer";
         final String polyTypeSpec = "the_geom:MultiPolygon:srid=4326,sp:String,ip:Integer";
+        final String pointsWithTimeTypeSpec =
+                "the_geom:Point:srid=4326,sp:String,ip:Integer,dp:Date";
         try {
-            POINT_TYPE = DataUtilities.createType("point", pointsTypeSpec);
-            POLY_TYPE = DataUtilities.createType("polygon", polyTypeSpec);
+            POINT_TYPE = DataUtilities.createType(POINT_TYPE_NAME, pointsTypeSpec);
+            POLY_TYPE = DataUtilities.createType(POLY_TYPE_NAME, polyTypeSpec);
+            POINT_WITH_TIME_TYPE = DataUtilities.createType(POINT_WITH_TIME_TYPE_NAME,
+                    pointsWithTimeTypeSpec);
         } catch (SchemaException e) {
             throw Throwables.propagate(e);
         }
@@ -164,12 +178,18 @@ public class FunctionalStepDefinitions {
     @Given("^I am working with the \"([^\"]*)\" layer$")
     public void i_am_working_with_the_layer(String layerName) throws Throwable {
         assertNotNull("Layer name must exist", layerName);
-        if (POINT_TYPE.getTypeName().equals(layerName)) {
-            this.currentLayer = POINT_TYPE;
-        } else if (POLY_TYPE.getTypeName().equals(layerName)) {
-            this.currentLayer = POLY_TYPE;
-        } else {
-            fail(String.format("Layer name does not exist in test data: %s", layerName));
+        switch (layerName) {
+            case POINT_TYPE_NAME:
+                this.currentLayer = POINT_TYPE;
+                break;
+            case POLY_TYPE_NAME:
+                this.currentLayer = POLY_TYPE;
+                break;
+            case POINT_WITH_TIME_TYPE_NAME:
+                this.currentLayer = POINT_WITH_TIME_TYPE;
+                break;
+            default:
+                fail(String.format("Layer name does not exist in test data: %s", layerName));
         }
     }
 
@@ -252,6 +272,72 @@ public class FunctionalStepDefinitions {
         assertEquals("Unexpected Index type", IndexType.QUADTREE, info.getIndexType());
         assertEquals("Unexpected Index spatial attribute", "the_geom", info.getAttributeName());
         assertEquals("Unexpected Index Path name", currentLayer.getTypeName(), info.getTreeName());
+    }
+
+    @When("^I create a spatial index on \"([^\"]*)\" with extra attributes \"([^\"]*)\"$")
+    public void i_create_a_spatial_index_with_extra_Attributes(String storeName, String attributes)
+            throws Throwable {
+        assertNotNull(attributes);
+        assertFalse(attributes.isEmpty());
+        final String[] attributeArray = attributes.split(" ");
+        final List<String> attributeList = Arrays.asList(attributeArray);
+        GeoGigDataStore store = datastoreMap.get(storeName);
+        Optional<ObjectId> createOrUpdateIndex =
+                store.createOrUpdateIndex(currentLayer.getTypeName(), attributeArray);
+        assertTrue("Expected an Index to be created", createOrUpdateIndex.isPresent());
+        Repository repo = repoMap.get(storeName);
+        IndexDatabase indexDatabase = repo.indexDatabase();
+        List<IndexInfo> resolveIndexInfo = indexDatabase.getIndexInfos(currentLayer.getTypeName());
+        assertEquals("Expected exactly 1 IndexInfo", 1, resolveIndexInfo.size());
+        IndexInfo info = resolveIndexInfo.get(0);
+        assertEquals("Unexpected Index type", IndexType.QUADTREE, info.getIndexType());
+        assertEquals("Unexpected Index spatial attribute", "the_geom", info.getAttributeName());
+        assertTrue("Extra Attribute list missing expected attributes", attributeList.containsAll(
+                IndexInfo.getMaterializedAttributeNames(info)));
+        assertEquals("Unexpected Index Path name", currentLayer.getTypeName(), info.getTreeName());
+    }
+
+    @When("^I edit a time dimension attribute value in \"([^\"]*)\" to be NULL")
+    public void i_edit_a_time_dimension_attribute_value_to_be_null(String storeName)
+            throws Throwable {
+        SimpleFeatureStore featureStore = getFeatureStore(storeName);
+        Transaction tx = new DefaultTransaction();
+        featureStore.setTransaction(tx);
+        int featureIndex = RANDOM.nextInt(writesPerThread * writeThreads);
+        int count = 0;
+        try (SimpleFeatureIterator featureIterator = getIterator(featureStore)) {
+            while (featureIterator.hasNext() && count++ < featureIndex) {
+                // advance the iterator
+                featureIterator.next();
+            }
+            // get the next feature
+            preEditedFeature = featureIterator.next();
+            postEditedFeature = (SimpleFeature) DataUtilities.duplicate(preEditedFeature);
+            // edit the feature
+            Object attribute = postEditedFeature.getAttribute("dp");
+            assertNotNull(attribute);
+            assertEquals(Date.class, attribute.getClass());
+            Date newVal = null;
+            postEditedFeature.setAttribute("dp", newVal);
+            featureStore.addFeatures(DataUtilities.collection(postEditedFeature));
+            tx.commit();
+        } finally {
+            tx.close();
+        }
+        // make sure the stored editedFeature is a GeogigSimpleFeature, not a SimpleFeatureImpl
+        tx = new DefaultTransaction();
+        featureStore.setTransaction(tx);
+        try (SimpleFeatureIterator featureIterator = getIterator(featureStore)) {
+            while (featureIterator.hasNext()) {
+                SimpleFeature feature = featureIterator.next();
+                if (feature.getIdentifier().equals(preEditedFeature.getIdentifier())) {
+                    postEditedFeature = feature;
+                    break;
+                }
+            }
+        } finally {
+            tx.close();
+        }
     }
 
     @Then("^datastore \"([^\"]*)\" and datastore \"([^\"]*)\" both have the same features$")
@@ -357,6 +443,38 @@ public class FunctionalStepDefinitions {
                 storeName, editedAttributeValue));
     }
 
+    @Then("^features in \"([^\"]*)\" should contain a Time attribute")
+    public void features_should_contain_time_attribute(String storeName) throws Throwable {
+        SimpleFeatureStore featureStore = getFeatureStore(storeName);
+        SimpleFeatureIterator iterator = getIterator(featureStore);
+        while (iterator.hasNext()) {
+            SimpleFeature feature = iterator.next();
+            Object timeAttribute = feature.getAttribute("dp");
+            assertNotNull("Feature should have had a Time attribute", timeAttribute);
+            assertEquals("Time attribute should be an instance of Date", Date.class,
+                    timeAttribute.getClass());
+        }
+    }
+
+    @Then("^the edited feature in \"([^\"]*)\" should contain a NULL Time attribute")
+    public void edited_feature_should_contain_null_time_attribute(String storeName)
+            throws Throwable {
+        SimpleFeatureStore featureStore = getFeatureStore(storeName);
+        SimpleFeatureIterator iterator = getIterator(featureStore);
+        while (iterator.hasNext()) {
+            SimpleFeature feature = iterator.next();
+            Object timeAttribute = feature.getAttribute("dp");
+            if (feature.getID().equals(postEditedFeature.getID())) {
+                assertNull("Feature should have had a NULL Time attribute", timeAttribute);
+            } else {
+                assertNotNull("Feature should have had a Time attribute", timeAttribute);
+                assertEquals("Time attribute should be an instance of Date", Date.class,
+                        timeAttribute.getClass());
+            }
+        }
+
+    }
+
     private SimpleFeatureStore getFeatureStore(String storeName)
             throws IOException {
         GeoGigDataStore store = datastoreMap.get(storeName);
@@ -428,6 +546,31 @@ public class FunctionalStepDefinitions {
         return new Coordinate(lat, lon);
     }
 
+    private static Date createRandomDate() {
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        // generate a random year between 1900 and 2010
+        final int year = 1900 + RANDOM.nextInt(110);
+        // generate a random monht, [0-11]
+        final int month = RANDOM.nextInt(11);
+        // generate a random Day (ignoring leap year stuff, so no Feb 29)
+        int day = 1;
+        switch (month) {
+            case 1: // February
+                day = 1 + RANDOM.nextInt(27);
+                break;
+            case 3:  // April
+            case 5:  // June
+            case 8:  // September
+            case 10: // November
+                day = 1 + RANDOM.nextInt(29);
+                break;
+            default:
+                day = 1 + RANDOM.nextInt(30);
+        }
+        calendar.set(year, month, day);
+        return calendar.getTime();
+    }
+
     private static MultiPolygon createRandomPolygon() {
         Polygon[] polygons = new Polygon[1];
         for (int polyCount = 0; polyCount < polygons.length; ++polyCount) {
@@ -477,11 +620,15 @@ public class FunctionalStepDefinitions {
                 }
                 builder.reset();
                 switch (type.getTypeName()) {
-                    case "point":
+                    case POINT_TYPE_NAME:
                         builder.set("the_geom", createRandomPoint());
                         break;
-                    case "polygon":
+                    case POLY_TYPE_NAME:
                         builder.set("the_geom", createRandomPolygon());
+                        break;
+                    case POINT_WITH_TIME_TYPE_NAME:
+                        builder.set("the_geom", createRandomPoint());
+                        builder.set("dp", createRandomDate());
                         break;
                     default:
                         throw new RuntimeException(String.format("Invalid layer name: %s",

@@ -66,7 +66,11 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
                 .setProgressListener(cli.getProgressListener())//
                 .call();
 
-        cli.getConsole().println(
-                "Index created successfully: " + index.indexTreeId().toString().substring(0, 8));
+        if (cli.getProgressListener().isCanceled()) {
+            cli.getConsole().println("Index creation cancelled.");
+        } else {
+            cli.getConsole().println("Index created successfully: "
+                    + index.indexTreeId().toString().substring(0, 8));
+        }
     }
 }

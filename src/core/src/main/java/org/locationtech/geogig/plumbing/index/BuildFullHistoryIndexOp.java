@@ -28,6 +28,7 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -53,7 +54,7 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
 
     /**
      * @param attributeName the indexed attribute
-     * @return
+     * @return {@code this}
      */
     public BuildFullHistoryIndexOp setAttributeName(String attributeName) {
         this.attributeName = attributeName;
@@ -96,9 +97,16 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
         ImmutableList<Ref> branches = command(BranchListOp.class).setLocal(true).setRemotes(true)
                 .call();
         int builtTrees = 0;
+        ProgressListener listener = getProgressListener();
         for (Ref ref : branches) {
+            if (listener.isCanceled()) {
+                break;
+            }
             Iterator<RevCommit> commits = command(LogOp.class).setUntil(ref.getObjectId()).call();
             while (commits.hasNext()) {
+                if (listener.isCanceled()) {
+                    break;
+                }
                 RevCommit next = commits.next();
                 if (indexCommit(index, next)) {
                     builtTrees++;
@@ -144,6 +152,9 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
                 .setNewCanonicalTree(newCanonicalTree)//
                 .setProgressListener(getProgressListener())//
                 .call();
+        if (getProgressListener().isCanceled()) {
+            return false;
+        }
         return true;
     }
 }

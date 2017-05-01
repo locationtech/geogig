@@ -66,7 +66,7 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
                 .setMetadata(metadata)//
                 .call();
 
-        final ObjectId indexedTreeId;
+        ObjectId indexedTreeId = null;
 
         try {
             if (indexHistory) {
@@ -75,11 +75,13 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
                         .setAttributeName(attributeName)//
                         .setProgressListener(getProgressListener())//
                         .call();
-                Optional<ObjectId> headIndexedTreeId = indexDatabase().resolveIndexedTree(indexInfo,
-                        canonicalTypeTree.getId());
-                checkState(headIndexedTreeId.isPresent(),
-                        "HEAD indexed tree could not be resolved after building history indexes.");
-                indexedTreeId = headIndexedTreeId.get();
+                if (!getProgressListener().isCanceled()) {
+                    Optional<ObjectId> headIndexedTreeId = indexDatabase()
+                            .resolveIndexedTree(indexInfo, canonicalTypeTree.getId());
+                    checkState(headIndexedTreeId.isPresent(),
+                            "HEAD indexed tree could not be resolved after building history indexes.");
+                    indexedTreeId = headIndexedTreeId.get();
+                }
             } else {
                 indexedTreeId = command(BuildIndexOp.class)//
                         .setIndex(indexInfo)//
@@ -91,12 +93,20 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
             }
         } catch (Exception e) {
             // rollback
-            command(DropIndexOp.class).setTreeRefSpec(treeName).setAttributeName(attributeName)
-                    .call();
+            rollback();
             throw Throwables.propagate(e);
         }
 
+        if (getProgressListener().isCanceled()) {
+            rollback();
+            return null;
+        }
+
         return new Index(indexInfo, indexedTreeId, indexDatabase());
+    }
+
+    private void rollback() {
+        command(DropIndexOp.class).setTreeRefSpec(treeName).setAttributeName(attributeName).call();
     }
 
     /**

@@ -76,8 +76,12 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
                 .setProgressListener(cli.getProgressListener())//
                 .call();
 
-        cli.getConsole().println(
+        if (cli.getProgressListener().isCanceled()) {
+            cli.getConsole().println("Index update cancelled.");
+        } else {
+            cli.getConsole().println(
                 "Index updated successfully: " + index.indexTreeId().toString().substring(0, 8));
+        }
 
     }
 }

@@ -5,7 +5,7 @@
 
   <groupId>org.locationtech.geogig</groupId>
   <artifactId>geogig</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1-beta2</version>
   <packaging>pom</packaging>
   <name>GeoGig</name>
 

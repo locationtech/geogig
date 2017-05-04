@@ -1,3 +1,17 @@
+GeoGig 1.1-beta2 Release Notes
+==============================
+
+May 2, 2017.
+
+This release is primarily a bug fix release. Notable changes since 1.1-beta1 are:
+
+* Performance improvements to internal threading.
+* Fix a bug in updating quadtrees.
+* Fix a bug when retrieving repository logs for very old ancestors with large numbers of commits.
+* Enable and fix bugs around the ability to cancel many GeoGig operations.
+* Fix a bug in export-diff where incorrect commit IDs were sometimes being used.
+* Add and enhance concurrency testing.
+
 GeoGig 1.1-beta1 Release Notes
 ==============================
 

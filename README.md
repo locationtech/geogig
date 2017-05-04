@@ -12,6 +12,8 @@ Project Lead: [Gabriel Roldan](https://github.com/groldan)
 
 Status: 
 
+A 1.1-beta2 version has been released and it is available for [download](https://github.com/locationtech/geogig/releases/tag/v1.1-beta2).
+
 A 1.1-beta1 version has been released and it is available for [download](https://github.com/locationtech/geogig/releases/tag/v1.1-beta1).
 
 A 1.0 version has been released and it is available for download, with a full commandline interface to import data and work with repositories.
@@ -29,7 +31,7 @@ GeoGig is proudly open source:
 Download
 --------
 
-The latest beta version [Version 1.1-beta1](https://github.com/locationtech/geogig/releases/tag/v1.1-beta1) is available on GitHub.
+The latest beta version [Version 1.1-beta2](https://github.com/locationtech/geogig/releases/tag/v1.1-beta2) is available on GitHub.
 
 The latest release [Version 1.0](https://github.com/locationtech/geogig/releases/tag/v1.0) is available on GitHub.
 

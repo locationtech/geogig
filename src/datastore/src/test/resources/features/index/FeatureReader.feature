@@ -104,3 +104,37 @@ Feature: GeoGig DataStore Feature read/write validation
       And I make an edit to "dataStore1"
       And I make the same edit to "dataStore2"
       Then datastore "dataStore1" and datastore "dataStore2" both have the same features
+
+   Scenario: Ensure Point Features can be edited concurrently
+      Given I am working with the "point" layer
+      And I have a datastore named "dataStore1" backed by a GeoGig repo
+      And datastore "dataStore1" has 200 features per thread inserted using 4 threads
+      When I create a spatial index on "dataStore1"
+      Then I should be able to retrieve data from "dataStore1" using 4 threads and 40 reads per thread
+      When I make 20 edits to "dataStore1" using 4 edit threads
+      Then datastore "dataStore1" has the edited features
+
+   Scenario: Ensure Polygon Features can be edited concurrently
+      Given I am working with the "polygon" layer
+      And I have a datastore named "dataStore1" backed by a GeoGig repo
+      And datastore "dataStore1" has 200 features per thread inserted using 4 threads
+      When I create a spatial index on "dataStore1"
+      Then I should be able to retrieve data from "dataStore1" using 4 threads and 40 reads per thread
+      When I make 20 edits to "dataStore1" using 4 edit threads
+      Then datastore "dataStore1" has the edited features
+
+   Scenario: Ensure Point Features can be edited concurrently with concurrent reads
+      Given I am working with the "point" layer
+      And I have a datastore named "dataStore1" backed by a GeoGig repo
+      And datastore "dataStore1" has 200 features per thread inserted using 4 threads
+      When I create a spatial index on "dataStore1"
+      And I make 20 edits to "dataStore1" using 4 edit threads while using 20 read threads and 8 reads per thread
+      Then datastore "dataStore1" has the edited features
+
+   Scenario: Ensure Polygon Features can be edited concurrently with concurrent reads
+      Given I am working with the "polygon" layer
+      And I have a datastore named "dataStore1" backed by a GeoGig repo
+      And datastore "dataStore1" has 200 features per thread inserted using 4 threads
+      When I create a spatial index on "dataStore1"
+      And I make 20 edits to "dataStore1" using 4 edit threads while using 20 read threads and 8 reads per thread
+      Then datastore "dataStore1" has the edited features

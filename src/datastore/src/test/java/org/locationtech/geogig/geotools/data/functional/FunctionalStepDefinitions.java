@@ -43,6 +43,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.porcelain.LogOp;
@@ -58,10 +59,13 @@ import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.TestContextBuilder;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -112,27 +116,23 @@ public class FunctionalStepDefinitions {
     // Home directory for GeoGig user
     private File userHomeDirectry;
 
-    // Test repos
-    private HashMap<String, Repository> repoMap;
-
     // DataStores
-    private HashMap<String, GeoGigDataStore> datastoreMap;
+    private final HashMap<String, GeoGigDataStore> datastoreMap = Maps.newHashMap();
 
     // Executor services
     private ExecutorService writeService, readService;
 
     // Write counts
     // These should be set by methods that take them as arguments
-    private int writesPerThread, writeThreads;
+    private static int WRITES_PER_THREAD, WRITE_THREADS;
 
     private SimpleFeature postEditedFeature;
     private SimpleFeature preEditedFeature;
 
-    // commit count
-    private HashMap<String, Integer> initialCommitCountMap;
-
     // working layer
     private SimpleFeatureType currentLayer;
+
+    private final List<FeatureId> editedFeatureIdList = Lists.newArrayList();
 
     @Before
     public void before() throws Exception {
@@ -147,9 +147,8 @@ public class FunctionalStepDefinitions {
         readService = Executors.newFixedThreadPool(READ_POOL_THREAD_COUNT,
                 new ThreadFactoryBuilder().setNameFormat("read-thread-%d").build());
 
-        initialCommitCountMap = new HashMap<>(2);
-        repoMap = new HashMap<>(2);
-        datastoreMap = new HashMap<>(2);
+        datastoreMap.clear();
+        editedFeatureIdList.clear();
     }
 
     @After
@@ -157,11 +156,6 @@ public class FunctionalStepDefinitions {
         for (GeoGigDataStore store : datastoreMap.values()) {
             if (store != null) {
                 store.dispose();
-            }
-        }
-        for (Repository repo : repoMap.values()) {
-            if (repo != null) {
-                repo.close();
             }
         }
         if (writeService != null) {
@@ -196,7 +190,6 @@ public class FunctionalStepDefinitions {
     @Given("^I have a datastore named \"([^\"]*)\" backed by a GeoGig repo$")
     public void i_have_a_datastore_backed_by_a_GeoGig_repo(String repoName) throws Throwable {
         Repository repo = initRepo(repoName);
-        repoMap.put(repoName, repo);
         GeoGigDataStore store = new GeoGigDataStore(repo);
         store.createSchema(currentLayer);
         datastoreMap.put(repoName, store);
@@ -207,8 +200,8 @@ public class FunctionalStepDefinitions {
             int writeThreadCount) throws Throwable {
 
         // set the counts for later verification
-        writesPerThread = numPointsPerWriteThread;
-        writeThreads = writeThreadCount;
+        WRITES_PER_THREAD = numPointsPerWriteThread;
+        WRITE_THREADS = writeThreadCount;
 
         List<Future<List<SimpleFeature>>> inserts = runInserts(writeThreadCount,
                 numPointsPerWriteThread, datastoreMap.get(storeName));
@@ -229,7 +222,7 @@ public class FunctionalStepDefinitions {
         assertEquals(readThreadCount, reads.size());
         for (Future<List<SimpleFeature>> future : reads) {
             List<SimpleFeature> featureList = future.get();
-            assertEquals(numReadsPerThread * writesPerThread * writeThreads, featureList.size());
+            assertEquals(numReadsPerThread * WRITES_PER_THREAD * WRITE_THREADS, featureList.size());
         }
     }
 
@@ -264,8 +257,7 @@ public class FunctionalStepDefinitions {
         Optional<ObjectId> createOrUpdateIndex =
                 store.createOrUpdateIndex(currentLayer.getTypeName());
         assertTrue("Expected an Index to be created", createOrUpdateIndex.isPresent());
-        Repository repo = repoMap.get(storeName);
-        IndexDatabase indexDatabase = repo.indexDatabase();
+        IndexDatabase indexDatabase = store.resolveContext(Transaction.AUTO_COMMIT).indexDatabase();
         List<IndexInfo> resolveIndexInfo = indexDatabase.getIndexInfos(currentLayer.getTypeName());
         assertEquals("Expected exactly 1 IndexInfo", 1, resolveIndexInfo.size());
         IndexInfo info = resolveIndexInfo.get(0);
@@ -285,8 +277,7 @@ public class FunctionalStepDefinitions {
         Optional<ObjectId> createOrUpdateIndex =
                 store.createOrUpdateIndex(currentLayer.getTypeName(), attributeArray);
         assertTrue("Expected an Index to be created", createOrUpdateIndex.isPresent());
-        Repository repo = repoMap.get(storeName);
-        IndexDatabase indexDatabase = repo.indexDatabase();
+        IndexDatabase indexDatabase = store.resolveContext(Transaction.AUTO_COMMIT).indexDatabase();
         List<IndexInfo> resolveIndexInfo = indexDatabase.getIndexInfos(currentLayer.getTypeName());
         assertEquals("Expected exactly 1 IndexInfo", 1, resolveIndexInfo.size());
         IndexInfo info = resolveIndexInfo.get(0);
@@ -303,7 +294,7 @@ public class FunctionalStepDefinitions {
         SimpleFeatureStore featureStore = getFeatureStore(storeName);
         Transaction tx = new DefaultTransaction();
         featureStore.setTransaction(tx);
-        int featureIndex = RANDOM.nextInt(writesPerThread * writeThreads);
+        int featureIndex = RANDOM.nextInt(WRITES_PER_THREAD * WRITE_THREADS);
         int count = 0;
         try (SimpleFeatureIterator featureIterator = getIterator(featureStore)) {
             while (featureIterator.hasNext() && count++ < featureIndex) {
@@ -365,7 +356,7 @@ public class FunctionalStepDefinitions {
         SimpleFeatureStore featureStore = getFeatureStore(storeName);
         Transaction tx = new DefaultTransaction();
         featureStore.setTransaction(tx);
-        int featureIndex = RANDOM.nextInt(writesPerThread * writeThreads);
+        int featureIndex = RANDOM.nextInt(WRITES_PER_THREAD * WRITE_THREADS);
         int count = 0;
         try (SimpleFeatureIterator featureIterator = getIterator(featureStore)) {
             while (featureIterator.hasNext() && count++ < featureIndex) {
@@ -398,6 +389,65 @@ public class FunctionalStepDefinitions {
             }
         } finally {
             tx.close();
+        }
+    }
+
+    @When("^I make (\\d+) edits to \"([^\"]*)\" using (\\d+) edit threads" +
+            " while using (\\d+) read threads and (\\d+) reads per thread$")
+    public void i_make_concurrent_edits_and_reads(int numEdits, String storeName, int numThreads,
+            int numReads, int numReadThreads)
+            throws Throwable {
+        final GeoGigDataStore store = datastoreMap.get(storeName);
+        // fire off the edits
+        List<Future<List<FeatureId>>> edits = runEdits(numThreads, numEdits, store);
+        // fire off the reads
+        List<Future<List<SimpleFeature>>> reads = runReads(numReadThreads, numReads, store);
+        assertEquals(numThreads, edits.size());
+        assertEquals(numReadThreads, reads.size());
+        for (Future<List<FeatureId>> editFuture : edits) {
+            editFuture.get();
+        }
+        for (Future<List<SimpleFeature>> readFuture : reads) {
+            readFuture.get();
+        }
+        // verify the commit counts
+        List<RevCommit> commits = copyOf(store.resolveContext(Transaction.AUTO_COMMIT).
+                command(LogOp.class).call());
+        for (RevCommit commit : commits) {
+            ObjectId treeId = commit.getTreeId();
+            ImmutableList<ObjectId> parentIds = commit.getParentIds();
+            System.out.println("TREE ID: " + treeId + ", Parents: " + Arrays.toString(parentIds.toArray())
+                    + "Message: " + commit.getMessage());
+        }
+    }
+
+    @When("^I make (\\d+) edits to \"([^\"]*)\" using (\\d+) edit threads$")
+    public void i_make_concurrent_edits(int numEdits, String storeName, int numThreads)
+            throws Throwable {
+        List<Future<List<FeatureId>>> edits = runEdits(numThreads, numEdits,
+                datastoreMap.get(storeName));
+        assertEquals(numThreads, edits.size());
+        for (Future<List<FeatureId>> editFuture : edits) {
+            List<FeatureId> featureIds = editFuture.get();
+            assertEquals(numEdits, featureIds.size());
+            editedFeatureIdList.addAll(featureIds);
+        }
+    }
+
+    @Then("^datastore \"([^\"]*)\" has the edited features$")
+    public void datastore_has_the_edited_features(String storeName) throws Throwable {
+        List<Future<List<SimpleFeature>>> reads = runReads(1, 1, datastoreMap.get(storeName));
+        assertEquals(1, reads.size());
+        Future<List<SimpleFeature>> future = reads.get(0);
+        List<SimpleFeature> featureList = future.get();
+        // ensure the list contains the edited features
+        for (SimpleFeature feature : featureList) {
+            if (editedFeatureIdList.contains(feature.getIdentifier())) {
+                Object attributeValue = feature.getAttribute("sp");
+                assertNotNull(attributeValue);
+                String strValue = attributeValue.toString();
+                assertTrue(strValue.endsWith("_edited"));
+            }
         }
     }
 
@@ -485,12 +535,6 @@ public class FunctionalStepDefinitions {
         return store.getFeatures().features();
     }
 
-    private void setInitialCommitCount(Context context, String repoName) {
-        // get the commit count
-        int size = copyOf(context.command(LogOp.class).call()).size();
-        initialCommitCountMap.put(repoName, size);
-    }
-
     private Repository initRepo(String repoName) throws IOException {
         File workingDirectory = tmp.newFolder(repoName);
         TestPlatform platform = new TestPlatform(workingDirectory, userHomeDirectry);
@@ -502,7 +546,6 @@ public class FunctionalStepDefinitions {
                 setName("user.name").setValue("geogig_test").call();
         geogig.command(ConfigOp.class).setAction(ConfigOp.ConfigAction.CONFIG_SET).
                 setName("user.email").setValue("geogig_test@geogig.org").call();
-        setInitialCommitCount(context, repoName);
         return geogig.getRepository();
     }
 
@@ -523,6 +566,15 @@ public class FunctionalStepDefinitions {
             readResults.add(readService.submit(new ReadTask(store, readsPerTask, currentLayer)));
         }
         return readResults;
+    }
+
+    private List<Future<List<FeatureId>>> runEdits(final int editThreadCount,
+            final int editsPerTask, GeoGigDataStore store) {
+        List<Future<List<FeatureId>>> editResults = Lists.newArrayList();
+        for (int i=0; i<editThreadCount; ++i) {
+            editResults.add(writeService.submit(new EditTask(store, editsPerTask, currentLayer)));
+        }
+        return editResults;
     }
 
     private static final GeometryFactory GF = new GeometryFactory();
@@ -553,7 +605,7 @@ public class FunctionalStepDefinitions {
         // generate a random monht, [0-11]
         final int month = RANDOM.nextInt(11);
         // generate a random Day (ignoring leap year stuff, so no Feb 29)
-        int day = 1;
+        int day;
         switch (month) {
             case 1: // February
                 day = 1 + RANDOM.nextInt(27);
@@ -697,6 +749,59 @@ public class FunctionalStepDefinitions {
                 }
             }
             return featureList;
+        }
+    }
+
+    public static class EditTask implements Callable<List<FeatureId>> {
+
+        private final int numEdits;
+        private final GeoGigDataStore dataStore;
+        private final SimpleFeatureType type;
+
+        public EditTask(GeoGigDataStore dataStore, int numEdits, final SimpleFeatureType type) {
+            this.dataStore = dataStore;
+            this.numEdits = numEdits;
+            this.type = type;
+        }
+
+        @Override
+        public List<FeatureId> call() throws Exception {
+            final List<FeatureId> list = Lists.newArrayList();
+            for (int i=0; i<numEdits; ++i) {
+                list.add(doEdit());
+            }
+            return list;
+        }
+
+        public FeatureId doEdit() throws Exception {
+            SimpleFeatureStore featureStore = (SimpleFeatureStore) dataStore.
+                    getFeatureSource(type.getTypeName());
+            final int featureIndex = RANDOM.nextInt(WRITES_PER_THREAD * WRITE_THREADS);
+            int count = 0;
+            Transaction tx = new DefaultTransaction();
+            featureStore.setTransaction(tx);
+            SimpleFeature featureToEdit;
+            SimpleFeature editedFeature;
+            try (SimpleFeatureIterator featureIterator = featureStore.getFeatures().features()) {
+                while (featureIterator.hasNext() && count++ < featureIndex) {
+                    // advance the iterator
+                    featureIterator.next();
+                }
+                // get the next feature
+                featureToEdit = (SimpleFeature)DataUtilities.duplicate(featureIterator.next());
+                editedFeature = (SimpleFeature)DataUtilities.duplicate(featureToEdit);
+                // edit the feature
+                Object attribute = editedFeature.getAttribute("sp");
+                assertNotNull(attribute);
+                String newVal = attribute.toString() + "_edited";
+                editedFeature.setAttribute("sp", newVal);
+                featureStore.addFeatures(DataUtilities.collection(editedFeature));
+                tx.commit();
+            } finally {
+                tx.close();
+            }
+            // return the edited feature Id
+            return editedFeature.getIdentifier();
         }
     }
 }

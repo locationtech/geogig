@@ -413,12 +413,10 @@ public class FunctionalStepDefinitions {
         // verify the commit counts
         List<RevCommit> commits = copyOf(store.resolveContext(Transaction.AUTO_COMMIT).
                 command(LogOp.class).call());
-        for (RevCommit commit : commits) {
-            ObjectId treeId = commit.getTreeId();
-            ImmutableList<ObjectId> parentIds = commit.getParentIds();
-            System.out.println("TREE ID: " + treeId + ", Parents: " + Arrays.toString(parentIds.toArray())
-                    + "Message: " + commit.getMessage());
-        }
+        // number of commits should be (initial commit, plus initial data insert, plus edits in
+        // this step
+        final int expectedCommitCount = 1 + WRITE_THREADS + numEdits * numThreads;
+        assertEquals("Unexpected number of commits", expectedCommitCount, commits.size());
     }
 
     @When("^I make (\\d+) edits to \"([^\"]*)\" using (\\d+) edit threads$")

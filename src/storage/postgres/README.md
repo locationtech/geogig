@@ -29,18 +29,34 @@ Enable tests with the ``-P postgres`` maven profile: ``mvn clean install -P post
 
 Have a ``$HOME/.geogig-pg-backend-tests.properties`` file with the following content:
 
-postgres.server = <server>
-postgres.port = <port>
-postgres.schema = <schema>
-postgres.database = <database>
-postgres.user = <user>
-postgres.password = <password>
+[postgres]
+enabled = \<true|false>  
+server = \<PG Host>  
+port = \<PG Port>  
+schema = \<PG Schema>  
+database = \<PG Daatabase name>  
+user = \<PG user>  
+password = \<PG user password>  
+
+For example;
+
+[postgres]  
+enabled = true  
+server = localhost  
+port = 5432  
+schema = public  
+database = testdb  
+user = postgres  
+password = postgres  
+  
+NOTE: ensure there are no extra spaces at the end of each line
+
 
 A JUnit "Rule" called ``org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig`` is used
 on each test class to create a config for each test.
 
 
-IMPORTANT: every test case creates its own set of tables prefixed by "test_<N>" where N is a random number between 0 and 999. Just for safety, its recommended to use a separate database schema to run the postgres backend tests. To do so, create the schema in pgsql:
+IMPORTANT: every test case creates its own set of tables prefixed by "test_\<N>" where N is a random number between 0 and 999. Just for safety, its recommended to use a separate database schema to run the postgres backend tests. To do so, create the schema in pgsql:
 $ psql -d geogig
 # create schema geogig_tests;
 # set search_path to geogig_tests;

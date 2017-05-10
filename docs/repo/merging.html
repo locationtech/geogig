@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Interacting with remote repositories" href="remotes.html" />
@@ -103,26 +105,26 @@
 <img alt="../_images/merged.png" src="../_images/merged.png" />
 </div>
 <p>Merging is done using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">merge</span></code> command. Change to the <strong>destination branch</strong> (in most cases, <code class="docutils literal"><span class="pre">master</span></code>) and perform the following command.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig merge mybranch</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig merge mybranch</span>
 </pre></div>
 </div>
 <p>This will add new commits from the <code class="docutils literal"><span class="pre">mybranch</span></code> branch to the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
 <p>Once you have merged your changes, you may wish to delete the branch. Do this by invoking the <code class="docutils literal"><span class="pre">-d</span></code> option on the <code class="docutils literal"><span class="pre">branch</span></code> command.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig branch -d mybranch</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig branch -d mybranch</span>
 </pre></div>
 </div>
 <div class="section" id="merge-conflicts">
 <h2>Merge conflicts<a class="headerlink" href="#merge-conflicts" title="Permalink to this headline">¶</a></h2>
 <p>When merging two branches, the changes made may not be compatible. For instance, if both branches have modified the same attribute value of the same feature, that will cause a conflicting situation that GeoGig cannot solve automatically. In such a case, GeoGig will merge all the compatible changes and leave the conflicting ones marked, so they can be manually resolved and then committed.</p>
 <p>When a merge operation finds conflicts and it cannot automatically merge all the changes, it shows a message like the one shown below.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">CONFLICT: Merge conflict in parks/2</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">CONFLICT: Merge conflict in parks/2</span>
 <span class="go">CONFLICT: Merge conflict in parks/3</span>
 <span class="go">CONFLICT: Merge conflict in parks/1</span>
 <span class="go">Automatic merge failed. Fix conflicts and then commit the result.</span>
 </pre></div>
 </div>
 <p>You can check which elements are conflicted by running the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">status</span></code> command. The result will be similar to that shown next.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> On branch master
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">#</span> On branch master
 <span class="gp">#</span> Unmerged paths:
 <span class="gp">#</span>   <span class="o">(</span>use <span class="s2">&quot;geogig add/rm &lt;path/to/fid&gt;...&quot;</span> as appropriate to mark resolution
 <span class="gp">#</span>
@@ -165,7 +167,7 @@
 <p>The <code class="docutils literal"><span class="pre">conflicts</span></code> command can be used to describe the current unmerged elements. There are three ways of displaying conflicts:</p>
 <ol class="arabic simple">
 <li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span></code> will print the full descriptions of the versions involved in the conflict: the common ancestor, &#8220;ours&#8221; (current branch) and &#8220;theirs&#8221; (the branch to merge). The descriptions of the involved elements are the same ones that would be obtained by calling the GeoGig <code class="docutils literal"><span class="pre">cat</span></code> command on each of them.</li>
-<li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--diff</span></code> will output a representation with diff-like syntax instead of full descriptions, showing only those attributes the differ. It uses the same syntax as the <code class="docutils literal"><span class="pre">diff</span></code> command, described in the <a class="reference internal" href="../data/diffs.html#differences"><span>Showing differences</span></a> section, which makes it easier to see why the conflict arises and how to solve it.</li>
+<li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--diff</span></code> will output a representation with diff-like syntax instead of full descriptions, showing only those attributes the differ. It uses the same syntax as the <code class="docutils literal"><span class="pre">diff</span></code> command, described in the <a class="reference internal" href="../data/diffs.html#differences"><span class="std std-ref">Showing differences</span></a> section, which makes it easier to see why the conflict arises and how to solve it.</li>
 <li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--ids-only</span></code> will return just the IDs of the three versions corresponding to each unmerged element.</li>
 </ol>
 </div>
@@ -189,17 +191,17 @@
 <p>Using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">add</span></code> command, features can be staged in the usual way. When a feature is staged, it is not in a conflicted state. Running the <code class="docutils literal"><span class="pre">add</span></code> command will solve the conflicted merge. Before this can be done, you must pick which version of the commit to merge.</p>
 <p>GeoGig uses &#8220;ours&#8221; and &#8220;theirs&#8221; notation, with &#8220;ours&#8221; referring to the current branch, and &#8220;theirs&#8221; referring to the other branch.</p>
 <p>To select the feature from the current branch:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig checkout -p &lt;path_to_feature&gt; --ours</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig checkout -p &lt;path_to_feature&gt; --ours</span>
 </pre></div>
 </div>
 <p>To select the feature from the other branch:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig checkout -p &lt;path_to_feature&gt; --theirs</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig checkout -p &lt;path_to_feature&gt; --theirs</span>
 </pre></div>
 </div>
 <p>Alternately, you can import a new feature using one of the importing tools from GeoGig or delete the conflicted feature entirely using the <code class="docutils literal"><span class="pre">rm</span></code> command. The latter option will remove it from both the working tree and the index, as well as the commit. There is no need to call <code class="docutils literal"><span class="pre">add</span></code> afterwards, unless you have staged some other element to solve a different conflict.</p>
 <p>Once you have the correct version that you want to commit, run <code class="docutils literal"><span class="pre">add</span></code> to stage it and then run <code class="docutils literal"><span class="pre">commit</span></code> to finally commit your resolved elements and finish the merge.</p>
 <p>In a standard commit, you usually must supply a commit message using the <code class="docutils literal"><span class="pre">-m</span></code> switch. In the case of a merge, you can also run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">merge</span></code> without a commit message. In the conflict case, the default message would look something like this:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">Merge branch refs/heads/b1</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">Merge branch refs/heads/b1</span>
 
 <span class="go">Conflicts:</span>
 <span class="go">  parks/2</span>
@@ -211,7 +213,7 @@
 <div class="section" id="aborting-the-merge-operation">
 <h2>Aborting the merge operation<a class="headerlink" href="#aborting-the-merge-operation" title="Permalink to this headline">¶</a></h2>
 <p>You can abort the merge operation and restore it to the original state it had before you invoked the <code class="docutils literal"><span class="pre">merge</span></code> command. You have the following alternatives, which will effect the same result.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig reset --hard ORIG_HEAD</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig reset --hard ORIG_HEAD</span>
 <span class="go">geogig merge --abort</span>
 </pre></div>
 </div>
@@ -246,6 +248,7 @@
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -273,7 +276,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/repo/merging.txt">Show Source</a></li>
+          <li><a href="../_sources/repo/merging.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

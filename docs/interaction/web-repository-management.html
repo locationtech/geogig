@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="GeoServer GUI configuration" href="geoserver_ui.html" />
@@ -101,28 +103,28 @@
 <h2>Serving Multiple Repositories<a class="headerlink" href="#serving-multiple-repositories" title="Permalink to this headline">¶</a></h2>
 <p>When <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code> is run from within a GeoGig repository directory, it will serve only that repository.  However, if it is run from a directory containing zero or more GeoGig repositories while using the <code class="docutils literal"><span class="pre">--multirepo</span></code> parameter, all repositories within that directory will be served through the endpoint.</p>
 <p>Given the following directory structure:</p>
-<div class="highlight-python"><div class="highlight"><pre>/repos/
-  repo1/
-    .geogig/
-  repo2/
-    .geogig/
-  repo3/
-    .geogig/
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">repos</span><span class="o">/</span>
+  <span class="n">repo1</span><span class="o">/</span>
+    <span class="o">.</span><span class="n">geogig</span><span class="o">/</span>
+  <span class="n">repo2</span><span class="o">/</span>
+    <span class="o">.</span><span class="n">geogig</span><span class="o">/</span>
+  <span class="n">repo3</span><span class="o">/</span>
+    <span class="o">.</span><span class="n">geogig</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>To serve repo1, repo2, and repo3 under a single endpoint, perform the following commands:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cd /repos
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /repos
 $ geogig serve --multirepo
 </pre></div>
 </div>
 <p>This will enable all three repositories to be accessed through the <code class="docutils literal"><span class="pre">http://localhost:8182/repos</span></code> endpoint.</p>
 <p>The rest of this document will use this repository configuration for demonstration purposes.</p>
 <p>You can also serve Postgres repositories by providing the repository URI to the command:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig serve &quot;postgresql://localhost/&lt;database&gt;/&lt;repoName&gt;?user=&lt;postgres_username&gt;&amp;password=&lt;postgres_password&gt;&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig serve &quot;postgresql://localhost/&lt;database&gt;/&lt;repoName&gt;?user=&lt;postgres_username&gt;&amp;password=&lt;postgres_password&gt;&quot;
 </pre></div>
 </div>
 <p>Or multiple by specifying the root URI:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig serve --multirepo &quot;postgresql://localhost/&lt;database&gt;?user=&lt;postgres_username&gt;&amp;password=&lt;postgres_password&gt;&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig serve --multirepo &quot;postgresql://localhost/&lt;database&gt;?user=&lt;postgres_username&gt;&amp;password=&lt;postgres_password&gt;&quot;
 </pre></div>
 </div>
 </div>
@@ -131,7 +133,7 @@ $ geogig serve --multirepo
 <div class="section" id="listing-repositories">
 <h3>Listing Repositories<a class="headerlink" href="#listing-repositories" title="Permalink to this headline">¶</a></h3>
 <p>In order to see which repositories are currently being served, you can issue a <code class="docutils literal"><span class="pre">GET</span></code> request against the <code class="docutils literal"><span class="pre">repos/</span></code> endpoint.  The response will also provide a link to each individual repository&#8217;s endpoint.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/&quot; | xmllint --format - --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/&quot; | xmllint --format - --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -157,7 +159,7 @@ $ geogig serve --multirepo
 <div class="section" id="basic-init-request">
 <h4>Basic Init Request<a class="headerlink" href="#basic-init-request" title="Permalink to this headline">¶</a></h4>
 <p>You can create a new repository by issuing a <code class="docutils literal"><span class="pre">PUT</span></code> request to the <code class="docutils literal"><span class="pre">init</span></code> endpoint of the desired repository.  The name preceding <code class="docutils literal"><span class="pre">init</span></code> will be used as the repository name.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X PUT -v &quot;http://localhost:8182/repos/repo4/init&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X PUT -v &quot;http://localhost:8182/repos/repo4/init&quot; | xmllint --format -
 &lt; HTTP/1.1 201 Created
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -176,14 +178,14 @@ $ geogig serve --multirepo
 <div class="section" id="init-request-with-optional-author-config">
 <h4>Init Request With Optional Author Config<a class="headerlink" href="#init-request-with-optional-author-config" title="Permalink to this headline">¶</a></h4>
 <p>You can also create a new repository and initialize the <code class="docutils literal"><span class="pre">user.name</span></code> and <code class="docutils literal"><span class="pre">user.email</span></code> config values in a single request. This allows you to initialize a repository that can be committed to without having to make 2 separate <code class="docutils literal"><span class="pre">config</span></code> requests to set these required config values. To do so, you can provide either a JSON object or a URL encoded form in the request body with <code class="docutils literal"><span class="pre">authorName</span></code> and <code class="docutils literal"><span class="pre">authorEmail</span></code> fields set to the desired values. An example JSON request body might look like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;authorName&quot;</span><span class="p">:</span><span class="s2">&quot;GeoGig User&quot;</span><span class="p">,</span>
     <span class="s2">&quot;authorEmail&quot;</span><span class="p">:</span><span class="s2">&quot;geogig@geogig.org&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Sending the request:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X PUT -H &quot;Content-Type: application/json&quot; -d &#39;{&quot;authorName&quot;:&quot;GeoGig User&quot;,&quot;authorEmail&quot;:&quot;geogig@geogig.org&quot;}&#39; -v &quot;http://localhost:8182/repos/repo5/init&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X PUT -H &quot;Content-Type: application/json&quot; -d &#39;{&quot;authorName&quot;:&quot;GeoGig User&quot;,&quot;authorEmail&quot;:&quot;geogig@geogig.org&quot;}&#39; -v &quot;http://localhost:8182/repos/repo5/init&quot; | xmllint --format -
 &lt; HTTP/1.1 201 Created
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot;?&gt;
@@ -200,7 +202,7 @@ $ geogig serve --multirepo
 <div class="section" id="init-request-with-optional-location-config">
 <h4>Init Request With Optional Location Config<a class="headerlink" href="#init-request-with-optional-location-config" title="Permalink to this headline">¶</a></h4>
 <p>You can also create a new repository and specify options that can dictate the repository&#8217;s location. This allows you to initialize a repository, for example, that is stored in a PostgreSQL database, or a different directory location than the working directory of the GeoGig multi-repo server. To specify a different parent directory location, set the <code class="docutils literal"><span class="pre">parentDirectory</span></code> value in the JSON request body:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;parentDirectory&quot;</span><span class="p">:</span><span class="s2">&quot;/data/geogig/repos&quot;</span><span class="p">,</span>
     <span class="s2">&quot;authorName&quot;</span><span class="p">:</span><span class="s2">&quot;GeoGig User&quot;</span><span class="p">,</span>
     <span class="s2">&quot;authorEmail&quot;</span><span class="p">:</span><span class="s2">&quot;geogig@geogig.org&quot;</span>
@@ -208,7 +210,7 @@ $ geogig serve --multirepo
 </pre></div>
 </div>
 <p>Send the request:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X PUT -H &quot;Content-Type: application/json&quot; -d &#39;{&quot;parentDirectory&quot;:&quot;/data/geogig/repos&quot;,&quot;authorName&quot;:&quot;GeoGig User&quot;,&quot;authorEmail&quot;:&quot;geogig@geogig.org&quot;}&#39; -v &quot;http://localhost:8182/repos/repo6/init&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X PUT -H &quot;Content-Type: application/json&quot; -d &#39;{&quot;parentDirectory&quot;:&quot;/data/geogig/repos&quot;,&quot;authorName&quot;:&quot;GeoGig User&quot;,&quot;authorEmail&quot;:&quot;geogig@geogig.org&quot;}&#39; -v &quot;http://localhost:8182/repos/repo6/init&quot; | xmllint --format -
 &lt; HTTP/1.1 201 Created
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot;?&gt;
@@ -238,13 +240,13 @@ $ geogig serve --multirepo
 <tbody valign="top">
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">dbName</span></code>
 (*)</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 <td>Name of the PostgreSQL
 database to connect to</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">dbPassword</span></code>
 (*)</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 <td>Password of the database
 user with which to connect</td>
 </tr>
@@ -269,19 +271,19 @@ to</td>
 <td>Username to connect with</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">authorName</span></code></td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 <td>Committer name for the
 repository</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">authorEmail</span></code></td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 <td>Committer email for the
 repository</td>
 </tr>
 </tbody>
 </table>
 <p>Example JSON request body:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;dbName&quot;</span><span class="p">:</span><span class="s2">&quot;repos&quot;</span><span class="p">,</span>
     <span class="s2">&quot;dbPassword&quot;</span><span class="p">:</span><span class="s2">&quot;geogig&quot;</span><span class="p">,</span>
     <span class="s2">&quot;dbHost&quot;</span><span class="p">:</span><span class="s2">&quot;database.example.com&quot;</span><span class="p">,</span>
@@ -294,7 +296,7 @@ repository</td>
 </pre></div>
 </div>
 <p>Example request:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X PUT -H &quot;Content-Type: application/json&quot; -d &#39;{&quot;dbName&quot;:&quot;repos&quot;,&quot;dbPassword&quot;:&quot;geogig&quot;,&quot;dbHost&quot;:&quot;database.example.com&quot;,&quot;dbPort&quot;:&quot;5432&quot;,&quot;dbSchema&quot;:&quot;public&quot;,&quot;dbUser&quot;:&quot;geogig&quot;,&quot;authorName&quot;:&quot;GeoGig User&quot;,&quot;authorEmail&quot;:&quot;geogig@geogig.org&quot;}&#39; -v &quot;http://localhost:8182/repos/repo7/init&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X PUT -H &quot;Content-Type: application/json&quot; -d &#39;{&quot;dbName&quot;:&quot;repos&quot;,&quot;dbPassword&quot;:&quot;geogig&quot;,&quot;dbHost&quot;:&quot;database.example.com&quot;,&quot;dbPort&quot;:&quot;5432&quot;,&quot;dbSchema&quot;:&quot;public&quot;,&quot;dbUser&quot;:&quot;geogig&quot;,&quot;authorName&quot;:&quot;GeoGig User&quot;,&quot;authorEmail&quot;:&quot;geogig@geogig.org&quot;}&#39; -v &quot;http://localhost:8182/repos/repo7/init&quot; | xmllint --format -
 &lt; HTTP/1.1 201 Created
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot;?&gt;
@@ -312,7 +314,7 @@ repository</td>
 <div class="section" id="renaming-repositories">
 <h3>Renaming Repositories<a class="headerlink" href="#renaming-repositories" title="Permalink to this headline">¶</a></h3>
 <p>If you wish to change the name of a repository after it has been created, you can do so by issuing a <code class="docutils literal"><span class="pre">POST</span></code> request to the <code class="docutils literal"><span class="pre">rename</span></code> endpoint of the repository with the new name.  Because the repository&#8217;s name is used in web-api calls, renaming a repository will cause the endpoint for that repository to change to the new name.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X POST -v &quot;http://localhost:8182/repos/repo4/rename?name=betterName&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST -v &quot;http://localhost:8182/repos/repo4/rename?name=betterName&quot; | xmllint --format -
 &lt; HTTP/1.1 301 Moved Permanently
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -330,7 +332,7 @@ repository</td>
 <div class="section" id="deleting-repositories">
 <h3>Deleting Repositories<a class="headerlink" href="#deleting-repositories" title="Permalink to this headline">¶</a></h3>
 <p>If a repository is no longer needed, you may wish to delete it.  You may do this by performing a two-step delete operation on the repository.  It is set up this way in order to prevent any accidental deletions.  The first step to delete a repository is to issue a <code class="docutils literal"><span class="pre">GET</span></code> request to the <code class="docutils literal"><span class="pre">delete</span></code> endpoint of the repository.  This will return a token that can be used to delete the repository in step two.</p>
-<div class="highlight-python"><div class="highlight"><pre>  $ curl -v &quot;http://localhost:8182/repos/betterName/delete&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>  $ curl -v &quot;http://localhost:8182/repos/betterName/delete&quot; | xmllint --format -
   &lt; HTTP/1.1 200 OK
   &lt; Content-Type: application/xml
   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -341,7 +343,7 @@ repository</td>
 </pre></div>
 </div>
 <p>Now that we have the delete token, we can issue a <code class="docutils literal"><span class="pre">DELETE</span></code> request to the repository endpoint.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X DELETE -v &quot;http://localhost:8182/repos/betterName?token=db431217519a4c72&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X DELETE -v &quot;http://localhost:8182/repos/betterName?token=db431217519a4c72&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -354,7 +356,7 @@ repository</td>
 <div class="section" id="asynchronous-requests">
 <h2>Asynchronous Requests<a class="headerlink" href="#asynchronous-requests" title="Permalink to this headline">¶</a></h2>
 <p>Just like when serving a single repository, asynchronous web-api tasks can be polled via the <code class="docutils literal"><span class="pre">tasks</span></code> endpoint.  All repositories share the same tasks endpoint.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/tasks&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/tasks&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -389,6 +391,7 @@ repository</td>
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -423,7 +426,7 @@ repository</td>
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/interaction/web-repository-management.txt">Show Source</a></li>
+          <li><a href="../_sources/interaction/web-repository-management.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

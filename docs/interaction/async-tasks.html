@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="GeoPackage import and export Web-API" href="geopackage-import-export.html" />
@@ -102,34 +104,34 @@ are executed asynchronously, meaning that, once invoked, they start the job in a
 This task identifier can then be used to poll the status of the task by querying the <code class="docutils literal"><span class="pre">/tasks/&lt;task</span> <span class="pre">id&gt;</span></code> API endpoint.</p>
 <p>If no task is given, e.g. by querying the <code class="docutils literal"><span class="pre">/tasks</span></code> endpoint, a list of all available tasks will be returned.</p>
 <p>A running task can be canceled with the <code class="docutils literal"><span class="pre">cancel=true</span></code> argument. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>http://localhost:8182/tasks/3?cancel=true
+<div class="highlight-default"><div class="highlight"><pre><span></span>http://localhost:8182/tasks/3?cancel=true
 </pre></div>
 </div>
 <p>This request will ask the operation to cancel and return immediately. Note, however, that it may take some time for the cancellation request to complete, as the running task may be blocking on I/O or in a temporarily non-cancelable state. Polling the task repeatedly with the
 <code class="docutils literal"><span class="pre">cancel=true</span></code> parameter is not a problem, though.</p>
 <p>Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes in order to allow their status to be queried.
 Finished tasks can be explicitly pruned with the <code class="docutils literal"><span class="pre">prune=true</span></code> parameter. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>http://localhost:8182/tasks/3?prune=true
+<div class="highlight-default"><div class="highlight"><pre><span></span>http://localhost:8182/tasks/3?prune=true
 </pre></div>
 </div>
 <p>Prune has no effect on unfinished tasks.</p>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>When the command is invoked, it returns a result such as the following XML-formatted response.</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
-   &lt;id&gt;5&lt;/id&gt;
-   &lt;status&gt;RUNNING&lt;/status&gt;
-   &lt;description&gt;{command description}&lt;/description&gt;
-   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/5.xml&quot; type=&quot;application/xml&quot;/&gt;
-   &lt;progress&gt;
-      &lt;task&gt;Connecting to http://overpass-api.de/api/interpreter...&lt;/task&gt;
-      &lt;amount&gt;0.0&lt;/amount&gt;
-   &lt;/progress&gt;
-&lt;/task&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="mi">5</span><span class="o">&lt;/</span><span class="nb">id</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">status</span><span class="o">&gt;</span><span class="n">RUNNING</span><span class="o">&lt;/</span><span class="n">status</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span><span class="p">{</span><span class="n">command</span> <span class="n">description</span><span class="p">}</span><span class="o">&lt;/</span><span class="n">description</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">atom</span><span class="p">:</span><span class="n">link</span> <span class="n">xmlns</span><span class="p">:</span><span class="n">atom</span><span class="o">=</span><span class="s2">&quot;http://www.w3.org/2005/Atom&quot;</span> <span class="n">rel</span><span class="o">=</span><span class="s2">&quot;alternate&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;http://localhost:8182/tasks/5.xml&quot;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;application/xml&quot;</span><span class="o">/&gt;</span>
+   <span class="o">&lt;</span><span class="n">progress</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span><span class="n">Connecting</span> <span class="n">to</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">overpass</span><span class="o">-</span><span class="n">api</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">interpreter</span><span class="o">...&lt;/</span><span class="n">task</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">amount</span><span class="o">&gt;</span><span class="mf">0.0</span><span class="o">&lt;/</span><span class="n">amount</span><span class="o">&gt;</span>
+   <span class="o">&lt;/</span><span class="n">progress</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">task</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>Or the JSON format:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s2">&quot;task&quot;</span><span class="p">:</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;task&quot;</span><span class="p">:</span>
    <span class="p">{</span>
       <span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
       <span class="s2">&quot;status&quot;</span><span class="p">:</span><span class="s2">&quot;RUNNING&quot;</span><span class="p">,</span>
@@ -145,39 +147,39 @@ Finished tasks can be explicitly pruned with the <code class="docutils literal">
 as a spot frees up in the thread pool. The others are self-explanatory.</p>
 <p>The content of the task query response varies slightly depending on the task status.</p>
 <p>Running tasks may contain a progress indicator.</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
-   &lt;id&gt;4&lt;/id&gt;
-   &lt;status&gt;RUNNING&lt;/status&gt;
-   &lt;description&gt; Importing geopackage...&lt;/description&gt;
-   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/4.xml&quot; type=&quot;application/xml&quot;/&gt;
-   &lt;progress&gt;
-      &lt;task&gt;Importing into GeoGig repo...&lt;/task&gt;
-      &lt;amount&gt;1397120.0&lt;/amount&gt;
-   &lt;/progress&gt;
-&lt;/task&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="mi">4</span><span class="o">&lt;/</span><span class="nb">id</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">status</span><span class="o">&gt;</span><span class="n">RUNNING</span><span class="o">&lt;/</span><span class="n">status</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span> <span class="n">Importing</span> <span class="n">geopackage</span><span class="o">...&lt;/</span><span class="n">description</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">atom</span><span class="p">:</span><span class="n">link</span> <span class="n">xmlns</span><span class="p">:</span><span class="n">atom</span><span class="o">=</span><span class="s2">&quot;http://www.w3.org/2005/Atom&quot;</span> <span class="n">rel</span><span class="o">=</span><span class="s2">&quot;alternate&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;http://localhost:8182/tasks/4.xml&quot;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;application/xml&quot;</span><span class="o">/&gt;</span>
+   <span class="o">&lt;</span><span class="n">progress</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span><span class="n">Importing</span> <span class="n">into</span> <span class="n">GeoGig</span> <span class="n">repo</span><span class="o">...&lt;/</span><span class="n">task</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">amount</span><span class="o">&gt;</span><span class="mf">1397120.0</span><span class="o">&lt;/</span><span class="n">amount</span><span class="o">&gt;</span>
+   <span class="o">&lt;/</span><span class="n">progress</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">task</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>Successfully finished tasks may contain a result summary which is specific to the command executed. The following is an example of the result for a successful OSM import operation.</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
-   &lt;id&gt;5&lt;/id&gt;
-   &lt;status&gt;FINISHED&lt;/status&gt;
-   &lt;description&gt;Importing geopackage....&lt;/description&gt;
-   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/5.xml&quot; type=&quot;application/xml&quot;/&gt;
-   &lt;result&gt;
-      &lt;OSMReport&gt;
-         &lt;latestChangeset&gt;17218621&lt;/latestChangeset&gt;
-         &lt;latestTimestamp&gt;1412698140574&lt;/latestTimestamp&gt;
-         &lt;processedEntities&gt;901852&lt;/processedEntities&gt;
-         &lt;nodeCount&gt;865542&lt;/nodeCount&gt;
-         &lt;wayCount&gt;35778&lt;/wayCount&gt;
-         &lt;unpprocessedCount&gt;4&lt;/unpprocessedCount&gt;
-      &lt;/OSMReport&gt;
-   &lt;/result&gt;
-&lt;/task&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="mi">5</span><span class="o">&lt;/</span><span class="nb">id</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">status</span><span class="o">&gt;</span><span class="n">FINISHED</span><span class="o">&lt;/</span><span class="n">status</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span><span class="n">Importing</span> <span class="n">geopackage</span><span class="o">....&lt;/</span><span class="n">description</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">atom</span><span class="p">:</span><span class="n">link</span> <span class="n">xmlns</span><span class="p">:</span><span class="n">atom</span><span class="o">=</span><span class="s2">&quot;http://www.w3.org/2005/Atom&quot;</span> <span class="n">rel</span><span class="o">=</span><span class="s2">&quot;alternate&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;http://localhost:8182/tasks/5.xml&quot;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;application/xml&quot;</span><span class="o">/&gt;</span>
+   <span class="o">&lt;</span><span class="n">result</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">OSMReport</span><span class="o">&gt;</span>
+         <span class="o">&lt;</span><span class="n">latestChangeset</span><span class="o">&gt;</span><span class="mi">17218621</span><span class="o">&lt;/</span><span class="n">latestChangeset</span><span class="o">&gt;</span>
+         <span class="o">&lt;</span><span class="n">latestTimestamp</span><span class="o">&gt;</span><span class="mi">1412698140574</span><span class="o">&lt;/</span><span class="n">latestTimestamp</span><span class="o">&gt;</span>
+         <span class="o">&lt;</span><span class="n">processedEntities</span><span class="o">&gt;</span><span class="mi">901852</span><span class="o">&lt;/</span><span class="n">processedEntities</span><span class="o">&gt;</span>
+         <span class="o">&lt;</span><span class="n">nodeCount</span><span class="o">&gt;</span><span class="mi">865542</span><span class="o">&lt;/</span><span class="n">nodeCount</span><span class="o">&gt;</span>
+         <span class="o">&lt;</span><span class="n">wayCount</span><span class="o">&gt;</span><span class="mi">35778</span><span class="o">&lt;/</span><span class="n">wayCount</span><span class="o">&gt;</span>
+         <span class="o">&lt;</span><span class="n">unpprocessedCount</span><span class="o">&gt;</span><span class="mi">4</span><span class="o">&lt;/</span><span class="n">unpprocessedCount</span><span class="o">&gt;</span>
+      <span class="o">&lt;/</span><span class="n">OSMReport</span><span class="o">&gt;</span>
+   <span class="o">&lt;/</span><span class="n">result</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">task</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>And failed tasks contain an exception report.</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span>&lt;task&gt;
    &lt;id&gt;7&lt;/id&gt;
    &lt;status&gt;FAILED&lt;/status&gt;
    &lt;description&gt;Importing geopackage...&lt;/description&gt;
@@ -232,6 +234,7 @@ as a spot frees up in the thread pool. The others are self-explanatory.</p>
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -253,7 +256,7 @@ as a spot frees up in the thread pool. The others are self-explanatory.</p>
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/interaction/async-tasks.txt">Show Source</a></li>
+          <li><a href="../_sources/interaction/async-tasks.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

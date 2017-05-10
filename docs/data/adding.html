@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Checking out a previous version" href="checkout.html" />
@@ -99,7 +101,7 @@
 <p>Data imported into GeoGig is not ready yet to be added to the repository database. It first has to be put into the staging area and from there it can be committed to the repository database.</p>
 <p>Staging data is done using the <code class="docutils literal"><span class="pre">add</span></code> command. Adding a given feature is telling GeoGig that you want that feature to be versioned.</p>
 <p>To add all unstaged features in the working tree, just use the <code class="docutils literal"><span class="pre">add</span></code> command without additional options</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig add
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig add
 Counting unstaged features...3
 Staging changes...
 100%
@@ -113,16 +115,16 @@ Staging changes...
 </div>
 <p>That will cause all new features to be added to the staging area, and also all those ones that were already in the staging area, but were modified in the index  (that is, the versions in the working index and staging area are not the same). Since this is the first data we work with, all features are new, and we have no modified ones in this case.</p>
 <p>If you just want to stage modified features but not add the new ones, you can use the <code class="docutils literal"><span class="pre">--update</span></code> option.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig add --update
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig add --update
 </pre></div>
 </div>
 <p>In the above case of our just-created repository, that would have no effect, since there are no modified features.</p>
 <p>For a more fine grained selection of which objects to stage, you can directly specify the names of objects to add</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig add parks/1 roads/3
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig add parks/1 roads/3
 </pre></div>
 </div>
 <p>After staging, you can run the <code class="docutils literal"><span class="pre">status</span></code> command to check that the 3 features that we imported in the working tree are now also in the staging area, ready to be committed to the repository database.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># On branch master</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># On branch master</span>
 <span class="c1"># Changes to be committed:</span>
 <span class="c1">#   (use &quot;geogig reset HEAD &lt;path/to/fid&gt;...&quot; to unstage)</span>
 <span class="c1">#</span>
@@ -159,6 +161,7 @@ Staging changes...
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
@@ -170,7 +173,7 @@ Staging changes...
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/data/adding.txt">Show Source</a></li>
+          <li><a href="../_sources/data/adding.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Exploring a repository" href="exploring.html" />
@@ -98,44 +100,44 @@
 <span id="repo-config"></span><h1>Configuring a GeoGig repository<a class="headerlink" href="#configuring-a-geogig-repository" title="Permalink to this headline">¶</a></h1>
 <p>Once the repository is initialized, some further configuration is recommended to ease further work.</p>
 <p>GeoGig configuration parameters are set using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">config</span></code> command, which, in the case of setting a new value, has the following syntax:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config &lt;--global&gt; param_name param_value</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config &lt;--global&gt; param_name param_value</span>
 </pre></div>
 </div>
 <p>Parameters are divided in sections, and they are referred to in the form <code class="docutils literal"><span class="pre">section.parameter</span></code>.</p>
 <p>When creating a new repository, we recommend that you set two parameters in the <code class="docutils literal"><span class="pre">user</span></code> section, which will identify you as the user of the repository. This is especially useful when sharing changes with others. When you later add changes to the repository to create new versions of your data, GeoGig will know who you are, so you will not have to enter this information manually each time.</p>
 <p>To define your user, you must configure a name and an email address using the <code class="docutils literal"><span class="pre">user.name</span></code> and <code class="docutils literal"><span class="pre">user.email</span></code> parameters.  Substitute the values in quotes with your own name and email address.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config user.name &quot;Author&quot;</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config user.name &quot;Author&quot;</span>
 <span class="go">geogig config user.email &quot;author@example.com&quot;</span>
 </pre></div>
 </div>
 <p>You can get a display of all the configured values by using the <code class="docutils literal"><span class="pre">-l</span></code> option.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config -l</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config -l</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">user.name=Author</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">user.name=Author</span>
 <span class="go">user.email=author@example.com</span>
 </pre></div>
 </div>
 <p>These parameters are valid just for this particular repository. You can also configure global parameters which will apply to all repositories created, unless overwritten by a local parameter.</p>
 <p>To set the global value of a parameter, use the <code class="docutils literal"><span class="pre">--global</span></code> option.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config --global user.name &quot;Author&quot;</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config --global user.name &quot;Author&quot;</span>
 <span class="go">geogig config --global user.email &quot;author@example.com&quot;</span>
 </pre></div>
 </div>
 <p>You can also get a display of all the configured global values by using the <code class="docutils literal"><span class="pre">-l</span></code> option.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config -l --global</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config -l --global</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">user.name=Author</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">user.name=Author</span>
 <span class="go">user.email=author@example.com</span>
 </pre></div>
 </div>
 <p>Console text colouring can be set using the <code class="docutils literal"><span class="pre">ansi.enabled</span></code> parameter. Set the value to <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">false</span></code> to manually enable or disable ANSI support. This will override the auto-detection of ANSI support and can be set at the global level using <code class="docutils literal"><span class="pre">--global</span></code> or set in a repository as shown below.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config ansi.enabled true</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config ansi.enabled true</span>
 </pre></div>
 </div>
 <p>To use auto-detection of ANSI support use the <code class="docutils literal"><span class="pre">--unset</span></code> flag to remove the <code class="docutils literal"><span class="pre">ansi.enabled</span></code> parameter.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config --unset ansi.enabled</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config --unset ansi.enabled</span>
 </pre></div>
 </div>
 </div>
@@ -164,6 +166,7 @@
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
@@ -175,7 +178,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/repo/config.txt">Show Source</a></li>
+          <li><a href="../_sources/repo/config.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

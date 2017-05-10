@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="The GeoGig logging system" href="logging.html" />
@@ -98,20 +100,20 @@
 <span id="repo-commandaliases"></span><h1>Command aliases<a class="headerlink" href="#command-aliases" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Command aliases are not the same as <a class="reference internal" href="remotes.html#repo-remotes"><span>repository aliases</span></a>.</p>
+<p class="last">Command aliases are not the same as <a class="reference internal" href="remotes.html#repo-remotes"><span class="std std-ref">repository aliases</span></a>.</p>
 </div>
 <p>GeoGig supports command aliases. These are alternate name for certain commands and command options.</p>
 <p>To add an alias, a new configuration variable has to be added with the name <code class="docutils literal"><span class="pre">alias.&lt;name_of_alias&gt;</span></code> and the value that GeoGig should replace the alias with when it is invoked.</p>
 <p>For instance, you can define an alias for the command <code class="docutils literal"><span class="pre">commit</span> <span class="pre">--amend</span></code> to be <code class="docutils literal"><span class="pre">am</span></code> by running the following command:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config alias.am commit --amend</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config alias.am commit --amend</span>
 </pre></div>
 </div>
 <p>To amend a commit, now you can use the following notation:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig am</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig am</span>
 </pre></div>
 </div>
 <p>If you want the alias to be available for the current repository, just call the config command with no extra options, as in the example above. If you want it to be available system-wide, use the <code class="docutils literal"><span class="pre">--global</span></code> switch to create a global configuration variable.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config --global alias.am commit --amend</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig config --global alias.am commit --amend</span>
 </pre></div>
 </div>
 </div>
@@ -140,6 +142,7 @@
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
@@ -151,7 +154,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/repo/commandaliases.txt">Show Source</a></li>
+          <li><a href="../_sources/repo/commandaliases.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

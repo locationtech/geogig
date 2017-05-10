@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="License" href="../license/index.html" />
@@ -102,7 +104,7 @@
 <h2>GeoPackage export<a class="headerlink" href="#geopackage-export" title="Permalink to this headline">¶</a></h2>
 <p>Exports a repository snapshot or a subset of it as a GeoPackage file.</p>
 <p>A repository snapshot is the data (layers and their features) addressable from a certain commit.</p>
-<div class="highlight-python"><div class="highlight"><pre>GET /repos/&lt;repo&gt;/export[.xml|.json]?format=gpkg[&amp;root=&lt;refspec&gt;][&amp;path=&lt;layerName&gt;[,&lt;layerName&gt;]+][&amp;bbox=&lt;boundingBox&gt;][&amp;interchange=&lt;true|false&gt;]
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/export[.xml|.json]?format=gpkg[&amp;root=&lt;refspec&gt;][&amp;path=&lt;layerName&gt;[,&lt;layerName&gt;]+][&amp;bbox=&lt;boundingBox&gt;][&amp;interchange=&lt;true|false&gt;]
 </pre></div>
 </div>
 <div class="section" id="parameters">
@@ -122,7 +124,7 @@ Optional. Boolean indicating whether to enable GeoGig&#8217;s interchange format
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="missing-format-argument">
 <h4>Missing format argument:<a class="headerlink" href="#missing-format-argument" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/repo1/export&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/export&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -136,7 +138,7 @@ Optional. Boolean indicating whether to enable GeoGig&#8217;s interchange format
 <div class="section" id="bad-refspec">
 <h4>Bad refspec:<a class="headerlink" href="#bad-refspec" title="Permalink to this headline">¶</a></h4>
 <p>Note, since the command is run asynchronously, you&#8217;ll only see the error once the async task status is polled.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/repo1/export?format=GPKG&amp;root=nonExistingBranch&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/export?format=GPKG&amp;root=nonExistingBranch&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -169,7 +171,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
 </div>
 <div class="section" id="export-all-layers-in-the-current-head">
 <h4>Export all layers in the current HEAD:<a class="headerlink" href="#export-all-layers-in-the-current-head" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/repo1/export?format=GPKG&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/export?format=GPKG&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -182,7 +184,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
 </pre></div>
 </div>
 <p>Poll task status until it&#8217;s FINISHED:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -215,7 +217,7 @@ $ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
 </div>
 <p>Note, once the task is finished, the <cite>result</cite> element contains the download link for the generated GeoPackage file.</p>
 <p>Finally, download the GeoPackage:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/tasks/3/download&quot; &gt; all_layers_current_head.gpkg
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/tasks/3/download&quot; &gt; all_layers_current_head.gpkg
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/octet-stream;type=geopackage
 &lt; Content-Length: 80854016
@@ -225,7 +227,7 @@ $ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
 </div>
 <p>That <cite>curl</cite> command downloaded the geopackage to the <cite>all_layers_current_head.gpkg</cite> file.</p>
 <p>Now you can open it, for example, in QGIS.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ qgis all_layers_current_head.gpkg
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ qgis all_layers_current_head.gpkg
 </pre></div>
 </div>
 <div class="figure">
@@ -237,7 +239,7 @@ $ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
 <div class="section" id="geopackage-import">
 <h2>GeoPackage import<a class="headerlink" href="#geopackage-import" title="Permalink to this headline">¶</a></h2>
 <p>Imports features from a GeoPackage into the repository. The GeoPackage file should be posted to the endpoint as <code class="docutils literal"><span class="pre">fileUpload</span></code>.</p>
-<div class="highlight-python"><div class="highlight"><pre>POST /repos/&lt;repo&gt;/import[.xml|.json]?format=gpkg&amp;transactionId=&lt;transactionId&gt;[&amp;root=&lt;refspec&gt;][&amp;layer=&lt;layerName&gt;][&amp;interchange=&lt;true|false&gt;][&amp;add=&lt;true|false&gt;][&amp;alter=&lt;true|false&gt;][&amp;forceFeatureType=&lt;true|false&gt;][&amp;dest=&lt;destPath&gt;][&amp;fidAttribute=&lt;fidAttribute&gt;][&amp;authorName=&lt;name&gt;][&amp;authorEmail=&lt;email&gt;][&amp;message=&lt;message&gt;]
+<div class="highlight-default"><div class="highlight"><pre><span></span>POST /repos/&lt;repo&gt;/import[.xml|.json]?format=gpkg&amp;transactionId=&lt;transactionId&gt;[&amp;root=&lt;refspec&gt;][&amp;layer=&lt;layerName&gt;][&amp;interchange=&lt;true|false&gt;][&amp;add=&lt;true|false&gt;][&amp;alter=&lt;true|false&gt;][&amp;forceFeatureType=&lt;true|false&gt;][&amp;dest=&lt;destPath&gt;][&amp;fidAttribute=&lt;fidAttribute&gt;][&amp;authorName=&lt;name&gt;][&amp;authorEmail=&lt;email&gt;][&amp;message=&lt;message&gt;]
 </pre></div>
 </div>
 <div class="section" id="id1">
@@ -275,7 +277,7 @@ Optional: String indicating the commit message to use for the resulting commit.<
 <h3>Examples<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="import-without-interchange-format">
 <h4>Import without interchange format:<a class="headerlink" href="#import-without-interchange-format" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=b6f3edb5-c831-4bfb-9e82-e7c0f1f8ed96&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=b6f3edb5-c831-4bfb-9e82-e7c0f1f8ed96&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -327,7 +329,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
 <div class="section" id="import-with-interchange-format">
 <h4>Import with interchange format:<a class="headerlink" href="#import-with-interchange-format" title="Permalink to this headline">¶</a></h4>
 <p>Using the interchange format allows proper handling of features that were modified in the repository since the export happened. This is done by creating a new commit with all of the modified features and then merging that commit into the current <code class="docutils literal"><span class="pre">HEAD</span></code> or specified branch.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;interchange=true&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=fd72b710-2f1c-481b-9c0c-34ac6567e96d&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;interchange=true&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=fd72b710-2f1c-481b-9c0c-34ac6567e96d&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -380,7 +382,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
 <div class="section" id="import-with-interchange-format-with-conflicts">
 <h4>Import with interchange format with conflicts:<a class="headerlink" href="#import-with-interchange-format-with-conflicts" title="Permalink to this headline">¶</a></h4>
 <p>When importing with the interchange format, it is possible that the same feature was modified in both the GeoPackage and in the main repository in the time since the export was performed.  In this case, merge conflicts will occur during the import. They must be resolved before ending the transaction.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;interchange=true&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=aa58fce6-df67-4f87-90f3-d8d684bef52a&quot; | xmllint --format -
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;interchange=true&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=aa58fce6-df67-4f87-90f3-d8d684bef52a&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -459,6 +461,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -499,7 +502,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/interaction/geopackage-import-export.txt">Show Source</a></li>
+          <li><a href="../_sources/interaction/geopackage-import-export.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

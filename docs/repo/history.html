@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Hooks" href="hooks.html" />
@@ -103,7 +105,7 @@
 <p>A very typical case of history modification happens when you neglect to add something to a commit. For example, staging a single feature but leaving out a second one created later. When the commit was made, only the staged feature will be committed, while the second one will exist only in the working tree.</p>
 <p>You can create a separate commit to include the second feature, but it might be desirable to have both features in the same commit. To accomplish this, you can <strong>amend</strong> the last commit.</p>
 <p>To amend a commit, use the <code class="docutils literal"><span class="pre">--amend</span></code> option when making the new commit.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig commit --amend</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig commit --amend</span>
 </pre></div>
 </div>
 <p>There is no need to add a commit message, since the commit command will use the one from the previous commit. It will replace the previous commit with a new one that includes the extra changes that you might have introduced, but keep the same message.</p>
@@ -113,16 +115,16 @@
 <h2>Squashing commits<a class="headerlink" href="#squashing-commits" title="Permalink to this headline">¶</a></h2>
 <p>A larger modification of the history can be made by replacing a given set of consecutive commits with a single commit. This is usually desired when working on data corresponding to a given task required several incremental commits, but, when work is done, you would like to have all those commits in one.</p>
 <p>You can squash commits by using the <code class="docutils literal"><span class="pre">squash</span></code> command and providing a range of commits. For instance, to squash the last 3 commits, you can use the following command.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig squash HEAD~2 HEAD</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig squash HEAD~2 HEAD</span>
 </pre></div>
 </div>
 <p>The commit message is, by default, taken from the oldest commit (in this case HEAD~2), but can be supplied, if needed, using the <code class="docutils literal"><span class="pre">-m</span></code> option.</p>
 <p>You can squash commits in the middle of the history line as well:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig squash HEAD~5 HEAD~2</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig squash HEAD~5 HEAD~2</span>
 </pre></div>
 </div>
 <p>Again, a message is not required, but it can be supplied using the <code class="docutils literal"><span class="pre">-m</span></code> option.</p>
-<p>If the set of commits to be squashed contain merge commits, the resulting commit will have the secondary parents of those merge commits as their parents as well. The resulting commit will, itself, be a merge commit. If several merge commits are squashed, the resulting commit will resemble an octopus merge (see <a class="reference internal" href="merging.html#repo-merging"><span>Merging branches</span></a> for more information on octopus merges).</p>
+<p>If the set of commits to be squashed contain merge commits, the resulting commit will have the secondary parents of those merge commits as their parents as well. The resulting commit will, itself, be a merge commit. If several merge commits are squashed, the resulting commit will resemble an octopus merge (see <a class="reference internal" href="merging.html#repo-merging"><span class="std std-ref">Merging branches</span></a> for more information on octopus merges).</p>
 <p>When a merge commit appears, the commits to squash must belong to the main branch. That is, the <code class="docutils literal"><span class="pre">since</span></code> commit must be reachable from the <code class="docutils literal"><span class="pre">until</span></code> commit descending in the history using just the first parent of each commit.</p>
 <p>Commits at the beginning of a branch (that is, commits where a branch was created that have more that one child commit) cannot be squashed. Because the squash operation rewrites the history of the current branch after the squash commit. This type of commit cannot be squashed as it would require rewriting the history of other branches.</p>
 <p>Also, if a new branch has been created after the squashed commits, the squash operation cannot run. As a rule of thumb, branches can start in the commits <em>before</em> the squash, but not on or after.</p>
@@ -135,7 +137,7 @@
 <div class="section" id="splitting-a-commit">
 <h2>Splitting a commit<a class="headerlink" href="#splitting-a-commit" title="Permalink to this headline">¶</a></h2>
 <p>It is also possible to split a commit into several commits. There is no command for doing this in GeoGig, but you can get the same result by running a soft reset.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig reset --soft HEAD~1</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig reset --soft HEAD~1</span>
 </pre></div>
 </div>
 <p>This will put your HEAD one commit behind, discarding the most recent commit. However, your working tree and index will not be affected, so you can then commit the changes on the working tree in whichever manner you choose.</p>
@@ -167,6 +169,7 @@
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -190,7 +193,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/repo/history.txt">Show Source</a></li>
+          <li><a href="../_sources/repo/history.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

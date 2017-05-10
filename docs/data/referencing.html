@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Reverting changes" href="reverting.html" />
@@ -109,13 +111,13 @@
 <p>The ID of an element can be abbreviated and denoted with just the first 7 digits instead of all 40. In the (unlikely) case of collision (more than one ID starting with those 7 digits), GeoGig will show you a warning message and prompt you to use the full, unambiguous, ID.</p>
 <p>If the full syntax is used, the first part of the reference has to resolve to a tree, and the second one must be a valid path under that tree. In some cases, you might in the end want to refer to a tree, so just the first part (the <code class="docutils literal"><span class="pre">ref</span></code> part) is needed, and any of the above alternatives can be used. In some other cases, the command might assume that you are referring to an element in the current working tree, so it will expect just the path, or, in case it is missing, assume that you are referring to the working tree (that is, it will automatically prepend <code class="docutils literal"><span class="pre">WORK_HEAD</span></code> to the parameter you specified). Check the documentation of each command to see what it actually expects.</p>
 <p>Going back to the proposed example of referencing a given path in a previous commit, there are several ways we can do it. One of them, in case we know the ID of the commit, would be to use <code class="docutils literal"><span class="pre">ID:path</span></code>. When you make a commit using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">commit</span></code> command, GeoGig will show you the Id of the commit, as it is shown next:</p>
-<div class="highlight-python"><div class="highlight"><pre>$commit -m &quot;modified parks&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$commit -m &quot;modified parks&quot;
 [c3bf45d6539a0d946a9f61e5ec17474d39529bb5] modified parks
 Committed, counting objects...0 features added, 3 changed, 0 deleted.
 </pre></div>
 </div>
 <p>If, as it happens in this case, you want to refer not to the last commit, but to a commit whose ID you do not know, remember that the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">log</span></code> command allows you to explore the history of the latest commits in your repository. Let&#8217;s say it gives you an output like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig log
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig log
 Commit:  c3bf45d6539a0d946a9f61e5ec17474d39529bb5
 Author:  volaya &lt;volaya@boundlessgeo.com&gt;
 Date:    (43 seconds ago) 2013-02-25 15:31:41 +0100
@@ -141,7 +143,7 @@ Subject: first commit
 <p>Since this commit is the ancestor of the one that the current HEAD is pointing to, we can also use <code class="docutils literal"><span class="pre">HEAD~1:parks</span></code>.</p>
 <p>One special ID in a GeoGig repository is the null ID, which represent the empty repository before any commits are made. It&#8217;s an object ID with all digits equal to zero: <code class="docutils literal"><span class="pre">0000000000000000000000000000000000000000</span></code>.</p>
 <p>You can use it whenever you need a reference to the empty repository. For instance, to know all the changes introduced from the very beginning of you history and up to 3 commits ago, the following command could be used.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig diff HEAD~3 00000000
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig diff HEAD~3 00000000
 </pre></div>
 </div>
 <p>You can also abbreviate the null ID if needed.</p>
@@ -175,6 +177,7 @@ Subject: first commit
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
@@ -186,7 +189,7 @@ Subject: first commit
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/data/referencing.txt">Show Source</a></li>
+          <li><a href="../_sources/data/referencing.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

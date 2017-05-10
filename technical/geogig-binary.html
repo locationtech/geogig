@@ -23,6 +23,8 @@
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <link rel="index" title="Index" href="genindex.html" />
+      <link rel="search" title="Search" href="search.html" />
       <link rel="top" title="GeoGig 1.1 Technical Manual" href="index.html" />
       <link rel="next" title="GeoGig Network Synchronization" href="geogig-network-sync.html" />
       <link rel="prev" title="GeoGig Technical Manual" href="index.html" />
@@ -100,7 +102,7 @@
 <h2>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h2>
 <p>Formats are specified using a modified Backus-Naur notation.
 Definitions generally take the form:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;structure&gt; := part1 part2 part3
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">structure</span><span class="o">&gt;</span> <span class="p">:</span><span class="o">=</span> <span class="n">part1</span> <span class="n">part2</span> <span class="n">part3</span>
 </pre></div>
 </div>
 <p>Indicating that the structure has three parts.
@@ -109,7 +111,7 @@ The parts can be:</p>
 <li><p class="first">Another structure, referenced by name.</p>
 </li>
 <li><p class="first">One of these specially defined structures</p>
-<div class="highlight-none"><div class="highlight"><pre>NUL       := 0x00 (ASCII NUL character)
+<div class="highlight-none"><div class="highlight"><pre><span></span>NUL       := 0x00 (ASCII NUL character)
 SP        := 0x20 (ASCII space character)
 BR        := 0x0a (ASCII newline character)
 &lt;rev&gt;     := &lt;byte&gt;* (exactly 20 bytes)
@@ -148,7 +150,7 @@ These will be enclosed in parentheses (<cite>()</cite>).</p>
 </div>
 <div class="section" id="commit">
 <h2>Commit<a class="headerlink" href="#commit" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-none"><div class="highlight"><pre>commit := commitHeader treeRef parent* authorLine committerLine message
+<div class="highlight-none"><div class="highlight"><pre><span></span>commit := commitHeader treeRef parent* authorLine committerLine message
 commitHeader := &quot;commit&quot; NUL
 treeRef := 0x01 &lt;rev&gt;
 parent  := 0x02 &lt;rev&gt;
@@ -172,7 +174,7 @@ features, trees, and buckets. Because of the way GeoGig builds trees,
 buckets must be zero when either of the other two fields is nonzero.</p>
 <p class="last">We should probably document how exactly GeoGig builds trees :)</p>
 </div>
-<div class="highlight-none"><div class="highlight"><pre>tree := treeHeader size treeCount features trees buckets
+<div class="highlight-none"><div class="highlight"><pre><span></span>tree := treeHeader size treeCount features trees buckets
 size := &lt;int64&gt; (the total [recursive] count of features in this tree)
 treeCount := &lt;int32&gt; (in a bucket tree: the number of trees that are
                       direct children of the bucket tree. In a node
@@ -197,7 +199,7 @@ index := &lt;int32&gt;
 </div>
 <div class="section" id="feature">
 <h2>Feature<a class="headerlink" href="#feature" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-none"><div class="highlight"><pre>feature := featureHeader count fields
+<div class="highlight-none"><div class="highlight"><pre><span></span>feature := featureHeader count fields
 featureHeader := &quot;feature&quot; NUL
 count := &lt;int32&gt;
 fields := field*
@@ -242,7 +244,7 @@ timestampField          := 0x1F &lt;int64&gt; &lt;int32&gt; (datetime followed b
 </div>
 <div class="section" id="featuretype">
 <h2>FeatureType<a class="headerlink" href="#featuretype" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-none"><div class="highlight"><pre>featureType := featureTypeHeader name properties
+<div class="highlight-none"><div class="highlight"><pre><span></span>featureType := featureTypeHeader name properties
 featureTypeHeader := &quot;featuretype&quot; NUL
 name := namespace localPart
 namespace := &lt;utf8&gt;
@@ -268,7 +270,7 @@ crsText := &lt;utf8&gt; (as determined by crsTextInterpretation)
 </div>
 <div class="section" id="tag">
 <h2>Tag<a class="headerlink" href="#tag" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-none"><div class="highlight"><pre>tag := tagHeader objectId tagName message tagger
+<div class="highlight-none"><div class="highlight"><pre><span></span>tag := tagHeader objectId tagName message tagger
 tagHeader := &quot;tag&quot; NUL
 objectId := &lt;byte&gt;[20]
 tagName := &lt;utf8&gt;
@@ -307,6 +309,7 @@ tzOffset := &lt;int32&gt;
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -333,7 +336,7 @@ tzOffset := &lt;int32&gt;
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/geogig-binary.txt">Show Source</a></li>
+          <li><a href="_sources/geogig-binary.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

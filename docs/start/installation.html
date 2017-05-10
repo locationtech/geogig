@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Starting out with GeoGig" href="index.html" />
       <link rel="next" title="GeoGig tutorial" href="tutorial.html" />
@@ -121,7 +123,7 @@
 <p>To build GeoGig an executable binary that you can run:</p>
 <ol class="arabic">
 <li><p class="first">Clone the GeoGig source code repository. To do so, create a new folder where you want the GeoGig source code to be kept, open a terminal and move to that folder, then type the following:</p>
-<div class="highlight-python"><div class="highlight"><pre>git clone https://github.com/locationtech/geogig.git
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">locationtech</span><span class="o">/</span><span class="n">geogig</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 </li>
@@ -130,13 +132,13 @@
 <li><p class="first">If not already on your system, install <a class="reference external" href="http://maven.apache.org/download.cgi">Maven</a>.</p>
 </li>
 <li><p class="first">Move to the <code class="docutils literal"><span class="pre">src/parent</span></code> folder under the folder where you have cloned the GeoGig source code, and type the following:</p>
-<div class="highlight-python"><div class="highlight"><pre>mvn clean install
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>To speed up the build process, you can skip tests:</p>
-<div class="last highlight-python"><div class="highlight"><pre>mvn clean install -DskipTests
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span> <span class="o">-</span><span class="n">DskipTests</span>
 </pre></div>
 </div>
 </div>
@@ -149,7 +151,7 @@
 <div class="section" id="running-on-windows">
 <h2>Running on Windows<a class="headerlink" href="#running-on-windows" title="Permalink to this headline">¶</a></h2>
 <p>GeoGig uses <a class="reference external" href="http://rocksdb.org/">RocksDB</a> as the default storage backend.  On Windows machines, the libraries for RocksDB require the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=48145">Visual C++ Redistributable for Visual Studio 2015</a>.  If you experience an <code class="docutils literal"><span class="pre">UnsatisfiedLinkError</span></code> exception when running GeoGig, make sure you have the above dependency installed on your system.</p>
-<p>Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing <a class="reference external" href="http://adoxa.altervista.org/ansicon/">ANSICON</a> and setting the <code class="docutils literal"><span class="pre">ansi.enabled</span></code> config parameter to <code class="docutils literal"><span class="pre">true</span></code>. See the config section <a class="reference internal" href="../repo/config.html#repo-config"><span>Configuring a GeoGig repository</span></a>.</p>
+<p>Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing <a class="reference external" href="http://adoxa.altervista.org/ansicon/">ANSICON</a> and setting the <code class="docutils literal"><span class="pre">ansi.enabled</span></code> config parameter to <code class="docutils literal"><span class="pre">true</span></code>. See the config section <a class="reference internal" href="../repo/config.html#repo-config"><span class="std std-ref">Configuring a GeoGig repository</span></a>.</p>
 </div>
 </div>
 <div class="section" id="installing-ansicon">
@@ -160,7 +162,7 @@
 <li>Add the ANSICON location to the Windows PATH, found under <code class="docutils literal"><span class="pre">System</span> <span class="pre">-&gt;</span> <span class="pre">Advanced</span> <span class="pre">System</span> <span class="pre">Properties</span> <span class="pre">-&gt;</span> <span class="pre">Environment</span> <span class="pre">Variables</span></code></li>
 <li>Open a <code class="docutils literal"><span class="pre">cmd</span></code> or <code class="docutils literal"><span class="pre">powershell</span></code> terminal and type <code class="docutils literal"><span class="pre">ansicon</span></code> to confirm the PATH variable is set correctly. If the PATH is correct  information about the Windows version will be printed in the console. This command will enable ANSICON for this terminal session only.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">ansicon</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">ansicon</span>
 <span class="go">Microsoft Windows [Version 6.3.9600]</span>
 <span class="go">(c) 2013 Microsoft Corporation. All rights reserved.</span>
 </pre></div>
@@ -168,7 +170,7 @@
 <ol class="arabic simple">
 <li>To make ANSICON load automatically with new terminals type:</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">ansicon -i</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">ansicon -i</span>
 </pre></div>
 </div>
 <ol class="arabic simple">
@@ -180,7 +182,7 @@
 <ol class="arabic simple">
 <li>To remove ANSICON from the terminal defaults type:</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">ansicon -u</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">ansicon -u</span>
 </pre></div>
 </div>
 <ol class="arabic simple">
@@ -213,6 +215,7 @@
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -238,7 +241,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/start/installation.txt">Show Source</a></li>
+          <li><a href="../_sources/start/installation.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

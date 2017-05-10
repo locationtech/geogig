@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Initializing a repository" href="init.html" />
@@ -107,7 +109,7 @@
 <p>Up to 1.0-RC3, the default storage backend was a BerkeleyDB Java Edition key/value database for the main repository elements such as the revision and graph objects, and simple text files for configuration settings, refs, and merge conflicts.</p>
 <p>As of 1.0-RC4, the BerkeleyDB database was replaced by a better performing database, RocksDB. Nonetheless, repositories created with the BerkeleyDB storage backend will still be supported through GeoGig&#8217;s plug-in mechanism.</p>
 <p>When a repository is created in the local filesystem, it uses a directory structure like the following:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="gp">user@localhost:/data/myrepository$</span> ls .geogig/ -F1
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">user@localhost:/data/myrepository$</span> ls .geogig/ -F1
 <span class="go">config</span>
 <span class="go">graph/</span>
 <span class="go">HEAD</span>
@@ -150,18 +152,18 @@
 </ul>
 <p>Examples:</p>
 <p>The following commands create two repositories, <code class="docutils literal"><span class="pre">gold</span></code> and <code class="docutils literal"><span class="pre">QA</span></code> in the same <code class="docutils literal"><span class="pre">geogig</span></code> database of the <code class="docutils literal"><span class="pre">dbserver</span></code> PostgreSQL instance:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="gp">user@localhost:/home/user$</span> geogig --repo <span class="s2">&quot;postgresql://dbserver/geogig/master/gold?user=peter&amp;password=secret&quot;</span> init
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">user@localhost:/home/user$</span> geogig --repo <span class="s2">&quot;postgresql://dbserver/geogig/master/gold?user=peter&amp;password=secret&quot;</span> init
 
 <span class="gp">user@localhost:/home/user$</span> geogig --repo <span class="s2">&quot;postgresql://dbserver/geogig/master/QA?user=peter&amp;password=secret&quot;</span> init
 </pre></div>
 </div>
 <p>Tired already of typing the repository URI?
 A nice trick is to use environment variables instead:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="gp">user@localhost:/home/user$</span> <span class="nb">export</span> <span class="nv">gold</span><span class="o">=</span><span class="s2">&quot;postgresql://dbserver/geogig/master/gold?user=peter&amp;password=secret&quot;</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">user@localhost:/home/user$</span> <span class="nb">export</span> <span class="nv">gold</span><span class="o">=</span><span class="s2">&quot;postgresql://dbserver/geogig/master/gold?user=peter&amp;password=secret&quot;</span>
 <span class="gp">user@localhost:/home/user$</span> <span class="nb">export</span> <span class="nv">QA</span><span class="o">=</span><span class="s2">&quot;postgresql://dbserver/geogig/master/QA?user=peter&amp;password=secret&quot;</span>
 
-<span class="gp">user@localhost:/home/user$</span> geogig --repo $gold init
-<span class="gp">user@localhost:/home/user$</span> geogig --repo $QA init
+<span class="gp">user@localhost:/home/user$</span> geogig --repo <span class="nv">$gold</span> init
+<span class="gp">user@localhost:/home/user$</span> geogig --repo <span class="nv">$QA</span> init
 </pre></div>
 </div>
 </div>
@@ -186,12 +188,12 @@ A nice trick is to use environment variables instead:</p>
 <h2>Database set up<a class="headerlink" href="#database-set-up" title="Permalink to this headline">¶</a></h2>
 <p>GeoGig will create the necessary tables the first time it&#8217;s used against a given database. However, the database and user/role must already exist in PostgreSQL. You can use a pre-existing PostgreSQL role with administrative access to an existing database or you can run the following steps and SQL script to create the GeoGig database and tables first.</p>
 <p><a class="reference download internal" href="../_downloads/geogig_postgres.sql" download=""><code class="xref download docutils literal"><span class="pre">geogig_postgres.sql</span></code></a></p>
-<div class="highlight-console"><div class="highlight"><pre><span class="gp">user@localhost:/home/user$</span> su - postgres
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">user@localhost:/home/user$</span> su - postgres
 <span class="gp">postgres@localhost: $</span> createdb geogig
 <span class="gp">postgres@localhost: $</span> psql -d geogig -f geogig_postgres.sql
 </pre></div>
 </div>
-<p>Finally, refer to the <a class="reference internal" href="../interaction/geoserver_ui.html#create-new-postgres-repo"><span>PostgreSQL-backed GeoGig repository</span></a> to learn how to configure a repository in GeoServer.</p>
+<p>Finally, refer to the <a class="reference internal" href="../interaction/geoserver_ui.html#create-new-postgres-repo"><span class="std std-ref">PostgreSQL-backed GeoGig repository</span></a> to learn how to configure a repository in GeoServer.</p>
 </div>
 </div>
 
@@ -219,6 +221,7 @@ A nice trick is to use environment variables instead:</p>
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -244,7 +247,7 @@ A nice trick is to use environment variables instead:</p>
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/repo/storage.txt">Show Source</a></li>
+          <li><a href="../_sources/repo/storage.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

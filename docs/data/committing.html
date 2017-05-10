@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Showing differences" href="diffs.html" />
@@ -98,7 +100,7 @@
 <span id="committing"></span><h1>Committing changes<a class="headerlink" href="#committing-changes" title="Permalink to this headline">¶</a></h1>
 <p>Once the data is in the staging area, it has to be committed to be finally stored in the database of the GeoGig repository and to create a persistent version of that data.</p>
 <p>Committing data from the staging area to the database is done using the <code class="docutils literal"><span class="pre">commit</span></code> command, as shown below</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig commit -m &quot;First commit&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig commit -m &quot;First commit&quot;
 100%
 [5852e6949ba71039fded67e7f4980af4f8773869] First commit
 Committed, counting objects...3 features added, 0 changed, 0 deleted.
@@ -110,7 +112,7 @@ Committed, counting objects...3 features added, 0 changed, 0 deleted.
 <p class="last">The <code class="docutils literal"><span class="pre">-m</span></code> option is mandatory. If not provided, GeoGig will not show the default editor, as Git does, but complain and tell you to provide a message instead.</p>
 </div>
 <p>The list of all commits made so far can be obtained by using the <code class="docutils literal"><span class="pre">log</span></code> command.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig log
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig log
 Commit:  5852e6949ba71039fded67e7f4980af4f8773869
 Author:  volaya &lt;volaya@boundlessgeo.com&gt;
 Date:    (1 day ago) 2013-02-25 15:31:24 +0100
@@ -121,7 +123,7 @@ Subject: First commit
 <p>Each commit also holds a reference to its parent commits, so that allows to keep track of the changes and define the whole history and the order in which the changes were performed. Also, it allows to find out the differences between the given commits and the stages that might exist between them.</p>
 <p>Right now, each commit has just one parent commit, which is the latest one that was made before it, but we will see how it is possible for a commit to have multiple parents. In the case above, since it is our first commit, it has a null parent. All other commits from this point will have a previous commit as parent.</p>
 <p>If, after having committed your changes, you run the <code class="docutils literal"><span class="pre">status</span></code> command again, now you will see that you have no changes waiting to be committed and no unstaged objects. All three areas (working tree, staging area and repository database) have no differences between them.</p>
-<div class="highlight-python"><div class="highlight"><pre>$gegoit status
+<div class="highlight-default"><div class="highlight"><pre><span></span>$gegoit status
 # On branch master
 nothing to commit (working directory clean)
 </pre></div>
@@ -152,6 +154,7 @@ nothing to commit (working directory clean)
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
@@ -163,7 +166,7 @@ nothing to commit (working directory clean)
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/data/committing.txt">Show Source</a></li>
+          <li><a href="../_sources/data/committing.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

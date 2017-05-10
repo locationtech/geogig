@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Configuring a GeoGig repository" href="config.html" />
@@ -102,11 +104,11 @@
 </div>
 <p>The first step, when starting out versioning data, is to initialize a new GeoGig repository. A repository keeps your data and all the different versions of it, so you can go revert to any given version at any time.</p>
 <p>GeoGig is a command-line application, and it is run from the console typing commands in the form of:</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig &lt;command&gt; &lt;options&gt;</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig &lt;command&gt; &lt;options&gt;</span>
 </pre></div>
 </div>
 <p>To create a new repository, the <code class="docutils literal"><span class="pre">init</span></code> command is used.</p>
-<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig init</span>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig init</span>
 </pre></div>
 </div>
 <p>This command will create a new directory called <code class="docutils literal"><span class="pre">.geogig</span></code> in the current directory, which will contain all your data, both the current version and the entire history of all older versions. Other than that, GeoGig will put nothing else in that directory.</p>
@@ -142,6 +144,7 @@
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
@@ -153,7 +156,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/repo/init.txt">Show Source</a></li>
+          <li><a href="../_sources/repo/init.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

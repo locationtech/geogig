@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Exploring your history" href="history.html" />
@@ -99,12 +101,12 @@
 <p>Data can also be exported from the GeoGig repository, allowing full synchronization with external applications that cannot use the native format of the GeoGig working tree.
 This also allows to export changes that have been incorporated into the working tree from an external repository, making those changes available to applications, and making them aware of edits done remotely.</p>
 <p>GeoGig supports the same formats for exporting that it does for importing. That is, GeoJSON, shapefiles, PostGIS/SQL Server/Oracle databases and Geopackage. To export from a GeoGig repository, the following syntax is used</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig &lt;shp|geojson|pg|oracle|sl&gt; export &lt;path_to_export&gt; &lt;destination&gt; [-overwrite] [--defaulttype] [--featuretype]
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig &lt;shp|geojson|pg|oracle|sl&gt; export &lt;path_to_export&gt; &lt;destination&gt; [-overwrite] [--defaulttype] [--featuretype]
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">destination</span></code> option is the filepath in the case of exporting to a shapefile, or the table name in case of exporting to a database. In both cases, the element designated by the <code class="docutils literal"><span class="pre">destination</span></code> parameter should not exist. If it exists, GeoGig will not perform the export operation. If you want GeoGig to overwrite, you must explicitly tell it to do so, by using the <code class="docutils literal"><span class="pre">--overwrite</span></code> option.</p>
 <p>The <code class="docutils literal"><span class="pre">path_to_export</span></code> refers by default to the working tree. Thus, the path <code class="docutils literal"><span class="pre">roads</span></code> refers to the full reference <code class="docutils literal"><span class="pre">WORK_HEAD:roads</span></code>. Data can be exported from a given commit or a different reference, by using a full reference instead of just a path. For instance, the following line will export the <code class="docutils literal"><span class="pre">roads</span></code> path from the current HEAD of the repository, to a shapefile.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig shp export HEAD:roads exported.shp
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp export HEAD:roads exported.shp
 </pre></div>
 </div>
 <p>When exporting to a database, the same options used to configure the database connection that are available for the import operation are also available for exporting.</p>
@@ -121,28 +123,28 @@ This also allows to export changes that have been incorporated into the working 
 <ul>
 <li><p class="first">Exporting only features that have the default feature type</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre>$ geogig shp export Points Points.shp --defaulttype
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp export Points Points.shp --defaulttype
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Exporting only feature that have a given feature type</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre>$ geogig shp export Points Points.shp --featuretype 0a3ebd6a
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp export Points Points.shp --featuretype 0a3ebd6a
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Exporting all features in the selected path, using the default feature type and modifying features when they have a different feature type</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre>$ geogig shp export Points Points.shp --alter
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp export Points Points.shp --alter
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Exporting all features in the selected path, using a given feature type and modifying features when they have a different feature type</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre>$ geogig shp export Points Points.shp --alter --featuretype 0a3ebd6a
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp export Points Points.shp --alter --featuretype 0a3ebd6a
 </pre></div>
 </div>
 </div></blockquote>
@@ -174,6 +176,7 @@ This also allows to export changes that have been incorporated into the working 
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
@@ -185,7 +188,7 @@ This also allows to export changes that have been incorporated into the working 
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/data/exporting.txt">Show Source</a></li>
+          <li><a href="../_sources/data/exporting.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

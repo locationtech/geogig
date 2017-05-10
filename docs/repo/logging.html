@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Data and commits" href="../data/index.html" />
@@ -106,7 +108,7 @@
 <p>By default, the logging file is located in your repository folder under <code class="docutils literal"><span class="pre">.geogig/log/geogig.log</span></code></p>
 <p>GeoGig uses the <a class="reference external" href="http://logback.qos.ch/">Logback</a> framework for logging. Check its documentation to know more about how to configure logback.</p>
 <p>Apart from the logging file you will find other files in the <code class="docutils literal"><span class="pre">log</span></code> folder. Metrics are collected in the <code class="docutils literal"><span class="pre">metrics.csv</span></code> file, but you must explicitly enable it. On the console, type the following.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig config metrics.enabled true
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig config metrics.enabled true
 </pre></div>
 </div>
 <p>Now, whenever you call a GeoGig command, the running time of all internal operations that are called will be saved to the metrics file.</p>
@@ -136,6 +138,7 @@
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
@@ -147,7 +150,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/repo/logging.txt">Show Source</a></li>
+          <li><a href="../_sources/repo/logging.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web-API indexing documentation" href="indexing-web-api.html" />
@@ -113,19 +115,19 @@
 <ul class="simple">
 <li><strong>URL Encoded</strong></li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre>curl -X POST &quot;http://localhost:8182/repos/&lt;repo name&gt;/config?name=user.name&amp;value=John%20Doe&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config?name=user.name&amp;value=John%20Doe&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><strong>JSON</strong></li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre>curl -X POST -H &quot;Content-Type: application/json&quot; -d &#39;{&quot;name&quot;:&quot;user.name&quot;,&quot;value&quot;:&quot;John Doe&quot;}&#39; &quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/json&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{&quot;name&quot;:&quot;user.name&quot;,&quot;value&quot;:&quot;John Doe&quot;}&#39;</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><strong>XML</strong></li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre>curl -X POST -H &quot;Content-Type: application/xml&quot; -d &quot;&lt;params&gt;&lt;name&gt;user.name&lt;/name&gt;&lt;value&gt;John Doe&lt;/value&gt;&lt;/params&gt;&quot; &quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/xml&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s2">&quot;&lt;params&gt;&lt;name&gt;user.name&lt;/name&gt;&lt;value&gt;John Doe&lt;/value&gt;&lt;/params&gt;&quot;</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -146,11 +148,11 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/add?path=tree/fid&amp;transactionId=id
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/add?path=tree/fid&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns whether or not the add succeeded.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">the</span> <span class="n">add</span> <span class="n">succeeded</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -175,11 +177,11 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/blame?path=pathToFeature&amp;commit=commitId
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/blame?path=pathToFeature&amp;commit=commitId
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns all of the attribute values of a feature and the commit within which they were last changed.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="nb">all</span> <span class="n">of</span> <span class="n">the</span> <span class="n">attribute</span> <span class="n">values</span> <span class="n">of</span> <span class="n">a</span> <span class="n">feature</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">commit</span> <span class="n">within</span> <span class="n">which</span> <span class="n">they</span> <span class="n">were</span> <span class="n">last</span> <span class="n">changed</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -204,11 +206,11 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/branch?list=true&amp;remote=true
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/branch?list=true&amp;remote=true
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns a list of all the branches on the repo, if remote is specified, it lists remote branches and the name of the remote they belong to.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="nb">all</span> <span class="n">the</span> <span class="n">branches</span> <span class="n">on</span> <span class="n">the</span> <span class="n">repo</span><span class="p">,</span> <span class="k">if</span> <span class="n">remote</span> <span class="ow">is</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">lists</span> <span class="n">remote</span> <span class="n">branches</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">remote</span> <span class="n">they</span> <span class="n">belong</span> <span class="n">to</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -245,12 +247,12 @@
 </ol>
 </div></blockquote>
 <p><strong>Examples:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/checkout?branch=master&amp;transactionId=id
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/checkout?branch=master&amp;transactionId=id
        localhost:8182/checkout?path=tree/fid&amp;ours=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the branch you were on and the branch you checked out, if path was specified it returns the path and the strategy chosen.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">branch</span> <span class="n">you</span> <span class="n">were</span> <span class="n">on</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">branch</span> <span class="n">you</span> <span class="n">checked</span> <span class="n">out</span><span class="p">,</span> <span class="k">if</span> <span class="n">path</span> <span class="n">was</span> <span class="n">specified</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">strategy</span> <span class="n">chosen</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -295,11 +297,11 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/commit?authorName=John&amp;authorEmail=john@example.com&amp;message=something&amp;all=true&amp;transactionId=id
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/commit?authorName=John&amp;authorEmail=john@example.com&amp;message=something&amp;all=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the commit ID and a count of the things that were added, changed, and deleted.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">commit</span> <span class="n">ID</span> <span class="ow">and</span> <span class="n">a</span> <span class="n">count</span> <span class="n">of</span> <span class="n">the</span> <span class="n">things</span> <span class="n">that</span> <span class="n">were</span> <span class="n">added</span><span class="p">,</span> <span class="n">changed</span><span class="p">,</span> <span class="ow">and</span> <span class="n">deleted</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -348,11 +350,11 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/diff?oldRefSpec=commitId1&amp;newRefSpec=commitId2&amp;showGeometryChanges=true&amp;show=100
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/diff?oldRefSpec=commitId1&amp;newRefSpec=commitId2&amp;showGeometryChanges=true&amp;show=100
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the path of the feature before and after, as well as the object ID before and after. If showGeometryChanges is specified, it will also return the geometry of the feature.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span> <span class="n">before</span> <span class="ow">and</span> <span class="n">after</span><span class="p">,</span> <span class="k">as</span> <span class="n">well</span> <span class="k">as</span> <span class="n">the</span> <span class="nb">object</span> <span class="n">ID</span> <span class="n">before</span> <span class="ow">and</span> <span class="n">after</span><span class="o">.</span> <span class="n">If</span> <span class="n">showGeometryChanges</span> <span class="ow">is</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">will</span> <span class="n">also</span> <span class="k">return</span> <span class="n">the</span> <span class="n">geometry</span> <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -383,11 +385,11 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/fetch?prune=true&amp;remote=origin
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/fetch?prune=true&amp;remote=origin
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the name of the remote, the branch name before and after, and the value before and after.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">remote</span><span class="p">,</span> <span class="n">the</span> <span class="n">branch</span> <span class="n">name</span> <span class="n">before</span> <span class="ow">and</span> <span class="n">after</span><span class="p">,</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">value</span> <span class="n">before</span> <span class="ow">and</span> <span class="n">after</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -486,12 +488,12 @@
 </ol>
 </div></blockquote>
 <p><strong>Examples:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/log?path=treeName&amp;firstParentOnly=true
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/log?path=treeName&amp;firstParentOnly=true
 localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;output_format=csv
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns a list of the commits within a given range. If countChanges is specified, it also returns the number of adds, modifies, and deletes for each commit. If summary with CSV output format is specified, it prompts for download a summary file of changes for each commit in CSV format.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">the</span> <span class="n">commits</span> <span class="n">within</span> <span class="n">a</span> <span class="n">given</span> <span class="nb">range</span><span class="o">.</span> <span class="n">If</span> <span class="n">countChanges</span> <span class="ow">is</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">also</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">adds</span><span class="p">,</span> <span class="n">modifies</span><span class="p">,</span> <span class="ow">and</span> <span class="n">deletes</span> <span class="k">for</span> <span class="n">each</span> <span class="n">commit</span><span class="o">.</span> <span class="n">If</span> <span class="n">summary</span> <span class="k">with</span> <span class="n">CSV</span> <span class="n">output</span> <span class="nb">format</span> <span class="ow">is</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">prompts</span> <span class="k">for</span> <span class="n">download</span> <span class="n">a</span> <span class="n">summary</span> <span class="n">file</span> <span class="n">of</span> <span class="n">changes</span> <span class="k">for</span> <span class="n">each</span> <span class="n">commit</span> <span class="ow">in</span> <span class="n">CSV</span> <span class="nb">format</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -536,11 +538,11 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/merge?commit=branch1&amp;noCommit=true&amp;transactionId=id
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/merge?commit=branch1&amp;noCommit=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the object ID of both branches being merged and the common ancestor&#39;s ID as well as the merge commit ID, if one was made, the number of conflicts there were, if there were any, and the list of changes that resulted from the merge.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="nb">object</span> <span class="n">ID</span> <span class="n">of</span> <span class="n">both</span> <span class="n">branches</span> <span class="n">being</span> <span class="n">merged</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">common</span> <span class="n">ancestor</span><span class="s1">&#39;s ID as well as the merge commit ID, if one was made, the number of conflicts there were, if there were any, and the list of changes that resulted from the merge.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -591,11 +593,11 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/pull?remoteName=origin&amp;all=true&amp;ref=master:master
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/pull?remoteName=origin&amp;all=true&amp;ref=master:master
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the result of Fetch, the remote name, the ref name, the number of adds, modifies and removes and the merge result if one was made.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">result</span> <span class="n">of</span> <span class="n">Fetch</span><span class="p">,</span> <span class="n">the</span> <span class="n">remote</span> <span class="n">name</span><span class="p">,</span> <span class="n">the</span> <span class="n">ref</span> <span class="n">name</span><span class="p">,</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">adds</span><span class="p">,</span> <span class="n">modifies</span> <span class="ow">and</span> <span class="n">removes</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">merge</span> <span class="n">result</span> <span class="k">if</span> <span class="n">one</span> <span class="n">was</span> <span class="n">made</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -634,11 +636,11 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/push?ref=master:master&amp;remoteName=origin
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/push?ref=master:master&amp;remoteName=origin
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns whether or not it succeeded in pushing data.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">it</span> <span class="n">succeeded</span> <span class="ow">in</span> <span class="n">pushing</span> <span class="n">data</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -719,7 +721,7 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 </ol>
 </div></blockquote>
 <p><strong>Examples:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/remote?list=true&amp;verbose=true
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/remote?list=true&amp;verbose=true
 localhost:8182/repos/&lt;repo name&gt;/remote?remove=true&amp;remoteName=origin
 localhost:8182/repos/&lt;repo name&gt;/remote?remoteName=origin&amp;remoteURL=urlToRepo.com
 localhost:8182/repos/&lt;repo name&gt;/remote?ping=true&amp;remoteName=origin
@@ -727,7 +729,7 @@ localhost:8182/repos/&lt;repo name&gt;/remote?update=true&amp;newName=origin&amp
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns a list of remotes. If verbose was specified, it returns the remote url and username. If ping was specified, it returns whether or not the ping was a success. If remove was specified, it returns the name of the remote that was removed If update was specified, it returns the name of the remote that was updated If a remote was created, it returns the name of the new remote.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">remotes</span><span class="o">.</span> <span class="n">If</span> <span class="n">verbose</span> <span class="n">was</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">remote</span> <span class="n">url</span> <span class="ow">and</span> <span class="n">username</span><span class="o">.</span> <span class="n">If</span> <span class="n">ping</span> <span class="n">was</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">the</span> <span class="n">ping</span> <span class="n">was</span> <span class="n">a</span> <span class="n">success</span><span class="o">.</span> <span class="n">If</span> <span class="n">remove</span> <span class="n">was</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">remote</span> <span class="n">that</span> <span class="n">was</span> <span class="n">removed</span> <span class="n">If</span> <span class="n">update</span> <span class="n">was</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">remote</span> <span class="n">that</span> <span class="n">was</span> <span class="n">updated</span> <span class="n">If</span> <span class="n">a</span> <span class="n">remote</span> <span class="n">was</span> <span class="n">created</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">new</span> <span class="n">remote</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -752,12 +754,12 @@ localhost:8182/repos/&lt;repo name&gt;/remote?update=true&amp;newName=origin&amp
 </ol>
 </div></blockquote>
 <p><strong>Examples:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName/fid&amp;transactionId=id
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName/fid&amp;transactionId=id
 localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the path that was deleted.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">path</span> <span class="n">that</span> <span class="n">was</span> <span class="n">deleted</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -782,11 +784,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/status?limit=100
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/status?limit=100
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the branch name of the currently checked out branch as well as a list of the staged, unstaged, and unmerged features.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">branch</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">currently</span> <span class="n">checked</span> <span class="n">out</span> <span class="n">branch</span> <span class="k">as</span> <span class="n">well</span> <span class="k">as</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">the</span> <span class="n">staged</span><span class="p">,</span> <span class="n">unstaged</span><span class="p">,</span> <span class="ow">and</span> <span class="n">unmerged</span> <span class="n">features</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -821,7 +823,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <div><ol class="loweralpha">
 <li><p class="first"><strong>List all tags</strong></p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre>GET localhost:8182/repos/&lt;repo name&gt;/tag
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">8182</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">tag</span>
 </pre></div>
 </div>
 <p>Outputs a list of all tags.</p>
@@ -829,7 +831,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </li>
 <li><p class="first"><strong>Delete a tag</strong></p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre>DELETE localhost:8182/repos/&lt;repo name&gt;/tag?name=TagToDelete
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>DELETE localhost:8182/repos/&lt;repo name&gt;/tag?name=TagToDelete
 </pre></div>
 </div>
 <p>Outputs the information of the deleted tag.</p>
@@ -837,7 +839,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </li>
 <li><p class="first"><strong>Create a new tag</strong></p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre>PUT localhost:8182/repos/&lt;repo name&gt;/tag?name=MyNewTag&amp;commit=master&amp;message=MyMessage
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>PUT localhost:8182/repos/&lt;repo name&gt;/tag?name=MyNewTag&amp;commit=master&amp;message=MyMessage
 </pre></div>
 </div>
 <p>Outputs the information of the newly created tag.</p>
@@ -854,11 +856,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <div><p>none</p>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/version
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">localhost</span><span class="p">:</span><span class="mi">8182</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">version</span>
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns all of the version information for your version of GeoGig.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="nb">all</span> <span class="n">of</span> <span class="n">the</span> <span class="n">version</span> <span class="n">information</span> <span class="k">for</span> <span class="n">your</span> <span class="n">version</span> <span class="n">of</span> <span class="n">GeoGig</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -875,11 +877,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <div><p>none</p>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/beginTransaction
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">localhost</span><span class="p">:</span><span class="mi">8182</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">beginTransaction</span>
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the ID of the transaction that was started.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">ID</span> <span class="n">of</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">that</span> <span class="n">was</span> <span class="n">started</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -898,11 +900,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/endTransaction?cancel=true&amp;transactionId=id
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/endTransaction?cancel=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns nothing if it succeeded or the transaction ID if it failed.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">nothing</span> <span class="k">if</span> <span class="n">it</span> <span class="n">succeeded</span> <span class="ow">or</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">ID</span> <span class="k">if</span> <span class="n">it</span> <span class="n">failed</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -939,11 +941,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/featurediff?path=treeName/fid&amp;newTreeish=commitId1&amp;oldTreeish=commitId2
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/featurediff?path=treeName/fid&amp;newTreeish=commitId1&amp;oldTreeish=commitId2
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the list of attributes for that feature with the before and after values, the changetype, and, if it is the geometry, it returns the CRS with it.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">attributes</span> <span class="k">for</span> <span class="n">that</span> <span class="n">feature</span> <span class="k">with</span> <span class="n">the</span> <span class="n">before</span> <span class="ow">and</span> <span class="n">after</span> <span class="n">values</span><span class="p">,</span> <span class="n">the</span> <span class="n">changetype</span><span class="p">,</span> <span class="ow">and</span><span class="p">,</span> <span class="k">if</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">geometry</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">CRS</span> <span class="k">with</span> <span class="n">it</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -994,11 +996,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/ls-tree?showTree=true&amp;recursive=true&amp;verbose=true
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/ls-tree?showTree=true&amp;recursive=true&amp;verbose=true
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the path to each node and, if verbose is specified, it returns the metadataId, type, and objectId.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">each</span> <span class="n">node</span> <span class="ow">and</span><span class="p">,</span> <span class="k">if</span> <span class="n">verbose</span> <span class="ow">is</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">metadataId</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="ow">and</span> <span class="n">objectId</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1025,11 +1027,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/rebuildgraph?quiet=true
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/rebuildgraph?quiet=true
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the number of updated graph elements. If quiet is not specified, it returns the objectId of each updated node.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">updated</span> <span class="n">graph</span> <span class="n">elements</span><span class="o">.</span> <span class="n">If</span> <span class="n">quiet</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">specified</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">objectId</span> <span class="n">of</span> <span class="n">each</span> <span class="n">updated</span> <span class="n">node</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1048,11 +1050,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/refparse?name=master
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/refparse?name=master
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the ref name and objectId. If it is a symbolic ref, it returns the target as well.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">ref</span> <span class="n">name</span> <span class="ow">and</span> <span class="n">objectId</span><span class="o">.</span> <span class="n">If</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">symbolic</span> <span class="n">ref</span><span class="p">,</span> <span class="n">it</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">target</span> <span class="k">as</span> <span class="n">well</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1083,11 +1085,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/updateref?name=master&amp;newValue=branch1
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/updateref?name=master&amp;newValue=branch1
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the same things as ref parse
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">same</span> <span class="n">things</span> <span class="k">as</span> <span class="n">ref</span> <span class="n">parse</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1137,11 +1139,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/getCommitGraph?show=100
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/getCommitGraph?show=100
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the same format as log.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">same</span> <span class="nb">format</span> <span class="k">as</span> <span class="n">log</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1169,11 +1171,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/resolveconflict?path=pathToFeature&amp;objectid=featureObjectId
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/resolveconflict?path=pathToFeature&amp;objectid=featureObjectId
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns whether or not it resolved successfully.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">it</span> <span class="n">resolved</span> <span class="n">successfully</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1231,11 +1233,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/revertfeature?authorName=John&amp;authorEmail=John@example.com&amp;commitMessage=&quot;Reverted Feature&quot;&amp;mergeMessage=&quot;Merge of reverted feature&quot;&amp;newCommitId=commitId1&amp;oldCommitId=commitId2&amp;path=pathToFeature
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/revertfeature?authorName=John&amp;authorEmail=John@example.com&amp;commitMessage=&quot;Reverted Feature&quot;&amp;mergeMessage=&quot;Merge of reverted feature&quot;&amp;newCommitId=commitId1&amp;oldCommitId=commitId2&amp;path=pathToFeature
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the same format as Merge.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">same</span> <span class="nb">format</span> <span class="k">as</span> <span class="n">Merge</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1256,7 +1258,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <li><p class="first"><strong>MergeFeature</strong></p>
 <blockquote>
 <div><p>This endpoint can be used to merge two features into a new one.  It will return the ObjectId of the new feature when the operation completes. This endpoint must be accessed by using a POST request that contains a JSON object to tell GeoGig how to merge the feature. The following is an example of the JSON POST data to merge a feature with three attributes.</p>
-<div class="highlight-none"><div class="highlight"><pre>{
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
   path: &#39;featureType/feature&#39;,
   ours: &#39;commitId that contains the left feature&#39;,
   theirs: &#39;commitId that contains the right feature&#39;,
@@ -1275,11 +1277,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </pre></div>
 </div>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/repo/mergefeature
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">localhost</span><span class="p">:</span><span class="mi">8182</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">repo</span><span class="o">/</span><span class="n">mergefeature</span>
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the ID of the merged feature.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">ID</span> <span class="n">of</span> <span class="n">the</span> <span class="n">merged</span> <span class="n">feature</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1288,11 +1290,11 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <blockquote>
 <div><p>This endpoint can be used to get a list of all refs in the repository and what they point to.  Similar to the <code class="docutils literal"><span class="pre">branch</span></code> command with the list option from above.</p>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/repo/manifest
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">localhost</span><span class="p">:</span><span class="mi">8182</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">repo</span><span class="o">/</span><span class="n">manifest</span>
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>Returns the list of refs and the IDs they point to.
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">refs</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">IDs</span> <span class="n">they</span> <span class="n">point</span> <span class="n">to</span><span class="o">.</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1330,6 +1332,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -1356,7 +1359,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/interaction/web-api.txt">Show Source</a></li>
+          <li><a href="../_sources/interaction/web-api.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

@@ -23,6 +23,8 @@
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <link rel="index" title="Index" href="genindex.html" />
+      <link rel="search" title="Search" href="search.html" />
       <link rel="top" title="GeoGig 1.1 Technical Manual" href="index.html" />
       <link rel="next" title="Plumbing commands" href="plumbing_commands.html" />
       <link rel="prev" title="Binary encoding of GeoGig objects" href="geogig-binary.html" />
@@ -110,7 +112,7 @@ Each ref includes its name and commit id (the commit id in hexadecimal notation)
 The first line should represent the HEAD symbolic ref.</p>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-none"><div class="highlight"><pre>GET /geogig/repo/manifest
+<div class="highlight-none"><div class="highlight"><pre><span></span>GET /geogig/repo/manifest
 
 HEAD /refs/branches/master 00000000000000000000
 /refs/branches/master 00000000000000000000
@@ -130,15 +132,13 @@ When a client determines that it has content to send to a server or that a serve
 <p>The existence-check resource responds to POST requests at <code class="docutils literal"><span class="pre">repo/exists</span></code>.
 The request body should be a JSON document containing two fields:</p>
 <blockquote>
-<div><ul>
+<div><ul class="simple">
 <li><dl class="first docutils">
 <dt><code class="docutils literal"><span class="pre">have</span></code> a list of object ids representing commits already present on the client.</dt>
-<dd><p class="first last">When walking history, the server should consider any commits from the &#8220;have&#8221; list as stopping points - as these commits are already on the client it already understands their history.</p>
-</dd>
+<dd>When walking history, the server should consider any commits from the &#8220;have&#8221; list as stopping points - as these commits are already on the client it already understands their history.</dd>
 </dl>
 </li>
-<li><p class="first"><code class="docutils literal"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</p>
-</li>
+<li><code class="docutils literal"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</li>
 </ul>
 </div></blockquote>
 <p>The server responds with a JSON document enumerating the history of the commits in the want list, or an error if the <code class="docutils literal"><span class="pre">want</span></code> list requests commits that the server does not have.
@@ -147,7 +147,7 @@ The server must include information about the commits listed in the want list, b
 <div class="section" id="id1">
 <h3>Example<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>In the following example, the &#8220;want&#8221; list conveniently contains only a single commit - which happens to be a direct descendant of the one commit in the &#8220;have&#8221; list.</p>
-<div class="highlight-none"><div class="highlight"><pre>POST /geogig/repo/exists
+<div class="highlight-none"><div class="highlight"><pre><span></span>POST /geogig/repo/exists
 {
   &quot;want&quot; : [ &quot;abcdefabcdefabcdef12&quot; ],
   &quot;have&quot; : [ &quot;123456567890345678ab&quot; ]
@@ -174,15 +174,13 @@ A well-implemented client should then be able to resume a transfer without needi
 <p>The bulk objects service accepts POST requests at <code class="docutils literal"><span class="pre">repo/objects</span></code>.
 The request body should be a JSON document containing two fields:</p>
 <blockquote>
-<div><ul>
+<div><ul class="simple">
 <li><dl class="first docutils">
 <dt><code class="docutils literal"><span class="pre">have</span></code> a list of object ids representing commits already present on the client.</dt>
-<dd><p class="first last">When walking history, the server should consider any commits from the &#8220;have&#8221; list as stopping points - as these commits are already on the client it already understands their history.</p>
-</dd>
+<dd>When walking history, the server should consider any commits from the &#8220;have&#8221; list as stopping points - as these commits are already on the client it already understands their history.</dd>
 </dl>
 </li>
-<li><p class="first"><code class="docutils literal"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</p>
-</li>
+<li><code class="docutils literal"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</li>
 </ul>
 </div></blockquote>
 <p>Note that this is the same format as accepted by the existence check service.</p>
@@ -195,7 +193,7 @@ Specifically, a 20-byte sha1 id is sent, followed by a &#8220;raw&#8221; binary 
 </div>
 <div class="section" id="id2">
 <h3>Example<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-none"><div class="highlight"><pre>POST /geogig/repo/objects
+<div class="highlight-none"><div class="highlight"><pre><span></span>POST /geogig/repo/objects
 {
   &quot;want&quot;: [&quot;abcdefabcdefabcdef12&quot;],
   &quot;have&quot;: [&quot;123456567890345678ab&quot;]
@@ -263,6 +261,7 @@ If the ref does not already exist, the client should use the special value &#822
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -298,7 +297,7 @@ If the ref does not already exist, the client should use the special value &#822
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/geogig-network-sync.txt">Show Source</a></li>
+          <li><a href="_sources/geogig-network-sync.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
       <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Partial cloning" href="partialcloning.html" />
@@ -106,7 +108,7 @@
 <p>A pre-execution hook should have the prefix <code class="docutils literal"><span class="pre">pre_</span></code> and the name of the operation before which is to be executed, and the extension of the corresponding scripting language used. A Python hook to be run before executing a commit operation should be named <code class="docutils literal"><span class="pre">pre_commit.py</span></code>.</p>
 <p>All hooks have a global variable named <code class="docutils literal"><span class="pre">params</span></code> that can be used to check the current operation parameters. It is a map containing the actual values of fields in the object representing the operation. Those values represent the arguments used when calling the operation was invoked. Map keys are field names.</p>
 <p>Here is an example of a Python pre-commit hook that illustrates the mechanism explained above. This hook ensures a minimum length for commit messages and converts the text to lower case. As it affects the <code class="docutils literal"><span class="pre">commit</span></code> operation, it should be named <code class="docutils literal"><span class="pre">pre_commit.py</span></code>.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">exception</span> <span class="o">=</span> <span class="n">Packages</span><span class="o">.</span><span class="n">org</span><span class="o">.</span><span class="n">geogig</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">CannotRunGeogigOperationException</span><span class="p">;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">exception</span> <span class="o">=</span> <span class="n">Packages</span><span class="o">.</span><span class="n">org</span><span class="o">.</span><span class="n">geogig</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">CannotRunGeogigOperationException</span><span class="p">;</span>
 <span class="n">msg</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">);</span>
 <span class="k">if</span> <span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">length</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">30</span><span class="p">){</span>
   <span class="n">throw</span> <span class="n">new</span> <span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Commit messages must have at least 30 letters&quot;</span><span class="p">);</span>
@@ -149,7 +151,7 @@
 <p class="last">See the API documentation for detailed information about its methods.</p>
 </div>
 <p>To illustrate the usage of this, below is an example of a hook that prevents committing features with topologically incorrect geometries.</p>
-<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">Validator</span> <span class="o">=</span> <span class="nb">Packages</span><span class="p">.</span><span class="nx">com</span><span class="p">.</span><span class="nx">vividsolutions</span><span class="p">.</span><span class="nx">jts</span><span class="p">.</span><span class="nx">operation</span><span class="p">.</span><span class="nx">valid</span><span class="p">.</span><span class="nx">IsValidOp</span><span class="p">;</span>
+<div class="highlight-javascript"><div class="highlight"><pre><span></span><span class="nx">Validator</span> <span class="o">=</span> <span class="nb">Packages</span><span class="p">.</span><span class="nx">com</span><span class="p">.</span><span class="nx">vividsolutions</span><span class="p">.</span><span class="nx">jts</span><span class="p">.</span><span class="nx">operation</span><span class="p">.</span><span class="nx">valid</span><span class="p">.</span><span class="nx">IsValidOp</span><span class="p">;</span>
 <span class="kd">var</span> <span class="nx">features</span> <span class="o">=</span> <span class="nx">geogig</span><span class="p">.</span><span class="nx">getFeaturesToCommit</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
 <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">features</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
   <span class="kd">var</span> <span class="nx">feature</span> <span class="o">=</span> <span class="nx">features</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
@@ -163,7 +165,7 @@
 <p>More elaborate hooks can be created making use of the API along with the GeoTools classes that GeoGig uses internally, such as re-projecting geometries before importing them into the repository.</p>
 <p>Also, GeoGig commands can be called from the script, using the <code class="docutils literal"><span class="pre">run()</span></code> method from the <code class="docutils literal"><span class="pre">geogig</span></code> object. It takes the name of the class with the command to call as the first parameter. the second parameter contains the names and values of the parameters needed by the command to be executed.</p>
 <p>The following is an example hook that triggers an OpenStreetMap &#8220;unmapping&#8221; operation whenever the <code class="docutils literal"><span class="pre">mapped</span></code> tree, which is supposed to contain mapped OSM data, is modified after a commit.</p>
-<div class="highlight-javascript"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">diffs</span> <span class="o">=</span> <span class="nx">geogig</span><span class="p">.</span><span class="nx">getFeaturesToCommit</span><span class="p">(</span><span class="s1">&#39;mapped&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+<div class="highlight-javascript"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">diffs</span> <span class="o">=</span> <span class="nx">geogig</span><span class="p">.</span><span class="nx">getFeaturesToCommit</span><span class="p">(</span><span class="s1">&#39;mapped&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
   <span class="k">if</span> <span class="p">(</span><span class="nx">diffs</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
     <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span> <span class="o">:</span> <span class="s2">&quot;mapped&quot;</span><span class="p">};</span>
     <span class="nx">geogig</span><span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="s2">&quot;org.geogig.osm.internal.OSMUnmapOp&quot;</span><span class="p">,</span> <span class="nx">params</span><span class="p">);</span>
@@ -198,6 +200,7 @@
           <a class="btn btn-default" href="/technical/">Technical Manual</a>
           <a class="btn btn-default" href="/manpages/">Man Pages</a>
           <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
@@ -223,7 +226,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="../_sources/repo/hooks.txt">Show Source</a></li>
+          <li><a href="../_sources/repo/hooks.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

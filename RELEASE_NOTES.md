@@ -1,21 +1,20 @@
-GeoGig 1.1-beta2 Release Notes
+GeoGig 1.1.0 Release Notes
 ==============================
 
-May 2, 2017.
+May 10, 2017.
 
-This release is primarily a bug fix release. Notable changes since 1.1-beta1 are:
+GeoGig 1.1 is now out for general consumption!
 
-* Performance improvements to internal threading.
-* Fix a bug in updating quadtrees.
-* Fix a bug when retrieving repository logs for very old ancestors with large numbers of commits.
-* Enable and fix bugs around the ability to cancel many GeoGig operations.
-* Fix a bug in export-diff where incorrect commit IDs were sometimes being used.
-* Add and enhance concurrency testing.
+Stakeholders asked us to make GeoGig faster - and 1.1 is all about making things faster! Most importantly, we’ve added
+the Spatial-Index-With-Attributes and greatly improved the networking, caching, and rendering performance.  We expect
+that all users will see substantial performance improvements.
 
-GeoGig 1.1-beta1 Release Notes
-==============================
+For existing GeoGig installations, see our detailed [Upgrade Guide](http://geogig.org/upgrade/index.html)
+(which includes helpful tips for installations).
 
-April 18, 2017.
+Download bundles are available [here](https://github.com/locationtech/geogig/releases/tag/v1.1.0)
+
+### Release Overview:
 
 This release introduces the long awaited spatial indexing capabilities to GeoGig.
 
@@ -33,10 +32,11 @@ When an index is created for a feature tree (i.e. layer), a new tree is created 
 the canonical tree contents, but using a quad-tree clustering strategy for its non terminal
 nodes.
 
-Spatial indexing capabilities:
+#### Spatial indexing capabilities:
 
 * Indexes are automatically updated on commits. Create an index for a layer, and any operation
 that creates a new commit will trigger the update of the index (i.e. commit, rebase, merge, etc).
+
 * Materialized attributes: the spatial index can materialize any spatial or non spatial attribute
 of the FeatureType being indexed, in order to speed up attribute queries as well as spatial ones.
 For example, you might want to include the attributes needed by the Styled Layer Descriptor to properly
@@ -48,15 +48,36 @@ commands to manage the indexes. Run `geogig index --help` or browse the online d
 http://geogig.org/docs for more information.
 
 
-Other improvements in this release:
+#### Other improvements in this release:
 
 * Better support for foreign CRS definitions. Importing from datasets that define its coordinate
 reference system in non OGC WKT formats (e.g. most shapefiles) are now correctly matches to their
 corresponding CRS from the EPSG database, providing extra CRS metadata such as area of validity.
-
 * Better PostgreSQL backend caching. The PostgreSQL backend's internal cache uses an improved
 serialization format that's a lot faster to decode, while still allowing to control the cache
 size by storing serialized objects instead of Java objects.
+* Performance improvements to internal threading.
+* Fix a bug in updating quad-trees.
+* Fix a bug when retrieving repository logs for very old ancestors with large numbers of commits.
+* Enable and fix bugs around the ability to cancel many GeoGig operations.
+* Fix a bug in export-diff where incorrect commit IDs were sometimes being used.
+* Add and enhance concurrency testing.
+
+
+#### The Spatial-Index-With-Attributes Index
+
+<p align="center">
+  <img src="spatial-index-attributes.png">
+  <i>Visualization of a Spatial-Index-With-Attributes Index</i>
+</p>
+
+The new GeoGig index (a revision-sharing QuadTree index) greatly improves performance for the two most common types of queries - spatial queries and attribute queries.
+
+For spatial searches, the QuadTree organization of the index makes for efficient retrieval of features.
+
+The most common types of attribute query (“only display Highway and Freeways”, “only display data marked between these two dates” ) is also optimized by storing Extra Attributes inside the QuadTree.  When executing the query, GeoGig can use the extra information in the index to quickly filter out unneeded features.
+
+The end result is **much** faster query performance (and much less network traffic).
 
 GeoGig 1.0.0 Release Notes
 ==========================

@@ -14,7 +14,7 @@ SYNOPSIS
 DESCRIPTION
 ***********
 
-GeoGIG is a distributed revision control system for geographic information, written in Java and inspired by the GIT distributed revsion control system's design and principles, adapting them to the differences in the problem domain, but having absolutely no relation with the GIT project.
+GeoGig is a distributed revision control system for geographic information, written in Java and inspired by the GIT distributed revsion control system's design and principles, adapting them to the differences in the problem domain, but having absolutely no relation with the GIT project.
 
 
 OPTIONS

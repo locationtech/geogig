@@ -98,12 +98,40 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="Upgrade_1.0_to_1.1.html">Upgrading existing GeoGig repositories to GeoGig 1.1 (PostgreSQL Backend)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#upgrading-1-0-0-repositories">Upgrading 1.0.0 repositories</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#creating-quadtree-indexes">Creating QuadTree Indexes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#configuring-postgresql-cache-sizes">Configuring PostgreSQL Cache Sizes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#creating-quadtree-indexes">Creating QuadTree Indexes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#creating-the-quadtree-index">Creating the QuadTree Index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#adding-creating-extra-attributes">Adding/Creating Extra Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#geoserver-auto-indexing-advanced-operation">Geoserver: Auto-Indexing (Advanced Operation)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#configuring-postgresql-cache-sizes">Configuring PostgreSQL Cache Sizes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#process-to-set-postgresql-cache-sizes">Process to Set PostgreSQL Cache Sizes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#example">Example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#geowebcache">GeoWebCache</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#caveats-and-issues">Caveats and Issues</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#geoserver-configuration">Geoserver Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#faqs">FAQs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#caveats-and-issues">Caveats and Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#bounds-problem">Bounds Problem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#postgresql-hash-index-problem-in-geogig-1-0">PostgreSQL Hash-index problem in GeoGig 1.0</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#http-clone">HTTP-Clone</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#geoserver-configuration">Geoserver Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#time-dimensioned-data">Time-dimensioned data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#use-the-marlin-renderer">Use the Marlin Renderer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#configure-repositories-to-use-a-specific-branch">Configure repositories to use a specific branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#control-flow-extension">Control-Flow Extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#for-clustered-environment">For Clustered Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#rds-network-performance">RDS Network Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#faqs">FAQs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#how-to-find-all-the-repos-in-a-database">How to find all the repos in a database?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#how-to-find-all-the-layers-that-i-might-need-to-build-an-index-on">How to find all the layers that I might need to build an index on?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#how-do-i-find-the-name-of-the-geometry-and-other-columns">How do I find the name of the Geometry (and other columns)?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Upgrade_1.0_to_1.1.html#how-do-i-find-the-branches-in-my-repository">How do I find the Branches in my repository?</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -93,62 +93,65 @@
         
   <div class="section" id="upgrading-existing-geogig-repositories-to-geogig-1-1-postgresql-backend">
 <h1>Upgrading existing GeoGig repositories to GeoGig 1.1 (PostgreSQL Backend)<a class="headerlink" href="#upgrading-existing-geogig-repositories-to-geogig-1-1-postgresql-backend" title="Permalink to this headline">¶</a></h1>
-<p><strong>Ensure you have your repository database fully backed up before moving to GeoGig 1.1</strong></p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Ensure you have your repository database fully backed up before moving to GeoGig 1.1</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This guide centred around a PostgreSQL GeoGig backend.  If you are using a RocksDB backend, please modify the command so they point to your RocksDB.</p>
+</div>
 <div class="section" id="upgrading-1-0-0-repositories">
 <h2>Upgrading 1.0.0 repositories<a class="headerlink" href="#upgrading-1-0-0-repositories" title="Permalink to this headline">¶</a></h2>
 <p>There’s been a lot of changes in GeoGig since the 1.0 release.
-Our recommendation is to use GeoGig 1.1 to
-clone
+Our recommendation is to use GeoGig 1.1 to <cite>clone</cite>
 your existing repository into a new repository (in a new database).
 We also strongly recommend first validating a test system before attempting to upgrade a production server.
 Here is a simple process to do this;</p>
-<ol class="arabic simple">
-<li>Backup your existing pre-1.0 repository (use existing PostgreSQL tools)</li>
-<li>Create a new PostgreSQL database</li>
-<li>Use GeoGig 1.1 to
-clone
-the pre-1.0 repository into the new database</li>
-</ol>
-<p>geogig clone &#8220;postgresql://..old..repo..&#8221; &#8220;postgresql://...new repo...&#8221;</p>
-<ol class="arabic simple">
-<li>Create QuadTree indexes in the new repository for the branches/layer required (see below)</li>
-<li>Setup your PG Cache sizes (see below)</li>
-<li>Upgrade your
-<em>test</em>
-server to GeoGig 1.1, pointing to the new database</li>
-<li>Test until you are satisfied that GeoGig is working in your environment and the datasets are working as expected</li>
-<li>Repeat steps 2-5 to set up a new production database</li>
-<li>Upgrade your production server to GeoGig 1.1, pointing to the new production database</li>
+<ol class="arabic">
+<li><p class="first">Backup your existing 1.0 repository (use existing PostgreSQL tools)</p>
+</li>
+<li><p class="first">Create a new PostgreSQL database</p>
+</li>
+<li><p class="first">Use GeoGig 1.1 to <cite>clone</cite> the 1.0 repository into the new database</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="n">clone</span> <span class="s2">&quot;postgresql://..old..repo..&quot;</span> <span class="s2">&quot;postgresql://...new repo...&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create QuadTree indexes in the new repository for the branches/layer required (see below)</p>
+</li>
+<li><p class="first">Setup your PG Cache sizes (see below)</p>
+</li>
+<li><p class="first">Upgrade your <strong>test</strong> server to GeoGig 1.1, pointing to the new database</p>
+</li>
+<li><p class="first">Test until you are satisfied that GeoGig is working in your environment and the datasets are working as expected</p>
+</li>
+<li><p class="first">Repeat steps 2-5 to set up a new production database</p>
+</li>
+<li><p class="first">Upgrade your production server to GeoGig 1.1, pointing to the new production database</p>
+</li>
 </ol>
 </div>
 <div class="section" id="creating-quadtree-indexes">
 <h2>Creating QuadTree Indexes<a class="headerlink" href="#creating-quadtree-indexes" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="creating-the-quadtree-index">
 <h3>Creating the QuadTree Index<a class="headerlink" href="#creating-the-quadtree-index" title="Permalink to this headline">¶</a></h3>
-<p>geogig &#8211;repo &#8220;postgresql://...&#8221; index create -a &lt;geometry column&gt; &#8211;tree &lt;branch&gt;:&lt;layer&gt;</p>
+<p>The following command will create a spatial index;</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">index</span> <span class="n">create</span> <span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">geometry</span> <span class="n">column</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">tree</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span>
+</pre></div>
+</div>
 <p>For help finding the names of the columns, branches, and layers see the FAQ section, below.</p>
-<p>More help is available
-<a class="reference external" href="http://geogig.org">here</a>
-or by typing “
-geogig index &#8211;help
-” or “
-geogig index create &#8211;help
-”.</p>
+<p>More help is available <a class="reference external" href="http://geogig.org">here</a> or by typing <code class="code docutils literal"><span class="pre">geogig</span> <span class="pre">index</span> <span class="pre">--help</span></code>.</p>
 </div>
 <div class="section" id="adding-creating-extra-attributes">
 <h3>Adding/Creating Extra Attributes<a class="headerlink" href="#adding-creating-extra-attributes" title="Permalink to this headline">¶</a></h3>
 <p>Adding “extra attributes” to the index makes querying-by-attribute much faster.
 If you have time series data (like StoryScape), you should include the dataset’s time attribute(s) to the index.
 If you have SLD or other queries that do selections based on an attribute (i.e. road type), you should include those attribute(s) to the index.</p>
-<p>geogig &#8211;repo &#8220;postgresql://...&#8221; index create -a &lt;geometry column&gt; &#8211;tree &lt;branch&gt;:&lt;layer&gt;
-<strong>-e &lt;attribute1&gt;,&lt;attribute2&gt;</strong></p>
-<p>More help is available
-<a class="reference external" href="http://geogig.org">here</a>
-or by typing “
-geogig index &#8211;help
-” or “
-geogig index create &#8211;help
-”.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">index</span> <span class="n">create</span> <span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">geometry</span> <span class="n">column</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">tree</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">e</span> <span class="o">&lt;</span><span class="n">attribute1</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">attribute2</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>More help is available <a class="reference external" href="http://geogig.org">here</a> or by typing <code class="code docutils literal"><span class="pre">geogig</span> <span class="pre">index</span> <span class="pre">--help</span></code>.</p>
 </div>
 <div class="section" id="geoserver-auto-indexing-advanced-operation">
 <h3>Geoserver: Auto-Indexing (Advanced Operation)<a class="headerlink" href="#geoserver-auto-indexing-advanced-operation" title="Permalink to this headline">¶</a></h3>
@@ -168,36 +171,33 @@ For more control, we recommend adding indexes explicitly through the GeoGig Rest
 <p>GeoGig 1.1’s caching has significantly improved since GeoGig 1.0.
 However, configuring the caches is a bit more involved.
 Each database (which typically has multiple repositories) needs to have a cache size set (it defaults to 10% of the JVM memory size, which is usually insufficient).</p>
-<p>You must ensure that the sum total of all the database caches does
-<em>not</em>
-exceed the memory you have allocated for the cache or your application will run out of memory.</p>
-<p>Also note that once you configure a cache size,
-<em>all</em>
-GeoGig applications connecting to the database will use the same sized cache, so ensure they all have enough JVM memory allocated.</p>
+<p>You must ensure that the sum total of all the database caches does <strong>not</strong> exceed the memory you have allocated for the cache or your application will run out of memory.</p>
+<p>Also note that once you configure a cache size, <strong>all</strong> GeoGig applications connecting to the database will use the same sized cache, so ensure they all have enough JVM memory allocated.</p>
 <div class="section" id="process-to-set-postgresql-cache-sizes">
 <h3>Process to Set PostgreSQL Cache Sizes<a class="headerlink" href="#process-to-set-postgresql-cache-sizes" title="Permalink to this headline">¶</a></h3>
-<ol class="arabic simple">
-<li>Determine the amount of memory to allocate to Geoserver (this will typically be the majority of the real memory of the system) and allocate it to Geoserver with an -Xmx java JVM option.</li>
-<li>Determine the amount of memory to allocate to GeoGig and Geoserver.
-Typically, allocating approximately 2-4GB to geoserver is sufficient (depending on your use case).</li>
-<li>Determine how much of the remaining memory will be allocated to each of your PG databases (do this on a database-by-database manner, NOT a repo-by-repo manner).
-Databases that are larger or more heavily used should be allocated more memory.</li>
-<li>Use Geoserver to set the cache size (
-postgres.bytecache.maxSize
-) for each of the database.<ul>
-<li>In Geoserver, on the left hand column click on [GeoGig] [GeoGig Repositories]</li>
-<li>Find a repository in each of the databases and click on it.
-A database can contain multiple repositories, but the cache size is set on a database-by-database manner.</li>
-<li>Press the [Add new global config] and add a config value for
-postgres.bytecache.maxSize
-with the number of cache bytes to allocate to that database.</li>
-</ul>
+<ol class="arabic">
+<li><p class="first">Determine the amount of memory to allocate to Geoserver (this will typically be the majority of the real memory of the system) and allocate it to Geoserver with an <code class="code docutils literal"><span class="pre">-Xmx</span></code> java JVM option.</p>
 </li>
+<li><p class="first">Determine the amount of memory to allocate to GeoGig and Geoserver.
+Typically, allocating approximately 2-4GB to geoserver is sufficient (depending on your use case).</p>
+</li>
+<li><p class="first">Determine how much of the remaining memory will be allocated to each of your PG databases (do this on a database-by-database manner, NOT a repo-by-repo manner).
+Databases that are larger or more heavily used should be allocated more memory.</p>
+</li>
+<li><p class="first">Use Geoserver to set the cache size (<code class="code docutils literal"><span class="pre">postgres.bytecache.maxSize</span></code>) for each of the database.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>In Geoserver, on the left hand column click on [GeoGig] [GeoGig Repositories]</li>
+<li>Find a repository in each of the databases and click on it.  A database can contain multiple repositories, but the cache size is set on a database-by-database manner.</li>
+<li>Press the [Add new global config] and add a config value for <code class="code docutils literal"><span class="pre">postgres.bytecache.maxSize</span></code> with the number of cache bytes to allocate to that database.</li>
 </ol>
 <p><a class="reference internal" href="_images/cacheConfig.png"><img alt="cacheConfig_png" src="_images/cacheConfig.png" style="width: 4.8484in; height: 1.8417in;" /></a></p>
-<ol class="arabic simple">
-<li>Verify that the sum total size of the caches are correct and that you have not over (or under) allocated your memory.</li>
-<li>Restart Geoserver</li>
+</div></blockquote>
+</li>
+<li><p class="first">Verify that the sum total size of the caches are correct and that you have not over (or under) allocated your memory.</p>
+</li>
+<li><p class="first">Restart Geoserver</p>
+</li>
 </ol>
 </div>
 <div class="section" id="example">
@@ -206,7 +206,7 @@ with the number of cache bytes to allocate to that database.</li>
 DB2 is larger and more heavily used than the other two database.</p>
 <ol class="arabic">
 <li><p class="first">We decide to allocate 62GB to Geoserver, giving 2GB of memory to other processes on the system.
-We set -XmX62GB and verify (see Geoserver documentation).</p>
+We set <code class="code docutils literal"><span class="pre">-Xmx62GB</span></code> and verify (see Geoserver documentation).</p>
 </li>
 <li><p class="first">We decide to allocate 3GB to Geoserver, leaving 59GB to GeoGig’s Cache.</p>
 </li>
@@ -214,8 +214,8 @@ We set -XmX62GB and verify (see Geoserver documentation).</p>
 </li>
 <li><p class="first">In geoserver, we find a repository in each database, and configure the parameter (as above).</p>
 </li>
-<li><p class="first">We verify;
-System Memory = &lt;Memory allocated to OS&gt; + &lt;Memory exclusive to Geoserver&gt; + &lt;memory allocated to DB1&gt; + &lt;memory allocated to DB2&gt; +&lt;memory allocated to DB3&gt;</p>
+<li><p class="first">We verify;</p>
+<p>System Memory = &lt;Memory allocated to OS&gt; + &lt;Memory exclusive to Geoserver&gt; + &lt;memory allocated to DB1&gt; + &lt;memory allocated to DB2&gt; +&lt;memory allocated to DB3&gt;</p>
 <p>64GB = 2GB + 3GB + 12GB + 35GB + 12GB</p>
 </li>
 </ol>
@@ -237,21 +237,12 @@ However, certain WFS queries (like a bounding box query for a feature whose boun
 <div class="section" id="postgresql-hash-index-problem-in-geogig-1-0">
 <h3>PostgreSQL Hash-index problem in GeoGig 1.0<a class="headerlink" href="#postgresql-hash-index-problem-in-geogig-1-0" title="Permalink to this headline">¶</a></h3>
 <p>Repositories created pre-GeoGig 1.0 (i.e. 1.0-pre3 and before) are using PostgreSQL hash indexes.
-These are not optimal - using GeoGig 1.1 to
-clone
-these repositories (as outlined, above) will use btree indexes instead.</p>
+These are not optimal - using GeoGig 1.1 to <code class="code docutils literal"><span class="pre">clone</span></code> these repositories (as outlined, above) will use btree indexes instead.</p>
 </div>
 <div class="section" id="http-clone">
 <h3>HTTP-Clone<a class="headerlink" href="#http-clone" title="Permalink to this headline">¶</a></h3>
-<p>There are some problems with
-clone
-when the source/destination repositories are via HTTP (i.e. against Geoserver or the
-serve
-CLI).
-Use
-clone</p>
-<p><em>directly</em>
-against the underlying databases instead of the HTTP location.</p>
+<p>There are some problems with <code class="code docutils literal"><span class="pre">clone</span></code> when the source/destination repositories are via HTTP (i.e. against Geoserver or the
+<code class="code docutils literal"><span class="pre">serve</span></code> CLI). Use <code class="code docutils literal"><span class="pre">clone</span></code> <strong>directly</strong> against the underlying databases instead of the HTTP location.</p>
 </div>
 </div>
 <div class="section" id="geoserver-configuration">
@@ -259,7 +250,9 @@ against the underlying databases instead of the HTTP location.</p>
 <div class="section" id="time-dimensioned-data">
 <h3>Time-dimensioned data<a class="headerlink" href="#time-dimensioned-data" title="Permalink to this headline">¶</a></h3>
 <p>Time Dimensioned datasets (in any datastore, including GeoGig) should have the internal Geoserver GetCapabilities cache disabled, or the Time dimension information in the capabilities document could be out-of-date.</p>
-<p>-DCAPABILITIES_CACHE_CONTROL_ENABLED=false</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DCAPABILITIES_CACHE_CONTROL_ENABLED</span><span class="o">=</span><span class="n">false</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="use-the-marlin-renderer">
 <h3>Use the Marlin Renderer<a class="headerlink" href="#use-the-marlin-renderer" title="Permalink to this headline">¶</a></h3>
@@ -296,21 +289,29 @@ This improves performance.</p>
 <div class="section" id="how-to-find-all-the-repos-in-a-database">
 <h3>How to find all the repos in a database?<a class="headerlink" href="#how-to-find-all-the-repos-in-a-database" title="Permalink to this headline">¶</a></h3>
 <p>Connect to the PostgreSQL database and execute;</p>
-<p>SELECT * FROM geogig_repository_name;</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SELECT</span> <span class="o">*</span> <span class="n">FROM</span> <span class="n">geogig_repository_name</span><span class="p">;</span>
+</pre></div>
+</div>
 <p><a class="reference internal" href="_images/repoNameSQL.png"><img alt="repoNameSQL_png" src="_images/repoNameSQL.png" style="width: 4.6402in; height: 1.1008in;" /></a></p>
 </div>
 <div class="section" id="how-to-find-all-the-layers-that-i-might-need-to-build-an-index-on">
 <h3>How to find all the layers that I might need to build an index on?<a class="headerlink" href="#how-to-find-all-the-layers-that-i-might-need-to-build-an-index-on" title="Permalink to this headline">¶</a></h3>
-<p>geogig &#8211;repo &#8220;postgresql://...&#8221; ls &lt;branch&gt;</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">ls</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="how-do-i-find-the-name-of-the-geometry-and-other-columns">
 <h3>How do I find the name of the Geometry (and other columns)?<a class="headerlink" href="#how-do-i-find-the-name-of-the-geometry-and-other-columns" title="Permalink to this headline">¶</a></h3>
-<p>geogig &#8211;repo &#8220;postgresql://...&#8221; show &lt;branch&gt;:&lt;layer&gt;</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">show</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span>
+</pre></div>
+</div>
 <p><a class="reference internal" href="_images/geomName.png"><img alt="geomName_png" src="_images/geomName.png" style="width: 6.5in; height: 3.1252in;" /></a></p>
 </div>
 <div class="section" id="how-do-i-find-the-branches-in-my-repository">
 <h3>How do I find the Branches in my repository?<a class="headerlink" href="#how-do-i-find-the-branches-in-my-repository" title="Permalink to this headline">¶</a></h3>
-<p>geogig &#8211;repo &#8220;postgresql://...&#8221; branch -a</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">branch</span> <span class="o">-</span><span class="n">a</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>

@@ -9,7 +9,6 @@ p {
   line-height: 1.6em;
 }
 li {
-  list-style-type: none;
   padding-bottom: 0.3em;
 }
 a {
@@ -20,6 +19,12 @@ a {
 }
 header {
   background: #191818;
+}
+blockquote {
+     border-left: 0
+}
+h3 {
+   font-size: 18px;
 }
 header .navbar .nav > li > a {
   font-size: .8em;

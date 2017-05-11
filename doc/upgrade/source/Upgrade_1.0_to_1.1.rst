@@ -4,6 +4,7 @@ Upgrading existing GeoGig repositories to GeoGig 1.1 (PostgreSQL Backend)
 
 .. warning:: Ensure you have your repository database fully backed up before moving to GeoGig 1.1
 
+.. note:: This guide centred around a PostgreSQL GeoGig backend.  If you are using a RocksDB backend, please modify the command so they point to your RocksDB.
 
 Upgrading 1.0.0 repositories
 -----------------------------
@@ -18,8 +19,9 @@ Here is a simple process to do this;
 #.  Backup your existing 1.0 repository (use existing PostgreSQL tools)
 #.  Create a new PostgreSQL database
 #.  Use GeoGig 1.1 to `clone` the 1.0 repository into the new database
+    ::
 
-     :code:`geogig clone "postgresql://..old..repo.." "postgresql://...new repo..."`
+       geogig clone "postgresql://..old..repo.." "postgresql://...new repo..."
 
 #.  Create QuadTree indexes in the new repository for the branches/layer required (see below)
 #.  Setup your PG Cache sizes (see below)
@@ -37,7 +39,9 @@ Creating the QuadTree Index
 
 The following command will create a spatial index;
 
-:code:`geogig --repo "postgresql://..." index create -a <geometry column> --tree <branch>:<layer>`
+::
+
+  geogig --repo "postgresql://..." index create -a <geometry column> --tree <branch>:<layer>
 
 
 For help finding the names of the columns, branches, and layers see the FAQ section, below.
@@ -52,9 +56,9 @@ Adding “extra attributes” to the index makes querying-by-attribute much fast
 If you have time series data (like StoryScape), you should include the dataset’s time attribute(s) to the index.
 If you have SLD or other queries that do selections based on an attribute (i.e. road type), you should include those attribute(s) to the index.
 
+::
 
-:code:`geogig --repo "postgresql://..." index create -a <geometry column> --tree <branch>:<layer>
--e <attribute1>,<attribute2>`
+  geogig --repo "postgresql://..." index create -a <geometry column> --tree <branch>:<layer> -e <attribute1>,<attribute2>
 
 
 More help is available `here <http://geogig.org>`_ or by typing :code:`geogig index --help`.
@@ -178,8 +182,9 @@ Time-dimensioned data
 
 Time Dimensioned datasets (in any datastore, including GeoGig) should have the internal Geoserver GetCapabilities cache disabled, or the Time dimension information in the capabilities document could be out-of-date.
 
+::
 
-:code:`-DCAPABILITIES_CACHE_CONTROL_ENABLED=false`
+   -DCAPABILITIES_CACHE_CONTROL_ENABLED=false
 
 Use the Marlin Renderer
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -227,8 +232,9 @@ How to find all the repos in a database?
 
 Connect to the PostgreSQL database and execute;
 
+::
 
-:code:`SELECT * FROM geogig_repository_name;`
+   SELECT * FROM geogig_repository_name;
 
 
 |repoNameSQL_png|
@@ -237,7 +243,9 @@ How to find all the layers that I might need to build an index on?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-:code:`geogig --repo "postgresql://..." ls <branch>`
+::
+
+   geogig --repo "postgresql://..." ls <branch>
 
 
 
@@ -245,7 +253,9 @@ How do I find the name of the Geometry (and other columns)?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-:code:`geogig --repo "postgresql://..." show <branch>:<layer>`
+::
+
+   geogig --repo "postgresql://..." show <branch>:<layer>
 
 
 |geomName_png|
@@ -255,7 +265,9 @@ How do I find the Branches in my repository?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-:code:`geogig --repo "postgresql://..." branch -a`
+::
+
+   geogig --repo "postgresql://..." branch -a
 
 .. |branchConfig_png| image:: ../img/branchConfig.png
     :width: 2.9953in

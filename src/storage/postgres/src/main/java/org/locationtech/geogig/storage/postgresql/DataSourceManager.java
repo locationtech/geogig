@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,11 +35,23 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
 
     @Override
     protected DataSource connect(Environment.ConnectionConfig config) {
+        PGSimpleDataSource pgSimpleDataSource = new PGSimpleDataSource();
+        pgSimpleDataSource.setBinaryTransfer(true);
+        pgSimpleDataSource.setApplicationName("geogig");
+        pgSimpleDataSource.setDatabaseName(config.getDatabaseName());
+        pgSimpleDataSource.setPortNumber(config.getPortNumber());
+        pgSimpleDataSource.setUser(config.getUser());
+        pgSimpleDataSource.setPassword(config.getPassword());
+        pgSimpleDataSource.setAssumeMinServerVersion("9.4");
+        pgSimpleDataSource.setPrepareThreshold(2);
+        pgSimpleDataSource.setTcpKeepAlive(true);
+
         HikariConfig hc = new HikariConfig();
         hc.setConnectionInitSql("SELECT NOW()");
         // no need to set a validation query, connections auto validate
         // hc.setConnectionTestQuery("SELECT NOW()");
-        hc.setDriverClassName("org.postgresql.Driver");
+        /// hc.setDriverClassName("org.postgresql.Driver");
+        hc.setDataSource(pgSimpleDataSource);
 
         final String jdbcUrl = getUrl(config);
         hc.setJdbcUrl(jdbcUrl);

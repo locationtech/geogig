@@ -49,7 +49,16 @@
           <groupId>javax.media</groupId>
           <artifactId>jai_core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+        </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.1.1</version>
     </dependency>
 
     <dependency>

@@ -43,7 +43,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         pgSimpleDataSource.setUser(config.getUser());
         pgSimpleDataSource.setPassword(config.getPassword());
         pgSimpleDataSource.setAssumeMinServerVersion("9.4");
-        pgSimpleDataSource.setPrepareThreshold(2);
+        pgSimpleDataSource.setPrepareThreshold(1);
         pgSimpleDataSource.setTcpKeepAlive(true);
 
         HikariConfig hc = new HikariConfig();

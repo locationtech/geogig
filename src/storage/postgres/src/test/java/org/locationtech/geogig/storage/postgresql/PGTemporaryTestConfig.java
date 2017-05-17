@@ -65,6 +65,9 @@ public class PGTemporaryTestConfig extends ExternalResource {
         if (environment == null) {
             return;
         }
+        if (dataSource == null) {
+            return;
+        }
         try {
             delete();
         } catch (Exception e) {
@@ -83,10 +86,11 @@ public class PGTemporaryTestConfig extends ExternalResource {
         dataSource = null;
     }
 
-    public void openDataSource() {
+    public DataSource openDataSource() {
         if (dataSource == null) {
             dataSource = PGStorage.newDataSource(environment);
         }
+        return dataSource;
     }
 
     private void delete() throws SQLException {

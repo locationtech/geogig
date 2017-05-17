@@ -21,6 +21,7 @@ import org.locationtech.geogig.repository.Hints;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 
 /**
  * <p>
@@ -34,6 +35,8 @@ public class Environment {
     public static final String KEY_DB_SERVER = "postgres.server";
 
     public static final String KEY_DB_PORT = "postgres.port";
+
+    public static final int DEFAULT_DB_PORT = 5432;
 
     public static final String KEY_DB_SCHEMA = "postgres.schema";
 
@@ -71,9 +74,9 @@ public class Environment {
 
     static class ConnectionConfig {
 
-        private final String user;
+        private @Nullable final String user;
 
-        private final String password;
+        private @Nullable final String password;
 
         private final String databaseName;
 
@@ -83,14 +86,60 @@ public class Environment {
 
         private final String server;
 
+        private @Nullable final String tablePrefix;
+
         ConnectionConfig(final String server, final int portNumber, final String databaseName,
-                final String schema, final String user, final String password) {
+                final String schema, @Nullable final String user, @Nullable final String password,
+                @Nullable String tablePrefix) {
             this.server = server;
             this.portNumber = portNumber;
             this.databaseName = databaseName;
             this.schema = schema;
             this.user = user;
             this.password = password;
+            this.tablePrefix = tablePrefix;
+        }
+
+        public URI toURI() {
+            return toURIInternal(null);
+        }
+
+        public URI toURI(final String repositoryName) {
+            Preconditions.checkNotNull(repositoryName);
+            return toURIInternal(repositoryName);
+        }
+
+        private URI toURIInternal(final @Nullable String repositoryName) {
+
+            // postgresql://<server>:<port>/<database>/<schema>[/<repoid>]?user=<username>][&password=<pwd>][&tablePrefix=<prefix>]
+            StringBuilder sb = new StringBuilder("postgresql://").append(server).append(":")
+                    .append(portNumber).append("/").append(databaseName).append("/").append(schema);
+
+            if (repositoryName != null) {
+                sb.append("/").append(repositoryName);
+            }
+            StringBuilder args = new StringBuilder();
+            if (this.user != null) {
+                args.append("user=").append(this.user);
+            }
+            if (password != null) {
+                args.append(args.length() > 0 ? "&password=" : "password=").append(password);
+            }
+            if (tablePrefix != null) {
+                args.append(args.length() > 0 ? "&tablePrefix=" : "tablePrefix=")
+                        .append(tablePrefix);
+            }
+            if (args.length() > 0) {
+                sb.append("?").append(args);
+            }
+
+            URI repoURI = null;
+            try {
+                repoURI = new URI(sb.toString());
+            } catch (URISyntaxException e) {
+                Throwables.propagate(e);
+            }
+            return repoURI;
         }
 
         @Override
@@ -102,23 +151,25 @@ public class Environment {
             return equal(getServer(), d.getServer()) && equal(getPortNumber(), d.getPortNumber())
                     && equal(getDatabaseName(), d.getDatabaseName())
                     && equal(getSchema(), d.getSchema()) && equal(getUser(), d.getUser())
-                    && equal(getPassword(), d.getPassword());
+                    && equal(getPassword(), d.getPassword()) && equal(tablePrefix, d.tablePrefix);
         }
 
         @Override
         public int hashCode() {
             return Objects.hashCode(getServer(), getPortNumber(), getDatabaseName(), getSchema(),
-                    getUser(), getPassword());
+                    getUser(), getPassword(), tablePrefix);
         }
 
         String getDatabaseName() {
             return databaseName;
         }
 
+        @Nullable
         String getUser() {
             return user;
         }
 
+        @Nullable
         String getPassword() {
             return password;
         }
@@ -133,6 +184,11 @@ public class Environment {
 
         String getServer() {
             return server;
+        }
+
+        @Nullable
+        String getTablePrefix() {
+            return tablePrefix;
         }
     }
 
@@ -156,10 +212,14 @@ public class Environment {
      */
     Environment(final String server, final int portNumber, final String databaseName,
             final String schema, final String user, final String password,
-            final @Nullable String repositoryName, final @Nullable String tablePrefix) {
+            final @Nullable String repositoryName, @Nullable String tablePrefix) {
+
+        if (tablePrefix != null && tablePrefix.trim().isEmpty()) {
+            tablePrefix = null;
+        }
 
         this.connectionConfig = new ConnectionConfig(server, portNumber, databaseName, schema, user,
-                password);
+                password, tablePrefix);
         this.repositoryName = repositoryName;
         this.tables = new TableNames(schema == null ? TableNames.DEFAULT_SCHEMA : schema,
                 tablePrefix == null ? TableNames.DEFAULT_TABLE_PREFIX : tablePrefix);

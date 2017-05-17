@@ -74,7 +74,7 @@ public class PGStorage {
     }
 
     synchronized static DataSource newDataSource(Environment config) {
-        DataSource dataSource = DATASOURCE_POOL.acquire(config);
+        DataSource dataSource = DATASOURCE_POOL.acquire(config.connectionConfig);
         return dataSource;
     }
 

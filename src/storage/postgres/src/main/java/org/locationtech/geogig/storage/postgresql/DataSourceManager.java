@@ -28,19 +28,19 @@ import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-class DataSourceManager extends ConnectionManager<Environment, DataSource> {
+class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, DataSource> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceManager.class);
 
     @Override
-    protected DataSource connect(Environment config) {
+    protected DataSource connect(Environment.ConnectionConfig config) {
         HikariConfig hc = new HikariConfig();
         hc.setConnectionInitSql("SELECT NOW()");
         // no need to set a validation query, connections auto validate
         // hc.setConnectionTestQuery("SELECT NOW()");
         hc.setDriverClassName("org.postgresql.Driver");
 
-        final String jdbcUrl = getUrl(config.connectionConfig);
+        final String jdbcUrl = getUrl(config);
         hc.setJdbcUrl(jdbcUrl);
 
         hc.setMaximumPoolSize(10);
@@ -52,10 +52,13 @@ class DataSourceManager extends ConnectionManager<Environment, DataSource> {
 
         LOG.debug("Connecting to " + jdbcUrl + " as user " + config.getUser());
         HikariDataSource ds = new HikariDataSource(hc);
+
+        final String configTable = (config.getTablePrefix() == null
+                ? TableNames.DEFAULT_TABLE_PREFIX : config.getTablePrefix()) + "config";
         try (Connection c = ds.getConnection()) {
             final String sql = format(
                     "SELECT value FROM %s WHERE repository = ? AND section = ? AND key = ?",
-                    config.getTables().config());
+                    configTable);
             String[] maxConnections = Environment.KEY_MAX_CONNECTIONS.split("\\.");
             String section = maxConnections[0];
             String key = maxConnections[1];
@@ -67,7 +70,8 @@ class DataSourceManager extends ConnectionManager<Environment, DataSource> {
 
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        ds.setMaximumPoolSize(Integer.parseInt(rs.getString(1)));
+                        String globalMaxConnections = rs.getString(1);
+                        ds.setMaximumPoolSize(Integer.parseInt(globalMaxConnections));
                     }
                 }
             } catch (SQLException e) {

@@ -84,7 +84,7 @@ public class EnvironmentBuilder {
 
         int port = repoUrl.getPort();
         if (-1 == port) {
-            port = 5432;
+            port = Environment.DEFAULT_DB_PORT;
         }
         portNumber = String.valueOf(port);
 
@@ -214,45 +214,20 @@ public class EnvironmentBuilder {
      */
     public static URI buildRepoURI(Properties props, String repoName) {
         String server = props.getProperty(Environment.KEY_DB_SERVER);
-        String portNumber = props.getProperty(Environment.KEY_DB_PORT);
+        String portNumber = props.getProperty(Environment.KEY_DB_PORT,
+                String.valueOf(Environment.DEFAULT_DB_PORT));
         String databaseName = props.getProperty(Environment.KEY_DB_NAME);
         String schema = props.getProperty(Environment.KEY_DB_SCHEMA);
         String userName = props.getProperty(Environment.KEY_DB_USERNAME);
         String password = props.getProperty(Environment.KEY_DB_PASSWORD);
         String tablePrefix = props.getProperty("tablePrefix");
-        if (tablePrefix != null && tablePrefix.trim().isEmpty()) {
-            tablePrefix = null;
-        }
-        // postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>
-        StringBuilder sb = new StringBuilder("postgresql://").append(server).append(":")
-                .append(portNumber).append("/").append(databaseName).append("/").append(schema)
-                .append("/").append(repoName);
-        StringBuilder args = new StringBuilder("");
-        if (userName != null) {
-            args.append("user=").append(userName);
-        }
-        if (password != null) {
-            if (args.length() > 0) {
-                args.append("&");
-            }
-            args.append("password=").append(password);
-        }
-        if (tablePrefix != null) {
-            if (args.length() > 0) {
-                args.append("&");
-            }
-            args.append("tablePrefix=").append(tablePrefix);
-        }
-        if (args.length() > 0) {
-            sb.append("?").append(args);
-        }
 
-        URI repoURI = null;
-        try {
-            repoURI = new URI(sb.toString());
-        } catch (URISyntaxException e) {
-            Throwables.propagate(e);
-        }
+        final int port = Integer.parseInt(portNumber);
+
+        Environment env = new Environment(server, port, databaseName, schema, userName, password,
+                repoName, tablePrefix);
+        final URI repoURI = env.connectionConfig.toURI();
+
         return repoURI;
     }
 

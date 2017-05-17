@@ -11,6 +11,8 @@ package org.locationtech.geogig.storage.postgresql;
 
 import static java.lang.String.format;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -41,6 +43,55 @@ public class PGStorageTest {
     @Before
     public void before() {
         this.config = testConfig.getEnvironment();
+    }
+
+    /**
+     * {@link PGStorage#newDataSource(Environment)} should return the same {@link DataSource} when
+     * the connection parameters match the same database
+     */
+    public @Test void testAcquireDataSource() throws Exception {
+
+        String server = config.getServer();
+        int portNumber = config.getPortNumber();
+        String databaseName = config.getDatabaseName();
+        String schema = config.getSchema();
+        String user = config.getUser();
+        String password = config.getPassword();
+        String repositoryName = config.getRepositoryName();
+        String tablePrefix = config.getTables().getPrefix();
+
+        final Environment sameEnv = new Environment(server, portNumber, databaseName, schema, user,
+                password, repositoryName, tablePrefix);
+
+        final Environment sameDbDifferentRepo = new Environment(server, portNumber, databaseName,
+                schema, user, password, "another_repository", tablePrefix);
+        assertNotEquals(repositoryName, sameDbDifferentRepo.getRepositoryName());
+
+        final Environment noReposiotryName = new Environment(server, portNumber, databaseName,
+                schema, user, password, "another_repository", tablePrefix);
+        assertNotEquals(repositoryName, noReposiotryName.getRepositoryName());
+
+        final DataSource expected = testConfig.openDataSource();
+
+        DataSource actual = PGStorage.newDataSource(sameEnv);
+        try {
+            assertSame(expected, actual);
+        } finally {
+            PGStorage.closeDataSource(actual);
+        }
+        actual = PGStorage.newDataSource(sameDbDifferentRepo);
+        try {
+            assertSame(expected, actual);
+        } finally {
+            PGStorage.closeDataSource(actual);
+        }
+        actual = PGStorage.newDataSource(noReposiotryName);
+        try {
+            assertSame(expected, actual);
+        } finally {
+            PGStorage.closeDataSource(actual);
+        }
+
     }
 
     @Test
@@ -134,9 +185,9 @@ public class PGStorageTest {
             } catch (RepositoryBusyException e) {
                 // expected;
             }
+        } finally {
+            PGStorage.closeDataSource(source);
         }
-        PGStorage.closeDataSource(source);
-
         // Try allowing two connections
         try (PGConfigDatabase globalOnlydb = new PGConfigDatabase(config)) {
             globalOnlydb.putGlobal(Environment.KEY_MAX_CONNECTIONS, "2");
@@ -151,9 +202,9 @@ public class PGStorageTest {
                     // expected;
                 }
             }
+        } finally {
+            PGStorage.closeDataSource(source);
         }
-        testConfig.openDataSource();
-        PGStorage.closeDataSource(source);
     }
 
     private void assertTableExist(DataSource ds, String table) {

@@ -20,6 +20,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -40,6 +41,11 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
     public PGObjectDatabase(final ConfigDatabase configdb, final Hints hints)
             throws URISyntaxException {
         this(configdb, Environment.get(hints), readOnly(hints));
+    }
+
+    protected @Override String getCacheIdentifier(ConnectionConfig connectionConfig) {
+        final String cacheIdentifier = connectionConfig.toURI().toString() + "#objects";
+        return cacheIdentifier;
     }
 
     private static boolean readOnly(Hints hints) {

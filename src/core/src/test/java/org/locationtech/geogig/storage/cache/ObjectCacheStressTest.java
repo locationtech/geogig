@@ -1,4 +1,13 @@
-package org.locationtech.geogig.storage.postgresql.performance;
+/* Copyright (c) 2017 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan (Boundless) - initial implementation
+ */
+package org.locationtech.geogig.storage.cache;
 
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureForceId;
 
@@ -20,14 +29,9 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.IndexInfo;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_1;
 import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
-import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.postgresql.PGCache;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
@@ -37,13 +41,13 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
-public class PGCacheTest {
+public class ObjectCacheStressTest {
 
-    final int featureCount = 1000_000;
+    final int featureCount = 100_000;
 
     final int treeCount = 10_000;
 
-    private PGCache cache;
+    private ObjectCache cache;
 
     List<RevFeature> features;// = createFeatures(ids);
 
@@ -53,26 +57,31 @@ public class PGCacheTest {
 
     private static final List<ObjectSerializingFactory> encoders = ImmutableList.of(//
             // raw encoders
-            DataStreamSerializationFactoryV1.INSTANCE //
-            , DataStreamSerializationFactoryV2.INSTANCE //
-            , DataStreamSerializationFactoryV2_1.INSTANCE//
-            , DataStreamSerializationFactoryV2_3.INSTANCE//
+            // DataStreamSerializationFactoryV1.INSTANCE //
+            // , DataStreamSerializationFactoryV2.INSTANCE //
+            // DataStreamSerializationFactoryV2_1.INSTANCE//
+            // , DataStreamSerializationFactoryV2_3.INSTANCE//
             // LZF encoders
-            , new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
-            , new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
-            , new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
-            , new LZFSerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
+            // , new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
+            // , new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
+            // , new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
+            // , new LZFSerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
             // LZ4 encoders
-            , new LZ4SerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
-            , new LZ4SerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
-            , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
-            , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
+            // , new LZ4SerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
+            // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
+            // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
+            new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
     );
 
     public static void main(String[] args) {
-        PGCacheTest test = new PGCacheTest();
+        ObjectCacheStressTest test = new ObjectCacheStressTest();
         System.err.println("set up...");
-        test.setUp();
+        try {
+            test.setUp();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
 
         final int runCount = 2;
 
@@ -83,13 +92,13 @@ public class PGCacheTest {
         System.err.println(test.cache);
         test.tearDown();
 
-        System.err.println("Bucket Trees test:");
-        for (int i = 1; i <= runCount; i++) {
-            test.runTest(test.bucketTrees);
-        }
-        System.err.println(test.cache);
-        test.tearDown();
-
+        // System.err.println("Bucket Trees test:");
+        // for (int i = 1; i <= runCount; i++) {
+        // test.runTest(test.bucketTrees);
+        // }
+        // System.err.println(test.cache);
+        // test.tearDown();
+        //
         System.err.println("Features test:");
         for (int i = 1; i <= runCount; i++) {
             test.runTest(test.features);
@@ -98,15 +107,30 @@ public class PGCacheTest {
         test.tearDown();
     }
 
-    public void setUp() {
-        cache = PGCache.build();
-        features = createFeatures(featureCount);
+    public void setUp() throws Exception {
+        cache = CacheManager.INSTANCE.acquire("unique-cache-id");
+        Stopwatch sw = Stopwatch.createStarted();
+        Runtime runtime = Runtime.getRuntime();
+        System.gc();
+        System.runFinalization();
+        Thread.sleep(3000);
+        long mem = runtime.totalMemory() - Runtime.getRuntime().freeMemory();
         leafTrees = createLeafTrees(treeCount);
+        System.gc();
+        System.runFinalization();
+        Thread.sleep(3000);
+        long mem2 = runtime.totalMemory() - Runtime.getRuntime().freeMemory();
+        System.err.printf("leaf tree mem: %,d\n", mem2 - mem);
         bucketTrees = createBucketTrees(treeCount);
+        features = createFeatures(featureCount);
+        sw.stop();
+        System.err.printf("Created %,d features, %,d trees, %,d buckets in %s\n", featureCount,
+                treeCount, treeCount, sw);
     }
 
     public void tearDown() {
-        cache.dispose();
+        CacheManager.INSTANCE.release(cache);
+        // Preconditions.checkState(cache.sizeBytes() == 0);
     }
 
     public void runTest(List<? extends RevObject> objects) {
@@ -120,15 +144,21 @@ public class PGCacheTest {
     }
 
     public void run(ObjectSerializingFactory encoder, List<? extends RevObject> objects) {
-        cache.setEncoder(encoder);
+        // cache.setEncoder(encoder);
         final Stopwatch put = put(objects);
-
+        try {
+            Thread.currentThread().sleep(5000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         Collections.shuffle(objects);
         final Stopwatch get = Stopwatch.createStarted();
         int hits = query(Lists.transform(objects, (f) -> f.getId()));
         get.stop();
         System.err.printf("%s\t %,d\t %,d\t %s\t %s\t %,d\t %s\n", encoder.getDisplayName(),
-                objects.size(), hits, put, get, cache.sizeBytes(), ""/* cache.toString() */);
+                objects.size(), hits, put, get, CacheManager.INSTANCE.getSizeBytes(),
+                ""/* cache.toString() */);
     }
 
     private int query(List<ObjectId> ids) {
@@ -208,7 +238,7 @@ public class PGCacheTest {
         String name = "Node-" + n;
         ObjectId oid = RevObjectTestSupport.hashString(name);
         Envelope bounds = new Envelope(-1 * n, n, -1 * n, n);
-        return Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds, extraData);
+        return Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
     }
 
     private List<RevFeature> createFeatures(int count) {

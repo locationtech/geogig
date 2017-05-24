@@ -44,12 +44,12 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
+import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.Environment;
-import org.locationtech.geogig.storage.postgresql.PGCache;
 import org.locationtech.geogig.storage.postgresql.PGObjectDatabase;
 import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
@@ -87,7 +87,7 @@ public class PGObjectDatabaseStressTest {
 
     private ObjectStore db;
 
-    private PGCache sharedCache;
+    private ObjectCache sharedCache;
 
     @Before
     public void setUp() throws IOException {

@@ -79,7 +79,9 @@ public class PGStorage {
     }
 
     static void closeDataSource(DataSource ds) {
-        DATASOURCE_POOL.release(ds);
+        if (ds != null) {
+            DATASOURCE_POOL.release(ds);
+        }
     }
 
     static Connection newConnection(DataSource ds) {

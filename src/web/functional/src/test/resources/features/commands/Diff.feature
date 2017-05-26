@@ -1,4 +1,4 @@
-@Commands
+@Commands @Diff
 Feature: Diff
   The diff command allows a user to see the difference between two commits and is supported through the "/repos/{repository}/config" endpoint
   The command must be executed using the HTTP GET method

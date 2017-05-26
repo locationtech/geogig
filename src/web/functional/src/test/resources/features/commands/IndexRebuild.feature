@@ -1,4 +1,4 @@
-@Commands
+@Commands @IndexRebuild
 Feature: IndexRebuild
   The Index Rebuild command allows a user to rebuild the spatial index for a specified layer
   The command must be executed using the HTTP POST method

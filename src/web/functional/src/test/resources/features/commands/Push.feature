@@ -1,4 +1,4 @@
-@Commands
+@Commands @Push
 Feature: Push
   The push command allows a user to push a local branch to a remote and is supported through the "/repos/{repository}/push" endpoint
   The command must be executed using the HTTP GET method

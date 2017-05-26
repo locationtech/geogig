@@ -1,4 +1,4 @@
-@Commands
+@Commands @IndexCreate
 Feature: IndexCreate
   The Index Create command allows a user to add spatial index to a specified layer
   The command must be executed using the HTTP PUT method

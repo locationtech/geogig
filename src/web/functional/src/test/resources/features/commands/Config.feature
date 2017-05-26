@@ -1,4 +1,4 @@
-@Commands
+@Commands @Config
 Feature: Config
   The config command allows a user to get and set config values and is supported through the "/repos/{repository}/config" endpoint
   The command must be executed using the HTTP GET or POST methods

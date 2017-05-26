@@ -1,4 +1,4 @@
-@Commands
+@Commands @IndexList
 Feature: IndexList
   The Index List command allows a user to display spatial index info for a feature tree
   The command must be executed using the HTTP GET method

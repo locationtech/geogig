@@ -1,4 +1,4 @@
-@Commands
+@Commands @FeatureDiff
 Feature: FeatureDiff
   The feature diff command allows a user to see the difference between two versions of a specific feature and is supported through the "/repos/{repository}/featurediff" endpoint
   The command must be executed using the HTTP GET method

@@ -1,4 +1,4 @@
-@Commands
+@Commands @LsTree
 Feature: LsTree
   The LsTree command allows a user to view the contents of a tree in the repository and is supported through the "/repos/{repository}/ls-tree" endpoint
   The command must be executed using the HTTP GET method

@@ -1,4 +1,4 @@
-@Commands
+@Commands @ReportMergeScenario
 Feature: ReportMergeScenario
   The ReportMergeScenario command allows a user to see the results of a merge between two branches and is supported through the "/repos/{repository}/reportMergeScenario" endpoint
   The command must be executed using the HTTP GET method

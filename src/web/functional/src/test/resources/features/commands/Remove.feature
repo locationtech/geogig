@@ -1,4 +1,4 @@
-@Commands
+@Commands @Remove
 Feature: Remove
   The remove command allows a user to remove features from the repository and is supported through the "/repos/{repository}/remove" endpoint
   The command must be executed using the HTTP GET method

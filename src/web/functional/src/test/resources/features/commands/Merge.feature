@@ -1,4 +1,4 @@
-@Commands
+@Commands @Merge
 Feature: Merge
   The merge command allows a user to merge two branches and is supported through the "/repos/{repository}/merge" endpoint
   The command must be executed using the HTTP GET method

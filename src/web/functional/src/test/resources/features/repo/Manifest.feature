@@ -1,4 +1,4 @@
-@Repo
+@Repo @Manifest
 Feature: Manifest
   The manifest resources provides a list of all the branches in the repository and is supported through the "/repos/{repository}/repo/manifest" endpoint
   The command must be executed using the HTTP GET method

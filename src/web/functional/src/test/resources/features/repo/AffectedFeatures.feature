@@ -1,4 +1,4 @@
-@Repo
+@Repo @AffectedFeatures
 Feature: AffectedFeatures
   The AffectedFeatures resource provides a list of features changed in a commit and is supported through the "/repos/{repository}/repo/affectedfeatures" endpoint
   The command must be executed using the HTTP GET method

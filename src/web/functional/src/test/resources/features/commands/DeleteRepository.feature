@@ -1,4 +1,4 @@
-@RepositoryManagement
+@RepositoryManagement @DeleteRepository
 Feature: Delete Repository
 	Deleting a repository through the web API is a non reversible operation.
   * In order to avoid accidental deletion of repositories, it is a two-step process:

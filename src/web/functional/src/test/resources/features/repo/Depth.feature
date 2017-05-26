@@ -1,4 +1,4 @@
-@Repo
+@Repo @Depth
 Feature: Depth
   The Depth resource returns the depth of the repository from a specific commit and is supported through the "/repos/{repository}/repo/getdepth" endpoint
   The command must be executed using the HTTP GET method

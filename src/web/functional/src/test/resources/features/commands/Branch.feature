@@ -1,4 +1,4 @@
-@Commands
+@Commands @Branch
 Feature: Branch
   The branch command allows a user to create and list branches and is supported through the "/repos/{repository}/branch" endpoint
   The command must be executed using the HTTP GET method

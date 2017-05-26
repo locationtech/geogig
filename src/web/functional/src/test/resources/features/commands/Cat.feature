@@ -1,4 +1,4 @@
-@Commands
+@Commands @Cat
 Feature: Cat
   The cat command allows a user to display the attributes of a repository object and is supported through the "/repos/{repository}/cat" endpoint
   The command must be executed using the HTTP GET method

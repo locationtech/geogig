@@ -1,4 +1,4 @@
-@Commands
+@Commands @Tag
 Feature: Tag
   The Tag command allows a user to create, list, and delete tags and is supported through the "/repos/{repository}/tag" endpoint
   The command must be executed using the HTTP GET, POST, or DELETE methods

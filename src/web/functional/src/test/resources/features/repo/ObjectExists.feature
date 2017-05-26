@@ -1,4 +1,4 @@
-@Repo
+@Repo @ObjectExists
 Feature: ObjectExists
   The ObjectExists resource is used to determine if an objectId exists in the repository and is supported through the "/repos/{repository}/repo/exists" endpoint
   The command must be executed using the HTTP GET method

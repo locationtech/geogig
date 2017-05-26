@@ -1,4 +1,4 @@
-@Commands
+@Commands @IndexUpdate
 Feature: IndexUpdate
   The Index Update command allows a user to update the spatial index with extra attributes
   The command must be executed using the HTTP POST method

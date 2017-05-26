@@ -1,4 +1,4 @@
-@Commands
+@Commands @Transaction
 Feature: Transaction
   Transactions allow a user to perform work without affecting the main repository is supported through the "/repos/{repository}/beginTransaction" endpoint
   The command must be executed using the HTTP GET method

@@ -1,4 +1,4 @@
-@Commands
+@Commands @Remote
 Feature: Remote
   The remote command allows a user to manage the remotes of a repository and is supported through the "/repos/{repository}/remote" endpoint
   The command must be executed using the HTTP GET method

@@ -1,4 +1,4 @@
-@Repo
+@Repo @MergeFeature
 Feature: MergeFeature
   The MergeFeature resource provides a method of merging two conflicting features and is supported through the "/repos/{repository}/repo/mergefeature" endpoint
   The command must be executed using the HTTP GET method

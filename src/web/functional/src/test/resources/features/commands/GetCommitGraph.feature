@@ -1,4 +1,4 @@
-@Commands
+@Commands @GetCommitGraph
 Feature: GetCommitGraph
   The get commit graph command allows a user to retrieve the commit graph of a repo and is supported through the "/repos/{repository}/getCommitGraph" endpoint
   The command must be executed using the HTTP GET method

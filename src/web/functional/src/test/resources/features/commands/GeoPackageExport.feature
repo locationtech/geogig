@@ -1,4 +1,4 @@
-@GeopackageSupport
+@GeopackageSupport @GeoPackageExport
 Feature: Export GeoPackage
   The GeoPackage export Web-API allows for downloading a repository snapshot or a subset of it as a GeoPackage file.
   It is possible to filter out the downloaded content indicating the names of the layers to include from a given

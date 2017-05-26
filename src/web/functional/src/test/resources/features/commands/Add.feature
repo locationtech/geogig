@@ -1,4 +1,4 @@
-@Commands
+@Commands @Add
 Feature: Add
   The add command allows a user to stage features in the repository and is supported through the "/repos/{repository}/add" endpoint
   The command must be executed using the HTTP GET method

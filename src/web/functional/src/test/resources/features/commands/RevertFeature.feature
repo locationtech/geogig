@@ -1,4 +1,4 @@
-@Commands
+@Commands @RevertFeature
 Feature: RevertFeature
   The RevertFeature command allows a user to undo the changes made to a feature and is supported through the "/repos/{repository}/revertfeature" endpoint
   The command must be executed using the HTTP GET method

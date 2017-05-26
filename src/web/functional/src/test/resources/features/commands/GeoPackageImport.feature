@@ -1,4 +1,4 @@
-@GeopackageSupport
+@GeopackageSupport @GeoPackageImport
 Feature: Import GeoPackage
   The GeoPackage import Web-API allows for uploading a set of layers from a GeoPackage file
   onto a repository snapshot and create a new commit reflecting the imported contents. 

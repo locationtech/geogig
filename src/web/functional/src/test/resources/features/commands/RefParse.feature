@@ -1,4 +1,4 @@
-@Commands
+@Commands @RefParse
 Feature: RefParse
   The RefParse command allows a user to get the details of a ref by name and is supported through the "/repos/{repository}/refparse" endpoint
   The command must be executed using the HTTP GET method

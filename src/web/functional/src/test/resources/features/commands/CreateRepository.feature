@@ -1,4 +1,4 @@
-@RepositoryManagement
+@RepositoryManagement @CreateRepository
 Feature: Create Repository
   Creating a repository on the server is done through the "/repos/{repository}/init" command
   The command must be executed using the HTTP PUT method

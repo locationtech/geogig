@@ -1,4 +1,4 @@
-@Repo
+@Repo @Parents
 Feature: Parents
   The Parents resource returns the parents of a specific commit and is supported through the "/repos/{repository}/repo/getparents" endpoint
   The command must be executed using the HTTP GET method

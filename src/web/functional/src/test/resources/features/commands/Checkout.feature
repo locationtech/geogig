@@ -1,4 +1,4 @@
-@Commands
+@Commands @Checkout
 Feature: Checkout
   The checkout command allows a user to switch branches or resolve conflicts and is supported through the "/repos/{repository}/checkout" endpoint
   The command must be executed using the HTTP GET method

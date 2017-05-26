@@ -1,4 +1,4 @@
-@Commands
+@Commands @Status
 Feature: Status
   The Status command allows a user to see the current state of the repository and is supported through the "/repos/{repository}/status" endpoint
   The command must be executed using the HTTP GET method

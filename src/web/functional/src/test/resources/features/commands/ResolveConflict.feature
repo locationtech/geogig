@@ -1,4 +1,4 @@
-@Commands
+@Commands @ResolveConflict
 Feature: ResolveConflict
   The ResolveConflict command allows a user to resolve a conflict with a specific objectId and is supported through the "/repos/{repository}/resolveconflict" endpoint
   The command must be executed using the HTTP GET method

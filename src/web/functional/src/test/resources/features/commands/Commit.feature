@@ -1,4 +1,4 @@
-@Commands
+@Commands @Commit
 Feature: Commit
   The commit command allows a user to commit staged changes and is supported through the "/repos/{repository}/commit" endpoint
   The command must be executed using the HTTP GET method

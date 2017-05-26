@@ -1,4 +1,4 @@
-@Commands
+@Commands @IndexDrop
 Feature: IndexDrop
   The Index Drop command allows a user to remove an existing index from the repository
   The command must be executed using the HTTP DELETE method

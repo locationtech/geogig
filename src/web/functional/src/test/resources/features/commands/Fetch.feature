@@ -1,4 +1,4 @@
-@Commands
+@Commands @Fetch
 Feature: Fetch
   The fetch command allows a user to fetch the changes from a remote repo and is supported through the "/repos/{repository}/featurediff" endpoint
   The command must be executed using the HTTP GET method

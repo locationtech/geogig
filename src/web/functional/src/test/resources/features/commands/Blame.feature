@@ -1,4 +1,4 @@
-@Commands
+@Commands @Blame
 Feature: Blame
   The blame command allows a user to see who last modified each attribute of a feature and is supported through the "/repos/{repository}/blame" endpoint
   The command must be executed using the HTTP GET method

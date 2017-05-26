@@ -1,4 +1,4 @@
-@Commands
+@Commands @UpdateRef
 Feature: UpdateRef
   The UpdateRef command allows a user to manually change the value of a ref and is supported through the "/repos/{repository}/updateref" endpoint
   The command must be executed using the HTTP GET method

@@ -1,4 +1,4 @@
-@Commands
+@Commands @Log
 Feature: Log
   The log command allows a user to view the commit log of a repo and is supported through the "/repos/{repository}/log" endpoint
   The command must be executed using the HTTP GET method

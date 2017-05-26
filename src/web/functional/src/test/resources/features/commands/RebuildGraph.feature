@@ -1,4 +1,4 @@
-@Commands
+@Commands @RebuildGraph
 Feature: RebuildGraph
   The RebuildGraph command allows a user to rebuild the graph database of a repository and is supported through the "/repos/{repository}/rebuildgraph" endpoint
   The command must be executed using the HTTP GET method

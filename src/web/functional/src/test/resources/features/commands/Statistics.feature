@@ -1,4 +1,4 @@
-@Commands
+@Commands @Statistics
 Feature: Statistics
   The Statistics command allows a user to summarize the changes made to a branch and is supported through the "/repos/{repository}/statistics" endpoint
   The command must be executed using the HTTP GET method

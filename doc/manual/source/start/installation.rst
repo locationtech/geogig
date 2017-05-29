@@ -5,59 +5,55 @@ Installation
 
 This section describes the steps needed to install GeoGig.
 
-Binaries
---------
+Pre-requisites
+--------------
+
+GeoGig requires a Java 8 runtime environment. If not already on your system, install a `Java JDK <http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>`_. Make sure the `java` executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.
+
+
+Command line executable
+-----------------------
 
 Pre-built binaries are available for GeoGig.
 
-#. If not already on your system, install a `Java JDK <http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>`_. GeoGig requires Java 8 or higher to run. Make sure the `java` executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.
-
-#. After the JDK is installed, navigate to http://geogig.org and click :guilabel:`Download`.
+#. After the JDK is installed, navigate to the project's releases page https://github.com/locationtech/geogig/releases/ and download the latest release. For example, `geogig-1.1.0.zip`.
 
 #. Extract this archive to your preferred program directory. (For example, :file:`C:\\Program Files\\GeoGig` or :file:`/opt/geogig`.)
 
    .. note:: The same packages can be used on Windows, OS X, and Linux.
 
-#. Add the bin directory to your ``PATH`` environment variable.
+#. Add the `bin` directory to your ``PATH`` environment variable.
 
 When finished, you should be able to run the ``geogig --help`` and see the command usage.
+
+GeoServer plug-in
+-----------------
+
+A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as a datastore. It enables a GeoGig repository to be exposed as a remote for cloning, pushing, and pulling, as well as to publish its data via OGC services.
+
+The GeoServer GeoGig plug-in binaries are pre-compiled and ready to be downloaded for the most recent versions of GeoServer.
+Refer to the project's releases page https://github.com/locationtech/geogig/releases/ and download the latest release. For example, `GeoServer 2.11.x plugin <https://github.com/locationtech/geogig/releases/download/v1.1.0/geoserver-2.11-SNAPSHOT-geogig-plugin.zip>`_.
+
+Once downloaded, unzip the contensts of the ``geoserver-<version>-geogig-plugin.zip`` file inside GeoServer's ``WEB-INF/lib`` directory and restart GeoServer.
+
+For information on how to configure GeoGig on GeoServer, refer to the :ref:`geoserver_ui` and :ref:`geoserver_web-api` sections.
 
 Building from source code
 -------------------------
 
-To build GeoGig an executable binary that you can run:
-
-#. Clone the GeoGig source code repository. To do so, create a new folder where you want the GeoGig source code to be kept, open a terminal and move to that folder, then type the following::
-
-	   git clone https://github.com/locationtech/geogig.git
-
-#. If not already on your system, install a `Java JDK`_. A Java JRE is not sufficient to build GeoGig.
-
-#. If not already on your system, install `Maven <http://maven.apache.org/download.cgi>`_.
-
-#. Move to the ``src/parent`` folder under the folder where you have cloned the GeoGig source code, and type the following::
-
-	 mvn clean install
-
-   .. note:: To speed up the build process, you can skip tests:
-
-      ::
-
-        mvn clean install -DskipTests
-
-#. GeoGig will now build. Scripts ready to be run should be available in the :file:`src/cli-app/target/geogig/bin` directory. Add that directory to your ``PATH`` environment variable.
-
-When finished, you should be able to run the ``geogig --help`` from a terminal and see the command usage.
+If you're interested in building GeoGig yourself, go to the project's source code repository and follow the instructions there: https://github.com/locationtech/geogig
 
 Running on Windows
 ------------------
 
-GeoGig uses `RocksDB <http://rocksdb.org/>`_ as the default storage backend.  On Windows machines, the libraries for RocksDB require the `Visual C++ Redistributable for Visual Studio 2015 <https://www.microsoft.com/en-us/download/details.aspx?id=48145>`_.  If you experience an ``UnsatisfiedLinkError`` exception when running GeoGig, make sure you have the above dependency installed on your system.
+GeoGig for Windows is only available for Windows 64-bit versions.
+
+GeoGig uses `RocksDB <http://rocksdb.org/>`_ as the default storage backend and for some temporary storage needs.  On Windows machines, the libraries for RocksDB require the `Visual C++ Redistributable for Visual Studio 2015 <https://www.microsoft.com/en-us/download/details.aspx?id=48145>`_.  If you experience an ``UnsatisfiedLinkError`` exception when running GeoGig, make sure you have the above dependency installed on your system.
 
 Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing `ANSICON <http://adoxa.altervista.org/ansicon/>`_ and setting the ``ansi.enabled`` config parameter to ``true``. See the config section :ref:`repo.config`.
 
 Installing ANSICON
-==================
+++++++++++++++++++
 
 #. Download the `ANSICON <http://adoxa.altervista.org/ansicon/>`_  zip.
 
@@ -82,7 +78,7 @@ Installing ANSICON
 #. ANSICON is now enabled by default in all terminals.
 
 Uninstalling ANSICON
-====================
+++++++++++++++++++++
 
 #. To remove ANSICON from the terminal defaults type:
 

@@ -214,6 +214,28 @@ It is now possible to push and pull from this remote repository. You can verify 
     100%
     Already up to date.
 
+.. _geosever-settings:
+
+GeoGig Runtime Settings
+-----------------------
+
+Some runtime aspects of GeoGig when running as part of GeoServer can be configured through the `GeoGig Settings` page as shown in the image bellow.
+
+.. figure:: ../img/geoserver_geogig_settings_page.png
+
+On the `Shared Cache` section of the `GeoGig Settings` configuration page, you can configure and monitor the status of GeoGig's shared revision objects cache.
+For more information on what the cache is and how it works, refer to the :ref:`caching` section.
+
+Use the ``Maximum cache size`` text entry to set a new value for the cache size in megabytes, and press the `Apply` button to make it effective.
+
+Use the ``Reset to defaults`` button to re-establish the maximum cache size to its default value, as given by the ``GEOGIG_CACHE_MAX_SIZE`` environment variable or system property, if provided, or the internal default of 25% of the maximum heap size othwerwise.
+
+Note these two operations are applied immediately and are destructive in the sense that the current cache will be discarded and a new one will be created, with the effect that the cache statistics shown in the table bellow them will be lost and reset.
+
+Use the ``Refresh`` button bellow the cache attributes and statistics table to obtain fresh, real time information about the status of the cache.
+
+Use the ``Clear cache`` button to prune all the objects currently in the cache, making the memory used immediately available to the Java Garbage Collector. This operation is non destructive, meaning the cache statistics will remain valid and further cache queries and inserts made by GeoGig will affect them.
+
 Automated repository synchronization
 ------------------------------------
 
@@ -224,10 +246,6 @@ Repositories configured by GeoServer can be configured with remotes and Automate
 Current limitations
 -------------------
 
-When using Directory-backed GeoGig repositories, the default underlying object database (BerkeleyDB) is single-user. While the repository is being exposed over the network by either the stand-alone server or by GeoServer, you will not be able to access the repository from the command line interface. The error is pretty clear about whats going on.
-
-::
-
-    com.sleepycat.je.EnvironmentLockedException: (JE 5.0.58) /Users/jj0hns0n/data/gisdata-repo/.geogig/objects The environment cannot be locked for single writer access. ENV_LOCKED: The je.lck file could not be locked. Environment is invalid and must be closed.
+When using Directory-backed GeoGig repositories, the default underlying object database (Rocksdb) is single-user. While the repository is being exposed over the network by either the stand-alone server or by GeoServer, you will not be able to access the repository from the command line interface.
 
 **GeoGig repositories backed by PostgreSQL do not have this limitation.**

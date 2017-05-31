@@ -42,6 +42,7 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 import org.locationtech.geogig.storage.datastream.ValueSerializer;
+import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -64,6 +65,11 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     public PGIndexDatabase(final ConfigDatabase configdb, final Hints hints)
             throws URISyntaxException {
         this(configdb, Environment.get(hints), readOnly(hints));
+    }
+
+    protected @Override String getCacheIdentifier(ConnectionConfig connectionConfig) {
+        final String cacheIdentifier = connectionConfig.toURI().toString() + "#index";
+        return cacheIdentifier;
     }
 
     private static boolean readOnly(Hints hints) {

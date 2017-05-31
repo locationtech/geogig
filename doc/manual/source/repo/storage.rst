@@ -100,10 +100,7 @@ There are several configuration options for tuning the cacheing and threading of
 
 * ``postgres.maxConnections``: The maximum number of simultaneous idle and in-use connections to the database. Defaults to 10.
 * ``postgres.threadPoolSize``: The number of threads that the object database should use.  Defaults to the number of processors available to the virtual machine, or 2, whichever is higher.
-* ``postgres.bytecache.maxSize``: The maximum size of the object database cache in bytes. Defaults to 10% of the heap.
-* ``postgres.bytecache.initialCapacity``: The minimum total size of the cache in bytes.  Defaults to 1,000,000 bytes.
-* ``postgres.bytecache.concurrencyLevel``: Hint to indicate the desired number of concurrent updates without contention. Actual concurrency may vary based on internal structure. Defaults to 16.
-* ``postgres.bytecache.expireSeconds``: If specified, cache entries will be removed after the given number of seconds have passed.  This is not set by default, so entries do not expire from the cache.
+* Caching: refer to the :ref:`runtime_config` section for more information
 
 Additionally, each repository can be tuned by adjusting the batch size of ``GET`` and ``PUT`` requests by adjusting the following configuration options.
 
@@ -113,7 +110,16 @@ Additionally, each repository can be tuned by adjusting the batch size of ``GET`
 Database set up
 ---------------
 
-GeoGig will create the necessary tables the first time it's used against a given database. However, the database and user/role must already exist in PostgreSQL. You can use a pre-existing PostgreSQL role with administrative access to an existing database or you can run the following steps and SQL script to create the GeoGig database and tables first.
+GeoGig will create the necessary tables the first time it's used against a given database. 
+For example, if you start with an empty databse and create a new repository on it, GeoGig will detect the missing tables and create them, like in the following example:
+
+.. code-block:: console
+
+ $ su - postgres -c "create database geogig_tests"
+ $ geogig init "postgresql://localhost/geogig_tests/myrepo?user=postgres&password=postgres"
+ Initialized empty Geogig repository in postgresql://localhost/geogig_tests/myrepo?user=postgres&password=postgres
+
+However, the database and user/role must already exist in PostgreSQL. You can use a pre-existing PostgreSQL role with administrative access to an existing database or you can run the following steps and SQL script to create the GeoGig database and tables first.
 
 :download:`geogig_postgres.sql <geogig_postgres.sql>`
 

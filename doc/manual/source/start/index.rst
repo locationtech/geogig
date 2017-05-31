@@ -10,4 +10,5 @@ This section will introduce you to GeoGig and explain the installation process.
 
    introduction
    installation
+   runtime
    tutorial

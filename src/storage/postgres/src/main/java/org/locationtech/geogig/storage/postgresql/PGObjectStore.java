@@ -39,13 +39,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,7 +70,10 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.cache.CacheManager;
+import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
+import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,6 +108,8 @@ public class PGObjectStore implements ObjectStore {
 
     private static final int DEFAULT_GET_ALL_PARTITION_SIZE = 100;
 
+    private static final ObjectStoreSharedResources SHARED_RESOURCES = new ObjectStoreSharedResources();
+
     protected final Environment config;
 
     protected final ConfigDatabase configdb;
@@ -116,17 +118,13 @@ public class PGObjectStore implements ObjectStore {
 
     protected DataSource dataSource;
 
-    private ExecutorService executor = null;
-
-    private PGCache sharedCache = null;
-
-    private int threadPoolSize = 2;
-
-    private ThreadGroup threadGroup = null;
+    private ObjectCache sharedCache = null;
 
     private int getAllBatchSize = DEFAULT_GET_ALL_PARTITION_SIZE;
 
     private int putAllBatchSize = DEFAULT_PUT_ALL_PARTITION_SIZE;
+
+    private SharedResourceReference resources;
 
     @Inject
     public PGObjectStore(final ConfigDatabase configdb, final Hints hints)
@@ -138,6 +136,7 @@ public class PGObjectStore implements ObjectStore {
         Preconditions.checkNotNull(configdb);
         Preconditions.checkNotNull(config);
         Preconditions.checkNotNull(config.getRepositoryName(), "Repository id not provided");
+        // REVISIT: the following check should be done at open() instead?
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
         this.configdb = configdb;
@@ -149,10 +148,11 @@ public class PGObjectStore implements ObjectStore {
         if (dataSource != null) {
             return;
         }
-        dataSource = connect();
+        dataSource = PGStorage.newDataSource(config);
 
         Optional<Integer> getAllFetchSize = configdb.get(KEY_GETALL_BATCH_SIZE, Integer.class);
         Optional<Integer> putAllBatchSize = configdb.get(KEY_PUTALL_BATCH_SIZE, Integer.class);
+        Optional<Integer> tpoolSize = configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class);
         if (getAllFetchSize.isPresent()) {
             Integer fetchSize = getAllFetchSize.get();
             Preconditions.checkState(fetchSize.intValue() > 0,
@@ -167,14 +167,33 @@ public class PGObjectStore implements ObjectStore {
                     batchSize);
             this.putAllBatchSize = batchSize;
         }
+        int threadPoolSize;
+        if (tpoolSize.isPresent()) {
+            Integer poolSize = tpoolSize.get();
+            Preconditions.checkState(poolSize.intValue() > 0,
+                    "postgres.threadPoolSize must be a positive integer: %s. Check your config.",
+                    poolSize);
+            threadPoolSize = poolSize;
+        } else {
+            threadPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+        }
 
-        final String prefix = config.getTables().getPrefix();
         final ConnectionConfig connectionConfig = config.connectionConfig;
-        ObjectStoreSharedResources.retain(configdb, connectionConfig, prefix);
-        executor = ObjectStoreSharedResources.getExecutor(connectionConfig, prefix);
-        sharedCache = ObjectStoreSharedResources.getByteCache(connectionConfig, prefix);
-        threadPoolSize = ObjectStoreSharedResources.getThreadPoolSize(connectionConfig, prefix);
-        threadGroup = ObjectStoreSharedResources.getThreadGroup(connectionConfig, prefix);
+        this.resources = SHARED_RESOURCES.acquire(connectionConfig);
+        resources.trySetThreadPoolSize(threadPoolSize);
+
+        this.sharedCache = CacheManager.INSTANCE.acquire(getCacheIdentifier(connectionConfig));
+    }
+
+    /**
+     * The cache identifier to give to {@link CacheManager#acquire(String)}, defaults to
+     * {@code connectionConfig.toURI().toString()}, subclasses should override to reflect which
+     * object store they operate upon (e.g. {@code connectionConfig.toURI().toString() + "index"} or
+     * {@code + "objects"}
+     */
+    protected String getCacheIdentifier(ConnectionConfig connectionConfig) {
+        final String cacheIdentifier = connectionConfig.toURI().toString();
+        return cacheIdentifier;
     }
 
     @Override
@@ -184,22 +203,27 @@ public class PGObjectStore implements ObjectStore {
 
     @Override
     public void close() {
-        if (dataSource != null) {
-            try {
-                close(dataSource);
-            } finally {
-                dataSource = null;
-            }
+        if (this.dataSource == null) {
+            return;
         }
-        final String prefix = config.getTables().getPrefix();
-        final ConnectionConfig connectionConfig = config.connectionConfig;
-        ObjectStoreSharedResources.release(connectionConfig, prefix);
-        executor = null;
-        sharedCache = null;
+        DataSource ds = this.dataSource;
+        SharedResourceReference res = this.resources;
+        ObjectCache sharedCache = this.sharedCache;
+        this.dataSource = null;
+        this.resources = null;
+        this.sharedCache = null;
+        try {
+            PGStorage.closeDataSource(ds);
+        } finally {
+            if (res != null) {
+                SHARED_RESOURCES.release(res);
+            }
+            CacheManager.INSTANCE.release(sharedCache);
+        }
     }
 
     @VisibleForTesting
-    public PGCache getCache() {
+    public ObjectCache getCache() {
         return sharedCache;
     }
 
@@ -421,7 +445,7 @@ public class PGObjectStore implements ObjectStore {
 
         private Iterator<ObjectInfo<T>> nextBatch;
 
-        final PGCache cache;
+        final ObjectCache cache;
 
         private boolean closed;
 
@@ -572,7 +596,7 @@ public class PGObjectStore implements ObjectStore {
 
         private Iterator<T> nextBatch;
 
-        final PGCache cache;
+        final ObjectCache cache;
 
         public GetAllIterator(Iterator<ObjectId> ids, Class<T> type, BulkOpListener listener,
                 PGObjectStore store) {
@@ -716,23 +740,6 @@ public class PGObjectStore implements ObjectStore {
         deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
-    /**
-     * Opens a database connection, returning the object representing connection state.
-     */
-    protected DataSource connect() {
-        return PGStorage.newDataSource(config);
-    }
-
-    /**
-     * Closes a database connection.
-     * 
-     * @param dataSource The connection object.
-     */
-
-    protected void close(DataSource ds) {
-        PGStorage.closeDataSource(ds);
-    }
-
     protected String tableNameForType(@Nullable RevObject.TYPE type, PGId pgid) {
         final String tableName;
         final TableNames tables = config.getTables();
@@ -822,7 +829,7 @@ public class PGObjectStore implements ObjectStore {
         GetAllOp<T> getAllOp = new GetAllOp<T>(ids, listener, this, type);
         // Avoid deadlocking by running the task synchronously if we are already in one of the
         // threads on the executor.
-        if (Thread.currentThread().getThreadGroup().equals(threadGroup)) {
+        if (Thread.currentThread().getThreadGroup().equals(resources.threadGroup)) {
             try {
                 List<T> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
@@ -830,7 +837,7 @@ public class PGObjectStore implements ObjectStore {
                 propagate(e);
             }
         }
-        Future<List<T>> future = executor.submit(getAllOp);
+        Future<List<T>> future = resources.executor().submit(getAllOp);
         return future;
     }
 
@@ -841,7 +848,7 @@ public class PGObjectStore implements ObjectStore {
         GetObjectOp<T> getAllOp = new GetObjectOp<T>(nodes, listener, this, type);
         // Avoid deadlocking by running the task synchronously if we are already in one of the
         // threads on the executor.
-        if (Thread.currentThread().getThreadGroup().equals(threadGroup)) {
+        if (Thread.currentThread().getThreadGroup().equals(resources.threadGroup)) {
             try {
                 List<ObjectInfo<T>> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
@@ -849,7 +856,7 @@ public class PGObjectStore implements ObjectStore {
                 propagate(e);
             }
         }
-        Future<List<ObjectInfo<T>>> future = executor.submit(getAllOp);
+        Future<List<ObjectInfo<T>>> future = resources.executor().submit(getAllOp);
         return future;
     }
 
@@ -861,7 +868,7 @@ public class PGObjectStore implements ObjectStore {
 
         private final PGObjectStore db;
 
-        private final PGCache sharedCache;
+        private final ObjectCache sharedCache;
 
         private final Class<T> type;
 
@@ -969,7 +976,7 @@ public class PGObjectStore implements ObjectStore {
 
         private final PGObjectStore db;
 
-        private final PGCache sharedCache;
+        private final ObjectCache sharedCache;
 
         private final Class<T> type;
 
@@ -1221,7 +1228,8 @@ public class PGObjectStore implements ObjectStore {
                     .iterator();
         }
 
-        final int maxTasks = Math.min(Runtime.getRuntime().availableProcessors(), threadPoolSize);
+        final int maxTasks = Math.min(Runtime.getRuntime().availableProcessors(),
+                resources.threadPoolSize());
 
         // Insert in batches of putAllBatchSize.
         // Using several connections for the insert really boosts performance, yet we need to share
@@ -1241,7 +1249,7 @@ public class PGObjectStore implements ObjectStore {
                 tasks.add(task);
             }
             try {
-                List<Future<Void>> results = executor.invokeAll(tasks);
+                List<Future<Void>> results = resources.executor().invokeAll(tasks);
                 if (abortFlag.get()) {
                     try {
                         for (Future<Void> r : results) {
@@ -1350,155 +1358,78 @@ public class PGObjectStore implements ObjectStore {
         checkOpen();
     }
 
+    private static class SharedResourceReference {
+
+        private ExecutorService executor;
+
+        private int threadPoolSize;
+
+        private final ThreadGroup threadGroup;
+
+        private final ConnectionConfig config;
+
+        SharedResourceReference(ThreadGroup threadGroup, ConnectionConfig config) {
+            this.threadGroup = threadGroup;
+            this.config = config;
+        }
+
+        public int threadPoolSize() {
+            checkState(threadPoolSize > 0, "threadPoolSize was not set");
+            return threadPoolSize;
+        }
+
+        public void trySetThreadPoolSize(int poolSize) {
+            Preconditions.checkArgument(poolSize > 0);
+            if (threadPoolSize == 0) {
+                this.threadPoolSize = poolSize;
+            }
+        }
+
+        public ExecutorService executor() {
+            if (executor == null) {
+                createExecutorService();
+            }
+            return executor;
+        }
+
+        private synchronized void createExecutorService() {
+            if (executor != null) {
+                return;
+            }
+            final ThreadFactory threadFactory = new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    return new Thread(threadGroup, r);
+                }
+            };
+            String poolName = String.format("GeoGig PG ODB pool for %s:%d/%s", config.getServer(),
+                    config.getPortNumber(), config.getDatabaseName()) + "-%d";
+            this.executor = Executors.newFixedThreadPool(threadPoolSize,
+                    new ThreadFactoryBuilder().setThreadFactory(threadFactory)
+                            .setNameFormat(poolName).setDaemon(true).build());
+        }
+
+    }
+
     /**
      * Class for managing the shared resources for each database.
      */
-    private static class ObjectStoreSharedResources {
+    private static class ObjectStoreSharedResources
+            extends ConnectionManager<ConnectionConfig, SharedResourceReference> {
 
-        /**
-         * A Key to the cache hash table, composed of connection info plus table names prefix.
-         * <p>
-         * A single database generally contains all its repos in tables with the default
-         * {@code geogig_} prefix, but it's also possible that it contains separate sets of
-         * repositories when the table names prefix differ. This is the case for most test cases
-         * where a single database is used to exercise "disconnected" repositories (i.e. where they
-         * don't share the {@code ObjectDatabase} by using different table names prefixes like
-         * "geogig_XXX" and "geogig_YYY" where XXX and YYY are random numbers.
-         *
-         */
-        private static final class Key {
-            final ConnectionConfig config;
+        @Override
+        protected SharedResourceReference connect(ConnectionConfig config) {
+            final String threadGroupName = String.format("PG ODB threads for %s:%d/%s",
+                    config.getServer(), config.getPortNumber(), config.getDatabaseName());
+            final ThreadGroup threadGroup = new ThreadGroup(threadGroupName);
+            SharedResourceReference ref = new SharedResourceReference(threadGroup, config);
+            return ref;
+        }
 
-            final String tableNamesPrefix;
-
-            public Key(ConnectionConfig config, String tableNamsPrefix) {
-                this.config = config;
-                this.tableNamesPrefix = tableNamsPrefix;
+        @Override
+        protected void disconnect(SharedResourceReference ref) {
+            if (ref.executor != null) {
+                ref.executor.shutdownNow();
             }
-
-            @Override
-            public boolean equals(Object o) {
-                return o instanceof Key && config.equals(((Key) o).config)
-                        && tableNamesPrefix.equals(((Key) o).tableNamesPrefix);
-            }
-
-            @Override
-            public int hashCode() {
-                return Objects.hash(config, tableNamesPrefix);
-            }
-        }
-
-        private static final ConcurrentMap<Key, SharedResourceReference> sharedResources = new ConcurrentHashMap<>();
-
-        /**
-         * Keeps track of the number of object databases using the database resources so they can be
-         * removed when no longer needed.
-         */
-        private static class SharedResourceReference {
-            final ExecutorService executor;
-
-            final PGCache sharedCache;
-
-            final int threadPoolSize;
-
-            final ThreadGroup threadGroup;
-
-            int refCount = 1;
-
-            SharedResourceReference(PGCache sharedCache, ExecutorService executor,
-                    int threadPoolSize, ThreadGroup threadGroup) {
-                this.executor = executor;
-                this.sharedCache = sharedCache;
-                this.threadPoolSize = threadPoolSize;
-                this.threadGroup = threadGroup;
-            }
-        }
-
-        public synchronized static void retain(ConfigDatabase configdb,
-                Environment.ConnectionConfig config, String tableNamesPrefix) {
-            final Key key = new Key(config, tableNamesPrefix);
-            SharedResourceReference ref = sharedResources.get(key);
-            if (ref == null) {
-                int threadPoolSize;
-                Optional<Integer> tpoolSize = configdb.getGlobal(KEY_THREADPOOL_SIZE,
-                        Integer.class);
-                if (tpoolSize.isPresent()) {
-                    Integer poolSize = tpoolSize.get();
-                    Preconditions.checkState(poolSize.intValue() > 0,
-                            "postgres.threadPoolSize must be a positive integer: %s. Check your config.",
-                            poolSize);
-                    threadPoolSize = poolSize;
-                } else {
-                    threadPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 2);
-                }
-                final String threadGroupName = String.format("PG ODB threads for %s:%d/%s",
-                        config.getServer(), config.getPortNumber(), config.getDatabaseName());
-                final ThreadGroup threadGroup = new ThreadGroup(threadGroupName);
-                final ThreadFactory threadFactory = new ThreadFactory() {
-                    public Thread newThread(Runnable r) {
-                        return new Thread(threadGroup, r);
-                    }
-                };
-                ExecutorService databaseExecutor = createExecutorService(threadFactory, config,
-                        threadPoolSize);
-                PGCache byteCache = createCache(configdb);
-                ref = new SharedResourceReference(byteCache, databaseExecutor, threadPoolSize,
-                        threadGroup);
-                sharedResources.put(key, ref);
-            } else {
-                ref.refCount++;
-            }
-        }
-
-        public synchronized static void release(Environment.ConnectionConfig config,
-                String tableNamesPrefix) {
-            final Key key = new Key(config, tableNamesPrefix);
-            SharedResourceReference ref = sharedResources.get(key);
-            if (ref != null) {
-                ref.refCount--;
-                if (ref.refCount == 0) {
-                    ref.executor.shutdownNow();
-                    ref.sharedCache.dispose();
-                    sharedResources.remove(key);
-                }
-            }
-        }
-
-        public static ExecutorService getExecutor(Environment.ConnectionConfig config,
-                String tableNamesPrefix) {
-            final Key key = new Key(config, tableNamesPrefix);
-            return sharedResources.get(key).executor;
-        }
-
-        public static ThreadGroup getThreadGroup(Environment.ConnectionConfig config,
-                String tableNamesPrefix) {
-            final Key key = new Key(config, tableNamesPrefix);
-            return sharedResources.get(key).threadGroup;
-        }
-
-        public static PGCache getByteCache(final Environment.ConnectionConfig config,
-                final String tableNamesPrefix) {
-            final Key key = new Key(config, tableNamesPrefix);
-            return sharedResources.get(key).sharedCache;
-        }
-
-        public static int getThreadPoolSize(Environment.ConnectionConfig config,
-                String tableNamesPrefix) {
-            final Key key = new Key(config, tableNamesPrefix);
-            return sharedResources.get(key).threadPoolSize;
-        }
-
-        private static PGCache createCache(ConfigDatabase configdb) {
-            return PGCache.build(configdb);
-        }
-
-        private static ExecutorService createExecutorService(ThreadFactory threadFactory,
-                Environment.ConnectionConfig config, int threadPoolSize) {
-            String poolName = String.format("GeoGig PG ODB pool for %s:%d/%s", config.getServer(),
-                    config.getPortNumber(), config.getDatabaseName()) + "-%d";
-            return Executors.newFixedThreadPool(threadPoolSize,
-                    new ThreadFactoryBuilder().setThreadFactory(threadFactory)
-                            .setNameFormat(poolName).setDaemon(true).build());
         }
     }
 

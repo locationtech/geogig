@@ -139,26 +139,27 @@ public class HeapGraphDatabase implements GraphDatabase {
     @Override
     public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
         Node n = graph.getOrAdd(commitId);
-
-        if (parentIds.isEmpty()) {
-            // the root node, only update on first addition
-            if (!n.isRoot()) {
-                n.setRoot(true);
-                return true;
-            }
-        }
-
-        // has the node been attached to graph?
-        if (Iterables.isEmpty(n.to())) {
-            // nope, attach it
-            for (ObjectId parent : parentIds) {
-                Node p = graph.getOrAdd(parent);
-                graph.newEdge(n, p);
+        synchronized (n) {
+            if (parentIds.isEmpty()) {
+                // the root node, only update on first addition
+                if (!n.isRoot()) {
+                    n.setRoot(true);
+                    return true;
+                }
             }
 
-            // only mark as updated if it is actually attached
-            boolean added = !Iterables.isEmpty(n.to());
-            return added;
+            // has the node been attached to graph?
+            if (Iterables.isEmpty(n.to())) {
+                // nope, attach it
+                for (ObjectId parent : parentIds) {
+                    Node p = graph.getOrAdd(parent);
+                    graph.newEdge(n, p);
+                }
+
+                // only mark as updated if it is actually attached
+                boolean added = !Iterables.isEmpty(n.to());
+                return added;
+            }
         }
         return false;
     }
@@ -258,8 +259,9 @@ public class HeapGraphDatabase implements GraphDatabase {
             List<GraphEdge> edges = new LinkedList<GraphEdge>();
             while (nodeEdges.hasNext()) {
                 Edge nodeEdge = nodeEdges.next();
-                edges.add(new GraphEdge(new HeapGraphNode(nodeEdge.src),
-                        new HeapGraphNode(nodeEdge.dst)));
+                Node src = nodeEdge.src;
+                Node dst = nodeEdge.dst;
+                edges.add(new GraphEdge(new HeapGraphNode(src), new HeapGraphNode(dst)));
             }
             return edges.iterator();
         }

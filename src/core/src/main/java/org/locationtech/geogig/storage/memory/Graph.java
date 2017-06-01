@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.model.ObjectId;
 
@@ -28,9 +28,9 @@ import com.google.common.collect.Maps;
  */
 class Graph {
 
-    final Map<ObjectId, Node> nodes;
+    final ConcurrentMap<ObjectId, Node> nodes;
 
-    final Map<ObjectId, ObjectId> mappings;
+    final ConcurrentMap<ObjectId, ObjectId> mappings;
 
     /**
      * Creates an empty graph.
@@ -64,8 +64,8 @@ class Graph {
         Preconditions.checkNotNull(id);
         Preconditions.checkState(nodes.get(id) == null);
         Node n = new Node(id);
-        nodes.put(id, n);
-        return n;
+        Node prev = nodes.putIfAbsent(id, n);
+        return prev == null ? n : prev;
     }
 
     /**

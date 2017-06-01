@@ -113,7 +113,7 @@ public class SharedCacheTest {
     }
 
     public @Test void testL1WriteBack() {
-        final int L1Capacity = 10;
+        final int L1Capacity = 1000;
         SharedCache cache = SharedCache.build(L1Capacity, maxCacheSizeBytes);
 
         List<RevObject> objects = createObjects(100);
@@ -125,10 +125,10 @@ public class SharedCacheTest {
     }
 
     public @Test void testInvalidateAllForPrefix() {
-        final int L1Capacity = 100;
-        SharedCache cache = SharedCache.build(L1Capacity, 32 * 1024 * 1024);
+        final int L1Capacity = 10;
+        SharedCache cache = SharedCache.build(L1Capacity, 16 * 1024 * 1024);
 
-        List<RevObject> objects = createObjects(500);
+        List<RevObject> objects = createObjects(100);
 
         objects.forEach((o) -> cache.put(repo1Id.create(o.getId()), o));
         objects.forEach((o) -> cache.put(repo2Id.create(o.getId()), o));
@@ -146,8 +146,8 @@ public class SharedCacheTest {
     }
 
     public @Test void testInvalidateAll() {
-        final int L1Capacity = 100;
-        SharedCache cache = SharedCache.build(L1Capacity, 32 * 1024 * 1024);
+        final int L1Capacity = 10;
+        SharedCache cache = SharedCache.build(L1Capacity, 16 * 1024 * 1024);
 
         List<RevObject> objects = createObjects(500);
 

@@ -38,6 +38,7 @@ import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.InputRepresentation;
 import org.restlet.resource.Representation;
 import org.restlet.resource.StringRepresentation;
 import org.w3c.dom.Document;
@@ -217,12 +218,20 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         setLastResponse(app.handle(request));
     }
 
+    private InputRepresentation createEntity(final String content, final String contentType) {
+        // create an InputRepresentation of the content
+        final MediaType mediaType = MediaType.valueOf(contentType);
+        final ByteArrayInputStream bais = new ByteArrayInputStream(content.getBytes());
+        return new InputRepresentation(bais, mediaType);
+    }
+
     @Override
     protected void callInternal(final Method method, String resourceUri, String content, String contentType) {
         Request request = new Request(method, resourceUri);
         request.setRootRef(new Reference(""));
         if (content != null && !content.isEmpty() && contentType != null) {
-            request.setEntity(content, MediaType.valueOf(contentType));
+            // create an InputRepresentation of the content
+            request.setEntity(createEntity(content, contentType));
         }
         setLastResponse(app.handle(request));
     }

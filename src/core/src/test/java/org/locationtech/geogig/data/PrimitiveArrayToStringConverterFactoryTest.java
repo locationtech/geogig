@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2016 Boundless and others.
+/* Copyright (c) 2015-2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -11,14 +11,42 @@ package org.locationtech.geogig.data;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Array;
+import java.util.List;
 
 import org.geotools.util.Converters;
 import org.junit.Test;
 
+import com.google.common.base.Splitter;
+
+/**
+ * Test suite for {@link PrimitiveArrayToStringConverterFactory}
+ */
 public class PrimitiveArrayToStringConverterFactoryTest {
+
+    @Test
+    public void testNull() {
+        assertNull(Converters.convert(null, String.class));
+        assertNull(Converters.convert(null, int[].class));
+        assertNull(Converters.convert("", boolean[].class));
+        assertNull(Converters.convert("", byte[].class));
+        assertNull(Converters.convert("", short[].class));
+        assertNull(Converters.convert("", int[].class));
+        assertNull(Converters.convert("", long[].class));
+        assertNull(Converters.convert("", float[].class));
+        assertNull(Converters.convert("", double[].class));
+
+        assertNull(Converters.convert(" ", boolean[].class));
+        assertNull(Converters.convert(" ", byte[].class));
+        assertNull(Converters.convert(" ", short[].class));
+        assertNull(Converters.convert(" ", int[].class));
+        assertNull(Converters.convert(" ", long[].class));
+        assertNull(Converters.convert(" ", float[].class));
+        assertNull(Converters.convert(" ", double[].class));
+    }
 
     @Test
     public void testBoolean() {
@@ -63,14 +91,25 @@ public class PrimitiveArrayToStringConverterFactoryTest {
     public void testDouble() {
         roundtripTest(new double[0]);
         roundtripTest(new double[] { Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                Double.MIN_VALUE, -1.1, 0, 1.1, 2.2, 3.3, Double.MAX_VALUE });
+                Double.MIN_VALUE, -1.1, 0, 1.1, 2.2, 3.3, Double.MAX_VALUE, Math.PI, Math.E });
     }
 
     private void roundtripTest(Object value) {
 
         String converted = Converters.convert(value, String.class);
         assertNotNull(converted);
-
+        int length = Array.getLength(value);
+        if (0 == length) {
+            assertEquals("[]", converted);
+        } else {
+            assertTrue(converted.startsWith("["));
+            assertTrue(converted.endsWith("]"));
+            String plain = converted.substring(1);
+            plain = plain.substring(0, plain.length() - 1);
+            List<String> elems = Splitter.on(',').omitEmptyStrings().trimResults()
+                    .splitToList(plain);
+            assertEquals(length, elems.size());
+        }
         Object roundTripped = Converters.convert(converted, value.getClass());
 
         assertNotNull(roundTripped);

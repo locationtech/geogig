@@ -15,6 +15,7 @@ import static org.locationtech.geogig.porcelain.ConfigOp.ConfigScope.LOCAL;
 import java.util.Map;
 
 import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Status;
@@ -22,10 +23,11 @@ import org.restlet.resource.Representation;
 import org.restlet.resource.Variant;
 
 /**
- * CommandResource extension to handle repository initialization requests specifically. The main reason for this
- * extension is to support setting the 2 required configuration elements ("user.name" and "user.email") with a single
- * "init" command, as opposed to requiring clients to make 3 Web API requests, 1 to initialize the repository and 1
- * each to set "user.name" and "user.email".
+ * CommandResource extension to handle repository initialization requests specifically. The main
+ * reason for this extension is to support setting the 2 required configuration elements
+ * ("user.name" and "user.email") with a single "init" command, as opposed to requiring clients to
+ * make 3 Web API requests, 1 to initialize the repository and 1 each to set "user.name" and
+ * "user.email".
  */
 public class InitCommandResource extends CommandResource {
 
@@ -43,6 +45,14 @@ public class InitCommandResource extends CommandResource {
     @Override
     protected String getCommandName() {
         return INIT_CMD;
+    }
+
+    @Override
+    protected ParameterSet handleRequestEntity(Request request) {
+        // For Init Requests, we do NOT want to consume the request entity at this point. The Entity
+        // may contain information that is needed to build the correct GeoGig repository context in
+        // which the Init command needs to be run.
+        return null;
     }
 
     @Override

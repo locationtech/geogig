@@ -91,14 +91,6 @@ Feature: Create Repository
     And the xpath "/response/repo/atom:link/@href" contains "/repos/repo1.xml"
     And the parent directory of repository "repo1" equals System Temp directory
 
-  Scenario: Verify JSON fomratted response of Init with already existing repository
-    Given There is a default multirepo server
-    When I call "PUT /repos/repo1/init.json" with the System Temp Directory as the parentDirectory
-    Then the response status should be '409'
-    And the response ContentType should be "application/json"
-    And the json object "response.success" equals "false"
-    And the json object "response.error" equals "Cannot run init on an already initialized repository."
-
   Scenario: Verify JSON fomratted response of Init with JSON formatted request parameters and Author
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init.json" with Author and the System Temp Directory as the parentDirectory

@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2016 Boundless and others.
+/* Copyright (c) 2015-2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -26,8 +26,8 @@ import com.google.common.base.Splitter;
 
 /**
  * Provides GeoTools converters for attributes of primitive arrays types (
- * {@code long[], byte[], boolean[], etc}) to and from String, since GeoGig supports these kind of
- * attributes in {@link SimpleFeature}s (See {@link FieldType}).
+ * {@code boolean[], byte[], short[], integer[], long[], float[], double[]}) to and from String,
+ * since GeoGig supports these kind of attributes in {@link SimpleFeature}s (See {@link FieldType}).
  * <p>
  * Engages into the {@link Converters#getConverterFactories} SPI lookup by means of the
  * {@code src/main/resources/META-INF/services/org.geotools.util.ConverterFactory} file.
@@ -65,16 +65,17 @@ public class PrimitiveArrayToStringConverterFactory implements ConverterFactory 
             }
             Preconditions.checkArgument(source.getClass().isArray());
             final int length = Array.getLength(source);
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder("[");
             if (length > 0) {
                 for (int i = 0; i < length - 1; i++) {
                     sb.append(Array.get(source, i));
-                    sb.append(';');
+                    sb.append(", ");
                 }
                 sb.append(Array.get(source, length - 1));
             }
 
-            return (T) sb.toString();
+            return (T) sb.append(']').toString();
+
         }
     };
 
@@ -82,18 +83,25 @@ public class PrimitiveArrayToStringConverterFactory implements ConverterFactory 
 
         @Override
         public <T> T convert(Object source, Class<T> target) throws Exception {
-            if (source == null) {
-                return null;
-            }
-            Preconditions.checkArgument(source.getClass().equals(String.class));
+            Preconditions.checkArgument(source == null || source.getClass().equals(String.class));
             Preconditions.checkArgument(target.isArray());
             Preconditions.checkArgument(target.getComponentType().isPrimitive());
+            if (source == null || ((String) source).trim().isEmpty()) {
+                return null;
+            }
 
             final FieldType arrayType = FieldType.forBinding(target);
             Preconditions.checkState(arrayType.getBinding().isArray());
 
-            final List<String> list = Splitter.on(';').omitEmptyStrings().trimResults()
-                    .splitToList((CharSequence) source);
+            String string = (String) source;
+            if (!string.startsWith("[") && !string.endsWith("]")) {
+                return null;
+            }
+            string = string.substring(1);
+            string = string.substring(0, string.length() - 1);
+
+            final List<String> list = Splitter.on(',').omitEmptyStrings().trimResults()
+                    .splitToList(string);
             final int length = list.size();
             Object array = Array.newInstance(target.getComponentType(), length);
             for (int i = 0; i < length; i++) {

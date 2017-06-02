@@ -101,11 +101,11 @@ public class MapToStringConverterFactory implements ConverterFactory {
 
         @Override
         public <T> T convert(Object source, Class<T> target) throws Exception {
-            if (source == null) {
+            Preconditions.checkArgument(source == null || source.getClass().equals(String.class));
+            Preconditions.checkArgument(Map.class.isAssignableFrom(target));
+            if (source == null || ((String) source).trim().isEmpty()) {
                 return null;
             }
-            Preconditions.checkArgument(source.getClass().equals(String.class));
-            Preconditions.checkArgument(Map.class.isAssignableFrom(target));
 
             Map<String, String> entries = EntrySplitter.split((String) source);
 

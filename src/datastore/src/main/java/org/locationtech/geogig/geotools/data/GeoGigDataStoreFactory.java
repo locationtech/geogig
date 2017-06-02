@@ -168,9 +168,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         final String head = (String) HEAD.lookUp(params);
 
         @Nullable
-        final Boolean autoIndex = (Boolean) AUTO_INDEXING.lookUp(params);
-
-        @Nullable
         final String effectiveHead = (head == null) ? branch : head;
 
         final URI repositoryUri = resolveURI(repositoryLocation);
@@ -195,9 +192,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         }
         if (effectiveHead != null) {
             store.setHead(effectiveHead);
-        }
-        if (autoIndex != null) {
-            store.setAutoIndexing(autoIndex.booleanValue());
         }
         return store;
     }

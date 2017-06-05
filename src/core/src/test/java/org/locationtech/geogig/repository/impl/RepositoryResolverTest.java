@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.repository.impl;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -29,7 +30,12 @@ public class RepositoryResolverTest {
         @Override
         public boolean canHandle(URI repoURI) {
             String scheme = repoURI.getScheme();
-            return scheme != null && scheme.equals("test");
+            return canHandleURIScheme(scheme);
+        }
+
+        @Override
+        public boolean canHandleURIScheme(String scheme) {
+            return "test".equals(scheme);
         }
 
         @Override
@@ -81,6 +87,14 @@ public class RepositoryResolverTest {
         RepositoryResolver initializer = RepositoryResolver.lookup(uri);
         assertNotNull(initializer);
         assertTrue(initializer instanceof TestResolver);
+    }
+
+    @Test
+    public void testCanHandleURIScheme() {
+        boolean canHandleScheme = RepositoryResolver.resolverAvailableForURIScheme("test");
+        assertTrue(canHandleScheme);
+        canHandleScheme = RepositoryResolver.resolverAvailableForURIScheme("unknown");
+        assertFalse(canHandleScheme);
     }
 
 }

@@ -31,6 +31,11 @@ public class PGRepositoryResolver extends RepositoryResolver {
     @Override
     public boolean canHandle(URI repoURI) {
         String scheme = repoURI.getScheme();
+        return canHandleURIScheme(scheme);
+    }
+
+    @Override
+    public boolean canHandleURIScheme(String scheme) {
         return "postgresql".equals(scheme);
     }
 

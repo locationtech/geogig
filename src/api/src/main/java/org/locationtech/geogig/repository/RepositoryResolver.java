@@ -52,7 +52,34 @@ public abstract class RepositoryResolver {
                 "No repository initializer found capable of handling this kind of URI: " + repoURI);
     }
 
+    /**
+     * Determines if any {@code RepositoryResolver}s are able to handle a given URI Scheme.
+     * <p>
+     * The lookup method uses the standard JAVA SPI (Service Provider Interface) mechanism, by which
+     * all the {@code META-INF/services/org.locationtech.geogig.repository.RepositoryResolver} files
+     * in the classpath will be scanned for fully qualified names of implementing classes.
+     * 
+     * @param scheme the URI scheme
+     * @return {@code true} if any resolver could handle the scheme, {@code false} otherwise
+     */
+    public static boolean resolverAvailableForURIScheme(String scheme) {
+        Preconditions.checkNotNull(scheme, "URI scheme is null");
+
+        Iterator<RepositoryResolver> initializers = ServiceLoader.load(RepositoryResolver.class)
+                .iterator();
+
+        while (initializers.hasNext()) {
+            RepositoryResolver initializer = initializers.next();
+            if (initializer.canHandleURIScheme(scheme)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public abstract boolean canHandle(URI repoURI);
+
+    public abstract boolean canHandleURIScheme(String scheme);
 
     public abstract boolean repoExists(URI repoURI) throws IllegalArgumentException;
 

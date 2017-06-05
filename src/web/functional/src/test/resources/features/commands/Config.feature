@@ -39,7 +39,7 @@ Feature: Config
       
   Scenario: Config POST with a name and value as json sets the config entry and GET retrieves the set value
     Given There is an empty repository named repo1
-     When I post content-type "application/json" to "/repos/repo1/config" with
+     When I "POST" content-type "application/json" to "/repos/repo1/config" with
        """
        {
          "name":"user.name",
@@ -54,7 +54,7 @@ Feature: Config
       
   Scenario: Config POST with a name and value as xml sets the config entry and GET retrieves the set value
     Given There is an empty repository named repo1
-     When I post content-type "application/xml" to "/repos/repo1/config" with
+     When I "POST" content-type "application/xml" to "/repos/repo1/config" with
        """
        <params>
          <name>user.name</name>

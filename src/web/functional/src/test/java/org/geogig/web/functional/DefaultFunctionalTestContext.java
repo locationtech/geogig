@@ -82,6 +82,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
             this.app = new Main(repoProvider, true);
             this.app.start();
+            setVariable("@systemTempPath", rootFolder.getCanonicalPath().replace("\\", "/"));
         }
     }
 

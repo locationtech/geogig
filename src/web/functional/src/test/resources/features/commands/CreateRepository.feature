@@ -13,7 +13,13 @@ Feature: Create Repository
 
   Scenario: Verify trying to create an existing repo issues 409 "Conflict"
     Given There is a default multirepo server
-    When I call "PUT /repos/repo1/init"
+    And I have "extraRepo" that is not managed
+    When I "PUT" content-type "application/json" to "/repos/extraRepo/init" with
+      """
+      {
+        "parentDirectory":"{@systemTempPath}"
+      }
+      """
     Then the response status should be '409'
     And the response ContentType should be "application/xml"
     And the xpath "/response/success/text()" equals "false"
@@ -36,7 +42,13 @@ Feature: Create Repository
 
   Scenario: Verify trying to create an existing repo issues 409 "Conflict", JSON requested response
     Given There is a default multirepo server
-    When I call "PUT /repos/repo1/init.json"
+    And I have "extraRepo" that is not managed
+    When I "PUT" content-type "application/json" to "/repos/extraRepo/init.json" with
+      """
+      {
+        "parentDirectory":"{@systemTempPath}"
+      }
+      """
     Then the response status should be '409'
     And the response ContentType should be "application/json"
     And the json object "response.success" equals "false"

@@ -26,7 +26,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.store.FeatureIteratorIterator;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -39,14 +38,10 @@ import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.jsqlparser.statement.insert.Insert;
 
@@ -194,7 +189,6 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
         insert(sql);
     }
 
-    @Ignore
     @Test
     public void insertSelectAllOntoEmptyTree() throws Exception {
         SimpleFeatureType newType = DataUtilities.createType("Points2", pointsTypeSpec);

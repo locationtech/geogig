@@ -17,19 +17,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.store.ContentFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.data.store.ContentFeatureSource;
+import org.geotools.data.store.ReTypingFeatureCollection;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.DiffObjectCount;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -41,6 +45,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -48,6 +53,7 @@ import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
@@ -139,16 +145,15 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
             throw Throwables.propagate(e);
         }
 
-        Query query = new Query();
-        parseFilter(select, query);
+        final Query query = parseFilter(select, new Query());
 
         if (isSelectFunction(select)) {
             if (isCount(select)) {
-                return selectCount(select, source, query.getFilter());
+                return selectCount(select, source, query);
             }
 
             if (isBounds(select)) {
-                return selectBounds(select, source, query.getFilter());
+                return selectBounds(select, source, query);
             }
             PlainSelect ps = (PlainSelect) select.getSelectBody();
             throw new IllegalArgumentException(
@@ -158,21 +163,65 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
         // query.setSortBy(new SortBy[]{SortBy.NATURAL_ORDER});
         query.setPropertyNames(parsePropertyNames(select));
 
-        ContentFeatureCollection features;
+        SimpleFeatureCollection features;
         try {
             features = source.getFeatures(query);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
 
-        return features;
+        if (!isSelectInto(select)) {
+            return features;
+        }
+
+        Table intoTable = getIntoTable(select);
+        final String targetTableName = intoTable.getName();
+        SimpleFeatureType sourceSchema = features.getSchema();
+        SimpleFeatureType targetSchema;
+        boolean targetSchemaCreated = false;
+        try {
+            targetSchema = dataStore.getSchema(targetTableName);
+            if (!sourceSchema.equals(targetSchema)) {
+                features = new ReTypingFeatureCollection(features, targetSchema);
+            }
+        } catch (IOException notFound) {
+            try {
+                targetSchema = DataUtilities.createSubType(sourceSchema,
+                        DataUtilities.attributeNames(sourceSchema), null, targetTableName, null);
+                workingTree().createTypeTree(targetTableName, targetSchema);
+                targetSchemaCreated = true;
+
+                features = new ReTypingFeatureCollection(features, targetSchema);
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
+        }
+
+        final String oldRefSpec = workingTree().getTree().getId() + ":" + targetTableName;
+        final String newRefSpec;
+        try {
+            SimpleFeatureStore target;
+            target = (SimpleFeatureStore) dataStore.getFeatureSource(targetTableName);
+            target.addFeatures(features);
+            newRefSpec = "WORK_HEAD:" + targetTableName;
+        } catch (Exception e) {
+            if (targetSchemaCreated) {
+                repository().workingTree().delete(targetTableName);
+            }
+            throw Throwables.propagate(e);
+        }
+
+        DiffObjectCount count = command(DiffCount.class).setOldVersion(oldRefSpec)
+                .setNewVersion(newRefSpec).call();
+
+        SimpleFeatureBuilder b = new SimpleFeatureBuilder(COUNT_TYPE);
+        b.set("count", count.getFeaturesAdded());
+        SimpleFeature f = b.buildFeature("count");
+        return DataUtilities.collection(f);
     }
 
     private SimpleFeatureCollection selectBounds(Select select, ContentFeatureSource source,
-            Filter filter) {
-
-        Query query = new Query();
-        query.setFilter(filter);
+            Query query) {
 
         ReferencedEnvelope bounds;
         try {
@@ -201,10 +250,7 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
     }
 
     private SimpleFeatureCollection selectCount(Select select, ContentFeatureSource source,
-            Filter filter) {
-
-        Query query = new Query();
-        query.setFilter(filter);
+            Query query) {
 
         int count;
         try {
@@ -217,6 +263,25 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
         b.set("count", count);
         SimpleFeature f = b.buildFeature("count");
         return DataUtilities.collection(f);
+    }
+
+    private boolean isSelectInto(Select select) {
+        Table intoTable = getIntoTable(select);
+        return intoTable != null;
+    }
+
+    private @Nullable Table getIntoTable(Select select) {
+        SelectBody selectBody = select.getSelectBody();
+        if (!(selectBody instanceof PlainSelect)) {
+            return null;
+        }
+        List<Table> intoTables = ((PlainSelect) selectBody).getIntoTables();
+        if (intoTables == null || intoTables.isEmpty()) {
+            return null;
+        }
+        checkArgument(1 == intoTables.size(),
+                "select into supports only one target table: " + intoTables);
+        return intoTables.get(0);
     }
 
     private boolean isBounds(Select select) {
@@ -358,23 +423,22 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
             @Override
             public void visit(PlainSelect plainSelect) {
                 Offset off = plainSelect.getOffset();
+                Limit limit = plainSelect.getLimit();
+
                 if (off != null) {
                     checkArgument(off.getOffset() > -1 && off.getOffset() <= Integer.MAX_VALUE);
                     query.setStartIndex((int) off.getOffset());
-                } else {
-                    Limit limit = plainSelect.getLimit();
-                    if (limit != null) {
-                        checkArgument(
-                                limit.getOffset() > -1 && limit.getOffset() <= Integer.MAX_VALUE);
-                        checkArgument(limit.getRowCount() > -1
-                                && limit.getRowCount() <= Integer.MAX_VALUE);
-
+                }
+                if (limit != null) {
+                    checkArgument(
+                            limit.getRowCount() > -1 && limit.getRowCount() <= Integer.MAX_VALUE);
+                    query.setMaxFeatures((int) limit.getRowCount());
+                    if (off == null) {
                         int offset = (int) limit.getOffset();
+                        checkArgument(offset > -1 && offset <= Integer.MAX_VALUE);
                         query.setStartIndex(offset);
-                        query.setMaxFeatures((int) limit.getRowCount());
                     }
                 }
-
                 Expression where = plainSelect.getWhere();
                 if (where != null) {
                     Filter filter = new ExpressionToFilterConverter().convert(where);

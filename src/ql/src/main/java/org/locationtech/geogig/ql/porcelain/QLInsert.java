@@ -19,6 +19,7 @@ import java.util.List;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.data.store.ReTypingFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.text.cql2.CQLException;
@@ -80,8 +81,9 @@ public class QLInsert extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
 
         final ObjectId initialFeatureTreeId;
         {
-            Optional<ObjectId> initialOid = command(ResolveTreeish.class)
-                    .setTreeish(Ref.WORK_HEAD + ":" + treePath).call();
+            String treeishRefSpec = Ref.WORK_HEAD + ":" + treePath;
+            Optional<ObjectId> initialOid = command(ResolveTreeish.class).setTreeish(treeishRefSpec)
+                    .call();
             checkArgument(initialOid.isPresent(), "%s does not resolve to a feature tree", treeish);
             initialFeatureTreeId = initialOid.get();
         }
@@ -97,8 +99,14 @@ public class QLInsert extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
         }
 
         SimpleFeatureCollection sourceData = resolveSourceData(insert, store.getSchema());
-        sourceData = new SetUseProvidedFidSimpleFeatureCollection(sourceData);
 
+        final SimpleFeatureType sourceType = sourceData.getSchema();
+        final SimpleFeatureType targetType = store.getSchema();
+        if (!targetType.equals(sourceType)) {
+            sourceData = new ReTypingFeatureCollection(sourceData, targetType);
+        }
+
+        sourceData = new SetUseProvidedFidSimpleFeatureCollection(sourceData);
         // Transaction gttx = new DefaultTransaction();
         try {
             // store.setTransaction(gttx);

@@ -24,7 +24,7 @@ Feature: MergeFeature
       
   Scenario: MergeFeature with an invalid json payload issues a 400 status code
     Given There is an empty repository named repo1
-     When I post content-type "text/plain" to "/repos/repo1/repo/mergefeature" with
+     When I "POST" content-type "text/plain" to "/repos/repo1/repo/mergefeature" with
       """
       "unexpected format"
       """
@@ -33,7 +33,7 @@ Feature: MergeFeature
       
   Scenario: MergeFeature without a feature issues a 400 status code
     Given There is an empty repository named repo1
-     When I post content-type "application/json" to "/repos/repo1/repo/mergefeature" with
+     When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with
       """
       {}
       """
@@ -42,7 +42,7 @@ Feature: MergeFeature
       
   Scenario: MergeFeature without an "ours" id issues a 400 status code
     Given There is an empty repository named repo1
-     When I post content-type "application/json" to "/repos/repo1/repo/mergefeature" with
+     When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with
       """
       {
         "path"="Points/Point.1"
@@ -53,7 +53,7 @@ Feature: MergeFeature
       
   Scenario: MergeFeature without a "theirs" id issues a 400 status code
     Given There is a default multirepo server
-     When I post content-type "application/json" to "/repos/repo1/repo/mergefeature" with
+     When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with
       """
       {
         "path"="Points/Point.1",
@@ -65,7 +65,7 @@ Feature: MergeFeature
       
   Scenario: MergeFeature without any merges issues a 400 status code
     Given There is a default multirepo server
-     When I post content-type "application/json" to "/repos/repo1/repo/mergefeature" with
+     When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with
       """
       {
         "path"="Points/Point.1",
@@ -78,7 +78,7 @@ Feature: MergeFeature
       
   Scenario: MergeFeature builds a new feature from provided merges using ours and theirs (both features are the same)
     Given There is a default multirepo server
-     When I post content-type "application/json" to "/repos/repo1/repo/mergefeature" with
+     When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with
       """
       {
         "path"="Points/Point.1",
@@ -96,7 +96,7 @@ Feature: MergeFeature
       
   Scenario: MergeFeature builds a new feature from provided merges with custom values (both features are the same)
     Given There is a default multirepo server
-     When I post content-type "application/json" to "/repos/repo1/repo/mergefeature" with
+     When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with
       """
       {
         "path"="Points/Point.1",
@@ -125,7 +125,7 @@ Feature: MergeFeature
   Scenario: MergeFeature builds a new feature from provided merges (different versions of the same feature)
     Given There is a default multirepo server
       And I have committed "Point.1_modified" on the "repo1" repo in the "" transaction
-     When I post content-type "application/json" to "/repos/repo1/repo/mergefeature" with
+     When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with
       """
       {
         "path"="Points/Point.1",

@@ -271,6 +271,16 @@ public abstract class FunctionalTestContext extends ExternalResource {
     protected abstract TestData createRepo(final String name) throws Exception;
 
     /**
+     * Create a repository that isn't managed with the given name for testing.
+     *
+     * @param name the repository name
+     * @return a newly created {@link TestData} for the repository.
+     * @throws Exception
+     */
+    protected TestData createUnmanagedRepo(final String name) throws Exception {
+        return createRepo(name);
+    }
+    /**
      * Issue a request with the given {@link Method} to the provided resource URI.
      * 
      * @param method the http method to use

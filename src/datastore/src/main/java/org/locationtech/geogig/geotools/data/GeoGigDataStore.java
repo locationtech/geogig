@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
@@ -23,6 +24,7 @@ import org.geotools.data.store.ContentDataStore;
 import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentState;
 import org.geotools.feature.NameImpl;
+import org.geotools.util.logging.Logging;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -84,6 +86,8 @@ import com.google.common.collect.Lists;
  */
 public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
+    private static final Logger LOGGER = Logging.getLogger(GeoGigDataStore.class);
+    
     private final Repository repository;
 
     private final Context _liveContext;
@@ -98,6 +102,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      * Indicates if layers from this datastore should automatically index time/elevation dimension
      * attributes
      **/
+    @Deprecated
     private boolean autoIndexing;
 
     public GeoGigDataStore(Repository repository) {
@@ -417,8 +422,22 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      * @return An Optional containing the ObjectId of the IndexInfo created/updated, or Absent if no
      *         index was created or updated.
      */
-    public Optional<ObjectId> createOrUpdateIndex(String layerName, String... extraAttributes) {
-        Preconditions.checkNotNull(layerName, "Layer name must not be null");
+    public Optional<ObjectId> createOrUpdateIndex(String layerName,
+            String... extraAttributes) {
+        
+        String head = getOrFigureOutHead();
+        return createOrUpdateIndex(this.repository, head, layerName, extraAttributes);
+    }
+    
+    
+    public static Optional<ObjectId> createOrUpdateIndex(Repository repository,
+            @Nullable String branchOrHead, String featureTreePath, String... extraAttributes) {
+
+        Preconditions.checkNotNull(featureTreePath, "Layer name must not be null");
+        if (null == branchOrHead) {
+            branchOrHead = Ref.HEAD;
+        }
+
         // list of non-null attributes provided
         final List<String> indexAttributes = Lists.newArrayList();
         if (extraAttributes != null && extraAttributes.length > 0) {
@@ -434,15 +453,15 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
             // no extra attributes specified
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(
-                        String.format("No attributes provided for indexing, layer: %s", layerName));
+                        String.format("No attributes provided for indexing, layer: %s", featureTreePath));
             }
         }
         // we have work to do
         // see if an index is already present for the specified layer name and attribute(s)
         final IndexDatabase indexDatabase = repository.indexDatabase();
-        final List<IndexInfo> indexInfos = indexDatabase.getIndexInfos(layerName);
+        final List<IndexInfo> indexInfos = indexDatabase.getIndexInfos(featureTreePath);
 
-        Context context = resolveContext(Transaction.AUTO_COMMIT);
+        Context context = repository.context();
         for (IndexInfo indexInfo : indexInfos) {
             // get any existing attributes that are already part of the index
             final Set<String> materializedAttributeNames = IndexInfo
@@ -462,12 +481,15 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
                         String.join(", ", indexAttributes)));
             }
             UpdateIndexOp command = context.command(UpdateIndexOp.class);
+            
+            final String treeRefSpec = branchOrHead + ":" + indexInfo.getTreeName();
+
             // set ADD to true as we don't want to clobber existing attributes in the extra data
             Index index = command.setAdd(true)
                     // set the extra attributes
                     .setExtraAttributes(indexAttributes)
                     // set the layer/path
-                    .setTreeRefSpec(indexInfo.getTreeName())
+                    .setTreeRefSpec(treeRefSpec)
                     // index the histroy as well
                     .setIndexHistory(true).call();
             return Optional.of(index.info().getId());
@@ -476,18 +498,28 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format(
                     "No Indexes found for layer %s, creating new index with extra attributes: %s.",
-                    layerName, String.join("' ", indexAttributes)));
+                    featureTreePath, String.join("' ", indexAttributes)));
         }
         CreateQuadTree command = context.command(CreateQuadTree.class);
-        Index index = command.setTreeRefSpec(layerName).setExtraAttributes(indexAttributes)
+        Index index = command.setTreeRefSpec(featureTreePath).setExtraAttributes(indexAttributes)
                 .setIndexHistory(true).call();
         return Optional.of(index.info().getId());
     }
 
+    /**
+     * @deprecated autoindexing is a geoserver only parameter and is handled by the geogig geoserver
+     *             plugin by inspecting the datastore configuration. Scheduled for removal at 1.2
+     */
+    @Deprecated
     public void setAutoIndexing(boolean autoIndexing) {
         this.autoIndexing = autoIndexing;
     }
 
+    /**
+     * @deprecated autoindexing is a geoserver only parameter and is handled by the geogig geoserver
+     *             plugin by inspecting the datastore configuration. Scheduled for removal at 1.2
+     */
+    @Deprecated
     public boolean getAutoIndexing() {
         return this.autoIndexing;
     }

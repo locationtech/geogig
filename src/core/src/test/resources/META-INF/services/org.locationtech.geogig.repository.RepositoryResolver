@@ -1,1 +1,2 @@
+org.locationtech.geogig.repository.impl.FileRepositoryResolver
 org.locationtech.geogig.repository.impl.RepositoryResolverTest$TestResolver

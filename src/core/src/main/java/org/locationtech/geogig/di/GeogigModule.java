@@ -33,14 +33,13 @@ import org.locationtech.geogig.storage.fs.FileObjectDatabase;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.memory.HeapGraphDatabase;
-import org.locationtech.geogig.storage.memory.HeapIndexDatabase;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
 import com.google.inject.Provider;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.util.Providers;
 
 /**
  * Provides bindings for GeoGig singletons.
@@ -89,10 +88,10 @@ public class GeogigModule extends AbstractModule {
         bind(ConfigDatabase.class).to(IniFileConfigDatabase.class).in(Scopes.SINGLETON);
         bind(StagingArea.class).to(StagingAreaImpl.class).in(Scopes.SINGLETON);
         bind(WorkingTree.class).to(WorkingTreeImpl.class).in(Scopes.SINGLETON);
-        bind(GraphDatabase.class).to(HeapGraphDatabase.class).in(Scopes.SINGLETON);
+        bind(GraphDatabase.class).toProvider(Providers.of(null));
 
         bind(ObjectDatabase.class).to(FileObjectDatabase.class).in(Scopes.SINGLETON);
-        bind(IndexDatabase.class).to(HeapIndexDatabase.class).in(Scopes.SINGLETON);
+        bind(IndexDatabase.class).toProvider(Providers.of(null));
         bind(RefDatabase.class).to(FileRefDatabase.class).in(Scopes.SINGLETON);
 
         bind(ObjectSerializingFactory.class).to(DataStreamSerializationFactoryV2.class)

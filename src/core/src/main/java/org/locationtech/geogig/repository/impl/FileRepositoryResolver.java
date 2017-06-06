@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Resources;
 
-public class DefaultRepositoryResolver extends RepositoryResolver {
+public class FileRepositoryResolver extends RepositoryResolver {
 
     @Override
     public boolean canHandle(URI repoURI) {
@@ -57,6 +57,11 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
                     : false;
             return (exists && directory) || parentExists;
         }
+        return canHandleURIScheme_deprecated(scheme);
+    }
+
+    @Override
+    public boolean canHandleURIScheme_deprecated(String scheme) {
         return "file".equals(scheme);
     }
 

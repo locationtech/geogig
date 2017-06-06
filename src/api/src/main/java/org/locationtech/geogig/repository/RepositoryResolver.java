@@ -70,7 +70,7 @@ public abstract class RepositoryResolver {
 
         while (initializers.hasNext()) {
             RepositoryResolver initializer = initializers.next();
-            if (initializer.canHandleURIScheme(scheme)) {
+            if (initializer.canHandleURIScheme_deprecated(scheme)) {
                 return true;
             }
         }
@@ -79,7 +79,10 @@ public abstract class RepositoryResolver {
 
     public abstract boolean canHandle(URI repoURI);
 
-    public abstract boolean canHandleURIScheme(String scheme);
+    @Deprecated
+    public boolean canHandleURIScheme_deprecated(String scheme) {
+        return false;
+    }
 
     public abstract boolean repoExists(URI repoURI) throws IllegalArgumentException;
 

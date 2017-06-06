@@ -57,11 +57,11 @@ public class FileRepositoryResolver extends RepositoryResolver {
                     : false;
             return (exists && directory) || parentExists;
         }
-        return canHandleURIScheme(scheme);
+        return canHandleURIScheme_deprecated(scheme);
     }
 
     @Override
-    public boolean canHandleURIScheme(String scheme) {
+    public boolean canHandleURIScheme_deprecated(String scheme) {
         return "file".equals(scheme);
     }
 

@@ -31,11 +31,11 @@ public class PGRepositoryResolver extends RepositoryResolver {
     @Override
     public boolean canHandle(URI repoURI) {
         String scheme = repoURI.getScheme();
-        return canHandleURIScheme(scheme);
+        return canHandleURIScheme_deprecated(scheme);
     }
 
     @Override
-    public boolean canHandleURIScheme(String scheme) {
+    public boolean canHandleURIScheme_deprecated(String scheme) {
         return "postgresql".equals(scheme);
     }
 

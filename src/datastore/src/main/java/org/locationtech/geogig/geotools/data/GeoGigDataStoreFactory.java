@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStoreFactorySpi;
+import org.geotools.data.Parameter;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 
 public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
 
@@ -80,7 +82,10 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             "Optional namespace for feature types that do not declare a Namespace themselves",
             false);
 
-    public static final Param AUTO_INDEXING = new Param("autoIndexing", Boolean.class, "Auto-indexing", false);
+    public static final Param AUTO_INDEXING = new Param("autoIndexing", Boolean.class,
+            "Let GeoServer automatically create spatial indexes and add time/elevation attributes if the layer has them",
+            false/* required */, false/* default */, //
+            ImmutableMap.of(Parameter.LEVEL, "advanced"));
 
     @Override
     public String getDisplayName() {
@@ -96,7 +101,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     public Param[] getParametersInfo() {
         return new Param[] { REPOSITORY, BRANCH, HEAD, DEFAULT_NAMESPACE, AUTO_INDEXING };
     }
-    
+
     private URI resolveURI(String repoParam) {
         URI repoUri = null;
         try {
@@ -163,9 +168,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         final String head = (String) HEAD.lookUp(params);
 
         @Nullable
-        final Boolean autoIndex = (Boolean) AUTO_INDEXING.lookUp(params);
-
-        @Nullable
         final String effectiveHead = (head == null) ? branch : head;
 
         final URI repositoryUri = resolveURI(repositoryLocation);
@@ -190,9 +192,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         }
         if (effectiveHead != null) {
             store.setHead(effectiveHead);
-        }
-        if (autoIndex != null) {
-            store.setAutoIndexing(autoIndex.booleanValue());
         }
         return store;
     }

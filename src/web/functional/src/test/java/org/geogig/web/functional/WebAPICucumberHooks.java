@@ -170,6 +170,15 @@ public class WebAPICucumberHooks {
         openedRepos.addAll(context.setUpDefaultMultiRepoServer());
     }
 
+    @Given("I have \"([^\"]*)\" that is not managed$")
+    public void setupExtraUnMangedRepo(String repoName) throws Exception {
+        context.createUnmanagedRepo(repoName)
+                .init("geogigUser", "repo1_Owner@geogig.org")
+                .loadDefaultData()
+                .getRepo().close();
+        openedRepos.add(repoName);
+    }
+
     @Given("^There is a default multirepo server with remotes$")
     public void setUpDefaultMultiRepoWithRemotes() throws Exception {
         setUpEmptyMultiRepo();
@@ -1100,9 +1109,21 @@ public class WebAPICucumberHooks {
         context.postFile(targetURI, formFieldName, file);
     }
 
-    @When("^I post content-type \"([^\"]*)\" to \"([^\"]*)\" with$")
-    public void post_content(String contentType, String targetURI, String postContent) {
-        context.postContent(contentType, targetURI, postContent);
+    @When("^I \"([^\"]*)\" content-type \"([^\"]*)\" to \"([^\"]*)\" with$")
+    public void requestWithContent(String method, String contentType, String targetURI,
+            String content) {
+        final String resourceUri = context.replaceVariables(targetURI);
+        final String requestContent = context.replaceVariables(content);
+        switch (method) {
+            case "PUT":
+                context.callInternal(Method.PUT, resourceUri, requestContent, contentType);
+                break;
+            case "POST":
+                context.callInternal(Method.POST, resourceUri, requestContent, contentType);
+                break;
+            default:
+                fail("Unsupported request method: " + method);
+        }
     }
 
     /**

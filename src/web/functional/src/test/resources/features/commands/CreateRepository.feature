@@ -13,7 +13,13 @@ Feature: Create Repository
 
   Scenario: Verify trying to create an existing repo issues 409 "Conflict"
     Given There is a default multirepo server
-    When I call "PUT /repos/repo1/init"
+    And I have "extraRepo" that is not managed
+    When I "PUT" content-type "application/json" to "/repos/extraRepo/init" with
+      """
+      {
+        "parentDirectory":"{@systemTempPath}"
+      }
+      """
     Then the response status should be '409'
     And the response ContentType should be "application/xml"
     And the xpath "/response/success/text()" equals "false"
@@ -36,7 +42,13 @@ Feature: Create Repository
 
   Scenario: Verify trying to create an existing repo issues 409 "Conflict", JSON requested response
     Given There is a default multirepo server
-    When I call "PUT /repos/repo1/init.json"
+    And I have "extraRepo" that is not managed
+    When I "PUT" content-type "application/json" to "/repos/extraRepo/init.json" with
+      """
+      {
+        "parentDirectory":"{@systemTempPath}"
+      }
+      """
     Then the response status should be '409'
     And the response ContentType should be "application/json"
     And the json object "response.success" equals "false"
@@ -90,14 +102,6 @@ Feature: Create Repository
     And the xpath "/response/repo/name/text()" equals "repo1"
     And the xpath "/response/repo/atom:link/@href" contains "/repos/repo1.xml"
     And the parent directory of repository "repo1" equals System Temp directory
-
-  Scenario: Verify JSON fomratted response of Init with already existing repository
-    Given There is a default multirepo server
-    When I call "PUT /repos/repo1/init.json" with the System Temp Directory as the parentDirectory
-    Then the response status should be '409'
-    And the response ContentType should be "application/json"
-    And the json object "response.success" equals "false"
-    And the json object "response.error" equals "Cannot run init on an already initialized repository."
 
   Scenario: Verify JSON fomratted response of Init with JSON formatted request parameters and Author
     Given There is an empty multirepo server

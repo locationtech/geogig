@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
@@ -1124,12 +1125,13 @@ public class PGObjectStore implements ObjectStore {
             try (Connection cx = PGStorage.newConnection(ds)) {
                 cx.setAutoCommit(false);
                 try {
-                    doInsert(cx, batch);
+                    Map<ObjectId, Integer> insertResults = doInsert(cx, batch);
                     if (abortFlag.get()) {
                         cx.rollback();
                     } else {
                         cx.commit();
                     }
+                    notifyInserted(insertResults, listener);
                 } catch (Exception executionEx) {
                     rollbackAndRethrow(cx, executionEx);
                 } finally {
@@ -1141,7 +1143,8 @@ public class PGObjectStore implements ObjectStore {
             return null;
         }
 
-        private void doInsert(Connection cx, List<EncodedObject> partition) throws Exception {
+        private Map<ObjectId, Integer> doInsert(Connection cx, List<EncodedObject> partition)
+                throws Exception {
             Map<String, PreparedStatement> perTableStatements = new HashMap<>();
             ArrayListMultimap<String, ObjectId> perTableIds = ArrayListMultimap.create();
 
@@ -1164,9 +1167,10 @@ public class PGObjectStore implements ObjectStore {
                 }
             }
 
+            Map<ObjectId, Integer> insertResults = new HashMap<ObjectId, Integer>();
             for (String tableName : new HashSet<String>(perTableIds.keySet())) {
                 if (abortFlag.get()) {
-                    return;
+                    return null;
                 }
                 PreparedStatement tableStatement;
                 tableStatement = perTableStatements.get(tableName);
@@ -1175,12 +1179,16 @@ public class PGObjectStore implements ObjectStore {
                 tableStatement.clearParameters();
                 tableStatement.clearBatch();
 
-                notifyInserted(batchResults, ids, listener);
+                for (int i = 0; i < batchResults.length; i++) {
+                    insertResults.put(ids.get(i), batchResults[i]);
+                }
             }
 
             for (PreparedStatement tableStatement : perTableStatements.values()) {
                 tableStatement.close();
             }
+
+            return insertResults;
         }
 
         private PreparedStatement prepare(final Connection cx, final String tableName,
@@ -1282,15 +1290,14 @@ public class PGObjectStore implements ObjectStore {
         }
     }
 
-    static int notifyInserted(int[] inserted, List<ObjectId> objects, BulkOpListener listener) {
+    static int notifyInserted(Map<ObjectId, Integer> insertResults, BulkOpListener listener) {
         int newObjects = 0;
-        for (int i = 0; i < inserted.length; i++) {
-            ObjectId id = objects.get(i);
-            if (inserted[i] > 0) {
-                listener.inserted(id, null);
+        for (Entry<ObjectId, Integer> entry : insertResults.entrySet()) {
+            if (entry.getValue() > 0) {
+                listener.inserted(entry.getKey(), null);
                 newObjects++;
             } else {
-                listener.found(id, null);
+                listener.found(entry.getKey(), null);
             }
         }
         return newObjects;

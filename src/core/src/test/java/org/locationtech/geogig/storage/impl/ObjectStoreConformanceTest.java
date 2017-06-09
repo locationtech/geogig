@@ -582,11 +582,15 @@ public abstract class ObjectStoreConformanceTest {
             @Override
             public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
                 found.add(object);
+                // make sure it's in the database
+                assertNotNull(db.getIfPresent(object));
             }
 
             @Override
             public void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
                 inserted.add(object);
+                // make sure it was inserted into the database
+                assertNotNull(db.getIfPresent(object));
             }
 
         };

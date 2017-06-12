@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.rocksdb.RocksdbMap;
+import org.locationtech.geogig.storage.impl.RocksdbMap;
 
 /**
  * Contains the results of a geopackage import.

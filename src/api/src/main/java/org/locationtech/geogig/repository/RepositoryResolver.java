@@ -14,15 +14,37 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
 import org.locationtech.geogig.storage.ConfigDatabase;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 public abstract class RepositoryResolver {
+
+    /**
+     * System property key for specifying disabled resolvers.
+     */
+    private static final String DISABLE_RESOLVER_KEY = "disableResolvers";
+
+    /**
+     * List of disabled resolver class names.
+     */
+    private static final List<String> DISABLED_RESOLVERS = new ArrayList<>();
+
+    static {
+        // look for a System property of disabled resolvers
+        String disabledResolvers = System.getProperty(DISABLE_RESOLVER_KEY);
+        if (disabledResolvers != null) {
+            String[] disabledResolverArray = disabledResolvers.split(",");
+            DISABLED_RESOLVERS.addAll(Arrays.asList(disabledResolverArray));
+        }
+    }
 
     /**
      * Finds a {@code RepositoryResolver} that {@link #canHandle(URI) can handle} the given URI, or
@@ -32,6 +54,8 @@ public abstract class RepositoryResolver {
      * all the {@code META-INF/services/org.locationtech.geogig.repository.RepositoryResolver} files
      * in the classpath will be scanned for fully qualified names of implementing classes.
      * 
+     * @param repoURI Repository location URI
+     * @return A RepositoryResolver that can handle the supplied URI.
      * @throws IllegalArgumentException if no repository resolver is found capable of handling the
      *         given URI
      */
@@ -44,7 +68,8 @@ public abstract class RepositoryResolver {
 
         while (initializers.hasNext()) {
             RepositoryResolver initializer = initializers.next();
-            if (initializer.canHandle(repoURI)) {
+            final String resolverClassName = initializer.getClass().getName();
+            if (!DISABLED_RESOLVERS.contains(resolverClassName) && initializer.canHandle(repoURI)) {
                 return initializer;
             }
         }
@@ -70,7 +95,9 @@ public abstract class RepositoryResolver {
 
         while (initializers.hasNext()) {
             RepositoryResolver initializer = initializers.next();
-            if (initializer.canHandleURIScheme_deprecated(scheme)) {
+            final String resolverClassName = initializer.getClass().getName();
+            if (!DISABLED_RESOLVERS.contains(resolverClassName)
+                    && initializer.canHandleURIScheme_deprecated(scheme)) {
                 return true;
             }
         }
@@ -190,6 +217,7 @@ public abstract class RepositoryResolver {
      * Deletes the repository addressed by the given URI.
      * <p>
      * 
+     * @param repositoryLocation Repository URI location
      * @return {@code true} if the repository was deleted, {@code false} is the repository didn't
      *         exist.
      * @throws IllegalArgumentException if this implementation can't handle the given URI
@@ -198,4 +226,30 @@ public abstract class RepositoryResolver {
      */
     public abstract boolean delete(URI repositoryLocation) throws Exception;
 
+    /**
+     * Sets or overrides the list of disabled resolvers.
+     *
+     * @param disabledResolvers List of class names of RepositoryResolver implementations that
+     *        should be disabled.
+     * <p>
+     *        Example: "org.locationtech.geogig.repository.impl.FileRepositoryResolver" to disable
+     *        the File/Directory resolver for URI scheme "file".
+     */
+    @VisibleForTesting
+    static void setDisabledResolvers(List<String> disabledResolvers) {
+        // clear any existing disabled resolvers
+        clearDisabledResolvers();
+        if (disabledResolvers != null) {
+            DISABLED_RESOLVERS.addAll(disabledResolvers);
+        }
+    }
+
+    /**
+     * Clears the list of disabled RepositoryResolvers.
+     */
+    @VisibleForTesting
+    static void clearDisabledResolvers() {
+        // clear any existing disabled resolvers
+        DISABLED_RESOLVERS.clear();
+    }
 }

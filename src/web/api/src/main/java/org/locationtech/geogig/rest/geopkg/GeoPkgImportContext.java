@@ -36,7 +36,7 @@ import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
-import org.locationtech.geogig.rocksdb.RocksdbMap;
+import org.locationtech.geogig.storage.impl.RocksdbMap;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;

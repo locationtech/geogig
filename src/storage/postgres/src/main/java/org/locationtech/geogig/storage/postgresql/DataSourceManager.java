@@ -38,6 +38,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         PGSimpleDataSource pgSimpleDataSource = new PGSimpleDataSource();
         pgSimpleDataSource.setBinaryTransfer(true);
         pgSimpleDataSource.setApplicationName("geogig");
+        pgSimpleDataSource.setServerName(config.getServer());
         pgSimpleDataSource.setDatabaseName(config.getDatabaseName());
         pgSimpleDataSource.setPortNumber(config.getPortNumber());
         pgSimpleDataSource.setUser(config.getUser());

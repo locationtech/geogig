@@ -351,42 +351,44 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
         Map<ObjectId, Integer> insertedIds = new HashMap<ObjectId, Integer>();
+
         try (RocksDBReference dbRef = dbhandle.getReference();
-                WriteOptions wo = new WriteOptions()) {
-             wo.setDisableWAL(true);
-             wo.setSync(false);
+                WriteOptions wo = new WriteOptions(); //
+                WriteBatch batch = new WriteBatch()) {
+            wo.setDisableWAL(true);
+            wo.setSync(false);
             try (ReadOptions ro = new ReadOptions()) {
                 ro.setFillCache(false);
                 ro.setVerifyChecksums(false);
                 while (objects.hasNext()) {
                     Iterator<? extends RevObject> partition = Iterators.limit(objects, 10_000);
 
-                    try (WriteBatch batch = new WriteBatch()) {
-                        while (partition.hasNext()) {
-                            RevObject object = partition.next();
-                            rawOut.reset();
-                            writeObject(object, rawOut);
+                    while (partition.hasNext()) {
+                        RevObject object = partition.next();
+                        rawOut.reset();
+                        writeObject(object, rawOut);
 
-                            object.getId().getRawValue(keybuff);
-                            final byte[] value = rawOut.toByteArray();
+                        object.getId().getRawValue(keybuff);
+                        final byte[] value = rawOut.toByteArray();
 
-                            boolean exists = checkExists ? exists(dbRef, ro, keybuff) : false;
-                            if (exists) {
-                                listener.found(object.getId(), null);
-                            } else {
-                                batch.put(keybuff, value);
-                                insertedIds.put(object.getId(), Integer.valueOf(value.length));
-                            }
-
+                        boolean exists = checkExists ? exists(dbRef, ro, keybuff) : false;
+                        if (exists) {
+                            listener.found(object.getId(), null);
+                        } else {
+                            batch.put(keybuff, value);
+                            insertedIds.put(object.getId(), Integer.valueOf(value.length));
                         }
-                        // Stopwatch sw = Stopwatch.createStarted();
-                        dbRef.db().write(wo, batch);
-                        for (Entry<ObjectId, Integer> entry : insertedIds.entrySet()) {
-                            listener.inserted(entry.getKey(), entry.getValue());
-                        }
-                        insertedIds.clear();
-                        // System.err.printf("--- synced writes in %s\n", sw.stop());
+
                     }
+                    // Stopwatch sw = Stopwatch.createStarted();
+                    dbRef.db().write(wo, batch);
+                    batch.clear();
+                    
+                    for (Entry<ObjectId, Integer> entry : insertedIds.entrySet()) {
+                        listener.inserted(entry.getKey(), entry.getValue());
+                    }
+                    insertedIds.clear();
+                    // System.err.printf("--- synced writes in %s\n", sw.stop());
                 }
             }
             wo.sync();

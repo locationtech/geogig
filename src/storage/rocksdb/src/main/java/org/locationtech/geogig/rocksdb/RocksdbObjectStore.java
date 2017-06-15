@@ -153,16 +153,15 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     @Override
     protected boolean putInternal(ObjectId id, byte[] rawData) {
         checkWritable();
-        byte[] key = id.getRawValue();
         boolean exists;
-        exists = exists(bulkReadOptions, key);
-
-        if (!exists) {
-            try (RocksDBReference dbRef = dbhandle.getReference()) {
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            byte[] key = id.getRawValue();
+            exists = exists(dbRef, bulkReadOptions, key);
+            if (!exists) {
                 dbRef.db().put(key, rawData);
-            } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
             }
+        } catch (RocksDBException e) {
+            throw Throwables.propagate(e);
         }
         return !exists;
     }
@@ -197,20 +196,20 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         checkOpen();
         checkNotNull(id, "argument id is null");
 
-        return exists(bulkReadOptions, id.getRawValue());
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            return exists(dbRef, bulkReadOptions, id.getRawValue());
+        }
     }
 
     private static final byte[] NO_DATA = new byte[0];
 
-    private boolean exists(ReadOptions readOptions, byte[] key) {
+    private boolean exists(RocksDBReference dbRef, ReadOptions readOptions, byte[] key) {
         int size = RocksDB.NOT_FOUND;
-        try (RocksDBReference dbRef = dbhandle.getReference()) {
-            if (dbRef.db().keyMayExist(key, new StringBuffer())) {
-                try {
-                    size = dbRef.db().get(key, NO_DATA);
-                } catch (RocksDBException e) {
-                    throw Throwables.propagate(e);
-                }
+        if (dbRef.db().keyMayExist(key, new StringBuffer())) {
+            try {
+                size = dbRef.db().get(key, NO_DATA);
+            } catch (RocksDBException e) {
+                throw Throwables.propagate(e);
             }
         }
         return size != RocksDB.NOT_FOUND;
@@ -301,7 +300,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 while (ids.hasNext()) {
                     ObjectId id = ids.next();
                     id.getRawValue(keybuff);
-                    if (!checkExists || exists(ro, keybuff)) {
+                    if (!checkExists || exists(dbRef, ro, keybuff)) {
                         try {
                             dbRef.db().remove(writeOps, keybuff);
                         } catch (RocksDBException e) {
@@ -352,8 +351,10 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
         Map<ObjectId, Integer> insertedIds = new HashMap<ObjectId, Integer>();
+
         try (RocksDBReference dbRef = dbhandle.getReference();
-                WriteOptions wo = new WriteOptions()) {
+                WriteOptions wo = new WriteOptions(); //
+                WriteBatch batch = new WriteBatch()) {
             wo.setDisableWAL(true);
             wo.setSync(false);
             try (ReadOptions ro = new ReadOptions()) {
@@ -362,32 +363,32 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 while (objects.hasNext()) {
                     Iterator<? extends RevObject> partition = Iterators.limit(objects, 10_000);
 
-                    try (WriteBatch batch = new WriteBatch()) {
-                        while (partition.hasNext()) {
-                            RevObject object = partition.next();
-                            rawOut.reset();
-                            writeObject(object, rawOut);
+                    while (partition.hasNext()) {
+                        RevObject object = partition.next();
+                        rawOut.reset();
+                        writeObject(object, rawOut);
 
-                            object.getId().getRawValue(keybuff);
-                            final byte[] value = rawOut.toByteArray();
+                        object.getId().getRawValue(keybuff);
+                        final byte[] value = rawOut.toByteArray();
 
-                            boolean exists = checkExists ? exists(ro, keybuff) : false;
-                            if (exists) {
-                                listener.found(object.getId(), null);
-                            } else {
-                                batch.put(keybuff, value);
-                                insertedIds.put(object.getId(), Integer.valueOf(value.length));
-                            }
-
+                        boolean exists = checkExists ? exists(dbRef, ro, keybuff) : false;
+                        if (exists) {
+                            listener.found(object.getId(), null);
+                        } else {
+                            batch.put(keybuff, value);
+                            insertedIds.put(object.getId(), Integer.valueOf(value.length));
                         }
-                        // Stopwatch sw = Stopwatch.createStarted();
-                        dbRef.db().write(wo, batch);
-                        for (Entry<ObjectId, Integer> entry : insertedIds.entrySet()) {
-                            listener.inserted(entry.getKey(), entry.getValue());
-                        }
-                        insertedIds.clear();
-                        // System.err.printf("--- synced writes in %s\n", sw.stop());
+
                     }
+                    // Stopwatch sw = Stopwatch.createStarted();
+                    dbRef.db().write(wo, batch);
+                    batch.clear();
+                    
+                    for (Entry<ObjectId, Integer> entry : insertedIds.entrySet()) {
+                        listener.inserted(entry.getKey(), entry.getValue());
+                    }
+                    insertedIds.clear();
+                    // System.err.printf("--- synced writes in %s\n", sw.stop());
                 }
             }
             wo.sync();

@@ -56,12 +56,15 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
 
         RocksDB.loadLibrary();
 
+        final String os = System.getProperty("os.name");
+        final boolean isWindows = os.toLowerCase().contains("windows");
+        final boolean safeToUseMMappedFiles = !isWindows;
+
         org.rocksdb.DBOptions dbOptions = new org.rocksdb.DBOptions();
         dbOptions.setCreateIfMissing(true)//
                 .setAdviseRandomOnOpen(true)//
-                .setAllowMmapReads(true)//
-                .setAllowMmapWrites(true)//
-                .setAllowOsBuffer(true)//
+                .setAllowMmapReads(safeToUseMMappedFiles)//
+                .setAllowMmapWrites(safeToUseMMappedFiles)//
                 .setBytesPerSync(64 * 1024 * 1024);
 
         RocksDB db;

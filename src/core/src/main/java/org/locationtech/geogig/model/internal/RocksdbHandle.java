@@ -74,12 +74,15 @@ class RocksdbHandle {
     public static RocksdbHandle create(Path targetDir) {
         RocksDB.loadLibrary();
 
+        final String os = System.getProperty("os.name");
+        final boolean isWindows = os.toLowerCase().contains("windows");
+        final boolean safeToUseMMappedFiles = !isWindows;
+
         Options options = new Options();
         options.setCreateIfMissing(true)//
                 .setAdviseRandomOnOpen(true)//
-                .setAllowMmapReads(true)//
-                .setAllowMmapWrites(true)//
-                .setAllowOsBuffer(true)//
+                .setAllowMmapReads(safeToUseMMappedFiles)//
+                .setAllowMmapWrites(safeToUseMMappedFiles)//
                 .setWriteBufferSize(16 * 1024 * 1024)//
                 .setMaxWriteBufferNumber(8)//
                 .setMaxBackgroundCompactions(2)//

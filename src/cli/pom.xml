@@ -20,12 +20,6 @@
       <artifactId>geogig-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <!-- As the default storage provider (see CLIContextBuilder.defaults) -->
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-rocksdb</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -85,6 +79,13 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- As the default storage provider (see CLIContextBuilder.defaults) -->
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-rocksdb</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

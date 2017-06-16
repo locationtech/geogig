@@ -17,7 +17,6 @@ import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.impl.ContextBuilder;
-import org.locationtech.geogig.rocksdb.RocksdbStorageProvider;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -45,11 +44,32 @@ public class CLIContextBuilder extends ContextBuilder {
 
     public static class DefaultPlugins extends AbstractModule {
 
+        private static final StorageProvider DEFAULT_PROVIDER;
+
+        static {
+            // hack to set a PluginDefaults to rocksDB without having an explicit dependency
+            // on RocksDB modules. This should be removed once the StroageProvider/Plugin
+            // mechanisms are reworked.
+            StorageProvider storageProvider = null;
+            for (StorageProvider provider : StorageProvider.findProviders()) {
+                if ("rocksdb".equals(provider.getName())) {
+                    // we have a RocksDB provider available, use it as the default
+                    storageProvider = provider;
+                    break;
+                }
+            }
+            // set the default to the provider found, or null
+            DEFAULT_PROVIDER = storageProvider;
+        }
+
         @Override
         protected void configure() {
 
-            final PluginDefaults defaults = new PluginDefaults(new RocksdbStorageProvider());
-            bind(PluginDefaults.class).toInstance(defaults);
+            if (null != DEFAULT_PROVIDER) {
+                // set a PluginDefaults using the default provider
+                PluginDefaults pluginDefaults = new PluginDefaults(DEFAULT_PROVIDER);
+                bind(PluginDefaults.class).toInstance(pluginDefaults);
+            }
 
             MapBinder<VersionedFormat, RefDatabase> refPlugins = MapBinder
                     .newMapBinder(binder(), VersionedFormat.class, RefDatabase.class)

@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (Prominent Edge) - initial implementation
  */
-package org.locationtech.geogig.rocksdb;
+package org.locationtech.geogig.storage.impl;
 
 import static com.google.common.base.Throwables.propagate;
 

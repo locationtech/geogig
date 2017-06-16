@@ -11,7 +11,7 @@ package org.locationtech.geogig.geotools.geopkg;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.locationtech.geogig.rocksdb.RocksdbMap;
+import org.locationtech.geogig.storage.impl.RocksdbMap;
 
 public class AuditReport {
 

@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -79,6 +80,7 @@ import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryResolverTestUtil;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.rest.AsyncContext;
@@ -148,6 +150,8 @@ public class WebAPICucumberHooks {
 
     @cucumber.api.java.After
     public void after() {
+        // Restore available resolvers
+        RepositoryResolverTestUtil.clearDisabledResolverList();
         // try to close any repositories used while executing a Scenario
         for (String repoName : openedRepos) {
             Repository repo = context.getRepo(repoName);
@@ -1410,6 +1414,26 @@ public class WebAPICucumberHooks {
         assertTrue("Expected repository to NOT EXIST", null == geogig);
         // add the repo to the set so it can be closed
         openedRepos.add(repo);
+    }
+
+    @Given("^I have disabled backends: \"([^\"]*)\"$")
+    public void i_have_plugin_without_backend(final String backendsToRemove) {
+        assertNotNull("Backend resolver class name(s) should be provided", backendsToRemove);
+        // parse the backends list
+        final String[] backends = backendsToRemove.split(",");
+        final ArrayList<String> backendList = new ArrayList<>(2);
+        for (String backendToRemove : backends) {
+            switch (backendToRemove.trim()) {
+                case "Directory" :
+                    backendList.add("org.locationtech.geogig.repository.impl.FileRepositoryResolver");
+                    break;
+                case "PostgreSQL" :
+                    backendList.add("org.locationtech.geogig.storage.postgresql.PGRepositoryResolver");
+                    break;
+            }
+        }
+        // add the list to the test utility
+        RepositoryResolverTestUtil.setDisabledResolvers(backendList);
     }
 
     String systemTempPath() throws IOException {

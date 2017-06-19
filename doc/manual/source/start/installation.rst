@@ -38,6 +38,21 @@ Once downloaded, unzip the contensts of the ``geoserver-<version>-geogig-plugin.
 
 For information on how to configure GeoGig on GeoServer, refer to the :ref:`geoserver_ui` and :ref:`geoserver_web-api` sections.
 
+PostgreSQL JDBC Driver version
+++++++++++++++++++++++++++++++
+
+GeoServer versions lower than 2.12 come with an older version of the PostgreSQL JDBC driver than the one required by GeoGig.
+GeoGig requires version ``42.1.1`` (included in the geogig plugin zip file as ``postgresql-42.1.1.jar``), while GeoServer comes
+with version ``9.4.1211``.
+
+GeoGig needs the above mentioned version or higher in order to be able to transferring data to and from the postgres database in pure binary form.
+
+Given the way servlet containers (such as Apache Tomcat or Jetty) work, if the two jar files end up being in GeoSevrer's ``WEB-INF/lib`` folder,
+one or the other may be loaded first, in a non deterministic way. Hence **you'll need to remove the older jar file** from GeoSevrer's ``WEB-INF/lib`` folder
+before restarting GeoServer and after installing the GeoGig plugin as described above.
+
+Note GeoGig will verify the correct driver version is in use and won't work if the old driver is still installed and loaded.
+
 Building from source code
 -------------------------
 

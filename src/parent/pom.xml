@@ -106,6 +106,7 @@
     <sqljdbc4.version>3.0</sqljdbc4.version>
     <hikaricp.version>2.4.2</hikaricp.version>
     <rocksdb.version>4.13.4</rocksdb.version>
+    <postgresql.version>42.1.1</postgresql.version>
     <springweb.version>4.2.5.RELEASE</springweb.version>
 
     <appassembler.plugin.version>1.2.2</appassembler.plugin.version>
@@ -138,7 +139,11 @@
           <artifactId>lz4</artifactId>
           <version>${lz4.version}</version>
       </dependency>
-
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgresql.version}</version>
+      </dependency>
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>

@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2016 Boundless and others.
+/* Copyright (c) 2015-2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -16,15 +16,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.sql.DataSource;
 
 import org.locationtech.geogig.storage.impl.ConnectionManager;
-import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -33,8 +38,99 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceManager.class);
 
+    /**
+     * Flag to perform the driver version check only once at {@link #connect} ->
+     * {@link #verifyDriverVersion()}
+     */
+    @VisibleForTesting
+    static boolean driverVersionVerified = false;
+
+    private static String driverVersion;
+
+    private static int driverMajorVersion;
+
+    @VisibleForTesting
+    int getDriverMajorVersion() {
+        return new org.postgresql.Driver().getMajorVersion();
+    }
+
+    @VisibleForTesting
+    int getDriverMinorVersion() {
+        return new org.postgresql.Driver().getMinorVersion();
+    }
+
+    /**
+     * GeoGig required a PostgreSQL JDBC driver version to be 42.1.1+, which is the first one that
+     * supports true binary transfers
+     * 
+     * @return {@code true}
+     */
+    @VisibleForTesting
+    boolean verifyDriverVersion() {
+        if (!driverVersionVerified) {
+            try {
+                int majorVersion = getDriverMajorVersion();
+                int minorVersion = getDriverMinorVersion();
+                driverVersion = majorVersion + "." + minorVersion;
+                driverMajorVersion = majorVersion;
+            } catch (Throwable e) {
+                driverMajorVersion = 0;
+                driverVersion = "Unknown";
+                throw Throwables.propagate(e);
+            } finally {
+                driverVersionVerified = true;
+            }
+            if (driverMajorVersion < 42) {
+                List<String> postgresJars = getPostgresJars();
+                String msg = "**********************\n"
+                        + "GeoGig PostgreSQL support requires PostgreSQL JDBC Driver version 42.1.1 and above."
+                        + "\norg.postgresql.Driver '" + driverVersion + "'"
+                        + " was loaded by the classloader."
+                        + "\nPlease make sure there are no multiple postgres drivers in the classpath.";
+                if (!postgresJars.isEmpty()) {
+                    msg += "\nThe following jar files contain the class org.postgresql.Driver: "
+                            + postgresJars.toString();
+                }
+                logError(msg);
+            }
+        }
+        return driverMajorVersion >= 42;
+    }
+
+    void logError(String msg) {
+        LOG.error(msg);
+    }
+
+    @VisibleForTesting
+    List<String> getPostgresJars() {
+        final String classpath = System.getProperty("java.class.path", "");
+        final String separator = System.getProperty("path.separator");
+        final List<String> classpathItems = Splitter.on(separator).omitEmptyStrings().trimResults()
+                .splitToList(classpath);
+
+        List<String> postgresJars = classpathItems.parallelStream()//
+                .filter((s) -> s.endsWith(".jar"))//
+                .filter((s) -> {
+                    boolean hasDriver = false;
+                    try (ZipFile zf = new ZipFile(s)) {
+                        ZipEntry entry = zf.getEntry("org/postgresql/Driver.class");
+                        hasDriver = entry != null;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return hasDriver;
+                })//
+                .collect(Collectors.toList());
+
+        return postgresJars;
+    }
+
     @Override
     protected DataSource connect(Environment.ConnectionConfig config) {
+        if (!verifyDriverVersion()) {
+            throw new IllegalStateException(
+                    "PostgreSQL JDBC Driver version not supported by GeoGig: " + driverVersion);
+        }
         PGSimpleDataSource pgSimpleDataSource = new PGSimpleDataSource();
         pgSimpleDataSource.setBinaryTransfer(true);
         pgSimpleDataSource.setApplicationName("geogig");
@@ -44,18 +140,18 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         pgSimpleDataSource.setUser(config.getUser());
         pgSimpleDataSource.setPassword(config.getPassword());
         pgSimpleDataSource.setAssumeMinServerVersion("9.4");
-        pgSimpleDataSource.setPrepareThreshold(2);
+        // A value of {@code -1} stands for forceBinary
+        pgSimpleDataSource.setPrepareThreshold(-1);
         pgSimpleDataSource.setTcpKeepAlive(true);
 
         HikariConfig hc = new HikariConfig();
-        hc.setConnectionInitSql("SELECT NOW()");
+        // hc.setConnectionInitSql("SELECT NOW()");
         // no need to set a validation query, connections auto validate
         // hc.setConnectionTestQuery("SELECT NOW()");
-        /// hc.setDriverClassName("org.postgresql.Driver");
-        hc.setDataSource(pgSimpleDataSource);
 
-        final String jdbcUrl = getUrl(config);
-        hc.setJdbcUrl(jdbcUrl);
+        // hc.setDriverClassName is replaced by the more explicit hc.setDataSource
+        // hc.setDriverClassName("org.postgresql.Driver");
+        hc.setDataSource(pgSimpleDataSource);
 
         hc.setMaximumPoolSize(10);
         hc.setMinimumIdle(0);
@@ -64,6 +160,8 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         hc.setPassword(config.getPassword());
         hc.setConnectionTimeout(5000);
 
+        String jdbcUrl = config.getServer() + ":" + config.getPortNumber() + "/"
+                + config.getSchema() + "/" + config.getDatabaseName();
         LOG.debug("Connecting to " + jdbcUrl + " as user " + config.getUser());
         HikariDataSource ds = new HikariDataSource(hc);
 
@@ -104,17 +202,4 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
     protected void disconnect(DataSource ds) {
         ((HikariDataSource) ds).close();
     }
-
-    String getUrl(ConnectionConfig config) {
-        StringBuilder sb = new StringBuilder("jdbc:postgresql://").append(config.getServer());
-        if (config.getPortNumber() != 0) {
-            sb.append(':').append(config.getPortNumber());
-        }
-        sb.append('/').append(config.getDatabaseName());
-        sb.append("?binaryTransfer=true");
-        sb.append("&prepareThreshold=3");
-
-        return sb.toString();
-    }
-
 }

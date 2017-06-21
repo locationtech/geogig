@@ -11,6 +11,7 @@ Feature: Create Repository
     Then the response status should be '405'
     And the response allowed methods should be "PUT"
 
+  @FileRepository
   Scenario: Verify trying to create an existing repo issues 409 "Conflict"
     Given There is a default multirepo server
     And I have "extraRepo" that is not managed
@@ -40,6 +41,7 @@ Feature: Create Repository
     Then the response status should be '405'
     And the response allowed methods should be "PUT"
 
+  @FileRepository
   Scenario: Verify trying to create an existing repo issues 409 "Conflict", JSON requested response
     Given There is a default multirepo server
     And I have "extraRepo" that is not managed
@@ -63,6 +65,7 @@ Feature: Create Repository
     And the json object "response.repo.name" equals "repo1"
     And the json object "response.repo.href" ends with "/repos/repo1.json"
 
+  @FileRepository
   Scenario: Verify JSON fomratted response of Init with JSON formatted request parameters
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init.json" with the System Temp Directory as the parentDirectory
@@ -73,6 +76,7 @@ Feature: Create Repository
     And the json object "response.repo.href" ends with "/repos/repo1.json"
     And the parent directory of repository "repo1" equals System Temp directory
 
+  @FileRepository
   Scenario: Verify XML fomratted response of Init with JSON formatted request parameters
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init" with the System Temp Directory as the parentDirectory
@@ -83,6 +87,7 @@ Feature: Create Repository
     And the xpath "/response/repo/atom:link/@href" contains "/repos/repo1.xml"
     And the parent directory of repository "repo1" equals System Temp directory
 
+  @FileRepository
   Scenario: Verify JSON fomratted response of Init with URL Form encoded request parameters
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init.json" with a URL encoded Form containing a parentDirectory parameter
@@ -93,6 +98,7 @@ Feature: Create Repository
     And the json object "response.repo.href" ends with "/repos/repo1.json"
     And the parent directory of repository "repo1" equals System Temp directory
 
+  @FileRepository
   Scenario: Verify XML fomratted response of Init with URL Form encoded request parameters
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init" with a URL encoded Form containing a parentDirectory parameter
@@ -103,6 +109,7 @@ Feature: Create Repository
     And the xpath "/response/repo/atom:link/@href" contains "/repos/repo1.xml"
     And the parent directory of repository "repo1" equals System Temp directory
 
+  @FileRepository
   Scenario: Verify JSON fomratted response of Init with JSON formatted request parameters and Author
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init.json" with Author and the System Temp Directory as the parentDirectory
@@ -114,6 +121,7 @@ Feature: Create Repository
     And the parent directory of repository "repo1" equals System Temp directory
     And the Author config of repository "repo1" is set
 
+  @FileRepository
   Scenario: Verify XML fomratted response of Init with JSON formatted request parameters and Author
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init" with Author and the System Temp Directory as the parentDirectory
@@ -125,6 +133,7 @@ Feature: Create Repository
     And the parent directory of repository "repo1" equals System Temp directory
     And the Author config of repository "repo1" is set
 
+  @FileRepository
   Scenario: Verify JSON fomratted response of Init with URL Form encoded request parameters and Author
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init.json" with a URL encoded Form containing a parentDirectory parameter and Author
@@ -136,6 +145,7 @@ Feature: Create Repository
     And the parent directory of repository "repo1" equals System Temp directory
     And the Author config of repository "repo1" is set
 
+  @FileRepository
   Scenario: Verify XML fomratted response of Init with URL Form encoded request parameters and Author
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init" with a URL encoded Form containing a parentDirectory parameter and Author

@@ -92,8 +92,17 @@ Feature: Transaction
       And the xpath "/response/success/text()" equals "true"
       And the xml response should contain "/response/Transaction/ID"
       And I save the response "/response/Transaction/ID/text()" as "@txId"
-      And I have removed "Point.1_modified" on the "repo1" repo in the "@txId" transaction
-      And I have committed "Point.1" on the "repo1" repo in the "" transaction
+     When I call "GET /repos/repo1/beginTransaction"
+     Then the response status should be '200'
+      And the xpath "/response/success/text()" equals "true"
+      And the xml response should contain "/response/Transaction/ID"
+      And I save the response "/response/Transaction/ID/text()" as "@txId2"
+     When I have removed "Point.1_modified" on the "repo1" repo in the "@txId" transaction
+      And I have committed "Point.1" on the "repo1" repo in the "@txId2" transaction
+     When I call "GET /repos/repo1/endTransaction?transactionId={@txId2}"
+     Then the response status should be '200'
+      And the xpath "/response/success/text()" equals "true"
+      And the xpath "/response/Transaction/ID/text()" equals "{@txId2}"
      When I call "GET /repos/repo1/endTransaction?transactionId={@txId}"
      Then the response status should be '200'
       And the xpath "/response/success/text()" equals "true"
@@ -113,8 +122,17 @@ Feature: Transaction
       And the xpath "/response/success/text()" equals "true"
       And the xml response should contain "/response/Transaction/ID"
       And I save the response "/response/Transaction/ID/text()" as "@txId"
+     When I call "GET /repos/repo1/beginTransaction"
+     Then the response status should be '200'
+      And the xpath "/response/success/text()" equals "true"
+      And the xml response should contain "/response/Transaction/ID"
+      And I save the response "/response/Transaction/ID/text()" as "@txId2"
       And I have removed "Point.1_modified" on the "repo1" repo in the "@txId" transaction
-      And I have committed "Point.1" on the "repo1" repo in the "" transaction
+      And I have committed "Point.1" on the "repo1" repo in the "@txId2" transaction
+     When I call "GET /repos/repo1/endTransaction?transactionId={@txId2}"
+     Then the response status should be '200'
+      And the xpath "/response/success/text()" equals "true"
+      And the xpath "/response/Transaction/ID/text()" equals "{@txId2}"
      When I call "GET /repos/repo1/endTransaction?transactionId={@txId}"
      Then the response status should be '200'
       And the xpath "/response/success/text()" equals "true"

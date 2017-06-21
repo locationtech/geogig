@@ -73,12 +73,12 @@ public class PGStorage {
         return sql;
     }
 
-    synchronized static DataSource newDataSource(Environment config) {
+    public synchronized static DataSource newDataSource(Environment config) {
         DataSource dataSource = DATASOURCE_POOL.acquire(config.connectionConfig);
         return dataSource;
     }
 
-    static void closeDataSource(DataSource ds) {
+    public static void closeDataSource(DataSource ds) {
         if (ds != null) {
             DATASOURCE_POOL.release(ds);
         }
@@ -146,8 +146,14 @@ public class PGStorage {
         List<String> repoNames = Lists.newLinkedList();
         final DataSource dataSource = PGStorage.newDataSource(config);
 
+
+        final String repoNamesView = config.getTables().repositoryNamesView();
+        if (!tableExists(dataSource, repoNamesView)) {
+            PGStorage.closeDataSource(dataSource);
+            return repoNames;
+        }
+
         try (Connection cx = PGStorage.newConnection(dataSource)) {
-            final String repoNamesView = config.getTables().repositoryNamesView();
             String sql = format("SELECT name FROM %s", repoNamesView);
             try (Statement st = cx.createStatement()) {
                 try (ResultSet repos = st.executeQuery(sql)) {

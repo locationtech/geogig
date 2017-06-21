@@ -60,6 +60,7 @@ import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
+import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -143,6 +144,10 @@ public class WebAPICucumberHooks {
 
     @cucumber.api.java.Before
     public void before() throws Exception {
+        if (TestRepoURIBuilderProvider.getURIBuilder() == null) {
+            TestRepoURIBuilderProvider.setURIBuilder(TestRepoURIBuilder.createDefault());
+        }
+
         // before each Scenario, clear out the opened repository set
         openedRepos.clear();
         context.before();

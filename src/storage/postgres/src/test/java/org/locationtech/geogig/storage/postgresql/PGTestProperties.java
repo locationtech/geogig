@@ -62,12 +62,18 @@ public class PGTestProperties extends OnlineTestProperties {
         String dbName = get(Environment.KEY_DB_NAME, String.class).orNull();
         String user = get(Environment.KEY_DB_USERNAME, String.class).orNull();
         String pwd = get(Environment.KEY_DB_PASSWORD, String.class).orNull();
+        String url;
         if (repoId == null) {
-            repoId = "";
+            url = String.format("postgresql://%s:%s/%s/%s?user=%s&password=%s", server, port,
+                    dbName, schema, user, pwd);
+        } else {
+            url = String.format("postgresql://%s:%s/%s/%s/%s?user=%s&password=%s", server, port,
+                    dbName, schema, repoId, user, pwd);
         }
-        String url = String.format("postgresql://%s:%s/%s/%s/%s?user=%s&password=%s&tablePrefix=%s",
-                server, port, dbName, schema, repoId, user, pwd,
-                tablePrefix == null ? "" : tablePrefix);
+
+        if (tablePrefix != null) {
+            url += "&tablePrefix=" + tablePrefix;
+        }
         return url;
     }
 

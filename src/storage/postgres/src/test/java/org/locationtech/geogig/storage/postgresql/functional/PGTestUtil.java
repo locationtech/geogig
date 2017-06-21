@@ -13,7 +13,7 @@ import org.locationtech.geogig.storage.postgresql.PGTestProperties;
 
 import cucumber.api.PendingException;
 
-class PGTestUtil {
+public class PGTestUtil {
 
     public static void checkPgTestsEnabled() throws PendingException {
         if (!PGTestProperties.isTestsEnabled()) {

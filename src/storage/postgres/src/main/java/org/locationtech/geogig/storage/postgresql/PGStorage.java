@@ -73,12 +73,12 @@ public class PGStorage {
         return sql;
     }
 
-    public synchronized static DataSource newDataSource(Environment config) {
+    synchronized static DataSource newDataSource(Environment config) {
         DataSource dataSource = DATASOURCE_POOL.acquire(config.connectionConfig);
         return dataSource;
     }
 
-    public static void closeDataSource(DataSource ds) {
+    static void closeDataSource(DataSource ds) {
         if (ds != null) {
             DATASOURCE_POOL.release(ds);
         }

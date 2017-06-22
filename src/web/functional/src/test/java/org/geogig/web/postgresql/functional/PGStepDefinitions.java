@@ -26,5 +26,6 @@ public class PGStepDefinitions {
     @cucumber.api.java.After(order = 10001)
     public void after() {
         TestRepoURIBuilderProvider.getURIBuilder().after();
+        TestRepoURIBuilderProvider.setURIBuilder(null);
     }
 }

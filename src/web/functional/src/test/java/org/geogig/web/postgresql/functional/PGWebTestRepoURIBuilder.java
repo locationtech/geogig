@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.postgresql.Environment;
-import org.locationtech.geogig.storage.postgresql.PGStorage;
+import org.locationtech.geogig.storage.postgresql.PGStorageTestUtil;
 import org.locationtech.geogig.storage.postgresql.PGTestProperties;
 import org.locationtech.geogig.storage.postgresql.TableNames;
 
@@ -49,7 +49,7 @@ public final class PGWebTestRepoURIBuilder extends TestRepoURIBuilder {
     @Override
     public void after() {
         Environment environment = pgTestProperties.getConfig(null, tablePrefix);
-        DataSource dataSource = PGStorage.newDataSource(environment);
+        DataSource dataSource = PGStorageTestUtil.newDataSource(environment);
         try {
             TableNames tables = environment.getTables();
             Connection cx = dataSource.getConnection();
@@ -74,7 +74,7 @@ public final class PGWebTestRepoURIBuilder extends TestRepoURIBuilder {
         } catch (Exception e) {
             Throwables.propagate(e);
         } finally {
-            PGStorage.closeDataSource(dataSource);
+            PGStorageTestUtil.closeDataSource(dataSource);
         }
     }
 

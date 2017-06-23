@@ -1,12 +1,13 @@
-Upgrading Existing GeoGig Repositories to GeoGig 1.1
------------------------------------------------------
+Upgrading Existing GeoGig Repositories
+--------------------------------------
 
 Table of Contents
 ~~~~~~~~~~~~~~~~~
 
 
 .. toctree::
-    :maxdepth: 3 
+    :maxdepth: 1
 
 
     Upgrade_1.0_to_1.1
+    Upgrade_1.1_to_1.1.1

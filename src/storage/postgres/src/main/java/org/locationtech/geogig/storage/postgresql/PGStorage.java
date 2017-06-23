@@ -146,8 +146,14 @@ public class PGStorage {
         List<String> repoNames = Lists.newLinkedList();
         final DataSource dataSource = PGStorage.newDataSource(config);
 
+
+        final String repoNamesView = config.getTables().repositoryNamesView();
+        if (!tableExists(dataSource, repoNamesView)) {
+            PGStorage.closeDataSource(dataSource);
+            return repoNames;
+        }
+
         try (Connection cx = PGStorage.newConnection(dataSource)) {
-            final String repoNamesView = config.getTables().repositoryNamesView();
             String sql = format("SELECT name FROM %s", repoNamesView);
             try (Statement st = cx.createStatement()) {
                 try (ResultSet repos = st.executeQuery(sql)) {

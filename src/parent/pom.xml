@@ -121,6 +121,7 @@
     <build.timestamp>${maven.build.timestamp}</build.timestamp>
     <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
     <postgresOnline.skip.pattern>org/locationtech/geogig/storage/postgresql/**</postgresOnline.skip.pattern>
+    <postgresWebFunctional.skip.pattern>org/geogig/web/postgresql/functional/**</postgresWebFunctional.skip.pattern>
     <allow.test.skip>true</allow.test.skip>
     <argLine>-Xms256m -Xmx512m</argLine>
   </properties>
@@ -467,6 +468,7 @@
           <excludes>
             <exclude>${online.skip.pattern}</exclude>
             <exclude>${postgresOnline.skip.pattern}</exclude>
+            <exclude>${postgresWebFunctional.skip.pattern}</exclude>
           </excludes>
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
           <reuseForks>true</reuseForks>
@@ -533,7 +535,7 @@
       <plugin>
         <groupId>pl.project13.maven</groupId>
         <artifactId>git-commit-id-plugin</artifactId>
-        <version>2.1.8</version>
+        <version>2.2.2</version>
         <executions>
           <execution>
             <goals>
@@ -545,6 +547,7 @@
           <prefix>git</prefix>
           <dateFormat>MMMM dd, yyyy 'at' HH:mm:ss z</dateFormat>
           <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
           <dotGitDirectory>${project.basedir}/../../.git</dotGitDirectory>
           <skipPoms>false</skipPoms>
           <verbose>false</verbose>
@@ -562,20 +565,6 @@
       </properties>
     </profile>
     <profile>
-      <id>travis</id> <!-- profile for travis-specific configuration tweaks -->
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>pl.project13.maven</groupId>
-            <artifactId>git-commit-id-plugin</artifactId>
-            <configuration>
-              <skip>true</skip> <!-- the git commit id plugin sometimes causes spurious failures on travis, so we are disabling it in that environment -->
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>postgres</id>
       <build>
         <plugins>
@@ -589,6 +578,7 @@
               <excludes>
                 <exclude>${online.skip.pattern}</exclude>
                 <!--exclude>${postgresOnline.skip.pattern}</exclude-->
+                <!--exclude>${postgresWebFunctional.skip.pattern}</exclude-->
               </excludes>
               <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
               <reuseForks>true</reuseForks>
@@ -611,6 +601,7 @@
               <!--excludes>
                 <exclude>${online.skip.pattern}</exclude>
                 <exclude>${postgresOnline.skip.pattern}</exclude>
+                <exclude>${postgresWebFunctional.skip.pattern}</exclude>
               </excludes-->
               <includes>
                 <include>**/*StressTest.java</include>

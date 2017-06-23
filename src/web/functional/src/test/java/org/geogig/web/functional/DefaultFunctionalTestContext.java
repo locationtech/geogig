@@ -68,6 +68,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
     private Server server;
 
+    private TestPlatform platform;
+
     /**
      * Set up the context for a scenario.
      */
@@ -75,9 +77,10 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     protected void setUp() throws Exception {
         if (app == null) {
             File rootFolder = tempFolder.getRoot();
-            repoProvider = new MultiRepositoryProvider(rootFolder.toURI());
+            this.platform = new TestPlatform(rootFolder);
+            URI rootURI = TestRepoURIBuilderProvider.getURIBuilder().buildRootURI(platform);
+            repoProvider = new MultiRepositoryProvider(rootURI);
 
-            TestPlatform platform = new TestPlatform(rootFolder);
             GlobalContextBuilder.builder(new FunctionalRepoContextBuilder(platform));
 
             this.app = new Main(repoProvider, true);
@@ -91,6 +94,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     protected void tearDown() throws Exception {
+        repoProvider.invalidateAll();
         if (app != null) {
             try {
                 this.app.stop();
@@ -147,7 +151,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     protected TestData createRepo(final String name) throws Exception {
-        URI repoURI = new File(tempFolder.getRoot(), name).toURI();
+        URI repoURI = TestRepoURIBuilderProvider.getURIBuilder().newRepositoryURI(name, platform);
         Hints hints = new Hints().uri(repoURI);
         Context repoContext = GlobalContextBuilder.builder().build(hints);
         GeoGIG geogig = new GeoGIG(repoContext);

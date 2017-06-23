@@ -226,7 +226,7 @@ public class EnvironmentBuilder {
 
         Environment env = new Environment(server, port, databaseName, schema, userName, password,
                 repoName, tablePrefix);
-        final URI repoURI = env.connectionConfig.toURI();
+        final URI repoURI = env.connectionConfig.toURI(repoName);
 
         return repoURI;
     }

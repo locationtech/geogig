@@ -14,7 +14,7 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-class TableNames {
+public class TableNames {
 
     public static final String DEFAULT_SCHEMA = "public";
 

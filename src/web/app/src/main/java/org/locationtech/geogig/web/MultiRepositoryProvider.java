@@ -128,7 +128,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
             final Repository repo = notification.getValue();
             LOG.info("Disposing repository {}. Cause: " + cause(cause));
             try {
-                if (repo != null) {
+                if (repo != null && repo.isOpen()) {
                     repo.close();
                 }
             } catch (RuntimeException e) {
@@ -178,7 +178,8 @@ public class MultiRepositoryProvider implements RepositoryProvider {
 
     @VisibleForTesting
     Repository loadGeoGIG(final String repoName) {
-        LOG.info("Loading repository " + repoName);
+        LOG.info(
+                "Loading repository " + repoName + " using " + resolver.getClass().getSimpleName());
         Hints hints = new Hints();
         final URI repoURI = resolver.buildRepoURI(rootRepoURI, repoName);
         hints.set(Hints.REPOSITORY_URL, repoURI);
@@ -227,6 +228,10 @@ public class MultiRepositoryProvider implements RepositoryProvider {
     @Override
     public void invalidate(String repoName) {
         this.repositories.invalidate(repoName);
+    }
+
+    public void invalidateAll() {
+        this.repositories.invalidateAll();
     }
 
     private static class InitRequestHandler {

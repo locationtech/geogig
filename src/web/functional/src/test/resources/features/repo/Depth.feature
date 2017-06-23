@@ -30,6 +30,7 @@ Feature: Depth
       And the response ContentType should be "text/plain"
       And the response body should contain ""
       
+  @ShallowDepth
   Scenario: Depth with no commit returns the depth of a shallow repository
     Given There is a default multirepo server with a shallow clone
      When I call "GET /repos/shallow/repo/getdepth"

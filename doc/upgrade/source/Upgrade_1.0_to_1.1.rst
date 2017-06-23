@@ -1,5 +1,5 @@
-Upgrading existing GeoGig repositories to GeoGig 1.1 (PostgreSQL Backend)
-=========================================================================
+Upgrading to GeoGig 1.1
+=======================
 
 
 .. warning:: Ensure you have your repository database fully backed up before moving to GeoGig 1.1

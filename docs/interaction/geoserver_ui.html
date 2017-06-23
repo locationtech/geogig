@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoServer GUI configuration &mdash; GeoGig 1.1 User Manual</title>
+  <title>GeoServer GUI configuration &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="GeoServer REST configuration integration" href="geoserver_web-api.html" />
       <link rel="prev" title="Serving and Managing Repositories" href="web-repository-management.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>GeoServer GUI configuration</li>
 </ul>
@@ -98,11 +98,11 @@
         
   <div class="section" id="geoserver-gui-configuration">
 <span id="geoserver-ui"></span><h1>GeoServer GUI configuration<a class="headerlink" href="#geoserver-gui-configuration" title="Permalink to this headline">¶</a></h1>
-<p>A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as a datastore. It enables a GeoGig repository to be exposed as a remote for cloning, pushing, and pulling, as well as to publish its data via OGC services (WMS/WFS/WMTS/etc). Each top-level tree (often called &#8220;feature tree&#8221;) in a GeoGig repository corresponds to a GeoServer layer. GeoServer treats a GeoGig repository configured as a store in much the same way as it does a database.</p>
+<p>A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as a datastore. It enables a GeoGig repository to be exposed as a remote for cloning, pushing, and pulling, as well as to publish its data via OGC services (WMS/WFS/WMTS/etc). Each top-level tree (often called “feature tree”) in a GeoGig repository corresponds to a GeoServer layer. GeoServer treats a GeoGig repository configured as a store in much the same way as it does a database.</p>
 <div class="section" id="building-installing-the-geoserver-geogig-extension">
 <h2>Building/installing the GeoServer GeoGig extension<a class="headerlink" href="#building-installing-the-geoserver-geogig-extension" title="Permalink to this headline">¶</a></h2>
 <p>You can download the latest stable version of the GeoGig GeoServer plugin from the <a class="reference external" href="http://www.geogig.org/">GeoGig</a> home page.</p>
-<p>In order to build it from sources, a GeoGig module is currently included in the 2.8.x branch of GeoServer&#8217;s community extensions. To build it, clone the GeoServer GitHub repository.</p>
+<p>In order to build it from sources, a GeoGig module is currently included in the 2.8.x branch of GeoServer’s community extensions. To build it, clone the GeoServer GitHub repository.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">geoserver</span><span class="o">/</span><span class="n">geoserver</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
@@ -182,18 +182,18 @@
 </div>
 <div class="section" id="creating-a-new-directory-backed-geogig-repository">
 <span id="create-new-directory-repo"></span><h2>Creating a new directory-backed GeoGig repository<a class="headerlink" href="#creating-a-new-directory-backed-geogig-repository" title="Permalink to this headline">¶</a></h2>
-<p>To create a new GeoGig repository that is backed by the filesystem, select <strong>Directory</strong> from the <strong>Repository Type</strong> pull-down, enter a <strong>Repository Name</strong>, a <strong>Parent Directory</strong> and click &#8220;Save&#8221;:</p>
+<p>To create a new GeoGig repository that is backed by the filesystem, select <strong>Directory</strong> from the <strong>Repository Type</strong> pull-down, enter a <strong>Repository Name</strong>, a <strong>Parent Directory</strong> and click “Save”:</p>
 <div class="figure">
 <img alt="../_images/create-new-geogig-repo-directory.png" src="../_images/create-new-geogig-repo-directory.png" />
 </div>
-<p>You can enter the parent directory manually or select one from a directory chooser dialog by clicking the <strong>Browse...</strong> link:</p>
+<p>You can enter the parent directory manually or select one from a directory chooser dialog by clicking the <strong>Browse…</strong> link:</p>
 <div class="figure">
 <img alt="../_images/create-new-geogig-repo-directory-chooser.png" src="../_images/create-new-geogig-repo-directory-chooser.png" />
 </div>
 </div>
 <div class="section" id="creating-a-new-postgresql-backed-geogig-repository">
 <span id="create-new-postgres-repo"></span><h2>Creating a new PostgreSQL-backed GeoGig repository<a class="headerlink" href="#creating-a-new-postgresql-backed-geogig-repository" title="Permalink to this headline">¶</a></h2>
-<p>To create a new GeoGig repository that is backed by a PostgreSQL database, select <strong>PostgreSQL</strong> from the <strong>Repository Type</strong> pull-down, enter the relevant database connection parameters and click &#8220;Save&#8221;.</p>
+<p>To create a new GeoGig repository that is backed by a PostgreSQL database, select <strong>PostgreSQL</strong> from the <strong>Repository Type</strong> pull-down, enter the relevant database connection parameters and click “Save”.</p>
 <div class="figure">
 <img alt="../_images/create-new-geogig-repo-postgres.png" src="../_images/create-new-geogig-repo-postgres.png" />
 </div>
@@ -274,16 +274,27 @@ Already up to date.
 </pre></div>
 </div>
 </div>
+<div class="section" id="geogig-runtime-settings">
+<span id="geosever-settings"></span><h2>GeoGig Runtime Settings<a class="headerlink" href="#geogig-runtime-settings" title="Permalink to this headline">¶</a></h2>
+<p>Some runtime aspects of GeoGig when running as part of GeoServer can be configured through the <cite>GeoGig Settings</cite> page as shown in the image bellow.</p>
+<div class="figure">
+<img alt="../_images/geoserver_geogig_settings_page.png" src="../_images/geoserver_geogig_settings_page.png" />
+</div>
+<p>On the <cite>Shared Cache</cite> section of the <cite>GeoGig Settings</cite> configuration page, you can configure and monitor the status of GeoGig’s shared revision objects cache.
+For more information on what the cache is and how it works, refer to the <a class="reference internal" href="../start/runtime.html#caching"><span class="std std-ref">Shared internal cache</span></a> section.</p>
+<p>Use the <code class="docutils literal"><span class="pre">Maximum</span> <span class="pre">cache</span> <span class="pre">size</span></code> text entry to set a new value for the cache size in megabytes, and press the <cite>Apply</cite> button to make it effective.</p>
+<p>Use the <code class="docutils literal"><span class="pre">Reset</span> <span class="pre">to</span> <span class="pre">defaults</span></code> button to re-establish the maximum cache size to its default value, as given by the <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> environment variable or system property, if provided, or the internal default of 25% of the maximum heap size othwerwise.</p>
+<p>Note these two operations are applied immediately and are destructive in the sense that the current cache will be discarded and a new one will be created, with the effect that the cache statistics shown in the table bellow them will be lost and reset.</p>
+<p>Use the <code class="docutils literal"><span class="pre">Refresh</span></code> button bellow the cache attributes and statistics table to obtain fresh, real time information about the status of the cache.</p>
+<p>Use the <code class="docutils literal"><span class="pre">Clear</span> <span class="pre">cache</span></code> button to prune all the objects currently in the cache, making the memory used immediately available to the Java Garbage Collector. This operation is non destructive, meaning the cache statistics will remain valid and further cache queries and inserts made by GeoGig will affect them.</p>
+</div>
 <div class="section" id="automated-repository-synchronization">
 <h2>Automated repository synchronization<a class="headerlink" href="#automated-repository-synchronization" title="Permalink to this headline">¶</a></h2>
 <p>Repositories configured by GeoServer can be configured with remotes and Automated Repository Synchronization. TODO</p>
 </div>
 <div class="section" id="current-limitations">
 <span id="id1"></span><h2>Current limitations<a class="headerlink" href="#current-limitations" title="Permalink to this headline">¶</a></h2>
-<p>When using Directory-backed GeoGig repositories, the default underlying object database (BerkeleyDB) is single-user. While the repository is being exposed over the network by either the stand-alone server or by GeoServer, you will not be able to access the repository from the command line interface. The error is pretty clear about whats going on.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">com</span><span class="o">.</span><span class="n">sleepycat</span><span class="o">.</span><span class="n">je</span><span class="o">.</span><span class="n">EnvironmentLockedException</span><span class="p">:</span> <span class="p">(</span><span class="n">JE</span> <span class="mf">5.0</span><span class="o">.</span><span class="mi">58</span><span class="p">)</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">jj0hns0n</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">gisdata</span><span class="o">-</span><span class="n">repo</span><span class="o">/.</span><span class="n">geogig</span><span class="o">/</span><span class="n">objects</span> <span class="n">The</span> <span class="n">environment</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">locked</span> <span class="k">for</span> <span class="n">single</span> <span class="n">writer</span> <span class="n">access</span><span class="o">.</span> <span class="n">ENV_LOCKED</span><span class="p">:</span> <span class="n">The</span> <span class="n">je</span><span class="o">.</span><span class="n">lck</span> <span class="n">file</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">locked</span><span class="o">.</span> <span class="n">Environment</span> <span class="ow">is</span> <span class="n">invalid</span> <span class="ow">and</span> <span class="n">must</span> <span class="n">be</span> <span class="n">closed</span><span class="o">.</span>
-</pre></div>
-</div>
+<p>When using Directory-backed GeoGig repositories, the default underlying object database (Rocksdb) is single-user. While the repository is being exposed over the network by either the stand-alone server or by GeoServer, you will not be able to access the repository from the command line interface.</p>
 <p><strong>GeoGig repositories backed by PostgreSQL do not have this limitation.</strong></p>
 </div>
 </div>
@@ -325,6 +336,7 @@ Already up to date.
 <li><a class="reference internal" href="#importing-an-existing-geogig-repository-in-geoserver">Importing an existing GeoGig repository in GeoServer</a></li>
 <li><a class="reference internal" href="#configuring-a-geogig-repository-in-geoserver">Configuring a GeoGig repository in GeoServer</a></li>
 <li><a class="reference internal" href="#cloning-pushing-and-pulling">Cloning, Pushing, and Pulling</a></li>
+<li><a class="reference internal" href="#geogig-runtime-settings">GeoGig Runtime Settings</a></li>
 <li><a class="reference internal" href="#automated-repository-synchronization">Automated repository synchronization</a></li>
 <li><a class="reference internal" href="#current-limitations">Current limitations</a></li>
 </ul>

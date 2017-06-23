@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Serving and Managing Repositories &mdash; GeoGig 1.1 User Manual</title>
+  <title>Serving and Managing Repositories &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="GeoServer GUI configuration" href="geoserver_ui.html" />
       <link rel="prev" title="GeoGig Networking" href="networking.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Serving and Managing Repositories</li>
 </ul>
@@ -132,7 +132,7 @@ $ geogig serve --multirepo
 <h2>Repository Management<a class="headerlink" href="#repository-management" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="listing-repositories">
 <h3>Listing Repositories<a class="headerlink" href="#listing-repositories" title="Permalink to this headline">¶</a></h3>
-<p>In order to see which repositories are currently being served, you can issue a <code class="docutils literal"><span class="pre">GET</span></code> request against the <code class="docutils literal"><span class="pre">repos/</span></code> endpoint.  The response will also provide a link to each individual repository&#8217;s endpoint.</p>
+<p>In order to see which repositories are currently being served, you can issue a <code class="docutils literal"><span class="pre">GET</span></code> request against the <code class="docutils literal"><span class="pre">repos/</span></code> endpoint.  The response will also provide a link to each individual repository’s endpoint.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/&quot; | xmllint --format - --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
@@ -201,7 +201,7 @@ $ geogig serve --multirepo
 </div>
 <div class="section" id="init-request-with-optional-location-config">
 <h4>Init Request With Optional Location Config<a class="headerlink" href="#init-request-with-optional-location-config" title="Permalink to this headline">¶</a></h4>
-<p>You can also create a new repository and specify options that can dictate the repository&#8217;s location. This allows you to initialize a repository, for example, that is stored in a PostgreSQL database, or a different directory location than the working directory of the GeoGig multi-repo server. To specify a different parent directory location, set the <code class="docutils literal"><span class="pre">parentDirectory</span></code> value in the JSON request body:</p>
+<p>You can also create a new repository and specify options that can dictate the repository’s location. This allows you to initialize a repository, for example, that is stored in a PostgreSQL database, or a different directory location than the working directory of the GeoGig multi-repo server. To specify a different parent directory location, set the <code class="docutils literal"><span class="pre">parentDirectory</span></code> value in the JSON request body:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;parentDirectory&quot;</span><span class="p">:</span><span class="s2">&quot;/data/geogig/repos&quot;</span><span class="p">,</span>
     <span class="s2">&quot;authorName&quot;</span><span class="p">:</span><span class="s2">&quot;GeoGig User&quot;</span><span class="p">,</span>
@@ -251,23 +251,23 @@ database to connect to</td>
 user with which to connect</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">dbHost</span></code></td>
-<td>&#8220;localhost&#8221;</td>
+<td>“localhost”</td>
 <td>Hostname of the PostgreSQL
 database server to connect
 to</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">dbPort</span></code></td>
-<td>&#8220;5432&#8221;</td>
+<td>“5432”</td>
 <td>Port the database is
 listening on</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">dbSchema</span></code></td>
-<td>&#8220;public&#8221;</td>
+<td>“public”</td>
 <td>Database schema to connect
 to</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">dbUser</span></code></td>
-<td>&#8220;postgres&#8221;</td>
+<td>“postgres”</td>
 <td>Username to connect with</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">authorName</span></code></td>
@@ -313,7 +313,7 @@ repository</td>
 </div>
 <div class="section" id="renaming-repositories">
 <h3>Renaming Repositories<a class="headerlink" href="#renaming-repositories" title="Permalink to this headline">¶</a></h3>
-<p>If you wish to change the name of a repository after it has been created, you can do so by issuing a <code class="docutils literal"><span class="pre">POST</span></code> request to the <code class="docutils literal"><span class="pre">rename</span></code> endpoint of the repository with the new name.  Because the repository&#8217;s name is used in web-api calls, renaming a repository will cause the endpoint for that repository to change to the new name.</p>
+<p>If you wish to change the name of a repository after it has been created, you can do so by issuing a <code class="docutils literal"><span class="pre">POST</span></code> request to the <code class="docutils literal"><span class="pre">rename</span></code> endpoint of the repository with the new name.  Because the repository’s name is used in web-api calls, renaming a repository will cause the endpoint for that repository to change to the new name.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST -v &quot;http://localhost:8182/repos/repo4/rename?name=betterName&quot; | xmllint --format -
 &lt; HTTP/1.1 301 Moved Permanently
 &lt; Content-Type: application/xml

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Merging branches &mdash; GeoGig 1.1 User Manual</title>
+  <title>Merging branches &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Interacting with remote repositories" href="remotes.html" />
       <link rel="prev" title="Branches" href="branches.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Merging branches</li>
 </ul>
@@ -138,7 +138,7 @@
 <p>When a conflict arises, the merge operation is interrupted. Conflicted elements are marked in the index under the heading <strong>unmerged paths</strong> and the user must resolve these manually. This is done by picking a change from one branch or the other, or by some combination of the two.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">&#8220;Unmerged paths&#8221; is another name for a conflicted element.</p>
+<p class="last">“Unmerged paths” is another name for a conflicted element.</p>
 </div>
 </div>
 <div class="section" id="types-of-conflicts">
@@ -160,13 +160,13 @@
 <li>Setting the same new default feature type for a path.</li>
 <li>Editing the same feature, but modifying different attributes.</li>
 </ul>
-<p>In general, whenever the situation doesn&#8217;t have a clear path to resolution, GeoGig will report a conflict for the sake of safety.</p>
+<p>In general, whenever the situation doesn’t have a clear path to resolution, GeoGig will report a conflict for the sake of safety.</p>
 </div>
 <div class="section" id="showing-conflicts">
 <h2>Showing conflicts<a class="headerlink" href="#showing-conflicts" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal"><span class="pre">conflicts</span></code> command can be used to describe the current unmerged elements. There are three ways of displaying conflicts:</p>
 <ol class="arabic simple">
-<li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span></code> will print the full descriptions of the versions involved in the conflict: the common ancestor, &#8220;ours&#8221; (current branch) and &#8220;theirs&#8221; (the branch to merge). The descriptions of the involved elements are the same ones that would be obtained by calling the GeoGig <code class="docutils literal"><span class="pre">cat</span></code> command on each of them.</li>
+<li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span></code> will print the full descriptions of the versions involved in the conflict: the common ancestor, “ours” (current branch) and “theirs” (the branch to merge). The descriptions of the involved elements are the same ones that would be obtained by calling the GeoGig <code class="docutils literal"><span class="pre">cat</span></code> command on each of them.</li>
 <li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--diff</span></code> will output a representation with diff-like syntax instead of full descriptions, showing only those attributes the differ. It uses the same syntax as the <code class="docutils literal"><span class="pre">diff</span></code> command, described in the <a class="reference internal" href="../data/diffs.html#differences"><span class="std std-ref">Showing differences</span></a> section, which makes it easier to see why the conflict arises and how to solve it.</li>
 <li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--ids-only</span></code> will return just the IDs of the three versions corresponding to each unmerged element.</li>
 </ol>
@@ -181,7 +181,7 @@
 <p>The following situations will cause GeoGig to fail the octopus merge process:</p>
 <ul class="simple">
 <li>A conflict on any type exist, whether it is a conflict between two branches or between many of them at the same time.</li>
-<li>A feature has been edited by at least two branches, and the changes introduced are not identical. Even if the changes are compatible (for instance, if branches have edited values for different attributes), GeoGig will not perform an automerge and the merge operation won&#8217;t be executed.</li>
+<li>A feature has been edited by at least two branches, and the changes introduced are not identical. Even if the changes are compatible (for instance, if branches have edited values for different attributes), GeoGig will not perform an automerge and the merge operation won’t be executed.</li>
 </ul>
 <p>In these cases, you will have to merge branches individually, solving conflicts for each of them one by one.</p>
 <p>Unlike a standard two branch merge, where the process will partially complete, a conflict will cause an octopus merge to <em>not even start</em>.</p>
@@ -189,7 +189,7 @@
 <div class="section" id="staging-a-merged-version-of-a-conflicted-element">
 <h2>Staging a merged version of a conflicted element<a class="headerlink" href="#staging-a-merged-version-of-a-conflicted-element" title="Permalink to this headline">¶</a></h2>
 <p>Using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">add</span></code> command, features can be staged in the usual way. When a feature is staged, it is not in a conflicted state. Running the <code class="docutils literal"><span class="pre">add</span></code> command will solve the conflicted merge. Before this can be done, you must pick which version of the commit to merge.</p>
-<p>GeoGig uses &#8220;ours&#8221; and &#8220;theirs&#8221; notation, with &#8220;ours&#8221; referring to the current branch, and &#8220;theirs&#8221; referring to the other branch.</p>
+<p>GeoGig uses “ours” and “theirs” notation, with “ours” referring to the current branch, and “theirs” referring to the other branch.</p>
 <p>To select the feature from the current branch:</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig checkout -p &lt;path_to_feature&gt; --ours</span>
 </pre></div>

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoPackage import and export Web-API &mdash; GeoGig 1.1 User Manual</title>
+  <title>GeoPackage import and export Web-API &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="License" href="../license/index.html" />
       <link rel="prev" title="Web-API Asynchronous tasks" href="async-tasks.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>GeoPackage import and export Web-API</li>
 </ul>
@@ -116,9 +116,9 @@ Optional. Defaults to <code class="docutils literal"><span class="pre">HEAD</spa
 <p><strong>path:</strong>
 Optional. A comma-separated list of layer names to export. Defaults to exporting all layers in the resolved root tree.</p>
 <p><strong>bbox:</strong>
-Optional. A bounding box filter. If present, only features matching the indicated bounding box filter will be exported. Applies to all exported layers. Format is <code class="docutils literal"><span class="pre">minx,miny,maxx,maxy,&lt;SRS&gt;</span></code>, where <code class="docutils literal"><span class="pre">SRS</span></code> is the EPSG code for the coordinates (e.g. <code class="docutils literal"><span class="pre">EPSG:4326</span></code>, <code class="docutils literal"><span class="pre">EPSG:26986</span></code>, etc), always using &#8220;longitude first&#8221; axis order.</p>
+Optional. A bounding box filter. If present, only features matching the indicated bounding box filter will be exported. Applies to all exported layers. Format is <code class="docutils literal"><span class="pre">minx,miny,maxx,maxy,&lt;SRS&gt;</span></code>, where <code class="docutils literal"><span class="pre">SRS</span></code> is the EPSG code for the coordinates (e.g. <code class="docutils literal"><span class="pre">EPSG:4326</span></code>, <code class="docutils literal"><span class="pre">EPSG:26986</span></code>, etc), always using “longitude first” axis order.</p>
 <p><strong>interchange:</strong>
-Optional. Boolean indicating whether to enable GeoGig&#8217;s interchange format extension for GeoPackage. The &#8220;GeoGig GeoPackage Extension&#8221; is an extension to the GeoPackage format that (transparently) records all changes made to vector layers, in hidden audit tables, that can then be used to replay those changes on top of the repository.</p>
+Optional. Boolean indicating whether to enable GeoGig’s interchange format extension for GeoPackage. The “GeoGig GeoPackage Extension” is an extension to the GeoPackage format that (transparently) records all changes made to vector layers, in hidden audit tables, that can then be used to replay those changes on top of the repository.</p>
 </div>
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
@@ -137,7 +137,7 @@ Optional. Boolean indicating whether to enable GeoGig&#8217;s interchange format
 </div>
 <div class="section" id="bad-refspec">
 <h4>Bad refspec:<a class="headerlink" href="#bad-refspec" title="Permalink to this headline">¶</a></h4>
-<p>Note, since the command is run asynchronously, you&#8217;ll only see the error once the async task status is polled.</p>
+<p>Note, since the command is run asynchronously, you’ll only see the error once the async task status is polled.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/export?format=GPKG&amp;root=nonExistingBranch&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
@@ -183,7 +183,7 @@ $ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
 &lt;/task&gt;
 </pre></div>
 </div>
-<p>Poll task status until it&#8217;s FINISHED:</p>
+<p>Poll task status until it’s FINISHED:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml

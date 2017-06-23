@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig Network Synchronization &mdash; GeoGig 1.1 Technical Manual</title>
+  <title>GeoGig Network Synchronization &mdash; GeoGig 1.1.1-RC1 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,7 +17,7 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
@@ -25,7 +25,7 @@
   <link rel="shortcut icon" href="_static/favicon.ico"/>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 Technical Manual" href="index.html" />
       <link rel="next" title="Plumbing commands" href="plumbing_commands.html" />
       <link rel="prev" title="Binary encoding of GeoGig objects" href="geogig-binary.html" />
 </head>
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1-RC1 Technical Manual</a> &raquo;</li>
   <li>GeoGig Network Synchronization</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -99,13 +99,13 @@
 <h1>GeoGig Network Synchronization<a class="headerlink" href="#geogig-network-synchronization" title="Permalink to this headline">¶</a></h1>
 <p>For synchronization over network connections, GeoGig defines a protocol layered over HTTP.
 This document defines the operations the GeoGig server must provide, and the way that a GeoGig client is expected to use it to achieve synchronization.
-In fact, GeoGig synchronization consists of two different types of operation - a &#8220;push&#8221; in which a client copies history to a server, and a &#8220;pull&#8221; in which a client copies history from a server.</p>
+In fact, GeoGig synchronization consists of two different types of operation - a “push” in which a client copies history to a server, and a “pull” in which a client copies history from a server.</p>
 </div>
 <div class="section" id="server-operations">
 <h1>Server operations<a class="headerlink" href="#server-operations" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="manifest">
 <h2>Manifest<a class="headerlink" href="#manifest" title="Permalink to this headline">¶</a></h2>
-<p>The server provides a &#8220;manifest&#8221; document advertising its named refs and their current commit ids.
+<p>The server provides a “manifest” document advertising its named refs and their current commit ids.
 Synchronization operations generally begin with the client requesting a manifest from the server in order to assess the differences between their histories.</p>
 <p>The manifest resource responds to GET requests at <code class="docutils literal"><span class="pre">repo/manifest</span></code> relative to the GeoGig server and contains a line-oriented textual description of the refs.
 Each ref includes its name and commit id (the commit id in hexadecimal notation); a prefix including the symbolic name for the ref may also be included.
@@ -120,7 +120,7 @@ HEAD /refs/branches/master 00000000000000000000
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">This doesn&#8217;t seem to account for the case where a symbolic ref does not point at a named branch/tag/whatever.
+<p class="last">This doesn’t seem to account for the case where a symbolic ref does not point at a named branch/tag/whatever.
 What happens in that case?</p>
 </div>
 </div>
@@ -135,7 +135,7 @@ The request body should be a JSON document containing two fields:</p>
 <div><ul class="simple">
 <li><dl class="first docutils">
 <dt><code class="docutils literal"><span class="pre">have</span></code> a list of object ids representing commits already present on the client.</dt>
-<dd>When walking history, the server should consider any commits from the &#8220;have&#8221; list as stopping points - as these commits are already on the client it already understands their history.</dd>
+<dd>When walking history, the server should consider any commits from the “have” list as stopping points - as these commits are already on the client it already understands their history.</dd>
 </dl>
 </li>
 <li><code class="docutils literal"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</li>
@@ -146,7 +146,7 @@ The history is represented as an <a class="reference external" href="http://en.w
 The server must include information about the commits listed in the want list, but it is up to the server to determine how many further commits to include.</p>
 <div class="section" id="id1">
 <h3>Example<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>In the following example, the &#8220;want&#8221; list conveniently contains only a single commit - which happens to be a direct descendant of the one commit in the &#8220;have&#8221; list.</p>
+<p>In the following example, the “want” list conveniently contains only a single commit - which happens to be a direct descendant of the one commit in the “have” list.</p>
 <div class="highlight-none"><div class="highlight"><pre><span></span>POST /geogig/repo/exists
 {
   &quot;want&quot; : [ &quot;abcdefabcdefabcdef12&quot; ],
@@ -169,7 +169,7 @@ The server must include information about the commits listed in the want list, b
 <h2>Bulk Objects<a class="headerlink" href="#bulk-objects" title="Permalink to this headline">¶</a></h2>
 <p>The server provides a bulk objects service for fetching many objects in a single request.
 This walks history forward (opposite the existence check resource!) to transfer multiple objects.
-By walking history in commit order, we increase robustness - an interrupted session still has high probability of leaving the client with valid commits &#8220;connected&#8221; to the rest of its history.
+By walking history in commit order, we increase robustness - an interrupted session still has high probability of leaving the client with valid commits “connected” to the rest of its history.
 A well-implemented client should then be able to resume a transfer without needing to re-fetch the already-sent objects.</p>
 <p>The bulk objects service accepts POST requests at <code class="docutils literal"><span class="pre">repo/objects</span></code>.
 The request body should be a JSON document containing two fields:</p>
@@ -177,7 +177,7 @@ The request body should be a JSON document containing two fields:</p>
 <div><ul class="simple">
 <li><dl class="first docutils">
 <dt><code class="docutils literal"><span class="pre">have</span></code> a list of object ids representing commits already present on the client.</dt>
-<dd>When walking history, the server should consider any commits from the &#8220;have&#8221; list as stopping points - as these commits are already on the client it already understands their history.</dd>
+<dd>When walking history, the server should consider any commits from the “have” list as stopping points - as these commits are already on the client it already understands their history.</dd>
 </dl>
 </li>
 <li><code class="docutils literal"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</li>
@@ -185,8 +185,8 @@ The request body should be a JSON document containing two fields:</p>
 </div></blockquote>
 <p>Note that this is the same format as accepted by the existence check service.</p>
 <p>The server responds by streaming history objects directly in binary format.
-Specifically, a 20-byte sha1 id is sent, followed by a &#8220;raw&#8221; binary blob, followed by another 20-byte id, followed by another blob, etc.</p>
-<p>While the server SHOULD optimize by avoiding sending objects that are reachable from commits in the &#8220;have&#8221; list, the client MUST be prepared to handle receiving objects that it already has locally.</p>
+Specifically, a 20-byte sha1 id is sent, followed by a “raw” binary blob, followed by another 20-byte id, followed by another blob, etc.</p>
+<p>While the server SHOULD optimize by avoiding sending objects that are reachable from commits in the “have” list, the client MUST be prepared to handle receiving objects that it already has locally.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Perhaps this stream should include more metadata - knowing how many objects were sent or where boundaries are expected to be would probably be useful for reliability purposes.</p>
@@ -221,17 +221,17 @@ The request body should be a JSON document containing one field:</p>
 <blockquote>
 <div><ul class="simple">
 <li><code class="docutils literal"><span class="pre">updates</span></code> a list of JSON objects with <code class="docutils literal"><span class="pre">ref</span></code>, <code class="docutils literal"><span class="pre">to</span></code>, and <code class="docutils literal"><span class="pre">from</span></code> fields identifying the ref name, new value, and old value of all refs to be updated.
-If the &#8216;to&#8217; field contains the special value &#8220;00000000000000000000&#8221; then the ref should be deleted.
-If the ref does not already exist, the client should use the special value &#8220;00000000000000000000&#8221; for the &#8216;from&#8217; field.</li>
+If the ‘to’ field contains the special value “00000000000000000000” then the ref should be deleted.
+If the ref does not already exist, the client should use the special value “00000000000000000000” for the ‘from’ field.</li>
 </ul>
 </div></blockquote>
 <p>The server responds with a document with a similar <code class="docutils literal"><span class="pre">updates</span></code> field containing the updates that were executed.  Updates may be rejected for any reasons the server deems appropriate, but MUST be rejected in the following situations:</p>
 <blockquote>
 <div><ul class="simple">
-<li>if the &#8220;from&#8221; value of an update object does not correspond to the current value of the ref at the time of update.</li>
-<li>if the &#8220;to&#8221; value of the update object corresponds to an object that is not a commit</li>
-<li>if the &#8220;to&#8221; value of the update object corresponds to an object that is not known to the server</li>
-<li>If the &#8220;to&#8221; value of the update object corresponds to a commit whose full history and content is not known to the server.</li>
+<li>if the “from” value of an update object does not correspond to the current value of the ref at the time of update.</li>
+<li>if the “to” value of the update object corresponds to an object that is not a commit</li>
+<li>if the “to” value of the update object corresponds to an object that is not known to the server</li>
+<li>If the “to” value of the update object corresponds to a commit whose full history and content is not known to the server.</li>
 </ul>
 </div></blockquote>
 </div>

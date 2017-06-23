@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Referencing a GeoGig element &mdash; GeoGig 1.1 User Manual</title>
+  <title>Referencing a GeoGig element &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Reverting changes" href="reverting.html" />
       <link rel="prev" title="Rebasing" href="rebasing.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Referencing a GeoGig element</li>
 </ul>
@@ -99,7 +99,7 @@
   <div class="section" id="referencing-a-geogig-element">
 <span id="referencing"></span><h1>Referencing a GeoGig element<a class="headerlink" href="#referencing-a-geogig-element" title="Permalink to this headline">¶</a></h1>
 <p>Many commands in GeoGig need a reference to a repository element. For instance, if you want to list the contents of a tree, you need a reference to that tree (we will see how to do this soon). You can use the name of the tree (i.e. <em>roads</em>) in this case, but there are other ways of naming an element.</p>
-<p>Imagine that you want to list the content of a tree, but not in the current version, but in a previous one. Let&#8217;s say you want the version represented by the command before the last one. How would you tell the corresponding command that you want that particular version?</p>
+<p>Imagine that you want to list the content of a tree, but not in the current version, but in a previous one. Let’s say you want the version represented by the command before the last one. How would you tell the corresponding command that you want that particular version?</p>
 <p>Since a GeoGig repository keeps all the history of your data, it requires a naming scheme that supports referencing an element and a given version. This is done with a notation in the form <code class="docutils literal"><span class="pre">[ref]:[path]</span></code>, where <code class="docutils literal"><span class="pre">ref</span></code> denotes the snapshot of the repository we want to refer to (that is, a given version), and <code class="docutils literal"><span class="pre">path</span></code> the path to the element. Think about it as adding an extra dimension to the common way of referring to an element in a filesystem using its path.</p>
 <p>The <code class="docutils literal"><span class="pre">ref</span></code> part of the full reference can be specified in several different ways, including the following.</p>
 <ul class="simple">
@@ -116,7 +116,7 @@
 Committed, counting objects...0 features added, 3 changed, 0 deleted.
 </pre></div>
 </div>
-<p>If, as it happens in this case, you want to refer not to the last commit, but to a commit whose ID you do not know, remember that the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">log</span></code> command allows you to explore the history of the latest commits in your repository. Let&#8217;s say it gives you an output like this:</p>
+<p>If, as it happens in this case, you want to refer not to the last commit, but to a commit whose ID you do not know, remember that the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">log</span></code> command allows you to explore the history of the latest commits in your repository. Let’s say it gives you an output like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig log
 Commit:  c3bf45d6539a0d946a9f61e5ec17474d39529bb5
 Author:  volaya &lt;volaya@boundlessgeo.com&gt;
@@ -141,7 +141,7 @@ Subject: first commit
 <li><code class="docutils literal"><span class="pre">955e67d:parks</span></code></li>
 </ul>
 <p>Since this commit is the ancestor of the one that the current HEAD is pointing to, we can also use <code class="docutils literal"><span class="pre">HEAD~1:parks</span></code>.</p>
-<p>One special ID in a GeoGig repository is the null ID, which represent the empty repository before any commits are made. It&#8217;s an object ID with all digits equal to zero: <code class="docutils literal"><span class="pre">0000000000000000000000000000000000000000</span></code>.</p>
+<p>One special ID in a GeoGig repository is the null ID, which represent the empty repository before any commits are made. It’s an object ID with all digits equal to zero: <code class="docutils literal"><span class="pre">0000000000000000000000000000000000000000</span></code>.</p>
 <p>You can use it whenever you need a reference to the empty repository. For instance, to know all the changes introduced from the very beginning of you history and up to 3 commits ago, the following command could be used.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig diff HEAD~3 00000000
 </pre></div>

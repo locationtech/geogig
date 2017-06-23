@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>geogig-init documentation &mdash; GeoGig 1.1 Man Pages</title>
+  <title>geogig-init documentation &mdash; GeoGig 1.1.1-RC1 Man Pages</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1 Man Pages" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 Man Pages" href="index.html" />
 </head>
 <body class="init">
     <div id="blacktop"></div>
@@ -77,7 +77,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1 Man Pages</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1-RC1 Man Pages</a> &raquo;</li>
   <li>geogig-init documentation</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -90,7 +90,7 @@
 <span id="geogig-init"></span><h1>geogig-init documentation<a class="headerlink" href="#geogig-init-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>geogig init [&lt;directory&gt;] [&#8211;config &lt;config_param&gt; &lt;config_value&gt; [&lt;config_param&gt; &lt;config_value&gt; ...]]</p>
+<p>geogig init [&lt;directory&gt;] [–config &lt;config_param&gt; &lt;config_value&gt; [&lt;config_param&gt; &lt;config_value&gt; …]]</p>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
@@ -104,12 +104,12 @@
 <tbody valign="top">
 <tr><td class="option-group">
 <kbd><span class="option">--config</span></kbd></td>
-<td><p class="first">&lt;config_param&gt;=&lt;config_value&gt;[,&lt;config_param&gt;=&lt;config_value&gt;...]              Sets a configuration parameter used to init the repository. Configuration parameters mostly refer to the storage options for the differents elements of the repository. The following parameters are available:</p>
+<td><p class="first">&lt;config_param&gt;=&lt;config_value&gt;[,&lt;config_param&gt;=&lt;config_value&gt;…]              Sets a configuration parameter used to init the repository. Configuration parameters mostly refer to the storage options for the differents elements of the repository. The following parameters are available:</p>
 <ul class="last simple">
-<li>storage.graph : sets the storage to use for the graph database. Valid values are &#8216;tinkergraph&#8217;, &#8216;mongodb&#8217;</li>
-<li>storage.objects : sets the storage to use for the objects database.  Valid values are &#8216;bdbje&#8217;, &#8216;mongodb&#8217;</li>
-<li>storage.staging : sets the storage to use for the staging database. Valid values are &#8216;bdbje&#8217;, &#8216;mongodb&#8217;</li>
-<li>storage.refs : sets the storage to use for references. Currently the only supported value is &#8216;file&#8217;</li>
+<li>storage.graph : sets the storage to use for the graph database. Valid values are ‘tinkergraph’, ‘mongodb’</li>
+<li>storage.objects : sets the storage to use for the objects database.  Valid values are ‘bdbje’, ‘mongodb’</li>
+<li>storage.staging : sets the storage to use for the staging database. Valid values are ‘bdbje’, ‘mongodb’</li>
+<li>storage.refs : sets the storage to use for references. Currently the only supported value is ‘file’</li>
 </ul>
 </td></tr>
 </tbody>
@@ -123,7 +123,7 @@
 <li>file.version 1.0</li>
 </ul>
 </div></blockquote>
-<p>The mongodb storage backend accepts additional parameters &#8220;mongodb.uri&#8221; and &#8220;mongodb.database&#8221; to specify connection parameters for the MongoDB server.</p>
+<p>The mongodb storage backend accepts additional parameters “mongodb.uri” and “mongodb.database” to specify connection parameters for the MongoDB server.</p>
 </div>
 <div class="section" id="see-also">
 <h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>

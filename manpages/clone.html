@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>geogig-clone documentation &mdash; GeoGig 1.1 Man Pages</title>
+  <title>geogig-clone documentation &mdash; GeoGig 1.1.1-RC1 Man Pages</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1 Man Pages" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 Man Pages" href="index.html" />
 </head>
 <body class="clone">
     <div id="blacktop"></div>
@@ -77,7 +77,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1 Man Pages</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1-RC1 Man Pages</a> &raquo;</li>
   <li>geogig-clone documentation</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -90,11 +90,11 @@
 <span id="geogig-clone"></span><h1>geogig-clone documentation<a class="headerlink" href="#geogig-clone-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>geogig clone [&#8211;branch &lt;name&gt;] &lt;repository&gt; [&lt;directory&gt;|&lt;clone URI&gt;] [&#8211;filter &lt;file&gt;] [&#8211;depth &lt;depth&gt;]</p>
+<p>geogig clone [–branch &lt;name&gt;] &lt;repository&gt; [&lt;directory&gt;|&lt;clone URI&gt;] [–filter &lt;file&gt;] [–depth &lt;depth&gt;]</p>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p>Clones a repository to create a new one, creates remote-tracking branches for each branch in the cloned repository (visible using geogig branch -r), and creates and checks out an initial branch that is forked from the cloned repository&#8217;s currently active branch.  If no directory or clone URI is specified, the clone will be created in the current working directory and will have the same name as the source repository.</p>
+<p>Clones a repository to create a new one, creates remote-tracking branches for each branch in the cloned repository (visible using geogig branch -r), and creates and checks out an initial branch that is forked from the cloned repository’s currently active branch.  If no directory or clone URI is specified, the clone will be created in the current working directory and will have the same name as the source repository.</p>
 <p>After the clone, a plain geogig fetch without arguments will update all the remote-tracking branches, and a geogig pull without arguments will in addition merge the remote master branch into the current master branch, if any.</p>
 <p>This default configuration is achieved by creating references to the remote branch heads under refs/remotes/origin and by initializing remote.origin.url and remote.origin.fetch configuration variables.</p>
 <p>Shallow and sparse clones can be created with this command as well. A shallow clone contains just a subset of the full history, not fetching commits at a distance larger than a given threshold from the branch tip. A sparse clone contains only features that pass a given filter, defined in an Ini file.</p>
@@ -119,7 +119,7 @@
 <tr><td>&#160;</td><td>Ini file containing the filter to be used to create a sparse clone.</td></tr>
 </tbody>
 </table>
-<p>&#8211;config &lt;config_name&gt;=&lt;config_value&gt;[,&lt;config_name&gt;=&lt;config_value&gt;]  Initial configuration parameters for the new repository.  See the documentation for geogig init</p>
+<p>–config &lt;config_name&gt;=&lt;config_value&gt;[,&lt;config_name&gt;=&lt;config_value&gt;]  Initial configuration parameters for the new repository.  See the documentation for geogig init</p>
 </div>
 <div class="section" id="see-also">
 <h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Import data &mdash; GeoGig 1.1 User Manual</title>
+  <title>Import data &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Creating and applying patches" href="patches.html" />
       <link rel="prev" title="Exploring your history" href="history.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Import data</li>
 </ul>
@@ -101,7 +101,7 @@
 <p>The first step to add data to a GeoGig repository, so it can be versioned, is to import it from a file or database. Data stored in a file or a database cannot be versioned by GeoGig, so it has to be converted to the native GeoGig format and imported into the working tree. From there, we can start working with it and follow the typical workflow of editing, updating, and sharing whatever changes we make to that data.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">As we already mentioned, the working tree of GeoGig is not the filesystem. That means that, to make data available to GeoGig so it can be added to the index and committed, you cannot just copy the file to be versioned into a repository folder or create it there. It&#8217;s necessary to import your data into the working tree, so it gets stored in the native format used by GeoGig. This adds an extra step if compared to VCSs oriented to work with source code files, but allows GeoGig to have a more powerful handling of spatial data.</p>
+<p class="last">As we already mentioned, the working tree of GeoGig is not the filesystem. That means that, to make data available to GeoGig so it can be added to the index and committed, you cannot just copy the file to be versioned into a repository folder or create it there. It’s necessary to import your data into the working tree, so it gets stored in the native format used by GeoGig. This adds an extra step if compared to VCSs oriented to work with source code files, but allows GeoGig to have a more powerful handling of spatial data.</p>
 </div>
 <p>Importing data into the working tree of a GeoGig repository is done using GeoGig commands which read a given data source and add all or part of its content to the repository. Data can also be exported from the repository into common formats that can be then used in other applications such as a desktop GIS. This built-in import/export process provides the necessary workflow for a GeoGig repository and makes it independent of the tools used to actually edit the data.</p>
 <p>Currently, data can be imported/exported from/to GeoJSON, shapefiles, PostGIS, Oracle Spatial and Geopackage databases. Depending on the type of data source, a different command should be used. For the supported data sources, the general syntax is as follows.</p>
@@ -118,7 +118,7 @@
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp import /home/shapefiles/parks.shp
 </pre></div>
 </div>
-<p>To import into a tree named &#8220;myparks&#8221;, the following command would be used.</p>
+<p>To import into a tree named “myparks”, the following command would be used.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp import /home/shapefiles/parks.shp -d myparks
 </pre></div>
 </div>

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Plumbing commands &mdash; GeoGig 1.1 Technical Manual</title>
+  <title>Plumbing commands &mdash; GeoGig 1.1.1-RC1 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,7 +17,7 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
@@ -25,7 +25,7 @@
   <link rel="shortcut icon" href="_static/favicon.ico"/>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 Technical Manual" href="index.html" />
       <link rel="next" title="GeoGig for developers" href="developers.html" />
       <link rel="prev" title="GeoGig Network Synchronization" href="geogig-network-sync.html" />
 </head>
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1-RC1 Technical Manual</a> &raquo;</li>
   <li>Plumbing commands</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -104,8 +104,8 @@
 <h2>ls-tree<a class="headerlink" href="#ls-tree" title="Permalink to this headline">¶</a></h2>
 <p>The ls-tree command replaces the <code class="docutils literal"><span class="pre">ls</span></code> command and shows a list of elements (trees and features) under a given path, with the following format:</p>
 <ul class="simple">
-<li>If the &#8211;verbose option is not used, then it prints outs a list of element paths, separated by line breaks. There is no information printed about whether the path corresponds to a tree or to a feature</li>
-<li>If the &#8211;verbose option is used, each line correponding to an element has this format:</li>
+<li>If the –verbose option is not used, then it prints outs a list of element paths, separated by line breaks. There is no information printed about whether the path corresponds to a tree or to a feature</li>
+<li>If the –verbose option is used, each line correponding to an element has this format:</li>
 </ul>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">feature_type_id</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">blank_space</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">element_type</span><span class="o">&lt;</span><span class="n">feature</span><span class="o">|</span><span class="n">tree</span><span class="o">&gt;&gt;</span> <span class="o">&lt;</span><span class="n">object_id</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">blank_space</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">path</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">blank_space</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">xmin</span><span class="p">;</span><span class="n">xmax</span><span class="p">;</span><span class="n">ymin</span><span class="p">;</span><span class="n">ymax</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">blank_space</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">size</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">blank_space</span><span class="o">&gt;</span> <span class="n">num_trees</span><span class="p">]</span>
 </pre></div>
@@ -173,7 +173,7 @@ landuse/3
 <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="o">&lt;</span><span class="n">commit_message</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>If several parents exist, the line starting with &#8220;parent&#8221; will appear repeated.</p>
+<p>If several parents exist, the line starting with “parent” will appear repeated.</p>
 <p>If the commit message contains line breaks, all lines will appear indented, with a tab character starting each line.</p>
 <p>In case of using the <code class="docutils literal"><span class="pre">--changed</span></code> option, the format is as follows:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="s2">&quot;commit&quot;</span> <span class="o">+</span> <span class="o">&lt;</span><span class="n">blank_space</span><span class="o">&gt;</span> <span class="o">+</span> <span class="o">&lt;</span><span class="n">id_of_commit</span><span class="o">&gt;</span>

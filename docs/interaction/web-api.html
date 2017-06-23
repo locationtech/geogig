@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web-API Documentation &mdash; GeoGig 1.1 User Manual</title>
+  <title>Web-API Documentation &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web-API indexing documentation" href="indexing-web-api.html" />
       <link rel="prev" title="GeoServer REST configuration integration" href="geoserver_web-api.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web-API Documentation</li>
 </ul>
@@ -98,8 +98,8 @@
         
   <div class="section" id="web-api-documentation">
 <h1>Web-API Documentation<a class="headerlink" href="#web-api-documentation" title="Permalink to this headline">¶</a></h1>
-<p>This will walk you through GeoGig&#8217;s web-API and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands.</p>
-<p>If you don&#8217;t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-API up and running after you have built the latest GeoGig, <code class="docutils literal"><span class="pre">cd</span></code> into your repository and run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>. This will set up a jetty server for your repository and give you access to the web-API. Now you just need to open up a web browser and go to <code class="docutils literal"><span class="pre">localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> to make sure the server starts up. After you have gotten the web server up and running, you can test any of the commands listed here.</p>
+<p>This will walk you through GeoGig’s web-API and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands.</p>
+<p>If you don’t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-API up and running after you have built the latest GeoGig, <code class="docutils literal"><span class="pre">cd</span></code> into your repository and run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>. This will set up a jetty server for your repository and give you access to the web-API. Now you just need to open up a web browser and go to <code class="docutils literal"><span class="pre">localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> to make sure the server starts up. After you have gotten the web server up and running, you can test any of the commands listed here.</p>
 <p>All web-API commands have transaction support, which means you can run the web-API commands beginTransaction, to start a transaction, and then use the ID that is returned to do other commands on that transaction instead of the actual repository. After you are done with everything on the transaction you just have call endTransaction through the web-API and pass it the transaction ID. Some commands require a transaction to preserve the stability of the repository. Those that require it will have <code class="docutils literal"><span class="pre">(-T)</span></code> next to the name of the command in this doc. To pass the transaction ID you just need to use the transactionId option and set it equal to the ID that beginTransaction returns. Some commands also have other options that are required for that command to work they will have a <code class="docutils literal"><span class="pre">(-R)</span></code> next to them. Any options that have notes associated with them have an asterisk next to them.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -226,13 +226,13 @@
 <p><strong>Default:</strong> null</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>ours*</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to use &#8220;our&#8221; version of the feature specified</p>
+<li><p class="first"><strong>ours*</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to use “our” version of the feature specified</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>theirs*</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to use &#8220;their&#8221; version of the feature specified</p>
+<li><p class="first"><strong>theirs*</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to use “their” version of the feature specified</p>
 <blockquote>
 <div><p><strong>Type:</strong> Boolean</p>
 <p><strong>Default:</strong> false</p>
@@ -261,7 +261,7 @@
 <blockquote>
 <div><div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">You must specify either branch OR path, not both. If path is specified then you MUST specify either &#8220;ours&#8221; or &#8220;theirs&#8221;.</p>
+<p class="last">You must specify either branch OR path, not both. If path is specified then you MUST specify either “ours” or “theirs”.</p>
 </div>
 </div></blockquote>
 <ul>
@@ -606,7 +606,7 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 <blockquote>
 <div><div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If you don&#8217;t specify the remoteName it will try to pull from a remote named   origin. Also, if ref is not specified it will try to pull the currently checked out branch. The ref option should be in this format remoteref:localref, with the localref portion being optional. If you should opt out of specifying the localref it will just use the same name as the remoteref.</p>
+<p class="last">If you don’t specify the remoteName it will try to pull from a remote named   origin. Also, if ref is not specified it will try to pull the currently checked out branch. The ref option should be in this format remoteref:localref, with the localref portion being optional. If you should opt out of specifying the localref it will just use the same name as the remoteref.</p>
 </div>
 </div></blockquote>
 <ul>
@@ -649,7 +649,7 @@ localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;ou
 <blockquote>
 <div><div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If you don&#8217;t specify the remoteName it will try to push to a remote named origin. Also, if ref is not specified it will try to push the currently checked out branch. The ref option should be in this format localref:remoteref, with the remoteref portion being optional. If you should opt out of specifying the remoteref it will just use the same name as the localref.</p>
+<p class="last">If you don’t specify the remoteName it will try to push to a remote named origin. Also, if ref is not specified it will try to push the currently checked out branch. The ref option should be in this format localref:remoteref, with the remoteref portion being optional. If you should opt out of specifying the remoteref it will just use the same name as the localref.</p>
 </div>
 </div></blockquote>
 <ul>
@@ -1303,7 +1303,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 </div>
 <div class="section" id="issues">
 <h2>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h2>
-<p>The main concern with the web-API currently is that it doesn&#8217;t have any kind of authentication on it, which means that anyone with the url can potentially destroy your repo or steal you data with commands like <code class="docutils literal"><span class="pre">updateref</span></code> and <code class="docutils literal"><span class="pre">pull</span></code>.</p>
+<p>The main concern with the web-API currently is that it doesn’t have any kind of authentication on it, which means that anyone with the url can potentially destroy your repo or steal you data with commands like <code class="docutils literal"><span class="pre">updateref</span></code> and <code class="docutils literal"><span class="pre">pull</span></code>.</p>
 <p>There are several commands that still need to be exposed through the web-API. There is a lot of room for improvement and optimization.</p>
 </div>
 </div>

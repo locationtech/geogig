@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>An Introduction to GeoGig &mdash; GeoGig 1.1-SNAPSHOT Workshop</title>
+  <title>An Introduction to GeoGig &mdash; GeoGig 1.1.1-RC1 Workshop</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,7 +17,7 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1-SNAPSHOT',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
@@ -25,7 +25,7 @@
   <link rel="shortcut icon" href="_static/favicon.ico"/>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1-SNAPSHOT Workshop" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 Workshop" href="index.html" />
       <link rel="prev" title="GeoGig Workshop" href="index.html" />
 </head>
 <body class="workshop">
@@ -79,7 +79,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1-SNAPSHOT Workshop</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1-RC1 Workshop</a> &raquo;</li>
   <li>An Introduction to GeoGig</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -186,7 +186,7 @@
 <div class="figure">
 <img alt="_images/create_role3.png" src="_images/create_role3.png" />
 </div>
-<p>Now the user should be defined. Let&#8217;s create the database.</p>
+<p>Now the user should be defined. Let’s create the database.</p>
 <p>Right-click on the <em>Databases</em> item and select <em>New Database</em>.</p>
 <p>Fill in the <em>New Database</em> form as shown below and click <em>OK</em>.</p>
 <ul class="simple">
@@ -277,7 +277,7 @@
 <div class="figure">
 <img alt="_images/identify.png" src="_images/identify.png" />
 </div>
-<p>The full table of attributes for all the features in the layer can be shown by right&#8211;clicking on the layer name and selecting <em>Open Attribute Table</em> in the context menu.</p>
+<p>The full table of attributes for all the features in the layer can be shown by right–clicking on the layer name and selecting <em>Open Attribute Table</em> in the context menu.</p>
 <div class="figure">
 <img alt="_images/attribute_table.png" src="_images/attribute_table.png" />
 </div>
@@ -354,7 +354,7 @@ Staging changes...
 Committed, counting objects...92035 features added, 0 changed, 0 deleted.
 </pre></div>
 </div>
-<p>The new version is now created and is identified with the &#8220;Initial add&#8221; message.</p>
+<p>The new version is now created and is identified with the “Initial add” message.</p>
 </div>
 <div class="section" id="examining-the-log">
 <h2>Examining the log<a class="headerlink" href="#examining-the-log" title="Permalink to this headline">¶</a></h2>
@@ -390,8 +390,8 @@ Subject: Initial add
 <div class="figure">
 <img alt="_images/new_feature_attributes.png" src="_images/new_feature_attributes.png" />
 </div>
-<p>Since we do not know the <code class="docutils literal"><span class="pre">osm_id</span></code>, you can leave that field blank. The expression in the first field will assign a correlative id to the feature based on the id&#8217;s used by the other features in the layer. Click on <em>OK</em> and the new feature will be added.</p>
-<p>That feature is still only in the editing buffer and hasn&#8217;t been stored in the database that contains the layer data. To store the changes, right-click on the layer name and select <em>Toggle editing</em> again. QGIS will ask you if you want to save your edits.</p>
+<p>Since we do not know the <code class="docutils literal"><span class="pre">osm_id</span></code>, you can leave that field blank. The expression in the first field will assign a correlative id to the feature based on the id’s used by the other features in the layer. Click on <em>OK</em> and the new feature will be added.</p>
+<p>That feature is still only in the editing buffer and hasn’t been stored in the database that contains the layer data. To store the changes, right-click on the layer name and select <em>Toggle editing</em> again. QGIS will ask you if you want to save your edits.</p>
 <div class="figure">
 <img alt="_images/save_edits.png" src="_images/save_edits.png" />
 </div>
@@ -510,7 +510,7 @@ Subject: Initial add
 </div>
 <div class="section" id="making-more-edits-to-the-postgis-database">
 <h2>Making more edits to the PostGIS database<a class="headerlink" href="#making-more-edits-to-the-postgis-database" title="Permalink to this headline">¶</a></h2>
-<p>Go back to QGIS and make some more edits. You can add a new building from the ones that are not in yet digitized. Also, let&#8217;s make a modification so we can later see how GeoGig handles that kind of edits. The feature with the id <code class="docutils literal"><span class="pre">8868</span></code> represents and administrative building, but its <code class="docutils literal"><span class="pre">type</span></code> attribute is <code class="docutils literal"><span class="pre">NULL</span></code>. Correct that by entering <code class="docutils literal"><span class="pre">administrative</span></code> in the corresponding cell in the attribute table. When the layer is in edit mode you can edit table cells by double&#8211;clicking on them.</p>
+<p>Go back to QGIS and make some more edits. You can add a new building from the ones that are not in yet digitized. Also, let’s make a modification so we can later see how GeoGig handles that kind of edits. The feature with the id <code class="docutils literal"><span class="pre">8868</span></code> represents and administrative building, but its <code class="docutils literal"><span class="pre">type</span></code> attribute is <code class="docutils literal"><span class="pre">NULL</span></code>. Correct that by entering <code class="docutils literal"><span class="pre">administrative</span></code> in the corresponding cell in the attribute table. When the layer is in edit mode you can edit table cells by double–clicking on them.</p>
 <p>Save the changes to the PostGIS database as it has already been explained.</p>
 </div>
 <div class="section" id="committing-edits-to-original-geogig-repo">
@@ -574,8 +574,8 @@ Features Added: 1 Removed: 0 Modified: 1
 <div class="section" id="push-edits-to-clone-via-remote-api">
 <h2>Push edits to clone via remote API<a class="headerlink" href="#push-edits-to-clone-via-remote-api" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><p>To pass changes from one repository, you can use the <code class="docutils literal"><span class="pre">pull</span></code> command as we have already seen, or you can <em>send</em> changes to a remote repository with the push command. Let&#8217;s see how to move the latest changes in the original repository to the clone repository.</p>
-<p>The original repository doesn&#8217;t know anything about the clone, so you have to add a reference to it using the <code class="docutils literal"><span class="pre">remote</span> <span class="pre">add</span></code> command.</p>
+<div><p>To pass changes from one repository, you can use the <code class="docutils literal"><span class="pre">pull</span></code> command as we have already seen, or you can <em>send</em> changes to a remote repository with the push command. Let’s see how to move the latest changes in the original repository to the clone repository.</p>
+<p>The original repository doesn’t know anything about the clone, so you have to add a reference to it using the <code class="docutils literal"><span class="pre">remote</span> <span class="pre">add</span></code> command.</p>
 </div></blockquote>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig remote add cloned http://localhost:8080/geoserver/geogig/opengeo:ethiopia
 </pre></div>

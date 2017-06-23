@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web-API indexing documentation &mdash; GeoGig 1.1 User Manual</title>
+  <title>Web-API indexing documentation &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web-API Asynchronous tasks" href="async-tasks.html" />
       <link rel="prev" title="Web-API Documentation" href="web-api.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web-API indexing documentation</li>
 </ul>
@@ -229,7 +229,7 @@ Optional.  String indicating the new maximum bounds of the spatial index.</p>
 </div>
 <div class="section" id="update-the-points-index-to-add-an-extra-attribute">
 <h4>Update the Points index to add an extra attribute<a class="headerlink" href="#update-the-points-index-to-add-an-extra-attribute" title="Permalink to this headline">¶</a></h4>
-<p>In this case Points already has an extra attribute of <code class="docutils literal"><span class="pre">sp</span></code>.  If we want to add <code class="docutils literal"><span class="pre">ip</span></code> we need to specify the <code class="docutils literal"><span class="pre">add</span></code> parameter to indicate that we don&#8217;t want to remove the existing extra attribute.</p>
+<p>In this case Points already has an extra attribute of <code class="docutils literal"><span class="pre">sp</span></code>.  If we want to add <code class="docutils literal"><span class="pre">ip</span></code> we need to specify the <code class="docutils literal"><span class="pre">add</span></code> parameter to indicate that we don’t want to remove the existing extra attribute.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;extraAttributes=ip&amp;add=true&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml

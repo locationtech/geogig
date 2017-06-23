@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Installation &mdash; GeoGig 1.1 User Manual</title>
+  <title>Installation &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,16 +17,16 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Starting out with GeoGig" href="index.html" />
-      <link rel="next" title="GeoGig tutorial" href="tutorial.html" />
+      <link rel="next" title="Runtime configuration" href="runtime.html" />
       <link rel="prev" title="Introduction" href="introduction.html" />
 </head>
 <body class="start/installation">
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Starting out with GeoGig</a> &raquo;</li>
   <li>Installation</li>
 </ul>
@@ -89,7 +89,7 @@
     <a href="../genindex.html" title="General Index"
        accesskey="I">index</a></li>
   <li>
-    <a href="tutorial.html" title="GeoGig tutorial"
+    <a href="runtime.html" title="Runtime configuration"
        accesskey="N">next</a>|</li>
   <li>
     <a href="introduction.html" title="Introduction"
@@ -99,13 +99,15 @@
   <div class="section" id="installation">
 <span id="start-installation"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>This section describes the steps needed to install GeoGig.</p>
-<div class="section" id="binaries">
-<h2>Binaries<a class="headerlink" href="#binaries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pre-requisites">
+<h2>Pre-requisites<a class="headerlink" href="#pre-requisites" title="Permalink to this headline">¶</a></h2>
+<p>GeoGig requires a Java 8 runtime environment. If not already on your system, install a <a class="reference external" href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Java JDK</a>. Make sure the <cite>java</cite> executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.</p>
+</div>
+<div class="section" id="command-line-executable">
+<h2>Command line executable<a class="headerlink" href="#command-line-executable" title="Permalink to this headline">¶</a></h2>
 <p>Pre-built binaries are available for GeoGig.</p>
 <ol class="arabic">
-<li><p class="first">If not already on your system, install a <a class="reference external" href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Java JDK</a>. GeoGig requires Java 8 or higher to run. Make sure the <cite>java</cite> executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.</p>
-</li>
-<li><p class="first">After the JDK is installed, navigate to <a class="reference external" href="http://geogig.org">http://geogig.org</a> and click <span class="guilabel">Download</span>.</p>
+<li><p class="first">After the JDK is installed, navigate to the project’s releases page <a class="reference external" href="https://github.com/locationtech/geogig/releases/">https://github.com/locationtech/geogig/releases/</a> and download the latest release. For example, <cite>geogig-1.1.0.zip</cite>.</p>
 </li>
 <li><p class="first">Extract this archive to your preferred program directory. (For example, <code class="file docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\GeoGig</span></code> or <code class="file docutils literal"><span class="pre">/opt/geogig</span></code>.)</p>
 <div class="admonition note">
@@ -113,52 +115,44 @@
 <p class="last">The same packages can be used on Windows, OS X, and Linux.</p>
 </div>
 </li>
-<li><p class="first">Add the bin directory to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.</p>
+<li><p class="first">Add the <cite>bin</cite> directory to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.</p>
 </li>
 </ol>
 <p>When finished, you should be able to run the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">--help</span></code> and see the command usage.</p>
 </div>
+<div class="section" id="geoserver-plug-in">
+<h2>GeoServer plug-in<a class="headerlink" href="#geoserver-plug-in" title="Permalink to this headline">¶</a></h2>
+<p>A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as a datastore. It enables a GeoGig repository to be exposed as a remote for cloning, pushing, and pulling, as well as to publish its data via OGC services.</p>
+<p>The GeoServer GeoGig plug-in binaries are pre-compiled and ready to be downloaded for the most recent versions of GeoServer.
+Refer to the project’s releases page <a class="reference external" href="https://github.com/locationtech/geogig/releases/">https://github.com/locationtech/geogig/releases/</a> and download the latest release. For example, <a class="reference external" href="https://github.com/locationtech/geogig/releases/download/v1.1.0/geoserver-2.11-SNAPSHOT-geogig-plugin.zip">GeoServer 2.11.x plugin</a>.</p>
+<p>Once downloaded, unzip the contensts of the <code class="docutils literal"><span class="pre">geoserver-&lt;version&gt;-geogig-plugin.zip</span></code> file inside GeoServer’s <code class="docutils literal"><span class="pre">WEB-INF/lib</span></code> directory and restart GeoServer.</p>
+<p>For information on how to configure GeoGig on GeoServer, refer to the <a class="reference internal" href="../interaction/geoserver_ui.html#geoserver-ui"><span class="std std-ref">GeoServer GUI configuration</span></a> and <a class="reference internal" href="../interaction/geoserver_web-api.html#geoserver-web-api"><span class="std std-ref">GeoServer REST configuration integration</span></a> sections.</p>
+<div class="section" id="postgresql-jdbc-driver-version">
+<h3>PostgreSQL JDBC Driver version<a class="headerlink" href="#postgresql-jdbc-driver-version" title="Permalink to this headline">¶</a></h3>
+<p>GeoServer versions lower than 2.12 come with an older version of the PostgreSQL JDBC driver than the one required by GeoGig.
+GeoGig requires version <code class="docutils literal"><span class="pre">42.1.1</span></code> (included in the geogig plugin zip file as <code class="docutils literal"><span class="pre">postgresql-42.1.1.jar</span></code>), while GeoServer comes
+with version <code class="docutils literal"><span class="pre">9.4.1211</span></code>.</p>
+<p>GeoGig needs the above mentioned version or higher in order to be able to transferring data to and from the postgres database in pure binary form.</p>
+<p>Given the way servlet containers (such as Apache Tomcat or Jetty) work, if the two jar files end up being in GeoSevrer’s <code class="docutils literal"><span class="pre">WEB-INF/lib</span></code> folder,
+one or the other may be loaded first, in a non deterministic way. Hence <strong>you’ll need to remove the older jar file</strong> from GeoSevrer’s <code class="docutils literal"><span class="pre">WEB-INF/lib</span></code> folder
+before restarting GeoServer and after installing the GeoGig plugin as described above.</p>
+<p>Note GeoGig will verify the correct driver version is in use and won’t work if the old driver is still installed and loaded.</p>
+</div>
+</div>
 <div class="section" id="building-from-source-code">
 <h2>Building from source code<a class="headerlink" href="#building-from-source-code" title="Permalink to this headline">¶</a></h2>
-<p>To build GeoGig an executable binary that you can run:</p>
-<ol class="arabic">
-<li><p class="first">Clone the GeoGig source code repository. To do so, create a new folder where you want the GeoGig source code to be kept, open a terminal and move to that folder, then type the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">locationtech</span><span class="o">/</span><span class="n">geogig</span><span class="o">.</span><span class="n">git</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">If not already on your system, install a <a class="reference external" href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Java JDK</a>. A Java JRE is not sufficient to build GeoGig.</p>
-</li>
-<li><p class="first">If not already on your system, install <a class="reference external" href="http://maven.apache.org/download.cgi">Maven</a>.</p>
-</li>
-<li><p class="first">Move to the <code class="docutils literal"><span class="pre">src/parent</span></code> folder under the folder where you have cloned the GeoGig source code, and type the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>To speed up the build process, you can skip tests:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span> <span class="o">-</span><span class="n">DskipTests</span>
-</pre></div>
-</div>
-</div>
-</li>
-<li><p class="first">GeoGig will now build. Scripts ready to be run should be available in the <code class="file docutils literal"><span class="pre">src/cli-app/target/geogig/bin</span></code> directory. Add that directory to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.</p>
-</li>
-</ol>
-<p>When finished, you should be able to run the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">--help</span></code> from a terminal and see the command usage.</p>
+<p>If you’re interested in building GeoGig yourself, go to the project’s source code repository and follow the instructions there: <a class="reference external" href="https://github.com/locationtech/geogig">https://github.com/locationtech/geogig</a></p>
 </div>
 <div class="section" id="running-on-windows">
 <h2>Running on Windows<a class="headerlink" href="#running-on-windows" title="Permalink to this headline">¶</a></h2>
-<p>GeoGig uses <a class="reference external" href="http://rocksdb.org/">RocksDB</a> as the default storage backend.  On Windows machines, the libraries for RocksDB require the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=48145">Visual C++ Redistributable for Visual Studio 2015</a>.  If you experience an <code class="docutils literal"><span class="pre">UnsatisfiedLinkError</span></code> exception when running GeoGig, make sure you have the above dependency installed on your system.</p>
+<p>GeoGig for Windows is only available for Windows 64-bit versions.</p>
+<p>GeoGig uses <a class="reference external" href="http://rocksdb.org/">RocksDB</a> as the default storage backend and for some temporary storage needs.  On Windows machines, the libraries for RocksDB require the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=48145">Visual C++ Redistributable for Visual Studio 2015</a>.  If you experience an <code class="docutils literal"><span class="pre">UnsatisfiedLinkError</span></code> exception when running GeoGig, make sure you have the above dependency installed on your system.</p>
 <p>Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing <a class="reference external" href="http://adoxa.altervista.org/ansicon/">ANSICON</a> and setting the <code class="docutils literal"><span class="pre">ansi.enabled</span></code> config parameter to <code class="docutils literal"><span class="pre">true</span></code>. See the config section <a class="reference internal" href="../repo/config.html#repo-config"><span class="std std-ref">Configuring a GeoGig repository</span></a>.</p>
-</div>
-</div>
 <div class="section" id="installing-ansicon">
-<h1>Installing ANSICON<a class="headerlink" href="#installing-ansicon" title="Permalink to this headline">¶</a></h1>
+<h3>Installing ANSICON<a class="headerlink" href="#installing-ansicon" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
 <li>Download the <a class="reference external" href="http://adoxa.altervista.org/ansicon/">ANSICON</a>  zip.</li>
-<li>Unzip the file to it&#8217;s own location, such as <code class="docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\Ansicon\</span></code></li>
+<li>Unzip the file to it’s own location, such as <code class="docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\Ansicon\</span></code></li>
 <li>Add the ANSICON location to the Windows PATH, found under <code class="docutils literal"><span class="pre">System</span> <span class="pre">-&gt;</span> <span class="pre">Advanced</span> <span class="pre">System</span> <span class="pre">Properties</span> <span class="pre">-&gt;</span> <span class="pre">Environment</span> <span class="pre">Variables</span></code></li>
 <li>Open a <code class="docutils literal"><span class="pre">cmd</span></code> or <code class="docutils literal"><span class="pre">powershell</span></code> terminal and type <code class="docutils literal"><span class="pre">ansicon</span></code> to confirm the PATH variable is set correctly. If the PATH is correct  information about the Windows version will be printed in the console. This command will enable ANSICON for this terminal session only.</li>
 </ol>
@@ -178,7 +172,7 @@
 </ol>
 </div>
 <div class="section" id="uninstalling-ansicon">
-<h1>Uninstalling ANSICON<a class="headerlink" href="#uninstalling-ansicon" title="Permalink to this headline">¶</a></h1>
+<h3>Uninstalling ANSICON<a class="headerlink" href="#uninstalling-ansicon" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
 <li>To remove ANSICON from the terminal defaults type:</li>
 </ol>
@@ -190,11 +184,13 @@
 <li>Delete the ANSICON folder from the location it was installed.</li>
 </ol>
 </div>
+</div>
+</div>
 
 
       <div class="selfclear pagination-nav">
           <div class="leftwise"><strong>Previous</strong>: <a href="introduction.html" title="previous chapter">Introduction</a></div>
-          <div class="rightwise"><strong>Next</strong>: <a href="tutorial.html" title="next chapter">GeoGig tutorial</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="runtime.html" title="next chapter">Runtime configuration</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
       </div><!-- /#content> -->
@@ -220,13 +216,20 @@
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#binaries">Binaries</a></li>
-<li><a class="reference internal" href="#building-from-source-code">Building from source code</a></li>
-<li><a class="reference internal" href="#running-on-windows">Running on Windows</a></li>
+<li><a class="reference internal" href="#pre-requisites">Pre-requisites</a></li>
+<li><a class="reference internal" href="#command-line-executable">Command line executable</a></li>
+<li><a class="reference internal" href="#geoserver-plug-in">GeoServer plug-in</a><ul>
+<li><a class="reference internal" href="#postgresql-jdbc-driver-version">PostgreSQL JDBC Driver version</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#building-from-source-code">Building from source code</a></li>
+<li><a class="reference internal" href="#running-on-windows">Running on Windows</a><ul>
 <li><a class="reference internal" href="#installing-ansicon">Installing ANSICON</a></li>
 <li><a class="reference internal" href="#uninstalling-ansicon">Uninstalling ANSICON</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
         <div class="section-footer"></div>
@@ -235,7 +238,7 @@
           <h3>Continue Reading</h3>
           <ul>
             <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
-            <li>Next: <a href="tutorial.html" title="next chapter">GeoGig tutorial</a></li>
+            <li>Next: <a href="runtime.html" title="next chapter">Runtime configuration</a></li>
           </ul>
         </div>
         <div class="section">

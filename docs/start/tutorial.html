@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig tutorial &mdash; GeoGig 1.1 User Manual</title>
+  <title>GeoGig tutorial &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,17 +17,17 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Starting out with GeoGig" href="index.html" />
       <link rel="next" title="Working with repositories" href="../repo/index.html" />
-      <link rel="prev" title="Installation" href="installation.html" />
+      <link rel="prev" title="Runtime configuration" href="runtime.html" />
 </head>
 <body class="start/tutorial">
     <div id="blacktop"></div>
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Starting out with GeoGig</a> &raquo;</li>
   <li>GeoGig tutorial</li>
 </ul>
@@ -92,7 +92,7 @@
     <a href="../repo/index.html" title="Working with repositories"
        accesskey="N">next</a>|</li>
   <li>
-    <a href="installation.html" title="Installation"
+    <a href="runtime.html" title="Runtime configuration"
        accesskey="P">previous</a>|</li>
 </ul>
         
@@ -101,13 +101,13 @@
 <p>GeoGig is a Distributed Version Control System (DVCS) for geospatial data.</p>
 <p>This document is a short introduction to the main ideas and elements of GeoGig. It describes how to set up and use GeoGig to version spatial data, introducing the following operations:</p>
 <ul class="simple">
-<li>Importing unversioned spatial data into GeoGig (&#8220;import&#8221;)</li>
-<li>Making changes and storing snapshots (&#8220;commit&#8221;)</li>
-<li>Maintaining independent lines of modifications (&#8220;branch&#8221;)</li>
-<li>Integrating changes from separate branches (&#8220;merge&#8221;)</li>
+<li>Importing unversioned spatial data into GeoGig (“import”)</li>
+<li>Making changes and storing snapshots (“commit”)</li>
+<li>Maintaining independent lines of modifications (“branch”)</li>
+<li>Integrating changes from separate branches (“merge”)</li>
 <li>Resolving conflicting edits</li>
-<li>Synchronizing data across a network (&#8220;push&#8221; and &#8220;pull&#8221;)</li>
-<li>Marking specific versions of the data (&#8220;tag&#8221;)</li>
+<li>Synchronizing data across a network (“push” and “pull”)</li>
+<li>Marking specific versions of the data (“tag”)</li>
 <li>Exporting data from GeoGig to a shapefile</li>
 </ul>
 <p>This tutorial assumes no prior experience with GeoGig. More details can be found in later sections.</p>
@@ -314,7 +314,7 @@
 <div class="section" id="creating-a-branch">
 <h2>Creating a branch<a class="headerlink" href="#creating-a-branch" title="Permalink to this headline">¶</a></h2>
 <p>Data editing can be done on multiple history lines of the repository, so one line can be kept clean and stable while edits are performed on another line. These lines are known as <strong>branches</strong>. You can merge commits from one branch to another branch at any time.</p>
-<p>To create a new branch named &#8220;myedits&#8221;, run the following command:</p>
+<p>To create a new branch named “myedits”, run the following command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig branch myedits -c</span>
 </pre></div>
 </div>
@@ -354,7 +354,7 @@
 <div class="section" id="merging-commits-from-a-branch">
 <h2>Merging commits from a branch<a class="headerlink" href="#merging-commits-from-a-branch" title="Permalink to this headline">¶</a></h2>
 <p>Our repository now has two branches: the one we just created (<code class="docutils literal"><span class="pre">myedits</span></code>) and the default branch (<code class="docutils literal"><span class="pre">master</span></code>). To see all the branches within a given repository, execute the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">branch</span></code> command.</p>
-<p>Let&#8217;s merge the changes we have just added from the <code class="docutils literal"><span class="pre">myedits</span></code> branch into the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
+<p>Let’s merge the changes we have just added from the <code class="docutils literal"><span class="pre">myedits</span></code> branch into the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
 <p>First <strong>switch to the branch to which you would like to apply the changes</strong>, in this case it is <code class="docutils literal"><span class="pre">master</span></code>. Execute the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">checkout</span> <span class="pre">master</span></code> command to switch to the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig checkout master</span>
 </pre></div>
@@ -372,7 +372,7 @@
 <span class="go">11b7058f4b8aaca98036f24c127e929281a01cce first version</span>
 </pre></div>
 </div>
-<p>Notice that the most recent commit (with the message &#8220;added new feature&#8221;) is missing. This is because it was added to the <code class="docutils literal"><span class="pre">myedits</span></code> branch, not the <code class="docutils literal"><span class="pre">master</span></code> branch (the branch we are currently on).</p>
+<p>Notice that the most recent commit (with the message “added new feature”) is missing. This is because it was added to the <code class="docutils literal"><span class="pre">myedits</span></code> branch, not the <code class="docutils literal"><span class="pre">master</span></code> branch (the branch we are currently on).</p>
 <p>To merge the work done in the <code class="docutils literal"><span class="pre">myedits</span></code> branch into the current <code class="docutils literal"><span class="pre">master</span></code> branch, enter the following command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig merge myedits</span>
 </pre></div>
@@ -408,9 +408,9 @@
 <span class="go">geogig commit -m &quot;edits on the conflict_res branch&quot;</span>
 </pre></div>
 </div>
-<p>This is the same data as <code class="docutils literal"><span class="pre">parks_plus_2features/Raleigh_Park_Locations.shp</span></code>, however the new shapefile changes the name for &#8216;Walnut Terrace Park&#8217; to &#8216;Walnut Terrace Field&#8217;.</p>
+<p>This is the same data as <code class="docutils literal"><span class="pre">parks_plus_2features/Raleigh_Park_Locations.shp</span></code>, however the new shapefile changes the name for ‘Walnut Terrace Park’ to ‘Walnut Terrace Field’.</p>
 <p>Now go back to the <code class="docutils literal"><span class="pre">master</span></code> branch and create a new commit with the data in <code class="docutils literal"><span class="pre">parks_2nd_change/Raleigh_Park_Locations.shp</span></code>.</p>
-<p>This is the same data as <code class="docutils literal"><span class="pre">parks_plus_2features/Raleigh_Park_Locations.shp</span></code>, however the new shapefile changes the name for &#8216;Walnut Terrace Park&#8217; to &#8216;Walnut Terrace Grove&#8217;.</p>
+<p>This is the same data as <code class="docutils literal"><span class="pre">parks_plus_2features/Raleigh_Park_Locations.shp</span></code>, however the new shapefile changes the name for ‘Walnut Terrace Park’ to ‘Walnut Terrace Grove’.</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig checkout master</span>
 <span class="go">geogig shp import parks_2nd_change/Raleigh_Park_Locations.shp</span>
 <span class="go">geogig add</span>
@@ -460,7 +460,7 @@
 </div>
 <p>The output indicates that the value in the <code class="docutils literal"><span class="pre">NAME</span></code> attribute of the <code class="docutils literal"><span class="pre">Raleigh_Park_Locations/1</span></code> feature is causing the conflict.</p>
 <p>The conflict has to be solved manually. You will have to merge both versions yourself, or just select one of the versions to be used.</p>
-<p>Assume we want to use the changed feature in the <code class="docutils literal"><span class="pre">conflict_res</span></code> branch. Since we are in the <code class="docutils literal"><span class="pre">master</span></code> branch, the <code class="docutils literal"><span class="pre">conflict_res</span></code> branch is considered &#8220;theirs.&#8221; Run the following command:</p>
+<p>Assume we want to use the changed feature in the <code class="docutils literal"><span class="pre">conflict_res</span></code> branch. Since we are in the <code class="docutils literal"><span class="pre">master</span></code> branch, the <code class="docutils literal"><span class="pre">conflict_res</span></code> branch is considered “theirs.” Run the following command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig checkout -p Raleigh_Park_Locations/1 --theirs</span>
 </pre></div>
 </div>
@@ -492,7 +492,7 @@
 </div>
 <div class="section" id="tagging-a-version">
 <h2>Tagging a version<a class="headerlink" href="#tagging-a-version" title="Permalink to this headline">¶</a></h2>
-<p>You can add a &#8220;tag&#8221; to a version to easily identify a snapshot with something more descriptive than the identifier associated with each commit.</p>
+<p>You can add a “tag” to a version to easily identify a snapshot with something more descriptive than the identifier associated with each commit.</p>
 <p>To do so, use the <code class="docutils literal"><span class="pre">tag</span></code> command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig tag my_tag_name -m &quot;First official version&quot;</span>
 </pre></div>
@@ -516,7 +516,7 @@
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig shp export 6bcd72b1a536aa6ec9a773a353f3e4e6f2ffa973:Raleigh_Park_Locations my_older_parks.shp</span>
 </pre></div>
 </div>
-<p>Use &#8220;HEAD&#8221; notation to export changes relative to the current working revision. For example, <code class="docutils literal"><span class="pre">HEAD~1</span></code> refers to the second-most recent commit, <code class="docutils literal"><span class="pre">HEAD~2</span></code> refers to the commit prior to that, etc.</p>
+<p>Use “HEAD” notation to export changes relative to the current working revision. For example, <code class="docutils literal"><span class="pre">HEAD~1</span></code> refers to the second-most recent commit, <code class="docutils literal"><span class="pre">HEAD~2</span></code> refers to the commit prior to that, etc.</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig shp export HEAD~1:Raleigh_Park_Locations 2nd_last_version_parks.shp</span>
 </pre></div>
 </div>
@@ -525,7 +525,7 @@
 <h2>Synchronizing repositories<a class="headerlink" href="#synchronizing-repositories" title="Permalink to this headline">¶</a></h2>
 <p>A GeoGig repository can interact with other GeoGig repositories that are working with the same data. Other GeoGig repositories are known as <strong>remotes</strong>.</p>
 <p>In our situation, we created a new repository from scratch using the <code class="docutils literal"><span class="pre">init</span></code> command. But if we wanted to start with a copy of an existing repository (referred to as the <code class="docutils literal"><span class="pre">origin</span></code>), use the <code class="docutils literal"><span class="pre">clone</span></code> command.</p>
-<p>Let&#8217;s clone the repository we have been working on. Create a new directory in your file system, move into it and run the following commands (replace &#8216;YOUR_FIRST_REPO&#8217; with the actual name of the first directory created)</p>
+<p>Let’s clone the repository we have been working on. Create a new directory in your file system, move into it and run the following commands (replace ‘YOUR_FIRST_REPO’ with the actual name of the first directory created)</p>
 <div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">mkdir ../my_new_repo</span>
 <span class="go">cd ../my_new_repo</span>
 <span class="go">geogig clone ../YOUR_FIRST_REPO</span>
@@ -564,7 +564,7 @@
 
 
       <div class="selfclear pagination-nav">
-          <div class="leftwise"><strong>Previous</strong>: <a href="installation.html" title="previous chapter">Installation</a></div>
+          <div class="leftwise"><strong>Previous</strong>: <a href="runtime.html" title="previous chapter">Runtime configuration</a></div>
           <div class="rightwise"><strong>Next</strong>: <a href="../repo/index.html" title="next chapter">Working with repositories</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
@@ -616,7 +616,7 @@
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
           <ul>
-            <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
+            <li>Previous: <a href="runtime.html" title="previous chapter">Runtime configuration</a></li>
             <li>Next: <a href="../repo/index.html" title="next chapter">Working with repositories</a></li>
           </ul>
         </div>

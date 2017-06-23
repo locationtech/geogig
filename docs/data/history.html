@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Exploring your history &mdash; GeoGig 1.1 User Manual</title>
+  <title>Exploring your history &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Import data" href="import.html" />
       <link rel="prev" title="Exporting from a GeoGig repository" href="exporting.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Exploring your history</li>
 </ul>
@@ -98,7 +98,7 @@
         
   <div class="section" id="exploring-your-history">
 <span id="history"></span><h1>Exploring your history<a class="headerlink" href="#exploring-your-history" title="Permalink to this headline">¶</a></h1>
-<p>We have already seen how to explore the content of a a GeoGig repository. It is also interesting to explore its history, since it will show us what has happened since it was created. Exploring the history can answer questions such as &#8220;who has edited this feature?&#8221;, &#8220;since when does this feature exist?&#8221; or &#8220;how many edits has a given person made during the last month?&#8221;, just to name a few.</p>
+<p>We have already seen how to explore the content of a a GeoGig repository. It is also interesting to explore its history, since it will show us what has happened since it was created. Exploring the history can answer questions such as “who has edited this feature?”, “since when does this feature exist?” or “how many edits has a given person made during the last month?”, just to name a few.</p>
 <p>The log command, which we have already seen, is used to browse the history of a GeoGig repository. In its most basic form, as we know, it just shows a list of all commits, ordered by their commit date.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$geogig log
 </pre></div>
@@ -120,7 +120,7 @@ da1534a4aae8a1b29974c040c9fb44be426c58f8 Added missing feature
 6cda554ac1af6c0fad1841b5b36018bd107d926d First import
 </pre></div>
 </div>
-<p>Sometimes it is useful not to summarize commits into a single line, but instead to display more information about the changes introduced in each one. Two commands are available for this: &#8220;&#8211;stats&#8221; and <code class="docutils literal"><span class="pre">--summary</span></code>.</p>
+<p>Sometimes it is useful not to summarize commits into a single line, but instead to display more information about the changes introduced in each one. Two commands are available for this: “–stats” and <code class="docutils literal"><span class="pre">--summary</span></code>.</p>
 <p>The <code class="docutils literal"><span class="pre">--stats</span></code> option prints an additional line with the number of objects that have been modified, added or removed, as it can be seen below.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$geogig log --stats
 Commit:  6f250c0c74d9cb852405818f4a5e50aa971d543c
@@ -162,7 +162,7 @@ Subject: First import
 <div class="section" id="setting-which-commits-are-displayed-history-simplification">
 <h2>Setting which commits are displayed (history simplification)<a class="headerlink" href="#setting-which-commits-are-displayed-history-simplification" title="Permalink to this headline">¶</a></h2>
 <p>Another way of limiting the history that is displayed is by just printing out commits from the current branch. The history displayed corresponds to the current branch, but if other branches have been merged into it, their history will also be displayed. Using the <code class="docutils literal"><span class="pre">--first-parent</span></code> option will cause the <code class="docutils literal"><span class="pre">log</span></code> command to just follow the first parent when traversing the history tree, so commits in branches other than the main one are discarded.</p>
-<p>Let&#8217;s say we have the following repository, and we are on the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
+<p>Let’s say we have the following repository, and we are on the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
 <div class="figure">
 <img alt="../_images/branches.png" src="../_images/branches.png" />
 </div>
@@ -242,7 +242,7 @@ d0bb10b4aee5fe9961d361031d548df3136cada2 Minor changes
 a87bc4f1725115d5cbdcf22a1b9914cf37911e18 First import
 </pre></div>
 </div>
-<p>Commits can also be filtered by author and committer using the <code class="docutils literal"><span class="pre">--author</span></code> and <code class="docutils literal"><span class="pre">--committer</span></code> options, respectively. The value following them is a regular expression that is used to filter the commits. For instance, to show just the commits made by a user named &#8220;geogiguser&#8221;, use the following command.</p>
+<p>Commits can also be filtered by author and committer using the <code class="docutils literal"><span class="pre">--author</span></code> and <code class="docutils literal"><span class="pre">--committer</span></code> options, respectively. The value following them is a regular expression that is used to filter the commits. For instance, to show just the commits made by a user named “geogiguser”, use the following command.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig log --author geogiguser
 </pre></div>
 </div>

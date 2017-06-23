@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Hooks &mdash; GeoGig 1.1 User Manual</title>
+  <title>Hooks &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Partial cloning" href="partialcloning.html" />
       <link rel="prev" title="Modifying history" href="history.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Hooks</li>
 </ul>
@@ -101,7 +101,7 @@
 <p>GeoGig supports the usage of <strong>hooks</strong>, commands that are executed before or after a given operation is run.</p>
 <p>Hooks are written in a supported scripting language and stored in the <code class="docutils literal"><span class="pre">hooks</span></code> directory in the GeoGig repository directory (<code class="docutils literal"><span class="pre">.geogig</span></code>).</p>
 <p>There are two types of hooks, <strong>pre-execution</strong> and <strong>post-execution</strong>, which happen before or after a given operation, respectively.</p>
-<p>To prevent erroneous behavior, don&#8217;t have multiple files containing the same type of hook. (As in, don&#8217;t have both <code class="docutils literal"><span class="pre">pre_commit.py</span></code> and <code class="docutils literal"><span class="pre">pre_commit.js</span></code>.)</p>
+<p>To prevent erroneous behavior, don’t have multiple files containing the same type of hook. (As in, don’t have both <code class="docutils literal"><span class="pre">pre_commit.py</span></code> and <code class="docutils literal"><span class="pre">pre_commit.js</span></code>.)</p>
 <div class="section" id="pre-execution">
 <h2>Pre-execution<a class="headerlink" href="#pre-execution" title="Permalink to this headline">¶</a></h2>
 <p>When an operation is executed, GeoGig searches for a corresponding hook to run <strong>before</strong> the operation is run.</p>
@@ -117,7 +117,7 @@
 <span class="n">params</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">toLowerCase</span><span class="p">());</span>
 </pre></div>
 </div>
-<p>Pre-execution hooks can halt the normal execution of the operation, and thus, be used to perform diagnostic checks. To indicate that the operation shouldn&#8217;t be executed, a <code class="docutils literal"><span class="pre">CannotRunGeogigOperationException</span></code> has to be thrown. Any other exception type is assumed to be due to an error in the script and will not block the execution of the operation.</p>
+<p>Pre-execution hooks can halt the normal execution of the operation, and thus, be used to perform diagnostic checks. To indicate that the operation shouldn’t be executed, a <code class="docutils literal"><span class="pre">CannotRunGeogigOperationException</span></code> has to be thrown. Any other exception type is assumed to be due to an error in the script and will not block the execution of the operation.</p>
 </div>
 <div class="section" id="post-execution">
 <h2>Post-execution<a class="headerlink" href="#post-execution" title="Permalink to this headline">¶</a></h2>
@@ -164,7 +164,7 @@
 </div>
 <p>More elaborate hooks can be created making use of the API along with the GeoTools classes that GeoGig uses internally, such as re-projecting geometries before importing them into the repository.</p>
 <p>Also, GeoGig commands can be called from the script, using the <code class="docutils literal"><span class="pre">run()</span></code> method from the <code class="docutils literal"><span class="pre">geogig</span></code> object. It takes the name of the class with the command to call as the first parameter. the second parameter contains the names and values of the parameters needed by the command to be executed.</p>
-<p>The following is an example hook that triggers an OpenStreetMap &#8220;unmapping&#8221; operation whenever the <code class="docutils literal"><span class="pre">mapped</span></code> tree, which is supposed to contain mapped OSM data, is modified after a commit.</p>
+<p>The following is an example hook that triggers an OpenStreetMap “unmapping” operation whenever the <code class="docutils literal"><span class="pre">mapped</span></code> tree, which is supposed to contain mapped OSM data, is modified after a commit.</p>
 <div class="highlight-javascript"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">diffs</span> <span class="o">=</span> <span class="nx">geogig</span><span class="p">.</span><span class="nx">getFeaturesToCommit</span><span class="p">(</span><span class="s1">&#39;mapped&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
   <span class="k">if</span> <span class="p">(</span><span class="nx">diffs</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
     <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span> <span class="o">:</span> <span class="s2">&quot;mapped&quot;</span><span class="p">};</span>

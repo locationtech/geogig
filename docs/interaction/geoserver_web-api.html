@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoServer REST configuration integration &mdash; GeoGig 1.1 User Manual</title>
+  <title>GeoServer REST configuration integration &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web-API Documentation" href="web-api.html" />
       <link rel="prev" title="GeoServer GUI configuration" href="geoserver_ui.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>GeoServer REST configuration integration</li>
 </ul>
@@ -99,19 +99,19 @@
   <div class="section" id="geoserver-rest-configuration-integration">
 <span id="geoserver-web-api"></span><h1>GeoServer REST configuration integration<a class="headerlink" href="#geoserver-rest-configuration-integration" title="Permalink to this headline">¶</a></h1>
 <p>GeoGig integrates well with the standard GeoServer REST configuration API in order to configure vector datastores and layers from GeoGig repositories.</p>
-<p>You can use a combination of GeoGig&#8217;s own &#8220;Web API&#8221; and GeoServer&#8217;s REST configuration API to create a wide variety of scripts.</p>
+<p>You can use a combination of GeoGig’s own “Web API” and GeoServer’s REST configuration API to create a wide variety of scripts.</p>
 <div class="section" id="geogig-s-plugin-web-api">
-<h2>GeoGig&#8217;s plugin Web-API<a class="headerlink" href="#geogig-s-plugin-web-api" title="Permalink to this headline">¶</a></h2>
+<h2>GeoGig’s plugin Web-API<a class="headerlink" href="#geogig-s-plugin-web-api" title="Permalink to this headline">¶</a></h2>
 <p>With the GeoGig GeoServer plug-in, like with the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span> <span class="pre">--multirepo</span></code> command, it is possible to expose several repositories. To do so, the GeoGig plug-in installs REST entry points under the <code class="docutils literal"><span class="pre">&lt;geoserver</span> <span class="pre">context&gt;/geogig/repos</span></code> context (e.g. <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos</span></code>).</p>
 <p>That root context can be used to query which repositories are being served by GeoServer.</p>
 <p>GeoSever managed repositories are internally identified by a UUID automatically assigned when the repository is first added to the GeoServer configuration, and published through their names. The repository name is assigned by the user and must also be unique across all the configured repositories.</p>
-<p>Each specific repository&#8217;s Web-API is accessed through the <code class="docutils literal"><span class="pre">&lt;geosever</span> <span class="pre">context&gt;/geogig/repos/&lt;repository</span> <span class="pre">name&gt;</span></code> entry point, a path change from when using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code> command that exposes the repository at the <code class="docutils literal"><span class="pre">/repos</span></code> application context.</p>
-<p>So, for example, whenever you would list the current HEAD&#8217;s commits by querying <code class="docutils literal"><span class="pre">http://localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> if serving a single repository with <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>, the same command, as served by GeoServer, would be at <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code>.</p>
+<p>Each specific repository’s Web-API is accessed through the <code class="docutils literal"><span class="pre">&lt;geosever</span> <span class="pre">context&gt;/geogig/repos/&lt;repository</span> <span class="pre">name&gt;</span></code> entry point, a path change from when using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code> command that exposes the repository at the <code class="docutils literal"><span class="pre">/repos</span></code> application context.</p>
+<p>So, for example, whenever you would list the current HEAD’s commits by querying <code class="docutils literal"><span class="pre">http://localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> if serving a single repository with <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>, the same command, as served by GeoServer, would be at <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code>.</p>
 <p>From that point on, the commands available are exactly the same then when using the standalone Web API.</p>
 </div>
 <div class="section" id="plugin-rest-api-for-creating-geogig-repositories">
 <span id="geoserver-web-api-plugin-init"></span><h2>Plugin REST API for creating GeoGig repositories<a class="headerlink" href="#plugin-rest-api-for-creating-geogig-repositories" title="Permalink to this headline">¶</a></h2>
-<p>In order to create a GeoGig Repository via the plugin&#8217;s REST API, you must send a <strong>PUT</strong> request to GeoServer that follows this URL form:</p>
+<p>In order to create a GeoGig Repository via the plugin’s REST API, you must send a <strong>PUT</strong> request to GeoServer that follows this URL form:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">geoserver</span><span class="o">&gt;/</span><span class="n">geogig</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repository</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">init</span>
 </pre></div>
 </div>
@@ -178,7 +178,7 @@
 </div>
 <div class="section" id="creating-a-geogig-repository-in-a-specific-parent-directory">
 <span id="geoserver-web-api-plugin-init-parentdirectory"></span><h2>Creating a GeoGig repository in a specific parent directory<a class="headerlink" href="#creating-a-geogig-repository-in-a-specific-parent-directory" title="Permalink to this headline">¶</a></h2>
-<p>If you wish to create a GeoGig repository in a location other than GeoServer&#8217;s config directory for GeoGig, you must send the <code class="docutils literal"><span class="pre">parentDirectory</span></code> parameter in the PUT request, telling the plugin in which directory to create the repository. You can provide this parameter in one of two ways.</p>
+<p>If you wish to create a GeoGig repository in a location other than GeoServer’s config directory for GeoGig, you must send the <code class="docutils literal"><span class="pre">parentDirectory</span></code> parameter in the PUT request, telling the plugin in which directory to create the repository. You can provide this parameter in one of two ways.</p>
 <p>1. Specify the <code class="docutils literal"><span class="pre">parentDirectory</span></code>, <code class="docutils literal"><span class="pre">authorName</span></code> and <code class="docutils literal"><span class="pre">authorEmail</span></code> as a URL-encoded form parameter, e.g.:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">PUT</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/x-www-form-urlencoded&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;parentDirectory=/opt/geogig/repos&amp;authorName=geogig&amp;authorEmail=geogig@geogig.org&#39;</span> <span class="s2">&quot;http://localhost:8080/geoserver/geogig/repos/myrepo/init&quot;</span>
 </pre></div>
@@ -191,7 +191,7 @@
     <span class="p">}</span><span class="s1">&#39; &quot;http://localhost:8080/geoserver/geogig/repos/myrepo/init&quot;</span>
 </pre></div>
 </div>
-<p>With either form, you <em>must</em> ensure that the PUT request has the correct <code class="docutils literal"><span class="pre">Content-Type</span></code> encoded into the request header. If you don&#8217;t put the correct Content-Type in the header, the plugin will not correctly parse the request.</p>
+<p>With either form, you <em>must</em> ensure that the PUT request has the correct <code class="docutils literal"><span class="pre">Content-Type</span></code> encoded into the request header. If you don’t put the correct Content-Type in the header, the plugin will not correctly parse the request.</p>
 <p>Also, as stated in the previous section, you can request a JSON-formatted response by appending <code class="docutils literal"><span class="pre">.json</span></code> to the PUT URL.</p>
 </div>
 <div class="section" id="creating-a-geogig-repository-backed-by-postgresql">
@@ -224,23 +224,23 @@ database to connect to</td>
 user with which to connect</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">dbHost</span></code></td>
-<td>&#8220;localhost&#8221;</td>
+<td>“localhost”</td>
 <td>Hostname of the PostgreSQL
 database server to connect
 to</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">dbPort</span></code></td>
-<td>&#8220;5432&#8221;</td>
+<td>“5432”</td>
 <td>Port the database is
 listening on</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">dbSchema</span></code></td>
-<td>&#8220;public&#8221;</td>
+<td>“public”</td>
 <td>Database schema to connect
 to</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">dbUser</span></code></td>
-<td>&#8220;postgres&#8221;</td>
+<td>“postgres”</td>
 <td>Username to connect with</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">authorName</span></code></td>
@@ -255,7 +255,7 @@ repository</td>
 </tr>
 </tbody>
 </table>
-<p>From the table above, you&#8217;ll see that you must provide at least <strong>dbName</strong> and <strong>dbPassword</strong>. Though not required, there are no default values for <strong>authorName</strong> or <strong>authorEmail</strong>. It is highly recommended that you specify these in an INIT request. Defaults will be used for the remaining parameters, if not specified. Parameters can be specified as a URL-encoded form or as a JSON object.</p>
+<p>From the table above, you’ll see that you must provide at least <strong>dbName</strong> and <strong>dbPassword</strong>. Though not required, there are no default values for <strong>authorName</strong> or <strong>authorEmail</strong>. It is highly recommended that you specify these in an INIT request. Defaults will be used for the remaining parameters, if not specified. Parameters can be specified as a URL-encoded form or as a JSON object.</p>
 <p>1. URL-encoded form:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">PUT</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/x-www-form-urlencoded&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;dbHost=localhost&amp;dbPort=5432&amp;dbName=repos&amp;dbSchema=public&amp;dbUser=geogig&amp;dbPassword=geogig&amp;authorName=geogig&amp;authorEmail=geogig@geogig.org&#39;</span> <span class="s2">&quot;http://localhost:8080/geoserver/geogig/repos/myrepo/init&quot;</span>
 </pre></div>
@@ -289,7 +289,7 @@ repository</td>
 &lt;/dataStore&gt;
 </pre></div>
 </div>
-<p>That&#8217;s all the information needed to create a GeoGig datastore.</p>
+<p>That’s all the information needed to create a GeoGig datastore.</p>
 <ul class="simple">
 <li>${datastore name} is the name to be given to the datastore, which then will be accessible through <code class="docutils literal"><span class="pre">/workspaces/&lt;ws&gt;/datastores/&lt;datastore</span> <span class="pre">name&gt;</span></code>.</li>
 <li>${repository URI} is a GeoServer URI string that identifies the GeoGig repository in GeoServer. It should be in the form <code class="docutils literal"><span class="pre">geoserver://&lt;repository</span> <span class="pre">name&gt;</span></code></li>
@@ -298,7 +298,7 @@ repository</td>
 </div>
 <div class="section" id="quick-example">
 <h2>Quick example:<a class="headerlink" href="#quick-example" title="Permalink to this headline">¶</a></h2>
-<p>For the impatient, here&#8217;s a very quick cheat sheet on how to create a datastore and layer for a repository.</p>
+<p>For the impatient, here’s a very quick cheat sheet on how to create a datastore and layer for a repository.</p>
 <p>Suppose you have a repository named <code class="docutils literal"><span class="pre">myrepo</span></code> in GeoServer, it contains a <code class="docutils literal"><span class="pre">roads</span></code> feature type tree, and GeoServer has a workspace named <code class="docutils literal"><span class="pre">ws1</span></code>:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &quot;&lt;dataStore&gt;&lt;name&gt;my_geogig_repo&lt;/name&gt;&lt;connectionParameters&gt;&lt;entry key=\&quot;geogig_repository\&quot;&gt;geoserver://myrepo&lt;/entry&gt;&lt;/connectionParameters&gt;&lt;/dataStore&gt;&quot; http://localhost:8080/geoserver/rest/workspaces/ws1/datastores
 &lt; HTTP/1.1 201 Created
@@ -329,7 +329,7 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Beware of not calling your namespace <code class="docutils literal"><span class="pre">geogig</span></code> as it&#8217;s &#8220;local workspace catalog&#8221; entry point will conflict with the <code class="docutils literal"><span class="pre">/geogig</span></code> REST API entry point.</p>
+<p class="last">Beware of not calling your namespace <code class="docutils literal"><span class="pre">geogig</span></code> as it’s “local workspace catalog” entry point will conflict with the <code class="docutils literal"><span class="pre">/geogig</span></code> REST API entry point.</p>
 </div>
 <p>Create a GeoGig datastore called <code class="docutils literal"><span class="pre">geogig_datastore_test</span></code> inside that workspace. To do so, create a file named <code class="docutils literal"><span class="pre">datastore.xml</span></code> in the current directory with the following content (note the value of the <code class="docutils literal"><span class="pre">geogig_repository</span></code> connection parameter is the repository directory):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">dataStore</span><span class="o">&gt;</span>
@@ -368,11 +368,11 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
 &lt;/dataStore&gt;
 </pre></div>
 </div>
-<p>Now, let&#8217;s import some data. For this example, we are importing a ZIP of a Shapefile called <code class="docutils literal"><span class="pre">railways.zip</span></code> that is located in the current working directory:</p>
+<p>Now, let’s import some data. For this example, we are importing a ZIP of a Shapefile called <code class="docutils literal"><span class="pre">railways.zip</span></code> that is located in the current working directory:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XPUT -H &quot;Content-type: application/zip&quot; --data-binary @railways.zip http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores/geogig_datastore_test/file.shp
 </pre></div>
 </div>
-<p>You can create a second datastore for the same repository using the repository and different branch.  To verify, let&#8217;s create a branch in the repository, and a new datastore that uses that branch, instead. To do so, copy the following XML fragment to a file called <code class="docutils literal"><span class="pre">datastore_branch.xml</span></code>. This fragment has a different name, an extra <code class="docutils literal"><span class="pre">branch</span></code> connection parameter, and the same repository directory:</p>
+<p>You can create a second datastore for the same repository using the repository and different branch.  To verify, let’s create a branch in the repository, and a new datastore that uses that branch, instead. To do so, copy the following XML fragment to a file called <code class="docutils literal"><span class="pre">datastore_branch.xml</span></code>. This fragment has a different name, an extra <code class="docutils literal"><span class="pre">branch</span></code> connection parameter, and the same repository directory:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">dataStore</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="n">experimental</span><span class="o">&lt;/</span><span class="n">name</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">connectionParameters</span><span class="o">&gt;</span>
@@ -413,8 +413,8 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
 &lt;/dataStore&gt;
 </pre></div>
 </div>
-<p>Now you have two different datastores, served from the same GeoGig repository, at different branches. These two different branches may have different feature type trees (i.e. &#8220;layers&#8221;) or different versions of the same.</p>
-<p>Let&#8217;s revisit the initial query in this tutorial and check the list of available repositories using GeoGig&#8217;s own REST API:</p>
+<p>Now you have two different datastores, served from the same GeoGig repository, at different branches. These two different branches may have different feature type trees (i.e. “layers”) or different versions of the same.</p>
+<p>Let’s revisit the initial query in this tutorial and check the list of available repositories using GeoGig’s own REST API:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos&quot;
 &lt; HTTP/1.1 200 OK
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -444,7 +444,7 @@ $ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localho
 &lt;/response&gt;
 </pre></div>
 </div>
-<p>Finally, let&#8217;s query the layer for the <code class="docutils literal"><span class="pre">railways</span></code> feature type (it was created when we imported the shapefile ZIP above):</p>
+<p>Finally, let’s query the layer for the <code class="docutils literal"><span class="pre">railways</span></code> feature type (it was created when we imported the shapefile ZIP above):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -u admin:geoserver -XGET -H &quot;Accept: text/xml&quot; http://localhost:8080/geoserver/rest/layers
 &lt;layers&gt;
   ....
@@ -488,7 +488,7 @@ $ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localho
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
 <li><a class="reference internal" href="#">GeoServer REST configuration integration</a><ul>
-<li><a class="reference internal" href="#geogig-s-plugin-web-api">GeoGig&#8217;s plugin Web-API</a></li>
+<li><a class="reference internal" href="#geogig-s-plugin-web-api">GeoGig’s plugin Web-API</a></li>
 <li><a class="reference internal" href="#plugin-rest-api-for-creating-geogig-repositories">Plugin REST API for creating GeoGig repositories</a></li>
 <li><a class="reference internal" href="#creating-a-geogig-repository-in-a-specific-parent-directory">Creating a GeoGig repository in a specific parent directory</a></li>
 <li><a class="reference internal" href="#creating-a-geogig-repository-backed-by-postgresql">Creating a GeoGig repository backed by PostgreSQL</a></li>

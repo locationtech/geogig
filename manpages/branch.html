@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>geogig-branch documentation &mdash; GeoGig 1.1 Man Pages</title>
+  <title>geogig-branch documentation &mdash; GeoGig 1.1.1-RC1 Man Pages</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1 Man Pages" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 Man Pages" href="index.html" />
 </head>
 <body class="branch">
     <div id="blacktop"></div>
@@ -77,7 +77,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1 Man Pages</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1-RC1 Man Pages</a> &raquo;</li>
   <li>geogig-branch documentation</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -91,16 +91,16 @@
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <p>geogig branch [&lt;options&gt;] [&lt;branchname&gt; [&lt;startpoint&gt;]]
-geogig branch &#8211;delete &lt;branchname&gt;...
-geogig branch &#8211;rename [&#8211;force] [&lt;oldBranchName&gt;] &lt;newBranchName&gt;</p>
+geogig branch –delete &lt;branchname&gt;…
+geogig branch –rename [–force] [&lt;oldBranchName&gt;] &lt;newBranchName&gt;</p>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>With no arguments the command will display all existing branches with the current branch
-highlighted with the asterisk. The -r option will list only remote branches and the -a option will list both local and remote branches. Adding the &#8211;color option with the value of auto, always, or never will add or remove color from the listing. With the -v option it will list the branches along with the commit id and commit message that the branch is currently on.</p>
+highlighted with the asterisk. The -r option will list only remote branches and the -a option will list both local and remote branches. Adding the –color option with the value of auto, always, or never will add or remove color from the listing. With the -v option it will list the branches along with the commit id and commit message that the branch is currently on.</p>
 <p>With a branch name specified it will create a branch of off the current branch. If a start point is specified as well then it will be created off of the given start point. If the -c option is given it will automatically checkout the branch once it is created.</p>
 <p>With the -d option with a branch name specified will delete that branch. You cannot delete the branch that you are currently on, checkout a different branch to delete it. Also with the -d option you can list multiple branches for deletion.</p>
-<p>With the -m option you can specify an oldBranchName to rename with the given newBranchName or you can rename the current branch by not specifying oldBranchName. With the &#8211;force option you can rename a branch to a name that already exists as a branch, however this will delete the other branch.</p>
+<p>With the -m option you can specify an oldBranchName to rename with the given newBranchName or you can rename the current branch by not specifying oldBranchName. With the –force option you can rename a branch to a name that already exists as a branch, however this will delete the other branch.</p>
 </div>
 <div class="section" id="options">
 <h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
@@ -134,7 +134,7 @@ deletes the original branch by that name</td></tr>
 commit message</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--remote</span>, <span class="option">-r</span></kbd></td>
-<td>List or delete (if used with &#8211;delete or -D) the
+<td>List or delete (if used with –delete or -D) the
 remote-tracking branches</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--all</span>, <span class="option">-a</span></kbd></td>

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Reverting changes &mdash; GeoGig 1.1 User Manual</title>
+  <title>Reverting changes &mdash; GeoGig 1.1.1-RC1 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.1.1-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Updating the repository data." href="updating.html" />
       <link rel="prev" title="Referencing a GeoGig element" href="referencing.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Reverting changes</li>
 </ul>
@@ -110,7 +110,7 @@
 </div>
 <p>Instead of rewinding the HEAD and <em>erasing</em> the last command, this adds a new commit of top of the current HEAD, which has exactly the opposite changes to the commit passed (in this case, <code class="docutils literal"><span class="pre">HEAD</span></code>). The state of the HEAD of your repo will be the same as it was two commits ago, since you have added one commit and then another commit that cancels the first out. The state of your repository, though, will hold both the change and the undo in history.</p>
 <p>You can revert not only the HEAD commit, but any other commit. This makes the <code class="docutils literal"><span class="pre">revert</span></code> command more interesting than <code class="docutils literal"><span class="pre">reset</span></code> if the problematic commit you want to undo is not the most recent. Using <code class="docutils literal"><span class="pre">reset</span></code> will cancel the commit, but also all the other commits after it, since <code class="docutils literal"><span class="pre">reset</span></code> operates rewinding the HEAD reference. The <code class="docutils literal"><span class="pre">revert</span></code> command is more flexible for this task.</p>
-<p>Let&#8217;s assume you have the following log entries in your repository.</p>
+<p>Let’s assume you have the following log entries in your repository.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$geogig log --oneline --abbrev-commit
 adf66fe Edited wrong geometries
 da1534a Added missing feature
@@ -118,14 +118,14 @@ da1534a Added missing feature
 6cda554 First import
 </pre></div>
 </div>
-<p>Now let&#8217;s say that you want to undo the second-to-last commit (&#8220;Added missing feature&#8221;) when you found out that the missing feature the commit message refers to is not correct and should not be added. You can revert that commit by running the following command.</p>
+<p>Now let’s say that you want to undo the second-to-last commit (“Added missing feature”) when you found out that the missing feature the commit message refers to is not correct and should not be added. You can revert that commit by running the following command.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$geogig revert da1534a
 </pre></div>
 </div>
-<p>Your HEAD will no longer contain the changes from the &#8220;Added missing feature&#8221; commit, but will maintain the edits incorporated by the &#8220;Edited wrong geometries&#8221; commit. Your log will now look like the following.</p>
+<p>Your HEAD will no longer contain the changes from the “Added missing feature” commit, but will maintain the edits incorporated by the “Edited wrong geometries” commit. Your log will now look like the following.</p>
 <blockquote>
-<div>$geogig log &#8211;oneline &#8211;abbrev-commit
-4ff56da Revert &#8216;Added missing feature&#8217;
+<div>$geogig log –oneline –abbrev-commit
+4ff56da Revert ‘Added missing feature’
 adf66fe Edited wrong geometries
 da1534a Added missing feature
 159b517 Minor changes

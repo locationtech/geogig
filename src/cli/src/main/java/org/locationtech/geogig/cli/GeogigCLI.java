@@ -42,8 +42,10 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -428,6 +430,7 @@ public class GeogigCLI {
      */
     private void executeInternal(String... args) throws ParameterException, CommandFailedException,
             IOException, CannotRunGeogigOperationException {
+        checkNotNull(args, "args is null");
 
         JCommander mainCommander = newCommandParser();
         String repoURI = parseRepoURI(args);
@@ -442,7 +445,7 @@ public class GeogigCLI {
             }
             this.platform.setWorkingDir(pwd);
         }
-        if (null == args || args.length == 0) {
+        if (args.length == 0) {
             printShortCommandList(mainCommander);
             return;
         }
@@ -450,7 +453,7 @@ public class GeogigCLI {
             String commandName = args[0];
             JCommander commandParser = mainCommander.getCommands().get(commandName);
             if (commandParser == null) {
-                args = unalias(args);
+                args = unalias(this.repositoryURI, args);
                 commandName = args[0];
                 commandParser = mainCommander.getCommands().get(commandName);
             }
@@ -595,38 +598,54 @@ public class GeogigCLI {
      * @param args
      * @return
      */
-    private String[] unalias(String[] args) {
+    private String[] unalias(@Nullable String repoURI, String[] args) {
         final String aliasedCommand = args[0];
-        String configParam = "alias." + aliasedCommand;
-        boolean closeGeogig = false;
-        GeoGIG geogig = this.providedGeogig == null ? this.geogig : this.providedGeogig;
-        if (geogig == null) { // in case the repo is not initialized yet
-            closeGeogig = true;
-            geogig = newGeoGIG(Hints.readOnly());
+        final String configParam = "alias." + aliasedCommand;
+
+        URI uri;
+        boolean globalOnly;
+        if (repoURI == null) {
+            uri = platform.getUserHome().toURI();
+            globalOnly = true;
+        } else {
+            try {
+                uri = RepositoryResolver.resolveRepoUriFromString(platform, repoURI);
+                globalOnly = false;
+            } catch (URISyntaxException e) {
+                uri = platform.getUserHome().toURI();
+                globalOnly = true;
+            }
         }
-        try {
-            Optional<String> unaliased = Optional.absent();
-            if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
-                unaliased = geogig.command(ConfigGet.class).setName(configParam).call();
+
+        Optional<String> unaliased = Optional.absent();
+
+        Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
+        try (ConfigDatabase config = RepositoryResolver.resolveConfigDatabase(uri, context,
+                globalOnly)) {
+            if (!globalOnly) {
+                unaliased = config.get(configParam);
             }
             if (!unaliased.isPresent()) {
-                unaliased = geogig.command(ConfigGet.class).setGlobal(true).setName(configParam)
-                        .call();
+                unaliased = config.getGlobal(configParam);
             }
-            if (!unaliased.isPresent()) {
-                return args;
+
+        } catch (IOException e) {
+            String msg = "Unable to acquire config to check alias for " + aliasedCommand;
+            LOGGER.error(msg, e);
+            try {
+                consoleReader.println(msg);
+            } catch (IOException e1) {
+                throw Throwables.propagate(e1);
             }
-            Iterable<String> tokens = Splitter.on(" ").split(unaliased.get());
-            List<String> allArgs = Lists.newArrayList(tokens);
-            allArgs.addAll(Lists.newArrayList(Arrays.copyOfRange(args, 1, args.length)));
-            return allArgs.toArray(new String[0]);
-        } catch (ConfigException e) {
+        }
+
+        if (!unaliased.isPresent()) {
             return args;
-        } finally {
-            if (closeGeogig) {
-                geogig.close();
-            }
         }
+        Iterable<String> tokens = Splitter.on(" ").split(unaliased.get());
+        List<String> allArgs = Lists.newArrayList(tokens);
+        allArgs.addAll(Lists.newArrayList(Arrays.copyOfRange(args, 1, args.length)));
+        return allArgs.toArray(new String[0]);
     }
 
     /**

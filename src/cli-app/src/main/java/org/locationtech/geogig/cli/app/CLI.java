@@ -9,79 +9,122 @@
  */
 package org.locationtech.geogig.cli.app;
 
+import static java.lang.String.format;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.porcelain.ConfigOp;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
+import org.locationtech.geogig.model.impl.DefaultPlatform;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.storage.ConfigDatabase;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 public class CLI {
+
+    public int run(InputStream stdin, PrintStream stdout, String[] args) throws IOException {
+        final Platform platform = new DefaultPlatform();
+        final Console console = new Console(stdin, stdout);
+        final @Nullable String repoURI;
+        final String[] cliArgs;
+        {
+            List<String> arglist = Lists.newArrayList(args);
+            if (arglist.indexOf("--repo") > -1) {
+                int indexOfRepoArg = arglist.indexOf("--repo");
+                int indexOfRepoValue = indexOfRepoArg + 1;
+                if (arglist.size() <= indexOfRepoValue) {
+                    console.println("--repo argument value missing");
+                    return -1;
+                }
+                repoURI = arglist.get(indexOfRepoValue);
+                arglist.remove(indexOfRepoValue);
+                arglist.remove(indexOfRepoArg);
+            } else {
+                Optional<URI> geogigDirUrl = new ResolveGeogigURI(platform, null).call();
+                repoURI = geogigDirUrl.isPresent() ? geogigDirUrl.get().toString() : null;
+            }
+            cliArgs = arglist.toArray(new String[arglist.size()]);
+        }
+
+        GlobalContextBuilder.builder(new CLIContextBuilder());
+        Logging.tryConfigureLogging(platform, repoURI);
+
+        {// resolve the ansi.enabled global config without opening a full repo, but just the global
+         // config database
+            final URI uri;
+            if (repoURI == null) {
+                uri = platform.getUserHome().toURI();
+            } else {
+                try {
+                    uri = RepositoryResolver.resolveRepoUriFromString(platform, repoURI);
+                } catch (URISyntaxException e) {
+                    console.println(format("Invalid repository URI format for '%s': %s", repoURI,
+                            e.getMessage()));
+                    return -1;
+                }
+            }
+            Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
+            try (ConfigDatabase config = RepositoryResolver.resolveConfigDatabase(uri, context,
+                    true)) {
+                Optional<String> ansiEnabled = config.getGlobal("ansi.enabled");
+                if(ansiEnabled.isPresent()){
+                    boolean enable = Boolean.getBoolean(ansiEnabled.get());
+                    if (enable) {
+                        console.enableAnsi();
+                    } else {
+                        console.disableAnsi();
+                    }
+                }
+            } catch (IOException e) {
+                console.println(format("Unable to obtain global config: " + e.getMessage()));
+                System.exit(-1);
+            }
+        }
+
+        final GeogigCLI cli = new GeogigCLI(console);
+        cli.setRepositoryURI(repoURI);
+        cli.setPlatform(platform);
+
+        addShutdownHook(cli);
+        int exitCode = cli.execute(cliArgs);
+
+        if (exitCode != 0 || cli.isExitOnFinish()) {
+            cli.close();
+        }
+
+        return cli.isExitOnFinish() ? exitCode : Integer.MIN_VALUE;
+    }
+
     /**
      * Entry point for the command line interface.
      * 
      * @param args
      */
     public static void main(String[] args) {
-        String repoURI = null;
-        if (args.length > 1 && "--repo".equals(args[0])) {
-            repoURI = args[1];
-            String[] norepoArgs = new String[args.length - 2];
-            if (args.length > 2) {
-                System.arraycopy(args, 2, norepoArgs, 0, args.length - 2);
+
+        int exitCode;
+        try {
+            exitCode = new CLI().run(System.in, System.out, args);
+            if (exitCode != Integer.MIN_VALUE) {
+                System.exit(exitCode);
             }
-            args = norepoArgs;
-        }
-
-        GlobalContextBuilder.builder(new CLIContextBuilder());
-        Logging.tryConfigureLogging();
-        Console consoleReader = new Console();
-
-        final GeogigCLI cli = new GeogigCLI(consoleReader);
-        cli.setRepositoryURI(repoURI);
-
-        GeoGIG geogig = cli.getGeogig();
-        boolean disableAnsi = false;
-        boolean closeIt = geogig == null;
-        if (closeIt) {
-            // we're not in a repository, need a geogig anyways to check the global config
-            geogig = cli.newGeoGIG(Hints.readOnly());
-            if (geogig.command(ConfigOp.class).setScope(ConfigScope.GLOBAL)
-                    .setAction(ConfigAction.CONFIG_GET).setName("ansi.enabled").toString()
-                    .equalsIgnoreCase("false")) {
-                disableAnsi = true;
-            } else if (geogig.command(ConfigOp.class).setScope(ConfigScope.GLOBAL)
-                    .setAction(ConfigAction.CONFIG_GET).setName("ansi.enabled").toString()
-                    .equalsIgnoreCase("true")) {
-                disableAnsi = false;
-            }
-            geogig.close();
-        } else {
-            if (geogig.getRepository().configDatabase().get("ansi.enabled").or("")
-                    .equalsIgnoreCase("false")) {
-                cli.getConsole().setForceAnsi(false);
-                disableAnsi = true;
-            } else if (geogig.getRepository().configDatabase().get("ansi.enabled").or("")
-                    .equalsIgnoreCase("true")) {
-                disableAnsi = false;
-                cli.getConsole().setForceAnsi(true);
-            }
-        }
-        if (disableAnsi) {
-            cli.getConsole().disableAnsi();
-        } else {
-            cli.getConsole().enableAnsi();
-        }
-
-        addShutdownHook(cli);
-        int exitCode = cli.execute(args);
-
-        if (exitCode != 0 || cli.isExitOnFinish()) {
-            cli.close();
-            System.exit(exitCode);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(-1);
         }
     }
 

@@ -154,6 +154,14 @@ public class RepositoryImpl implements Repository {
         }
     }
 
+    protected @Override void finalize() {
+        if (open) {
+            LOGGER.warn("Repository instance being finalized without having been closed: "
+                    + repositoryLocation);
+            close();
+        }
+    }
+
     private void close(Closeable db) {
         try {
             db.close();

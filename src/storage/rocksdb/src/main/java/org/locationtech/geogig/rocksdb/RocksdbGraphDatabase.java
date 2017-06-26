@@ -185,6 +185,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
             batch.put(commitId.getRawValue(), BINDING.objectToEntry(node));
             try (RocksDBReference dbRef = dbhandle.getReference();
                     WriteOptions wo = new WriteOptions()) {
+                wo.setSync(true);
                 dbRef.db().write(wo, batch);
             }
         } catch (Exception e) {
@@ -264,14 +265,14 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             try (RocksIterator it = dbRef.db().newIterator()) {
                 it.seekToFirst();
-                try (WriteOptions wo = new WriteOptions()) {
-                    wo.setDisableWAL(true);
-                    wo.setSync(false);
+                try (WriteOptions wo = new WriteOptions(); //
+                        WriteBatch batch = new WriteBatch()) {
+                    wo.setSync(true);
                     while (it.isValid()) {
-                        dbRef.db().remove(wo, it.key());
+                        batch.remove(it.key());
                         it.next();
                     }
-                    wo.sync();
+                    dbRef.db().write(wo, batch);
                 }
             } catch (RocksDBException e) {
                 throw propagate(e);

@@ -295,23 +295,24 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         try (RocksDBReference dbRef = dbhandle.getReference(); ReadOptions ro = new ReadOptions()) {
             ro.setFillCache(false);
             ro.setVerifyChecksums(false);
-            try (WriteOptions writeOps = new WriteOptions()) {
-                writeOps.setSync(false);
+            try (WriteOptions writeOps = new WriteOptions(); //
+                    WriteBatch batch = new WriteBatch()) {
+                writeOps.setSync(true);
                 while (ids.hasNext()) {
                     ObjectId id = ids.next();
                     id.getRawValue(keybuff);
                     if (!checkExists || exists(dbRef, ro, keybuff)) {
-                        try {
-                            dbRef.db().remove(writeOps, keybuff);
-                        } catch (RocksDBException e) {
-                            throw Throwables.propagate(e);
-                        }
+                        batch.remove(keybuff);
                         listener.deleted(id);
                     } else {
                         listener.notFound(id);
                     }
                 }
-                writeOps.sync();
+                try {
+                    dbRef.db().write(writeOps, batch);
+                } catch (RocksDBException e) {
+                    throw Throwables.propagate(e);
+                }
             }
         }
     }
@@ -355,8 +356,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         try (RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions(); //
                 WriteBatch batch = new WriteBatch()) {
-            wo.setDisableWAL(true);
-            wo.setSync(false);
+            wo.setSync(true);
             try (ReadOptions ro = new ReadOptions()) {
                 ro.setFillCache(false);
                 ro.setVerifyChecksums(false);
@@ -383,7 +383,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                     // Stopwatch sw = Stopwatch.createStarted();
                     dbRef.db().write(wo, batch);
                     batch.clear();
-                    
+
                     for (Entry<ObjectId, Integer> entry : insertedIds.entrySet()) {
                         listener.inserted(entry.getKey(), entry.getValue());
                     }
@@ -391,7 +391,6 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                     // System.err.printf("--- synced writes in %s\n", sw.stop());
                 }
             }
-            wo.sync();
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }

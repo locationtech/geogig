@@ -271,6 +271,7 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
                     batch.put(key, value);
                 }
                 try (WriteOptions writeOptions = new WriteOptions()) {
+                    writeOptions.setSync(true);
                     dbRef.db().write(writeOptions, batch);
                 }
             } catch (Exception e) {
@@ -286,7 +287,7 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
             return;
         }
         try (RocksDBReference dbRef = dbRefOpt.get()) {
-            dbRef.db().remove(key(path));
+            dbRef.db().delete(key(path));
         } catch (RocksDBException e) {
             propagate(e);
         }
@@ -299,12 +300,13 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
             return;
         }
         try (RocksDBReference dbRef = dbRefOpt.get();
-                WriteOptions writeOptions = new WriteOptions()) {
-            writeOptions.setSync(false);
+                WriteOptions writeOptions = new WriteOptions();
+                WriteBatch batch = new WriteBatch()) {
+            writeOptions.setSync(true);
             for (String path : paths) {
-                dbRef.db().remove(writeOptions, key(path));
+                batch.remove(key(path));
             }
-            writeOptions.sync();
+            dbRef.db().write(writeOptions, batch);
         } catch (RocksDBException e) {
             propagate(e);
         }
@@ -339,7 +341,10 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
         }
 
         final @Nullable byte[] prefix = pathPrefix == null ? null : key(pathPrefix + "/");
-        try (RocksDBReference dbRef = dbRefOpt.get(); WriteBatch batch = new WriteBatch()) {
+        try (RocksDBReference dbRef = dbRefOpt.get(); //
+                WriteOptions opts = new WriteOptions(); //
+                WriteBatch batch = new WriteBatch()) {
+            opts.setSync(true);
             if (pathPrefix != null) {
                 batch.remove(key(pathPrefix));
             }
@@ -359,9 +364,7 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
                     it.next();
                 }
             }
-            try (WriteOptions opts = new WriteOptions()) {
-                dbRef.db().write(opts, batch);
-            }
+            dbRef.db().write(opts, batch);
         } catch (RocksDBException e) {
             propagate(e);
         }

@@ -5,7 +5,7 @@ This will walk you through GeoGig's web-API and all of its currently supported f
 
 If you don't already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-API up and running after you have built the latest GeoGig, ``cd`` into your repository and run ``geogig serve``. This will set up a jetty server for your repository and give you access to the web-API. Now you just need to open up a web browser and go to ``localhost:8182/repos/<repo name>/log`` to make sure the server starts up. After you have gotten the web server up and running, you can test any of the commands listed here.
 
-All web-API commands have transaction support, which means you can run the web-API commands beginTransaction, to start a transaction, and then use the ID that is returned to do other commands on that transaction instead of the actual repository. After you are done with everything on the transaction you just have call endTransaction through the web-API and pass it the transaction ID. Some commands require a transaction to preserve the stability of the repository. Those that require it will have ``(-T)`` next to the name of the command in this doc. To pass the transaction ID you just need to use the transactionId option and set it equal to the ID that beginTransaction returns. Some commands also have other options that are required for that command to work they will have a ``(-R)`` next to them. Any options that have notes associated with them have an asterisk next to them.
+Some commands have options that are required for that command to work.  These commands will have a ``(-R)`` next to them. Any options that have notes associated with them have an asterisk next to them.
 
 .. note:: All web-API command response are formatted for xml by default, however you can get a JSON response by adding ``output_format=JSON`` to the URL parameters.
 
@@ -33,6 +33,53 @@ Parameters can be supplied to the various commands through URL encoding, JSON, o
 ::
 
   curl -X POST -H "Content-Type: application/xml" -d "<params><name>user.name</name><value>John Doe</value></params>" "http://localhost:8182/repos/<repo name>/config"
+  
+Transactions
+------------
+
+Many web-API commands have transaction support to allow multiple users to change the state of the repository without compromising stability.  This works by beginning a transaction, which will generate a unique transaction ID.  This ID can then be passed to many web-API commands so that all work done by that command will affect only that transaction.  After you are done with everything on the transaction you can then end that transaction to merge those changes into the base repository. Some commands require a transaction to preserve the stability of the repository. Those that require it will have ``(-T)`` next to the name of the command in this doc. To perform a command on a transaction, simply supply the transaction ID via the transactionId parameter.
+
+- **BeginTransaction**
+
+	**Currently-supported options:**
+
+		none
+
+	**Example:**
+
+ 	::
+
+	  localhost:8182/repos/<repo name>/beginTransaction
+
+	**Output:**
+
+	::
+
+	   Returns the ID of the transaction that was started.
+
+- **EndTransaction** (-T)
+
+	**Currently-supported options:**
+
+		a) **cancel** - set ``true`` to abort all changes made in this transaction
+
+			**Type:** Boolean
+
+			**Default:** false
+
+	**Example:**
+
+ 	::
+
+	  localhost:8182/repos/<repo name>/endTransaction?cancel=true&transactionId=id
+
+	**Output:**
+
+	::
+
+	   Returns nothing if it succeeded or the transaction ID if it failed.
+
+ .. note:: If there were conflicting changes on the base repository when ending a transaction, this endpoint will return those conflicts.  They must be resolved before attempting to end the transaction again.
 
 Porcelain commands supported
 -----------------------------------------------
@@ -717,46 +764,6 @@ Porcelain commands supported
 
 Plumbing Commands Supported
 -------------------------------------------------------
-
-- **BeginTransaction**
-
-	**Currently-supported options:**
-
-		none
-
-	**Example:**
-
- 	::
-
-	  localhost:8182/repos/<repo name>/beginTransaction
-
-	**Output:**
-
-	::
-
-	   Returns the ID of the transaction that was started.
-
-- **EndTransaction** (-T)
-
-	**Currently-supported options:**
-
-		a) **cancel** - set ``true`` to abort all changes made in this transaction
-
-			**Type:** Boolean
-
-			**Default:** false
-
-	**Example:**
-
- 	::
-
-	  localhost:8182/repos/<repo name>/endTransaction?cancel=true&transactionId=id
-
-	**Output:**
-
-	::
-
-	   Returns nothing if it succeeded or the transaction ID if it failed.
 
 - **FeatureDiff**
 

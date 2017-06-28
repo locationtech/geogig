@@ -66,12 +66,16 @@ public class CLI {
         {// resolve the ansi.enabled global config without opening a full repo, but just the global
          // config database
             final URI uri;
+            boolean globalOnly;
             if (repoURI == null) {
                 uri = platform.getUserHome().toURI();
+                globalOnly = true;
             } else {
                 try {
                     uri = RepositoryResolver.resolveRepoUriFromString(platform, repoURI);
+                    globalOnly = false;
                 } catch (URISyntaxException e) {
+                    globalOnly = true;
                     console.println(format("Invalid repository URI format for '%s': %s", repoURI,
                             e.getMessage()));
                     return -1;
@@ -79,9 +83,9 @@ public class CLI {
             }
             Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
             try (ConfigDatabase config = RepositoryResolver.resolveConfigDatabase(uri, context,
-                    true)) {
+                    globalOnly)) {
                 Optional<String> ansiEnabled = config.getGlobal("ansi.enabled");
-                if(ansiEnabled.isPresent()){
+                if (ansiEnabled.isPresent()) {
                     boolean enable = Boolean.getBoolean(ansiEnabled.get());
                     if (enable) {
                         console.enableAnsi();

@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,7 +26,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.FileRepositoryResolver;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
@@ -64,26 +63,15 @@ public class CLI {
         Logging.tryConfigureLogging(platform, repoURI);
 
         {// resolve the ansi.enabled global config without opening a full repo, but just the global
-         // config database
-            final URI uri;
-            boolean globalOnly;
-            if (repoURI == null) {
-                uri = platform.getUserHome().toURI();
-                globalOnly = true;
-            } else {
-                try {
-                    uri = RepositoryResolver.resolveRepoUriFromString(platform, repoURI);
-                    globalOnly = false;
-                } catch (URISyntaxException e) {
-                    globalOnly = true;
-                    console.println(format("Invalid repository URI format for '%s': %s", repoURI,
-                            e.getMessage()));
-                    return -1;
-                }
-            }
+         // config database at $HOME/.geogigconfig
             Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
-            try (ConfigDatabase config = RepositoryResolver.resolveConfigDatabase(uri, context,
-                    globalOnly)) {
+            // only need the $HOME/.geogigconfig global config. Note given the control coupling
+            // imposed by this argument, this works "by accident" just because we know
+            // FileRepositoryResolver doesn't fail regardless of the argument value, but other
+            // implementations might.
+            final boolean resolveAsRootURI = false;
+            try (ConfigDatabase config = FileRepositoryResolver
+                    .resolveConfigDatabase(platform.pwd().toURI(), context, resolveAsRootURI)) {
                 Optional<String> ansiEnabled = config.getGlobal("ansi.enabled");
                 if (ansiEnabled.isPresent()) {
                     boolean enable = Boolean.getBoolean(ansiEnabled.get());
@@ -126,7 +114,7 @@ public class CLI {
             if (exitCode != Integer.MIN_VALUE) {
                 System.exit(exitCode);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }

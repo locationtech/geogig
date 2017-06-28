@@ -77,7 +77,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
             config = parseConfig(repoURI);
         }
         PGConfigDatabase configDb = new PGConfigDatabase(config);
-        if (config.getRepositoryName() != null) {
+        if (config.getRepositoryName() != null && PGStorage.repoExists(config)) {
             Optional<String> configEntry = configDb.get(PGStorageProvider.FORMAT_NAME + ".version");
             if (!configEntry.isPresent()) {
                 configDb.put(PGStorageProvider.FORMAT_NAME + ".version", PGStorageProvider.VERSION);

@@ -458,17 +458,13 @@ public class PGConfigDatabase implements ConfigDatabase {
      */
     public Optional<Integer> resolveRepositoryPK(String repositoryName) throws SQLException {
         checkNotNull(repositoryName, "provided null repository name");
-        final String configTable = config.getTables().config();
-        final String sql = format(
-                "SELECT repository FROM %s WHERE section = ? and key = ? and value = ?",
-                configTable);
+        final String configTable = config.getTables().repositoryNamesView();
+        final String sql = format("SELECT repository FROM %s WHERE name = ?", configTable);
 
         Integer repoPK = null;
         try (Connection cx = PGStorage.newConnection(connect(config))) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, "repo");
-                ps.setString(2, "name");
-                ps.setString(3, repositoryName);
+                ps.setString(1, repositoryName);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         repoPK = rs.getInt(1);

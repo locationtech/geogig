@@ -35,7 +35,6 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.porcelain.ConfigGet;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.Hints;
@@ -43,10 +42,10 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.FileRepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -601,11 +600,10 @@ public class GeogigCLI {
     private String[] unalias(@Nullable String repoURI, String[] args) {
         final String aliasedCommand = args[0];
         final String configParam = "alias." + aliasedCommand;
-
         URI uri;
         boolean globalOnly;
         if (repoURI == null) {
-            uri = platform.getUserHome().toURI();
+            uri = platform.pwd().toURI();
             globalOnly = true;
         } else {
             try {
@@ -619,16 +617,16 @@ public class GeogigCLI {
 
         Optional<String> unaliased = Optional.absent();
 
-        Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
-        try (ConfigDatabase config = RepositoryResolver.resolveConfigDatabase(uri, context,
-                globalOnly)) {
-            if (!globalOnly) {
+        final Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
+        final RepositoryResolver resolver = RepositoryResolver.lookup(uri);
+        final boolean repoExists = resolver.repoExists(uri);
+        try (ConfigDatabase config = resolver.getConfigDatabase(uri, context, globalOnly)) {
+            if (!globalOnly && repoExists) {
                 unaliased = config.get(configParam);
             }
             if (!unaliased.isPresent()) {
                 unaliased = config.getGlobal(configParam);
             }
-
         } catch (IOException e) {
             String msg = "Unable to acquire config to check alias for " + aliasedCommand;
             LOGGER.error(msg, e);
@@ -640,7 +638,18 @@ public class GeogigCLI {
         }
 
         if (!unaliased.isPresent()) {
-            return args;
+            // see if we can fall back to a file global config
+            if (repoURI == null || !"file".equals(uri.getScheme())) {
+                try (ConfigDatabase global = FileRepositoryResolver
+                        .resolveConfigDatabase(platform.pwd().toURI(), context, true)) {
+                    unaliased = global.getGlobal(configParam);
+                } catch (IOException e) {
+                    throw Throwables.propagate(e);
+                }
+            }
+            if (!unaliased.isPresent()) {
+                return args;
+            }
         }
         Iterable<String> tokens = Splitter.on(" ").split(unaliased.get());
         List<String> allArgs = Lists.newArrayList(tokens);

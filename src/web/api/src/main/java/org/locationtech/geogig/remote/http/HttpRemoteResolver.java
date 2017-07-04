@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 Boundless and others.
+/* Copyright (c) 2012-2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -7,17 +7,15 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.remote;
+package org.locationtech.geogig.remote.http;
 
-import java.io.File;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.CreateDeduplicator;
-import org.locationtech.geogig.remote.http.HttpMappedRemoteRepo;
-import org.locationtech.geogig.remote.http.HttpRemoteRepo;
+import org.locationtech.geogig.remote.IRemoteRepo;
+import org.locationtech.geogig.remote.RemoteResolver;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
@@ -27,35 +25,21 @@ import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 
 /**
- * Provides utilities for creating interfaces to remote repositories.
+ * {@link RemoteResolver} implementation that works against the HTTP web API
  */
-public class RemoteUtils {
+public class HttpRemoteResolver implements RemoteResolver {
 
-    /**
-     * Constructs an interface to allow access to a remote repository.
-     * 
-     * @param localRepository the local repository
-     * @param remoteConfig the remote to connect to
-     * @param remoteHints hints for the remote repo, like read-only, etc.
-     * @return an {@link Optional} of the interface to the remote repository, or
-     *         {@link Optional#absent()} if a connection to the remote could not be established.
-     */
-    public static Optional<IRemoteRepo> newRemote(Repository localRepository, Remote remoteConfig,
-            @Nullable Hints remoteHints) {
+    public Optional<IRemoteRepo> resolve(Repository localRepository, Remote remoteConfig,
+            Hints remoteHints) {
 
-        if (remoteHints == null) {
-            remoteHints = new Hints();
-        }
+        IRemoteRepo remoteRepo = null;
+        
         try {
             String fetchURL = remoteConfig.getFetchURL();
             URI fetchURI = URI.create(fetchURL);
-            if (null == fetchURI.getScheme()) {
-                fetchURI = new File(fetchURL).toURI();
-            }
             final String protocol = fetchURI.getScheme();
 
-            IRemoteRepo remoteRepo = null;
-            if (protocol.equals("http") || protocol.equals("https")) {
+            if ("http".equals(protocol) || "https".equals(protocol)) {
                 final String username = remoteConfig.getUserName();
                 final String password = remoteConfig.getPassword();
                 if (username != null && password != null) {
@@ -77,20 +61,11 @@ public class RemoteUtils {
                             deduplicationService);
                 }
 
-            } else {
-                if (remoteConfig.getMapped()) {
-                    remoteRepo = new LocalMappedRemoteRepo(fetchURI, localRepository);
-                } else {
-                    remoteRepo = new LocalRemoteRepo(fetchURI, localRepository);
-                }
             }
-
-            return Optional.fromNullable(remoteRepo);
         } catch (Exception e) {
             // Invalid fetch URL
             Throwables.propagate(e);
         }
-
-        return Optional.absent();
+        return Optional.fromNullable(remoteRepo);
     }
 }

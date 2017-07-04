@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.remote;
+package org.locationtech.geogig.remote.http;
 
 import static org.locationtech.geogig.storage.datastream.FormatCommonV1.readObjectId;
 
@@ -25,6 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.remote.FilteredDiffIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.BulkOpListener;

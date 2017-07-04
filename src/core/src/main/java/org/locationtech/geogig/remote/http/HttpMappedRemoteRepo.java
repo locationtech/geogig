@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.remote;
+package org.locationtech.geogig.remote.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,6 +32,9 @@ import org.locationtech.geogig.plumbing.CheckSparsePath;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
+import org.locationtech.geogig.remote.FilteredDiffIterator;
+import org.locationtech.geogig.remote.RepositoryWrapper;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.RepositoryFilter.FilterDescription;
@@ -53,7 +56,7 @@ import com.google.gson.JsonPrimitive;
  * 
  * @see AbstractMappedRemoteRepo
  */
-class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
+public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
 
     private URL repositoryURL;
 

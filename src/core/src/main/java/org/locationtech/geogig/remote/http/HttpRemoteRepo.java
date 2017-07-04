@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.remote;
+package org.locationtech.geogig.remote.http;
 
 import java.io.BufferedReader;
 import java.io.FilterOutputStream;
@@ -33,8 +33,13 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.porcelain.ConfigGet;
 import org.locationtech.geogig.porcelain.SynchronizationException;
-import org.locationtech.geogig.remote.BinaryPackedObjects.IngestResults;
-import org.locationtech.geogig.remote.HttpUtils.ReportingOutputStream;
+import org.locationtech.geogig.remote.AbstractRemoteRepo;
+import org.locationtech.geogig.remote.CommitTraverser;
+import org.locationtech.geogig.remote.ObjectFunnel;
+import org.locationtech.geogig.remote.ObjectFunnels;
+import org.locationtech.geogig.remote.RepositoryWrapper;
+import org.locationtech.geogig.remote.http.BinaryPackedObjects.IngestResults;
+import org.locationtech.geogig.remote.http.HttpUtils.ReportingOutputStream;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.DeduplicationService;
@@ -62,7 +67,7 @@ import com.google.gson.JsonPrimitive;
  * 
  * @see AbstractRemoteRepo
  */
-class HttpRemoteRepo extends AbstractRemoteRepo {
+public class HttpRemoteRepo extends AbstractRemoteRepo {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpRemoteRepo.class);
 

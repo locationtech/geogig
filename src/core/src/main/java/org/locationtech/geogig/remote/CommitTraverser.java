@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableList;
  * Provides a method of traversing the commit graph with overridable functions to determine when to
  * prune the traversal, and when to process a commit node.
  */
-abstract class CommitTraverser {
+public abstract class CommitTraverser {
 
     private Queue<CommitNode> commitQueue;
 

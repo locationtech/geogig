@@ -51,7 +51,7 @@ import com.google.common.io.CountingOutputStream;
  */
 class HttpUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
+    static final Logger LOGGER = LoggerFactory.getLogger("org.locationtech.geogig.remote.http");
 
     /**
      * Parse the provided ref string to a {@link Ref}. The input string should be in the following

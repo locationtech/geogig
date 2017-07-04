@@ -27,7 +27,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.remote.ObjectFunnel;
 import org.locationtech.geogig.repository.impl.Deduplicator;
-import org.locationtech.geogig.repository.impl.PostOrderIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ObjectStore;

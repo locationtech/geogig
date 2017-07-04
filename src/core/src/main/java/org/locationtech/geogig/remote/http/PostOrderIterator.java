@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.repository.impl;
+package org.locationtech.geogig.remote.http;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,6 +23,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.repository.impl.Deduplicator;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.AbstractIterator;
@@ -42,7 +43,7 @@ import com.google.common.collect.AbstractIterator;
  * commit to the features.) Some traversals use additional memory to avoid re-visiting objects that
  * are reachable via multiple paths (eg, features that are part of multiple commits.)
  */
-public class PostOrderIterator extends AbstractIterator<RevObject> {
+class PostOrderIterator extends AbstractIterator<RevObject> {
 
     /**
      * A traversal of all objects reachable from the given origin, with deduplication.

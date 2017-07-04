@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.CreateDeduplicator;
-import org.locationtech.geogig.remote.BinaryPackedObjects;
 import org.locationtech.geogig.remote.ObjectFunnel;
 import org.locationtech.geogig.remote.ObjectFunnels;
+import org.locationtech.geogig.remote.http.BinaryPackedObjects;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.DeduplicationService;
 import org.locationtech.geogig.repository.impl.Deduplicator;

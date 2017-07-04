@@ -145,6 +145,16 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
     public static final TextSerializationFactory INSTANCE = new TextSerializationFactory();
 
     /**
+     * @return {@code false}, this serializer does not support reading back multiple objects from a
+     *         single stream since the parser uses a {@link BufferedReader} and the encoded format
+     *         does not define a trailing marker on each object to unambiguously determine the end
+     *         of one object and the start of the next object.
+     */
+    public @Override boolean supportsStreaming() {
+        return false;
+    }
+
+    /**
      * Abstract text writer that provides print methods on a {@link Writer} to consistently write
      * newlines as {@code \n} instead of using the platform's line separator as in
      * {@link PrintWriter}. It also provides some common method used by different writers.
@@ -853,7 +863,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String message = parseLine(requireLine(reader), "message");
             String commitId = parseLine(requireLine(reader), "commitid");
             RevPerson tagger = parsePerson(requireLine(reader));
-            RevTag tag = RevTagBuilder.create(id, name, ObjectId.valueOf(commitId), message, tagger);
+            RevTag tag = RevTagBuilder.create(id, name, ObjectId.valueOf(commitId), message,
+                    tagger);
             return tag;
         }
 

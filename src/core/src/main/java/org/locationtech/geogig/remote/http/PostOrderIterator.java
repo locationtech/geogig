@@ -9,17 +9,19 @@
  */
 package org.locationtech.geogig.remote.http;
 
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
@@ -27,6 +29,10 @@ import org.locationtech.geogig.repository.impl.Deduplicator;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * The PostOrderIterator class provides utilities for traversing a GeoGig revision history graph in
@@ -95,21 +101,18 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
     private final ObjectStore database;
 
     /**
-     * The collection of ObjectIds that must be visited. It is organized as a list of lists - the
-     * first entry is always the deepest set of ObjectIds that needs to be processed.
+     * A {@link PostOrderIteratorInternal} providing a stream of {@link RevObject} and/or
+     * {@link ObjectId} instances
+     * 
+     * @see #computeNext()
      */
-    private List<List<ObjectId>> toVisit;
+    private final Iterator<Object> internal;
 
     /**
-     * A flag tracking the state of the traversal. When true, we are building up a queue of objects
-     * to visit. When false, we are visiting them (aka returning them from the iterator.)
+     * The current batch of {@link RevObject} instances resolved from {@link #internal} that
+     * {@link #computeNext()} returns from
      */
-    private boolean enqueue;
-
-    /**
-     * The Successors object determining which objects reachable from the current one to enqueue.
-     */
-    private final Successors successors;
+    private Iterator<RevObject> currentBatch = Collections.emptyIterator();
 
     /**
      * The single, private constructor for PostOrderIterator. Generally it will be more convenient
@@ -122,47 +125,149 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
      * @param successors the traversal policy for this iteration.
      */
     private PostOrderIterator(List<ObjectId> start, ObjectStore database, Successors successors) {
-        super();
         this.database = database;
-        this.enqueue = true;
-        this.successors = successors;
-        toVisit = new ArrayList<List<ObjectId>>();
-        toVisit.add(new ArrayList<ObjectId>());
-        toVisit.get(0).addAll(start);
+        this.internal = new PostOrderIteratorInternal(start, database, successors);
     }
 
+    /**
+     * Returns objects from {@link #currentBatch}, creating a new batch from {@link #internal} while
+     * there are objects in {@link #internal}
+     * <p>
+     * {@link #internal} is a {@link PostOrderIteratorInternal}
+     * <p>
+     * Since {@link #internal} may return either {@link RevObject} instances or {@link ObjectId}
+     * instances, sequences of {@link ObjectId} will first be translated to
+     * {@link ObjectStore#getAll} calls.
+     * 
+     * @see PostOrderIteratorInternal
+     */
     @Override
     protected RevObject computeNext() {
-        while (!toVisit.isEmpty()) {
-            List<ObjectId> currentList = toVisit.get(0);
-            if (currentList.isEmpty()) {
-                // No more ids at this depth - pop a level off of the stack and switch to "visiting"
-                // mode
-                enqueue = false;
-                toVisit.remove(0);
-            } else {
-                if (enqueue) {
-                    // We're building up a list of objects to visit, so add all the reachable
-                    // objects from here to the front of the toVisit stack
-                    final ObjectId id = currentList.get(0);
-                    final RevObject object = database.get(id);
-                    final List<ObjectId> next = new ArrayList<ObjectId>();
-                    successors.findSuccessors(object, next);
-                    toVisit.add(0, next);
-                } else {
-                    // We just visited a node, so switch back to enqueuing mode in order to make
-                    // sure the successors of the next one at this depth are visited.
-                    enqueue = true;
-                    final ObjectId id = currentList.remove(0);
+        if (currentBatch.hasNext()) {
+            return currentBatch.next();
+        }
+        if (internal.hasNext()) {
+            currentBatch = computeNextBatch();
+            return computeNext();
+        }
+        return endOfData();
+    }
 
-                    if (successors.previsit(id)) {
-                        return database.get(id);
+    private Iterator<RevObject> computeNextBatch() {
+        List<RevObject> batch = new ArrayList<>();
+        List<ObjectId> query = new ArrayList<>();
+
+        while (internal.hasNext()) {
+            Object next = internal.next();
+            if (next instanceof RevObject) {
+                batch.add((RevObject) next);
+                if (batch.size() >= 100) {
+                    break;
+                }
+            } else {
+                query.add((ObjectId) next);
+                // advance while we have ObjectIds to query
+                while (internal.hasNext()) {
+                    next = internal.next();
+                    if (next instanceof ObjectId) {
+                        query.add((ObjectId) next);
+                    } else {
+                        batch.add((RevObject) next);
+                        break;
                     }
                 }
             }
         }
-        // when the toVisit list becomes empty, we are done
-        return endOfData();
+        if (!query.isEmpty()) {
+            Iterator<RevObject> all = database.getAll(query);
+            all.forEachRemaining((o) -> batch.add(o));
+        }
+
+        return batch.iterator();
+    }
+
+    /**
+     * Uses {@link Successors} to traverse all the reachable objects in the commit graph and produce
+     * an iterator of objects that are either {@link RevObject} or {@link ObjectId} instances.
+     * <p>
+     * This is so {@link RevFeature} instances don't need to be pre-fetches unnecessarily before
+     * going through the {@link Successors#previsit(ObjectId)} filter. That is, all
+     * {@link Successors} instances return {@link RevObject}s except {@link #TREE_FEATURES}
+     *
+     */
+    private static class PostOrderIteratorInternal extends AbstractIterator<Object> {
+        /**
+         * A handle to the object database used for the traversal
+         */
+        private final ObjectStore database;
+
+        /**
+         * The collection of ObjectIds that must be visited. It is organized as a list of lists -
+         * the first entry is always the deepest set of ObjectIds that needs to be processed.
+         */
+        private List<List<Object>> toVisit;
+
+        /**
+         * A flag tracking the state of the traversal. When true, we are building up a queue of
+         * objects to visit. When false, we are visiting them (aka returning them from the
+         * iterator.)
+         */
+        private boolean enqueue;
+
+        /**
+         * The Successors object determining which objects reachable from the current one to
+         * enqueue.
+         */
+        private final Successors successors;
+
+        private PostOrderIteratorInternal(List<ObjectId> start, ObjectStore database,
+                Successors successors) {
+            this.database = database;
+            this.enqueue = true;
+            this.successors = successors;
+            toVisit = new ArrayList<List<Object>>();
+            Iterator<RevObject> startobjs = database.getAll(start);
+            ArrayList<Object> startList = Lists.newArrayList(startobjs);
+            toVisit.add(startList);
+        }
+
+        @Override
+        protected Object computeNext() {
+            while (!toVisit.isEmpty()) {
+                List<Object> currentList = toVisit.get(0);
+                if (currentList.isEmpty()) {
+                    // No more ids at this depth - pop a level off of the stack and switch to
+                    // "visiting"
+                    // mode
+                    enqueue = false;
+                    toVisit.remove(0);
+                } else {
+                    if (enqueue) {
+                        // We're building up a list of objects to visit, so add all the reachable
+                        // objects from here to the front of the toVisit stack
+                        final Object object = currentList.get(0);
+                        final List<Object> next = new ArrayList<Object>();
+                        successors.findSuccessors(object, next, database);
+                        toVisit.add(0, next);
+                    } else {
+                        // We just visited a node, so switch back to enqueuing mode in order to make
+                        // sure the successors of the next one at this depth are visited.
+                        enqueue = true;
+                        final Object obj = currentList.remove(0);
+                        final ObjectId id = id(obj);
+                        if (successors.previsit(id)) {
+                            return obj;
+                        }
+                    }
+                }
+            }
+            // when the toVisit list becomes empty, we are done
+            return endOfData();
+        }
+    }
+
+    private static ObjectId id(Object object) {
+        return object instanceof RevObject ? ((RevObject) object).getId() : (ObjectId) object;
     }
 
     /**
@@ -173,13 +278,18 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
      */
     private static interface Successors {
         /**
-         * Calculate the list of ObjectIds for objects directly reachable from the given RevObject
-         * according to this policy.
+         * Calculate the list of objects directly reachable from the given RevObject according to
+         * this policy.
+         * <p>
+         * The objects added to the {@code successors} argument list can be {@link RevObject} or
+         * {@link ObjectId} instances. This is so that a {@code Successors} implementation can
+         * decide whether it's best to pre-fetch the objects from the {@code database} or leave it
+         * for a later phase.
          * 
          * @param object an object whose successor list should be calculated
          * @param successors a List into which successors will be inserted
          */
-        public void findSuccessors(RevObject object, List<ObjectId> successors);
+        public void findSuccessors(Object object, List<Object> successors, ObjectStore database);
 
         /**
          * Test an ObjectId before the object is visited. Implementors should return true if this
@@ -195,10 +305,13 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
      * A Successors strategy for traversing to the parents of commit nodes.
      */
     private final static Successors COMMIT_PARENTS = new Successors() {
-        public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
+        public @Override void findSuccessors(final Object object, final List<Object> successors,
+                ObjectStore database) {
             if (object instanceof RevCommit) {
                 final RevCommit commit = (RevCommit) object;
-                successors.addAll(commit.getParentIds());
+                Iterator<RevCommit> parents = database.getAll(commit.getParentIds(), NOOP_LISTENER,
+                        RevCommit.class);
+                parents.forEachRemaining((o) -> successors.add(o));
             }
         }
 
@@ -209,10 +322,11 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
     };
 
     private final static Successors TAG_COMMIT = new Successors() {
-        public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
+        public @Override void findSuccessors(final Object object, final List<Object> successors,
+                ObjectStore database) {
             if (object instanceof RevTag) {
                 final RevTag tag = (RevTag) object;
-                successors.add(tag.getCommitId());
+                successors.add(database.getCommit(tag.getCommitId()));
             }
         }
 
@@ -226,10 +340,10 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
      * A Successors strategy for traversing to the single content tree from a commit node.
      */
     private final static Successors COMMIT_TREE = new Successors() {
-        public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
+        public @Override void findSuccessors(final Object object, final List<Object> successors,
+                ObjectStore database) {
             if (object instanceof RevCommit) {
-                final RevCommit commit = (RevCommit) object;
-                successors.add(commit.getTreeId());
+                successors.add(database.getTree(((RevCommit) object).getTreeId()));
             }
         }
 
@@ -241,24 +355,28 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
 
     /**
      * A Successors strategy for traversing to features from a tree node
+     * <p>
+     * Adds {@link RevTree#features()}'s {@link ObjectId}s to the {@code successors} list in order
+     * to avoid pre-fetching feature instances before their ids pass through the
+     * {@link Successors#previsit(ObjectId)} filter
      */
     private final static Successors TREE_FEATURES = new Successors() {
-        public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
-            if (object instanceof RevTree) {
-                final RevTree tree = (RevTree) object;
-                if (!tree.features().isEmpty()) {
-                    final Set<ObjectId> seen = new HashSet<ObjectId>();
-                    for (Node n : tree.features()) {
-                        if (n.getMetadataId().isPresent()) {
-                            if (seen.add(n.getMetadataId().get())) {
-                                successors.add(n.getMetadataId().get());
-                            }
-                        }
-                        if (seen.add(n.getObjectId())) {
-                            successors.add(n.getObjectId());
-                        }
+        public @Override void findSuccessors(final Object object, final List<Object> successors,
+                ObjectStore database) {
+            if (!(object instanceof RevTree)) {
+                return;
+            }
+            final RevTree tree = (RevTree) object;
+            ImmutableList<Node> features = tree.features();
+            if (!features.isEmpty()) {
+                final Set<ObjectId> seen = Sets.newHashSet();
+                features.forEach((n) -> {
+                    if (n.getMetadataId().isPresent()) {
+                        seen.add(n.getMetadataId().get());
                     }
-                }
+                    seen.add(n.getObjectId());
+                });
+                successors.addAll(seen);
             }
         }
 
@@ -272,21 +390,18 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
      * A Successors strategy for traversing to subtrees from a tree node
      */
     private final static Successors TREE_SUBTREES = new Successors() {
-        public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
+        public @Override void findSuccessors(final Object object, final List<Object> successors,
+                ObjectStore database) {
             if (object instanceof RevTree) {
                 final RevTree tree = (RevTree) object;
                 if (!tree.trees().isEmpty()) {
                     final Set<ObjectId> seen = new HashSet<ObjectId>();
                     for (Node n : tree.trees()) {
-                        if (n.getMetadataId().isPresent()) {
-                            if (seen.add(n.getMetadataId().get())) {
-                                successors.add(n.getMetadataId().get());
-                            }
-                        }
-                        if (seen.add(n.getObjectId())) {
-                            successors.add(n.getObjectId());
-                        }
+                        seen.add(n.getMetadataId().get());
+                        seen.add(n.getObjectId());
                     }
+                    Iterator<RevObject> all = database.getAll(seen);
+                    all.forEachRemaining((o) -> successors.add(o));
                 }
             }
         }
@@ -301,14 +416,16 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
      * A Successors strategy for traversing to bucket contents from a tree node.
      */
     private final static Successors TREE_BUCKETS = new Successors() {
-        public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
+        public @Override void findSuccessors(final Object object, final List<Object> successors,
+                ObjectStore database) {
             if (object instanceof RevTree) {
                 final RevTree tree = (RevTree) object;
                 if (!tree.buckets().isEmpty()) {
-                    for (Map.Entry<?, Bucket> entry : tree.buckets().entrySet()) {
-                        final Bucket bucket = entry.getValue();
-                        successors.add(bucket.getObjectId());
-                    }
+                    Iterable<ObjectId> bucketIds = Iterables.transform(tree.buckets().values(),
+                            (b) -> b.getObjectId());
+                    Iterator<RevTree> buckets = database.getAll(bucketIds, NOOP_LISTENER,
+                            RevTree.class);
+                    buckets.forEachRemaining((b) -> successors.add(b));
                 }
             }
         }
@@ -329,9 +446,10 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
      */
     private final static Successors combine(final Successors... chained) {
         return new Successors() {
-            public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
+            public @Override void findSuccessors(final Object object, final List<Object> successors,
+                    ObjectStore database) {
                 for (Successors s : chained) {
-                    s.findSuccessors(object, successors);
+                    s.findSuccessors(object, successors, database);
                 }
             }
 
@@ -362,11 +480,14 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
     private final static Successors uniqueWithDeduplicator(final Successors delegate,
             final Deduplicator deduplicator) {
         return new Successors() {
-            public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
-                if (!deduplicator.isDuplicate(object.getId())) {
+            public @Override void findSuccessors(final Object object, final List<Object> successors,
+                    ObjectStore database) {
+                ObjectId id = id(object);
+                if (!deduplicator.isDuplicate(id)) {
                     final int oldSize = successors.size();
-                    delegate.findSuccessors(object, successors);
-                    deduplicator.removeDuplicates(successors.subList(oldSize, successors.size()));
+                    delegate.findSuccessors(object, successors, database);
+                    List<Object> subList = successors.subList(oldSize, successors.size());
+                    deduplicator.removeDuplicates(Lists.transform(subList, (o) -> id(o)));
                 }
             }
 
@@ -389,10 +510,12 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
             final List<ObjectId> base) {
         final Set<ObjectId> baseSet = new HashSet<ObjectId>(base);
         return new Successors() {
-            public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
-                if (!baseSet.contains(object.getId())) {
+            public @Override void findSuccessors(final Object object, final List<Object> successors,
+                    ObjectStore database) {
+                ObjectId id = id(object);
+                if (!baseSet.contains(id)) {
                     final int oldSize = successors.size();
-                    delegate.findSuccessors(object, successors);
+                    delegate.findSuccessors(object, successors, database);
                     successors.subList(oldSize, successors.size()).removeAll(baseSet);
                 }
             }

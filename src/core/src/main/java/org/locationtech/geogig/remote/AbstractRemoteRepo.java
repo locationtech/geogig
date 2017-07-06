@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
  * 
  * @see IRemoteRepo
  */
-abstract class AbstractRemoteRepo implements IRemoteRepo {
+public abstract class AbstractRemoteRepo implements IRemoteRepo {
 
     protected Repository localRepository;
 

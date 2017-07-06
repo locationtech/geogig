@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Provides an interface to make basic queries to a repository.
  */
-interface RepositoryWrapper {
+public interface RepositoryWrapper {
 
     /**
      * Determines if the provided object exists in the repository.

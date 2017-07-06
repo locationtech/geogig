@@ -16,6 +16,8 @@ import java.net.URI;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.CreateDeduplicator;
+import org.locationtech.geogig.remote.http.HttpMappedRemoteRepo;
+import org.locationtech.geogig.remote.http.HttpRemoteRepo;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;

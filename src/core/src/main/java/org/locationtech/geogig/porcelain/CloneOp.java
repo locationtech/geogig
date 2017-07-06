@@ -160,7 +160,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
         }
 
         // Fetch remote data
-        command(FetchOp.class).setDepth(depth.or(0)).setProgressListener(progressListener).call();
+        command(FetchOp.class).addRemote(remote.getName()).setDepth(depth.or(0)).setProgressListener(progressListener).call();
 
         // Set up remote tracking branches
         final ImmutableSet<Ref> remoteRefs = command(LsRemote.class).retrieveTags(false)

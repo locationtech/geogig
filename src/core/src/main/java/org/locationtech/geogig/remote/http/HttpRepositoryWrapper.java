@@ -7,11 +7,12 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.remote;
+package org.locationtech.geogig.remote.http;
 
 import java.net.URL;
 
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.remote.RepositoryWrapper;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;

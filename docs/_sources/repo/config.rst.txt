@@ -53,14 +53,14 @@ You can also get a display of all the configured global values by using the ``-l
    user.name=Author
    user.email=author@example.com
 
-Console text colouring can be set using the ``ansi.enabled`` parameter. Set the value to ``true`` or ``false`` to manually enable or disable ANSI support. This will override the auto-detection of ANSI support and can be set at the global level using ``--global`` or set in a repository as shown below.
+Console text colouring can be set using the ``ansi.enabled`` parameter. Set the value to ``true`` or ``false`` to manually enable or disable ANSI support. This will override the auto-detection of ANSI support and shall be set at the global level using ``--global`` as shown below.
 
 .. code-block:: console
 
-   geogig config ansi.enabled true
+   geogig config --global ansi.enabled true
 
 To use auto-detection of ANSI support use the ``--unset`` flag to remove the ``ansi.enabled`` parameter.
 
 .. code-block:: console
 
-   geogig config --unset ansi.enabled
+   geogig config --unset --global ansi.enabled

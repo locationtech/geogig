@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web-API Documentation &mdash; GeoGig 1.1.1-RC1 User Manual</title>
+  <title>Web-API Documentation &mdash; GeoGig 1.1.1-RC3 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1.1-RC1',
+        VERSION:     '1.1.1-RC3',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1.1-RC1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.1.1-RC3 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web-API indexing documentation" href="indexing-web-api.html" />
       <link rel="prev" title="GeoServer REST configuration integration" href="geoserver_web-api.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1.1-RC1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.1.1-RC3 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web-API Documentation</li>
 </ul>
@@ -100,7 +100,7 @@
 <h1>Web-API Documentation<a class="headerlink" href="#web-api-documentation" title="Permalink to this headline">¶</a></h1>
 <p>This will walk you through GeoGig’s web-API and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands.</p>
 <p>If you don’t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-API up and running after you have built the latest GeoGig, <code class="docutils literal"><span class="pre">cd</span></code> into your repository and run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>. This will set up a jetty server for your repository and give you access to the web-API. Now you just need to open up a web browser and go to <code class="docutils literal"><span class="pre">localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> to make sure the server starts up. After you have gotten the web server up and running, you can test any of the commands listed here.</p>
-<p>All web-API commands have transaction support, which means you can run the web-API commands beginTransaction, to start a transaction, and then use the ID that is returned to do other commands on that transaction instead of the actual repository. After you are done with everything on the transaction you just have call endTransaction through the web-API and pass it the transaction ID. Some commands require a transaction to preserve the stability of the repository. Those that require it will have <code class="docutils literal"><span class="pre">(-T)</span></code> next to the name of the command in this doc. To pass the transaction ID you just need to use the transactionId option and set it equal to the ID that beginTransaction returns. Some commands also have other options that are required for that command to work they will have a <code class="docutils literal"><span class="pre">(-R)</span></code> next to them. Any options that have notes associated with them have an asterisk next to them.</p>
+<p>Some commands have options that are required for that command to work.  These commands will have a <code class="docutils literal"><span class="pre">(-R)</span></code> next to them. Any options that have notes associated with them have an asterisk next to them.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">All web-API command response are formatted for xml by default, however you can get a JSON response by adding <code class="docutils literal"><span class="pre">output_format=JSON</span></code> to the URL parameters.</p>
@@ -130,6 +130,57 @@
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/xml&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s2">&quot;&lt;params&gt;&lt;name&gt;user.name&lt;/name&gt;&lt;value&gt;John Doe&lt;/value&gt;&lt;/params&gt;&quot;</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="transactions">
+<h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this headline">¶</a></h2>
+<p>Many web-API commands have transaction support to allow multiple users to change the state of the repository without compromising stability.  This works by beginning a transaction, which will generate a unique transaction ID.  This ID can then be passed to many web-API commands so that all work done by that command will affect only that transaction.  After you are done with everything on the transaction you can then end that transaction to merge those changes into the base repository. Some commands require a transaction to preserve the stability of the repository. Those that require it will have <code class="docutils literal"><span class="pre">(-T)</span></code> next to the name of the command in this doc. To perform a command on a transaction, simply supply the transaction ID via the transactionId parameter.</p>
+<ul>
+<li><p class="first"><strong>BeginTransaction</strong></p>
+<blockquote>
+<div><p><strong>Currently-supported options:</strong></p>
+<blockquote>
+<div><p>none</p>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">localhost</span><span class="p">:</span><span class="mi">8182</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">beginTransaction</span>
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">ID</span> <span class="n">of</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">that</span> <span class="n">was</span> <span class="n">started</span><span class="o">.</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>EndTransaction</strong> (-T)</p>
+<blockquote>
+<div><p><strong>Currently-supported options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>cancel</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to abort all changes made in this transaction</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/endTransaction?cancel=true&amp;transactionId=id
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">nothing</span> <span class="k">if</span> <span class="n">it</span> <span class="n">succeeded</span> <span class="ow">or</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">ID</span> <span class="k">if</span> <span class="n">it</span> <span class="n">failed</span><span class="o">.</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If there were conflicting changes on the base repository when ending a transaction, this endpoint will return those conflicts.  They must be resolved before attempting to end the transaction again.</p>
+</div>
+</div></blockquote>
 </div>
 <div class="section" id="porcelain-commands-supported">
 <h2>Porcelain commands supported<a class="headerlink" href="#porcelain-commands-supported" title="Permalink to this headline">¶</a></h2>
@@ -870,45 +921,6 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
 <div class="section" id="plumbing-commands-supported">
 <h2>Plumbing Commands Supported<a class="headerlink" href="#plumbing-commands-supported" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p class="first"><strong>BeginTransaction</strong></p>
-<blockquote>
-<div><p><strong>Currently-supported options:</strong></p>
-<blockquote>
-<div><p>none</p>
-</div></blockquote>
-<p><strong>Example:</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">localhost</span><span class="p">:</span><span class="mi">8182</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">beginTransaction</span>
-</pre></div>
-</div>
-<p><strong>Output:</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">the</span> <span class="n">ID</span> <span class="n">of</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">that</span> <span class="n">was</span> <span class="n">started</span><span class="o">.</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
-<li><p class="first"><strong>EndTransaction</strong> (-T)</p>
-<blockquote>
-<div><p><strong>Currently-supported options:</strong></p>
-<blockquote>
-<div><ol class="loweralpha">
-<li><p class="first"><strong>cancel</strong> - set <code class="docutils literal"><span class="pre">true</span></code> to abort all changes made in this transaction</p>
-<blockquote>
-<div><p><strong>Type:</strong> Boolean</p>
-<p><strong>Default:</strong> false</p>
-</div></blockquote>
-</li>
-</ol>
-</div></blockquote>
-<p><strong>Example:</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>localhost:8182/repos/&lt;repo name&gt;/endTransaction?cancel=true&amp;transactionId=id
-</pre></div>
-</div>
-<p><strong>Output:</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Returns</span> <span class="n">nothing</span> <span class="k">if</span> <span class="n">it</span> <span class="n">succeeded</span> <span class="ow">or</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">ID</span> <span class="k">if</span> <span class="n">it</span> <span class="n">failed</span><span class="o">.</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
 <li><p class="first"><strong>FeatureDiff</strong></p>
 <blockquote>
 <div><p><strong>Currently-supported options:</strong></p>
@@ -1338,6 +1350,7 @@ localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&a
         <ul>
 <li><a class="reference internal" href="#">Web-API Documentation</a><ul>
 <li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#transactions">Transactions</a></li>
 <li><a class="reference internal" href="#porcelain-commands-supported">Porcelain commands supported</a></li>
 <li><a class="reference internal" href="#plumbing-commands-supported">Plumbing Commands Supported</a></li>
 <li><a class="reference internal" href="#web-api-specific">Web-API Specific</a></li>

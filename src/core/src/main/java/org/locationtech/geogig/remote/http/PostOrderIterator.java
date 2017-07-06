@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -154,36 +155,32 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
     }
 
     private Iterator<RevObject> computeNextBatch() {
-        List<RevObject> batch = new ArrayList<>();
+        // used to preserve order of elements returned by #internal
+        LinkedHashMap<ObjectId, RevObject> ordered = new LinkedHashMap<>();
+
         List<ObjectId> query = new ArrayList<>();
 
         while (internal.hasNext()) {
             Object next = internal.next();
             if (next instanceof RevObject) {
-                batch.add((RevObject) next);
-                if (batch.size() >= 100) {
-                    break;
-                }
+                RevObject o = (RevObject) next;
+                ordered.put(o.getId(), o);
             } else {
-                query.add((ObjectId) next);
-                // advance while we have ObjectIds to query
-                while (internal.hasNext()) {
-                    next = internal.next();
-                    if (next instanceof ObjectId) {
-                        query.add((ObjectId) next);
-                    } else {
-                        batch.add((RevObject) next);
-                        break;
-                    }
-                }
+                ObjectId id = (ObjectId) next;
+                query.add(id);
+                ordered.put(id, null);
+            }
+            if (ordered.size() == 1000) {
+                break;
             }
         }
+
         if (!query.isEmpty()) {
             Iterator<RevObject> all = database.getAll(query);
-            all.forEachRemaining((o) -> batch.add(o));
+            all.forEachRemaining((o) -> ordered.put(o.getId(), o));
         }
 
-        return batch.iterator();
+        return ordered.values().iterator();
     }
 
     /**

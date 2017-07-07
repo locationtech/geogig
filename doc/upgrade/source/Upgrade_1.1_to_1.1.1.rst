@@ -32,9 +32,8 @@ Here is a simple process to do this;
 Cache Configuration
 -------------------
 
-The cache's configuration has been greatly simplified.  Please see the documentation for how to configure it and see statistics.
-
-TODO: link to doc/manual/source/interaction/geoserver_ui.rst  _geosever-settings
+The cache's configuration has been greatly simplified.  Please see the
+`documentation <http://geogig.org/docs/interaction/geoserver_ui.html#geogig-runtime-settings>`_ for configuring it and observing statistics.
 
 PostgreSQL driver upgrade
 -------------------------
@@ -68,9 +67,8 @@ For help in seeing dependencies, you can use `mvn dependency:tree`.
    </dependency>
 
 
-TODO: link to doc/manual/source/start/installation.rst
-
-https://jdbc.postgresql.org/download/postgresql-42.1.1.jar
+The PostgreSQL driver can be downloaded form `here <https://jdbc.postgresql.org/download/postgresql-42.1.1.jar>`_. Please
+also read the section in the `installation <http://geogig.org/docs/start/installation.html#postgresql-jdbc-driver-version>`_ guide.
 
 
 Using GeoGig 1.1.1 in the Cloud
@@ -80,16 +78,27 @@ GeoGig 1.1.1 has been updated to work with various GeoServer clustered environme
 added (or modified) are known to all the GeoServers in the cluster.  GeoGig is already designed to allow multiple simultaneous
 connections and modifications to the same PostgreSQL dataset.
 
-Clustered - do not use RocksDB
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Clustered - Disable RocksDB Provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-GeoGIG should *only* be used with the PostgreSQL backend in a clustered environment.  The GeoGig RocksDB backend cannot be
+GeoGig should *only* be used with the PostgreSQL backend in a clustered environment.  The GeoGig RocksDB backend cannot be
 used by more than one GeoGig process at a time and some cloud filesystems would not efficiently allow the files to be shared.
 
-TODO: add POM/deployment information here for the postgresql/rocks providers
+GeoGig 1.1.1 now supports disabling specific backend (i.e. RocksDB or PostgreSQL) providers at runtime, in one of two ways.
+The easiest way is to simply remove the provider's JAR file from the classpath. In the context of GeoServer, the provider
+JAR files will be in the ``geoserver/WEB-INF/lib`` directory. Remove ``geogig-rocksdb-1.1.1.jar`` to disable the RocksDB backend
+provider and restart GeoServer.
 
-Clustered - GeoGig async operation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The other way to disable a provider is to set a JVM system property (**disableResolvers**) at startup that specifies the
+list of provider classnames to disable. To disable the RocksDB provider for GeoServer using this method, ensure the
+following is set during startup:
+
+::
+
+    -DdisableResolvers=org.locationtech.geogig.repository.impl.FileRepositoryResolver
+
+Clustered - GeoGig asynchronous operations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There are some asynchronous operations in GeoGig - these operations start a process that can be monitored for completion.
 Unfortunately, these operations are only known about on the node that they were started on.  In the general cloud case, the
@@ -99,4 +108,5 @@ process could be started on one node and the request to monitor for completion c
 In a clustered environment, the async operation and monitoring requests must be directed to the same node.  This can be
 done by either directly talking to a node or (better) having the load balancer direct the requests to the same node.
 
-TODO: provide a (partial/full) list of async operations
+Most of the asynchronous operations in GeoGig are ones that are expected to take some time to complete. These include all
+**import** and **export** operations, as well as the **task** status operations associated with them.

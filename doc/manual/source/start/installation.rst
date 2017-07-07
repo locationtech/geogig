@@ -45,7 +45,7 @@ GeoServer versions lower than 2.12 come with an older version of the PostgreSQL 
 GeoGig requires version ``42.1.1`` (included in the geogig plugin zip file as ``postgresql-42.1.1.jar``), while GeoServer comes
 with version ``9.4.1211``.
 
-GeoGig needs the above mentioned version or higher in order to be able to transferring data to and from the postgres database in pure binary form.
+GeoGig needs the above mentioned version or higher in order to be able to transfer data to and from the postgres database in pure binary form.
 
 Given the way servlet containers (such as Apache Tomcat or Jetty) work, if the two jar files end up being in GeoSevrer's ``WEB-INF/lib`` folder,
 one or the other may be loaded first, in a non deterministic way. Hence **you'll need to remove the older jar file** from GeoSevrer's ``WEB-INF/lib`` folder

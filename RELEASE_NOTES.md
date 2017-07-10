@@ -1,3 +1,57 @@
+#GeoGig 1.1.1 Release Notes
+
+July 10, 2017.
+
+This release sits on top of 1.1.0, adding even more performance and robustness improvements.
+
+Download bundles are available [here](https://github.com/locationtech/geogig/releases/tag/v1.1.1)
+
+##Performance
+
+We’ve, again, improved communication between Geoserver/GeoGig and PostgreSQL - and that means it’s 
+FAST and requires 25% less network bandwidth.  This means lower infrastructure requirements
+and quicker responses. 
+
+NOTE: this requires an updated PostgreSQL driver; check the [installation instructions](http://geogig.org/docs/start/installation.html#postgresql-jdbc-driver-version).
+
+Also, for this release we've started a performance assessment and improvement plan for geogig to geogig remoting (that is, cloning and synchronizing),
+and introduced the first round of improvements for cloning from an HTTP remote to a local repository, with time savings of up to an order of magnitude!
+
+There are still some rough edges specially when synchronizing a large number of commits that we'll be working on for the 1.2 series.
+
+##Caching
+
+GeoGig 1.1.1 has a simplified and improved cache, offering;
+
+* Very simple configuration - simply set the size of the cache with one number.
+* Sharing - one cache is now shared among all your repos, allowing more heavily used repos more efficient access to the cache.
+* Statistics - the cache’s effectiveness can now be explored, allowing administrators better information to make configuration decisions. 
+* Independence - the cache can be configured on a per-instance basis, allowing each instance to be individually tuned. 
+
+Please see the [Shared cache](http://geogig.org/docs/start/runtime.html#shared-internal-cache) documentation and how to
+configure it on the [GeoServer GUI](http://geogig.org/docs/interaction/geoserver_ui.html#geogig-runtime-settings).
+
+
+##Clustering
+
+The GeoGig team have extensively tested the GeoGig GeoServer plugin in a clustered environment and we're more than glad with the results.
+Please see the [upgrade guide](http://geogig.org/upgrade/Upgrade_1.1_to_1.1.1.html).
+
+
+##Bug Fixes
+
+We performed more testing this release and found (and fixed) several minor problems. We also addressed a few issues reported on the mailing list.
+
+* Fix Rocksdb backend's durability issues. A rocksdb backed repository was corrupted if edited through the WEB-API once the server was shut down.
+* Avoid stack trace when trying to unalias a CLI command that doesn't exist.
+* Avoid failure to return the pg config db if the repository does not exist.
+* Fix error when cloning on Windows
+* Fix an issue which prevents cloning into postgres from http.
+* Fix empty string bug in custom geotools converter factories.It had the side effect of breaking the geoserver config UI
+for ImageMosaic layers as it uses the Converters framework to parse the "Bands" argument to an int[] that comes as an empty string.
+* Upgrade downloadable postgres DDL script to include index tables
+* Make sure PG connection pools are unique for a set of connection parameters add better formatting for documentation
+
 GeoGig 1.1.0 Release Notes
 ==============================
 

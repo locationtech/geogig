@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Upgrading to GeoGig 1.1.1 &mdash; GeoGig 1.1.1-RC4 Upgrading</title>
+  <title>Upgrading to GeoGig 1.1.1 &mdash; GeoGig 1.1.1 Upgrading</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,15 +17,13 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.1-RC4',
+        VERSION:     '1.1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
-      <link rel="index" title="Index" href="genindex.html" />
-      <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1.1-RC4 Upgrading" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1 Upgrading" href="index.html" />
       <link rel="prev" title="Upgrading to GeoGig 1.1" href="Upgrade_1.0_to_1.1.html" />
 </head>
 <body class="Upgrade_1.1_to_1.1.1">
@@ -79,7 +77,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1.1-RC4 Upgrading</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1 Upgrading</a> &raquo;</li>
   <li>Upgrading to GeoGig 1.1.1</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -113,7 +111,7 @@ Here is a simple process to do this;</p>
 <li><p class="first">Create a new PostgreSQL database</p>
 </li>
 <li><p class="first">Use GeoGig 1.1.1 to <cite>clone</cite> the existing repository into the new database</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="n">clone</span> <span class="s2">&quot;postgresql://OLDdatabase/&lt;repo&gt;&quot;</span> <span class="s2">&quot;postgresql://NEWdatabase/&lt;repo&gt;&quot;</span>
+<div class="highlight-python"><div class="highlight"><pre>geogig clone &quot;postgresql://OLDdatabase/&lt;repo&gt;&quot; &quot;postgresql://NEWdatabase/&lt;repo&gt;&quot;
 </pre></div>
 </div>
 </li>
@@ -133,8 +131,9 @@ Here is a simple process to do this;</p>
 </div>
 <div class="section" id="cache-configuration">
 <h2>Cache Configuration<a class="headerlink" href="#cache-configuration" title="Permalink to this headline">¶</a></h2>
-<p>The cache’s configuration has been greatly simplified.  Please see the documentation for how to configure it and see statistics.</p>
-<p>TODO: link to doc/manual/source/interaction/geoserver_ui.rst  _geosever-settings</p>
+<p>The cache&#8217;s configuration has been greatly simplified.  Please follow these documentation links for how to configure it and see statistics:</p>
+<p><a class="reference external" href="http://geogig.org/docs/start/runtime.html">Cache runtime configuration</a>
+<a class="reference external" href="http://geogig.org/docs/interaction/geoserver_ui.html#geogig-runtime-settings">GeoServer GUI cache configuration</a></p>
 </div>
 <div class="section" id="postgresql-driver-upgrade">
 <h2>PostgreSQL driver upgrade<a class="headerlink" href="#postgresql-driver-upgrade" title="Permalink to this headline">¶</a></h2>
@@ -146,28 +145,27 @@ Here is a simple process to do this;</p>
 <p class="first admonition-title">Note</p>
 <p class="last">You will get a <cite>java.lang.IllegalStateException: PostgreSQL JDBC Driver version not supported by GeoGig: 9.4</cite> if you have not upgraded your PostgreSQL driver.</p>
 </div>
-<p>GeoGig’s networking communication has been greatly improved. Binary transfers have been improved by 25%!</p>
+<p>GeoGig&#8217;s networking communication has been greatly improved. Binary transfers have been improved by 25%!</p>
 <p>For GeoServer versions 2.9 to 2.11, you must use a newer PostgreSQL JDBC Driver (version 42.1.1).  The upgrade is simple -
 remove the old postgresql driver and add the new one.</p>
 <p>If you are building with maven - you may have to add a dependency on the correct PostgreSQL driver to have it included.  You may also
 have to use exclusions to prevent the old version from being added.  Manually check that <em>only</em> the new PostgreSQL driver is being used.
 For help in seeing dependencies, you can use <cite>mvn dependency:tree</cite>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
-<span class="o">&lt;</span><span class="n">exclusion</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">groupId</span><span class="o">&gt;</span><span class="n">org</span><span class="o">.</span><span class="n">postgresql</span><span class="o">&lt;/</span><span class="n">groupId</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">artifactId</span><span class="o">&gt;</span><span class="n">postgresql</span><span class="o">&lt;/</span><span class="n">artifactId</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">exclusion</span><span class="o">&gt;</span>
-<span class="o">...</span>
+<div class="highlight-python"><div class="highlight"><pre>...
+&lt;exclusion&gt;
+    &lt;groupId&gt;org.postgresql&lt;/groupId&gt;
+    &lt;artifactId&gt;postgresql&lt;/artifactId&gt;
+&lt;/exclusion&gt;
+...
 
-<span class="o">&lt;</span><span class="n">dependency</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">groupId</span><span class="o">&gt;</span><span class="n">org</span><span class="o">.</span><span class="n">postgresql</span><span class="o">&lt;/</span><span class="n">groupId</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">artifactId</span><span class="o">&gt;</span><span class="n">postgresql</span><span class="o">&lt;/</span><span class="n">artifactId</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span><span class="mf">42.1</span><span class="o">.</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">version</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">dependency</span><span class="o">&gt;</span>
+&lt;dependency&gt;
+    &lt;groupId&gt;org.postgresql&lt;/groupId&gt;
+    &lt;artifactId&gt;postgresql&lt;/artifactId&gt;
+    &lt;version&gt;42.1.1&lt;/version&gt;
+&lt;/dependency&gt;
 </pre></div>
 </div>
-<p>TODO: link to doc/manual/source/start/installation.rst</p>
-<p><a class="reference external" href="https://jdbc.postgresql.org/download/postgresql-42.1.1.jar">https://jdbc.postgresql.org/download/postgresql-42.1.1.jar</a></p>
+<p>Please see the <a class="reference external" href="http://geogig.org/docs/start/installation.html#geoserver-plug-in">GeoServer plugin installation guide</a> for detailed instructions.</p>
 </div>
 <div class="section" id="using-geogig-1-1-1-in-the-cloud">
 <h2>Using GeoGig 1.1.1 in the Cloud<a class="headerlink" href="#using-geogig-1-1-1-in-the-cloud" title="Permalink to this headline">¶</a></h2>
@@ -185,7 +183,7 @@ used by more than one GeoGig process at a time and some cloud filesystems would 
 <p>There are some asynchronous operations in GeoGig - these operations start a process that can be monitored for completion.
 Unfortunately, these operations are only known about on the node that they were started on.  In the general cloud case, the
 process could be started on one node and the request to monitor for completion could be performed on another node
-(who doesn’t know anything about the async operation).</p>
+(who doesn&#8217;t know anything about the async operation).</p>
 <p>In a clustered environment, the async operation and monitoring requests must be directed to the same node.  This can be
 done by either directly talking to a node or (better) having the load balancer direct the requests to the same node.</p>
 <p>TODO: provide a (partial/full) list of async operations</p>
@@ -244,7 +242,7 @@ done by either directly talking to a node or (better) having the load balancer d
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/Upgrade_1.1_to_1.1.1.rst.txt">Show Source</a></li>
+          <li><a href="_sources/Upgrade_1.1_to_1.1.1.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

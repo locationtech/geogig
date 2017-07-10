@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>geogig-reset documentation &mdash; GeoGig 1.1.1-RC4 Man Pages</title>
+  <title>geogig-reset documentation &mdash; GeoGig 1.1.1 Man Pages</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.1-RC4',
+        VERSION:     '1.1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="index" title="Index" href="genindex.html" />
-      <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1.1-RC4 Man Pages" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1 Man Pages" href="index.html" />
 </head>
 <body class="reset">
     <div id="blacktop"></div>
@@ -77,7 +75,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1.1-RC4 Man Pages</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1 Man Pages</a> &raquo;</li>
   <li>geogig-reset documentation</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -90,31 +88,31 @@
 <span id="geogig-reset"></span><h1>geogig-reset documentation<a class="headerlink" href="#geogig-reset-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>geogig reset [&lt;commit&gt;] -p &lt;path&gt;…
-geogig reset –(hard|soft|mixed) [&lt;commit&gt;]</p>
+<p>geogig reset [&lt;commit&gt;] -p &lt;path&gt;...
+geogig reset &#8211;(hard|soft|mixed) [&lt;commit&gt;]</p>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>There are two forms of geogig reset. In the first form, copy entries from &lt;commit&gt; to the index. In the second form, set the current branch head (HEAD) to &lt;commit&gt;, optionally modifying index and working tree to match. The &lt;commit&gt; defaults to HEAD in both forms.</p>
 <blockquote>
 <div><dl class="docutils">
-<dt>geogig reset [&lt;commit&gt;] -p &lt;path&gt;…</dt>
+<dt>geogig reset [&lt;commit&gt;] -p &lt;path&gt;...</dt>
 <dd>This form resets the index entries for all &lt;paths&gt; to their state at &lt;commit&gt;. (It does not affect the working tree, nor the current branch.)</dd>
-<dt>geogig reset –(hard|soft|mixed) [&lt;commit&gt;]</dt>
+<dt>geogig reset &#8211;(hard|soft|mixed) [&lt;commit&gt;]</dt>
 <dd>This form resets the current branch head to &lt;commit&gt; and possibly updates the index (resetting it to the tree of &lt;commit&gt;) and the working tree depending on &lt;mode&gt;.</dd>
 </dl>
 </div></blockquote>
 </div>
 <div class="section" id="options">
 <h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
-<p>-p &lt;path&gt;…, –path &lt;path&gt;…     Path filters for reset operation.  Only features that match one of the given filters will be affected.</p>
+<p>-p &lt;path&gt;..., &#8211;path &lt;path&gt;...     Path filters for reset operation.  Only features that match one of the given filters will be affected.</p>
 <table class="docutils option-list" frame="void" rules="none">
 <col class="option" />
 <col class="description" />
 <tbody valign="top">
 <tr><td class="option-group">
 <kbd><span class="option">--soft</span></kbd></td>
-<td>Does not touch the index file nor the working tree at all (but resets the head to &lt;commit&gt;, just like all modes do). This leaves all your changed files “Changes to be committed”, as geogig status would put it.</td></tr>
+<td>Does not touch the index file nor the working tree at all (but resets the head to &lt;commit&gt;, just like all modes do). This leaves all your changed files &#8220;Changes to be committed&#8221;, as geogig status would put it.</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--mixed</span></kbd></td>
 <td>Resets the index but not the working tree (i.e., the changed files are preserved but not marked for commit) and reports what has not been updated. This is the default action.</td></tr>
@@ -126,9 +124,9 @@ geogig reset –(hard|soft|mixed) [&lt;commit&gt;]</p>
 </div>
 <div class="section" id="see-also">
 <h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="status.html#geogig-status"><span class="std std-ref">geogig-status documentation</span></a></p>
-<p><a class="reference internal" href="add.html#geogig-add"><span class="std std-ref">geogig-add documentation</span></a></p>
-<p><a class="reference internal" href="commit.html#geogig-commit"><span class="std std-ref">geogig-commit documentation</span></a></p>
+<p><a class="reference internal" href="status.html#geogig-status"><span>geogig-status documentation</span></a></p>
+<p><a class="reference internal" href="add.html#geogig-add"><span>geogig-add documentation</span></a></p>
+<p><a class="reference internal" href="commit.html#geogig-commit"><span>geogig-commit documentation</span></a></p>
 </div>
 <div class="section" id="bugs">
 <h2>BUGS<a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h2>
@@ -175,7 +173,7 @@ geogig reset –(hard|soft|mixed) [&lt;commit&gt;]</p>
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/reset.rst.txt">Show Source</a></li>
+          <li><a href="_sources/reset.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

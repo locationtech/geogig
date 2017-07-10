@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig for developers &mdash; GeoGig 1.1.1-RC4 Technical Manual</title>
+  <title>GeoGig for developers &mdash; GeoGig 1.1.1 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,15 +17,13 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.1-RC4',
+        VERSION:     '1.1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
-      <link rel="index" title="Index" href="genindex.html" />
-      <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1.1-RC4 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1 Technical Manual" href="index.html" />
       <link rel="next" title="GeoGig merge conflicts strategy" href="geogig-merge-conflicts.html" />
       <link rel="prev" title="Plumbing commands" href="plumbing_commands.html" />
 </head>
@@ -80,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1.1-RC4 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1 Technical Manual</a> &raquo;</li>
   <li>GeoGig for developers</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -104,7 +102,7 @@
 <ul class="simple">
 <li>Clone the GeoGig source code repository. To do so, create a new folder where you want the GeoGig source code to be kept, open a console and move to that folder. Now type the following.</li>
 </ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$git clone https://github.com/locationtech/geogig.git
+<div class="highlight-python"><div class="highlight"><pre>$git clone https://github.com/locationtech/geogig.git
 </pre></div>
 </div>
 <ul>
@@ -119,30 +117,30 @@
 <li><p class="first">Move to the <code class="docutils literal"><span class="pre">src/parent</span></code> folder under the folder where you have cloned the GeoGig source code, and type the following.</p>
 </li>
 </ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$mvn clean install
+<div class="highlight-python"><div class="highlight"><pre>$mvn clean install
 </pre></div>
 </div>
 <ul class="simple">
 <li>GeoGig should now be built, and scripts ready to be run should be available in the <code class="docutils literal"><span class="pre">src/cli-app/target/geogig/bin</span></code> folder. Add that folders to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable, so your system can find it and you can call GeoGig from the console.</li>
 <li>To test that GeoGig is ready to be used, open a console and type <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">help</span></code>. You should see a list of available commands like the one shown below.</li>
 </ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">geogig</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">args</span><span class="o">&gt;</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre>usage: geogig &lt;command&gt; [&lt;args&gt;]
 
-<span class="n">The</span> <span class="n">most</span> <span class="n">commonly</span> <span class="n">used</span> <span class="n">geogig</span> <span class="n">commands</span> <span class="n">are</span><span class="p">:</span>
-<span class="o">--</span><span class="n">help</span>          <span class="n">Print</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span><span class="p">,</span> <span class="ow">or</span> <span class="n">provide</span> <span class="n">a</span> <span class="n">command</span> <span class="n">name</span> <span class="n">to</span> <span class="n">get</span> <span class="n">help</span> <span class="k">for</span>
-<span class="n">add</span>             <span class="n">Add</span> <span class="n">features</span> <span class="n">to</span> <span class="n">the</span> <span class="n">staging</span> <span class="n">area</span>
-<span class="n">apply</span>           <span class="n">Apply</span> <span class="n">a</span> <span class="n">patch</span> <span class="n">to</span> <span class="n">the</span> <span class="n">current</span> <span class="n">working</span> <span class="n">tree</span>
-<span class="n">branch</span>          <span class="n">List</span><span class="p">,</span> <span class="n">create</span><span class="p">,</span> <span class="ow">or</span> <span class="n">delete</span> <span class="n">branches</span>
-<span class="n">cat</span>             <span class="n">Provide</span> <span class="n">content</span> <span class="n">of</span> <span class="n">an</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">repository</span>
-<span class="n">checkout</span>        <span class="n">Checkout</span> <span class="n">a</span> <span class="n">branch</span> <span class="ow">or</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">the</span> <span class="n">working</span> <span class="n">tree</span>
-<span class="n">cherry</span><span class="o">-</span><span class="n">pick</span>     <span class="n">Apply</span> <span class="n">the</span> <span class="n">changes</span> <span class="n">introduced</span> <span class="n">by</span> <span class="n">existing</span> <span class="n">commits</span>
-<span class="n">clean</span>           <span class="n">Deletes</span> <span class="n">untracked</span> <span class="n">features</span> <span class="kn">from</span> <span class="nn">working</span> <span class="n">tree</span>
-<span class="n">clone</span>           <span class="n">Clone</span> <span class="n">a</span> <span class="n">repository</span> <span class="n">into</span> <span class="n">a</span> <span class="n">new</span> <span class="n">directory</span>
-<span class="n">commit</span>          <span class="n">Record</span> <span class="n">staged</span> <span class="n">changes</span> <span class="n">to</span> <span class="n">the</span> <span class="n">repository</span>
-<span class="n">config</span>          <span class="n">Get</span> <span class="ow">and</span> <span class="nb">set</span> <span class="n">repository</span> <span class="ow">or</span> <span class="k">global</span> <span class="n">options</span>
-<span class="n">conflicts</span>       <span class="n">Shows</span> <span class="n">existing</span> <span class="n">conflicts</span>
-<span class="n">diff</span>            <span class="n">Show</span> <span class="n">changes</span> <span class="n">between</span> <span class="n">commits</span><span class="p">,</span> <span class="n">commit</span> <span class="ow">and</span> <span class="n">working</span> <span class="n">tree</span><span class="p">,</span> <span class="n">etc</span>
-<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+The most commonly used geogig commands are:
+--help          Print this help message, or provide a command name to get help for
+add             Add features to the staging area
+apply           Apply a patch to the current working tree
+branch          List, create, or delete branches
+cat             Provide content of an element in the repository
+checkout        Checkout a branch or paths to the working tree
+cherry-pick     Apply the changes introduced by existing commits
+clean           Deletes untracked features from working tree
+clone           Clone a repository into a new directory
+commit          Record staged changes to the repository
+config          Get and set repository or global options
+conflicts       Shows existing conflicts
+diff            Show changes between commits, commit and working tree, etc
+[...]
 </pre></div>
 </div>
 </div>
@@ -152,13 +150,13 @@
 <ul class="simple">
 <li>Move to the <code class="docutils literal"><span class="pre">src/parent</span></code> folder and type the following to build the corresponding eclipse projects:</li>
 </ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$mvn eclipse:eclipse
+<div class="highlight-python"><div class="highlight"><pre>$mvn eclipse:eclipse
 </pre></div>
 </div>
 <ul>
-<li><p class="first">Open Eclipse and create a new workspace by selecting <em>File-&gt;Switch Workspace-&gt;Other…</em> menu and choosing an empty directory</p>
+<li><p class="first">Open Eclipse and create a new workspace by selecting <em>File-&gt;Switch Workspace-&gt;Other...</em> menu and choosing an empty directory</p>
 </li>
-<li><p class="first">Select the <em>File-&gt;Import…</em> menu and then select “Existing projects from workspace”. You will see the dialog shown below</p>
+<li><p class="first">Select the <em>File-&gt;Import...</em> menu and then select &#8220;Existing projects from workspace&#8221;. You will see the dialog shown below</p>
 <blockquote>
 <div><div class="figure">
 <img alt="_images/import_eclipse.png" src="_images/import_eclipse.png" />
@@ -203,8 +201,8 @@
 </li>
 <li><p class="first">Cobertura is configured for a test coverage report:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mvn</span> <span class="n">cobertura</span><span class="p">:</span><span class="n">cobertura</span>
-<span class="nb">open</span> <span class="n">target</span><span class="o">/</span><span class="n">site</span><span class="o">/</span><span class="n">cobertura</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div><div class="highlight-python"><div class="highlight"><pre>mvn cobertura:cobertura
+open target/site/cobertura/index.html
 </pre></div>
 </div>
 </div></blockquote>
@@ -268,7 +266,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/developers.rst.txt">Show Source</a></li>
+          <li><a href="_sources/developers.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

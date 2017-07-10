@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig merge conflicts strategy &mdash; GeoGig 1.1.1-RC4 Technical Manual</title>
+  <title>GeoGig merge conflicts strategy &mdash; GeoGig 1.1.1 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,15 +17,13 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.1-RC4',
+        VERSION:     '1.1.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
-      <link rel="index" title="Index" href="genindex.html" />
-      <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1.1-RC4 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.1.1 Technical Manual" href="index.html" />
       <link rel="next" title="Sparse clone" href="sparse-clone.html" />
       <link rel="prev" title="GeoGig for developers" href="developers.html" />
 </head>
@@ -80,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1.1-RC4 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.1.1 Technical Manual</a> &raquo;</li>
   <li>GeoGig merge conflicts strategy</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -127,7 +125,7 @@ Both actors have added a feature or feature type with the same name, but differe
 </div>
 <div class="section" id="the-working-tree-file-during-a-conflicted-merge-operation">
 <h2>The working tree file during a conflicted merge operation<a class="headerlink" href="#the-working-tree-file-during-a-conflicted-merge-operation" title="Permalink to this headline">¶</a></h2>
-<p>In Git, the working tree version contains the result of the “merge” program with conflict markers (&lt;&lt;&lt; === &gt;&gt;&gt;). Git alters the working tree version so the merge tool, which is not a Git tool, can access all the changes from both parts without having to be able to read the index. The application doesn’t have to be aware of Git at any point, but just handle text files and understand the syntax of the merge program.</p>
+<p>In Git, the working tree version contains the result of the &#8220;merge&#8221; program with conflict markers (&lt;&lt;&lt; === &gt;&gt;&gt;). Git alters the working tree version so the merge tool, which is not a Git tool, can access all the changes from both parts without having to be able to read the index. The application doesn’t have to be aware of Git at any point, but just handle text files and understand the syntax of the merge program.</p>
 <p>This behaviour cannot be copied in GeoGig, since a version with all changes together cannot be stored with the design of the working tree. Instead, the working tree features will remain unchanged, and should be changed by the merge tool when resolving the conflict. The 3 versions needed for a 3-way merge are all stored in the  repository database, and can be accessed using the IDs referenced in the conflicts file.</p>
 </div>
 <div class="section" id="references-during-a-conflicted-merge-operation">
@@ -142,19 +140,19 @@ Both actors have added a feature or feature type with the same name, but differe
 <h2>Some implementation details<a class="headerlink" href="#some-implementation-details" title="Permalink to this headline">¶</a></h2>
 <p>The StagingArea class is responsible of marking conflicts as solved when an element is added, so classes staging to the index do not have to take care of that. It also resolve conflicts when the STAGE_HEAD reference is updated</p>
 <p>The heap-based staging database has also a heap-based conflicts storage.</p>
-<p>An AOP scheme has been implemented to intercept calls to the ‘call’ method of operations that cannot run while a merge conflict is being solved. Operations in the ‘plumbing’ package, and those annotated with the &#64;CanRunDuringConflict annotation, are not intercepted. The remaining ones are intercepted and aborted if conflicts exist.</p>
+<p>An AOP scheme has been implemented to intercept calls to the &#8216;call&#8217; method of operations that cannot run while a merge conflict is being solved. Operations in the &#8216;plumbing&#8217; package, and those annotated with the &#64;CanRunDuringConflict annotation, are not intercepted. The remaining ones are intercepted and aborted if conflicts exist.</p>
 <p>This approach should not collide with the method interception used by the hooks functionality, although certain operations might be intercepted by both of them. It should be reviewed once both branches are merged, to ensure the interceptor corresponding to the merge conflict has priority</p>
 <p>The available  merge strategies are as follows:</p>
 <ul class="simple">
 <li>normal merge with conflicts marking if merging two branches.</li>
 <li>octopus merge if merging more than two branches. Operation is canceled if conflicts exist</li>
-<li>“ours” and “theirs” strategies available if explicitly invoked, only for the case of merging just two branches</li>
+<li>&#8220;ours&#8221; and &#8220;theirs&#8221; strategies available if explicitly invoked, only for the case of merging just two branches</li>
 </ul>
 </div>
 <div class="section" id="mergetool">
 <h2>MergeTool<a class="headerlink" href="#mergetool" title="Permalink to this headline">¶</a></h2>
 <p>Although still unfinished, the above functionality can be used to discuss, implement and test a tool for solving merge conflicts.</p>
-<p>Currently, a <code class="docutils literal"><span class="pre">conflicts</span></code> commands is implemented, which returns a description of all conflicts, or just those that match a given path, if it is specified. It basically calls the ‘cat’ command on the ancestor, ours and theirs versions of each conflict, and prints that out. This could be used by an external mergetool.</p>
+<p>Currently, a <code class="docutils literal"><span class="pre">conflicts</span></code> commands is implemented, which returns a description of all conflicts, or just those that match a given path, if it is specified. It basically calls the &#8216;cat&#8217; command on the ancestor, ours and theirs versions of each conflict, and prints that out. This could be used by an external mergetool.</p>
 </div>
 <div class="section" id="import-of-solved-elements">
 <h2>Import of solved elements<a class="headerlink" href="#import-of-solved-elements" title="Permalink to this headline">¶</a></h2>
@@ -223,7 +221,7 @@ Both actors have added a feature or feature type with the same name, but differe
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/geogig-merge-conflicts.rst.txt">Show Source</a></li>
+          <li><a href="_sources/geogig-merge-conflicts.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

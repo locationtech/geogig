@@ -32,9 +32,10 @@ Here is a simple process to do this;
 Cache Configuration
 -------------------
 
-The cache's configuration has been greatly simplified.  Please see the documentation for how to configure it and see statistics.
+The cache's configuration has been greatly simplified.  Please follow these documentation links for how to configure it and see statistics:
 
-TODO: link to doc/manual/source/interaction/geoserver_ui.rst  _geosever-settings
+`Cache runtime configuration <http://geogig.org/docs/start/runtime.html>`_
+`GeoServer GUI cache configuration <http://geogig.org/docs/interaction/geoserver_ui.html#geogig-runtime-settings>`_
 
 PostgreSQL driver upgrade
 -------------------------
@@ -68,9 +69,7 @@ For help in seeing dependencies, you can use `mvn dependency:tree`.
    </dependency>
 
 
-TODO: link to doc/manual/source/start/installation.rst
-
-https://jdbc.postgresql.org/download/postgresql-42.1.1.jar
+Please see the `GeoServer plugin installation guide <http://geogig.org/docs/start/installation.html#geoserver-plug-in>`_ for detailed instructions.
 
 
 Using GeoGig 1.1.1 in the Cloud
@@ -100,3 +99,4 @@ In a clustered environment, the async operation and monitoring requests must be 
 done by either directly talking to a node or (better) having the load balancer direct the requests to the same node.
 
 TODO: provide a (partial/full) list of async operations
+

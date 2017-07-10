@@ -99,7 +99,7 @@ copyright = u'Boundless <http://boundlessgeo.com>'
 # The short X.Y version.
 version = '1.1'
 # The full version, including alpha/beta/rc tags.
-release = '1.1-SNAPSHOT'
+release = '1.1.1'
 # Users don't need to see the "SNAPSHOT" notation when it's there
 if release.find('SNAPSHOT') != -1:
    release = '1.1'

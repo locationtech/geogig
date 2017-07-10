@@ -51,7 +51,7 @@ copyright = u'2016, OpenGeo'
 # The short X.Y version.
 version = '1.1'
 # The full version, including alpha/beta/rc tags.
-release = '1.1.1'
+release = '1.1-SNAPSHOT'
 
 # Users don't need to see the "SNAPSHOT" notation when it's there
 if release.find('SNAPSHOT') != -1:

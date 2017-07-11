@@ -23,6 +23,8 @@
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <link rel="index" title="Index" href="genindex.html" />
+      <link rel="search" title="Search" href="search.html" />
       <link rel="top" title="GeoGig 1.1.1 Upgrading" href="index.html" />
       <link rel="next" title="Upgrading to GeoGig 1.1.1" href="Upgrade_1.1_to_1.1.1.html" />
       <link rel="prev" title="Upgrading Existing GeoGig Repositories" href="index.html" />
@@ -116,7 +118,7 @@ Here is a simple process to do this;</p>
 <li><p class="first">Create a new PostgreSQL database</p>
 </li>
 <li><p class="first">Use GeoGig 1.1 to <cite>clone</cite> the 1.0 repository into the new database</p>
-<div class="highlight-python"><div class="highlight"><pre>geogig clone &quot;postgresql://..old..repo..&quot; &quot;postgresql://...new repo...&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="n">clone</span> <span class="s2">&quot;postgresql://..old..repo..&quot;</span> <span class="s2">&quot;postgresql://...new repo...&quot;</span>
 </pre></div>
 </div>
 </li>
@@ -139,7 +141,7 @@ Here is a simple process to do this;</p>
 <div class="section" id="creating-the-quadtree-index">
 <h3>Creating the QuadTree Index<a class="headerlink" href="#creating-the-quadtree-index" title="Permalink to this headline">¶</a></h3>
 <p>The following command will create a spatial index;</p>
-<div class="highlight-python"><div class="highlight"><pre>geogig --repo &quot;postgresql://...&quot; index create -a &lt;geometry column&gt; --tree &lt;branch&gt;:&lt;layer&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">index</span> <span class="n">create</span> <span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">geometry</span> <span class="n">column</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">tree</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>For help finding the names of the columns, branches, and layers see the FAQ section, below.</p>
@@ -150,7 +152,7 @@ Here is a simple process to do this;</p>
 <p>Adding “extra attributes” to the index makes querying-by-attribute much faster.
 If you have time series data (like StoryScape), you should include the dataset’s time attribute(s) to the index.
 If you have SLD or other queries that do selections based on an attribute (i.e. road type), you should include those attribute(s) to the index.</p>
-<div class="highlight-python"><div class="highlight"><pre>geogig --repo &quot;postgresql://...&quot; index create -a &lt;geometry column&gt; --tree &lt;branch&gt;:&lt;layer&gt; -e &lt;attribute1&gt;,&lt;attribute2&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">index</span> <span class="n">create</span> <span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">geometry</span> <span class="n">column</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">tree</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">e</span> <span class="o">&lt;</span><span class="n">attribute1</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">attribute2</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>More help is available <a class="reference external" href="http://geogig.org">here</a> or by typing <code class="code docutils literal"><span class="pre">geogig</span> <span class="pre">index</span> <span class="pre">--help</span></code>.</p>
@@ -252,7 +254,7 @@ These are not optimal - using GeoGig 1.1 to <code class="code docutils literal">
 <div class="section" id="time-dimensioned-data">
 <h3>Time-dimensioned data<a class="headerlink" href="#time-dimensioned-data" title="Permalink to this headline">¶</a></h3>
 <p>Time Dimensioned datasets (in any datastore, including GeoGig) should have the internal Geoserver GetCapabilities cache disabled, or the Time dimension information in the capabilities document could be out-of-date.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">-</span><span class="n">DCAPABILITIES_CACHE_CONTROL_ENABLED</span><span class="o">=</span><span class="n">false</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DCAPABILITIES_CACHE_CONTROL_ENABLED</span><span class="o">=</span><span class="n">false</span>
 </pre></div>
 </div>
 </div>
@@ -291,27 +293,27 @@ This improves performance.</p>
 <div class="section" id="how-to-find-all-the-repos-in-a-database">
 <h3>How to find all the repos in a database?<a class="headerlink" href="#how-to-find-all-the-repos-in-a-database" title="Permalink to this headline">¶</a></h3>
 <p>Connect to the PostgreSQL database and execute;</p>
-<div class="highlight-python"><div class="highlight"><pre>SELECT * FROM geogig_repository_name;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SELECT</span> <span class="o">*</span> <span class="n">FROM</span> <span class="n">geogig_repository_name</span><span class="p">;</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="_images/repoNameSQL.png"><img alt="repoNameSQL_png" src="_images/repoNameSQL.png" style="width: 4.6402in; height: 1.1008in;" /></a></p>
 </div>
 <div class="section" id="how-to-find-all-the-layers-that-i-might-need-to-build-an-index-on">
 <h3>How to find all the layers that I might need to build an index on?<a class="headerlink" href="#how-to-find-all-the-layers-that-i-might-need-to-build-an-index-on" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>geogig --repo &quot;postgresql://...&quot; ls &lt;branch&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">ls</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="how-do-i-find-the-name-of-the-geometry-and-other-columns">
 <h3>How do I find the name of the Geometry (and other columns)?<a class="headerlink" href="#how-do-i-find-the-name-of-the-geometry-and-other-columns" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>geogig --repo &quot;postgresql://...&quot; show &lt;branch&gt;:&lt;layer&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">show</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="_images/geomName.png"><img alt="geomName_png" src="_images/geomName.png" style="width: 6.5in; height: 3.1252in;" /></a></p>
 </div>
 <div class="section" id="how-do-i-find-the-branches-in-my-repository">
 <h3>How do I find the Branches in my repository?<a class="headerlink" href="#how-do-i-find-the-branches-in-my-repository" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>geogig --repo &quot;postgresql://...&quot; branch -a
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">branch</span> <span class="o">-</span><span class="n">a</span>
 </pre></div>
 </div>
 </div>
@@ -398,7 +400,7 @@ This improves performance.</p>
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/Upgrade_1.0_to_1.1.txt">Show Source</a></li>
+          <li><a href="_sources/Upgrade_1.0_to_1.1.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

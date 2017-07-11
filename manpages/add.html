@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="genindex.html" />
+      <link rel="search" title="Search" href="search.html" />
       <link rel="top" title="GeoGig 1.1.1 Man Pages" href="index.html" />
 </head>
 <body class="add">
@@ -88,12 +90,12 @@
 <span id="geogig-add"></span><h1>geogig-add documentation<a class="headerlink" href="#geogig-add-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>geogig add [&lt;options&gt;] [&lt;pattern&gt;...]</p>
+<p>geogig add [&lt;options&gt;] [&lt;pattern&gt;…]</p>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>This command updates the index using the current content found in the working tree, to prepare the content staged for the next commit. It typically adds all unstaged changes, but with a defined pattern, only matching features will be added.</p>
-<p>The &#8220;index&#8221; holds a snapshot of the HEAD tree plus any staged changes and is used to determine what will be committed to the repository. Thus after making any changes to the working tree, and before running the commit command, you must use the add command to add any new or modified files to the index.</p>
+<p>The “index” holds a snapshot of the HEAD tree plus any staged changes and is used to determine what will be committed to the repository. Thus after making any changes to the working tree, and before running the commit command, you must use the add command to add any new or modified files to the index.</p>
 <p>This command can be performed multiple times before a commit. It only adds the content of the specified feature(s) at the time the add command is run; if you want subsequent changes included in the next commit, then you must run geogig add again to add the new content to the index.</p>
 <p>The geogig status command can be used to obtain a summary of which files have changes that are staged for the next commit.</p>
 </div>
@@ -105,15 +107,15 @@
 <tbody valign="top">
 <tr><td class="option-group">
 <kbd><span class="option">-n</span>, <span class="option">--dry-run</span></kbd></td>
-<td>Don&#8217;t actually add the feature(s), just show what would happen if add were performed.</td></tr>
+<td>Don’t actually add the feature(s), just show what would happen if add were performed.</td></tr>
 </tbody>
 </table>
-<p>-u &#8211;update     Only add features that have already been tracked.</p>
+<p>-u –update     Only add features that have already been tracked.</p>
 </div>
 <div class="section" id="see-also">
 <h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="status.html#geogig-status"><span>geogig-status documentation</span></a></p>
-<p><a class="reference internal" href="commit.html#geogig-commit"><span>geogig-commit documentation</span></a></p>
+<p><a class="reference internal" href="status.html#geogig-status"><span class="std std-ref">geogig-status documentation</span></a></p>
+<p><a class="reference internal" href="commit.html#geogig-commit"><span class="std std-ref">geogig-commit documentation</span></a></p>
 </div>
 <div class="section" id="bugs">
 <h2>BUGS<a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h2>
@@ -160,7 +162,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/add.txt">Show Source</a></li>
+          <li><a href="_sources/add.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

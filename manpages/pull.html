@@ -22,6 +22,8 @@
         FILE_SUFFIX: '.html'
     };
   </script>
+      <link rel="index" title="Index" href="genindex.html" />
+      <link rel="search" title="Search" href="search.html" />
       <link rel="top" title="GeoGig 1.1.1 Man Pages" href="index.html" />
 </head>
 <body class="pull">
@@ -88,12 +90,12 @@
 <span id="geogig-pull"></span><h1>geogig-pull documentation<a class="headerlink" href="#geogig-pull-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>geogig pull [options] [&lt;repository&gt; [&lt;refspec&gt;...]]</p>
+<p>geogig pull [options] [&lt;repository&gt; [&lt;refspec&gt;…]]</p>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Incorporates changes from a remote repository into the current branch.</p>
-<p>More precisely, geogig pull runs geogig fetch with the given parameters and calls geogig merge to merge the retrieved branch heads into the current branch. With &#8211;rebase, it runs geogig rebase instead of geogig merge.</p>
+<p>More precisely, geogig pull runs geogig fetch with the given parameters and calls geogig merge to merge the retrieved branch heads into the current branch. With –rebase, it runs geogig rebase instead of geogig merge.</p>
 <p>Refspecs can be used to gain more control over the pull process.  The format of a pull refspec is [+]&lt;remoteref&gt;[:&lt;localref&gt;] where &lt;remoteref&gt; is the remote branch to pull and &lt;localref&gt; is the local branch to pull to.  If the local branch is not present, it will be created.  If &lt;localref&gt; is not specified, it will pull the remote branch into a local branch with a matching name.</p>
 </div>
 <div class="section" id="options">
@@ -111,7 +113,7 @@
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--depth <var>&lt;depth&gt;</var></span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td>In the case of a shallow clone, it fetches history only up to the specified depth</td></tr>
+<tr><td>&#160;</td><td>In the case of a shallow clone, it fetches history only up to the specified depth</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--fulldepth</span></kbd></td>
 <td>In the case of a shallow clone, fetch the full history from the repository. This will turn the repository into a full clone.</td></tr>
@@ -120,9 +122,9 @@
 </div>
 <div class="section" id="see-also">
 <h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="fetch.html#geogig-fetch"><span>geogig-fetch documentation</span></a></p>
-<p><a class="reference internal" href="clone.html#geogig-clone"><span>geogig-clone documentation</span></a></p>
-<p><a class="reference internal" href="rebase.html#geogig-rebase"><span>geogig-rebase documentation</span></a></p>
+<p><a class="reference internal" href="fetch.html#geogig-fetch"><span class="std std-ref">geogig-fetch documentation</span></a></p>
+<p><a class="reference internal" href="clone.html#geogig-clone"><span class="std std-ref">geogig-clone documentation</span></a></p>
+<p><a class="reference internal" href="rebase.html#geogig-rebase"><span class="std std-ref">geogig-rebase documentation</span></a></p>
 </div>
 <div class="section" id="bugs">
 <h2>BUGS<a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h2>
@@ -169,7 +171,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/pull.txt">Show Source</a></li>
+          <li><a href="_sources/pull.rst.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

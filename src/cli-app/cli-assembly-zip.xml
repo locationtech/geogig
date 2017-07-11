@@ -26,7 +26,8 @@
             <outputDirectory>geogig</outputDirectory>
             <includes>
                 <include>bin/**</include>
-                <include>lib/**</include>
+                <include>libexec/**</include>
+                <include>misc/**</include>
             </includes>
             <fileMode>0755</fileMode>
             <directoryMode>0755</directoryMode>

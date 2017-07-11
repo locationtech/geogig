@@ -32,7 +32,7 @@
         </file-->
         <file>
             <source>target/geogig-build/dependency-tree.txt</source>
-            <outputDirectory>lib</outputDirectory>
+            <outputDirectory>misc</outputDirectory>
         </file>
         <file>
             <source>../../LICENSE.txt</source>
@@ -40,14 +40,18 @@
         <file>
             <source>../../NOTICE.txt</source>
         </file>
+        <file>
+            <source>target/geogig-build/libexec/maven-metadata-appassembler.xml</source>
+            <outputDirectory>misc</outputDirectory>
+        </file>
     </files>
     
     <fileSets>
         <fileSet>
-            <directory>target/geogig-build/lib</directory>
-            <outputDirectory>/lib</outputDirectory>
+            <directory>target/geogig-build/libexec</directory>
+            <outputDirectory>/libexec</outputDirectory>
             <includes>
-                <include>*</include>
+                <include>*.jar</include>
             </includes>
         </fileSet>
         <fileSet>

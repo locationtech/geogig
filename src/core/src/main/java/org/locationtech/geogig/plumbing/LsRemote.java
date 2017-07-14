@@ -11,7 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.remote.IRemoteRepo;
-import org.locationtech.geogig.remote.RemoteUtils;
+import org.locationtech.geogig.remote.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
@@ -134,7 +134,7 @@ public class LsRemote extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      */
     public Optional<IRemoteRepo> getRemoteRepo(Remote remote) {
         Repository localRepository = repository();
-        return RemoteUtils.newRemote(localRepository, remote, Hints.readOnly());
+        return RemoteResolver.newRemote(localRepository, remote, Hints.readOnly());
     }
 
     /**

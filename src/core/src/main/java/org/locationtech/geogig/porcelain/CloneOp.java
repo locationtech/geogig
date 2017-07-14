@@ -18,7 +18,7 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.remote.IRemoteRepo;
-import org.locationtech.geogig.remote.RemoteUtils;
+import org.locationtech.geogig.remote.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -136,7 +136,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
 
         if (!depth.isPresent()) {
             // See if we are cloning a shallow clone. If so, a depth must be specified.
-            Optional<IRemoteRepo> remoteRepo = RemoteUtils.newRemote(localRepo, remote,
+            Optional<IRemoteRepo> remoteRepo = RemoteResolver.newRemote(localRepo, remote,
                     Hints.readOnly());
 
             Preconditions.checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");

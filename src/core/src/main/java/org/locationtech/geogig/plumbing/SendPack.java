@@ -29,7 +29,7 @@ import org.locationtech.geogig.porcelain.TransferSummary;
 import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef;
 import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef.ChangeTypes;
 import org.locationtech.geogig.remote.IRemoteRepo;
-import org.locationtech.geogig.remote.RemoteUtils;
+import org.locationtech.geogig.remote.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
@@ -233,7 +233,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         Hints remoteHints = new Hints();
         remoteHints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
         Repository localRepository = repository();
-        return RemoteUtils.newRemote(localRepository, remote, remoteHints);
+        return RemoteResolver.newRemote(localRepository, remote, remoteHints);
     }
 
     private Optional<Ref> refParse(String refSpec) {

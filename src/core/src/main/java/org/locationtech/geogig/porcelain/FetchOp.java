@@ -24,7 +24,7 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef;
 import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef.ChangeTypes;
 import org.locationtech.geogig.remote.IRemoteRepo;
-import org.locationtech.geogig.remote.RemoteUtils;
+import org.locationtech.geogig.remote.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -313,7 +313,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @return an interface for the remote repository
      */
     public Optional<IRemoteRepo> getRemoteRepo(Remote remote) {
-        return RemoteUtils.newRemote(repository(), remote, Hints.readOnly());
+        return RemoteResolver.newRemote(repository(), remote, Hints.readOnly());
     }
 
     private Ref updateLocalRef(Ref remoteRef, Remote remote, ImmutableSet<Ref> localRemoteRefs) {

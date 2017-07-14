@@ -17,7 +17,7 @@ import org.locationtech.geogig.porcelain.RemoteListOp;
 import org.locationtech.geogig.porcelain.RemoteRemoveOp;
 import org.locationtech.geogig.porcelain.RemoteResolve;
 import org.locationtech.geogig.remote.IRemoteRepo;
-import org.locationtech.geogig.remote.RemoteUtils;
+import org.locationtech.geogig.remote.RemoteResolver;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
@@ -271,7 +271,7 @@ public class RemoteManagement extends AbstractWebAPICommand {
         }
         boolean remotePingResponse = false;
         if (remote.isPresent()) {
-            Optional<IRemoteRepo> remoteRepo = RemoteUtils.newRemote(geogig.repository(),
+            Optional<IRemoteRepo> remoteRepo = RemoteResolver.newRemote(geogig.repository(),
                     remote.get(), Hints.readOnly());
             if (remoteRepo.isPresent()) {
                 try {

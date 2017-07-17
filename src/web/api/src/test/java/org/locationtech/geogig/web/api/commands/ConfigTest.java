@@ -12,6 +12,9 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,7 +27,6 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.data.Method;
@@ -91,7 +93,7 @@ public class ConfigTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         JsonArray config = response.getJsonArray("config");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), config, false));
+        assertTrue(jsonEquals(toJSONArray(expected), config, false));
     }
 
     @Test
@@ -105,7 +107,7 @@ public class ConfigTest extends AbstractWebOpTest {
         cmd.run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
-        assertTrue(TestData.jsonEquals(TestData.toJSON("{\"value\":\"value1\"}"), response, false));
+        assertTrue(jsonEquals(toJSON("{\"value\":\"value1\"}"), response, false));
     }
 
     @Test
@@ -119,7 +121,7 @@ public class ConfigTest extends AbstractWebOpTest {
         cmd.run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
-        assertTrue(TestData.jsonEquals(TestData.toJSON("{\"success\":true}"), response, true));
+        assertTrue(jsonEquals(toJSON("{\"success\":true}"), response, true));
     }
 
     @Test
@@ -139,7 +141,7 @@ public class ConfigTest extends AbstractWebOpTest {
         assertEquals("myTestValue", value.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
-        assertTrue(TestData.jsonEquals(TestData.toJSON("{\"success\":true}"), response, true));
+        assertTrue(jsonEquals(toJSON("{\"success\":true}"), response, true));
     }
 
     @Test

@@ -22,10 +22,10 @@ import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class AddTest extends AbstractWebOpTest {

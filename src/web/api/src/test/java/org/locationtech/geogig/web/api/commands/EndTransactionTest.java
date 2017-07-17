@@ -12,6 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
 
 import java.util.UUID;
 
@@ -29,10 +31,10 @@ import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class EndTransactionTest extends AbstractWebOpTest {
@@ -86,9 +88,9 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        assertTrue(TestData.jsonEquals(
-                TestData.toJSON("{\"ID\":\"" + transaction.getTransactionId().toString() + "\"}"),
-                response.getJsonObject("Transaction"), false));
+        assertTrue(
+                jsonEquals(toJSON("{\"ID\":\"" + transaction.getTransactionId().toString() + "\"}"),
+                        response.getJsonObject("Transaction"), false));
 
     }
 
@@ -122,9 +124,9 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        assertTrue(TestData.jsonEquals(
-                TestData.toJSON("{\"ID\":\"" + transaction.getTransactionId().toString() + "\"}"),
-                response.getJsonObject("Transaction"), false));
+        assertTrue(
+                jsonEquals(toJSON("{\"ID\":\"" + transaction.getTransactionId().toString() + "\"}"),
+                        response.getJsonObject("Transaction"), false));
     }
 
     @Test

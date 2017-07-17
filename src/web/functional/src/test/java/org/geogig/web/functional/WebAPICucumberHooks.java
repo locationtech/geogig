@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.porcelain.ConfigOp.ConfigAction.CONFIG_LIST;
 import static org.locationtech.geogig.porcelain.ConfigOp.ConfigScope.LOCAL;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -87,7 +88,7 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
-import org.locationtech.geogig.web.api.TestData;
+import org.locationtech.geogig.test.TestData;
 import org.mortbay.log.Log;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
@@ -205,21 +206,21 @@ public class WebAPICucumberHooks {
         setUpEmptyMultiRepo();
         openedRepos.addAll(context.setUpDefaultMultiRepoServerWithShallowClone());
     }
-    
+
     @Given("^There are three repos with remotes$")
     public void twoGoodRepos() throws Throwable {
-        Repository repo2 = context.createRepo("repo2")
-                .init("geogigUser", "repo_Owner@geogig.org").getRepo();
-                
-        Repository repo3 = context.createRepo("repo3")
-                .init("geogigUser", "repo_Owner@geogig.org").getRepo();
-        
+        Repository repo2 = context.createRepo("repo2").init("geogigUser", "repo_Owner@geogig.org")
+                .getRepo();
+
+        Repository repo3 = context.createRepo("repo3").init("geogigUser", "repo_Owner@geogig.org")
+                .getRepo();
+
         String repo2Url = repo2.getLocation().toString();
         repo3.command(RemoteAddOp.class).setName("repo2").setURL(repo2Url).call();
-        
-        Repository repo4 = context.createRepo("repo4")
-                .init("geogigUser", "repo_Owner@geogig.org").getRepo();
-        
+
+        Repository repo4 = context.createRepo("repo4").init("geogigUser", "repo_Owner@geogig.org")
+                .getRepo();
+
         repo4.command(RemoteAddOp.class).setName("repo2").setURL(repo2Url).call();
 
         repo2.close();
@@ -259,7 +260,8 @@ public class WebAPICucumberHooks {
 
     @Given("There is a repo with some data")
     public void setUpRepoWithData() throws Exception {
-        Repository repo = context.createRepo("repo1").init("myuser", "the_user@testing.com").getRepo();
+        Repository repo = context.createRepo("repo1").init("myuser", "the_user@testing.com")
+                .getRepo();
         TestData data = new TestData(repo);
         data.addAndCommit("Added Point.1", TestData.point1);
     }
@@ -269,9 +271,9 @@ public class WebAPICucumberHooks {
         Repository repo = context.getRepo("repo1");
         TestData data = new TestData(repo);
         data.addAndCommit("modify point1; add point2, line1, poly1", data.point1_modified,
-            data.point2, data.line1, data.poly1);
+                data.point2, data.line1, data.poly1);
     }
-    
+
     /**
      * Checks that the repository named {@code repositoryName}, at it's commit {@code headRef}, has
      * the expected features as given by the {@code expectedFeatures} {@link DataTable}.
@@ -344,7 +346,7 @@ public class WebAPICucumberHooks {
         verifyRepositoryContents(repositoryName, headRef, txId, expectedFeatures, false);
 
     }
-    
+
     @Then("^the ([^\"]*) repository's \"([^\"]*)\" should have the following features:$")
     public void verifyRepositoryContents(String repositoryName, String headRef,
             DataTable expectedFeatures) throws Throwable {
@@ -794,7 +796,7 @@ public class WebAPICucumberHooks {
         final String responseText = context.getLastResponseText();
         assertThat(responseText, containsString(substring));
     }
-    
+
     @Then("^the response body should not contain \"([^\"]*)\"$")
     public void checkResponseTextNotContains(String substring) {
         substring = context.replaceVariables(substring);
@@ -888,7 +890,8 @@ public class WebAPICucumberHooks {
      *     <id>2</id>
      *     <status>RUNNING</status>
      *     <description>Export to Geopackage database</description>
-     *     <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8182/tasks/2.xml" type="application/xml"/>
+     *     <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href=
+    "http://localhost:8182/tasks/2.xml" type="application/xml"/>
      *   </task>
      * </code>
      * </pre>
@@ -1176,10 +1179,11 @@ public class WebAPICucumberHooks {
     }
 
     @Then("^the json response \"([^\"]*)\" should contain \"([^\"]*)\" (\\d+) times$")
-    public void checkJSONResponseContains(final String jsonArray, final String attribute, final int count) {
+    public void checkJSONResponseContains(final String jsonArray, final String attribute,
+            final int count) {
         JsonArray response = getArrayFromJSONResponse(jsonArray);
         int arrayCount = 0;
-        for (int i=0; i< response.size(); ++i) {
+        for (int i = 0; i < response.size(); ++i) {
             JsonObject arrayObj = response.getJsonObject(i);
             if (arrayObj.getString(attribute, null) != null) {
                 ++arrayCount;
@@ -1210,8 +1214,7 @@ public class WebAPICucumberHooks {
      * @param variableName the name of the variable to save the xpath expression value as
      */
     @Then("^I save the json response \"([^\"]*)\" as \"([^\"]*)\"$")
-    public void saveResponseJSONValueAsVariable(final String jsonPath,
-            final String variableName) {
+    public void saveResponseJSONValueAsVariable(final String jsonPath, final String variableName) {
 
         String jsonValue = getStringFromJSONResponse(jsonPath);
         context.setVariable(variableName, jsonValue);
@@ -1272,7 +1275,7 @@ public class WebAPICucumberHooks {
     @When("^I call \"([^\"]*)\" with the System Temp Directory as the parentDirectory$")
     public void callURLWithJSONPaylod(final String methodAndURL) throws JsonException, IOException {
         // build JSON payload
-        JsonObject payload = TestData.toJSON("{\"parentDirectory\":\"" + systemTempPath() + "\"}");
+        JsonObject payload = toJSON("{\"parentDirectory\":\"" + systemTempPath() + "\"}");
         callURLWithJSONPayload(methodAndURL, payload);
     }
 
@@ -1286,7 +1289,8 @@ public class WebAPICucumberHooks {
         // parent of the repo is the directory that contains the ".geogig" directory.
         // the parent of the parent of the repo is the directory that the user specifies in the Init
         // request.
-        String parentDir = new File(repoURI).getParentFile().getParentFile().getCanonicalPath().replace("\\", "/");
+        String parentDir = new File(repoURI).getParentFile().getParentFile().getCanonicalPath()
+                .replace("\\", "/");
         assertEquals("Unexpected parent directory", systemTempPath(), parentDir);
     }
 
@@ -1358,17 +1362,17 @@ public class WebAPICucumberHooks {
     }
 
     @When("^I call \"([^\"]*)\" with Author and the System Temp Directory as the parentDirectory$")
-    public void callURLWithJSONPayloadAndAuthor(final String methodAndURL) throws JsonException, IOException {
+    public void callURLWithJSONPayloadAndAuthor(final String methodAndURL)
+            throws JsonException, IOException {
         // build the JSON payload
         JsonObject payload = Json.createObjectBuilder().add("parentDirectory", systemTempPath())
-                .add("authorName", "GeoGig User")
-                .add("authorEmail", "geogig@geogig.org")
-                .build();
+                .add("authorName", "GeoGig User").add("authorEmail", "geogig@geogig.org").build();
         callURLWithJSONPayload(methodAndURL, payload);
     }
 
     @When("^I call \"([^\"]*)\" with a URL encoded Form containing a parentDirectory parameter and Author$")
-    public void callURLWithFormPaylodWithAuthor(final String methodAndURL) throws JsonException, IOException {
+    public void callURLWithFormPaylodWithAuthor(final String methodAndURL)
+            throws JsonException, IOException {
         final int idx = methodAndURL.indexOf(' ');
         checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
         final String httpMethod = methodAndURL.substring(0, idx);
@@ -1399,7 +1403,8 @@ public class WebAPICucumberHooks {
     }
 
     @When("^I call \"([^\"]*)\" with an unsupported media type$")
-    public void callURLWithUnsupportedMediaType(final String methodAndURL) throws JsonException, IOException {
+    public void callURLWithUnsupportedMediaType(final String methodAndURL)
+            throws JsonException, IOException {
         final int idx = methodAndURL.indexOf(' ');
         checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
         final String httpMethod = methodAndURL.substring(0, idx);
@@ -1407,9 +1412,7 @@ public class WebAPICucumberHooks {
         Method method = Method.valueOf(httpMethod);
         // build the JSON payload
         JsonObject payload = Json.createObjectBuilder().add("parentDirectory", systemTempPath())
-                .add("authorName", "GeoGig User")
-                .add("authorEmail", "geogig@geogig.org")
-                .build();
+                .add("authorName", "GeoGig User").add("authorEmail", "geogig@geogig.org").build();
         context.call(method, resourceUri, payload.toString(), "application/xml");
     }
 
@@ -1474,7 +1477,7 @@ public class WebAPICucumberHooks {
      */
     private String getStringFromJSONResponse(String jsonPath) {
         final String response = context.getLastResponseText();
-        final JsonObject jsonResponse = TestData.toJSON(response);
+        final JsonObject jsonResponse = toJSON(response);
         // find the JSON object
         final String[] paths = jsonPath.split("\\.");
         String subPath;
@@ -1498,7 +1501,7 @@ public class WebAPICucumberHooks {
 
     private JsonObject getObjectFromJSONResponse(String jsonPath) {
         String response = context.getLastResponseText();
-        final JsonObject jsonResponse = TestData.toJSON(response);
+        final JsonObject jsonResponse = toJSON(response);
         // find the JSON object
         final String[] paths = jsonPath.split("\\.");
         JsonObject path = jsonResponse;
@@ -1511,7 +1514,7 @@ public class WebAPICucumberHooks {
 
     private JsonArray getArrayFromJSONResponse(String jsonPath) {
         String response = context.getLastResponseText();
-        final JsonObject jsonResponse = TestData.toJSON(response);
+        final JsonObject jsonResponse = toJSON(response);
         // find the JSON object
         final String[] paths = jsonPath.split("\\.");
         JsonObject path = jsonResponse;
@@ -1519,23 +1522,23 @@ public class WebAPICucumberHooks {
             // drill down
             path = path.getJsonObject(paths[i]);
         }
-        final String key = paths[paths.length -1];
+        final String key = paths[paths.length - 1];
         return path.getJsonArray(key);
     }
 
     private String getString(JsonValue value) {
         switch (value.getValueType()) {
-            case NULL:
-                return "null";
-            case FALSE:
-                return "false";
-            case TRUE:
-                return "true";
-            case STRING:
-                JsonString val = JsonString.class.cast(value);
-                return val.getString();
-            default:
-                return value.toString();
+        case NULL:
+            return "null";
+        case FALSE:
+            return "false";
+        case TRUE:
+            return "true";
+        case STRING:
+            JsonString val = JsonString.class.cast(value);
+            return val.getString();
+        default:
+            return value.toString();
         }
     }
 

@@ -11,6 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -23,11 +25,11 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class GetCommitGraphTest extends AbstractWebOpTest {
@@ -113,8 +115,7 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
         expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit4.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit5.getId().toString() + "\"}]");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
-                false));
+        assertTrue(jsonEquals(toJSONArray(expectedCommits.toString()), commits, false));
     }
 
     @Test
@@ -157,8 +158,7 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
         expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit4.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit5.getId().toString() + "\"}]");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
-                false));
+        assertTrue(jsonEquals(toJSONArray(expectedCommits.toString()), commits, false));
 
     }
 }

@@ -50,7 +50,7 @@ import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.test.functional.TestFeatures;
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
-import org.locationtech.geogig.geotools.test.storage.MemoryDataStoreWithProvidedFIDSupport;
+import org.locationtech.geogig.test.MemoryDataStoreWithProvidedFIDSupport;
 import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;

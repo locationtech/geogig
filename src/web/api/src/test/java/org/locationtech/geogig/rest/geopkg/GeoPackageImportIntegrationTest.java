@@ -11,8 +11,8 @@ package org.locationtech.geogig.rest.geopkg;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.web.api.TestData.point1;
-import static org.locationtech.geogig.web.api.TestData.pointsType;
+import static org.locationtech.geogig.test.TestData.point1;
+import static org.locationtech.geogig.test.TestData.pointsType;
 
 import java.io.File;
 import java.util.Iterator;
@@ -46,11 +46,12 @@ import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.Status;
 import org.locationtech.geogig.rest.geotools.Import;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
+import org.locationtech.geogig.web.api.JsonUtils;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.opengis.filter.Filter;
 
@@ -638,10 +639,10 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
             throws InterruptedException, ExecutionException {
         op.run(context);
         JsonObject response = getJSONResponse();
-        JsonObject expected = TestData.toJSON(String.format(
+        JsonObject expected = JsonUtils.toJSON(String.format(
                 "{\"task\":{\"id\":%s,\"description\":\"Importing GeoPackage database file.\",\"href\":\"/geogig/tasks/%s.json\"}}",
                 taskId, taskId));
-        assertTrue(TestData.jsonEquals(expected, response, false));
+        assertTrue(JsonUtils.jsonEquals(expected, response, false));
         Optional<AsyncContext.AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {
             asyncCommand = testAsyncContext.getAndPruneIfFinished(taskId);

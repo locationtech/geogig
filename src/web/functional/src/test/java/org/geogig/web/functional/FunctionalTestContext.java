@@ -39,7 +39,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.web.api.TestData;
+import org.locationtech.geogig.test.TestData;
 import org.restlet.data.Method;
 import org.w3c.dom.Document;
 

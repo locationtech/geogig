@@ -11,6 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -31,10 +33,10 @@ import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class CatTest extends AbstractWebOpTest {
@@ -99,19 +101,20 @@ public class CatTest extends AbstractWebOpTest {
         JsonObject parents = commit.getJsonObject("parents");
         String expectedParents = "[\"" + lastCommit.getParentIds().get(0) + "\", \""
                 + lastCommit.getParentIds().get(1) + "\"]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedParents),
-                parents.getJsonArray("id"), false));
+        assertTrue(jsonEquals(toJSONArray(expectedParents), parents.getJsonArray("id"), false));
         RevPerson author = lastCommit.getAuthor();
         RevPerson committer = lastCommit.getCommitter();
         JsonObject authorObject = commit.getJsonObject("author");
         assertEquals(author.getName().or(""), authorObject.getString("name"));
         assertEquals(author.getEmail().or(""), authorObject.getString("email"));
-        assertEquals(author.getTimestamp(), authorObject.getJsonNumber("timestamp").longValueExact());
+        assertEquals(author.getTimestamp(),
+                authorObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(author.getTimeZoneOffset(), authorObject.getInt("timeZoneOffset"));
         JsonObject committerObject = commit.getJsonObject("committer");
         assertEquals(committer.getName().or(""), committerObject.getString("name"));
         assertEquals(committer.getEmail().or(""), committerObject.getString("email"));
-        assertEquals(committer.getTimestamp(), committerObject.getJsonNumber("timestamp").longValueExact());
+        assertEquals(committer.getTimestamp(),
+                committerObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(committer.getTimeZoneOffset(), committerObject.getInt("timeZoneOffset"));
 
     }
@@ -154,8 +157,7 @@ public class CatTest extends AbstractWebOpTest {
         String expectedAttributes = "[{\"type\": \"STRING\", \"value\": \"StringProp1_1\"},"
                 + "{\"type\": \"INTEGER\", \"value\": 1000},"
                 + "{\"type\": \"POINT\", \"value\": \"POINT (0 0)\"}]";
-        assertTrue(
-                TestData.jsonEquals(TestData.toJSONArray(expectedAttributes), attributes, false));
+        assertTrue(jsonEquals(toJSONArray(expectedAttributes), attributes, false));
 
     }
 
@@ -165,8 +167,8 @@ public class CatTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        RevFeatureType pointType = testContext.get().getRepository().command(ResolveFeatureType.class)
-                .setRefSpec("Points").call().get();
+        RevFeatureType pointType = testContext.get().getRepository()
+                .command(ResolveFeatureType.class).setRefSpec("Points").call().get();
         ParameterSet options = TestParams.of("objectid", pointType.getId().toString());
         buildCommand(options).run(testContext.get());
         JsonObject response = getJSONResponse().getJsonObject("response");
@@ -179,8 +181,7 @@ public class CatTest extends AbstractWebOpTest {
         String expectedAttributes = "[{\"name\": \"sp\", \"type\": \"STRING\"},"
                 + "{\"name\": \"ip\", \"type\": \"INTEGER\"},"
                 + "{\"name\": \"geom\", \"type\": \"POINT\", \"crs\": \"urn:ogc:def:crs:EPSG::4326\"}]";
-        assertTrue(
-                TestData.jsonEquals(TestData.toJSONArray(expectedAttributes), attributes, false));
+        assertTrue(jsonEquals(toJSONArray(expectedAttributes), attributes, false));
 
     }
 
@@ -208,7 +209,8 @@ public class CatTest extends AbstractWebOpTest {
         JsonObject taggerObject = tagObject.getJsonObject("tagger");
         assertEquals(tagger.getName().or(""), taggerObject.getString("name"));
         assertEquals(tagger.getEmail().or(""), taggerObject.getString("email"));
-        assertEquals(tagger.getTimestamp(), taggerObject.getJsonNumber("timestamp").longValueExact());
+        assertEquals(tagger.getTimestamp(),
+                taggerObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(tagger.getTimeZoneOffset(), taggerObject.getInt("timeZoneOffset"));
     }
 }

@@ -14,7 +14,7 @@ import java.io.File;
 import org.geotools.data.DataStore;
 import org.geotools.data.memory.MemoryDataStore;
 import org.locationtech.geogig.geotools.cli.geopkg.GeoPackageTestSupport;
-import org.locationtech.geogig.web.api.TestData;
+import org.locationtech.geogig.test.TestData;
 
 import com.google.common.collect.ImmutableList;
 

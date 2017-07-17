@@ -11,6 +11,9 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import javax.json.JsonObject;
 
@@ -20,11 +23,11 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.restlet.data.Method;
 
@@ -71,12 +74,9 @@ public class TagTest extends AbstractWebOpTest {
                 .setName("branch1").call().get();
 
         RevTag branch1Tag = geogig.command(TagCreateOp.class).setCommitId(branch1.getObjectId())
-                .setName("Branch1Tag")
-                .call();
+                .setName("Branch1Tag").call();
         RevTag masterTag = geogig.command(TagCreateOp.class).setCommitId(master.getObjectId())
-                .setName("MasterTag")
-                .setMessage("provided message")
-                .call();
+                .setName("MasterTag").setMessage("provided message").call();
 
         ParameterSet options = TestParams.of();
         buildCommand(options).run(testContext.get());
@@ -85,8 +85,7 @@ public class TagTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         String expectedTags = "[" + expectedTagString(branch1Tag) + ","
                 + expectedTagString(masterTag) + "]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedTags),
-                response.getJsonArray("Tag"), true));
+        assertTrue(jsonEquals(toJSONArray(expectedTags), response.getJsonArray("Tag"), true));
     }
 
     @Test
@@ -150,8 +149,7 @@ public class TagTest extends AbstractWebOpTest {
                 .setName("branch1").call().get();
 
         RevTag branch1Tag = geogig.command(TagCreateOp.class).setCommitId(branch1.getObjectId())
-                .setName("Branch1Tag")
-                .call();
+                .setName("Branch1Tag").call();
         geogig.command(TagCreateOp.class).setCommitId(master.getObjectId()).setName("MasterTag")
                 .call();
 
@@ -161,8 +159,7 @@ public class TagTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expectedTag = expectedTagString(branch1Tag);
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedTag),
-                response.getJsonObject("DeletedTag"), true));
+        assertTrue(jsonEquals(toJSON(expectedTag), response.getJsonObject("DeletedTag"), true));
 
         ImmutableList<RevTag> tags = geogig.command(TagListOp.class).call();
         assertEquals(1, tags.size());
@@ -230,8 +227,7 @@ public class TagTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         String expectedTag = "{\"name\":\"MasterTag\", \"commitid\":\"" + master.getObjectId()
                 + "\", \"message\":\"\", \"tagger\": {\"name\":\"John Doe\", \"email\":\"JohnDoe@example.com\"}}";
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedTag), response.getJsonObject("Tag"),
-                false));
+        assertTrue(jsonEquals(toJSON(expectedTag), response.getJsonObject("Tag"), false));
 
         ImmutableList<RevTag> tags = geogig.command(TagListOp.class).call();
         assertEquals(1, tags.size());
@@ -259,8 +255,7 @@ public class TagTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         String expectedTag = "{\"name\":\"MasterTag\", \"commitid\":\"" + master.getObjectId()
                 + "\", \"message\":\"My tag message\", \"tagger\": {\"name\":\"John Doe\", \"email\":\"JohnDoe@example.com\"}}";
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedTag), response.getJsonObject("Tag"),
-                false));
+        assertTrue(jsonEquals(toJSON(expectedTag), response.getJsonObject("Tag"), false));
 
         ImmutableList<RevTag> tags = geogig.command(TagListOp.class).call();
         assertEquals(1, tags.size());

@@ -11,6 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import java.net.URI;
 
@@ -25,12 +27,12 @@ import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class FetchTest extends AbstractWebOpTest {
@@ -72,7 +74,7 @@ public class FetchTest extends AbstractWebOpTest {
         TestData remoteTestData = new TestData(remoteGeogig);
         remoteTestData.init();
         remoteTestData.loadDefaultData();
-        
+
         Ref remoteMaster = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
         Ref remoteBranch1 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
@@ -92,14 +94,14 @@ public class FetchTest extends AbstractWebOpTest {
 
         ParameterSet options = TestParams.of("remote", "origin");
         buildCommand(options).run(testContext.get());
-        
+
         Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/master").call().get();
         Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch1").call().get();
         Ref branch2 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch2").call().get();
-        
+
         assertEquals(remoteMaster.getObjectId(), master.getObjectId());
         assertEquals(remoteBranch1.getObjectId(), branch1.getObjectId());
         assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
@@ -115,7 +117,7 @@ public class FetchTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "\"},"
                 + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
                 + master.getObjectId().toString() + "\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
+        assertTrue(jsonEquals(toJSONArray(expected), branch, false));
     }
 
     @Test
@@ -127,12 +129,10 @@ public class FetchTest extends AbstractWebOpTest {
 
         Ref remoteMaster = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref remoteBranch1 = remoteGeogig
-                .command(org.locationtech.geogig.plumbing.RefParse.class).setName("branch1")
-                .call().get();
-        Ref remoteBranch2 = remoteGeogig
-                .command(org.locationtech.geogig.plumbing.RefParse.class).setName("branch2")
-                .call().get();
+        Ref remoteBranch1 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("branch1").call().get();
+        Ref remoteBranch2 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("branch2").call().get();
 
         Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
@@ -169,7 +169,7 @@ public class FetchTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "\"},"
                 + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
                 + master.getObjectId().toString() + "\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
+        assertTrue(jsonEquals(toJSONArray(expected), branch, false));
     }
 
     @Test
@@ -202,8 +202,8 @@ public class FetchTest extends AbstractWebOpTest {
 
         URI remoteURI = remoteGeogig.command(ResolveGeogigURI.class).call().get();
 
-        geogig.command(RemoteAddOp.class).setName("origin")
-                .setURL(remoteURI.toURL().toString()).call();
+        geogig.command(RemoteAddOp.class).setName("origin").setURL(remoteURI.toURL().toString())
+                .call();
 
         ParameterSet options = TestParams.of("remote", "origin");
 

@@ -12,18 +12,18 @@ package org.locationtech.geogig.rest.geopkg;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.web.api.TestData.line2;
-import static org.locationtech.geogig.web.api.TestData.line3;
-import static org.locationtech.geogig.web.api.TestData.linesType;
-import static org.locationtech.geogig.web.api.TestData.point1;
-import static org.locationtech.geogig.web.api.TestData.point1_modified;
-import static org.locationtech.geogig.web.api.TestData.point2;
-import static org.locationtech.geogig.web.api.TestData.point3;
-import static org.locationtech.geogig.web.api.TestData.pointsType;
-import static org.locationtech.geogig.web.api.TestData.poly1;
-import static org.locationtech.geogig.web.api.TestData.poly2;
-import static org.locationtech.geogig.web.api.TestData.poly3;
-import static org.locationtech.geogig.web.api.TestData.polysType;
+import static org.locationtech.geogig.test.TestData.line2;
+import static org.locationtech.geogig.test.TestData.line3;
+import static org.locationtech.geogig.test.TestData.linesType;
+import static org.locationtech.geogig.test.TestData.point1;
+import static org.locationtech.geogig.test.TestData.point1_modified;
+import static org.locationtech.geogig.test.TestData.point2;
+import static org.locationtech.geogig.test.TestData.point3;
+import static org.locationtech.geogig.test.TestData.pointsType;
+import static org.locationtech.geogig.test.TestData.poly1;
+import static org.locationtech.geogig.test.TestData.poly2;
+import static org.locationtech.geogig.test.TestData.poly3;
+import static org.locationtech.geogig.test.TestData.polysType;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,11 +60,12 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.geotools.ExportDiff;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
+import org.locationtech.geogig.web.api.JsonUtils;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -232,8 +233,8 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
         final String expected = "{\"task\":{\"id\":1,\"description\":\"Export changes between two commits to Geopackage database\",\"href\":\"/geogig/tasks/1.json\"}}";
 
         JsonObject response = getJSONResponse();
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                TestData.toJSON(response.toString()), false));
+        assertTrue(JsonUtils.jsonEquals(JsonUtils.toJSON(expected),
+                JsonUtils.toJSON(response.toString()), false));
 
         Optional<AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {

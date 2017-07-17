@@ -11,6 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
 
 import javax.json.JsonObject;
 
@@ -22,7 +24,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.RESTUtils;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.TestRepository;
 import org.locationtech.geogig.web.api.WebAPICommand;
@@ -57,7 +58,8 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
     @Test
     public void testRename() throws Exception {
 
-        String repoName = testContext.get().getRepository().command(ResolveRepositoryName.class).call();
+        String repoName = testContext.get().getRepository().command(ResolveRepositoryName.class)
+                .call();
 
         assertEquals(TestRepository.REPO_NAME, repoName);
 
@@ -75,8 +77,9 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
                 MediaType.APPLICATION_JSON);
 
         JsonObject response = getJSONResponse().getJsonObject("response");
-        assertTrue(TestData.jsonEquals(TestData.toJSON(
-                "{\"success\":true, \"repo\": {\"name\": \"newRepoName\", \"href\": \"" + expectedURL + "\"}}"),
+        assertTrue(jsonEquals(
+                toJSON("{\"success\":true, \"repo\": {\"name\": \"newRepoName\", \"href\": \""
+                        + expectedURL + "\"}}"),
                 response, true));
     }
 

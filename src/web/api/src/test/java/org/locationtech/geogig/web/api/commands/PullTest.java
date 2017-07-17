@@ -11,6 +11,9 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import java.net.URI;
 
@@ -31,12 +34,12 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class PullTest extends AbstractWebOpTest {
@@ -125,7 +128,7 @@ public class PullTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "\"},"
                 + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
                 + master.getObjectId().toString() + "\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
+        assertTrue(jsonEquals(toJSONArray(expected), branch, false));
         assertEquals(remote.getFetchURL(), pull.getString("Remote"));
         assertEquals("master", pull.getString("Ref"));
         assertEquals(9, pull.getInt("Added"));
@@ -186,7 +189,7 @@ public class PullTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "\"},"
                 + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
                 + master.getObjectId().toString() + "\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
+        assertTrue(jsonEquals(toJSONArray(expected), branch, false));
         assertEquals(remote.getFetchURL(), pull.getString("Remote"));
         assertEquals("newbranch", pull.getString("Ref"));
         assertEquals(6, pull.getInt("Added"));
@@ -236,7 +239,7 @@ public class PullTest extends AbstractWebOpTest {
         JsonObject pull = response.getJsonObject("Pull");
         JsonObject fetchObj = pull.getJsonObject("Fetch");
 
-        assertTrue(TestData.jsonEquals(TestData.toJSON("{}"), fetchObj, false));
+        assertTrue(jsonEquals(toJSON("{}"), fetchObj, false));
     }
 
     @Test

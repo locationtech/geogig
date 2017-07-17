@@ -11,6 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import java.io.ByteArrayOutputStream;
 
@@ -27,11 +29,11 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.Variants;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.restlet.resource.Representation;
 
@@ -122,8 +124,7 @@ public class LogTest extends AbstractWebOpTest {
         expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit4.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit5.getId().toString() + "\"}]");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
-                false));
+        assertTrue(jsonEquals(toJSONArray(expectedCommits.toString()), commits, false));
     }
 
     @Test
@@ -166,8 +167,7 @@ public class LogTest extends AbstractWebOpTest {
         StringBuilder expectedCommits = new StringBuilder("[");
         expectedCommits.append("{\"id\": \"" + commit2.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit4.getId().toString() + "\"}]");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
-                false));
+        assertTrue(jsonEquals(toJSONArray(expectedCommits.toString()), commits, false));
     }
 
     @Test
@@ -199,8 +199,7 @@ public class LogTest extends AbstractWebOpTest {
         StringBuilder expectedCommits = new StringBuilder("[");
         expectedCommits.append("{\"id\": \"" + commit2.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"}]");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
-                false));
+        assertTrue(jsonEquals(toJSONArray(expectedCommits.toString()), commits, false));
     }
 
     @Test
@@ -242,8 +241,7 @@ public class LogTest extends AbstractWebOpTest {
         expectedCommits.append("{\"id\": \"" + commit1.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"},");
         expectedCommits.append("{\"id\": \"" + commit5.getId().toString() + "\"}]");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
-                false));
+        assertTrue(jsonEquals(toJSONArray(expectedCommits.toString()), commits, false));
     }
 
     @Test
@@ -295,8 +293,7 @@ public class LogTest extends AbstractWebOpTest {
                 + "\", \"adds\": 2, \"removes\": 0, \"modifies\": 1},");
         expectedCommits.append("{\"id\": \"" + commit5.getId().toString()
                 + "\", \"adds\": 1, \"removes\": 1, \"modifies\": 0}]");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
-                false));
+        assertTrue(jsonEquals(toJSONArray(expectedCommits.toString()), commits, false));
     }
 
     @Test

@@ -8,10 +8,10 @@
  * Erik Merkle (Boundless) - initial implementation
  */
 package org.locationtech.geogig.web.api;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -34,7 +34,7 @@ public class JSONStreaminWriterTest extends AbstractStreamingWriterTest {
 
     private JsonValue getJsonValue(String[] paths, String actualBuffer) throws IOException {
         // build a JsonObject from the buffer
-        JsonObject obj = TestData.toJSON(actualBuffer);
+        JsonObject obj = toJSON(actualBuffer);
         // drill down the path
         for (int i = 0; i < (paths.length - 1); ++i) {
             obj = obj.getJsonObject(paths[i]);

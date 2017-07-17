@@ -12,6 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
 
 import javax.json.JsonObject;
 
@@ -19,11 +21,11 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 import com.google.common.base.Optional;
@@ -93,16 +95,15 @@ public class UpdateRefTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "branch1", "delete", "true");
         buildCommand(options).run(testContext.get());
 
-        branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
-                .setName("branch1").call();
+        branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class).setName("branch1")
+                .call();
         assertFalse(branch1.isPresent());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expected = "{\"name\":\"" + refName + "\", \"objectId\":\"" + oldObjectId + "\"}";
 
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                response.getJsonObject("ChangedRef"), true));
+        assertTrue(jsonEquals(toJSON(expected), response.getJsonObject("ChangedRef"), true));
     }
 
     @Test
@@ -131,11 +132,10 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "{\"name\":\"" + refName + "\", \"objectId\":\"" + oldObjectId + "\", \"target\":\""
-                + oldTarget + "\"}";
+        String expected = "{\"name\":\"" + refName + "\", \"objectId\":\"" + oldObjectId
+                + "\", \"target\":\"" + oldTarget + "\"}";
 
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                response.getJsonObject("ChangedRef"), true));
+        assertTrue(jsonEquals(toJSON(expected), response.getJsonObject("ChangedRef"), true));
     }
 
     @Test
@@ -168,8 +168,8 @@ public class UpdateRefTest extends AbstractWebOpTest {
                 master.getObjectId().toString());
         buildCommand(options).run(testContext.get());
 
-        branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
-                .setName("branch1").call().get();
+        branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class).setName("branch1")
+                .call().get();
 
         assertEquals(master.getObjectId(), branch1.getObjectId());
 
@@ -178,8 +178,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
         String expected = "{\"name\":\"" + branch1.getName() + "\", \"objectId\":\""
                 + master.getObjectId().toString() + "\"}";
 
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                response.getJsonObject("ChangedRef"), true));
+        assertTrue(jsonEquals(toJSON(expected), response.getJsonObject("ChangedRef"), true));
     }
 
     @Test
@@ -227,8 +226,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
         String expected = "{\"name\":\"" + head.getName() + "\", \"objectId\":\""
                 + branch1.getObjectId().toString() + "\",\"target\":\"" + branch1.getName() + "\"}";
 
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                response.getJsonObject("ChangedRef"), true));
+        assertTrue(jsonEquals(toJSON(expected), response.getJsonObject("ChangedRef"), true));
     }
 
     @Test

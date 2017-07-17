@@ -25,10 +25,10 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 import com.google.common.base.Optional;

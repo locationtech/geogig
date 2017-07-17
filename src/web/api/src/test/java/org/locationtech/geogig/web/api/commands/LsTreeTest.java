@@ -11,16 +11,18 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class LsTreeTest extends AbstractWebOpTest {
@@ -69,7 +71,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         String expected = "[{\"path\":\"Points\"},{\"path\":\"Points/Point.1\"},{\"path\":\"Points/Point.2\"},{\"path\":\"Points/Point.3\"},"
                 + "{\"path\":\"Lines\"},{\"path\":\"Lines/Line.1\"},{\"path\":\"Lines/Line.2\"},{\"path\":\"Lines/Line.3\"},"
                 + "{\"path\":\"Polygons\"},{\"path\":\"Polygons/Polygon.1\"},{\"path\":\"Polygons/Polygon.2\"},{\"path\":\"Polygons/Polygon.3\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
+        assertTrue(jsonEquals(toJSONArray(expected), nodes, false));
     }
 
     @Test
@@ -86,7 +88,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
         String expected = "[{\"path\":\"Points\"},{\"path\":\"Lines\"},{\"path\":\"Polygons\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
+        assertTrue(jsonEquals(toJSONArray(expected), nodes, false));
     }
 
     @Test
@@ -104,7 +106,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         String expected = "[{\"path\":\"Points/Point.1\"},{\"path\":\"Points/Point.2\"},{\"path\":\"Points/Point.3\"},"
                 + "{\"path\":\"Lines/Line.1\"},{\"path\":\"Lines/Line.2\"},{\"path\":\"Lines/Line.3\"},"
                 + "{\"path\":\"Polygons/Polygon.1\"},{\"path\":\"Polygons/Polygon.2\"},{\"path\":\"Polygons/Polygon.3\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
+        assertTrue(jsonEquals(toJSONArray(expected), nodes, false));
     }
 
     @Test
@@ -121,7 +123,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
         String expected = "[{\"path\":\"Points\"},{\"path\":\"Lines\"},{\"path\":\"Polygons\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
+        assertTrue(jsonEquals(toJSONArray(expected), nodes, false));
     }
 
     @Test
@@ -138,7 +140,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
         String expected = "[{\"path\":\"Points\"},{\"path\":\"Lines\"},{\"path\":\"Polygons\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
+        assertTrue(jsonEquals(toJSONArray(expected), nodes, false));
     }
 
     @Test
@@ -156,6 +158,6 @@ public class LsTreeTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
         String expected = "[{\"path\":\"Point.1\"},{\"path\":\"Point.2\"},{\"path\":\"Point.3\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
+        assertTrue(jsonEquals(toJSONArray(expected), nodes, false));
     }
 }

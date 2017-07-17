@@ -10,6 +10,9 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -21,10 +24,10 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class StatusTest extends AbstractWebOpTest {
@@ -86,18 +89,18 @@ public class StatusTest extends AbstractWebOpTest {
         assertEquals(1, stagedArray.getValuesAs(JsonValue.class).size());
         JsonObject staged = stagedArray.getJsonObject(0);
         String expectedStaged = "{\"changeType\":\"ADDED\",\"newPath\":\"" + point3_path
-                + "\",\"newObjectId\":\"" + point3.getId().toString() + "\",\"path\":\"\",\"oldObjectId\":\""
-                + ObjectId.NULL.toString() + "\"}";
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedStaged), staged, false));
+                + "\",\"newObjectId\":\"" + point3.getId().toString()
+                + "\",\"path\":\"\",\"oldObjectId\":\"" + ObjectId.NULL.toString() + "\"}";
+        assertTrue(jsonEquals(toJSON(expectedStaged), staged, false));
 
         JsonArray unstaged = response.getJsonArray("unstaged");
         String expectedUnstaged = "[{\"changeType\":\"MODIFIED\",\"newPath\":\"" + point1_path
                 + "\",\"newObjectId\":\"" + point1_modified.getId().toString() + "\",\"path\":\""
                 + point1_path + "\",\"oldObjectId\":\"" + point1.getId().toString()
-                + "\"},{\"changeType\":\"REMOVED\",\"path\":\"" + point2_path + "\",\"oldObjectId\":\""
-                + point2.getId().toString() + "\",\"newPath\":\"\",\"newObjectId\":\""
-                + ObjectId.NULL.toString() + "\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedUnstaged), unstaged, false));
+                + "\"},{\"changeType\":\"REMOVED\",\"path\":\"" + point2_path
+                + "\",\"oldObjectId\":\"" + point2.getId().toString()
+                + "\",\"newPath\":\"\",\"newObjectId\":\"" + ObjectId.NULL.toString() + "\"}]";
+        assertTrue(jsonEquals(toJSONArray(expectedUnstaged), unstaged, false));
     }
 
 }

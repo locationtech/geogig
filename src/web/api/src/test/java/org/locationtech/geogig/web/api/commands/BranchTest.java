@@ -13,6 +13,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import java.net.URI;
 import java.util.List;
@@ -30,12 +32,12 @@ import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
@@ -131,7 +133,7 @@ public class BranchTest extends AbstractWebOpTest {
         assertTrue(obj.getBoolean("success"));
         JsonArray localBranches = obj.getJsonObject("Local").getJsonArray("Branch");
         String expected = "[{\"name\":\"branch1\"},{\"name\":\"branch2\"},{\"name\":\"master\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), localBranches, true));
+        assertTrue(jsonEquals(toJSONArray(expected), localBranches, true));
         JsonObject remote = obj.getJsonObject("Remote");
         JsonArray remoteBranches = remote.getJsonArray("Branch");
         assertTrue(remoteBranches.getValuesAs(JsonValue.class).isEmpty());
@@ -162,12 +164,12 @@ public class BranchTest extends AbstractWebOpTest {
         JsonArray localBranches = obj.getJsonObject("Local").getJsonArray("Branch");
         assertEquals(3, localBranches.getValuesAs(JsonValue.class).size());
         String expected = "[{\"name\":\"branch1\"},{\"name\":\"branch2\"},{\"name\":\"master\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), localBranches, true));
+        assertTrue(jsonEquals(toJSONArray(expected), localBranches, true));
 
         expected = "[{\"remoteName\":\"origin\",\"name\":\"branch1\"},{\"remoteName\":\"origin\",\"name\":\"branch2\"},{\"remoteName\":\"origin\",\"name\":\"master\"}]";
         JsonArray remoteBranches = obj.getJsonObject("Remote").getJsonArray("Branch");
         assertEquals(3, remoteBranches.getValuesAs(JsonValue.class).size());
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), remoteBranches, true));
+        assertTrue(jsonEquals(toJSONArray(expected), remoteBranches, true));
     }
 
     @Test

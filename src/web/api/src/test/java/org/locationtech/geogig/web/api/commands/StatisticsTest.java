@@ -11,6 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import javax.json.JsonObject;
 
@@ -18,10 +20,10 @@ import org.junit.Test;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class StatisticsTest extends AbstractWebOpTest {
@@ -92,8 +94,7 @@ public class StatisticsTest extends AbstractWebOpTest {
         assertEquals(2, authors.getInt("totalAuthors"));
         String expectedAuthors = "[{\"name\":\"Author1\",\"email\":\"author1@example.com\"},"
                 + "{\"name\":\"Author2\",\"email\":\"author2@example.com\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
-                authors.getJsonArray("Author"), false));
+        assertTrue(jsonEquals(toJSONArray(expectedAuthors), authors.getJsonArray("Author"), false));
     }
 
     @Test
@@ -136,8 +137,7 @@ public class StatisticsTest extends AbstractWebOpTest {
         assertEquals(2, authors.getInt("totalAuthors"));
         String expectedAuthors = "[{\"name\":\"Author2\",\"email\":\"author2@example.com\"},"
                 + "{\"name\":\"Author2\",\"email\":\"author2_alternate@example.com\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
-                authors.getJsonArray("Author"), false));
+        assertTrue(jsonEquals(toJSONArray(expectedAuthors), authors.getJsonArray("Author"), false));
     }
 
     @Test
@@ -180,8 +180,7 @@ public class StatisticsTest extends AbstractWebOpTest {
         String expectedAuthors = "[{\"name\":\"Author1\",\"email\":\"author1@example.com\"},"
                 + "{\"name\":\"Author2\",\"email\":\"author2@example.com\"},"
                 + "{\"name\":\"Author3\",\"email\":\"author3@example.com\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
-                authors.getJsonArray("Author"), false));
+        assertTrue(jsonEquals(toJSONArray(expectedAuthors), authors.getJsonArray("Author"), false));
         JsonObject featureTypes = statistics.getJsonObject("FeatureTypes");
         assertEquals(2, featureTypes.getInt("totalFeatureTypes"));
         assertEquals(4, featureTypes.getInt("totalFeatures"));
@@ -189,7 +188,7 @@ public class StatisticsTest extends AbstractWebOpTest {
                 + "\",\"numFeatures\":3}," + "{\"name\":\"" + TestData.linesType.getTypeName()
                 + "\",\"numFeatures\":1}]";
 
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedFeatureTypes),
+        assertTrue(jsonEquals(toJSONArray(expectedFeatureTypes),
                 featureTypes.getJsonArray("FeatureType"), false));
     }
 }

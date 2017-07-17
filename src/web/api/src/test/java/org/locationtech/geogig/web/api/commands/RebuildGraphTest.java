@@ -11,6 +11,9 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -22,10 +25,10 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 public class RebuildGraphTest extends AbstractWebOpTest {
@@ -102,8 +105,7 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         expectedCommits.append("{\"ref\": \"" + commit3.getId().toString() + "\"},");
         expectedCommits.append("{\"ref\": \"" + commit4.getId().toString() + "\"},");
         expectedCommits.append("{\"ref\": \"" + commit5.getId().toString() + "\"}]");
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()),
-                updatedObjects, false));
+        assertTrue(jsonEquals(toJSONArray(expectedCommits.toString()), updatedObjects, false));
     }
 
     @Test
@@ -143,6 +145,6 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonObject rebuildGraph = response.getJsonObject("RebuildGraph");
         String expectedResponse = "{\"updatedGraphElements\":4}";
-        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedResponse), rebuildGraph, false));
+        assertTrue(jsonEquals(toJSON(expectedResponse), rebuildGraph, false));
     }
 }

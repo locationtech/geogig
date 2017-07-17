@@ -12,6 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
+import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import java.net.URI;
 
@@ -26,12 +28,12 @@ import org.locationtech.geogig.porcelain.RemoteException;
 import org.locationtech.geogig.porcelain.RemoteResolve;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
 import com.google.common.base.Optional;
@@ -117,8 +119,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expected = "[{\"name\":\"remote1\"},{\"name\":\"remote2\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected),
-                response.getJsonArray("Remote"), true));
+        assertTrue(jsonEquals(toJSONArray(expected), response.getJsonArray("Remote"), true));
     }
 
     @Test
@@ -132,8 +133,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         String expected = "[{\"name\":\"remote1\", \"url\":\"" + remote1URI.toURL().toString()
                 + "\"},{\"name\":\"remote2\",\"url\":\"" + remote2URI.toURL().toString() + "\"}]";
-        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected),
-                response.getJsonArray("Remote"), true));
+        assertTrue(jsonEquals(toJSONArray(expected), response.getJsonArray("Remote"), true));
     }
 
     @Test

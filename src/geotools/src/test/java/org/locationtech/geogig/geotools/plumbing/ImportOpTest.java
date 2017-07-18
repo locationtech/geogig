@@ -23,6 +23,7 @@ import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -207,6 +208,7 @@ public class ImportOpTest extends RepositoryTestCase {
         assertTrue(ref.isPresent());
     }
 
+    @Ignore
     @Test
     public void testImportAllWithDifferentFeatureTypesAndDestPath() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
@@ -232,6 +234,7 @@ public class ImportOpTest extends RepositoryTestCase {
         }
     }
 
+    @Ignore
     @Test
     public void testImportAllWithDifferentFeatureTypesAndDestPathAndAdd() throws Exception {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();

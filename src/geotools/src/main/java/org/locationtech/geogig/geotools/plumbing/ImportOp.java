@@ -9,10 +9,14 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
+import static org.locationtech.geogig.repository.impl.SpatialOps.findIdentifier;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,8 +35,6 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.jdbc.JDBCFeatureSource;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.CRS.AxisOrder;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.data.ForwardingFeatureCollection;
 import org.locationtech.geogig.data.ForwardingFeatureIterator;
@@ -51,7 +53,6 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.porcelain.CRSException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -64,7 +65,6 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.identity.FeatureId;
-import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +77,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
 import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
-import static org.locationtech.geogig.repository.impl.SpatialOps.findIdentifier;
 
 /**
  * Internal operation for importing tables from a GeoTools {@link DataStore}.
@@ -391,6 +390,10 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         if (typeNames.length > 1 && alter && all) {
             throw new GeoToolsOpException(StatusCode.ALTER_AND_ALL_DEFINED);
         }
+        // sort the schemas in reverse alphabetic order so that any FIDs that exist in multiple
+        // schemas will look like the Feature in the first schema alphabetically, since it will be
+        // the last one processed in _call() above.
+        Arrays.sort(typeNames, Collections.reverseOrder());
         return typeNames;
     }
 

@@ -26,6 +26,7 @@ public interface RepositoryProvider {
      */
     String KEY = "__REPOSITORY_PROVIDER_KEY__";
 
+    @Deprecated
     public Optional<Repository> getGeogig(Request request);
 
     /**
@@ -33,6 +34,7 @@ public interface RepositoryProvider {
      * <p>
      * Implementation detail: the repository instance is removed from the provider's cache.
      */
+    @Deprecated
     void delete(Request request);
 
     /**
@@ -44,5 +46,4 @@ public interface RepositoryProvider {
      * @return an Iterator that walks through the names of all the repositories provided.
      */
     public Iterator<String> findRepositories();
-
 }

@@ -12,6 +12,8 @@ package org.locationtech.geogig.web.api;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.restlet.data.MediaType;
@@ -53,6 +55,19 @@ public class RESTUtils {
         }
     }
 
+    public static String getStringAttribute(final HttpServletRequest request, final String key) {
+        Object value = request.getAttribute(key);
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            return URLDecoder.decode(value.toString(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public static void encodeAlternateAtomLink(MediaType format, StreamingWriter w, String href)
             throws StreamWriterException {
         if ("xml".equalsIgnoreCase(format.getSubType())) {
@@ -69,6 +84,20 @@ public class RESTUtils {
         }
     }
 
+    public static void encodeAlternateAtomLink(org.springframework.http.MediaType format, StreamingWriter w, String href)
+            throws StreamWriterException {
+        if ("xml".equalsIgnoreCase(format.getSubtype())) {
+            w.writeStartElement("atom:link");
+            w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
+            w.writeAttribute("rel", "alternate");
+            w.writeAttribute("href", href);
+            w.writeAttribute("type", format.toString());
+            w.writeEndElement();
+        } else if (org.springframework.http.MediaType.APPLICATION_JSON.equals(format)) {
+            w.writeAttribute("href", href);
+        }
+    }
+
     public static String buildHref(String baseURL, String link, MediaType format) {
         link = baseURL + "/" + link;
 
@@ -76,6 +105,23 @@ public class RESTUtils {
         String ext = null;
         if (format != null) {
             ext = format.getSubType();
+        }
+
+        if (ext != null && ext.length() > 0) {
+            link = link + "." + ext;
+        }
+
+        return link;
+    }
+
+    public static String buildHref(String baseURL, String link,
+            org.springframework.http.MediaType format) {
+        link = baseURL + "/" + link;
+
+        // try to figure out extension
+        String ext = null;
+        if (format != null) {
+            ext = format.getSubtype();
         }
 
         if (ext != null && ext.length() > 0) {

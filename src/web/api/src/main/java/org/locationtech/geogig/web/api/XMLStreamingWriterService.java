@@ -32,4 +32,10 @@ public class XMLStreamingWriterService implements StreamingWriterService {
         return APPLICATION_XML.equals(mediaType, true) || TEXT_XML.equals(mediaType, true);
     }
 
+    @Override
+    public boolean handles(org.springframework.http.MediaType mediaType) {
+        // true if the main/sub-types match, ignore extra parameters
+        return org.springframework.http.MediaType.APPLICATION_XML.equals(mediaType)
+                || org.springframework.http.MediaType.TEXT_XML.equals(mediaType);
+    }
 }

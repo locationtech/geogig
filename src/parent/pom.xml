@@ -107,8 +107,9 @@
     <hikaricp.version>2.4.2</hikaricp.version>
     <rocksdb.version>5.7.2</rocksdb.version>
     <postgresql.version>42.1.1</postgresql.version>
-    <springweb.version>4.2.5.RELEASE</springweb.version>
-
+    <springweb.version>4.3.7.RELEASE</springweb.version>
+    <servlet-api.version>3.1.0</servlet-api.version>
+    <jetty.version>9.4.1.v20170120</jetty.version>
     <appassembler.plugin.version>1.2.2</appassembler.plugin.version>
     <war.plugin.version>2.4</war.plugin.version>
     <jetty.plugin.version>7.1.6.v20100715</jetty.plugin.version>
@@ -332,6 +333,24 @@
         <version>0.9.5</version>
       </dependency>
 
+      <!-- Spring MVC dependencies -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${springweb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>${servlet-api.version}</version>
+      </dependency>
+
+      <!-- Jetty Runner dependencies -->
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
       <!-- Test scope dependencies -->
       <dependency>
         <groupId>junit</groupId>
@@ -387,11 +406,6 @@
         <groupId>net.sf.py4j</groupId>
         <artifactId>py4j</artifactId>
         <version>0.8.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>${springweb.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -713,6 +727,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>2.20</version>
         <configuration>
           <aggregate>true</aggregate>
         </configuration>

@@ -38,11 +38,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 public class MemoryDataStoreWithProvidedFIDSupport extends MemoryDataStore {
 
     @Override
-    public Map<String, SimpleFeature> features(String typeName) throws IOException {
-        return super.features(typeName);
-    }
-
-    @Override
     protected ContentFeatureSource createFeatureSource(ContentEntry entry, Query query) {
 
         return new MemoryFeatureStore(entry, query) {
@@ -66,6 +61,12 @@ public class MemoryDataStoreWithProvidedFIDSupport extends MemoryDataStore {
 
     }
 
+    @Override
+    public void dispose() {
+        // don't dispose the store, it will wipe the in-memory contents
+    }
+
+
     private static class MemoryFeatureWriterWithProvidedFIDSupport
             implements FeatureWriter<SimpleFeatureType, SimpleFeature> {
         ContentState state;
@@ -87,7 +88,7 @@ public class MemoryDataStoreWithProvidedFIDSupport extends MemoryDataStore {
             String typeName = featureType.getTypeName();
             MemoryDataStoreWithProvidedFIDSupport store = (MemoryDataStoreWithProvidedFIDSupport) state
                     .getEntry().getDataStore();
-            contents = store.features(typeName);
+            contents = store.entry(typeName).getMemory();
             iterator = contents.values().iterator();
 
         }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.geotools.data.EmptyFeatureReader;
@@ -85,7 +86,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
                 GeogigFeatureStore.this.setTransaction(transaction);
             }
         };
-        super.hints = delegate.getSupportedHints();
+        super.hints = (Set<Hints.Key>) (Set<?>)delegate.getSupportedHints();
     }
 
     /** We handle events internally */

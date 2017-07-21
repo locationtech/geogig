@@ -21,121 +21,87 @@ import java.io.Serializable;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
+import org.geotools.data.DataUtilities;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.feature.NameImpl;
+import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.referencing.CRS;
 import org.mockito.Mockito;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class TestHelper {
 
+    private static SimpleFeatureType type(String typeName, String typeSpec) throws SchemaException {
+        // Use the same deafult namespace than SimpleFeatureTypeBuilder
+        typeName = "http://www.opengis.net/gml." + typeName;
+        SimpleFeatureType type = DataUtilities.createType(typeName, typeSpec);
+        return type;
+    }
+
+    private static SimpleFeature feature(SimpleFeatureType type, String id, Object... values) {
+        return SimpleFeatureBuilder.build(type, values, id);
+    }
+
+    private static Geometry geom(String wkt) throws ParseException {
+        return new WKTReader().read(wkt);
+    }
+
     public static DataStoreFactorySpi createTestFactory() throws Exception {
 
-        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        builder.setCRS(CRS.decode("EPSG:4326"));
-        builder.add("geom", Point.class);
-        builder.add("label", String.class);
-        builder.setName("table1");
+        final SimpleFeatureType type1;
+        final SimpleFeatureType type2;
+        final SimpleFeatureType type3;
+        final SimpleFeatureType type4;
 
-        SimpleFeatureType type = builder.buildFeatureType();
+        final SimpleFeatureType typeShp;
+        final SimpleFeatureType typeShp2;
+        final SimpleFeatureType typeGeoJson;
+        final SimpleFeatureType typeGeoJson2;
 
-        SimpleFeatureTypeBuilder builder2 = new SimpleFeatureTypeBuilder();
-        builder2.setCRS(CRS.decode("EPSG:4326"));
-        builder2.add("geom", Point.class);
-        builder2.add("name", String.class);
-        builder2.setName("table2");
-
-        SimpleFeatureType type2 = builder2.buildFeatureType();
-
-        SimpleFeatureTypeBuilder builder3 = new SimpleFeatureTypeBuilder();
-        builder3.setCRS(CRS.decode("EPSG:4326"));
-        builder3.add("geom", Point.class);
-        builder3.add("name", String.class);
-        builder3.add("number", Long.class);
-        builder3.setName("table3");
-
-        SimpleFeatureTypeBuilder builder4 = new SimpleFeatureTypeBuilder();
-        builder4.setCRS(CRS.decode("EPSG:4326"));
-        builder4.add("geom", Point.class);
-        builder4.add("number", Double.class);
-        builder4.setName("table4");
+        type1 = type("table1", "geom:Point:srid=4326,label:String");
+        type2 = type("table2", "geom:Point:srid=4326,name:String");
+        type3 = type("table3", "geom:Point:srid=4326,name:String,number:java.lang.Long");
+        type4 = type("table4", "geom:Point:srid=4326,number:java.lang.Double");
 
         // A table with a shp-like structure
-        SimpleFeatureTypeBuilder builderShp = new SimpleFeatureTypeBuilder();
-        builderShp.setCRS(CRS.decode("EPSG:4326"));
-        builderShp.add("the_geom", Point.class);
-        builderShp.add("number", Double.class);
-        builderShp.add("number2", Double.class);
-        builderShp.setName("shpLikeTable");
-
-        SimpleFeatureTypeBuilder builderShp2 = new SimpleFeatureTypeBuilder();
-        builderShp2.setCRS(CRS.decode("EPSG:4326"));
-        builderShp2.add("the_geom", Point.class);
-        builderShp2.add("number", Double.class);
-        builderShp2.add("number2", Integer.class);
-        builderShp2.setName("shpLikeTable2");
+        typeShp = type("shpLikeTable",
+                "the_geom:Point:srid=4326,number:java.lang.Double,number2:java.lang.Double");
+        typeShp2 = type("shpLikeTable2",
+                "the_geom:Point:srid=4326,number:java.lang.Double,number2:java.lang.Integer");
 
         // A table with a geojson-like structure
-        SimpleFeatureTypeBuilder builderGeoJson = new SimpleFeatureTypeBuilder();
-        builderGeoJson.setCRS(CRS.decode("EPSG:4326"));
-        builderGeoJson.add("number", Double.class);
-        builderGeoJson.add("number2", Double.class);
-        builderGeoJson.add("geom", Point.class);
-        builderGeoJson.setName("GeoJsonLikeTable");
+        typeGeoJson = type("GeoJsonLikeTable",
+                "number:java.lang.Double,number2:java.lang.Double,geom:Point:srid=4326");
 
-        SimpleFeatureTypeBuilder builderGeoJson2 = new SimpleFeatureTypeBuilder();
-        builderGeoJson2.setCRS(CRS.decode("EPSG:23030"));
-        builderGeoJson2.add("number", Double.class);
-        builderGeoJson2.add("number2", Double.class);
-        builderGeoJson2.add("geom", Point.class);
-        builderGeoJson2.setName("GeoJsonLikeTable2");
+        typeGeoJson2 = type("GeoJsonLikeTable2",
+                "number:java.lang.Double,number2:java.lang.Double,geom:Point:srid=23030");
 
-        SimpleFeatureType type3 = builder3.buildFeatureType();
-
-        SimpleFeatureType typeShp = builderShp.buildFeatureType();
-        SimpleFeatureType typeShp2 = builderShp2.buildFeatureType();
-        SimpleFeatureType typeGeoJson = builderGeoJson.buildFeatureType();
-        SimpleFeatureType typeGeoJson2 = builderGeoJson2.buildFeatureType();
-
-        GeometryFactory gf = new GeometryFactory();
-        SimpleFeature f1 = SimpleFeatureBuilder.build(type,
-                new Object[] { gf.createPoint(new Coordinate(5, 8)), "feature1" },
-                "table1.feature1");
-        SimpleFeature f2 = SimpleFeatureBuilder.build(type,
-                new Object[] { gf.createPoint(new Coordinate(5, 4)), "feature2" },
-                "table1.feature2");
-        SimpleFeature f3 = SimpleFeatureBuilder.build(type2,
-                new Object[] { gf.createPoint(new Coordinate(3, 2)), "feature3" },
-                "table2.feature3");
-        SimpleFeature f4 = SimpleFeatureBuilder.build(type3,
-                new Object[] { gf.createPoint(new Coordinate(0, 5)), "feature4", 1000 },
-                "table2.feature4");
-        SimpleFeature f5 = SimpleFeatureBuilder.build(typeShp,
-                new Object[] { gf.createPoint(new Coordinate(0, 6)), 2.2, 1000 }, "feature1");
-        SimpleFeature f6 = SimpleFeatureBuilder.build(typeShp2,
-                new Object[] { gf.createPoint(new Coordinate(0, 7)), 3.2, 1100.0 }, "feature1");
-        SimpleFeature f7 = SimpleFeatureBuilder.build(typeGeoJson,
-                new Object[] { 4.2, 1200, gf.createPoint(new Coordinate(0, 8)) }, "feature1");
-        SimpleFeature f8 = SimpleFeatureBuilder.build(typeGeoJson2,
-                new Object[] { 4.2, 1200, gf.createPoint(new Coordinate(0, 9)) }, "feature1");
+        final SimpleFeature f1 = feature(type1, "table1.feature1", geom("POINT(5 8)"), "feature1");
+        final SimpleFeature f2 = feature(type1, "table1.feature2", geom("POINT(5 4)"), "feature2");
+        final SimpleFeature f3 = feature(type2, "table2.feature3", geom("POINT(3 2)"), "feature3");
+        final SimpleFeature f4 = feature(type3, "table2.feature4", geom("POINT(0 5)"), "feature4",
+                1000);
+        final SimpleFeature f5 = feature(typeShp, "feature1", geom("POINT(0 6)"), 2.2, 1000d);
+        final SimpleFeature f6 = feature(typeShp2, "feature1", geom("POINT(0 7)"), 3.2, 1100);
+        final SimpleFeature f7 = feature(typeGeoJson, "feature1", 4.2d, 1200d, geom("POINT(0 8)"));
+        final SimpleFeature f8 = feature(typeGeoJson2, "feature1", 4.2d, 1200d, geom("POINT(0 9)"));
 
         MemoryDataStore testDataStore = new MemoryDataStore();
-        testDataStore.addFeature(f1);
-        testDataStore.addFeature(f2);
-        testDataStore.addFeature(f3);
-        testDataStore.addFeature(f4);
-        testDataStore.addFeature(f5);
-        testDataStore.addFeature(f6);
-        testDataStore.addFeature(f7);
-        testDataStore.addFeature(f8);
-        testDataStore.createSchema(builder4.buildFeatureType());
+        testDataStore.createSchema(type1);
+        testDataStore.createSchema(type2);
+        testDataStore.createSchema(type3);
+        testDataStore.createSchema(type4);
+        testDataStore.createSchema(typeShp);
+        testDataStore.createSchema(typeShp2);
+        testDataStore.createSchema(typeGeoJson);
+        testDataStore.createSchema(typeGeoJson2);
+
+        testDataStore.addFeatures(new SimpleFeature[] { f1, f2, f3, f4, f5, f6, f7, f8 });
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
         when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
@@ -183,27 +149,13 @@ public class TestHelper {
 
     public static DataStoreFactorySpi createFactoryWithGetFeatureSourceException()
             throws Exception {
-        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        builder.setCRS(CRS.decode("EPSG:4326"));
-        builder.add("geom", Point.class);
-        builder.add("label", String.class);
-        builder.setName("table1");
-        SimpleFeatureType type = builder.buildFeatureType();
 
-        SimpleFeatureTypeBuilder builder2 = new SimpleFeatureTypeBuilder();
-        builder2.setCRS(CRS.decode("EPSG:4326"));
-        builder2.add("geom", Point.class);
-        builder2.add("name", String.class);
-        builder2.setName("table2");
-        SimpleFeatureType type2 = builder2.buildFeatureType();
+        final SimpleFeatureType type = type("table1", "geom:Point:srid=4326,label:String");
+        final SimpleFeatureType type2 = type("table2", "geom:Point:srid=4326,name:String");
 
-        GeometryFactory gf = new GeometryFactory();
-        SimpleFeature f1 = SimpleFeatureBuilder.build(type,
-                new Object[] { gf.createPoint(new Coordinate(5, 8)), "feature1" }, null);
-        SimpleFeature f2 = SimpleFeatureBuilder.build(type,
-                new Object[] { gf.createPoint(new Coordinate(5, 4)), "feature2" }, null);
-        SimpleFeature f3 = SimpleFeatureBuilder.build(type2,
-                new Object[] { gf.createPoint(new Coordinate(3, 2)), "feature3" }, null);
+        final SimpleFeature f1 = feature(type, null, geom("POINT(5 8)"), "feature1");
+        final SimpleFeature f2 = feature(type, null, geom("POINT(5 4)"), "feature2");
+        final SimpleFeature f3 = feature(type2, null, geom("POINT(3 2)"), "feature3");
 
         MemoryDataStore testDataStore = new MemoryDataStore();
         testDataStore.addFeature(f1);

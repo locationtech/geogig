@@ -104,7 +104,7 @@
           <!-- set alternative assemble directory -->
           <assembleDirectory>${project.build.directory}/geogig-build</assembleDirectory>
           <repositoryLayout>flat</repositoryLayout>
-          <repositoryName>lib</repositoryName>
+          <repositoryName>libexec</repositoryName>
           <useWildcardClassPath>true</useWildcardClassPath>
           <useAsterikClassPath>true</useAsterikClassPath>
           <platforms>

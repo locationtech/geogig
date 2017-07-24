@@ -38,6 +38,12 @@ Contents:
     log.rst
     ls.rst
     merge.rst
+    geopkg.rst
+    geopkgdescribe.rst
+    geopkgexport.rst
+    geopkgimport.rst
+    geopkglist.rst
+    geopkgpull.rst
     pg.rst
     pgdescribe.rst
     pgexport.rst

@@ -16,4 +16,5 @@ Contents:
     developers.rst
     geogig-merge-conflicts.rst
     sparse-clone.rst
+    geopkg-interchange.rst
     osm.rst

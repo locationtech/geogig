@@ -65,17 +65,6 @@ public class GeogigModule extends AbstractModule {
      */
     @Override
     protected void configure() {
-
-        Provider<ExecutorService> fineGrainedExecutor = new Provider<ExecutorService>() {
-            @Override
-            public ExecutorService get() {
-                int availableProcessors = Runtime.getRuntime().availableProcessors();
-                return Executors.newFixedThreadPool(availableProcessors);
-            }
-        };
-
-        bind(ExecutorService.class).toProvider(fineGrainedExecutor).in(Scopes.SINGLETON);
-
         bind(Context.class).to(GuiceContext.class).in(Scopes.SINGLETON);
 
         Multibinder.newSetBinder(binder(), Decorator.class);

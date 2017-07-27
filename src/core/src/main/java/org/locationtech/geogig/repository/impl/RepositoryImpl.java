@@ -13,7 +13,6 @@ import java.io.Closeable;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -74,14 +73,11 @@ public class RepositoryImpl implements Repository {
 
     private URI repositoryLocation;
 
-    private ExecutorService executor;
-
     private volatile boolean open;
 
     @Inject
-    public RepositoryImpl(Context context, ExecutorService executor) {
+    public RepositoryImpl(Context context) {
         this.context = context;
-        this.executor = executor;
     }
 
     @Override
@@ -143,7 +139,6 @@ public class RepositoryImpl implements Repository {
         close(context.objectDatabase());
         close(context.indexDatabase());
         close(context.graphDatabase());
-        executor.shutdownNow();
         close(context.configDatabase());
         for (RepositoryListener l : listeners) {
             try {// don't let a broken listener mess us up

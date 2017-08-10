@@ -22,12 +22,12 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.geotools.data.DataUtilities;
-import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.impl.CommitBuilder;
@@ -43,8 +43,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
 
 public class HashObjectTest extends RepositoryTestCase {
 
@@ -283,15 +281,28 @@ public class HashObjectTest extends RepositoryTestCase {
 
         RevPerson tagger = RevPersonBuilder.build("volaya", "volaya@boundlessgeo.com", -1000, -1);
         RevPerson tagger2 = RevPersonBuilder.build("groldan", "groldan@boundlessgeo.com", 10000, 0);
-        RevTag tag = RevTagBuilder.build(null, "tag1", RevObjectTestSupport.hashString("fake commit id"),
-                "message", tagger);
+        RevTag tag = RevTagBuilder.build(null, "tag1",
+                RevObjectTestSupport.hashString("fake commit id"), "message", tagger);
         RevTag tag2 = RevTagBuilder.build(null, "tag2",
-                RevObjectTestSupport.hashString("another fake commit id"), "another message", tagger2);
+                RevObjectTestSupport.hashString("another fake commit id"), "another message",
+                tagger2);
         ObjectId tagId = hashCommand.setObject(tag).call();
         ObjectId tagId2 = hashCommand.setObject(tag2).call();
         assertNotNull(tagId);
         assertNotNull(tagId2);
         assertNotSame(tagId, tagId2);
 
+    }
+
+    @Test
+    public void testHashCommitsConsistency() throws Exception {
+        testHashCommitsConsistency(commit1);
+    }
+
+    private void testHashCommitsConsistency(RevObject o) throws Exception {
+        ObjectId expected = o.getId();
+        ObjectId actual = hashCommand.setObject(o).call();
+
+        assertEquals(expected, actual);
     }
 }

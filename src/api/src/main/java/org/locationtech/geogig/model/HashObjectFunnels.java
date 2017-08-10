@@ -185,15 +185,28 @@ public class HashObjectFunnels {
 
         @Override
         public void funnel(RevCommit from, PrimitiveSink into) {
+            funnel(into, from.getTreeId(), from.getParentIds(), from.getMessage(), from.getAuthor(),
+                    from.getCommitter());
+        }
+
+        public void funnel(PrimitiveSink into, ObjectId treeId, List<ObjectId> parentIds,
+                String message, RevPerson author, RevPerson committer) {
             RevObjectTypeFunnel.funnel(TYPE.COMMIT, into);
-            ObjectIdFunnel.funnel(from.getId(), into);
-            ObjectIdFunnel.funnel(from.getTreeId(), into);
-            for (ObjectId parentId : from.getParentIds()) {
+
+            // funnel ObjectId.NULL for backwards compatibility, since prior to geogig 1.2,
+            // CommitBuilder was creating a fake commit with NULL as object id before computing the
+            // final hash, and this CommitFunnel inadvertently funneling the commit id, which is
+            // plain wrong, so if we don't keep funneling this null id commits will hash out
+            // differently
+            ObjectIdFunnel.funnel(ObjectId.NULL, into);
+
+            ObjectIdFunnel.funnel(treeId, into);
+            for (ObjectId parentId : parentIds) {
                 ObjectIdFunnel.funnel(parentId, into);
             }
-            NullableStringFunnel.funnel(from.getMessage(), into);
-            PersonFunnel.funnel(from.getAuthor(), into);
-            PersonFunnel.funnel(from.getCommitter(), into);
+            NullableStringFunnel.funnel(message, into);
+            PersonFunnel.funnel(author, into);
+            PersonFunnel.funnel(committer, into);
         }
     };
 

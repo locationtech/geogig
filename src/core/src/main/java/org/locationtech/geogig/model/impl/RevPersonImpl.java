@@ -39,7 +39,7 @@ class RevPersonImpl implements RevPerson {
      * @param timestamp milliseconds since January 1, 1970, 00:00:00 GMT
      * @param timeZoneOffset milliseconds to add to the GMT timestamp
      */
-    public RevPersonImpl(@Nullable String name, @Nullable String email, long timeStamp,
+    RevPersonImpl(@Nullable String name, @Nullable String email, long timeStamp,
             int timeZoneOffset) {
         this.name = name;
         this.email = email;

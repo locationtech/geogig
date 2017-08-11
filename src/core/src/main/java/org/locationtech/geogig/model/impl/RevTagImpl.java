@@ -10,7 +10,6 @@
 package org.locationtech.geogig.model.impl;
 
 import static com.google.common.base.Objects.equal;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevPerson;
@@ -41,10 +40,6 @@ class RevTagImpl extends AbstractRevObject implements RevTag {
     RevTagImpl(final ObjectId id, final String name, final ObjectId commitId, final String message,
             RevPerson tagger) {
         super(id);
-        checkNotNull(name);
-        checkNotNull(commitId);
-        checkNotNull(message);
-        checkNotNull(tagger);
         this.name = name;
         this.commit = commitId;
         this.message = message;

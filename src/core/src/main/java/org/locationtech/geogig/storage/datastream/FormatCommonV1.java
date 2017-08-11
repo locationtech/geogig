@@ -125,7 +125,7 @@ public class FormatCommonV1 {
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
 
-        return RevTagBuilder.build(id, name, commitId, message, tagger);
+        return RevTagBuilder.create(id, name, commitId, message, tagger);
     }
 
     public static void writeTag(RevTag tag, DataOutput out) throws IOException {
@@ -174,7 +174,7 @@ public class FormatCommonV1 {
 
         final String message = in.readUTF();
 
-        return CommitBuilder.build(id, treeId, parentListBuilder.build(), author, committer,
+        return CommitBuilder.create(id, treeId, parentListBuilder.build(), author, committer,
                 message);
     }
 
@@ -320,7 +320,7 @@ public class FormatCommonV1 {
         }
         SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
                 Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
-        return RevFeatureTypeBuilder.build(id, ftype);
+        return RevFeatureTypeBuilder.create(id, ftype);
     }
 
     private static Name readName(DataInput in) throws IOException {

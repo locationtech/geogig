@@ -36,6 +36,7 @@ import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
 import org.locationtech.geogig.model.impl.RevTagBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
@@ -69,6 +70,10 @@ public class HashObjectTest extends RepositoryTestCase {
     private RevFeature coverageRevFeature;
 
     private RevFeatureType coverageRevFeatureType;
+
+    private RevTag tag1;
+
+    private RevTag tag2;
 
     @Override
     protected void setUpInternal() throws Exception {
@@ -147,6 +152,15 @@ public class HashObjectTest extends RepositoryTestCase {
         hashCommand.setContext(mockCommandLocator);
         when(mockCommandLocator.command(eq(DescribeFeatureType.class)))
                 .thenReturn(new DescribeFeatureType());
+
+        RevPerson tagger = RevPersonBuilder.build("volaya", "volaya@boundlessgeo.com", -1000, -1);
+        RevPerson tagger2 = RevPersonBuilder.build("groldan", "groldan@boundlessgeo.com", 10000, 0);
+        tag1 = RevTagBuilder.build("tag1", RevObjectTestSupport.hashString("fake commit id"),
+                "message", tagger);
+        tag2 = RevTagBuilder.build("tag2",
+                RevObjectTestSupport.hashString("another fake commit id"), "another message",
+                tagger2);
+
     }
 
     @Test
@@ -278,24 +292,18 @@ public class HashObjectTest extends RepositoryTestCase {
 
     @Test
     public void testHashTags() throws Exception {
-
-        RevPerson tagger = RevPersonBuilder.build("volaya", "volaya@boundlessgeo.com", -1000, -1);
-        RevPerson tagger2 = RevPersonBuilder.build("groldan", "groldan@boundlessgeo.com", 10000, 0);
-        RevTag tag = RevTagBuilder.build(null, "tag1",
-                RevObjectTestSupport.hashString("fake commit id"), "message", tagger);
-        RevTag tag2 = RevTagBuilder.build(null, "tag2",
-                RevObjectTestSupport.hashString("another fake commit id"), "another message",
-                tagger2);
-        ObjectId tagId = hashCommand.setObject(tag).call();
+        ObjectId tagId = hashCommand.setObject(tag1).call();
         ObjectId tagId2 = hashCommand.setObject(tag2).call();
         assertNotNull(tagId);
         assertNotNull(tagId2);
         assertNotSame(tagId, tagId2);
-
     }
 
     @Test
     public void testHashCommitsConsistency() throws Exception {
+        testHashCommitsConsistency(pointFeature1);
+        testHashCommitsConsistency(featureType1);
+        testHashCommitsConsistency(tag1);
         testHashCommitsConsistency(commit1);
     }
 

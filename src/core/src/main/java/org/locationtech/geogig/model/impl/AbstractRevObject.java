@@ -17,6 +17,8 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Base object type accessed during revision walking.
  * 
@@ -30,6 +32,7 @@ public abstract class AbstractRevObject implements RevObject {
     private final ObjectId id;
 
     public AbstractRevObject(final ObjectId id) {
+        Preconditions.checkNotNull(id);
         this.id = id;
     }
 

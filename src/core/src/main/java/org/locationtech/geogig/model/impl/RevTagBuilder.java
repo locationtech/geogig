@@ -9,15 +9,27 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.plumbing.HashObject;
 
 public class RevTagBuilder {
 
-    public static RevTag build(ObjectId id, String name, ObjectId commitId, String message,
+    public static RevTag create(ObjectId id, String name, ObjectId commitId, String message,
             RevPerson tagger) {
+        checkNotNull(id);
+        checkNotNull(name);
+        checkNotNull(commitId);
+        checkNotNull(message);
+        checkNotNull(tagger);
         return new RevTagImpl(id, name, commitId, message, tagger);
     }
 
+    public static RevTag build(String name, ObjectId commitId, String message, RevPerson tagger) {
+        ObjectId id = HashObject.hashTag(name, commitId, message, tagger);
+        return create(id, name, commitId, message, tagger);
+    }
 }

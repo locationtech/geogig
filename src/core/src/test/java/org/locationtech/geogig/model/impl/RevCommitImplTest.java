@@ -38,7 +38,7 @@ public class RevCommitImplTest {
         String message = "This is a test commit";
         ImmutableList<ObjectId> parentIds = ImmutableList
                 .of(RevObjectTestSupport.hashString("Parent 1"));
-        RevCommit commit = CommitBuilder.build(id, treeId, parentIds, author, committer, message);
+        RevCommit commit = CommitBuilder.create(id, treeId, parentIds, author, committer, message);
 
         assertEquals(committer, commit.getCommitter());
         assertEquals(author, commit.getAuthor());
@@ -50,7 +50,7 @@ public class RevCommitImplTest {
         assertEquals(parentIds.get(0), commit.parentN(0).get());
 
         parentIds = ImmutableList.of();
-        commit = CommitBuilder.build(id, treeId, parentIds, author, committer, message);
+        commit = CommitBuilder.create(id, treeId, parentIds, author, committer, message);
         assertEquals(Collections.EMPTY_LIST, commit.getParentIds());
         assertEquals(Optional.absent(), commit.parentN(0));
     }
@@ -66,35 +66,35 @@ public class RevCommitImplTest {
         ImmutableList<ObjectId> parentId = ImmutableList
                 .of(RevObjectTestSupport.hashString("Parent 1"));
         ImmutableList<ObjectId> emptyParentIds = ImmutableList.of();
-        RevCommit commit = CommitBuilder.build(id, treeId, parentId, author, committer, message);
+        RevCommit commit = CommitBuilder.create(id, treeId, parentId, author, committer, message);
 
         String commitString = commit.toString();
 
         assertEquals("Commit[" + id.toString() + ", '" + message + "']", commitString);
 
-        RevCommit commit2 = CommitBuilder.build(RevObjectTestSupport.hashString("second commit"),
+        RevCommit commit2 = CommitBuilder.create(RevObjectTestSupport.hashString("second commit"),
                 treeId, parentId, author, committer, message);
 
         assertTrue(commit.equals(commit2));
 
-        commit2 = CommitBuilder.build(id, RevObjectTestSupport.hashString("new test tree"),
+        commit2 = CommitBuilder.create(id, RevObjectTestSupport.hashString("new test tree"),
                 parentId, author, committer, message);
 
         assertFalse(commit.equals(commit2));
 
-        commit2 = CommitBuilder.build(id, treeId, emptyParentIds, author, committer, message);
+        commit2 = CommitBuilder.create(id, treeId, emptyParentIds, author, committer, message);
 
         assertFalse(commit.equals(commit2));
 
-        commit2 = CommitBuilder.build(id, treeId, parentId, committer, committer, message);
+        commit2 = CommitBuilder.create(id, treeId, parentId, committer, committer, message);
 
         assertFalse(commit.equals(commit2));
 
-        commit2 = CommitBuilder.build(id, treeId, parentId, author, author, message);
+        commit2 = CommitBuilder.create(id, treeId, parentId, author, author, message);
 
         assertFalse(commit.equals(commit2));
 
-        commit2 = CommitBuilder.build(id, treeId, parentId, author, committer, "new message");
+        commit2 = CommitBuilder.create(id, treeId, parentId, author, committer, "new message");
 
         assertFalse(commit.equals(commit2));
 

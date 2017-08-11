@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -261,15 +263,20 @@ public final class CommitBuilder {
 
         final String commitMessage = this.message == null ? "" : this.message;
 
-        RevCommit unnnamedCommit = new RevCommitImpl(ObjectId.NULL, treeId, parentIds, author,
-                committer, commitMessage);
-        ObjectId commitId = new HashObject().setObject(unnnamedCommit).call();
+        final ObjectId commitId = HashObject.hashCommit(treeId, parentIds, author, committer,
+                commitMessage);
 
         return new RevCommitImpl(commitId, treeId, parentIds, author, committer, commitMessage);
     }
 
-    public static RevCommit build(ObjectId id, ObjectId treeId, List<ObjectId> parents,
+    public static RevCommit create(ObjectId id, ObjectId treeId, List<ObjectId> parents,
             RevPerson author, RevPerson committer, String message) {
+        checkNotNull(id);
+        checkNotNull(treeId);
+        checkNotNull(parents);
+        checkNotNull(author);
+        checkNotNull(committer);
+        checkNotNull(message);
         return new RevCommitImpl(id, treeId, ImmutableList.copyOf(parents), author, committer,
                 message);
     }

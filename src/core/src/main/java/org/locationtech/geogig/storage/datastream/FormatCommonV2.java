@@ -140,10 +140,10 @@ public class FormatCommonV2 {
 
         RevTag tag;
         if (id == null) {
-            tag = RevTagBuilder.build(ObjectId.NULL, name, commitId, message, tagger);
+            tag = RevTagBuilder.create(ObjectId.NULL, name, commitId, message, tagger);
             id = new HashObject().setObject(tag).call();
         }
-        tag = RevTagBuilder.build(id, name, commitId, message, tagger);
+        tag = RevTagBuilder.create(id, name, commitId, message, tagger);
         return tag;
     }
 
@@ -184,11 +184,11 @@ public class FormatCommonV2 {
         if (id == null) {
             commitId = ObjectId.NULL;
         }
-        RevCommit commit = CommitBuilder.build(commitId, treeId, parentListBuilder.build(), author,
+        RevCommit commit = CommitBuilder.create(commitId, treeId, parentListBuilder.build(), author,
                 committer, message);
         if (id == null) {
             commitId = new HashObject().setObject(commit).call();
-            commit = CommitBuilder.build(commitId, treeId, parentListBuilder.build(), author,
+            commit = CommitBuilder.create(commitId, treeId, parentListBuilder.build(), author,
                     committer, message);
         }
         return commit;
@@ -625,7 +625,7 @@ public class FormatCommonV2 {
         SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
                 Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
         RevFeatureType revtype;
-        revtype = RevFeatureTypeBuilder.build(id, ftype);
+        revtype = RevFeatureTypeBuilder.create(id, ftype);
 
         return revtype;
     }

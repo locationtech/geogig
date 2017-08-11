@@ -19,7 +19,6 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
 import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.plumbing.CheckRefFormat;
-import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -62,9 +61,9 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
         }
         RevPerson tagger = resolveTagger();
         message = message == null ? "" : message;
-        RevTag tag = RevTagBuilder.build(ObjectId.NULL, name, commitId, message, tagger);
-        ObjectId id = command(HashObject.class).setObject(tag).call();
-        tag = RevTagBuilder.build(id, name, commitId, message, tagger);
+
+        RevTag tag = RevTagBuilder.build(name, commitId, message, tagger);
+
         objectDatabase().put(tag);
         Optional<Ref> branchRef = command(UpdateRef.class).setName(tagRefPath)
                 .setNewValue(tag.getId()).call();

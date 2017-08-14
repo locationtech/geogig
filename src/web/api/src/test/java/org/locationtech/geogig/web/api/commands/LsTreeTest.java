@@ -160,4 +160,18 @@ public class LsTreeTest extends AbstractWebOpTest {
         String expected = "[{\"path\":\"Point.1\"},{\"path\":\"Point.2\"},{\"path\":\"Point.3\"}]";
         assertTrue(jsonEquals(toJSONArray(expected), nodes, false));
     }
+
+    @Test
+    public void testWrongPath() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        testData.loadDefaultData();
+
+        ParameterSet options = TestParams.of("showTree", "true", "recursive", "true", "path",
+                "nonexistent");
+        ex.expect(IllegalArgumentException.class);
+        ex.expectMessage("Invalid reference: nonexistent");
+        buildCommand(options).run(testContext.get());
+    }
 }

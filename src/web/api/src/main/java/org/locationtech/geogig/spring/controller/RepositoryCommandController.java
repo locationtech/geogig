@@ -29,6 +29,7 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.locationtech.geogig.web.api.StreamingWriter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,13 +52,7 @@ import com.google.common.base.Optional;
         produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
 public class RepositoryCommandController extends AbstractController {
 
-    @ExceptionHandler({ CommandSpecException.class })
-    public ResponseEntity<Object> handleCommandSpecException(CommandSpecException ex,
-            HttpServletRequest request) {
-        System.out.println("HANDLED");
-        return new ResponseEntity<Object>(new CommandSpecException.CommandSpecExceptionResponse(ex),
-                new HttpHeaders(), ex.getStatus());
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCommandController.class);
 
     @GetMapping
     public RepositoryInfo getRepositoryInfo(@PathVariable String repoName) {
@@ -66,13 +61,13 @@ public class RepositoryCommandController extends AbstractController {
 
     @RequestMapping(value = "/{command}", method = { RequestMethod.GET, RequestMethod.PUT,
             RequestMethod.POST, RequestMethod.DELETE })
-    public void getCommand(@PathVariable String repoName, @PathVariable String command,
+    public void runCommand(@PathVariable String repoName, @PathVariable String command,
             @RequestParam MultiValueMap<String, String> params,
             HttpServletRequest request, HttpServletResponse response) {
+        AbstractWebAPICommand webCommand = buildCommand(command);
         RequestMethod method = RequestMethod.valueOf(request.getMethod());
-        AbstractWebAPICommand webCommand = CommandBuilder.build(command);
         webCommand.setParameters(new MultiValueMapParams(params));
-        SpringContext context = getContext(request, repoName, webCommand);
+        SpringContext context = buildContext(request, repoName, webCommand);
         if (webCommand.supports(method)) {
             webCommand.run(context);
             encode(context.getResponseContent(), request, response);
@@ -86,7 +81,11 @@ public class RepositoryCommandController extends AbstractController {
         }
     }
 
-    private SpringContext getContext(HttpServletRequest request, String repoName,
+    protected AbstractWebAPICommand buildCommand(String commandName) {
+        return CommandBuilder.build(commandName);
+    }
+
+    private SpringContext buildContext(HttpServletRequest request, String repoName,
             AbstractWebAPICommand webCommand) {
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         RepositoryProvider provider = null;
@@ -103,8 +102,7 @@ public class RepositoryCommandController extends AbstractController {
 
     @Override
     protected Logger getLogger() {
-        // TODO Auto-generated method stub
-        return null;
+        return LOGGER;
     }
 
     static class SpringContext implements CommandContext {

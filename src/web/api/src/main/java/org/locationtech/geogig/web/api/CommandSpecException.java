@@ -9,11 +9,6 @@
  */
 package org.locationtech.geogig.web.api;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.springframework.http.HttpStatus;
 
 /**
@@ -41,23 +36,5 @@ public class CommandSpecException extends IllegalArgumentException {
 
     public HttpStatus getStatus() {
         return status;
-    }
-
-    @XmlRootElement(name = "response")
-    @XmlAccessorType(XmlAccessType.FIELD)
-    public static class CommandSpecExceptionResponse {
-        @XmlElement
-        boolean success = false;
-
-        @XmlElement
-        String error;
-
-        public CommandSpecExceptionResponse() {
-            this.error = "";
-        }
-
-        public CommandSpecExceptionResponse(CommandSpecException ex) {
-            this.error = ex.getMessage();
-        }
     }
 }

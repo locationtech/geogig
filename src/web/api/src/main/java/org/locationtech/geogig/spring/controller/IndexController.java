@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller for handing Repository INIT requests.
+ * Controller for handing index commands.
  */
 @RestController
 @RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/index",
@@ -29,16 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class IndexController extends RepositoryCommandController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexController.class);
-
-    /*
-     * @RequestMapping(value = "/{command}", method = { RequestMethod.GET, RequestMethod.PUT,
-     * RequestMethod.POST, RequestMethod.DELETE }) public void getCommand(@PathVariable String
-     * repoName, @PathVariable String command,
-     * 
-     * @RequestParam MultiValueMap<String, String> params, HttpServletRequest request,
-     * HttpServletResponse response) { runCommand(repoName, IndexCommandBuilder.build(command),
-     * params, request, response); }
-     */
 
     @Override
     protected AbstractWebAPICommand buildCommand(String commandName) {

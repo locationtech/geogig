@@ -21,6 +21,7 @@ import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.InitRequest;
 import org.locationtech.geogig.spring.dto.RepositoryInitRepo;
 import org.locationtech.geogig.spring.service.RepositoryInitService;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,13 +53,11 @@ public class RepositoryInitController extends AbstractController {
             HttpServletRequest request) throws RepositoryConnectionException {
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         if (repoProvider.isPresent()) {
-            System.out.println("repo provider present");
             return repositoryInitService.initRepository(repoProvider.get(), repoName,
                     Maps.newHashMap());
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("No GeoGig repository provider set in the request.");
+        } else {
+            throw new CommandSpecException("No GeoGig repository provider set in the request.");
         }
-        return null;
     }
 
     @PutMapping(consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
@@ -71,10 +70,9 @@ public class RepositoryInitController extends AbstractController {
             System.out.println("repo provider present");
             return repositoryInitService.initRepository(repoProvider.get(), repoName,
                     requestBody.getParameters());
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("No GeoGig repository provider set in the request.");
+        } else {
+            throw new CommandSpecException("No GeoGig repository provider set in the request.");
         }
-        return null;
     }
 
     @PutMapping(consumes = {APPLICATION_FORM_URLENCODED_VALUE})
@@ -82,16 +80,12 @@ public class RepositoryInitController extends AbstractController {
             @PathVariable(name = "repoName")String repoName,
             @RequestBody MultiValueMap<String, String> request) {
         // parse the request
-        System.out.println("Init Request FORM body:");
-        for (MultiValueMap.Entry entry : request.entrySet()) {
-            System.out.println("\t" + entry.getKey() + " = " + entry.getValue());
-        }
+        // TODO: implement
         return new RepositoryInitRepo().setName(repoName);
     }
 
     @Override
     protected Logger getLogger() {
-        // TODO Auto-generated method stub
-        return null;
+        return LOGGER;
     }
 }

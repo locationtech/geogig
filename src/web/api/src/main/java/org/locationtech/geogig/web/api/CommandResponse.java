@@ -9,10 +9,15 @@
  */
 package org.locationtech.geogig.web.api;
 
+import org.locationtech.geogig.spring.dto.LegacyResponse;
+import org.springframework.http.MediaType;
+
+import com.google.common.base.Throwables;
+
 /**
  * Provides a base abstract response implementation for Web API commands.
  */
-public abstract class CommandResponse {
+public abstract class CommandResponse extends LegacyResponse {
 
     /**
      * Write the command response to the provided {@link ResponseWriter}.
@@ -43,6 +48,16 @@ public abstract class CommandResponse {
      */
     public static CommandResponse error(String message) {
         return new ErrorLiteral("error", message);
+    }
+
+    @Override
+    public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+        ResponseWriter out = new ResponseWriter(writer, format);
+        try {
+            write(out);
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     }
 
     /**

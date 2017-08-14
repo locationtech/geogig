@@ -21,7 +21,7 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Status;
+import org.springframework.http.HttpStatus;
 
 /**
  * Lists all indexes in the database, or all of the indexes on a given feature type tree.
@@ -66,7 +66,7 @@ public class ListIndexes extends AbstractWebAPICommand {
                 if (treeRef == null) {
                     throw new CommandSpecException(
                             "The provided tree name was not found in the HEAD commit.",
-                            Status.CLIENT_ERROR_NOT_FOUND);
+                            HttpStatus.NOT_FOUND);
                 }
             }
         } else {

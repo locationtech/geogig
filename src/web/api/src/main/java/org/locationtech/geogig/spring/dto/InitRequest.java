@@ -9,10 +9,14 @@
  */
 package org.locationtech.geogig.spring.dto;
 
+import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import com.google.common.collect.Maps;
 
 /**
  * Bean for JSON init request.
@@ -122,6 +126,10 @@ public class InitRequest {
     public InitRequest setParentDirectory(String parentDirectory) {
         this.parentDirectory = parentDirectory;
         return this;
+    }
+
+    public Map<String, String> getParameters() {
+        return Maps.newHashMap();
     }
 
     @Override

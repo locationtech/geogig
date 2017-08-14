@@ -116,7 +116,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         final Iterator<String> repos = repoProvider.findRepositories();
         while (repos.hasNext()) {
             if (name.equals(repos.next())) {
-                return repoProvider.getGeogig(name);
+                return repoProvider.getGeogigByName(name);
             }
         }
         return null;

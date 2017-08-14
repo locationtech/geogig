@@ -9,14 +9,9 @@
  */
 package org.locationtech.geogig.web.api;
 
-import java.util.function.Function;
-
-import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.resource.Representation;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  *
@@ -25,14 +20,12 @@ public interface CommandContext {
 
     String getBaseURL();
 
-    Context context();
-
     /**
      * @return the {@link Repository} for this context, or {@code null} if not set.
      */
     Repository getRepository();
 
-    Method getMethod();
+    RequestMethod getMethod();
 
     /**
      * Sets the response for the context.
@@ -47,8 +40,6 @@ public interface CommandContext {
      * @param responseContent the command response
      */
     void setResponseContent(StreamResponse responseContent);
-
-    void setResponse(Function<MediaType, Representation> representation);
 
     RepositoryProvider getRepositoryProvider();
 

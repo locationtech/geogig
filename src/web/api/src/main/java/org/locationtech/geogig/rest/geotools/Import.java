@@ -25,8 +25,8 @@ import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.MediaType;
-import org.restlet.data.Method;
 import org.restlet.resource.Representation;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -208,12 +208,12 @@ public class Import extends AbstractWebAPICommand {
             }
         };
 
-        context.setResponse(rep);
+        // context.setResponse(rep);
     }
 
     @Override
-    public boolean supports(Method method) {
-        return Method.POST.equals(method);
+    public boolean supports(RequestMethod method) {
+        return RequestMethod.POST.equals(method);
     }
 
     private DataStoreImportOp<?> buildImportOp(

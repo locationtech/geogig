@@ -84,6 +84,40 @@ public abstract class AbstractController {
     }
 
     /**
+     * Encodes the command Response directly to the HTTP OutputStream. This method is to provide a
+     * way to reuse the old Restlet Representation stream writing within the Spring MVC framework so
+     * that the response format of GeoGig Web API requests remains the same.
+     *
+     * @param success Whether or not the request was successful
+     * @param responseBean An encapsulated response object that can write itself to a
+     *        {@link StreamingWriter}.
+     * @param request The Request that produced the supplied responseBean.
+     * @param response The Response to which the responseBean should be written.
+     */
+    protected final void encodeCommandResponse(boolean success, LegacyResponse responseBean,
+            final HttpServletRequest request, final HttpServletResponse response) {
+        // Extract the baseURL from the request (NOTE: not reliable if proxies are involved)
+        final String baseURL = getBaseUrl(request);
+        // determine requested output format
+        final MediaType requestedResponseFormat = getMediaType(request);
+        // set the Content-Type since we aren't using Spring's framework here
+        response.setContentType(requestedResponseFormat.toString());
+        // write the LegacyResponse object out to the Response stream
+        try (StreamingWriter streamWriter = StreamingWriterFactory
+                .getStreamWriter(requestedResponseFormat, response.getWriter())) {
+            streamWriter.writeStartDocument();
+            streamWriter.writeStartElement("response");
+            streamWriter.writeElement("success", Boolean.toString(success));
+            responseBean.encode(streamWriter, requestedResponseFormat, baseURL);
+            streamWriter.writeEndElement();
+            streamWriter.writeEndDocument();
+        } catch (Exception ex) {
+            getLogger().error("Error writing response", ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
      * Extracts the desired Response format from the Request. The default response format is XML.
      * The GeoGig Web API only supports XML and JSON responses (for requests that don't produce a
      * file output), therefore the returned format will be XML, unless the Request URI specifies

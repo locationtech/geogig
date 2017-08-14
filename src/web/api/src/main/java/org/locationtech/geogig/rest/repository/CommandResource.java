@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,25 +33,23 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.CommandBuilder;
-import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandResponseStreamingWriterRepresentation;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.locationtech.geogig.web.api.StreamWriterRepresentation;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
-import org.restlet.data.Method;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -154,22 +151,22 @@ public class CommandResource extends Resource {
 
     @Override
     public boolean allowPost() {
-        return command.supports(Method.POST);
+        return command.supports(RequestMethod.POST);
     }
 
     @Override
     public boolean allowPut() {
-        return command.supports(Method.PUT);
+        return command.supports(RequestMethod.PUT);
     }
 
     @Override
     public boolean allowGet() {
-        return command.supports(Method.GET);
+        return command.supports(RequestMethod.GET);
     }
 
     @Override
     public boolean allowDelete() {
-        return command.supports(Method.DELETE);
+        return command.supports(RequestMethod.DELETE);
     }
 
     private boolean checkMethod(boolean allowed, MediaType format) {
@@ -181,7 +178,7 @@ public class CommandResource extends Resource {
         return allowed;
     }
 
-    private Representation processRequest(Method method) {
+    private Representation processRequest(RequestMethod method) {
         Representation representation = null;
         MediaType format = MediaType.TEXT_PLAIN;
         try {
@@ -197,7 +194,7 @@ public class CommandResource extends Resource {
             getResponse().setStatus(Status.SERVER_ERROR_SERVICE_UNAVAILABLE);
         } catch (CommandSpecException ex) {
             representation = formatException(ex, format);
-            getResponse().setStatus(ex.getStatus());
+            getResponse().setStatus(Status.SERVER_ERROR_INTERNAL);
         } catch (RestletException ex) {
             representation = ex.getRepresentation();
             getResponse().setStatus(ex.getStatus());
@@ -213,19 +210,19 @@ public class CommandResource extends Resource {
 
     @Override
     public void put(Representation entity) {
-        Representation representation = processRequest(Method.PUT);
+        Representation representation = processRequest(RequestMethod.PUT);
         getResponse().setEntity(representation);
     }
 
     @Override
     public void post(Representation entity) {
-        Representation representation = processRequest(Method.POST);
+        Representation representation = processRequest(RequestMethod.POST);
         getResponse().setEntity(representation);
     }
 
     @Override
     public void delete() {
-        Representation representation = processRequest(Method.DELETE);
+        Representation representation = processRequest(RequestMethod.DELETE);
         getResponse().setEntity(representation);
     }
 
@@ -236,7 +233,7 @@ public class CommandResource extends Resource {
      */
     @Override
     public Representation getRepresentation(Variant variant) {
-        return processRequest(Method.GET);
+        return processRequest(RequestMethod.GET);
     }
 
     protected ParameterSet buildParameterSet(final Form options) {
@@ -248,12 +245,12 @@ public class CommandResource extends Resource {
     protected Representation runCommand(Variant variant, Request request, MediaType outputFormat) {
         geogig = getGeogig(request);
         Preconditions.checkState(geogig.isPresent());
-        RestletContext ctx = new RestletContext(geogig.get(), request);
-        command.run(ctx);
-        Representation rep = ctx.getRepresentation(outputFormat, getJSONPCallback());
-        getResponse().setStatus(command.getStatus());
+        // RestletContext ctx = new RestletContext(geogig.get(), request);
+        // command.run(ctx);
+        // Representation rep = ctx.getRepresentation(outputFormat, getJSONPCallback());
+        // getResponse().setStatus(command.getStatus());
 
-        return rep;
+        return null;
     }
 
     private Representation formatBusyException(RepositoryBusyException ex, MediaType format) {
@@ -322,82 +319,5 @@ public class CommandResource extends Resource {
             }
         }
         return retval;
-    }
-
-    static class RestletContext implements CommandContext {
-
-        CommandResponse responseContent = null;
-
-        StreamResponse streamContent = null;
-
-        final Repository geogig;
-
-        private final Request request;
-
-        private Function<MediaType, Representation> representation;
-
-        RestletContext(Repository geogig, Request request) {
-            this.geogig = geogig;
-            this.request = request;
-        }
-
-        @Override
-        public Repository getRepository() {
-            return geogig;
-        }
-
-        @Override
-        public org.locationtech.geogig.repository.Context context() {
-            return geogig.context();
-        }
-
-        @Override
-        public Method getMethod() {
-            return request.getMethod();
-        }
-
-        public Representation getRepresentation(MediaType format, String callback) {
-            if (representation != null) {
-                return representation.apply(format);
-            }
-            if (streamContent != null) {
-                if (format != CSV_MEDIA_TYPE) {
-                    throw new CommandSpecException(
-                            "Unsupported Media Type: This response is only compatible with text/csv.");
-                }
-                return new StreamWriterRepresentation(format, streamContent);
-            }
-            if (format != MediaType.APPLICATION_JSON && format != MediaType.APPLICATION_XML) {
-                throw new CommandSpecException(
-                        "Unsupported Media Type: This response is only compatible with application/json and application/xml.");
-            }
-            return new CommandResponseStreamingWriterRepresentation(format, responseContent, callback);
-        }
-
-        @Override
-        public void setResponse(Function<MediaType, Representation> representation) {
-            this.representation = representation;
-        }
-
-        @Override
-        public void setResponseContent(CommandResponse responseContent) {
-            this.responseContent = responseContent;
-        }
-
-        @Override
-        public void setResponseContent(StreamResponse responseContent) {
-            this.streamContent = responseContent;
-        }
-
-        @Override
-        public String getBaseURL() {
-            return request.getRootRef().toString();
-        }
-
-        @Override
-        public RepositoryProvider getRepositoryProvider() {
-            return RESTUtils.repositoryProvider(request);
-        }
-
     }
 }

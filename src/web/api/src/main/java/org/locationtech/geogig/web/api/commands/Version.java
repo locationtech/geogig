@@ -18,7 +18,7 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Status;
+import org.springframework.http.HttpStatus;
 
 /**
  * Interface for the Version operation in the GeoGig.
@@ -50,7 +50,7 @@ public class Version extends AbstractWebAPICommand {
 
         if (info == null) {
             throw new CommandSpecException("No version information available.",
-                    Status.SERVER_ERROR_SERVICE_UNAVAILABLE);
+                    HttpStatus.SERVICE_UNAVAILABLE);
         }
 
         context.setResponseContent(new CommandResponse() {

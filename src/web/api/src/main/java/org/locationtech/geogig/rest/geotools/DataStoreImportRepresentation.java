@@ -15,10 +15,9 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
-import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamWriterException;
-import org.restlet.data.MediaType;
 import org.locationtech.geogig.web.api.StreamingWriter;
+import org.restlet.data.MediaType;
 
 /**
  * Representation for Commands that produce RevCommit objects (like
@@ -35,8 +34,8 @@ public class DataStoreImportRepresentation extends AsyncCommandRepresentation<Re
     @Override
     protected void writeResultBody(StreamingWriter w, RevCommit result) throws StreamWriterException {
         if (result != null) {
-            ResponseWriter out = new ResponseWriter(w, getMediaType());
-            out.writeCommit(result, "commit", null, null, null);
+            // ResponseWriter out = new ResponseWriter(w, getMediaType());
+            // out.writeCommit(result, "commit", null, null, null);
         }
     }
 

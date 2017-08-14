@@ -23,7 +23,7 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Method;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Optional;
 
@@ -51,8 +51,9 @@ public class Config extends AbstractWebAPICommand {
     }
 
     @Override
-    public boolean supports(final Method method) {
-        return Method.POST.equals(method) || Method.GET.equals(method) || super.supports(method);
+    public boolean supports(final RequestMethod method) {
+        return RequestMethod.POST.equals(method) || RequestMethod.GET.equals(method)
+                || super.supports(method);
     }
 
 
@@ -88,7 +89,7 @@ public class Config extends AbstractWebAPICommand {
         ConfigOp command = geogig.command(ConfigOp.class).setScope(ConfigScope.LOCAL);
 
         final ConfigAction action;
-        if (context.getMethod() == Method.POST) {
+        if (context.getMethod() == RequestMethod.POST) {
             checkArgument(name != null, "You must specify the key when setting a config key.");
             checkArgument(value != null, "You must specify the value when setting a config key.");
             action = ConfigAction.CONFIG_SET;

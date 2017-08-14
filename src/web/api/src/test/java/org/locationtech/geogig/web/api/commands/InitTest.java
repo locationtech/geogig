@@ -28,7 +28,7 @@ import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.TestRepository;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.data.MediaType;
-import org.restlet.data.Method;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 public class InitTest extends AbstractWebOpTest {
 
@@ -59,7 +59,7 @@ public class InitTest extends AbstractWebOpTest {
 
         ex.expect(CommandSpecException.class);
         ex.expectMessage("Cannot run init on an already initialized repository.");
-        testContext.setRequestMethod(Method.PUT);
+        testContext.setRequestMethod(RequestMethod.PUT);
         cmd.run(testContext.get());
     }
 
@@ -71,7 +71,7 @@ public class InitTest extends AbstractWebOpTest {
 
         assertNull(testContext.get().getRepository());
 
-        testContext.setRequestMethod(Method.PUT);
+        testContext.setRequestMethod(RequestMethod.PUT);
         cmd.run(testContext.get());
 
         String expectedURL = RESTUtils.buildHref(testContext.get().getBaseURL(),

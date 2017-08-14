@@ -9,19 +9,12 @@
  */
 package org.locationtech.geogig.web.api;
 
-import static org.locationtech.geogig.rest.Variants.CSV_MEDIA_TYPE;
-
-import java.util.function.Function;
-
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
-import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.resource.Representation;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Preconditions;
 
@@ -62,7 +55,7 @@ public class TestContext extends ExternalResource {
         ((TestCommandContext) get()).createUninitializedRepo();
     }
 
-    public void setRequestMethod(Method method) {
+    public void setRequestMethod(RequestMethod method) {
         ((TestCommandContext) get()).setRequestMethod(method);
     }
 
@@ -72,10 +65,6 @@ public class TestContext extends ExternalResource {
 
     public StreamResponse getStreamCommandResponse() {
         return context.streamResponse;
-    }
-
-    public Representation getRepresentation(MediaType format) {
-        return context.getRepresentation(format, null);
     }
 
     public void reset() {
@@ -90,9 +79,7 @@ public class TestContext extends ExternalResource {
 
         private StreamResponse streamResponse;
 
-        private Function<MediaType, Representation> representation;
-
-        private Method requestMethod = Method.GET;
+        private RequestMethod requestMethod = RequestMethod.GET;
 
         private RepositoryProvider repoProvider = null;
 
@@ -110,45 +97,20 @@ public class TestContext extends ExternalResource {
             return repo.getGeogig().getRepository();
         }
 
-        @Override
-        public Context context() {
-            return repo.getGeogig().getContext();
-        }
-
-        public void setRequestMethod(Method method) {
+        public void setRequestMethod(RequestMethod method) {
             this.requestMethod = method;
-        }
-
-        public Representation getRepresentation(MediaType format, String callback) {
-            if (representation != null) {
-                return representation.apply(format);
-            }
-            if (streamResponse != null) {
-                if (format != CSV_MEDIA_TYPE) {
-                    throw new CommandSpecException(
-                            "Unsupported Media Type: This response is only compatible with text/csv.");
-                }
-                return new StreamWriterRepresentation(format, streamResponse);
-            }
-            if (format != MediaType.APPLICATION_JSON && format != MediaType.APPLICATION_XML) {
-                throw new CommandSpecException(
-                        "Unsupported Media Type: This response is only compatible with application/json and application/xml.");
-            }
-            return new CommandResponseStreamingWriterRepresentation(format, commandResponse, callback);
         }
 
         @Override
         public void setResponseContent(CommandResponse responseContent) {
             this.commandResponse = responseContent;
             this.streamResponse = null;
-            this.representation = null;
         }
 
         @Override
         public void setResponseContent(StreamResponse responseContent) {
             this.streamResponse = responseContent;
             this.commandResponse = null;
-            this.representation = null;
         }
 
         @Override
@@ -156,15 +118,15 @@ public class TestContext extends ExternalResource {
             return "/geogig";
         }
 
-        @Override
-        public void setResponse(Function<MediaType, Representation> representation) {
-            this.representation = representation;
-            this.commandResponse = null;
-            this.streamResponse = null;
-        }
+        // @Override
+        // public void setResponse(Function<MediaType, Representation> representation) {
+        // this.representation = representation;
+        // this.commandResponse = null;
+        // this.streamResponse = null;
+        // }
 
         @Override
-        public Method getMethod() {
+        public RequestMethod getMethod() {
             return requestMethod;
         }
 

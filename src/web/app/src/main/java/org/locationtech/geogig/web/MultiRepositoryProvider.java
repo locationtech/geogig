@@ -100,18 +100,29 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         if (null == repositoryName) {
             return Optional.absent();
         }
-        if (isInitRequest(request)) {
-            // init request, get a GeoGig repo based on the request
-            Optional<Repository> initRepo = InitRequestHandler.createGeoGIG(request);
-            if (initRepo.isPresent()) {
-                // init request was sufficient
-                return initRepo;
-            }
-        }
-        return Optional.of(getGeogig(repositoryName));
+        return Optional.of(getGeogigByName(repositoryName));
     }
 
-    public Repository getGeogig(final String repositoryName) {
+    @Override
+    public Optional<Repository> getGeogig(final String repoName) {
+        if (null == repoName) {
+            return Optional.absent();
+        }
+        return Optional.of(getGeogigByName(repoName));
+    }
+
+    @Override
+    public Repository createGeogig(final String repositoryName,
+            final Map<String, String> parameters) {
+        Optional<Repository> initRepo = InitRequestHandler.createGeoGIG(repositoryName, parameters);
+        if (initRepo.isPresent()) {
+            // init request was sufficient
+            return initRepo.get();
+        }
+        return null;
+    }
+
+    public Repository getGeogigByName(final String repositoryName) {
         try {
             return repositories.get(repositoryName);
         } catch (ExecutionException e) {
@@ -236,9 +247,11 @@ public class MultiRepositoryProvider implements RepositoryProvider {
 
     private static class InitRequestHandler {
 
-        private static Optional<Repository> createGeoGIG(Request request) {
+        private static Optional<Repository> createGeoGIG(String repositoryName,
+                Map<String, String> parameters) {
             try {
-                final Hints hints = InitRequestUtil.createHintsFromRequest(request);
+                final Hints hints = InitRequestUtil.createHintsFromParameters(repositoryName,
+                        parameters);
                 final Optional<Serializable> repositoryUri = hints.get(Hints.REPOSITORY_URL);
                 if (!repositoryUri.isPresent()) {
                     // didn't successfully build a Repository URI

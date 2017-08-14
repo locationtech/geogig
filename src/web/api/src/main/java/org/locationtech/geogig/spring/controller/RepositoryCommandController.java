@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.MultiValueMapParams;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.locationtech.geogig.spring.dto.RepositoryInfo;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandBuilder;
@@ -27,14 +26,10 @@ import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.StreamResponse;
-import org.locationtech.geogig.web.api.StreamingWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,6 +54,15 @@ public class RepositoryCommandController extends AbstractController {
         return new RepositoryInfo().setName(repoName);
     }
 
+    /**
+     * Runs the given command.
+     * 
+     * @param repoName the repository name
+     * @param command the command name
+     * @param params request parameters
+     * @param request the request
+     * @param response the response object
+     */
     @RequestMapping(value = "/{command}", method = { RequestMethod.GET, RequestMethod.PUT,
             RequestMethod.POST, RequestMethod.DELETE })
     public void runCommand(@PathVariable String repoName, @PathVariable String command,
@@ -72,15 +76,17 @@ public class RepositoryCommandController extends AbstractController {
             webCommand.run(context);
             encode(context.getResponseContent(), request, response);
         } else {
-            encodeCommandResponse(false, new LegacyResponse() {
-                @Override
-                public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
-                    writer.writeElement("error", "unsupported method.");
-                }
-            }, request, response);
+            throw new CommandSpecException("The request method is unsupported for this operation.",
+                    HttpStatus.METHOD_NOT_ALLOWED);
         }
     }
 
+    /**
+     * Build an {@link AbstractWebAPICommand} from a command name.
+     * 
+     * @param commandName the name of the command
+     * @return
+     */
     protected AbstractWebAPICommand buildCommand(String commandName) {
         return CommandBuilder.build(commandName);
     }

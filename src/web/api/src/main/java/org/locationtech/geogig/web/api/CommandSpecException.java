@@ -9,7 +9,12 @@
  */
 package org.locationtech.geogig.web.api;
 
-import org.restlet.data.Status;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.springframework.http.HttpStatus;
 
 /**
  * A user-input (or lack thereof) driven exception. Purposefully does not have a constructor to
@@ -18,7 +23,7 @@ import org.restlet.data.Status;
 @SuppressWarnings("serial")
 public class CommandSpecException extends IllegalArgumentException {
 
-    private Status status = Status.SERVER_ERROR_INTERNAL;
+    private HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
     /**
      * Constructs a new {code CommandSpecException} with the given message.
@@ -29,13 +34,30 @@ public class CommandSpecException extends IllegalArgumentException {
         super(message);
     }
 
-    public CommandSpecException(String message, Status status) {
+    public CommandSpecException(String message, HttpStatus status) {
         super(message);
         this.status = status;
     }
 
-    public Status getStatus() {
+    public HttpStatus getStatus() {
         return status;
     }
 
+    @XmlRootElement(name = "response")
+    @XmlAccessorType(XmlAccessType.FIELD)
+    public static class CommandSpecExceptionResponse {
+        @XmlElement
+        boolean success = false;
+
+        @XmlElement
+        String error;
+
+        public CommandSpecExceptionResponse() {
+            this.error = "";
+        }
+
+        public CommandSpecExceptionResponse(CommandSpecException ex) {
+            this.error = ex.getMessage();
+        }
+    }
 }

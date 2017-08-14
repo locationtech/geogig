@@ -338,6 +338,16 @@ public class InitRequestUtil {
         return hints;
     }
 
+    public static Hints createHintsFromParameters(final String repositoryName,
+            final Map<String, String> parameters) throws UnsupportedEncodingException,
+            URISyntaxException, IOException, RepositoryConnectionException {
+        final Hints hints = new Hints();
+        hints.set(Hints.REPOSITORY_NAME, repositoryName);
+        // try to build the Repo URI from any Request parameters.
+        INSTANCE.updateHintsWithParams(hints, parameters);
+        return hints;
+    }
+
     public static Hints createHintsFromRequest(HttpServletRequest request)
             throws UnsupportedEncodingException, URISyntaxException, IOException,
             RepositoryConnectionException {

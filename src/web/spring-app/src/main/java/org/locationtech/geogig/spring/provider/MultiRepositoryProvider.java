@@ -10,7 +10,6 @@
 package org.locationtech.geogig.spring.provider;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.locationtech.geogig.rest.repository.InitCommandResource.INIT_CMD;
 import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
 
 import java.io.IOException;
@@ -81,70 +80,36 @@ public class MultiRepositoryProvider implements RepositoryProvider {
     }
 
     @Deprecated
-    private boolean isInitRequest(org.restlet.data.Request request) {
-        // if the request is a PUT, and the request path ends in "init", it's an INIT request.
-        if ("PUT".equals(request.getMethod().getName())) {
-            Map<String, Object> attributes = request.getAttributes();
-            if (attributes != null && attributes.containsKey("command")) {
-                return INIT_CMD.equals(attributes.get("command"));
-            } else if (request.getResourceRef() != null) {
-                String path = request.getResourceRef().getPath();
-                return path != null && path.contains(INIT_CMD);
-            }
-        }
-        return false;
-    }
-
-    private boolean isInitRequest(HttpServletRequest request) {
-        // if the request is a PUT, and the request path ends in "init", it's an INIT request.
-        if ("PUT".equals(request.getMethod())) {
-            String commandAttribute = getStringAttribute(request, "command");
-            if (commandAttribute != null) {
-                return INIT_CMD.equals(commandAttribute);
-            } else {
-                String path = request.getPathInfo();
-                return path != null && path.contains(INIT_CMD);
-            }
-        }
-        return false;
-    }
-
-    @Deprecated
     @Override
     public Optional<Repository> getGeogig(org.restlet.data.Request request) {
         final String repositoryName = getStringAttribute(request, "repository");
         if (null == repositoryName) {
             return Optional.absent();
         }
-        if (isInitRequest(request)) {
-            // init request, get a GeoGig repo based on the request
-            Optional<Repository> initRepo = InitRequestHandler.createGeoGIG(request);
-            if (initRepo.isPresent()) {
-                // init request was sufficient
-                return initRepo;
-            }
-        }
-        return Optional.of(getGeogig(repositoryName));
+        return Optional.of(getGeogigByName(repositoryName));
     }
 
-    //@Override
-    public Optional<Repository> getGeogig(HttpServletRequest request) {
-        final String repositoryName = getStringAttribute(request, "repository");
+    @Override
+    public Optional<Repository> getGeogig(final String repositoryName) {
         if (null == repositoryName) {
             return Optional.absent();
         }
-        if (isInitRequest(request)) {
-            // init request, get a GeoGig repo based on the request
-            Optional<Repository> initRepo = InitRequestHandler.createGeoGIG(request);
-            if (initRepo.isPresent()) {
-                // init request was sufficient
-                return initRepo;
-            }
-        }
-        return Optional.of(getGeogig(repositoryName));
+        return Optional.of(getGeogigByName(repositoryName));
     }
 
-    public Repository getGeogig(final String repositoryName) {
+    @Override
+    public Repository createGeogig(final String repositoryName,
+            final Map<String, String> parameters) {
+        Optional<Repository> initRepo = InitRequestHandler.createGeoGIG(resolver, rootRepoURI,
+                repositoryName, parameters);
+        if (initRepo.isPresent()) {
+            // init request was sufficient
+            return initRepo.get();
+        }
+        return null;
+    }
+
+    public Repository getGeogigByName(final String repositoryName) {
         try {
             return repositories.get(repositoryName);
         } catch (ExecutionException e) {
@@ -259,25 +224,6 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         }
     }
 
-    //@Override
-    public void delete(HttpServletRequest request) {
-        Optional<Repository> geogig = getGeogig(request);
-        Preconditions.checkState(geogig.isPresent(), "No repository to delete.");
-
-        final String repositoryName = getStringAttribute(request, "repository");
-        Repository ggig = geogig.get();
-        Optional<URI> repoUri = ggig.command(ResolveGeogigURI.class).call();
-        Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
-
-        ggig.close();
-        try {
-            GeoGIG.delete(repoUri.get());
-            this.repositories.invalidate(repositoryName);
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
-    }
-
     @Override
     public void invalidate(String repoName) {
         this.repositories.invalidate(repoName);
@@ -289,18 +235,17 @@ public class MultiRepositoryProvider implements RepositoryProvider {
 
     private static class InitRequestHandler {
 
-        @Deprecated
-        private static Optional<Repository> createGeoGIG(org.restlet.data.Request request) {
-            return Optional.absent();
-        }
-
-        private static Optional<Repository> createGeoGIG(HttpServletRequest request) {
+        private static Optional<Repository> createGeoGIG(RepositoryResolver defaultResolver,
+                URI rootRepoURI, String repositoryName,
+                Map<String, String> parameters) {
             try {
-                final Hints hints = InitRequestUtil.createHintsFromRequest(request);
-                final Optional<Serializable> repositoryUri = hints.get(Hints.REPOSITORY_URL);
+                final Hints hints = InitRequestUtil.createHintsFromParameters(repositoryName,
+                        parameters);
+                Optional<Serializable> repositoryUri = hints.get(Hints.REPOSITORY_URL);
                 if (!repositoryUri.isPresent()) {
-                    // didn't successfully build a Repository URI
-                    return Optional.absent();
+                    URI repoURI = defaultResolver.buildRepoURI(rootRepoURI, repositoryName);
+                    hints.set(Hints.REPOSITORY_URL, repoURI);
+                    repositoryUri = hints.get(Hints.REPOSITORY_URL);
                 }
                 final URI repoUri = URI.create(repositoryUri.get().toString());
                 final RepositoryResolver resolver = RepositoryResolver.lookup(repoUri);

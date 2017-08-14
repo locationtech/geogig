@@ -25,8 +25,8 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Method;
-import org.restlet.data.Status;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -44,12 +44,12 @@ public class Init extends AbstractWebAPICommand {
     }
 
     @Override
-    public boolean supports(final Method method) {
-        return Method.PUT.equals(method);
+    public boolean supports(final RequestMethod method) {
+        return RequestMethod.PUT.equals(method);
     }
 
     @Override
-    protected boolean requiresOpenRepo() {
+    public boolean requiresOpenRepo() {
         return false;
     }
 
@@ -70,7 +70,7 @@ public class Init extends AbstractWebAPICommand {
         Repository repository = context.getRepository();
         if (repository != null && repository.isOpen()) {
             throw new CommandSpecException("Cannot run init on an already initialized repository.",
-                    Status.CLIENT_ERROR_CONFLICT);
+                    HttpStatus.CONFLICT);
         }
 
         final Context geogig = this.getRepositoryContext(context);
@@ -96,7 +96,7 @@ public class Init extends AbstractWebAPICommand {
                     out.finish();
                 }
             });
-            setStatus(Status.SUCCESS_CREATED);
+            setStatus(HttpStatus.CREATED);
         } catch (RepositoryConnectionException e) {
             throw new CommandSpecException(
                     "Repository was created, but was unable to connect to it immediately.");

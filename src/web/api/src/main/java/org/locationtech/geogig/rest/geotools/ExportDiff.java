@@ -88,7 +88,7 @@ public class ExportDiff extends AbstractWebAPICommand {
     }
 
     @Override
-    protected boolean requiresTransaction() {
+    public boolean requiresTransaction() {
         return false;
     }
 
@@ -161,7 +161,7 @@ public class ExportDiff extends AbstractWebAPICommand {
             }
         };
 
-        context.setResponse(rep);
+        // context.setResponse(rep);
     }
 
     private OutputFormat resolveOutputFormat() {

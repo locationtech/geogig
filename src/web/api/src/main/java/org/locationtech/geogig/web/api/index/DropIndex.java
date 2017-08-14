@@ -18,7 +18,7 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Method;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * The interface for the Drop Index operation in GeoGig.
@@ -47,12 +47,12 @@ public class DropIndex extends AbstractWebAPICommand {
     }
 
     @Override
-    public boolean supports(final Method method) {
-        return Method.DELETE.equals(method);
+    public boolean supports(final RequestMethod method) {
+        return RequestMethod.DELETE.equals(method);
     }
 
     @Override
-    protected boolean requiresOpenRepo() {
+    public boolean requiresOpenRepo() {
         return true;
     }
 

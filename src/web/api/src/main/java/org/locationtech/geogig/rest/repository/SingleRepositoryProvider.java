@@ -11,6 +11,7 @@ package org.locationtech.geogig.rest.repository;
 
 import java.net.URI;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
@@ -35,6 +36,18 @@ public class SingleRepositoryProvider implements RepositoryProvider {
     @Override
     public Optional<Repository> getGeogig(Request request) {
         return Optional.of(repo);
+    }
+
+    @Override
+    public Optional<Repository> getGeogig(final String repositoryName) {
+        return Optional.of(repo);
+    }
+
+    @Override
+    public Repository createGeogig(final String repositoryName,
+            final Map<String, String> parameters) {
+        throw new UnsupportedOperationException(
+                "Cannot create a repository with the single repo provider.");
     }
 
     @Override

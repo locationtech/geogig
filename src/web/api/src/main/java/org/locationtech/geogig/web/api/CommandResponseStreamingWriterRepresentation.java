@@ -40,7 +40,7 @@ public class CommandResponseStreamingWriterRepresentation extends WriterRepresen
         }
         try {
             final StreamingWriter streamWriter = createWriter(writer);
-            impl.write(new ResponseWriter(streamWriter, getMediaType()));
+            // impl.write(new ResponseWriter(streamWriter, getMediaType()));
             streamWriter.flush();
             impl.close();
         } catch (Exception ex) {

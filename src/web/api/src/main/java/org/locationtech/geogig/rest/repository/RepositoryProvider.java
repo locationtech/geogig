@@ -10,6 +10,7 @@
 package org.locationtech.geogig.rest.repository;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.locationtech.geogig.repository.Repository;
 import org.restlet.data.Request;
@@ -28,6 +29,11 @@ public interface RepositoryProvider {
 
     @Deprecated
     public Optional<Repository> getGeogig(Request request);
+
+    public Optional<Repository> getGeogig(final String repositoryName);
+
+    public Repository createGeogig(final String repositoryName,
+            final Map<String, String> parameters);
 
     /**
      * Deletes the repository that resolved from the request argument.

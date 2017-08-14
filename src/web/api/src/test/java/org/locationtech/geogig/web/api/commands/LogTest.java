@@ -28,7 +28,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -327,7 +326,7 @@ public class LogTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("path", path, "summary", "true");
         buildCommand(options).run(testContext.get());
 
-        Representation representation = getResponseRepresentation(Variants.CSV.getMediaType());
+        Representation representation = null;// getResponseRepresentation(Variants.CSV.getMediaType());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         representation.write(out);
 

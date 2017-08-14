@@ -25,7 +25,7 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Method;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Optional;
 
@@ -56,9 +56,9 @@ public class Tag extends AbstractWebAPICommand {
     }
 
     @Override
-    public boolean supports(final Method method) {
-        return Method.POST.equals(method) || Method.GET.equals(method)
-                || Method.DELETE.equals(method) || super.supports(method);
+    public boolean supports(final RequestMethod method) {
+        return RequestMethod.POST.equals(method) || RequestMethod.GET.equals(method)
+                || RequestMethod.DELETE.equals(method) || super.supports(method);
     }
 
     /**
@@ -97,7 +97,7 @@ public class Tag extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
 
-        if (context.getMethod() == Method.GET) {
+        if (context.getMethod() == RequestMethod.GET) {
             final List<RevTag> tags = geogig.command(TagListOp.class).call();
 
             context.setResponseContent(new CommandResponse() {
@@ -108,7 +108,7 @@ public class Tag extends AbstractWebAPICommand {
                     out.finish();
                 }
             });
-        } else if (context.getMethod() == Method.DELETE) {
+        } else if (context.getMethod() == RequestMethod.DELETE) {
             if (name == null) {
                 throw new CommandSpecException("You must specify the tag name to delete.");
             }

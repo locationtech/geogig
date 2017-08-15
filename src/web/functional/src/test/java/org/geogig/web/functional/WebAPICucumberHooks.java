@@ -93,10 +93,10 @@ import org.mortbay.log.Log;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Response;
-import org.restlet.data.Status;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xmlunit.matchers.CompareMatcher;
@@ -657,7 +657,7 @@ public class WebAPICucumberHooks {
         checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
         final String httpMethod = methodAndURL.substring(0, idx);
         String resourceUri = methodAndURL.substring(idx + 1).trim();
-        Method method = Method.valueOf(httpMethod);
+        HttpMethod method = HttpMethod.valueOf(httpMethod);
         context.call(method, resourceUri);
     }
 
@@ -729,10 +729,10 @@ public class WebAPICucumberHooks {
     }
 
     private void assertStatusCode(final int statusCode) {
-        Status status = Status.valueOf(context.getLastResponseStatus());
-        Status expected = Status.valueOf(statusCode);
+        HttpStatus status = HttpStatus.valueOf(context.getLastResponseStatus());
+        HttpStatus expected = HttpStatus.valueOf(statusCode);
         assertEquals(format("Expected status code %s, but got %s", expected, status), statusCode,
-                status.getCode());
+                status.value());
     }
 
     @Then("^the response ContentType should be \"([^\"]*)\"$")
@@ -742,8 +742,7 @@ public class WebAPICucumberHooks {
     }
 
     /**
-     * Checks that the response {@link Response#getAllowedMethods() allowed methods} match the given
-     * list.
+     * Checks that the response allowed methods match the given list.
      * <p>
      * Note the list of allowed methods in the response is only set when a 304 (method not allowed)
      * status code is set.
@@ -934,7 +933,7 @@ public class WebAPICucumberHooks {
 
     private String getAsyncTaskAsXML(final Integer taskId) throws IOException {
         String url = String.format("/tasks/%d", taskId);
-        context.call(Method.GET, url);
+        context.call(HttpMethod.GET, url);
         String text = context.getLastResponseText();
         return text;
     }
@@ -996,7 +995,7 @@ public class WebAPICucumberHooks {
 
         final Integer taskId = Integer.valueOf(context.getVariable(taskIdVariable));
         String url = String.format("/tasks/%d?prune=true", taskId);
-        context.call(Method.GET, url);
+        context.call(HttpMethod.GET, url);
         context.getLastResponseText();
 
     }
@@ -1128,10 +1127,10 @@ public class WebAPICucumberHooks {
         final String requestContent = context.replaceVariables(content);
         switch (method) {
             case "PUT":
-                context.callInternal(Method.PUT, resourceUri, requestContent, contentType);
+                context.callInternal(HttpMethod.PUT, resourceUri, requestContent, contentType);
                 break;
             case "POST":
-                context.callInternal(Method.POST, resourceUri, requestContent, contentType);
+                context.callInternal(HttpMethod.POST, resourceUri, requestContent, contentType);
                 break;
             default:
                 fail("Unsupported request method: " + method);
@@ -1300,8 +1299,8 @@ public class WebAPICucumberHooks {
         checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
         final String httpMethod = methodAndURL.substring(0, idx);
         String resourceUri = methodAndURL.substring(idx + 1).trim();
-        Method method = Method.valueOf(httpMethod);
-        context.call(method, resourceUri, payload.toString(), MediaType.APPLICATION_JSON.getName());
+        HttpMethod method = HttpMethod.valueOf(httpMethod);
+        context.call(method, resourceUri, payload.toString(), MediaType.APPLICATION_JSON_VALUE);
     }
 
     @Then("^the json response \"([^\"]*)\" attribute \"([^\"]*)\" should each contain \"([^\"]*)\"$")
@@ -1334,11 +1333,11 @@ public class WebAPICucumberHooks {
         checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
         final String httpMethod = methodAndURL.substring(0, idx);
         String resourceUri = methodAndURL.substring(idx + 1).trim();
-        Method method = Method.valueOf(httpMethod);
+        HttpMethod method = HttpMethod.valueOf(httpMethod);
         // build URL encoded Form
         Form form = new Form();
         form.add("parentDirectory", systemTempPath());
-        context.call(method, resourceUri, form.encode(), MediaType.APPLICATION_WWW_FORM.getName());
+        context.call(method, resourceUri, form.encode(), MediaType.MULTIPART_FORM_DATA_VALUE);
     }
 
     @Then("^the Author config of repository \"([^\"]*)\" is set$")
@@ -1377,13 +1376,13 @@ public class WebAPICucumberHooks {
         checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
         final String httpMethod = methodAndURL.substring(0, idx);
         String resourceUri = methodAndURL.substring(idx + 1).trim();
-        Method method = Method.valueOf(httpMethod);
+        HttpMethod method = HttpMethod.valueOf(httpMethod);
         // build URL encoded Form
         Form form = new Form();
         form.add("parentDirectory", systemTempPath());
         form.add("authorName", "GeoGig User");
         form.add("authorEmail", "geogig@geogig.org");
-        context.call(method, resourceUri, form.encode(), MediaType.APPLICATION_WWW_FORM.getName());
+        context.call(method, resourceUri, form.encode(), MediaType.MULTIPART_FORM_DATA_VALUE);
     }
 
     @Then("^the parent directory of repository \"([^\"]*)\" is NOT the System Temp directory$")
@@ -1409,7 +1408,7 @@ public class WebAPICucumberHooks {
         checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
         final String httpMethod = methodAndURL.substring(0, idx);
         String resourceUri = methodAndURL.substring(idx + 1).trim();
-        Method method = Method.valueOf(httpMethod);
+        HttpMethod method = HttpMethod.valueOf(httpMethod);
         // build the JSON payload
         JsonObject payload = Json.createObjectBuilder().add("parentDirectory", systemTempPath())
                 .add("authorName", "GeoGig User").add("authorEmail", "geogig@geogig.org").build();
@@ -1544,7 +1543,7 @@ public class WebAPICucumberHooks {
 
     private void checkAsyncTaskAsJson(final Integer taskId) throws IOException {
         String url = String.format("/tasks/%d.json", taskId);
-        context.call(Method.GET, url);
+        context.call(HttpMethod.GET, url);
     }
 
     private void assertJsonIsAsyncTask() {

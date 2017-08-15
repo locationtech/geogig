@@ -38,9 +38,14 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.spring.config.GeoGigWebAPISpringConfig;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestData;
-import org.restlet.data.Method;
+import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
+import org.springframework.http.HttpMethod;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.w3c.dom.Document;
 
 import com.google.common.base.Optional;
@@ -62,12 +67,15 @@ public abstract class FunctionalTestContext extends ExternalResource {
 
     private Map<String, String> variables = new HashMap<>();
 
+    protected WebApplicationContext wac;
+
     @Override
     public synchronized void before() throws Exception {
         if (tempFolder == null) {
             this.tempFolder = new TemporaryFolder();
             this.tempFolder.create();
         }
+        setupSpringContext();
         setUp();
 
         RevFeatureType rft = RevFeatureTypeBuilder.build(TestData.pointsType);
@@ -80,6 +88,14 @@ public abstract class FunctionalTestContext extends ExternalResource {
         setVariable("@PolysTypeID", rft.getId().toString());
     }
 
+    protected void setupSpringContext() {
+        GenericWebApplicationContext context = new GenericWebApplicationContext();
+        new AnnotatedBeanDefinitionReader(context).register(GeoGigWebAPISpringConfig.class);
+        MockServletContext msc = new MockServletContext("");
+        context.setServletContext(msc);
+        context.refresh();
+        wac = context;
+    }
     /**
      * Set up the context for a scenario.
      */
@@ -173,6 +189,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
     /**
      * Set up multiple repositories with remotes for testing.
      * 
+     * @param http
      * @return Collection of repository names created.
      *
      * @throws Exception
@@ -281,44 +298,44 @@ public abstract class FunctionalTestContext extends ExternalResource {
         return createRepo(name);
     }
     /**
-     * Issue a request with the given {@link Method} to the provided resource URI.
+     * Issue a request with the given {@link HttpMethod} to the provided resource URI.
      * 
      * @param method the http method to use
      * @param resourceUri the uri to issue the request to
      */
-    public void call(final Method method, String resourceUri) {
+    public void call(final HttpMethod method, String resourceUri) {
         callInternal(method, replaceVariables(resourceUri));
     }
 
     /**
-     * Issue a request with the given {@link Method} to the provided resource URI and payload.
+     * Issue a request with the given {@link HttpMethod} to the provided resource URI and payload.
      *
      * @param method the http method to use
      * @param resourceUri the uri to issue the request to
      * @param content the payload to encode into the request body
      * @param contentType the MediaType of the payload
      */
-    public void call(final Method method, String resourceUri, String content, String contentType) {
+    public void call(final HttpMethod method, String resourceUri, String content, String contentType) {
         callInternal(method, replaceVariables(resourceUri), content, contentType);
     }
 
     /**
-     * Issue a request with the given {@link Method} to the provided resource URI and payload.
+     * Issue a request with the given {@link HttpMethod} to the provided resource URI and payload.
      *
      * @param method the http method to use
      * @param resourceUri the uri to issue the request to
      * @param content the payload to encode into the request body
      * @param contentType the MediaType of the payload
      */
-    protected abstract void callInternal(final Method method, String resourceUri, String content, String contentType);
+    protected abstract void callInternal(final HttpMethod method, String resourceUri, String content, String contentType);
 
     /**
-     * Issue a request with the given {@link Method} to the provided resource URI.
+     * Issue a request with the given {@link HttpMethod} to the provided resource URI.
      * 
      * @param method the http method to use
      * @param resourceUri the uri to issue the request to
      */
-    protected abstract void callInternal(final Method method, String resourceUri);
+    protected abstract void callInternal(final HttpMethod method, String resourceUri);
 
     /**
      * Issue a POST request to the provided URL with the given file passed as form data.
@@ -356,7 +373,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
      * Issue a POST request to the provided URL with the given text as post data.
      * 
      * @param contentType the content type of the post content
-     * @param url the url to issue the request to
+     * @param resourceUri the url to issue the request to
      * @param postContent the content to post
      */
     protected abstract void postContentInternal(final String contentType, final String resourceUri,
@@ -414,7 +431,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
     static String replaceVariables(final String text, Map<String, String> variables,
             FunctionalTestContext context) {
         String resource = text;
-        int varIndex = -1;
+        int varIndex;
         while ((varIndex = resource.indexOf("{@")) > -1) {
             for (int i = varIndex + 1; i < resource.length(); i++) {
                 char c = resource.charAt(i);

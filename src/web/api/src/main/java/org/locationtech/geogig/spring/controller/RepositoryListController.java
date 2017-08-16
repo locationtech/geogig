@@ -19,9 +19,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.RepositoryList;
 import org.locationtech.geogig.spring.service.RepositoryListService;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,16 +63,14 @@ public class RepositoryListController extends AbstractController {
     }
 
     private RepositoryList extractRepoList(final HttpServletRequest request) {
-        RepositoryList list = new RepositoryList();
         // get the repositoryProvider form the request
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         if (repoProvider.isPresent()) {
             return repositoryListService.getRepositoryList(repoProvider.get(),
                     getMediaType(request), getBaseUrl(request) + "/" + BASE_REPOSITORY_ROUTE);
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("No GeoGig repository provider set in the request.");
         }
-        return list;
+        throw new CommandSpecException("No Repository Provider found in request",
+                HttpStatus.BAD_REQUEST);
     }
 
     @Override

@@ -14,21 +14,26 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.locationtech.geogig.web.api.StreamingWriter;
+import org.springframework.http.MediaType;
+
 /**
  * Bean for a Repository response.
  */
 @XmlRootElement(name = "repo")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class RepositoryInfo {
+public class RepositoryInfo extends LegacyResponse {
+
+    private static final String UNDEFINED = "UNDEFINED";
 
     @XmlElement
-    private String id = java.util.UUID.randomUUID().toString();
+    private String id = UNDEFINED;
 
     @XmlElement
-    private String name;
+    private String name = UNDEFINED;
 
     @XmlElement
-    private String location = "file:///tmp/geoig/repo";
+    private String location = UNDEFINED;
 
     public String getName() {
         return name;
@@ -55,5 +60,16 @@ public class RepositoryInfo {
     public RepositoryInfo setId(String id) {
         this.id = id;
         return this;
+    }
+
+    @Override
+    public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+        writer.writeStartElement("repository");
+        if (!UNDEFINED.equals(id)) {
+            writer.writeElement("id", id);
+        }
+        writer.writeElement("name", name);
+        writer.writeElement("location", location);
+        writer.writeEndElement();
     }
 }

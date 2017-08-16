@@ -27,9 +27,10 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.spring.provider.MultiRepositoryProvider;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.test.TestPlatform;
-import org.locationtech.geogig.web.MultiRepositoryProvider;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
@@ -153,12 +154,15 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     protected void postFileInternal(String resourceUri, String formFieldName, File file) {
+        if (resourceUri.endsWith("/")) {
+            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
+        }
         MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
         try (FileInputStream fis = new FileInputStream(file)) {
             MockMultipartFile mFile = new MockMultipartFile(formFieldName, fis);
             MockMultipartHttpServletRequestBuilder request =
                     MockMvcRequestBuilders.fileUpload(resourceUri).file(mFile);
-
+            request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
             Throwables.propagate(e);
@@ -173,12 +177,15 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      * @param postContent the content to post
      */
     @Override
-    protected void postContentInternal(final String contentType, final String resourceUri,
+    protected void postContentInternal(final String contentType, String resourceUri,
             final String postContent) {
+        if (resourceUri.endsWith("/")) {
+            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
+        }
         MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(resourceUri)
                 .content(postContent);
-
+        request.requestAttr(RepositoryProvider.KEY, repoProvider);
         try {
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
@@ -194,8 +201,12 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     protected void callInternal(HttpMethod method, String resourceUri) {
+        if (resourceUri.endsWith("/")) {
+            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
+        }
         MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.request(method, resourceUri);
+        request.requestAttr(RepositoryProvider.KEY, repoProvider);
         if (HttpMethod.PUT.equals(method) || HttpMethod.POST.equals(method)) {
             // PUT and POST requests should have an entity.
             // Since this method has no content argument, fill the entity with an empty JSON object.
@@ -213,9 +224,13 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     @Override
     protected void callInternal(final HttpMethod method, String resourceUri, String content,
             String contentType) {
+        if (resourceUri.endsWith("/")) {
+            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
+        }
         MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.request(method, resourceUri)
                 .content(content).contentType(contentType);
+        request.requestAttr(RepositoryProvider.KEY, repoProvider);
         try {
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
@@ -266,7 +281,6 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         if (lastResponseDocument == null) {
             try {
                 String text = getLastResponseText();
-                System.out.println("Getting DOM from\n" + text);
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
                 factory.setNamespaceAware(true);

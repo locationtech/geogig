@@ -20,6 +20,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.MultiValueMapParams;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.RepositoryInfo;
+import org.locationtech.geogig.spring.service.RepositoryListService;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -28,6 +29,7 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,9 +51,21 @@ public class RepositoryCommandController extends AbstractController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCommandController.class);
 
+    @Autowired
+    private RepositoryListService repositoryListService;
+
     @GetMapping
-    public RepositoryInfo getRepositoryInfo(@PathVariable String repoName) {
-        return new RepositoryInfo().setName(repoName);
+    public void getRepositoryInfo(@PathVariable String repoName,
+            final HttpServletRequest request, HttpServletResponse response) {
+        Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
+        if (repoProvider.isPresent()) {
+            encode(repositoryListService.getRepository(repoProvider.get(),
+                    getMediaType(request), getBaseUrl(request) + "/" + BASE_REPOSITORY_ROUTE,
+                    repoName), request, response);
+        } else {
+            throw new CommandSpecException("RepositoryProvider not specified in request",
+                    HttpStatus.BAD_REQUEST);
+        }
     }
 
     /**

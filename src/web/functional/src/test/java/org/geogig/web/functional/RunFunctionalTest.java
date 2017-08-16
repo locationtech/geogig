@@ -32,17 +32,5 @@ import cucumber.api.junit.Cucumber;
 @CucumberOptions(strict = true, plugin = { "pretty", "html:cucumber-report",
         "json:cucumber-report/cucumber.json" }, glue = { "org.geogig.web.functional" }, features = {
                 "src/test/resources/features/commands", "src/test/resources/features/repo" })
-@ContextConfiguration(classes = GeoGigWebAPISpringConfig.class)
-@WebAppConfiguration
 public class RunFunctionalTest {
-
-    // The following SpringClassRule and SpringMethodRule allow us to inject Spring test context
-    // framework items without using the SpringRunner for Junit. This is neccessary as we use the
-    // Cucumber.class as the Runner.
-    @ClassRule
-    public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
-
-    @Rule
-    public final SpringMethodRule springMethodRule = new SpringMethodRule();
-
 }

@@ -19,4 +19,5 @@ import org.restlet.data.MediaType;
 public interface StreamingWriterService {
     public StreamingWriter createWriter(Writer writer) throws StreamWriterException;
     public boolean handles(MediaType mediaType);
+    public boolean handles(org.springframework.http.MediaType mediaType);
 }

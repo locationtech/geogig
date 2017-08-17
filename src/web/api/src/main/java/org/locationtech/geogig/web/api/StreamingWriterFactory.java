@@ -32,4 +32,17 @@ public class StreamingWriterFactory {
         // no supported writer found
         throw new IllegalArgumentException("Unsupported MediaType: '" + format + "'");
     }
+
+    public static StreamingWriter getStreamWriter(org.springframework.http.MediaType format, Writer parent) {
+        final ServiceLoader<StreamingWriterService> svcLoader = ServiceLoader.load(StreamingWriterService.class);
+        final Iterator<StreamingWriterService> writerServices = svcLoader.iterator();
+        while (writerServices.hasNext()) {
+            final StreamingWriterService writerService = writerServices.next();
+            if (writerService.handles(format)) {
+                return writerService.createWriter(parent);
+            }
+        }
+        // no supported writer found
+        throw new IllegalArgumentException("Unsupported MediaType: '" + format + "'");
+    }
 }

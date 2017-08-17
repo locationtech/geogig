@@ -21,13 +21,39 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>${springweb.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+    </dependency>
+<!--    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.8.9</version>
+    </dependency>-->
+<!--    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>2.8.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>woodstox-core-asl</artifactId>
+      <version>4.2.0</version>
+    </dependency>-->
+    <dependency>
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.noelios.restlet</groupId>
       <artifactId>com.noelios.restlet</artifactId>
       <version>${restlet.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -42,6 +68,7 @@
       <groupId>org.restlet</groupId>
       <artifactId>org.restlet.ext.fileupload</artifactId>
       <version>${restlet.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

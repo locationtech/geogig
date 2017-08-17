@@ -52,7 +52,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.JsonUtils;
-import org.locationtech.geogig.web.api.TestParams;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;

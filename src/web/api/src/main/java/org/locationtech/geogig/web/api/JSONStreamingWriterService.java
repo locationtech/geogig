@@ -29,4 +29,9 @@ public class JSONStreamingWriterService implements StreamingWriterService {
         return MediaType.APPLICATION_JSON.equals(mediaType, true);
     }
 
+    @Override
+    public boolean handles(org.springframework.http.MediaType mediaType) {
+        // true if the main/sub-types match, ignore extra parameters
+        return org.springframework.http.MediaType.APPLICATION_JSON.equals(mediaType);
+    }
 }

@@ -11,6 +11,7 @@ package org.geogig.web.functional;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -26,27 +27,24 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.spring.provider.MultiRepositoryProvider;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.test.TestPlatform;
-import org.locationtech.geogig.web.Main;
-import org.locationtech.geogig.web.MultiRepositoryProvider;
-import org.restlet.Component;
-import org.restlet.Server;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Protocol;
-import org.restlet.data.Reference;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.InputRepresentation;
-import org.restlet.resource.Representation;
-import org.restlet.resource.StringRepresentation;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
@@ -54,19 +52,15 @@ import com.google.common.collect.Sets;
  */
 public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
-    private static int TEST_HTTP_PORT = 8182;
-
-    private Main app;
+    private static final int TEST_HTTP_PORT = 8182;
 
     private MultiRepositoryProvider repoProvider;
 
-    private Response lastResponse;
+    private MvcResult lastResponse;
 
     private String lastResponseText = null;
 
     private Document lastResponseDocument = null;
-
-    private Server server;
 
     private TestPlatform platform;
 
@@ -75,18 +69,14 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     protected void setUp() throws Exception {
-        if (app == null) {
-            File rootFolder = tempFolder.getRoot();
-            this.platform = new TestPlatform(rootFolder);
-            URI rootURI = TestRepoURIBuilderProvider.getURIBuilder().buildRootURI(platform);
-            repoProvider = new MultiRepositoryProvider(rootURI);
+        File rootFolder = tempFolder.getRoot();
+        this.platform = new TestPlatform(rootFolder);
+        URI rootURI = TestRepoURIBuilderProvider.getURIBuilder().buildRootURI(platform);
+        repoProvider = new MultiRepositoryProvider(rootURI);
 
-            GlobalContextBuilder.builder(new FunctionalRepoContextBuilder(platform));
+        GlobalContextBuilder.builder(new FunctionalRepoContextBuilder(platform));
 
-            this.app = new Main(repoProvider, true);
-            this.app.start();
-            setVariable("@systemTempPath", rootFolder.getCanonicalPath().replace("\\", "/"));
-        }
+        setVariable("@systemTempPath", rootFolder.getCanonicalPath().replace("\\", "/"));
     }
 
     /**
@@ -95,28 +85,14 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     @Override
     protected void tearDown() throws Exception {
         repoProvider.invalidateAll();
-        if (app != null) {
-            try {
-                this.app.stop();
-            } finally {
-                this.app = null;
-            }
-        }
-        if (server != null) {
-            try {
-                this.server.stop();
-            } finally {
-                this.server = null;
-            }
-        }
     }
 
     @Override
     protected void serveHttpRepos() throws Exception {
-        Component comp = new Component();
-        comp.getDefaultHost().attach(this.app);
-        this.server = comp.getServers().add(Protocol.HTTP, TEST_HTTP_PORT);
-        this.server.start();
+//        Component comp = new Component();
+//        comp.getDefaultHost().attach(this.app);
+//        this.server = comp.getServers().add(Protocol.HTTP, TEST_HTTP_PORT);
+//        this.server.start();
     }
 
     @Override
@@ -136,7 +112,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         final Iterator<String> repos = repoProvider.findRepositories();
         while (repos.hasNext()) {
             if (name.equals(repos.next())) {
-                return repoProvider.getGeogig(name);
+                return repoProvider.getGeogigByName(name);
             }
         }
         return null;
@@ -159,7 +135,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         return testData;
     }
 
-    private void setLastResponse(Response response) {
+    private void setLastResponse(MvcResult response) {
         this.lastResponse = response;
         this.lastResponseText = null;
         this.lastResponseDocument = null;
@@ -173,13 +149,17 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     protected void postFileInternal(String resourceUri, String formFieldName, File file) {
-        try {
-            Representation webForm = new MultiPartFileRepresentation(file, formFieldName);
-            Request request = new Request(Method.POST, resourceUri, webForm);
-            request.setRootRef(new Reference(""));
-
-            setLastResponse(app.handle(request));
-        } catch (IOException e) {
+        if (resourceUri.endsWith("/")) {
+            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
+        }
+        MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            MockMultipartFile mFile = new MockMultipartFile(formFieldName, fis);
+            MockMultipartHttpServletRequestBuilder request =
+                    MockMvcRequestBuilders.fileUpload(resourceUri).file(mFile);
+            request.requestAttr(RepositoryProvider.KEY, repoProvider);
+            setLastResponse(mvc.perform(request).andReturn());
+        } catch (Exception e) {
             Throwables.propagate(e);
         }
     }
@@ -188,57 +168,69 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      * Issue a POST request to the provided URL with the given content as post data.
      * 
      * @param contentType the content type of the data
-     * @param url the url to issue the request to
+     * @param resourceUri the url to issue the request to
      * @param postContent the content to post
      */
     @Override
-    protected void postContentInternal(final String contentType, final String resourceUri,
+    protected void postContentInternal(final String contentType, String resourceUri,
             final String postContent) {
-        StringRepresentation content = new StringRepresentation(postContent);
-        content.setMediaType(MediaType.valueOf(contentType));
-        Request request = new Request(Method.POST, resourceUri, content);
-        request.setRootRef(new Reference(""));
-
-        setLastResponse(app.handle(request));
+        if (resourceUri.endsWith("/")) {
+            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
+        }
+        MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(resourceUri)
+                .content(postContent);
+        request.requestAttr(RepositoryProvider.KEY, repoProvider);
+        try {
+            setLastResponse(mvc.perform(request).andReturn());
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     }
 
     /**
-     * Issue a request with the given {@link Method} to the provided resource URI.
+     * Issue a request with the given {@link HttpMethod} to the provided resource URI.
      * 
      * @param method the http method to use
      * @param resourceUri the uri to issue the request to
      */
     @Override
-    protected void callInternal(Method method, String resourceUri) {
-        Request request = new Request(method, resourceUri);
-        request.setRootRef(new Reference(""));
-        if (Method.PUT.equals(method) || Method.POST.equals(method)) {
+    protected void callInternal(HttpMethod method, String resourceUri) {
+        if (resourceUri.endsWith("/")) {
+            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
+        }
+        MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.request(method, resourceUri);
+        request.requestAttr(RepositoryProvider.KEY, repoProvider);
+        if (HttpMethod.PUT.equals(method) || HttpMethod.POST.equals(method)) {
             // PUT and POST requests should have an entity.
             // Since this method has no content argument, fill the entity with an empty JSON object.
             // This method is hit for setting up repositories for many tests, making PUT calls to trigger the "init"
             // command. The INIT Web API command only accepts JSON and Web Form entities, so we'll use JSON here.
-            request.setEntity("{}", MediaType.APPLICATION_JSON);
+            request.content("{}").contentType(org.springframework.http.MediaType.APPLICATION_JSON);
         }
-
-        setLastResponse(app.handle(request));
-    }
-
-    private InputRepresentation createEntity(final String content, final String contentType) {
-        // create an InputRepresentation of the content
-        final MediaType mediaType = MediaType.valueOf(contentType);
-        final ByteArrayInputStream bais = new ByteArrayInputStream(content.getBytes());
-        return new InputRepresentation(bais, mediaType);
+        try {
+            setLastResponse(mvc.perform(request).andReturn());
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     }
 
     @Override
-    protected void callInternal(final Method method, String resourceUri, String content, String contentType) {
-        Request request = new Request(method, resourceUri);
-        request.setRootRef(new Reference(""));
-        if (content != null && !content.isEmpty() && contentType != null) {
-            // create an InputRepresentation of the content
-            request.setEntity(createEntity(content, contentType));
+    protected void callInternal(final HttpMethod method, String resourceUri, String content,
+            String contentType) {
+        if (resourceUri.endsWith("/")) {
+            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
         }
-        setLastResponse(app.handle(request));
+        MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.request(method, resourceUri)
+                .content(content).contentType(contentType);
+        request.requestAttr(RepositoryProvider.KEY, repoProvider);
+        try {
+            setLastResponse(mvc.perform(request).andReturn());
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     }
 
     /**
@@ -246,7 +238,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      * 
      * @return the last response
      */
-    private Response getLastResponse() {
+    private MvcResult getLastResponse() {
         Preconditions.checkState(lastResponse != null, "there is no last reponse");
         return lastResponse;
     }
@@ -260,7 +252,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             return lastResponseText;
         }
         try {
-            lastResponseText = getLastResponse().getEntity().getText();
+            lastResponseText = getLastResponse().getResponse().getContentAsString();
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
@@ -272,7 +264,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public String getLastResponseContentType() {
-        final String xml = getLastResponse().getEntity().getMediaType().getName();
+        final String xml = getLastResponse().getResponse().getContentType();
         return xml;
     }
 
@@ -302,7 +294,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public int getLastResponseStatus() {
-        return getLastResponse().getStatus().getCode();
+        return getLastResponse().getResponse().getStatus();
     }
 
     /**
@@ -311,7 +303,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public InputStream getLastResponseInputStream() throws Exception {
-        return getLastResponse().getEntity().getStream();
+        return new ByteArrayInputStream(getLastResponse().getResponse().getContentAsByteArray());
     }
 
     /**
@@ -319,8 +311,10 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public Set<String> getLastResponseAllowedMethods() {
-        return Sets.newHashSet(
-                Iterables.transform(getLastResponse().getAllowedMethods(), (s) -> s.getName()));
+        // HttpHeaders for ALLOW comes back as a comma separated list in a single String, not
+        Object headerValues = getLastResponse().getResponse()
+                .getHeaderValue(HttpHeaders.ALLOW);
+        return Sets.newHashSet(headerValues.toString().split(","));
     }
 
 }

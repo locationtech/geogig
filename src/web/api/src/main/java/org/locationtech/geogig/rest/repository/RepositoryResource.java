@@ -38,7 +38,7 @@ public class RepositoryResource extends DeleteRepository {
         final Request request = getRequest();
         RepositoryProvider provider = RESTUtils.repositoryProvider(request);
 
-        Optional<Repository> geogig = provider.getGeogig(request);
+        Optional<Repository> geogig = Optional.absent();// provider.getGeogig(request);
         if (!geogig.isPresent() || !geogig.get().isOpen()) {
             getResponse().setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return new StreamWriterRepresentation(MediaType.TEXT_PLAIN,

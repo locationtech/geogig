@@ -36,8 +36,8 @@ import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
-import org.locationtech.geogig.storage.impl.RocksdbMap;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.impl.RocksdbMap;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -168,8 +168,8 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
         @Override
         protected void writeResultBody(StreamingWriter w, GeopkgImportResult result)
                 throws StreamWriterException {
-            ResponseWriter out = new ResponseWriter(w, getMediaType());
-            writeImportResult(result, w, out);
+            // ResponseWriter out = new ResponseWriter(w, getMediaType());
+            // writeImportResult(result, w, out);
         }
 
         @Override
@@ -185,13 +185,13 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                 final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
                         .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
                         .call();
-                ResponseWriter out = new ResponseWriter(w, getMediaType());
+                // ResponseWriter out = new ResponseWriter(w, getMediaType());
                 Optional<RevCommit> mergeCommit = Optional.absent();
                 w.writeStartElement("result");
-                out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
-                        theirs.getId(), ancestor.get(), consumer);
+                // out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
+                // theirs.getId(), ancestor.get(), consumer);
                 w.writeStartElement("import");
-                writeImportResult(m.importResult, w, out);
+                // writeImportResult(m.importResult, w, out);
                 w.writeEndElement();
                 w.writeEndElement();
             } else {

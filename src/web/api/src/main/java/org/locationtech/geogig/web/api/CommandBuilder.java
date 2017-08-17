@@ -49,6 +49,7 @@ import org.locationtech.geogig.web.api.commands.Status;
 import org.locationtech.geogig.web.api.commands.Tag;
 import org.locationtech.geogig.web.api.commands.UpdateRef;
 import org.locationtech.geogig.web.api.commands.Version;
+import org.springframework.http.HttpStatus;
 
 /**
  * Builds {@link WebAPICommand}s by parsing a given command name and uses a given parameter set to
@@ -56,7 +57,7 @@ import org.locationtech.geogig.web.api.commands.Version;
  */
 public class CommandBuilder {
 
-    private final static Map<String, Supplier<WebAPICommand>> MAPPINGS =
+    private final static Map<String, Supplier<AbstractWebAPICommand>> MAPPINGS =
             new HashMap<>(36);
     static {
         MAPPINGS.put("init", Init::new);
@@ -105,14 +106,15 @@ public class CommandBuilder {
      * @return the command that was built
      * @throws CommandSpecException
      */
-    public static WebAPICommand build(final String commandName)
+    public static AbstractWebAPICommand build(final String commandName)
             throws CommandSpecException {
 
         if (!MAPPINGS.containsKey(commandName)) {
-            throw new CommandSpecException("'" + commandName + "' is not a geogig command");
+            throw new CommandSpecException("'" + commandName + "' is not a geogig command",
+                    HttpStatus.NOT_FOUND);
         }
 
-        WebAPICommand command = MAPPINGS.get(commandName).get();
+        AbstractWebAPICommand command = MAPPINGS.get(commandName).get();
 
         return command;
     }

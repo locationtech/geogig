@@ -24,11 +24,11 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.RESTUtils;
-import org.locationtech.geogig.web.api.TestParams;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.web.api.TestRepository;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.data.MediaType;
-import org.restlet.data.Method;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 public class RenameRepositoryTest extends AbstractWebOpTest {
 
@@ -65,7 +65,7 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
 
         ParameterSet options = TestParams.of("name", "newRepoName");
         WebAPICommand cmd = buildCommand(options);
-        testContext.setRequestMethod(Method.POST);
+        testContext.setRequestMethod(RequestMethod.POST);
         cmd.run(testContext.get());
 
         repoName = testContext.get().getRepository().command(ResolveRepositoryName.class).call();
@@ -87,7 +87,7 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
     public void testRenameNoName() throws Exception {
         ParameterSet options = TestParams.of();
         WebAPICommand cmd = buildCommand(null);
-        testContext.setRequestMethod(Method.POST);
+        testContext.setRequestMethod(RequestMethod.POST);
 
         ex.expect(CommandSpecException.class);
         ex.expectMessage("Required parameter 'name' was not provided.");

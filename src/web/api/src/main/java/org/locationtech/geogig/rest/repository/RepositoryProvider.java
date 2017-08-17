@@ -10,6 +10,7 @@
 package org.locationtech.geogig.rest.repository;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.locationtech.geogig.repository.Repository;
 import org.restlet.data.Request;
@@ -26,13 +27,31 @@ public interface RepositoryProvider {
      */
     String KEY = "__REPOSITORY_PROVIDER_KEY__";
 
+    @Deprecated
     public Optional<Repository> getGeogig(Request request);
+
+    public Optional<Repository> getGeogig(final String repositoryName);
+
+    /**
+     * Indicates if this provider already has a GeoGig Repository with a given name. If this method
+     * returns true, it is implied that calling {@link #getGeogig(java.lang.String)} will return a
+     * GeoGig Repository that already exists.
+     *
+     * @param repositoryName The name of the repository.
+     * @return True if a GeoGig Repository with the supplied name already exists that this provider
+     * can provide, false otherwise.
+     */
+    public boolean hasGeoGig(final String repositoryName);
+
+    public Repository createGeogig(final String repositoryName,
+            final Map<String, String> parameters);
 
     /**
      * Deletes the repository that resolved from the request argument.
      * <p>
      * Implementation detail: the repository instance is removed from the provider's cache.
      */
+    @Deprecated
     void delete(Request request);
 
     /**
@@ -44,5 +63,4 @@ public interface RepositoryProvider {
      * @return an Iterator that walks through the names of all the repositories provided.
      */
     public Iterator<String> findRepositories();
-
 }

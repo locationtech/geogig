@@ -13,6 +13,8 @@ import static org.locationtech.geogig.rest.repository.InitCommandResource.AUTHOR
 import static org.locationtech.geogig.rest.repository.InitCommandResource.AUTHOR_NAME;
 import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
 import static org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.servlet.http.HttpServletRequest;
 
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -94,6 +97,7 @@ public class InitRequestUtil {
         }
     }
 
+    @Deprecated
     private void updateRequestWithAuthor(Request request, Map<String, String> params) {
         // store author name and email in the attributes, if they were provided
         if (params.containsKey(AUTHOR_NAME)) {
@@ -101,6 +105,16 @@ public class InitRequestUtil {
         }
         if (params.containsKey(AUTHOR_EMAIL)) {
             request.getAttributes().put(AUTHOR_EMAIL, params.get(AUTHOR_EMAIL));
+        }
+    }
+
+    private void updateRequestWithAuthor(HttpServletRequest request, Map<String, String> params) {
+        // store author name and email in the attributes, if they were provided
+        if (params.containsKey(AUTHOR_NAME)) {
+            request.setAttribute(AUTHOR_NAME, params.get(AUTHOR_NAME));
+        }
+        if (params.containsKey(AUTHOR_EMAIL)) {
+            request.setAttribute(AUTHOR_EMAIL, params.get(AUTHOR_EMAIL));
         }
     }
 
@@ -146,6 +160,18 @@ public class InitRequestUtil {
         addParameter(params, AUTHOR_EMAIL, form.getFirstValue(AUTHOR_EMAIL, null));
     }
 
+    private void addFormParameters(Map<String, String> params, HttpServletRequest request) {
+        addParameter(params, DIR_PARENT_DIR, request.getParameter(DIR_PARENT_DIR));
+        addParameter(params, DB_HOST, request.getParameter(DB_HOST));
+        addParameter(params, DB_PORT, request.getParameter(DB_PORT));
+        addParameter(params, DB_NAME, request.getParameter(DB_NAME));
+        addParameter(params, DB_SCHEMA, request.getParameter(DB_SCHEMA));
+        addParameter(params, DB_USER, request.getParameter(DB_USER));
+        addParameter(params, DB_PASSWORD, request.getParameter(DB_PASSWORD));
+        addParameter(params, AUTHOR_NAME, request.getParameter(AUTHOR_NAME));
+        addParameter(params, AUTHOR_EMAIL, request.getParameter(AUTHOR_EMAIL));
+    }
+
     /**
      * Parses Request entity for repository creation specifics and adds them to a key-value map. Currently, only
      * URL Encoded web forms or JSON objects are supported in the Request entity. Any other Content-Type/MediaType in
@@ -157,6 +183,7 @@ public class InitRequestUtil {
      * @param request GeoGig Repository initialization request
      * @return Key-Value Map of initialization parameters specified in the request entity.
      */
+    @Deprecated
     private Map<String, String> getRequestParameters(Request request) {
         HashMap<String, String> params = new HashMap<>(10);
         if (request.isEntityAvailable()) {
@@ -187,6 +214,46 @@ public class InitRequestUtil {
                         CLIENT_ERROR_BAD_REQUEST);
             }
             // no parameters specified
+        }
+        // the request body was just consumed and can't be retrieved again. If we parsed Author info,
+        // store that on the request for later processing.
+        updateRequestWithAuthor(request, params);
+        return params;
+    }
+
+    /**
+     * Parses Request entity for repository creation specifics and adds them to a key-value map.
+     * Currently, only URL Encoded web forms or JSON objects are supported in the Request entity.
+     * Any other Content-Type/MediaType in the request will be rejected with a 400 Bad Request. If
+     * the request entity is empty (for example, "{}" for a JSON payload), the default repository
+     * provider will be chosen when creating repositories. It is recommended to provide either a
+     * "parentDirectory" element (for file-backed GeoGig repositories) or the database elements (for
+     * Database-backed GeoGig repositories). If BOTH are specified, the "parentDirectory" will be
+     * used for a file-backed repository.
+     *
+     * @param request GeoGig Repository initialization request
+     *
+     * @return Key-Value Map of initialization parameters specified in the request entity.
+     */
+    private Map<String, String> getRequestParameters(HttpServletRequest request) {
+        HashMap<String, String> params = new HashMap<>(10);
+        // get the content type
+        String contentType = request.getContentType();
+        if (null != contentType) {
+            switch (contentType) {
+                case APPLICATION_FORM_URLENCODED_VALUE :
+                    addFormParameters(params, request);
+                    break;
+                case APPLICATION_JSON_VALUE :
+                    try {
+                        JsonObject jsonObject = Json.createReader(request.getReader()).readObject();
+                        addParameters(params, jsonObject);
+                    } catch (IOException ioe) {
+                        throw new RuntimeException(ioe);
+                    }
+                default :
+                    throw new RuntimeException("Unsupported Request MediaType: " + contentType);
+            }
         }
         // the request body was just consumed and can't be retrieved again. If we parsed Author info,
         // store that on the request for later processing.
@@ -251,6 +318,7 @@ public class InitRequestUtil {
         }
     }
 
+    @Deprecated
     public static Hints createHintsFromRequest(Request request) throws UnsupportedEncodingException, URISyntaxException, IOException,
             RepositoryConnectionException {
         // get the repository name from the request
@@ -270,4 +338,33 @@ public class InitRequestUtil {
         return hints;
     }
 
+    public static Hints createHintsFromParameters(final String repositoryName,
+            final Map<String, String> parameters) throws UnsupportedEncodingException,
+            URISyntaxException, IOException, RepositoryConnectionException {
+        final Hints hints = new Hints();
+        hints.set(Hints.REPOSITORY_NAME, repositoryName);
+        // try to build the Repo URI from any Request parameters.
+        INSTANCE.updateHintsWithParams(hints, parameters);
+        return hints;
+    }
+
+    public static Hints createHintsFromRequest(HttpServletRequest request)
+            throws UnsupportedEncodingException, URISyntaxException, IOException,
+            RepositoryConnectionException {
+        // get the repository name from the request
+        final Optional<String> nameOptional = Optional.fromNullable(getStringAttribute(request,
+                REPO_ATTR));
+        if (!nameOptional.isPresent()) {
+            // no repo name provided
+            throw new RestletException(String.format(
+                    "Cannot create GeoGIG repository. Missing '%s' resource", REPO_ATTR),
+                    Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+        final String repoName = nameOptional.get();
+        final Hints hints = new Hints();
+        hints.set(Hints.REPOSITORY_NAME, repoName);
+        // try to build the Repo URI from any Request parameters.
+        INSTANCE.updateHintsWithParams(hints, INSTANCE.getRequestParameters(request));
+        return hints;
+    }
 }

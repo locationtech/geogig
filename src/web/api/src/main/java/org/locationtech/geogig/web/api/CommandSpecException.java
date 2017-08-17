@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.web.api;
 
-import org.restlet.data.Status;
+import java.util.Set;
+
+import org.springframework.http.HttpStatus;
 
 /**
  * A user-input (or lack thereof) driven exception. Purposefully does not have a constructor to
@@ -18,8 +20,9 @@ import org.restlet.data.Status;
 @SuppressWarnings("serial")
 public class CommandSpecException extends IllegalArgumentException {
 
-    private Status status = Status.SERVER_ERROR_INTERNAL;
+    private HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
+    private Set<String> allowedMethods;
     /**
      * Constructs a new {code CommandSpecException} with the given message.
      * 
@@ -29,13 +32,21 @@ public class CommandSpecException extends IllegalArgumentException {
         super(message);
     }
 
-    public CommandSpecException(String message, Status status) {
+    public CommandSpecException(String message, HttpStatus status) {
         super(message);
         this.status = status;
     }
 
-    public Status getStatus() {
+    public CommandSpecException(String message, HttpStatus status, Set<String> allowedMethods) {
+        this(message, status);
+        this.allowedMethods = allowedMethods;
+    }
+
+    public HttpStatus getStatus() {
         return status;
     }
 
+    public Set<String> getAllowedMethods() {
+        return allowedMethods;
+    }
 }

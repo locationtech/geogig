@@ -63,7 +63,7 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.JsonUtils;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestParams;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.geometry.BoundingBox;
 

@@ -194,7 +194,7 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
             w.writeStartElement("atom:link");
             w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
             w.writeAttribute("rel", "alternate");
-            w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, null));
+            w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, (MediaType)null));
             w.writeAttribute("type", outputFormat.toString());
             w.writeEndElement();
         }

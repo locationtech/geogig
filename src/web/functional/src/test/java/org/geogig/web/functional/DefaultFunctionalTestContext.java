@@ -31,6 +31,7 @@ import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.provider.MultiRepositoryProvider;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.test.TestPlatform;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,13 +45,14 @@ import org.xml.sax.SAXException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Sets;
 
 /**
  * Context that uses the GeoGIG web app to run web API functional tests against.
  */
 public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
-    private static int TEST_HTTP_PORT = 8182;
+    private static final int TEST_HTTP_PORT = 8182;
 
     private MultiRepositoryProvider repoProvider;
 
@@ -83,13 +85,6 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     @Override
     protected void tearDown() throws Exception {
         repoProvider.invalidateAll();
-//        if (app != null) {
-//            try {
-//                this.app.stop();
-//            } finally {
-//                this.app = null;
-//            }
-//        }
     }
 
     @Override
@@ -308,8 +303,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public InputStream getLastResponseInputStream() throws Exception {
-        throw new UnsupportedOperationException("implement me");
-//        return getLastResponse().getEntity().getStream();
+        return new ByteArrayInputStream(getLastResponse().getResponse().getContentAsByteArray());
     }
 
     /**
@@ -317,9 +311,10 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public Set<String> getLastResponseAllowedMethods() {
-        throw new UnsupportedOperationException("implement me");
-//        return Sets.newHashSet(
-//                Iterables.transform(getLastResponse().getAllowedMethods(), (s) -> s.getName()));
+        // HttpHeaders for ALLOW comes back as a comma separated list in a single String, not
+        Object headerValues = getLastResponse().getResponse()
+                .getHeaderValue(HttpHeaders.ALLOW);
+        return Sets.newHashSet(headerValues.toString().split(","));
     }
 
 }

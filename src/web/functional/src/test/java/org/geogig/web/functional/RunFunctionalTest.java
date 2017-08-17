@@ -10,14 +10,7 @@
 package org.geogig.web.functional;
 
 
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.runner.RunWith;
-import org.locationtech.geogig.spring.config.GeoGigWebAPISpringConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.rules.SpringClassRule;
-import org.springframework.test.context.junit4.rules.SpringMethodRule;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;

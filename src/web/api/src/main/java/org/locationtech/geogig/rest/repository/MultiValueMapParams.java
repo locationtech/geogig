@@ -15,7 +15,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 import org.springframework.util.MultiValueMap;
 
-public class MultiValueMapParams extends AbstractParameterSet {
+class MultiValueMapParams extends AbstractParameterSet {
 
     protected MultiValueMap<String, String> options;
 

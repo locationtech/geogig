@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.web.api;
+package org.locationtech.geogig.rest.repository;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -18,11 +18,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.rest.repository.MultiMapParams;
 import org.restlet.util.ByteUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
+
+import org.locationtech.geogig.web.api.ParameterSet;
 
 public class TestParams extends MultiMapParams {
 

@@ -9,18 +9,33 @@
  */
 package org.locationtech.geogig.spring.controller;
 
+import java.io.IOException;
+import java.io.StringReader;
+
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpUtils;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
+import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.LegacyResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.StreamingWriter;
 import org.locationtech.geogig.web.api.StreamingWriterFactory;
 import org.slf4j.Logger;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 
 /**
  * Base Controller to hold common controller logic.
@@ -133,6 +148,54 @@ public abstract class AbstractController {
         return requestURL.substring(0, requestURL.indexOf(requestURI));
     }
 
+    /**
+     * Builds a {@link MultiValueMapParams} from a {@link RequestEntity}. Currently only supports
+     * JSON payload, and only basic JSON objects that are essentially key-value pairs, where the
+     * values are primitives (String, numeric or boolean).
+     * @param entity The RequestEntity payload, expected to be JSON.
+     * @return a {@link MultiValueMapParams} instance with key-value pairs from the JSON entity, or
+     * and empty instance if there is no body in the entity.
+     */
+    protected final ParameterSet getParamsFromEntity(RequestEntity<String> entity) {
+        // attempt to build a parameter map from the request entity/payload
+        if (entity != null && entity.hasBody()) {
+            MediaType contentType = entity.getHeaders().getContentType();
+            String body = entity.getBody();
+            if (MediaType.APPLICATION_JSON.isCompatibleWith(contentType)) {
+                // parse just a basic key-value styled JSON payload
+                return handleJsonPayload(body);
+            } else if (contentType.getSubtype().equals("xml")) {
+                // handle XML payload
+                return handleXmlPayload(body);
+            } else {
+                getLogger().error("RequestEntity does not have a JSON or XML payload. MediaType: " +
+                        contentType);
+            }
+        }
+        return ParameterSetFactory.buildEmptyParameterSet();
+    }
+
+    private ParameterSet handleJsonPayload(String body) {
+        // parse just a basic key-value styled JSON payload
+        JsonObject json = Json.createReader(new StringReader(body)).readObject();
+        return ParameterSetFactory.buildParameterSet(json);
+    }
+
+    private ParameterSet handleXmlPayload(String body) {
+        // this is a hack to handle specifically a POST with ConfigOp parameters "name" and "value".
+        // It likely won't work with any other POSTed XML payload
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            InputSource xmlIn = new InputSource(new StringReader(body));
+            Document doc = dBuilder.parse(xmlIn);
+            doc.getDocumentElement().normalize();
+            return ParameterSetFactory.buildParameterSet(doc);
+        } catch (IOException | ParserConfigurationException | SAXException ex) {
+            Throwables.propagate(ex);
+        }
+        return ParameterSetFactory.buildEmptyParameterSet();
+    }
     /**
      * Returns sub-class specific {@link Logger} instance.
      *

@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.spring.controller;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -18,10 +22,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import com.google.common.collect.Lists;
 
 @ControllerAdvice
 public class RequestExceptionHandler {
@@ -29,28 +37,52 @@ public class RequestExceptionHandler {
     @ExceptionHandler({ RepositoryBusyException.class })
     public ResponseEntity<Object> handleRepositoryBusyException(RepositoryBusyException ex,
             HttpServletRequest request) {
-        return new ResponseEntity<Object>(new ExceptionResponse(ex), new HttpHeaders(),
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(new ExceptionResponse(ex), headers,
                 HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler({ CommandSpecException.class })
     public ResponseEntity<Object> handleCommandSpecException(CommandSpecException ex,
             HttpServletRequest request) {
-        return new ResponseEntity<Object>(new ExceptionResponse(ex),
-                new HttpHeaders(), ex.getStatus());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(new ExceptionResponse(ex),
+                updateAllowedMethodsFromException(headers, ex), ex.getStatus());
     }
 
     @ExceptionHandler({ IllegalArgumentException.class })
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex,
             HttpServletRequest request) {
-        return new ResponseEntity<Object>(new ExceptionResponse(ex), new HttpHeaders(),
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(new ExceptionResponse(ex), headers,
                 HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleException(Exception ex, HttpServletRequest request) {
-        return new ResponseEntity<Object>(new ExceptionResponse(ex), new HttpHeaders(),
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(new ExceptionResponse(ex), headers,
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private HttpHeaders updateAllowedMethodsFromException(HttpHeaders headers,
+            CommandSpecException ex) {
+        if (ex.getAllowedMethods() != null) {
+            // headers set on exception, make a list of allowed HttpMethods
+            List<HttpMethod> methodList = Lists.newArrayList();
+            // ge the list of names from the exception
+            Set<String> allowedMethods = ex.getAllowedMethods();
+            for (String method : allowedMethods) {
+                methodList.add(HttpMethod.resolve(method));
+            }
+            // set the allowed methods on the headers
+            headers.setAllow(EnumSet.copyOf(methodList));
+        }
+        return headers;
     }
 
     @XmlRootElement(name = "response")

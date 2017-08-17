@@ -112,6 +112,20 @@ public class MultiRepositoryProvider implements RepositoryProvider {
     }
 
     @Override
+    public boolean hasGeoGig(String repositoryName) {
+        if (null != repositoryName) {
+            Iterator<String> findRepositories = findRepositories();
+            while (findRepositories.hasNext()) {
+                String next = findRepositories.next();
+                if (next.equals(repositoryName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public Repository createGeogig(final String repositoryName,
             final Map<String, String> parameters) {
         Optional<Repository> initRepo = InitRequestHandler.createGeoGIG(repositoryName, parameters);

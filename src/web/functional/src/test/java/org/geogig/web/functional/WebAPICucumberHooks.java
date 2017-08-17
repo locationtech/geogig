@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -96,7 +97,6 @@ import org.restlet.data.Form;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xmlunit.matchers.CompareMatcher;
@@ -757,7 +757,22 @@ public class WebAPICucumberHooks {
 
         Set<String> allowedMethods = context.getLastResponseAllowedMethods();
 
-        assertEquals(expected, allowedMethods);
+        assertSetsContainTheSameElements(expected, allowedMethods);
+    }
+
+    private void assertSetsContainTheSameElements(Set<String> expected, Set<String> actual) {
+        // if expected is null, actual better be as well
+        if (expected == null) {
+            assertNull(actual);
+            return;
+        }
+        // if expected is not null, actual better not be
+        assertNotNull(actual);
+        // check sizes
+        assertEquals(expected.size(), actual.size());
+        // make sure all elements in one are in the other
+        assertTrue(expected.containsAll(actual));
+        assertTrue(actual.containsAll(expected));
     }
 
     @Then("^the xml response should contain \"([^\"]*)\"$")

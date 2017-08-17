@@ -32,6 +32,17 @@ public interface RepositoryProvider {
 
     public Optional<Repository> getGeogig(final String repositoryName);
 
+    /**
+     * Indicates if this provider already has a GeoGig Repository with a given name. If this method
+     * returns true, it is implied that calling {@link #getGeogig(java.lang.String)} will return a
+     * GeoGig Repository that already exists.
+     *
+     * @param repositoryName The name of the repository.
+     * @return True if a GeoGig Repository with the supplied name already exists that this provider
+     * can provide, false otherwise.
+     */
+    public boolean hasGeoGig(final String repositoryName);
+
     public Repository createGeogig(final String repositoryName,
             final Map<String, String> parameters);
 

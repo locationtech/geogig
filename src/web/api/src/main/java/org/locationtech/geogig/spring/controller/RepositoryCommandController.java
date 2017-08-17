@@ -13,11 +13,13 @@ import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_RE
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
+import java.util.HashSet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.rest.repository.MultiValueMapParams;
+import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.RepositoryInfo;
 import org.locationtech.geogig.spring.service.RepositoryListService;
@@ -26,12 +28,15 @@ import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,6 +73,23 @@ public class RepositoryCommandController extends AbstractController {
         }
     }
 
+    @DeleteMapping
+    public void deleteRepository(@PathVariable String repoName,
+            final HttpServletRequest request, HttpServletResponse response) {
+        Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
+        if (repoProvider.isPresent()) {
+            RepositoryProvider provider = repoProvider.get();
+            if (!provider.hasGeoGig(repoName)) {
+                throw new CommandSpecException("error:No repository to delete.",
+                        HttpStatus.NOT_FOUND);
+            }
+            // TODO: Handle deletes with transaction ID
+            throw new RuntimeException("IMPLEMENT DELETE");
+        } else {
+            throw new CommandSpecException("error:No repository to delete.",
+                    HttpStatus.NOT_FOUND);
+        }
+    }
     /**
      * Runs the given command.
      * 
@@ -76,22 +98,39 @@ public class RepositoryCommandController extends AbstractController {
      * @param params request parameters
      * @param request the request
      * @param response the response object
+     * @param entity the RequestEntity payload, if any
      */
     @RequestMapping(value = "/{command}", method = { RequestMethod.GET, RequestMethod.PUT,
             RequestMethod.POST, RequestMethod.DELETE })
     public void runCommand(@PathVariable String repoName, @PathVariable String command,
             @RequestParam MultiValueMap<String, String> params,
-            HttpServletRequest request, HttpServletResponse response) {
+            HttpServletRequest request, HttpServletResponse response, RequestEntity<String> entity) {
         AbstractWebAPICommand webCommand = buildCommand(command);
         RequestMethod method = RequestMethod.valueOf(request.getMethod());
-        webCommand.setParameters(new MultiValueMapParams(params));
-        SpringContext context = buildContext(request, repoName, webCommand);
         if (webCommand.supports(method)) {
+            // build the PArameterSet from the request entity and parameters
+            webCommand.setParameters(ParameterSet.concat(getParamsFromEntity(entity),
+                    ParameterSetFactory.buildParameterSet(params)));
+            SpringContext context = buildContext(request, repoName, webCommand);
             webCommand.run(context);
             encode(context.getResponseContent(), request, response);
         } else {
+            // determined allowed set of methods
+            HashSet<String> allowedMethods = new HashSet<>(4);
+            if (webCommand.supports(RequestMethod.GET)) {
+                allowedMethods.add(RequestMethod.GET.toString());
+            }
+            if (webCommand.supports(RequestMethod.POST)) {
+                allowedMethods.add(RequestMethod.POST.toString());
+            }
+            if (webCommand.supports(RequestMethod.PUT)) {
+                allowedMethods.add(RequestMethod.PUT.toString());
+            }
+            if (webCommand.supports(RequestMethod.DELETE)) {
+                allowedMethods.add(RequestMethod.DELETE.toString());
+            }
             throw new CommandSpecException("The request method is unsupported for this operation.",
-                    HttpStatus.METHOD_NOT_ALLOWED);
+                    HttpStatus.METHOD_NOT_ALLOWED, allowedMethods);
         }
     }
 

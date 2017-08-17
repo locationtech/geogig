@@ -38,7 +38,7 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-import org.locationtech.geogig.web.api.TestParams;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
 import com.google.common.collect.ImmutableList;

@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.web.api;
 
+import org.locationtech.geogig.rest.repository.TestParams;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

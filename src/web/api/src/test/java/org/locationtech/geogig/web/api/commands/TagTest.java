@@ -28,7 +28,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestParams;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.ImmutableList;

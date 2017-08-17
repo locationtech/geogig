@@ -17,6 +17,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.storage.ConfigDatabase;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
@@ -41,6 +42,15 @@ public class SingleRepositoryProvider implements RepositoryProvider {
     @Override
     public Optional<Repository> getGeogig(final String repositoryName) {
         return Optional.of(repo);
+    }
+
+    @Override
+    public boolean hasGeoGig(String repositoryName) {
+        if (repo != null) {
+            String repoName = repo.command(ResolveRepositoryName.class).call();
+            return repoName.equals(repositoryName);
+        }
+        return false;
     }
 
     @Override

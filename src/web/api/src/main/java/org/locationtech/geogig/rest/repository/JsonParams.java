@@ -19,7 +19,8 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
-import com.beust.jcommander.internal.Lists;
+import com.google.common.collect.Lists;
+
 
 /**
  *
@@ -47,10 +48,8 @@ class JsonParams extends AbstractParameterSet {
         if (valueArray != null) {
             if (valueArray.getValueType().equals(ValueType.ARRAY)) {
                 JsonArray array = (JsonArray) valueArray;
-                if (array != null) {
-                    for (JsonValue value : array) {
-                        values.add(value.toString());
-                    }
+                for (JsonValue value : array) {
+                    values.add(value.toString());
                 }
             } else {
                 values.add(jsonValueToString(valueArray));

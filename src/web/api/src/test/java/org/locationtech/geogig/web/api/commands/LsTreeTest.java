@@ -23,7 +23,7 @@ import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestParams;
+import org.locationtech.geogig.rest.repository.TestParams;
 
 public class LsTreeTest extends AbstractWebOpTest {
 

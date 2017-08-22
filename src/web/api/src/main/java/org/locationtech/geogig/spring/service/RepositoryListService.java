@@ -77,8 +77,4 @@ public class RepositoryListService {
         repo.setLink(link);
         return repo;
     }
-
-    private Object RepositoryInfo() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

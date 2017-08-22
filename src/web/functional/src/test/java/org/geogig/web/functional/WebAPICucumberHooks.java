@@ -93,7 +93,6 @@ import org.locationtech.geogig.test.TestData;
 import org.mortbay.log.Log;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
-import org.restlet.data.Form;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -1350,9 +1349,8 @@ public class WebAPICucumberHooks {
         String resourceUri = methodAndURL.substring(idx + 1).trim();
         HttpMethod method = HttpMethod.valueOf(httpMethod);
         // build URL encoded Form
-        Form form = new Form();
-        form.add("parentDirectory", systemTempPath());
-        context.call(method, resourceUri, form.encode(), MediaType.MULTIPART_FORM_DATA_VALUE);
+        context.call(method, resourceUri, "parentDirectory="+systemTempPath(),
+                MediaType.APPLICATION_FORM_URLENCODED_VALUE);
     }
 
     @Then("^the Author config of repository \"([^\"]*)\" is set$")
@@ -1393,11 +1391,12 @@ public class WebAPICucumberHooks {
         String resourceUri = methodAndURL.substring(idx + 1).trim();
         HttpMethod method = HttpMethod.valueOf(httpMethod);
         // build URL encoded Form
-        Form form = new Form();
-        form.add("parentDirectory", systemTempPath());
-        form.add("authorName", "GeoGig User");
-        form.add("authorEmail", "geogig@geogig.org");
-        context.call(method, resourceUri, form.encode(), MediaType.MULTIPART_FORM_DATA_VALUE);
+        StringBuilder form = new StringBuilder();
+        form.append("parentDirectory=").append(systemTempPath()).append("&")
+                .append("authorName=GeoGig User&")
+                .append("authorEmail=geogig@geogig.org");
+        context.call(method, resourceUri, form.toString(),
+                MediaType.APPLICATION_FORM_URLENCODED_VALUE);
     }
 
     @Then("^the parent directory of repository \"([^\"]*)\" is NOT the System Temp directory$")

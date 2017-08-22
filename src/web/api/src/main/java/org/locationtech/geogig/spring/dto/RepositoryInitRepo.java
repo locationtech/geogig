@@ -51,6 +51,16 @@ public class RepositoryInitRepo extends LegacyResponse {
 
     @Override
     public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        writer.writeStartElement("response");
+        {
+            writer.writeElement("success", "true");
+            writer.writeStartElement("repo");
+            {
+                writer.writeElement("name", name);
+                encodeAlternateAtomLink(writer, baseUrl, link, format);
+            }
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
     }
 }

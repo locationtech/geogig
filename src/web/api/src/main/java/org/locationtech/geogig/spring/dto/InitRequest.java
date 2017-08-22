@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.spring.dto;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -16,14 +17,22 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.google.common.collect.Maps;
-
 /**
  * Bean for JSON init request.
  */
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
 public class InitRequest {
+
+    public static final String DBHOST = "dbHost";
+    public static final String DBNAME = "dbName";
+    public static final String DBPORT = "dbPort";
+    public static final String DBUSER = "dbUser";
+    public static final String DBSCHEMA = "dbSchema";
+    public static final String DBPASSWORD = "dbPassword";
+    public static final String PARENTDIRECTORY = "parentDirectory";
+    public static final String AUTHORNAME = "authorName";
+    public static final String AUTHOREMAIL = "authorEmail";
 
     // Database config
     @XmlElement
@@ -129,20 +138,48 @@ public class InitRequest {
     }
 
     public Map<String, String> getParameters() {
-        return Maps.newHashMap();
+        HashMap<String, String> map = new HashMap<>(8);
+        // add values
+        if (parentDirectory != null) {
+            map.put(PARENTDIRECTORY, parentDirectory);
+        }
+        if (authorName != null) {
+            map.put(AUTHORNAME, authorName);
+        }
+        if (authorEmail != null) {
+            map.put(AUTHOREMAIL, authorEmail);
+        }
+        if (dbHost != null) {
+            map.put(DBHOST, dbHost);
+        }
+        map.put(DBPORT, Integer.toString(dbPort));
+        if (dbUser != null) {
+            map.put(DBUSER, dbUser);
+        }
+        if (dbPassword != null) {
+            map.put(DBPASSWORD, dbPassword);
+        }
+        if (dbSchema != null) {
+            map.put(DBSCHEMA, dbSchema);
+        }
+        if (dbName != null) {
+            map.put(DBNAME, dbName);
+        }
+        return map;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("InitRequest{");
-        sb.append("parentDirectory = ").append(parentDirectory)
-                .append(", dbHost = ").append(dbHost)
-                .append(", dbPort = ").append(dbPort)
-                .append(", dbName = ").append(dbName)
-                .append(", dbUser = ").append(dbUser)
-                .append(", dbPassword = ").append(dbPassword)
-                .append(", authorName = ").append(authorName)
-                .append(", authoerEmail = ").append(authorEmail);
+        sb.append(PARENTDIRECTORY).append(" = ").append(parentDirectory)
+                .append(", ").append(DBHOST).append(" = ").append(dbHost)
+                .append(", ").append(DBPORT).append(" = ").append(dbPort)
+                .append(", ").append(DBNAME).append(" = ").append(dbName)
+                .append(", ").append(DBUSER).append(" = ").append(dbUser)
+                .append(", ").append(DBPASSWORD).append(" = ").append(dbPassword)
+                .append(", ").append(AUTHORNAME).append(" = ").append(authorName)
+                .append(", ").append(AUTHOREMAIL).append(" = ").append(authorEmail)
+                .append('}');
         return sb.toString();
     }
 

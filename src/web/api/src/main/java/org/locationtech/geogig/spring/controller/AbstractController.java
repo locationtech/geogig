@@ -196,6 +196,7 @@ public abstract class AbstractController {
         }
         return ParameterSetFactory.buildEmptyParameterSet();
     }
+
     /**
      * Returns sub-class specific {@link Logger} instance.
      *

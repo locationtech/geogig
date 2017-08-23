@@ -9,17 +9,13 @@
  */
 package org.locationtech.geogig.web;
 
-import static org.locationtech.geogig.rest.Variants.JSON;
-import static org.locationtech.geogig.rest.Variants.TEXT_XML;
-import static org.locationtech.geogig.rest.Variants.XML;
-import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
-
 import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.rest.StreamingWriterRepresentation;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.StreamWriterException;
+import org.locationtech.geogig.web.api.StreamingWriter;
 import org.restlet.Context;
 import org.restlet.Finder;
 import org.restlet.data.MediaType;
@@ -28,7 +24,6 @@ import org.restlet.data.Response;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
-import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Creates a new commit on the server with the changes provided by the client.
@@ -60,15 +55,14 @@ public class RepositoryFinder extends Finder {
         public void init(Context context, Request request, Response response) {
             super.init(context, request, response);
             List<Variant> variants = getVariants();
-            variants.add(XML);
-            variants.add(TEXT_XML);
-            variants.add(JSON);
+            // variants.add(XML);
+            // variants.add(TEXT_XML);
+            // variants.add(JSON);
         }
 
         @Override
         public Variant getPreferredVariant() {
-            return getVariantByExtension(getRequest(), getVariants())
-                    .or(super.getPreferredVariant());
+            return super.getPreferredVariant();
         }
 
         @Override

@@ -37,6 +37,11 @@ public class CommandSpecException extends IllegalArgumentException {
         this.status = status;
     }
 
+    public CommandSpecException(String message, HttpStatus status, Exception cause) {
+        super(message, cause);
+        this.status = status;
+    }
+
     public CommandSpecException(String message, HttpStatus status, Set<String> allowedMethods) {
         this(message, status);
         this.allowedMethods = allowedMethods;

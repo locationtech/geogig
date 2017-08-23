@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import static org.locationtech.geogig.rest.Variants.TEXT_PLAIN;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -42,7 +40,7 @@ public class ObjectExistsResource extends Resource {
         super.init(context, request, response);
         List<Variant> variants = getVariants();
 
-        variants.add(TEXT_PLAIN);
+        // variants.add(TEXT_PLAIN);
     }
 
     @Override

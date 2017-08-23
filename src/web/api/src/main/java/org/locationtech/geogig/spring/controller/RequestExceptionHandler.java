@@ -42,37 +42,37 @@ public class RequestExceptionHandler extends AbstractController {
     public ResponseEntity<Object> handleRepositoryBusyException(RepositoryBusyException ex,
             HttpServletRequest request) {
         HttpHeaders headers = new HttpHeaders();
-        return new ResponseEntity<>(new ExceptionResponse(ex), headers,
-                HttpStatus.SERVICE_UNAVAILABLE);
+        return buildResponse(ex, request, headers, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler({ CommandSpecException.class })
     public ResponseEntity<Object> handleCommandSpecException(CommandSpecException ex,
             HttpServletRequest request) {
-        HttpHeaders headers = new HttpHeaders();
-        if (this.getMediaType(request).isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            // JSON response, use JsonExceptionFormat
-            return new ResponseEntity<>(new JsonExceptionResponse(ex),
-                    updateAllowedMethodsFromException(headers, ex), ex.getStatus());
-        }
-        return new ResponseEntity<>(new ExceptionResponse(ex),
-                updateAllowedMethodsFromException(headers, ex), ex.getStatus());
+        HttpHeaders headers = updateAllowedMethodsFromException(new HttpHeaders(), ex);
+        return buildResponse(ex, request, headers, ex.getStatus());
     }
 
     @ExceptionHandler({ IllegalArgumentException.class })
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex,
             HttpServletRequest request) {
         HttpHeaders headers = new HttpHeaders();
-        return new ResponseEntity<>(new ExceptionResponse(ex), headers,
-                HttpStatus.BAD_REQUEST);
+        return buildResponse(ex, request, headers, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleException(Exception ex, HttpServletRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        return new ResponseEntity<>(new ExceptionResponse(ex), headers,
-                HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildResponse(ex, request, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ResponseEntity<Object> buildResponse(Exception ex, HttpServletRequest request,
+            HttpHeaders headers, HttpStatus status) {
+        if (this.getMediaType(request).isCompatibleWith(MediaType.APPLICATION_JSON)) {
+            // JSON response, use JsonExceptionFormat
+            return new ResponseEntity<>(new JsonExceptionResponse(ex), headers, status);
+        }
+        return new ResponseEntity<>(new ExceptionResponse(ex), headers, status);
     }
 
     private HttpHeaders updateAllowedMethodsFromException(HttpHeaders headers,
@@ -115,30 +115,15 @@ public class RequestExceptionHandler extends AbstractController {
     }
 
     public static class JsonExceptionResponse {
-
-        private Response response;
+        @XmlElement
+        private ExceptionResponse response;
 
         public JsonExceptionResponse() {
-            this.response = new Response();
+            this.response = new ExceptionResponse();
         }
 
         public JsonExceptionResponse(Exception ex) {
-            this.response = new Response(ex);
-        }
-
-        public static class Response {
-
-            private final boolean success = false;
-
-            private final String error;
-
-            public Response() {
-                this.error = "";
-            }
-
-            public Response(Exception ex) {
-                this.error = ex.getLocalizedMessage();
-            }
+            this.response = new ExceptionResponse(ex);
         }
     }
 }

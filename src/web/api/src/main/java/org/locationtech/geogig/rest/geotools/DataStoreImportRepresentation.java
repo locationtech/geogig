@@ -15,9 +15,9 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
+import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamingWriter;
-import org.restlet.data.MediaType;
 
 /**
  * Representation for Commands that produce RevCommit objects (like
@@ -26,16 +26,16 @@ import org.restlet.data.MediaType;
  */
 public class DataStoreImportRepresentation extends AsyncCommandRepresentation<RevCommit> {
 
-    public DataStoreImportRepresentation(MediaType mediaType,
-            AsyncContext.AsyncCommand<RevCommit> cmd, String baseURL, boolean cleanup) {
-        super(mediaType, cmd, baseURL, cleanup);
+    public DataStoreImportRepresentation(AsyncContext.AsyncCommand<RevCommit> cmd,
+            boolean cleanup) {
+        super(cmd, cleanup);
     }
 
     @Override
     protected void writeResultBody(StreamingWriter w, RevCommit result) throws StreamWriterException {
         if (result != null) {
-            // ResponseWriter out = new ResponseWriter(w, getMediaType());
-            // out.writeCommit(result, "commit", null, null, null);
+            ResponseWriter out = new ResponseWriter(w, getMediaType());
+            out.writeCommit(result, "commit", null, null, null);
         }
     }
 
@@ -48,9 +48,8 @@ public class DataStoreImportRepresentation extends AsyncCommandRepresentation<Re
 
         @Override
         public AsyncCommandRepresentation<RevCommit> newRepresentation(
-                AsyncContext.AsyncCommand<RevCommit> cmd, MediaType mediaType, String baseURL,
-                boolean cleanup) {
-            return new DataStoreImportRepresentation(mediaType, cmd, baseURL, cleanup);
+                AsyncContext.AsyncCommand<RevCommit> cmd, boolean cleanup) {
+            return new DataStoreImportRepresentation(cmd, cleanup);
         }
 
     }

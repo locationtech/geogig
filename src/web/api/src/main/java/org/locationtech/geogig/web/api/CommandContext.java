@@ -11,6 +11,7 @@ package org.locationtech.geogig.web.api;
 
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
@@ -32,7 +33,7 @@ public interface CommandContext {
      * 
      * @param responseContent the command response
      */
-    void setResponseContent(CommandResponse responseContent);
+    void setResponseContent(LegacyResponse responseContent);
 
     /**
      * Sets the response for the context.

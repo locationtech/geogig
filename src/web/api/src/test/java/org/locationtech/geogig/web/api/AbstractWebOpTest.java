@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.web.api;
 
-import org.locationtech.geogig.rest.repository.TestParams;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -24,6 +22,8 @@ import javax.json.JsonObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.rest.repository.TestParams;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Throwables;
@@ -109,12 +109,12 @@ public abstract class AbstractWebOpTest {
     public JsonObject getJSONResponse() {
         JsonObject response = null;
         try {
-            CommandResponse commandResponse = testContext.getCommandResponse();
+            LegacyResponse commandResponse = testContext.getCommandResponse();
             StringWriter writer = new StringWriter();
             try (StreamingWriter streamWriter = StreamingWriterFactory
                     .getStreamWriter(MediaType.APPLICATION_JSON, writer)) {
                 streamWriter.writeStartDocument();
-                commandResponse.encode(streamWriter, MediaType.APPLICATION_JSON, "base");
+                commandResponse.encode(streamWriter, MediaType.APPLICATION_JSON, "/geogig");
                 streamWriter.writeEndDocument();
             } catch (Exception ex) {
                 Throwables.propagate(ex);

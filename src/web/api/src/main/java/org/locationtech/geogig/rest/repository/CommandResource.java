@@ -9,11 +9,6 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import static org.locationtech.geogig.rest.Variants.CSV;
-import static org.locationtech.geogig.rest.Variants.CSV_MEDIA_TYPE;
-import static org.locationtech.geogig.rest.Variants.JSON;
-import static org.locationtech.geogig.rest.Variants.XML;
-import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
 import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
 
 import java.io.IOException;
@@ -37,8 +32,6 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandResponseStreamingWriterRepresentation;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.StreamResponse;
-import org.locationtech.geogig.web.api.StreamWriterRepresentation;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.Context;
 import org.restlet.data.Form;
@@ -72,9 +65,9 @@ public class CommandResource extends Resource {
     public void init(Context context, Request request, Response response) {
         super.init(context, request, response);
         List<Variant> variants = getVariants();
-        variants.add(XML);
-        variants.add(JSON);
-        variants.add(CSV);
+        // variants.add(XML);
+        // variants.add(JSON);
+        // variants.add(CSV);
 
         final String commandName = getCommandName();
         command = buildCommand(commandName);
@@ -87,7 +80,8 @@ public class CommandResource extends Resource {
 
     @Override
     public Variant getPreferredVariant() {
-        return getVariantByExtension(getRequest(), getVariants()).or(super.getPreferredVariant());
+        return null;// getVariantByExtension(getRequest(),
+                    // getVariants()).or(super.getPreferredVariant());
     }
 
     protected ParameterSet getRequestParams() {
@@ -258,9 +252,9 @@ public class CommandResource extends Resource {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "RepositoryBusyException", ex);
         }
-        if (format == CSV_MEDIA_TYPE) {
-            return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
-        }
+        // if (format == CSV_MEDIA_TYPE) {
+        // return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
+        // }
         return new CommandResponseStreamingWriterRepresentation(format,
                 CommandResponse.error(ex.getMessage()), getJSONPCallback());
     }
@@ -270,9 +264,9 @@ public class CommandResource extends Resource {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "CommandSpecException", ex);
         }
-        if (format == CSV_MEDIA_TYPE) {
-            return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
-        }
+        // if (format == CSV_MEDIA_TYPE) {
+        // return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
+        // }
         return new CommandResponseStreamingWriterRepresentation(format,
                 CommandResponse.error(ex.getMessage()), getJSONPCallback());
 
@@ -291,9 +285,9 @@ public class CommandResource extends Resource {
             }
         }
         logger.log(Level.SEVERE, "Unexpected exception : " + uuid, ex);
-        if (format == CSV_MEDIA_TYPE) {
-            return new StreamWriterRepresentation(format, StreamResponse.error(stack));
-        }
+        // if (format == CSV_MEDIA_TYPE) {
+        // return new StreamWriterRepresentation(format, StreamResponse.error(stack));
+        // }
         return new CommandResponseStreamingWriterRepresentation(format, CommandResponse.error(stack),
                 getJSONPCallback());
     }
@@ -312,7 +306,7 @@ public class CommandResource extends Resource {
             } else if (requested.equalsIgnoreCase("json")) {
                 retval = MediaType.APPLICATION_JSON;
             } else if (requested.equalsIgnoreCase("csv")) {
-                retval = CSV_MEDIA_TYPE;
+                retval = null;// CSV_MEDIA_TYPE;
             } else {
                 throw new RestletException("Invalid output_format '" + requested + "'",
                         org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST);

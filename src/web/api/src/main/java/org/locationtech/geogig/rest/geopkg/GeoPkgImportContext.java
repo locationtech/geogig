@@ -44,7 +44,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamingWriter;
-import org.restlet.data.MediaType;
 
 import com.google.common.base.Optional;
 
@@ -150,26 +149,25 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
 
         @Override
         public AsyncCommandRepresentation<GeopkgImportResult> newRepresentation(
-                AsyncCommand<GeopkgImportResult> cmd, MediaType mediaType, String baseURL,
-                boolean cleanup) {
+                AsyncCommand<GeopkgImportResult> cmd, boolean cleanup) {
 
-            return new GeopkgAuditImportRepresentation(mediaType, cmd, baseURL, cleanup);
+            return new GeopkgAuditImportRepresentation(cmd, cleanup);
         }
     }
 
     public static class GeopkgAuditImportRepresentation
             extends AsyncCommandRepresentation<GeopkgImportResult> {
 
-        public GeopkgAuditImportRepresentation(MediaType mediaType,
-                AsyncCommand<GeopkgImportResult> cmd, String baseURL, boolean cleanup) {
-            super(mediaType, cmd, baseURL, cleanup);
+        public GeopkgAuditImportRepresentation(AsyncCommand<GeopkgImportResult> cmd,
+                boolean cleanup) {
+            super(cmd, cleanup);
         }
 
         @Override
         protected void writeResultBody(StreamingWriter w, GeopkgImportResult result)
                 throws StreamWriterException {
-            // ResponseWriter out = new ResponseWriter(w, getMediaType());
-            // writeImportResult(result, w, out);
+            ResponseWriter out = new ResponseWriter(w, getMediaType());
+            writeImportResult(result, w, out);
         }
 
         @Override
@@ -185,13 +183,13 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                 final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
                         .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
                         .call();
-                // ResponseWriter out = new ResponseWriter(w, getMediaType());
+                ResponseWriter out = new ResponseWriter(w, getMediaType());
                 Optional<RevCommit> mergeCommit = Optional.absent();
                 w.writeStartElement("result");
-                // out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
-                // theirs.getId(), ancestor.get(), consumer);
+                out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
+                        theirs.getId(), ancestor.get(), consumer);
                 w.writeStartElement("import");
-                // writeImportResult(m.importResult, w, out);
+                writeImportResult(m.importResult, w, out);
                 w.writeEndElement();
                 w.writeEndElement();
             } else {

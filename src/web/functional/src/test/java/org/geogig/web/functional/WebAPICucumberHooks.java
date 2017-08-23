@@ -1018,7 +1018,7 @@ public class WebAPICucumberHooks {
 
     @Then("^the result is a valid GeoPackage file$")
     public void gpkg_CheckResponseIsGeoPackage() throws Throwable {
-        checkContentType(Variants.GEOPKG_MEDIA_TYPE.getName());
+        checkContentType(Variants.GEOPKG_MEDIA_TYPE.getType());
 
         File tmp = File.createTempFile("gpkg_functional_test", ".gpkg", context.getTempFolder());
         tmp.deleteOnExit();

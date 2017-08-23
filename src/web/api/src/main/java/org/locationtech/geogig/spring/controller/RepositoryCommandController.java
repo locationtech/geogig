@@ -13,6 +13,8 @@ import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_RE
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,12 +23,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.locationtech.geogig.spring.dto.RepositoryInfo;
+import org.locationtech.geogig.rest.repository.UploadCommandResource;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.locationtech.geogig.spring.service.RepositoryListService;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
-import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.StreamResponse;
@@ -43,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.base.Optional;
 
@@ -90,6 +93,7 @@ public class RepositoryCommandController extends AbstractController {
                     HttpStatus.NOT_FOUND);
         }
     }
+    
     /**
      * Runs the given command.
      * 
@@ -99,18 +103,28 @@ public class RepositoryCommandController extends AbstractController {
      * @param request the request
      * @param response the response object
      * @param entity the RequestEntity payload, if any
+     * @throws IOException
      */
     @RequestMapping(value = "/{command}", method = { RequestMethod.GET, RequestMethod.PUT,
             RequestMethod.POST, RequestMethod.DELETE })
     public void runCommand(@PathVariable String repoName, @PathVariable String command,
             @RequestParam MultiValueMap<String, String> params,
-            HttpServletRequest request, HttpServletResponse response, RequestEntity<String> entity) {
+            @RequestParam(required = false, name = UploadCommandResource.UPLOAD_FILE_KEY) MultipartFile file,
+            HttpServletRequest request, HttpServletResponse response, RequestEntity<String> entity)
+            throws IOException {
         AbstractWebAPICommand webCommand = buildCommand(command);
         RequestMethod method = RequestMethod.valueOf(request.getMethod());
+        File uploadedFile = null;
+        if (file != null) {
+            uploadedFile = File.createTempFile(
+                    "geogig-" + UploadCommandResource.UPLOAD_FILE_KEY + "-", ".tmp");
+            uploadedFile.deleteOnExit();
+            file.transferTo(uploadedFile);
+        }
         if (webCommand.supports(method)) {
             // build the PArameterSet from the request entity and parameters
             webCommand.setParameters(ParameterSet.concat(getParamsFromEntity(entity),
-                    ParameterSetFactory.buildParameterSet(params)));
+                    ParameterSetFactory.buildParameterSet(params, uploadedFile)));
             SpringContext context = buildContext(request, repoName, webCommand);
             webCommand.run(context);
             encode(context.getResponseContent(), request, response);
@@ -166,7 +180,7 @@ public class RepositoryCommandController extends AbstractController {
 
     static class SpringContext implements CommandContext {
 
-        CommandResponse responseContent = null;
+        LegacyResponse responseContent = null;
 
         final Repository repository;
 
@@ -192,11 +206,11 @@ public class RepositoryCommandController extends AbstractController {
         }
 
         @Override
-        public void setResponseContent(CommandResponse responseContent) {
+        public void setResponseContent(LegacyResponse responseContent) {
             this.responseContent = responseContent;
         }
 
-        public CommandResponse getResponseContent() {
+        public LegacyResponse getResponseContent() {
             return this.responseContent;
         }
 

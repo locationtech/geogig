@@ -9,14 +9,11 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import java.util.function.Function;
-
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Representations;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
@@ -24,8 +21,6 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.restlet.data.MediaType;
-import org.restlet.resource.Representation;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -195,20 +190,7 @@ public class Import extends AbstractWebAPICommand {
         final AsyncContext.AsyncCommand<?> asyncCommand = asyncContext.run(command,
                 commandDescription);
 
-        Function<MediaType, Representation> rep = new Function<MediaType, Representation>() {
-
-            private final String baseUrl = context.getBaseURL();
-
-            @Override
-            public Representation apply(MediaType mediaType) {
-                AsyncCommandRepresentation<?> repr;
-                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl, true);
-                return repr;
-
-            }
-        };
-
-        // context.setResponse(rep);
+        context.setResponseContent(Representations.newRepresentation(asyncCommand, false));
     }
 
     @Override

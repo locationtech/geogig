@@ -11,10 +11,10 @@ package org.locationtech.geogig.rest;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.locationtech.geogig.web.api.RESTUtils;
-import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.resource.Variant;
+import org.springframework.http.MediaType;
 
 import com.google.common.base.Optional;
 
@@ -25,33 +25,22 @@ public class Variants {
     public static final MediaType GEOPKG_MEDIA_TYPE = new MediaType(
             "application/octet-stream;type=geopackage", "GeoPackage database file");
 
-    public static final Variant JSON = new Variant(MediaType.APPLICATION_JSON);
-
-    public static final Variant XML = new Variant(MediaType.APPLICATION_XML);
-
-    public static final Variant TEXT_XML = new Variant(MediaType.TEXT_XML);
-
-    public static final Variant TEXT_PLAIN = new Variant(MediaType.TEXT_PLAIN);
-
-    public static final Variant CSV = new Variant(CSV_MEDIA_TYPE);
-
-    public static final Variant GEOPKG = new Variant(GEOPKG_MEDIA_TYPE);
-
-    public static Optional<Variant> getVariantByExtension(Request request, List<Variant> supported) {
+    public static Optional<MediaType> getMediaTypeByExtension(HttpServletRequest request,
+            List<MediaType> supported) {
         String extension = RESTUtils.getStringAttribute(request, "extension");
-        Variant v = null;
-        if ("xml".equals(extension) && supported.contains(XML)) {
-            v = XML;
-        } else if ("json".equals(extension) && supported.contains(JSON)) {
-            v = JSON;
-        } else if ("csv".equals(extension) && supported.contains(CSV)) {
-            v = CSV;
-        } else if ("geopkg".equals(extension) && supported.contains(GEOPKG)) {
-            v = GEOPKG;
-        } else if ("txt".equals(extension) && supported.contains(TEXT_PLAIN)) {
-            v = TEXT_PLAIN;
+        MediaType t = null;
+        if ("xml".equals(extension) && supported.contains(MediaType.APPLICATION_XML)) {
+            t = MediaType.APPLICATION_XML;
+        } else if ("json".equals(extension) && supported.contains(MediaType.APPLICATION_JSON)) {
+            t = MediaType.APPLICATION_JSON;
+        } else if ("csv".equals(extension) && supported.contains(CSV_MEDIA_TYPE)) {
+            t = CSV_MEDIA_TYPE;
+        } else if ("geopkg".equals(extension) && supported.contains(GEOPKG_MEDIA_TYPE)) {
+            t = GEOPKG_MEDIA_TYPE;
+        } else if ("txt".equals(extension) && supported.contains(MediaType.TEXT_PLAIN)) {
+            t = MediaType.TEXT_PLAIN;
         }
-        return Optional.fromNullable(v);
+        return Optional.fromNullable(t);
     }
 
 }

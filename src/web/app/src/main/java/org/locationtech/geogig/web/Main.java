@@ -23,8 +23,6 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.rest.TaskResultDownloadResource;
-import org.locationtech.geogig.rest.TaskStatusResource;
 import org.locationtech.geogig.rest.postgis.PGRouter;
 import org.locationtech.geogig.rest.repository.CommandResource;
 import org.locationtech.geogig.rest.repository.FixedEncoder;
@@ -114,10 +112,6 @@ public class Main extends Application {
             }
         };
 
-        router.attach("/tasks", TaskStatusResource.class);
-        router.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
-        router.attach("/tasks/{taskId}", TaskStatusResource.class);
-        router.attach("/tasks/{taskId}/download", TaskResultDownloadResource.class);
         router.attach("/" + RepositoryProvider.BASE_REPOSITORY_ROUTE + ".{extension}",
                 new RepositoryFinder(repoProvider));
         router.attach("/" + RepositoryProvider.BASE_REPOSITORY_ROUTE,

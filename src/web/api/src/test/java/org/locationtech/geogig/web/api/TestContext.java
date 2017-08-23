@@ -14,6 +14,7 @@ import org.junit.rules.ExternalResource;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Preconditions;
@@ -59,7 +60,7 @@ public class TestContext extends ExternalResource {
         ((TestCommandContext) get()).setRequestMethod(method);
     }
 
-    public CommandResponse getCommandResponse() {
+    public LegacyResponse getCommandResponse() {
         return context.commandResponse;
     }
 
@@ -75,7 +76,7 @@ public class TestContext extends ExternalResource {
 
         private TestRepository repo;
 
-        private CommandResponse commandResponse;
+        private LegacyResponse commandResponse;
 
         private StreamResponse streamResponse;
 
@@ -102,7 +103,7 @@ public class TestContext extends ExternalResource {
         }
 
         @Override
-        public void setResponseContent(CommandResponse responseContent) {
+        public void setResponseContent(LegacyResponse responseContent) {
             this.commandResponse = responseContent;
             this.streamResponse = null;
         }

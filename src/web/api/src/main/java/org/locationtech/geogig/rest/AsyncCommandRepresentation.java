@@ -18,31 +18,38 @@ import java.util.concurrent.ExecutionException;
 
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.AsyncContext.Status;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.StreamWriterException;
-import org.restlet.data.MediaType;
+import org.locationtech.geogig.web.api.StreamingWriter;
+import org.springframework.http.MediaType;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 
-import org.locationtech.geogig.web.api.StreamingWriter;
-
-public abstract class AsyncCommandRepresentation<T> extends StreamingWriterRepresentation {
+public abstract class AsyncCommandRepresentation<T> extends LegacyResponse {
 
     protected final AsyncCommand<T> cmd;
 
     private final boolean cleanup;
 
-    public AsyncCommandRepresentation(MediaType mediaType, AsyncCommand<T> cmd, String baseURL,
-            boolean cleanup) {
-        super(mediaType, baseURL);
-        checkNotNull(mediaType);
+    private MediaType mediaType;
+
+    protected String baseURL;
+
+    public AsyncCommandRepresentation(AsyncCommand<T> cmd, boolean cleanup) {
         checkNotNull(cmd);
         this.cmd = cmd;
         this.cleanup = cleanup;
     }
 
-    @Override
-    protected void write(StreamingWriter w) throws StreamWriterException {
+    public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+        this.mediaType = format;
+        this.baseURL = baseUrl;
+        write(writer);
+    }
+
+    public void write(StreamingWriter w) throws StreamWriterException {
         final String taskId = cmd.getTaskId();
         final Status status = cmd.getStatus();
         final String description = cmd.getDescription();
@@ -58,7 +65,8 @@ public abstract class AsyncCommandRepresentation<T> extends StreamingWriterRepre
         }
         w.writeElement("description", description);
         String link = "tasks/" + taskId;// relative to baseURL (e.g. /geoserver/geogig)
-        encodeAlternateAtomLink(w, link);
+        RESTUtils.encodeAlternateAtomLink(mediaType, w,
+                RESTUtils.buildHref(baseURL, link, mediaType));
         if (cmd.isDone()) {
             T result;
             try {
@@ -68,6 +76,8 @@ public abstract class AsyncCommandRepresentation<T> extends StreamingWriterRepre
                 writeError(w, e);
             } catch (ExecutionException e) {
                 writeError(w, e.getCause());
+            } catch (Exception e) {
+                writeError(w, e);
             }
         } else if (cmd.getStatus() == Status.RUNNING) {
             String statusLine = cmd.getStatusLine();
@@ -82,6 +92,10 @@ public abstract class AsyncCommandRepresentation<T> extends StreamingWriterRepre
         if (cleanup) {
             cmd.close();
         }
+    }
+
+    public MediaType getMediaType() {
+        return mediaType;
     }
 
     protected void writeResult(StreamingWriter w, T result) throws StreamWriterException {

@@ -9,20 +9,16 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import org.locationtech.geogig.web.api.RESTUtils;
-
-import static org.locationtech.geogig.rest.Variants.JSON;
-import static org.locationtech.geogig.rest.Variants.XML;
-import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
-
 import java.util.List;
 
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.StreamingWriterRepresentation;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamWriterRepresentation;
+import org.locationtech.geogig.web.api.StreamingWriter;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -34,8 +30,6 @@ import org.restlet.resource.Variant;
 
 import com.google.common.base.Optional;
 
-import org.locationtech.geogig.web.api.StreamingWriter;
-
 /**
  * Allows a user to delete a repository.
  */
@@ -46,13 +40,14 @@ public class DeleteRepository extends Resource {
     public void init(Context context, Request request, Response response) {
         super.init(context, request, response);
         List<Variant> variants = getVariants();
-        variants.add(XML);
-        variants.add(JSON);
+        // variants.add(XML);
+        // variants.add(JSON);
     }
 
     @Override
     public Variant getPreferredVariant() {
-        return getVariantByExtension(getRequest(), getVariants()).or(super.getPreferredVariant());
+        return null;// getVariantByExtension(getRequest(),
+                    // getVariants()).or(super.getPreferredVariant());
     }
 
     @Override

@@ -9,21 +9,14 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.geotools.referencing.crs.DefaultGeographicCRS.WGS84;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.referencing.CRS;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -36,44 +29,17 @@ class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureType {
     private ImmutableList<PropertyDescriptor> sortedDescriptors;
 
     /**
-     * Constructs a new {@code RevFeatureType} from the given {@link FeatureType}.
-     * 
-     * @param featureType the feature type to use
-     */
-    RevFeatureTypeImpl(FeatureType featureType) {
-        this(ObjectId.NULL, featureType);
-    }
-
-    /**
      * Constructs a new {@code RevFeatureType} from the given {@link ObjectId} and
      * {@link FeatureType}.
      * 
      * @param id the object id to use for this feature type
      * @param featureType the feature type to use
      */
-    public RevFeatureTypeImpl(ObjectId id, FeatureType featureType) {
+    RevFeatureTypeImpl(ObjectId id, FeatureType featureType) {
         super(id);
         checkNotNull(featureType);
-        CoordinateReferenceSystem defaultCrs = featureType.getCoordinateReferenceSystem();
-        if (WGS84.equals((org.geotools.referencing.AbstractIdentifiedObject) defaultCrs, false)) {
-            // GeoTools treats DefaultGeographic.WGS84 as a special case when calling the
-            // CRS.toSRS() method, and that causes the parsed RevFeatureType to hash differently.
-            // To compensate that, we replace any instance of it with a CRS built using the
-            // EPSG:4326 code, which works consistently when storing it and later recovering it from
-            // the database.
-            checkArgument(featureType instanceof SimpleFeatureType);
-            try {
-                final boolean longitudeFirst = true;
-                CoordinateReferenceSystem epsg4326 = CRS.decode("EPSG:4326", longitudeFirst);
-                String[] includeAllAttributes = null;
-                featureType = DataUtilities.createSubType((SimpleFeatureType) featureType,
-                        includeAllAttributes, epsg4326);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
-        }
         this.featureType = featureType;
-        sortedDescriptors = ImmutableList.copyOf(featureType.getDescriptors());
+        this.sortedDescriptors = ImmutableList.copyOf(featureType.getDescriptors());
     }
 
     @Override

@@ -39,14 +39,13 @@ public class MultiFeatureTypeBuilderTest {
         ObjectId meta1 = getOID(1);
         ObjectId meta2 = getOID(2);
 
-        RevFeatureTypeBuilder ftbuilder = new RevFeatureTypeBuilder();
         SimpleFeatureType fType1 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name:String,name2:String");
-        RevFeatureType revft1 = ftbuilder.build(getOID(1), fType1);
+        RevFeatureType revft1 = RevFeatureTypeBuilder.create(getOID(1), fType1);
 
         SimpleFeatureType fType2 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name3:String,name4:String");
-        RevFeatureType revft2 = ftbuilder.build(getOID(1), fType2);
+        RevFeatureType revft2 = RevFeatureTypeBuilder.create(getOID(1), fType2);
 
         ObjectDatabase odb = mock(ObjectDatabase.class);
         when(odb.getFeatureType(meta1)).thenReturn(revft1);
@@ -68,10 +67,9 @@ public class MultiFeatureTypeBuilderTest {
 
         ObjectId meta1 = getOID(1);
 
-        RevFeatureTypeBuilder ftbuilder = new RevFeatureTypeBuilder();
         SimpleFeatureType fType1 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name:String,name2:String");
-        RevFeatureType revft1 = ftbuilder.build(getOID(1), fType1);
+        RevFeatureType revft1 = RevFeatureTypeBuilder.create(getOID(1), fType1);
 
         ObjectDatabase odb = mock(ObjectDatabase.class);
         when(odb.getFeatureType(meta1)).thenReturn(revft1);

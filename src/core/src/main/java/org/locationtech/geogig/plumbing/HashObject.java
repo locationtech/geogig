@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.RevObject.TYPE.COMMIT;
 import static org.locationtech.geogig.model.RevObject.TYPE.FEATURE;
 import static org.locationtech.geogig.model.RevObject.TYPE.FEATURETYPE;
@@ -17,6 +18,7 @@ import static org.locationtech.geogig.model.RevObject.TYPE.TREE;
 
 import java.util.List;
 import java.util.SortedMap;
+import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -24,14 +26,16 @@ import org.locationtech.geogig.model.HashObjectFunnels;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.opengis.feature.type.FeatureType;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
+import com.google.common.hash.PrimitiveSink;
 
 /**
  * Hashes a RevObject and returns the ObjectId.
@@ -83,24 +87,40 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
     }
 
     public static ObjectId hashFeature(List<Object> values) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-
-        HashObjectFunnels.feature(hasher, values);
-
-        final byte[] rawKey = hasher.hash().asBytes();
-        final ObjectId id = ObjectId.createNoClone(rawKey);
-
-        return id;
+        return hash((h) -> HashObjectFunnels.feature(h, values));
     }
 
     public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
             @Nullable SortedMap<Integer, Bucket> buckets) {
 
+        final List<Node> t = trees == null ? ImmutableList.of() : trees;
+        final List<Node> f = features == null ? ImmutableList.of() : features;
+        final SortedMap<Integer, Bucket> b = buckets == null ? ImmutableSortedMap.of() : buckets;
+
+        return hash((h) -> HashObjectFunnels.tree(h, t, f, b));
+
+    }
+
+    public static ObjectId hashTag(String name, ObjectId commitId, String message,
+            RevPerson tagger) {
+        return hash((h) -> HashObjectFunnels.tag(h, name, commitId, message, tagger));
+    }
+
+    public static ObjectId hashFeatureType(FeatureType featureType) {
+        checkNotNull(featureType);
+        return hash((h) -> HashObjectFunnels.featureType(h, featureType));
+    }
+
+    public static ObjectId hashCommit(ObjectId treeId, ImmutableList<ObjectId> parentIds,
+            RevPerson author, RevPerson committer, String commitMessage) {
+
+        return hash((h)->HashObjectFunnels.commit(h, treeId, parentIds, author, committer, commitMessage));
+    }
+
+    private static ObjectId hash(Consumer<PrimitiveSink> funnel) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        trees = trees == null ? ImmutableList.of() : trees;
-        features = features == null ? ImmutableList.of() : features;
-        buckets = buckets == null ? ImmutableSortedMap.of() : buckets;
-        HashObjectFunnels.tree(hasher, trees, features, buckets);
+
+        funnel.accept(hasher);
 
         final byte[] rawKey = hasher.hash().asBytes();
         final ObjectId id = ObjectId.createNoClone(rawKey);

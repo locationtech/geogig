@@ -853,7 +853,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String message = parseLine(requireLine(reader), "message");
             String commitId = parseLine(requireLine(reader), "commitid");
             RevPerson tagger = parsePerson(requireLine(reader));
-            RevTag tag = RevTagBuilder.build(id, name, ObjectId.valueOf(commitId), message, tagger);
+            RevTag tag = RevTagBuilder.create(id, name, ObjectId.valueOf(commitId), message, tagger);
             return tag;
         }
 

@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -23,6 +25,7 @@ import java.util.UUID;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -79,26 +82,30 @@ public class HashObjectFunnels {
     /**
      * Convenience method to hash a {@link RevFeature} out of its property values
      * 
-     * @param hasher expected to be {@link ObjectId#HASH_FUNCTION} in order to compute the SHA-1
-     *        hash
+     * @param into expected to be {@link ObjectId#HASH_FUNCTION} in order to compute the SHA-1 hash
      * @param values the {@link RevFeature} actual values, not {@code Optional}s
      */
-    public static void feature(PrimitiveSink hasher, List<Object> values) {
-        FeatureFunnel.INSTANCE.funnelValues(values, hasher);
+    public static void feature(PrimitiveSink into, List<Object> values) {
+        checkNotNull(into);
+        checkNotNull(values);
+        FeatureFunnel.INSTANCE.funnelValues(values, into);
     }
 
     /**
      * Convenience method to hash a {@link RevTree} out of its values
      * 
-     * @param hasher expected to be {@link ObjectId#HASH_FUNCTION} in order to compute the SHA-1
-     *        hash
+     * @param into expected to be {@link ObjectId#HASH_FUNCTION} in order to compute the SHA-1 hash
      * @param trees the tree's {@link RevTree#trees() contained tree nodes}
      * @param features the tree's {@link RevTree#trees() contained feature nodes}
      * @param buckets the tree's {@link RevTree#trees() contained bucket pointers}
      */
-    public static void tree(PrimitiveSink hasher, List<Node> trees, List<Node> features,
+    public static void tree(PrimitiveSink into, List<Node> trees, List<Node> features,
             SortedMap<Integer, Bucket> buckets) {
-        TreeFunnel.INSTANCE.funnel(hasher, trees, features, buckets);
+        checkNotNull(into);
+        checkNotNull(trees);
+        checkNotNull(features);
+        checkNotNull(buckets);
+        TreeFunnel.INSTANCE.funnel(into, trees, features, buckets);
     }
 
     public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
@@ -185,15 +192,28 @@ public class HashObjectFunnels {
 
         @Override
         public void funnel(RevCommit from, PrimitiveSink into) {
+            funnel(into, from.getTreeId(), from.getParentIds(), from.getMessage(), from.getAuthor(),
+                    from.getCommitter());
+        }
+
+        public void funnel(PrimitiveSink into, ObjectId treeId, List<ObjectId> parentIds,
+                String message, RevPerson author, RevPerson committer) {
             RevObjectTypeFunnel.funnel(TYPE.COMMIT, into);
-            ObjectIdFunnel.funnel(from.getId(), into);
-            ObjectIdFunnel.funnel(from.getTreeId(), into);
-            for (ObjectId parentId : from.getParentIds()) {
+
+            // funnel ObjectId.NULL for backwards compatibility, since prior to geogig 1.2,
+            // CommitBuilder was creating a fake commit with NULL as object id before computing the
+            // final hash, and this CommitFunnel inadvertently funneling the commit id, which is
+            // plain wrong, so if we don't keep funneling this null id commits will hash out
+            // differently
+            ObjectIdFunnel.funnel(ObjectId.NULL, into);
+
+            ObjectIdFunnel.funnel(treeId, into);
+            for (ObjectId parentId : parentIds) {
                 ObjectIdFunnel.funnel(parentId, into);
             }
-            NullableStringFunnel.funnel(from.getMessage(), into);
-            PersonFunnel.funnel(from.getAuthor(), into);
-            PersonFunnel.funnel(from.getCommitter(), into);
+            NullableStringFunnel.funnel(message, into);
+            PersonFunnel.funnel(author, into);
+            PersonFunnel.funnel(committer, into);
         }
     };
 
@@ -250,17 +270,20 @@ public class HashObjectFunnels {
 
         @Override
         public void funnel(RevFeatureType from, PrimitiveSink into) {
+            funnel(into, from.type());
+        }
+
+        public void funnel(PrimitiveSink into, FeatureType type) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURETYPE, into);
 
-            Collection<PropertyDescriptor> featureTypeProperties = from.type().getDescriptors();
+            Collection<PropertyDescriptor> featureTypeProperties = type.getDescriptors();
 
-            NameFunnel.funnel(from.getName(), into);
+            NameFunnel.funnel(type.getName(), into);
 
             for (PropertyDescriptor descriptor : featureTypeProperties) {
                 PropertyDescriptorFunnel.funnel(descriptor, into);
             }
         }
-
     };
 
     private static final class TagFunnel implements Funnel<RevTag> {
@@ -270,11 +293,16 @@ public class HashObjectFunnels {
 
         @Override
         public void funnel(RevTag from, PrimitiveSink into) {
+            funnel(into, from.getName(), from.getCommitId(), from.getMessage(), from.getTagger());
+        }
+
+        public void funnel(PrimitiveSink into, String name, ObjectId commitId, String message,
+                RevPerson tagger) {
             RevObjectTypeFunnel.funnel(TYPE.TAG, into);
-            ObjectIdFunnel.funnel(from.getCommitId(), into);
-            StringFunnel.funnel((CharSequence) from.getName(), into);
-            StringFunnel.funnel((CharSequence) from.getMessage(), into);
-            PersonFunnel.funnel(from.getTagger(), into);
+            ObjectIdFunnel.funnel(commitId, into);
+            StringFunnel.funnel(name, into);
+            StringFunnel.funnel(message, into);
+            PersonFunnel.funnel(tagger, into);
         }
     };
 
@@ -515,5 +543,34 @@ public class HashObjectFunnels {
             }
         }
     };
+
+    public static void tag(PrimitiveSink into, String name, ObjectId commitId, String message,
+            RevPerson tagger) {
+        checkNotNull(into);
+        checkNotNull(name);
+        checkNotNull(commitId);
+        checkNotNull(message);
+        checkNotNull(tagger);
+        TagFunnel.INSTANCE.funnel(into, name, commitId, message, tagger);
+    }
+
+    public static void featureType(PrimitiveSink into, FeatureType featureType) {
+        checkNotNull(into);
+        checkNotNull(featureType);
+        FeatureTypeFunnel.INSTANCE.funnel(into, featureType);
+    }
+
+    public static void commit(PrimitiveSink into, ObjectId treeId,
+            ImmutableList<ObjectId> parentIds, RevPerson author, RevPerson committer,
+            String commitMessage) {
+        checkNotNull(into);
+        checkNotNull(treeId);
+        checkNotNull(parentIds);
+        checkNotNull(author);
+        checkNotNull(committer);
+        checkNotNull(commitMessage);
+
+        CommitFunnel.INSTANCE.funnel(into, treeId, parentIds, commitMessage, author, committer);
+    }
 
 }

@@ -45,10 +45,9 @@ public class BulkFeatureRetrieverTest {
     public void testGet() throws Exception {
         ObjectId meta1 = getOID(1);
 
-        RevFeatureTypeBuilder ftbuilder = new RevFeatureTypeBuilder();
         SimpleFeatureType fType1 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name:String,name2:String");
-        RevFeatureType revft1 = ftbuilder.build(meta1, fType1);
+        RevFeatureType revft1 = RevFeatureTypeBuilder.create(meta1, fType1);
 
         WKTReader2 wkt = new WKTReader2();
         RevFeature f1 = RevObjectTestSupport.featureForceId(getOID(2), wkt.read("POINT(0 0)"),
@@ -73,7 +72,7 @@ public class BulkFeatureRetrieverTest {
 
         AutoCloseableIterator<ObjectInfo<RevObject>> objects = AutoCloseableIterator
                 .fromIterator(objs.iterator());
-        
+
         when(odb.getObjects(anyObject(), anyObject(), anyObject())).thenReturn(objects);
 
         Iterator<NodeRef> input = Arrays.asList(nr1, nr2).iterator();

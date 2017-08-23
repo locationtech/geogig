@@ -670,7 +670,7 @@ public class WriteTree2Test extends RepositoryTestCase {
             db.put(fakenId);
         }
         if (!metadataId.isNull()) {
-            RevFeatureType fakeType = RevFeatureTypeBuilder.build(metadataId, pointsType);
+            RevFeatureType fakeType = RevFeatureTypeBuilder.create(metadataId, pointsType);
             if (!db.exists(fakeType.getId())) {
                 db.put(fakeType);
             }

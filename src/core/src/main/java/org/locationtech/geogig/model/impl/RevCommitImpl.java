@@ -10,7 +10,6 @@
 package org.locationtech.geogig.model.impl;
 
 import static com.google.common.base.Objects.equal;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -36,15 +35,6 @@ class RevCommitImpl extends AbstractRevObject implements RevCommit {
 
     private String message;
 
-    /**
-     * Constructs a new {@code RevCommit} with the given {@link ObjectId}.
-     * 
-     * @param id the object id to use
-     */
-    public RevCommitImpl(final ObjectId id) {
-        super(id);
-    }
-
     @Override
     public TYPE getType() {
         return TYPE.COMMIT;
@@ -60,14 +50,9 @@ class RevCommitImpl extends AbstractRevObject implements RevCommit {
      * @param committer the committer of this commit
      * @param message the message for this commit
      */
-    public RevCommitImpl(final ObjectId id, ObjectId treeId, ImmutableList<ObjectId> parentIds,
+    RevCommitImpl(final ObjectId id, ObjectId treeId, ImmutableList<ObjectId> parentIds,
             RevPerson author, RevPerson committer, String message) {
-        this(id);
-        checkNotNull(treeId);
-        checkNotNull(parentIds);
-        checkNotNull(author);
-        checkNotNull(committer);
-        checkNotNull(message);
+        super(id);
         this.treeId = treeId;
         this.parentIds = parentIds;
         this.author = author;

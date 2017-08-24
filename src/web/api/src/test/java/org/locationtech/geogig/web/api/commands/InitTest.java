@@ -10,27 +10,53 @@
 package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
-import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import javax.json.JsonObject;
+import java.io.File;
+import java.net.URI;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.rest.repository.TestParams;
-import org.locationtech.geogig.web.api.TestRepository;
+import org.locationtech.geogig.spring.config.GeoGigWebAPISpringConfig;
+import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.web.api.WebAPICommand;
-import org.restlet.data.MediaType;
+import org.restlet.data.Request;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.context.WebApplicationContext;
 
+import com.google.common.base.Optional;
+
+@ContextConfiguration(classes = GeoGigWebAPISpringConfig.class)
+@WebAppConfiguration
+@RunWith(SpringRunner.class)
 public class InitTest extends AbstractWebOpTest {
+
+    @Autowired
+    private WebApplicationContext springContext;
 
     @Override
     protected String getRoute() {
@@ -65,25 +91,78 @@ public class InitTest extends AbstractWebOpTest {
 
     @Test
     public void testInit() throws Exception {
-        testContext.createUninitializedRepo();
-        ParameterSet options = TestParams.of();
-        WebAPICommand cmd = buildCommand(options);
+        TemporaryFolder tmp = new TemporaryFolder();
+        tmp.create();
+        // assert Autowired Spring Context is not null
+        assertNotNull(springContext);
+        // get a request builder
+        MockHttpServletRequestBuilder initRequest =
+                MockMvcRequestBuilders.put("/repos/testRepo/init.json");
+        // need to embed a RepsoitoryResolver into the request
+        initRequest.requestAttr(RepositoryProvider.KEY,
+                new TestRepositoryProvider(tmp.newFolder()));
+        // get a Mock MVC based on the autowired context
+        MockMvc mvc = MockMvcBuilders.webAppContextSetup(springContext).build();
+        // send the Init request, and verify the Status is 201 Created
+        mvc.perform(initRequest).andExpect(status().isCreated()).andExpect(content().contentType(
+                MediaType.APPLICATION_JSON)).andExpect(content().string(
+                        "{\"response\":{\"success\":true,\"repo\":{\"name\":\"testRepo\",\"href\":\"http://localhost/repos/testRepo.json\"}}}"));
+        tmp.delete();
+    }
 
-        assertNull(testContext.get().getRepository());
+    private static class TestRepositoryProvider implements RepositoryProvider {
 
-        testContext.setRequestMethod(RequestMethod.PUT);
-        cmd.run(testContext.get());
+        private Repository repository;
+        private final File rootDirectory;
 
-        String expectedURL = RESTUtils.buildHref(testContext.get().getBaseURL(),
-                RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + TestRepository.REPO_NAME,
-                MediaType.APPLICATION_JSON);
+        private TestRepositoryProvider(File rootDirectory) {
+            this.rootDirectory = rootDirectory;
+        }
 
-        assertNotNull(testContext.get().getRepository());
-        assertTrue(testContext.get().getRepository().isOpen());
-        JsonObject response = getJSONResponse().getJsonObject("response");
-        assertTrue(jsonEquals(toJSON("{\"success\":true, \"repo\": {\"name\": \""
-                + TestRepository.REPO_NAME + "\", \"href\": \"" + expectedURL + "\"}}"), response,
-                true));
+        @Override
+        public Optional<Repository> getGeogig(Request request) {
+            throw new UnsupportedOperationException("Unnecessary for this test.");
+        }
 
+        @Override
+        public Optional<Repository> getGeogig(String repositoryName) {
+            throw new UnsupportedOperationException("Unnecessary for this test.");
+        }
+
+        @Override
+        public boolean hasGeoGig(String repositoryName) {
+            return repository != null;
+        }
+
+        @Override
+        public Repository createGeogig(String repositoryName, Map<String, String> parameters) {
+            if (repository != null) {
+                throw new RuntimeException("Repository already exists");
+            }
+            // ignore the parameters for now, just create a new repo with the name
+            RepositoryResolver resolver = RepositoryResolver.lookup(rootDirectory.toURI());
+            URI repoURI = resolver.buildRepoURI(rootDirectory.toURI(), repositoryName);
+            Hints hints = new Hints();
+            hints.set(Hints.REPOSITORY_URL, repoURI.toString());
+            hints.set(Hints.REPOSITORY_NAME, repositoryName);
+            GlobalContextBuilder.builder(new CLITestContextBuilder(new TestPlatform(rootDirectory)));
+            repository = GlobalContextBuilder.builder().build(hints).repository();
+            return repository;
+        }
+
+        @Override
+        public void delete(Request request) {
+            throw new UnsupportedOperationException("Unnecessary for this test.");
+        }
+
+        @Override
+        public void invalidate(String repoName) {
+            throw new UnsupportedOperationException("Unnecessary for this test.");
+        }
+
+        @Override
+        public Iterator<String> findRepositories() {
+            throw new UnsupportedOperationException("Unnecessary for this test.");
+        }
     }
 }

@@ -344,7 +344,12 @@
         <artifactId>javax.servlet-api</artifactId>
         <version>${servlet-api.version}</version>
       </dependency>
-
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>${springweb.version}</version>
+        <scope>test</scope>
+      </dependency>
       <!-- Jetty Runner dependencies -->
       <dependency>
         <groupId>org.eclipse.jetty</groupId>

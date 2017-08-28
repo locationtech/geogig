@@ -55,4 +55,30 @@ public class TestPlatform extends DefaultPlatform implements Platform, Cloneable
         return getClass().getSimpleName() + "[home=" + this.userHomeDirectory + ", pwd="
                 + super.workingDir + "]";
     }
+
+    //Make sure that all the times are unique (make sure clock ticks between calls)
+    @Override
+    public synchronized long currentTimeMillis() {
+        boolean keep_going = true;
+        int i = 0;
+        long current = super.currentTimeMillis();
+        while (keep_going) {
+            if (current <= lastCreatedTimestamp) {
+                try {
+                    Thread.sleep(1);
+                } catch (Exception e) {
+                    //do nothing
+                }
+            } else {
+                lastCreatedTimestamp = current;
+                return current;
+            }
+            i++;
+            keep_going = i < 50; // don't run forever -- this should never be a problem (except for system clock resets)
+            current = super.currentTimeMillis();
+        }
+        return current; //waited too long
+    }
+
+    static volatile long lastCreatedTimestamp = 0;
 }

@@ -277,30 +277,53 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
         }
         return filteredCommits;
     }
-
     /**
      * Iterator that traverses the commit history backwards starting from the provided commit, in
      * chronological order. It performs a reverse breadth-first search
-     * 
+     *
+     * ChronologicalHistoryIterator walks the Commit Graph and atempts to walk the nodes in
+     * Chronological order.
+     *
+     * In general, if all the commit times are unique (not occurring at the same time) and
+     * commit order is in chronological order then this process is simple.
+     *
+     * However, if commits can occur at the same time or if time can be not always moving forward
+     *  (i.e. due to changes in the clock or clock skew for a remote) this can be more complex.
+     *
+     *  This method is likely not perfect, however, it will usually be correct (without a lot of
+     *  extra DB work).
+     *
+     *  It could be improved by using some of the techniques in the Topological operator, however,
+     *  the extra DB work is not justified since its mostly only useful for giving a "better" order
+     *  for cases where commits happen at the same time (which is ambiguous).
+     *
+     *  We do, however, store all the nodes that we've seen so we don't re-traverse them.
+     *  This is quick, and memory efficient (1,000,000 history is about 20M of memory).
+     *
      */
     private static class ChronologicalHistoryIterator extends AbstractIterator<RevCommit> {
 
         private final Repository repo;
 
         private Set<RevCommit> parents;
+        private Set<ObjectId> seenCommits; //don't re-traverse the same part of the tree
 
         /**
          * Constructs a new {@code LinearHistoryIterator} with the given parameters.
-         * 
+         *
          * @param tip the first commit in the history
          * @param repo the repository where the commits are stored.
          */
+
         public ChronologicalHistoryIterator(final List<ObjectId> tips, final Repository repo) {
             parents = Sets.newHashSet();
+            seenCommits = Sets.newHashSet();
             for (ObjectId tip : tips) {
                 if (!tip.isNull()) {
                     final RevCommit commit = repo.getCommit(tip);
-                    parents.add(commit);
+                    if (!parents.contains(commit)) {
+                        parents.add(commit);
+                    }
                 }
             }
             this.repo = repo;
@@ -308,7 +331,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
         /**
          * Calculates the next commit in the history.
-         * 
+         *
          * @return the next {@link RevCommit commit} in the history
          */
         @Override
@@ -317,7 +340,6 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 return endOfData();
             } else {
                 Iterator<RevCommit> iter = parents.iterator();
-                // TODO: Maybe we should make RevCommit implement Comparable?
                 RevCommit mostRecent = iter.next();
                 while (iter.hasNext()) {
                     RevCommit commit = iter.next();
@@ -331,12 +353,14 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 for (ObjectId parent : mostRecent.getParentIds()) {
                     if (repo.commitExists(parent)) {
                         commit = repo.getCommit(parent);
-                        parents.add(commit);
+                        if (!seenCommits.contains(commit.getId())) {
+                            parents.add(commit);
+                            seenCommits.add(commit.getId());
+                        }
                     }
                 }
                 return mostRecent;
             }
-
         }
     }
 

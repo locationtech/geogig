@@ -10,6 +10,7 @@
 package org.locationtech.geogig.rest;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,14 +18,18 @@ import org.locationtech.geogig.web.api.RESTUtils;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
 
 public class Variants {
-    public static final MediaType CSV_MEDIA_TYPE = new MediaType("text/csv",
-            "Comma-separated Values");
+    public static final MediaType CSV_MEDIA_TYPE = new MediaType("text", "csv");
 
-    public static final MediaType GEOPKG_MEDIA_TYPE = new MediaType(
-            "application/octet-stream;type=geopackage", "GeoPackage database file");
+    public static final MediaType GEOPKG_MEDIA_TYPE;
 
+    static {
+        Map<String, String> geopkgParams = Maps.newHashMap();
+        geopkgParams.put("type", "geopackage");
+        GEOPKG_MEDIA_TYPE = new MediaType(MediaType.APPLICATION_OCTET_STREAM, geopkgParams);
+    }
     public static Optional<MediaType> getMediaTypeByExtension(HttpServletRequest request,
             List<MediaType> supported) {
         String extension = RESTUtils.getStringAttribute(request, "extension");

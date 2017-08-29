@@ -23,21 +23,30 @@ import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.Representations;
+import org.locationtech.geogig.rest.Variants;
+import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.StreamingWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Optional;
+import com.google.common.io.Files;
 
 /**
  * Controller for Task related endpoints.
@@ -62,12 +71,14 @@ public class TaskController extends AbstractController {
         encode(new LegacyResponse() {
             @Override
             public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
-                writer.writeStartElement("tasks");
+                writer.writeStartArray("tasks");
                 for (AsyncCommand<? extends Object> c : all) {
+                    writer.writeStartArrayElement("tasks");
                     AsyncCommandRepresentation<?> rep = Representations.newRepresentation(c, false);
                     rep.encode(writer, format, baseUrl);
+                    writer.writeEndArrayElement();
                 }
-                writer.writeEndElement();
+                writer.writeEndArray();
 
             }
         }, request, response);
@@ -76,14 +87,17 @@ public class TaskController extends AbstractController {
 
     @GetMapping(path = "/{taskId}")
     public void getTaskStatus(@PathVariable String taskId,
-            @RequestAttribute(required = false) Boolean prune,
-            @RequestAttribute(required = false) Boolean cancel, HttpServletRequest request,
-            HttpServletResponse response) {
+            @RequestParam MultiValueMap<String, String> params, HttpServletRequest request,
+            HttpServletResponse response, RequestEntity<String> entity) {
+        ParameterSet options = ParameterSet.concat(getParamsFromEntity(entity),
+                ParameterSetFactory.buildParameterSet(params));
+        boolean prune = Boolean.parseBoolean(options.getFirstValue("prune", "false"));
+        boolean cancel = Boolean.parseBoolean(options.getFirstValue("cancel", "false"));
         final AsyncContext asyncContext = AsyncContext.get();
 
         Optional<AsyncCommand<?>> cmd;
 
-        if (Boolean.TRUE.equals(prune)) {
+        if (prune) {
             cmd = asyncContext.getAndPruneIfFinished(taskId);
         } else {
             cmd = asyncContext.get(taskId);
@@ -93,7 +107,7 @@ public class TaskController extends AbstractController {
         }
 
         AsyncCommand<?> command = cmd.get();
-        if (Boolean.TRUE.equals(cancel)) {
+        if (cancel) {
             command.tryCancel();
             try {
                 Thread.sleep(200);
@@ -104,14 +118,14 @@ public class TaskController extends AbstractController {
                 asyncContext.getAndPruneIfFinished(taskId);
             }
         }
-        AsyncCommandRepresentation<?> rep = Representations.newRepresentation(command,
-                Boolean.TRUE.equals(prune));
+        AsyncCommandRepresentation<?> rep = Representations.newRepresentation(command, prune);
         encode(rep, request, response);
     }
 
     @GetMapping(path = "/{taskId}/download")
     public @ResponseBody
-    File getDownload(@PathVariable String taskId) throws IOException {
+            HttpEntity<FileSystemResource> getDownload(@PathVariable String taskId)
+                    throws IOException {
         final AsyncContext asyncContext = AsyncContext.get();
 
         Optional<AsyncCommand<?>> cmd = asyncContext.get(taskId);
@@ -143,7 +157,26 @@ public class TaskController extends AbstractController {
                     HttpStatus.BAD_REQUEST);
         }
 
-        return file;
+        MediaType mediaType = resolveMediaType(file);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(mediaType);
+
+        return new HttpEntity<FileSystemResource>(new FileSystemResource(file), headers);
+    }
+
+    private MediaType resolveMediaType(File file) {
+        String extension = Files.getFileExtension(file.getName());
+
+        if ("gpkg".equalsIgnoreCase(extension)) {
+            return Variants.GEOPKG_MEDIA_TYPE;
+        } else if ("xml".equalsIgnoreCase(extension)) {
+            return MediaType.TEXT_XML;
+        } else if ("json".equalsIgnoreCase(extension)) {
+            return MediaType.APPLICATION_JSON;
+        }
+
+        return MediaType.APPLICATION_OCTET_STREAM;
     }
 
     @Override

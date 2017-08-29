@@ -37,6 +37,14 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
     }
 
     @Override
+    protected void after() {
+        for (TestRepository repo : repositories.values()) {
+            repo.after();
+        }
+        repositories.clear();
+    }
+
+    @Override
     public Iterator<String> findRepositories() {
         return repositories.keySet().iterator();
     }

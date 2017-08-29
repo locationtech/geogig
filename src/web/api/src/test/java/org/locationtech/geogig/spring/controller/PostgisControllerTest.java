@@ -21,6 +21,7 @@ import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.junit.After;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.cli.TestHelper;
 import org.locationtech.geogig.model.NodeRef;
@@ -39,6 +40,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.google.common.collect.Lists;
 
 public class PostgisControllerTest extends AbstractControllerTest {
+
+    @After
+    public void after() {
+        AsyncContext.close();
+    }
 
     @Test
     public void testImport() throws Exception {
@@ -82,10 +88,10 @@ public class PostgisControllerTest extends AbstractControllerTest {
     }
 
     private ResultActions waitForTask(Integer taskId) throws Exception {
+        MockHttpServletRequestBuilder taskRequest = MockMvcRequestBuilders
+                .get(String.format("/tasks/%d.json", taskId));
         while (true) {
             Thread.sleep(100);
-            MockHttpServletRequestBuilder taskRequest = MockMvcRequestBuilders
-                    .get(String.format("/tasks/%d.json", taskId));
             try {
                 return perform(taskRequest).andExpect(jsonPath("$.task.status")
                         .value(not(AsyncContext.Status.RUNNING.toString())));

@@ -31,4 +31,12 @@ public interface ObjectSerializingFactory {
     RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) throws IOException;
 
     String getDisplayName();
+
+    /**
+     * @return {@code true} if multiple {@link RevObject} instances can be written to a byte stream
+     *         and then read from the resulting byte stream using this serializer.
+     */
+    public default boolean supportsStreaming() {
+        return true;
+    }
 }

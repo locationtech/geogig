@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.impl.RevFeatureBuilder.build;
@@ -28,6 +29,7 @@ import java.util.SortedMap;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -35,6 +37,8 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.WKTReader2;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Bounded;
@@ -167,24 +171,19 @@ public abstract class ObjectSerializationFactoryTest {
                         RevObjectTestSupport.hashString("barmetadataid"), RevObject.TYPE.TREE,
                         new Envelope(1, 2, 1, 2)));
 
-        SortedMap<Integer, Bucket> spatialBuckets = ImmutableSortedMap.of(1,
+        ImmutableSortedMap<Integer, Bucket> spatialBuckets = ImmutableSortedMap.of(1,
                 Bucket.create(RevObjectTestSupport.hashString("buckettree"), new Envelope()));
 
-        SortedMap<Integer, Bucket> buckets = ImmutableSortedMap.of(1, Bucket
+        ImmutableSortedMap<Integer, Bucket> buckets = ImmutableSortedMap.of(1, Bucket
                 .create(RevObjectTestSupport.hashString("buckettree"), new Envelope(1, 2, 1, 2)));
 
-        tree1_leaves = RevTreeBuilder.create(RevObjectTestSupport.hashString("leaves"), 1L, 0, null,
-                features, null);
-        tree2_internal = RevTreeBuilder.create(RevObjectTestSupport.hashString("internal"), 0,
-                trees.size(), trees, null, null);
-        tree3_buckets = RevTreeBuilder.create(RevObjectTestSupport.hashString("buckets"), 1L, 1,
-                null, null, buckets);
-        tree4_spatial_leaves = RevTreeBuilder.create(RevObjectTestSupport.hashString("leaves"), 1L,
-                0, null, spatialFeatures, null);
-        tree5_spatial_internal = RevTreeBuilder.create(RevObjectTestSupport.hashString("internal"),
-                1L, spatialTrees.size(), spatialTrees, null, null);
-        tree6_spatial_buckets = RevTreeBuilder.create(RevObjectTestSupport.hashString("buckets"),
-                1L, 1, null, null, spatialBuckets);
+        tree1_leaves = RevTreeBuilder.build(1L, 0, null, features, null);
+        tree2_internal = RevTreeBuilder.build(0, trees.size(), trees, null, null);
+        tree3_buckets = RevTreeBuilder.build(1L, 1, null, null, buckets);
+        tree4_spatial_leaves = RevTreeBuilder.build(1L, 0, null, spatialFeatures, null);
+        tree5_spatial_internal = RevTreeBuilder.build(1L, spatialTrees.size(), spatialTrees, null,
+                null);
+        tree6_spatial_buckets = RevTreeBuilder.build(1L, 1, null, null, spatialBuckets);
 
     }
 
@@ -600,10 +599,89 @@ public abstract class ObjectSerializationFactoryTest {
         assertTreesAreEqual(tree6_spatial_buckets, roundTripped);
     }
 
-    private byte[] write(RevTree tree) {
+    @Test
+    public void testSerializerDoesntCloseStreams() throws IOException {
+
+        AtomicBoolean closed = new AtomicBoolean(false);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream() {
+            public @Override void close() {
+                closed.set(true);
+            }
+        };
+
+        final RevTree orig = tree1_leaves;
+        serializer.write(orig, out);
+        assertFalse(closed.get());
+        out.close();
+        assertTrue(closed.get());
+
+        closed.set(false);
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray()) {
+            public @Override void close() throws IOException {
+                closed.set(true);
+            }
+        };
+
+        final RevObject read = serializer.read(orig.getId(), in);
+        assertFalse(closed.get());
+        assertEquals(orig, read);
+    }
+
+    @Test
+    public void testStreaming() throws IOException {
+        // ignores the test if the serializer does not support streaming
+        Assume.assumeTrue(serializer.supportsStreaming());
+
+        AtomicBoolean closed = new AtomicBoolean(false);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream() {
+            public @Override void close() {
+                closed.set(true);
+            }
+        };
+        List<RevObject> objects = ImmutableList.of(//
+                testCommit.build(), //
+                tree1_leaves, //
+                tree2_internal, //
+                tree3_buckets, //
+                tree4_spatial_leaves, //
+                tree5_spatial_internal, //
+                tree6_spatial_buckets//
+        );
+
+        for (RevObject o : objects) {
+            serializer.write(o, out);
+            assertFalse(closed.get());
+        }
+        out.close();
+        assertTrue(closed.get());
+
+        byte[] byteArray = out.toByteArray();
+        closed.set(false);
+        ByteArrayInputStream in = new ByteArrayInputStream(byteArray) {
+            public @Override void close() throws IOException {
+                closed.set(true);
+            }
+        };
+        for (int i = 0; i < objects.size(); i++) {
+            RevObject expected = objects.get(i);
+            RevObject actual;
+            try {
+                actual = serializer.read(expected.getId(), in);
+                assertFalse(closed.get());
+                assertEquals("at index " + i, expected, actual);
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+                Assert.fail("At idex " + i + ": " + ioe.getMessage());
+            }
+        }
+    }
+
+    private byte[] write(RevObject object) {
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            serializer.write(tree, bout);
+            serializer.write(object, bout);
             return bout.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);

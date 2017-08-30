@@ -44,6 +44,7 @@ import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
 import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -194,7 +195,7 @@ public class FormatCommonV1 {
         data.writeInt(person.getTimeZoneOffset());
     }
 
-    public static RevTree readTree(ObjectId id, DataInput in) throws IOException {
+    public static RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
         final long size = in.readLong();
         final int treeCount = in.readInt();
         final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<Node>();
@@ -229,6 +230,9 @@ public class FormatCommonV1 {
         ImmutableList<Node> trees = treesBuilder.build();
         ImmutableList<Node> features = featuresBuilder.build();
 
+        if (null == id) {
+            id = HashObject.hashTree(trees, features, buckets);
+        }
         RevTree tree = RevTreeBuilder.create(id, size, treeCount, trees, features, buckets);
         return tree;
     }

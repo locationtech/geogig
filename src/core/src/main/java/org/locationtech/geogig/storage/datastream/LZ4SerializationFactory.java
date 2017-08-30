@@ -20,6 +20,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 
 import net.jpountz.lz4.LZ4BlockInputStream;
@@ -31,7 +32,12 @@ import net.jpountz.xxhash.XXHashFactory;
 
 /**
  * Wrapper Factory that deflates/inflates data written to/read from streams using LZ4 compression.
+ * <p>
+ * Note this serialization factory is experimental and does not support reading multiple objects
+ * from a single stream where each object has been compressed individually. See
+ * <a href="https://github.com/lz4/lz4-java/issues/48">lz-java issue #48</a>.
  */
+@Beta
 public class LZ4SerializationFactory implements ObjectSerializingFactory {
 
     // cache factory to avoid thread contention when looking up for the fastest instance on some LZ4
@@ -51,13 +57,22 @@ public class LZ4SerializationFactory implements ObjectSerializingFactory {
         this.factory = factory;
     }
 
+    /**
+     * @return {@code false}, this serializer does not support reading back multiple objects from a
+     *         single stream where each object has been individually compressed, due to a limitation
+     *         in {@code lz-java}
+     */
+    public @Override boolean supportsStreaming() {
+        return false;
+    }
+
     @Override
     public RevObject read(ObjectId id, InputStream in) throws IOException {
         LZ4FastDecompressor decompressor = lz4factory.fastDecompressor();
         Checksum checksum = newChecksum();
-        try (LZ4BlockInputStream cin = new LZ4BlockInputStream(in, decompressor, checksum)) {
-            return factory.read(id, cin);
-        }
+        LZ4BlockInputStream cin = new LZ4BlockInputStream(in, decompressor, checksum);
+        return factory.read(id, cin);
+
     }
 
     private Checksum newChecksum() {
@@ -77,10 +92,10 @@ public class LZ4SerializationFactory implements ObjectSerializingFactory {
         final int blockSize = 1 << 16;
         LZ4Compressor compressor = lz4factory.fastCompressor();
         Checksum checksum = newChecksum();
-        try (LZ4BlockOutputStream cout = new LZ4BlockOutputStream(out, blockSize, compressor,
-                checksum, false)) {
-            factory.write(o, cout);
-        }
+        LZ4BlockOutputStream cout = new LZ4BlockOutputStream(out, blockSize, compressor, checksum,
+                true);
+        factory.write(o, cout);
+        cout.finish();// same as close but not closing the wrapped stream
     }
 
     @Override

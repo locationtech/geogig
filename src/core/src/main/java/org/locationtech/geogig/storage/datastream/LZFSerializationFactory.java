@@ -38,9 +38,9 @@ public class LZFSerializationFactory implements ObjectSerializingFactory {
     @Override
     public RevObject read(ObjectId id, InputStream rawData) throws IOException {
         // decompress the stream
-        try (LZFInputStream inflatedInputeStream = new LZFInputStream(rawData)) {
-            return factory.read(id, inflatedInputeStream);
-        }
+        LZFInputStream inflatedInputeStream = new LZFInputStream(rawData);
+        return factory.read(id, inflatedInputeStream);
+
     }
 
     @Override
@@ -53,9 +53,10 @@ public class LZFSerializationFactory implements ObjectSerializingFactory {
     @Override
     public void write(RevObject o, OutputStream out) throws IOException {
         // compress the stream
-        try (LZFOutputStream deflatedOutputStream = new LZFOutputStream(out)) {
-            factory.write(o, deflatedOutputStream);
-        }
+        LZFOutputStream deflatedOutputStream = new LZFOutputStream(out);
+        deflatedOutputStream.setFinishBlockOnFlush(true);
+        factory.write(o, deflatedOutputStream);
+        deflatedOutputStream.flush();
     }
 
     @Override

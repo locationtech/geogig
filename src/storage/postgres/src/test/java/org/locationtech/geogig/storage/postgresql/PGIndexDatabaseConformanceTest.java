@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.postgresql;
 import java.io.IOException;
 
 import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -23,8 +24,10 @@ import com.google.common.base.Throwables;
 
 public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest {
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
+    public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
+
+    public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
+            getClass().getSimpleName(), ds);
 
     ConfigDatabase configdb;
 

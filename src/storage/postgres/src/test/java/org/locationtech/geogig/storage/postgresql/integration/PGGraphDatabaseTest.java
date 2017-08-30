@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.postgresql.integration;
 import java.io.IOException;
 
 import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -22,13 +23,16 @@ import org.locationtech.geogig.storage.postgresql.PGConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.PGGraphDatabase;
 import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 
 import com.google.common.base.Throwables;
 
 public class PGGraphDatabaseTest extends GraphDatabaseTest {
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
+    public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
+
+    public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
+            getClass().getSimpleName(), ds);
 
     ConfigDatabase configdb;
 

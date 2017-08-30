@@ -44,15 +44,16 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
-import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.Environment;
 import org.locationtech.geogig.storage.postgresql.PGObjectDatabase;
 import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.performance.EnablePerformanceTestRule;
 
@@ -70,8 +71,10 @@ import com.vividsolutions.jts.io.WKTReader;
 public class PGObjectDatabaseStressTest {
     private static final MemoryMXBean MEMORY_MX_BEAN = ManagementFactory.getMemoryMXBean();
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
+    public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
+
+    public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
+            getClass().getSimpleName(), ds);
 
     /**
      * Enables this test only if the geogig.runPerformanceTests=true system property was provided
@@ -266,7 +269,7 @@ public class PGObjectDatabaseStressTest {
 
         Iterator<NodeRef> refs = Iterators.transform(nodes.iterator(),
                 (n) -> NodeRef.create("layer", n));
-        
+
         Iterator<ObjectInfo<RevFeature>> iterator = db.getObjects(refs, listener, RevFeature.class);
         final int returnedObjectCount = Iterators.size(iterator);
 

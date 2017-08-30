@@ -74,30 +74,73 @@ public class Environment {
 
     static class ConnectionConfig {
 
-        private @Nullable final String user;
+        private final Key key;
 
-        private @Nullable final String password;
+        /**
+         * Encapsulates the parts of the connection config that uniquely identify a connection to
+         * the database in order to be used as key for {@link DataSourceManager}. As such, #schema
+         * and #tablePrefix are ignored by {@link #equals(Object)} and {@link #hashCode()}, while
+         * they're taking into account for {@link ConnectionConfig} itself.
+         *
+         */
+        static class Key {
 
-        private final String databaseName;
+            final String server;
 
-        private final String schema;
+            final int portNumber;
 
-        private final int portNumber;
+            final String databaseName;
 
-        private final String server;
+            @Nullable
+            final String user;
 
-        private @Nullable final String tablePrefix;
+            @Nullable
+            final String password;
+
+            final String schema;
+
+            @Nullable
+            final String tablePrefix;
+
+            Key(String server, int portNumber, String databaseName, String schema, String user,
+                    String password, String tablePrefix) {
+                this.server = server;
+                this.portNumber = portNumber;
+                this.databaseName = databaseName;
+                this.schema = schema;
+                this.user = user;
+                this.password = password;
+                this.tablePrefix = tablePrefix;
+            }
+
+            public @Override boolean equals(Object o) {
+                if (o instanceof Key) {
+                    Key k = (Key) o;
+                    return equal(server, k.server) && equal(portNumber, k.portNumber)
+                            && equal(databaseName, k.databaseName) && equal(user, k.user)
+                            && equal(password, k.password);
+                }
+                return false;
+            }
+
+            public @Override int hashCode() {
+                return Objects.hashCode(server, portNumber, databaseName, user, password);
+            }
+
+            public @Override String toString() {
+                return String.format(
+                        "%s[host: %s, port: %d, db: %s, schema: %s, user: %s, pwd: %s, prefix: %s]",
+                        getClass().getSimpleName(), server, portNumber, databaseName, schema, user,
+                        "***", tablePrefix);
+            }
+
+        }
 
         ConnectionConfig(final String server, final int portNumber, final String databaseName,
                 final String schema, @Nullable final String user, @Nullable final String password,
                 @Nullable String tablePrefix) {
-            this.server = server;
-            this.portNumber = portNumber;
-            this.databaseName = databaseName;
-            this.schema = schema;
-            this.user = user;
-            this.password = password;
-            this.tablePrefix = tablePrefix;
+            this.key = new Key(server, portNumber, databaseName, schema, user, password,
+                    tablePrefix);
         }
 
         public URI toURI() {
@@ -112,22 +155,23 @@ public class Environment {
         private URI toURIInternal(final @Nullable String repositoryName) {
 
             // postgresql://<server>:<port>/<database>/<schema>[/<repoid>]?user=<username>][&password=<pwd>][&tablePrefix=<prefix>]
-            StringBuilder sb = new StringBuilder("postgresql://").append(server).append(":")
-                    .append(portNumber).append("/").append(databaseName).append("/").append(schema);
+            StringBuilder sb = new StringBuilder("postgresql://").append(key.server).append(":")
+                    .append(key.portNumber).append("/").append(key.databaseName).append("/")
+                    .append(key.schema);
 
             if (repositoryName != null) {
                 sb.append("/").append(repositoryName);
             }
             StringBuilder args = new StringBuilder();
-            if (this.user != null) {
-                args.append("user=").append(this.user);
+            if (key.user != null) {
+                args.append("user=").append(key.user);
             }
-            if (password != null) {
-                args.append(args.length() > 0 ? "&password=" : "password=").append(password);
+            if (key.password != null) {
+                args.append(args.length() > 0 ? "&password=" : "password=").append(key.password);
             }
-            if (tablePrefix != null) {
+            if (key.tablePrefix != null) {
                 args.append(args.length() > 0 ? "&tablePrefix=" : "tablePrefix=")
-                        .append(tablePrefix);
+                        .append(key.tablePrefix);
             }
             if (args.length() > 0) {
                 sb.append("?").append(args);
@@ -148,47 +192,52 @@ public class Environment {
                 return false;
             }
             ConnectionConfig d = (ConnectionConfig) o;
-            return equal(getServer(), d.getServer()) && equal(getPortNumber(), d.getPortNumber())
-                    && equal(getDatabaseName(), d.getDatabaseName())
-                    && equal(getSchema(), d.getSchema()) && equal(getUser(), d.getUser())
-                    && equal(getPassword(), d.getPassword()) && equal(tablePrefix, d.tablePrefix);
+            return equal(key, d.key) && equal(getSchema(), d.getSchema())
+                    && equal(key.tablePrefix, d.key.tablePrefix);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(getServer(), getPortNumber(), getDatabaseName(), getSchema(),
-                    getUser(), getPassword(), tablePrefix);
+            return Objects.hashCode(key, key.schema, key.tablePrefix);
+        }
+
+        public @Override String toString() {
+            return String.format("%s[%s]", getClass().getSimpleName(), key);
         }
 
         String getDatabaseName() {
-            return databaseName;
+            return key.databaseName;
         }
 
         @Nullable
         String getUser() {
-            return user;
+            return key.user;
         }
 
         @Nullable
         String getPassword() {
-            return password;
+            return key.password;
         }
 
         String getSchema() {
-            return schema;
+            return key.schema;
         }
 
         int getPortNumber() {
-            return portNumber;
+            return key.portNumber;
         }
 
         String getServer() {
-            return server;
+            return key.server;
         }
 
         @Nullable
         String getTablePrefix() {
-            return tablePrefix;
+            return key.tablePrefix;
+        }
+
+        public Key getKey() {
+            return key;
         }
     }
 

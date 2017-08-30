@@ -14,14 +14,17 @@ import java.io.File;
 import javax.sql.DataSource;
 
 import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.locationtech.geogig.storage.impl.TransactionBlobStoreTest;
 
 public class PGBlobStoreTest extends TransactionBlobStoreTest {
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
+    public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
+
+    public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
+            getClass().getSimpleName(), ds);
 
     private DataSource dataSource;
 

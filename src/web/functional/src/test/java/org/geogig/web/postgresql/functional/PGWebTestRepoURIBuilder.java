@@ -48,7 +48,7 @@ public final class PGWebTestRepoURIBuilder extends TestRepoURIBuilder {
 
     @Override
     public void after() {
-        Environment environment = pgTestProperties.getConfig(null, tablePrefix);
+        Environment environment = pgTestProperties.newConfig(null, tablePrefix);
         DataSource dataSource = PGStorageTestUtil.newDataSource(environment);
         try {
             TableNames tables = environment.getTables();

@@ -13,6 +13,7 @@ package org.locationtech.geogig.storage.postgresql.functional;
 import org.junit.runner.RunWith;
 
 import cucumber.api.CucumberOptions;
+import cucumber.api.PendingException;
 import cucumber.api.junit.Cucumber;
 
 /**
@@ -31,8 +32,13 @@ import cucumber.api.junit.Cucumber;
 public class RunPGPlumbingFunctionalTest {
 
     @org.junit.BeforeClass
-    public static void checkPostgresTestConfig() {
-        PGTestUtil.checkPgTestsEnabled();
+    public static void checkPostgresTestConfig() throws PendingException {
+        PGTestUtil.beforeClass();
+    }
+
+    @org.junit.AfterClass
+    public static void afterClass() throws PendingException {
+        PGTestUtil.afterClass();
     }
 
 }

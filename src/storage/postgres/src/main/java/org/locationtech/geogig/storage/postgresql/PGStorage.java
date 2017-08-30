@@ -74,7 +74,11 @@ public class PGStorage {
     }
 
     synchronized static DataSource newDataSource(Environment config) {
-        DataSource dataSource = DATASOURCE_POOL.acquire(config.connectionConfig);
+        return newDataSource(config.connectionConfig);
+    }
+
+    synchronized static DataSource newDataSource(Environment.ConnectionConfig config) {
+        DataSource dataSource = DATASOURCE_POOL.acquire(config.getKey());
         return dataSource;
     }
 
@@ -146,7 +150,6 @@ public class PGStorage {
         List<String> repoNames = Lists.newLinkedList();
         final DataSource dataSource = PGStorage.newDataSource(config);
 
-
         final String repoNamesView = config.getTables().repositoryNamesView();
         if (!tableExists(dataSource, repoNamesView)) {
             PGStorage.closeDataSource(dataSource);
@@ -197,10 +200,10 @@ public class PGStorage {
             if (repositoryPK.isPresent()) {
                 return false;
             }
+            final int pk;
             try (Connection cx = PGStorage.newConnection(dataSource)) {
                 final String reposTable = config.getTables().repositories();
                 cx.setAutoCommit(false);
-                final int pk;
                 try {
                     String sql = format("INSERT INTO %s (created) VALUES (NOW())", reposTable);
                     try (Statement st = cx.createStatement()) {
@@ -218,11 +221,12 @@ public class PGStorage {
                 } finally {
                     cx.setAutoCommit(true);
                 }
-
-                configdb.put("repo.name", argRepoName);
-                checkState(pk == configdb.resolveRepositoryPK(argRepoName)
-                        .or(Environment.REPOSITORY_ID_UNSET));
             }
+            // set the config option outside the try-with-resources block to avoid acquiring 2
+            // connections
+            configdb.put("repo.name", argRepoName);
+            checkState(pk == configdb.resolveRepositoryPK(argRepoName)
+                    .or(Environment.REPOSITORY_ID_UNSET));
         } catch (SQLException e) {
             throw propagate(e);
         } finally {
@@ -385,9 +389,8 @@ public class PGStorage {
                 stripSchema(configTable), configTable);
         run(cx, sql);
         try {
-            sql = format(
-                    "CREATE VIEW %s " + "AS SELECT r.*, c.value AS name FROM "
-                            + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name'",
+            sql = format("CREATE VIEW %s " + "AS SELECT r.*, c.value AS name FROM "
+                    + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name'",
                     viewName, repositories, configTable);
             run(cx, sql);
         } catch (SQLException alreadyExists) {

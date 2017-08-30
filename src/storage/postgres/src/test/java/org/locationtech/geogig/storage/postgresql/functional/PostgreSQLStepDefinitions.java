@@ -18,7 +18,6 @@ import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 import cucumber.runtime.java.StepDefAnnotation;
@@ -58,13 +57,10 @@ public class PostgreSQLStepDefinitions {
         }
 
         @Override
-        public URI newRepositoryURI(String name, Platform platform) throws URISyntaxException {
-            PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(name);
-            try {
-                testConfig.before();
-            } catch (Throwable e) {
-                throw Throwables.propagate(e);
-            }
+        public URI newRepositoryURI(String repoName, Platform platform) throws URISyntaxException {
+            PGTemporaryTestConfig testConfig = PGTestUtil.newTestConfig(repoName);
+            testConfig.before();
+
             String repoURI = testConfig.getRepoURL();
             testConfigs.add(testConfig);
             return new URI(repoURI);
@@ -73,14 +69,8 @@ public class PostgreSQLStepDefinitions {
         @Override
         public URI buildRootURI(Platform platform) {
             PGTemporaryTestConfig testConfig = testConfigs.get(testConfigs.size() - 1);
-            String rootURI = testConfig.getRepoURL()
-                    .replace("/" + testConfig.getEnvironment().getRepositoryName(), "");
-            URI rootUri = null;
-            try {
-                rootUri = new URI(rootURI);
-            } catch (URISyntaxException e) {
-                Throwables.propagate(e);
-            }
+            String rootURI = testConfig.getRootURI();
+            URI rootUri = URI.create(rootURI);
             return rootUri;
         }
     }

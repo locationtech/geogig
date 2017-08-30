@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
@@ -36,8 +37,10 @@ import com.google.common.collect.Lists;
 
 public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
+    public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
+
+    public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
+            getClass().getSimpleName(), ds);
 
     ConfigDatabase configdb;
 
@@ -104,12 +107,12 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 
         Iterator<RevObject> objects = db.getAll(Lists.newArrayList(originalObject.getId()),
                 new BulkOpListener() {
-            public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+                    public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
                         Iterator<RevObject> subQueryObjects = db.getAll(Lists.newArrayList(object));
                         assertTrue(subQueryObjects.hasNext());
                         assertEquals(originalObject, subQueryObjects.next());
-            }
-        });
+                    }
+                });
 
         assertTrue(objects.hasNext());
         assertEquals(originalObject, objects.next());

@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URISyntaxException;
 
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,8 +24,10 @@ import org.locationtech.geogig.storage.impl.ConfigDatabaseTest;
 
 public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
+    public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
+
+    public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
+            getClass().getSimpleName(), ds);
 
     @Override
     protected PGConfigDatabase createDatabase(Platform platform) {
@@ -43,7 +46,7 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
     public void testNoRepository() {
 
         PGTestProperties props = new PGTestProperties();
-        PGConfigDatabase globalOnlydb = new PGConfigDatabase(props.getConfig(null));
+        PGConfigDatabase globalOnlydb = new PGConfigDatabase(props.newConfig(null));
         try {
             exception.expect(ConfigException.class);
             globalOnlydb.put("section.int", 1);

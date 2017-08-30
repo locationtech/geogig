@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
-import java.io.File;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,10 +16,12 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 public class PGTemporaryTestConfig extends ExternalResource {
@@ -31,33 +32,38 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     private Environment environment;
 
-    private PGTestProperties props;
+    private final String repositoryId;
 
-    private String repositoryId;
+    private PGTestDataSourceProvider dataSourceProvider;
 
-    private DataSource dataSource;
+    private final boolean externalDataSource;
 
     public PGTemporaryTestConfig(String repositoryId) {
+        Preconditions.checkNotNull(repositoryId);
         this.repositoryId = repositoryId;
+        this.dataSourceProvider = new PGTestDataSourceProvider();
+        this.externalDataSource = false;
+    }
+
+    public PGTemporaryTestConfig(String repositoryId, PGTestDataSourceProvider dataSourceProvider) {
+        Preconditions.checkNotNull(repositoryId);
+        Preconditions.checkNotNull(dataSourceProvider);
+        this.repositoryId = repositoryId;
+        this.dataSourceProvider = dataSourceProvider;
+        this.externalDataSource = true;
     }
 
     @Override
-    public void before() throws Throwable {
-        loadConfig();
+    public void before() throws AssumptionViolatedException {
+        if (!externalDataSource) {
+            dataSourceProvider.before();
+        }
         org.junit.Assume.assumeTrue(isEnabled());
         environment = getEnvironment();
-        openDataSource();
     }
 
     private boolean isEnabled() {
-        final boolean enabled = props.get(PGTestProperties.TESTS_ENABLED_KEY, Boolean.class)
-                .or(Boolean.FALSE).booleanValue();
-        if (!enabled) {
-            final String home = System.getProperty("user.home");
-            String propsFile = new File(home, PGTestProperties.CONFIG_FILE).getAbsolutePath();
-            LOG.info("PostgreSQL backend tests disabled. Configure " + propsFile);
-        }
-        return enabled;
+        return dataSourceProvider.isEnabled();
     }
 
     @Override
@@ -65,7 +71,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
         if (environment == null) {
             return;
         }
-        if (dataSource == null) {
+        if (dataSourceProvider == null) {
             return;
         }
         try {
@@ -73,24 +79,19 @@ public class PGTemporaryTestConfig extends ExternalResource {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            PGStorage.closeDataSource(dataSource);
+            if (!externalDataSource) {
+                dataSourceProvider.after();
+            }
+            dataSourceProvider = null;
         }
-    }
-
-    private void loadConfig() {
-        this.props = new PGTestProperties();
     }
 
     public void closeDataSource() {
-        PGStorage.closeDataSource(dataSource);
-        dataSource = null;
+        dataSourceProvider.closeDataSource();
     }
 
-    public DataSource openDataSource() {
-        if (dataSource == null) {
-            dataSource = PGStorage.newDataSource(environment);
-        }
-        return dataSource;
+    public DataSource getDataSource() {
+        return dataSourceProvider.getDataSource();
     }
 
     private void delete() throws SQLException {
@@ -99,25 +100,25 @@ public class PGTemporaryTestConfig extends ExternalResource {
         }
 
         TableNames tables = environment.getTables();
-        Connection cx = dataSource.getConnection();
-        execute(cx, String.format("DROP VIEW IF EXISTS %s", tables.repositoryNamesView()));
-        delete(cx, tables.objects(), true);
-        delete(cx, tables.conflicts());
-        delete(cx, tables.blobs());
+        try (Connection cx = getDataSource().getConnection()) {
+            execute(cx, String.format("DROP VIEW IF EXISTS %s", tables.repositoryNamesView()));
+            delete(cx, tables.objects(), true);
+            delete(cx, tables.conflicts());
+            delete(cx, tables.blobs());
 
-        delete(cx, tables.index());
-        delete(cx, tables.indexMappings());
-        delete(cx, tables.indexObjects());
+            delete(cx, tables.index());
+            delete(cx, tables.indexMappings());
+            delete(cx, tables.indexObjects());
 
-        delete(cx, tables.graphMappings());
-        delete(cx, tables.graphEdges());
-        delete(cx, tables.graphMappings());
-        delete(cx, tables.graphProperties());
+            delete(cx, tables.graphMappings());
+            delete(cx, tables.graphEdges());
+            delete(cx, tables.graphMappings());
+            delete(cx, tables.graphProperties());
 
-        delete(cx, tables.refs());
-        delete(cx, tables.config());
-        delete(cx, tables.repositories());
-
+            delete(cx, tables.refs());
+            delete(cx, tables.config());
+            delete(cx, tables.repositories());
+        }
     }
 
     private void delete(Connection cx, String table) throws SQLException {
@@ -142,12 +143,22 @@ public class PGTemporaryTestConfig extends ExternalResource {
             synchronized (RND) {
                 tablePrefix = "geogig_" + Math.abs(RND.nextInt(100_000)) + "_";
             }
-            environment = props.getConfig(repositoryId, tablePrefix);
+            environment = dataSourceProvider.newEnvironment(repositoryId, tablePrefix);
         }
         return environment;
     }
 
+    public String getRootURI() {
+        PGTestProperties props = dataSourceProvider.getTestProperties();
+        Environment env = getEnvironment();
+        String repositoryName = null;
+        String prefix = env.getTables().getPrefix();
+        String url = props.buildRepoURL(repositoryName, prefix);
+        return url;
+    }
+
     public String getRepoURL() {
+        PGTestProperties props = dataSourceProvider.getTestProperties();
         Environment env = getEnvironment();
         String url = props.buildRepoURL(env.getRepositoryName(), env.getTables().getPrefix());
         return url;

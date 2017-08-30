@@ -32,18 +32,11 @@ public class PGTestProperties extends OnlineTestProperties {
         super(CONFIG_FILE, DEFAULTS);
     }
 
-    public static boolean isTestsEnabled() {
-        PGTestProperties props = new PGTestProperties();
-        final boolean enabled = props.get(PGTestProperties.TESTS_ENABLED_KEY, Boolean.class)
-                .or(Boolean.FALSE).booleanValue();
-        return enabled;
+    public Environment newConfig(@Nullable String repositoryId) {
+        return newConfig(repositoryId, null);
     }
 
-    public Environment getConfig(@Nullable String repositoryId) {
-        return getConfig(repositoryId, null);
-    }
-
-    public Environment getConfig(@Nullable String repositoryId, @Nullable String tablePrefix) {
+    public Environment newConfig(@Nullable String repositoryId, @Nullable String tablePrefix) {
         String server = get(Environment.KEY_DB_SERVER, String.class).orNull();
         String port = get(Environment.KEY_DB_PORT, String.class).or("5432");
         String schema = get(Environment.KEY_DB_SCHEMA, String.class).or("public");

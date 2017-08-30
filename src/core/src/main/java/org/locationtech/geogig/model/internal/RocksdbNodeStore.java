@@ -43,14 +43,18 @@ class RocksdbNodeStore {
 
     private ColumnFamilyHandle column;
 
+    private BloomFilter bloomFilter;
+    private ColumnFamilyOptions colFamilyOptions;
+
     public RocksdbNodeStore(RocksDB db) {
         this.db = db;
         try {
             // enable bloom filter to speed up RocksDB.get() calls
             BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
-            tableFormatConfig.setFilter(new BloomFilter());
+            bloomFilter = new BloomFilter();
+            tableFormatConfig.setFilter(bloomFilter);
 
-            ColumnFamilyOptions colFamilyOptions = new ColumnFamilyOptions();
+            colFamilyOptions = new ColumnFamilyOptions();
             colFamilyOptions.setTableFormatConfig(tableFormatConfig);
 
             byte[] tableNameKey = "nodes".getBytes(Charsets.UTF_8);
@@ -73,6 +77,8 @@ class RocksdbNodeStore {
         readOptions.close();
         writeOptions.close();
         column.close();
+        colFamilyOptions.close();
+        bloomFilter.close();
         db = null;
     }
 

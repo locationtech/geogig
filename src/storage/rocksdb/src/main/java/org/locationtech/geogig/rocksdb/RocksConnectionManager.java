@@ -127,6 +127,20 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
                     ColumnFamilyDescriptor mdd = newColDescriptor("metadata");
                     metadata = db.createColumnFamily(mdd);
                 }
+                //This usually happens only when creating a database -
+                //Column Family "default" is not handled correctly; this
+                //makes sure its put into the extraColumns so it will be correctly
+                //released when the DB is closed.
+                if (!dbconfig.getColumnFamilyNames().contains("default")) {
+                    int index = 0;
+                    for (ColumnFamilyDescriptor descriptor : colDescriptors) {
+                        if (new String(descriptor.columnFamilyName()).equals("default")) {
+                            extraColumns.put("default", colFamiliesTarget.get( index));
+                        }
+                        index++;
+                    }
+
+                }
                 for (String name : dbconfig.getColumnFamilyNames()) {
                     ColumnFamilyDescriptor colDescriptor;
                     ColumnFamilyHandle colHandle;

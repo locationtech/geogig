@@ -205,7 +205,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     private boolean exists(RocksDBReference dbRef, ReadOptions readOptions, byte[] key) {
         int size = RocksDB.NOT_FOUND;
-        if (dbRef.db().keyMayExist(key, new StringBuffer())) {
+        if (dbRef.db().keyMayExist(key, new StringBuilder(0))) {
             try {
                 size = dbRef.db().get(key, NO_DATA);
             } catch (RocksDBException e) {

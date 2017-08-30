@@ -45,14 +45,18 @@ class RocksdbDAGStore {
 
     private ColumnFamilyHandle column;
 
+    private BloomFilter bloomFilter;
+    private ColumnFamilyOptions colFamilyOptions;
+
     public RocksdbDAGStore(RocksDB db) {
         this.db = db;
         try {
             // enable bloom filter to speed up RocksDB.get() calls
             BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
-            tableFormatConfig.setFilter(new BloomFilter());
+            bloomFilter = new BloomFilter();
+            tableFormatConfig.setFilter(bloomFilter);
 
-            ColumnFamilyOptions colFamilyOptions = new ColumnFamilyOptions();
+            colFamilyOptions = new ColumnFamilyOptions();
             colFamilyOptions.setTableFormatConfig(tableFormatConfig);
 
             byte[] tableNameKey = "trees".getBytes(Charsets.UTF_8);
@@ -74,6 +78,8 @@ class RocksdbDAGStore {
         readOptions.close();
         writeOptions.close();
         column.close();
+        bloomFilter.close();
+        colFamilyOptions.close();
         db = null;
     }
 

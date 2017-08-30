@@ -189,6 +189,8 @@ public class QuadTreeClusteringStrategy_putTest {
         // [1, 2, 2] will have one un-promotable
         dag = support.findDAG(quadStrategy, "[1, 2, 2]");
         /// assertEquals(dag.numUnpromotable(), 1);
+
+        quadStrategy.dispose();
     }
 
     @Test
@@ -293,6 +295,7 @@ public class QuadTreeClusteringStrategy_putTest {
 
             // build the tree
             origTree = DAGTreeBuilder.build(origTreeBuilder, support.store());
+            origTreeBuilder.dispose();
         }
 
         // create a new builder based on the original tree
@@ -322,6 +325,8 @@ public class QuadTreeClusteringStrategy_putTest {
 
         RevTree newTree = DAGTreeBuilder.build(updateBuilder, support.store());
         assertEquals(expectedSize, newTree.size());
+
+        updateBuilder.dispose();
     }
 
     private void print(ClusteringStrategy st, DAG root) {

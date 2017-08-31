@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Platform;
@@ -31,7 +32,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
 
 /**
  * Provides an default in memory implementation of a GeoGig Graph Database.
@@ -42,12 +42,11 @@ public class HeapGraphDatabase implements GraphDatabase {
 
     static final Map<URI, Ref> graphs = Maps.newConcurrentMap();
 
-    final Platform platform;
+    final @Nullable Platform platform;
 
     Graph graph;
 
-    @Inject
-    public HeapGraphDatabase(Platform platform) {
+    public HeapGraphDatabase(@Nullable Platform platform) {
         this.platform = platform;
     }
 
@@ -57,7 +56,8 @@ public class HeapGraphDatabase implements GraphDatabase {
             return;
         }
 
-        Optional<URI> url = new ResolveGeogigURI(platform, null).call();
+        Optional<URI> url = platform == null ? Optional.absent()
+                : new ResolveGeogigURI(platform, null).call();
         if (url.isPresent()) {
             synchronized (graphs) {
                 URI key = url.get();
@@ -73,16 +73,6 @@ public class HeapGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public void configure() {
-        // No-op
-    }
-
-    @Override
-    public boolean checkConfig() {
-        return true;
-    }
-
-    @Override
     public boolean isOpen() {
         return graph != null;
     }
@@ -93,7 +83,8 @@ public class HeapGraphDatabase implements GraphDatabase {
             return;
         }
         graph = null;
-        Optional<URI> url = new ResolveGeogigURI(platform, null).call();
+        Optional<URI> url = platform == null ? Optional.absent()
+                : new ResolveGeogigURI(platform, null).call();
         if (url.isPresent()) {
             synchronized (graphs) {
                 URI key = url.get();

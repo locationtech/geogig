@@ -16,30 +16,27 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.storage.memory.HeapConfigDatabase;
 
 public class StorageTypeTest {
 
     @Test
     public void testKeys() {
-        assertEquals("graph", StorageType.GRAPH.key);
         assertEquals("objects", StorageType.OBJECT.key);
         assertEquals("index", StorageType.INDEX.key);
         assertEquals("refs", StorageType.REF.key);
         assertEquals("staging", StorageType.STAGING.key);
-        assertEquals(5, StorageType.values().length);
+        assertEquals(4, StorageType.values().length);
     }
 
     @Test
     public void testConfigure() throws RepositoryConnectionException {
-        ConfigDatabase testConfig = new TestConfigDatabase();
-        StorageType.GRAPH.configure(testConfig, "testGraph", "1.0");
+        ConfigDatabase testConfig = new HeapConfigDatabase();
         StorageType.OBJECT.configure(testConfig, "testObject", "2.0");
         StorageType.INDEX.configure(testConfig, "testIndex", "3.0");
         StorageType.REF.configure(testConfig, "testRef", "4.0");
         StorageType.STAGING.configure(testConfig, "testStaging", "5.0");
 
-        assertEquals("testGraph", testConfig.get("storage.graph").get());
-        assertEquals("1.0", testConfig.get("testGraph.version").get());
         assertEquals("testObject", testConfig.get("storage.objects").get());
         assertEquals("2.0", testConfig.get("testObject.version").get());
         assertEquals("testIndex", testConfig.get("storage.index").get());
@@ -49,7 +46,6 @@ public class StorageTypeTest {
         assertEquals("testStaging", testConfig.get("storage.staging").get());
         assertEquals("5.0", testConfig.get("testStaging.version").get());
 
-        StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
         StorageType.OBJECT.verify(testConfig, "testObject", "2.0");
         StorageType.INDEX.verify(testConfig, "testIndex", "3.0");
         StorageType.REF.verify(testConfig, "testRef", "4.0");
@@ -58,14 +54,14 @@ public class StorageTypeTest {
 
     @Test
     public void testConfigureExisting() throws RepositoryConnectionException {
-        ConfigDatabase testConfig = new TestConfigDatabase();
-        StorageType.GRAPH.configure(testConfig, "testGraph", "1.0");
+        ConfigDatabase testConfig = new HeapConfigDatabase();
+        StorageType.OBJECT.configure(testConfig, "testObj", "1.0");
         // reconfiguring with same format name and version should work just fine
-        StorageType.GRAPH.configure(testConfig, "testGraph", "1.0");
+        StorageType.OBJECT.configure(testConfig, "testObj", "1.0");
 
         try {
             // Different version
-            StorageType.GRAPH.configure(testConfig, "testGraph", "2.0");
+            StorageType.OBJECT.configure(testConfig, "testObj", "2.0");
             fail();
         } catch (RepositoryConnectionException e) {
             // expected
@@ -73,7 +69,7 @@ public class StorageTypeTest {
 
         try {
             // Different format name
-            StorageType.GRAPH.configure(testConfig, "testGraph2", "1.0");
+            StorageType.OBJECT.configure(testConfig, "testObj2", "1.0");
             fail();
         } catch (RepositoryConnectionException e) {
             // expected
@@ -82,31 +78,31 @@ public class StorageTypeTest {
 
     @Test
     public void testVerify() throws RepositoryConnectionException {
-        ConfigDatabase testConfig = new TestConfigDatabase();
+        ConfigDatabase testConfig = new HeapConfigDatabase();
         // nothing configured
-        boolean verified = StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+        boolean verified = StorageType.OBJECT.verify(testConfig, "testObj", "1.0");
         assertFalse(verified);
 
-        testConfig.put("storage.graph", "testGraph");
+        testConfig.put("storage.objects", "testObj");
         try {
             // only format name configured
-            StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+            StorageType.OBJECT.verify(testConfig, "testObj", "1.0");
             fail();
         } catch (RepositoryConnectionException e) {
             // expected
         }
 
-        testConfig.remove("storage.graph");
-        testConfig.put("testGraph.version", "1.0");
+        testConfig.remove("storage.objects");
+        testConfig.put("testObj.version", "1.0");
 
         // only the format version was configured
-        verified = StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+        verified = StorageType.OBJECT.verify(testConfig, "testObj", "1.0");
         assertFalse(verified);
 
-        testConfig.put("storage.graph", "testGraph");
+        testConfig.put("storage.objects", "testObj");
         try {
             // format name mismatch
-            StorageType.GRAPH.verify(testConfig, "testGraph2", "1.0");
+            StorageType.OBJECT.verify(testConfig, "testObj2", "1.0");
             fail();
         } catch (RepositoryConnectionException e) {
             // expected
@@ -114,13 +110,13 @@ public class StorageTypeTest {
 
         try {
             // version mismatch
-            StorageType.GRAPH.verify(testConfig, "testGraph", "2.0");
+            StorageType.OBJECT.verify(testConfig, "testObj", "2.0");
             fail();
         } catch (RepositoryConnectionException e) {
             // expected
         }
 
-        verified = StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+        verified = StorageType.OBJECT.verify(testConfig, "testObj", "1.0");
         assertTrue(verified);
     }
 }

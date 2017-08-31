@@ -18,8 +18,10 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 
 import com.google.common.base.Preconditions;
@@ -34,6 +36,8 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
     private PGConflictsDatabase conflicts;
 
     private PGBlobStore blobStore;
+
+    private PGGraphDatabase graph;
 
     private final boolean readOnly;
 
@@ -71,16 +75,15 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
     @Override
     public void open() {
         super.open();
-        if (dataSource == null) {
-            return;
-        }
-
+        Preconditions.checkState(super.dataSource != null);
         final int repositoryId = config.getRepositoryId();
         final String conflictsTable = config.getTables().conflicts();
         final String blobsTable = config.getTables().blobs();
 
         conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
         blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
+        graph = new PGGraphDatabase(config);
+        graph.open();
     }
 
     @Override
@@ -90,10 +93,15 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     @Override
     public void close() {
-        if (dataSource != null) {
-            conflicts = null;
+        if (isOpen()) {
+            try {
+                conflicts = null;
+                graph.close();
+                graph = null;
+            } finally {
+                super.close();
+            }
         }
-        super.close();
     }
 
     @Override
@@ -108,6 +116,13 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
         Preconditions.checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
         return blobStore;
+    }
+
+    @Override
+    public GraphDatabase getGraphDatabase() {
+        Preconditions.checkState(isOpen(), "Database is closed");
+        config.checkRepositoryExists();
+        return new SynchronizedGraphDatabase(graph);
     }
 
     @Override

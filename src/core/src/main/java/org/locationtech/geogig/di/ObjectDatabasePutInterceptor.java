@@ -17,12 +17,10 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.impl.ForwardingObjectDatabase;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.google.inject.Provider;
 import com.google.inject.util.Providers;
 
 /**
@@ -31,10 +29,7 @@ import com.google.inject.util.Providers;
  */
 class ObjectDatabasePutInterceptor implements Decorator {
 
-    private Provider<GraphDatabase> graphDb;
-
-    public ObjectDatabasePutInterceptor(Provider<GraphDatabase> graphDb) {
-        this.graphDb = graphDb;
+    public ObjectDatabasePutInterceptor() {
     }
 
     @Override
@@ -45,18 +40,14 @@ class ObjectDatabasePutInterceptor implements Decorator {
 
     @SuppressWarnings("unchecked")
     @Override
-    public ObjectStore decorate(Object subject) {
-        return new GraphUpdatingObjectDatabase(graphDb, (ObjectDatabase) subject);
+    public ObjectDatabase decorate(Object subject) {
+        return new GraphUpdatingObjectDatabase((ObjectDatabase) subject);
     }
 
     private static class GraphUpdatingObjectDatabase extends ForwardingObjectDatabase {
 
-        private Provider<GraphDatabase> graphDb;
-
-        public GraphUpdatingObjectDatabase(Provider<GraphDatabase> graphDb,
-                ObjectDatabase subject) {
+        public GraphUpdatingObjectDatabase(ObjectDatabase subject) {
             super(Providers.of(subject));
-            this.graphDb = graphDb;
         }
 
         @Override
@@ -66,7 +57,7 @@ class ObjectDatabasePutInterceptor implements Decorator {
 
             if (inserted && RevObject.TYPE.COMMIT.equals(object.getType())) {
                 RevCommit commit = (RevCommit) object;
-                graphDb.get().put(commit.getId(), commit.getParentIds());
+                getGraphDatabase().put(commit.getId(), commit.getParentIds());
             }
             return inserted;
         }
@@ -84,7 +75,7 @@ class ObjectDatabasePutInterceptor implements Decorator {
             final Iterator<? extends RevObject> collectingIterator = Iterators.transform(objects,
                     (obj) -> {
                         if (obj instanceof RevCommit) {
-                            final GraphDatabase graphDatabase = graphDb.get();
+                            final GraphDatabase graphDatabase = getGraphDatabase();
                             RevCommit commit = (RevCommit) obj;
                             ObjectId commitId = commit.getId();
                             ImmutableList<ObjectId> parentIds = commit.getParentIds();

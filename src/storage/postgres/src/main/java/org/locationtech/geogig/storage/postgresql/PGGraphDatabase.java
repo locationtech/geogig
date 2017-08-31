@@ -14,7 +14,6 @@ import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.closeDataSource;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.newDataSource;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
 
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -33,10 +32,7 @@ import javax.sql.DataSource;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,27 +55,20 @@ public class PGGraphDatabase implements GraphDatabase {
 
     private final String MAPPINGS;
 
-    final ConfigDatabase configdb;
-
     private DataSource dataSource;
-
-    private final String formatVersion;
 
     private Environment config;
 
     @Inject
-    public PGGraphDatabase(ConfigDatabase configdb, Hints hints) throws URISyntaxException {
-        this(configdb, Environment.get(hints));
+    public PGGraphDatabase(Hints hints) throws URISyntaxException {
+        this(Environment.get(hints));
     }
 
-    public PGGraphDatabase(ConfigDatabase configdb, Environment config) {
-        Preconditions.checkNotNull(configdb);
+    public PGGraphDatabase(Environment config) {
         Preconditions.checkNotNull(config);
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
-        this.configdb = configdb;
         this.config = config;
-        this.formatVersion = PGStorageProvider.VERSION;
         TableNames tables = config.getTables();
         this.EDGES = tables.graphEdges();
         this.PROPS = tables.graphProperties();
@@ -104,16 +93,6 @@ public class PGGraphDatabase implements GraphDatabase {
             closeDataSource(dataSource);
             dataSource = null;
         }
-    }
-
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        StorageType.GRAPH.configure(configdb, FORMAT_NAME, formatVersion);
-    }
-
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.GRAPH.verify(configdb, FORMAT_NAME, formatVersion);
     }
 
     /**

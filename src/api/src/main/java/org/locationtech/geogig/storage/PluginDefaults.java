@@ -22,8 +22,6 @@ public final class PluginDefaults {
 
     private VersionedFormat objects;
 
-    private VersionedFormat graph;
-
     private VersionedFormat index;
 
     /**
@@ -38,14 +36,11 @@ public final class PluginDefaults {
      * 
      * @param objects the format and version of the {@link ObjectDatabase}
      * @param refs the format and version of the {@link RefDatabase}
-     * @param graph the format and version of the {@link GraphDatabase}
      * @param index the format and version of the {@link IndexDatabase}
      */
-    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat graph,
-            VersionedFormat index) {
+    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat index) {
         this.refs = refs;
         this.objects = objects;
-        this.graph = graph;
         this.index = index;
     }
 
@@ -57,7 +52,6 @@ public final class PluginDefaults {
     public PluginDefaults(StorageProvider provider) {
         refs = provider.getRefsDatabaseFormat();
         objects = provider.getObjectDatabaseFormat();
-        graph = provider.getGraphDatabaseFormat();
         index = provider.getIndexDatabaseFormat();
     }
 
@@ -75,14 +69,6 @@ public final class PluginDefaults {
      */
     public Optional<VersionedFormat> getObjects() {
         return Optional.fromNullable(objects);
-    }
-
-    /**
-     * @return an {@link Optional} with the {@link GraphDatabase} format and version, or
-     *         {@link Optional#absent()} if there wasn't one
-     */
-    public Optional<VersionedFormat> getGraph() {
-        return Optional.fromNullable(graph);
     }
 
     /**
@@ -109,15 +95,6 @@ public final class PluginDefaults {
      */
     public void setRefs(VersionedFormat refs) {
         this.refs = refs;
-    }
-
-    /**
-     * Sets the {@link GraphDatabase} format and version to the provided one.
-     * 
-     * @param graph the format and version
-     */
-    public void setGraph(VersionedFormat graph) {
-        this.graph = graph;
     }
 
     /**

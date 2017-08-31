@@ -46,7 +46,6 @@ public class RocksdbStorageProviderTest {
         assertEquals("RocksDB backend store", provider.getDescription());
         assertEquals(RocksdbStorageProvider.OBJECTS, provider.getObjectDatabaseFormat());
         assertEquals(RocksdbStorageProvider.REFS, provider.getRefsDatabaseFormat());
-        assertEquals(RocksdbStorageProvider.GRAPH, provider.getGraphDatabaseFormat());
     }
 
 }

@@ -43,6 +43,8 @@ public interface ObjectDatabase extends ObjectStore {
      */
     public ConflictsDatabase getConflictsDatabase();
 
+    public GraphDatabase getGraphDatabase();
+    
     /**
      * @return the {@link BlobStore} associated with this {@code ObjectDatabase}
      */

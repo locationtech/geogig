@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.propagate;
 
+import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -50,7 +51,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
-class RocksdbConflictsDatabase implements ConflictsDatabase {
+class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbConflictsDatabase.class);
 

@@ -14,9 +14,13 @@ import java.nio.file.Path;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
+import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
+
+import com.google.inject.Inject;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
@@ -32,16 +36,24 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
 
     private HeapBlobStore blobs;
 
+    private HeapGraphDatabase graph;
+
+    private Platform platform;
+
     public HeapObjectDatabase() {
         super(new HeapObjectStore(), false);
     }
 
+    @Inject
     public HeapObjectDatabase(Platform platform, Hints hints) {
         super(connect(platform), readOnly(hints));
+        this.platform = platform;
     }
 
     private static HeapObjectStore connect(Platform platform) {
-        return CONN_MANAGER.acquire(platform.pwd().toPath());
+        Path path = platform.pwd().toPath();
+        HeapObjectStore store = CONN_MANAGER.acquire(path);
+        return store;
     }
 
     private static boolean readOnly(Hints hints) {
@@ -61,6 +73,10 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
             conflicts = null;
             blobs = null;
         }
+        if (graph != null) {
+            graph.close();
+            graph = null;
+        }
     }
 
     /**
@@ -74,6 +90,8 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
         super.open();
         conflicts = new HeapConflictsDatabase();
         blobs = new HeapBlobStore();
+        graph = new HeapGraphDatabase(platform);
+        graph.open();
     }
 
     @Override
@@ -89,6 +107,11 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public BlobStore getBlobStore() {
         return blobs;
+    }
+
+    @Override
+    public GraphDatabase getGraphDatabase() {
+        return new SynchronizedGraphDatabase(graph);
     }
 
     @Override

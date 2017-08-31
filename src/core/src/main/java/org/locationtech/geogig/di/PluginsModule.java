@@ -18,7 +18,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
@@ -45,8 +44,6 @@ public class PluginsModule extends AbstractModule {
         bind(IndexDatabase.class).toProvider(PluginIndexDatabaseProvider.class)
                 .in(Scopes.SINGLETON);
         bind(RefDatabase.class).toProvider(PluginRefDatabaseProvider.class).in(Scopes.SINGLETON);
-        bind(GraphDatabase.class).toProvider(PluginGraphDatabaseProvider.class)
-                .in(Scopes.SINGLETON);
     }
 
     private static class PluginConfigDatabaseProvider implements Provider<ConfigDatabase> {
@@ -201,50 +198,6 @@ public class PluginsModule extends AbstractModule {
                 if (refsFormat != null && format.equals(refsFormat.getFormat())
                         && version.equals(refsFormat.getVersion())) {
                     return refsFormat;
-                }
-            }
-
-            throw new IllegalStateException(
-                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
-                            format, versionKey, version));
-        }
-    }
-
-    private static class PluginGraphDatabaseProvider extends FormatSelector<GraphDatabase> {
-        private final PluginDefaults defaults;
-
-        @Inject
-        public PluginGraphDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<GraphDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
-        }
-
-        @Override
-        protected final VersionedFormat readConfig(ConfigDatabase config) {
-            final String formatKey = "storage.graph";
-            String versionKey = null;
-            String format = null, version = null;
-            try {
-                format = getConfig(formatKey, config).orNull();
-                if (format != null) {
-                    versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orNull();
-                }
-            } catch (RuntimeException e) {
-                // ignore, the config may not be available when we need this
-            }
-
-            if (format == null || version == null) {
-                // .get, not .orNull. we should only be using the plugin providers when there are
-                // plugins set up
-                return defaults.getGraph().get();
-            }
-            for (StorageProvider p : StorageProvider.findProviders()) {
-                VersionedFormat graphFormat = p.getGraphDatabaseFormat();
-                if (graphFormat != null && format.equals(graphFormat.getFormat())
-                        && version.equals(graphFormat.getVersion())) {
-                    return graphFormat;
                 }
             }
 

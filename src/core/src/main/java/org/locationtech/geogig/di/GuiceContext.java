@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.di;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
@@ -26,6 +28,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
@@ -64,6 +67,7 @@ public class GuiceContext implements Context {
     }
 
     private <T> T getInstance(final Class<T> type) {
+        checkNotNull(type);
         Provider<T> provider = guiceInjector.getProvider(type);
         T instance = provider.get();
         return instance;
@@ -71,11 +75,14 @@ public class GuiceContext implements Context {
 
     private <T> T getDecoratedInstance(final Class<T> type) {
         T undecorated = getInstance(type);
+        Preconditions.checkNotNull(undecorated, "no instance of type %s found in context", type);
         return getDecoratedInstance(undecorated);
     }
 
     private <T> T getDecoratedInstance(T undecorated) {
+        checkNotNull(undecorated);
         DecoratorProvider decoratorProvider = guiceInjector.getInstance(DecoratorProvider.class);
+        checkNotNull(decoratorProvider);
         T decoratedInstance = decoratorProvider.get(undecorated);
         return decoratedInstance;
     }
@@ -118,7 +125,11 @@ public class GuiceContext implements Context {
 
     @Override
     public ConflictsDatabase conflictsDatabase() {
-        return getDecoratedInstance(objectDatabase().getConflictsDatabase());
+        ObjectDatabase objectDatabase = objectDatabase();
+        checkNotNull(objectDatabase);
+        ConflictsDatabase conflictsDatabase = objectDatabase.getConflictsDatabase();
+        checkNotNull(conflictsDatabase);
+        return getDecoratedInstance(conflictsDatabase);
     }
 
     @Override
@@ -128,7 +139,7 @@ public class GuiceContext implements Context {
 
     @Override
     public GraphDatabase graphDatabase() {
-        return getDecoratedInstance(GraphDatabase.class);
+        return getDecoratedInstance(objectDatabase().getGraphDatabase());
     }
 
     @Deprecated

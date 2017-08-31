@@ -13,14 +13,19 @@ import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME
 import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 
+import com.google.common.base.Throwables;
+import com.google.common.io.Closeables;
 import com.google.inject.Inject;
 
 public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectDatabase {
@@ -30,6 +35,8 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
     private RocksdbBlobStore blobs;
 
     private final ConfigDatabase configdb;
+
+    private RocksdbGraphDatabase graph;
 
     @Inject
     public RocksdbObjectDatabase(Platform platform, Hints hints, ConfigDatabase configdb) {
@@ -63,37 +70,52 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
     }
 
     @Override
+    public GraphDatabase getGraphDatabase() {
+        return new SynchronizedGraphDatabase(graph);
+    }
+
+    @Override
     public synchronized void open() {
         if (isOpen()) {
             return;
         }
         super.open();
-        File basedir = new File(super.path).getParentFile();
-        File conflictsDir = new File(basedir, "conflicts");
-        File blobsDir = new File(super.path, "blobs");
-        conflictsDir.mkdir();
-        blobsDir.mkdir();
-        this.conflicts = new RocksdbConflictsDatabase(conflictsDir);
-        this.blobs = new RocksdbBlobStore(blobsDir, super.readOnly);
+        try {
+            File basedir = new File(super.path).getParentFile();
+            File conflictsDir = new File(basedir, "conflicts");
+            File blobsDir = new File(super.path, "blobs");
+            conflictsDir.mkdir();
+            blobsDir.mkdir();
+            this.conflicts = new RocksdbConflictsDatabase(conflictsDir);
+            this.blobs = new RocksdbBlobStore(blobsDir, super.readOnly);
+            this.graph = new RocksdbGraphDatabase(platform, hints);
+            this.graph.open();
+        } catch (RuntimeException e) {
+            close();
+            throw e;
+        }
     }
 
     @Override
     public synchronized void close() {
+        if (!isOpen()) {
+            return;
+        }
         try {
             super.close();
         } finally {
             RocksdbConflictsDatabase conflicts = this.conflicts;
             RocksdbBlobStore blobs = this.blobs;
+            RocksdbGraphDatabase graph = this.graph;
             this.conflicts = null;
             this.blobs = null;
+            this.graph = null;
             try {
-                if (conflicts != null) {
-                    conflicts.close();
-                }
-            } finally {
-                if (blobs != null) {
-                    blobs.close();
-                }
+                Closeables.close(conflicts, true);
+                Closeables.close(blobs, true);
+                Closeables.close(graph, true);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
         }
     }

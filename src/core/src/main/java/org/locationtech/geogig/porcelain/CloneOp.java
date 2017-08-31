@@ -26,6 +26,7 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
@@ -136,8 +137,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
 
         if (!depth.isPresent()) {
             // See if we are cloning a shallow clone. If so, a depth must be specified.
-            Optional<IRemoteRepo> remoteRepo = RemoteResolver.newRemote(localRepo, remote,
-                    Hints.readOnly());
+            Optional<IRemoteRepo> remoteRepo = getRemote(localRepo, remote);
 
             Preconditions.checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
             IRemoteRepo remoteRepoInstance = remoteRepo.get();
@@ -160,7 +160,8 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
         }
 
         // Fetch remote data
-        command(FetchOp.class).addRemote(remote.getName()).setDepth(depth.or(0)).setProgressListener(progressListener).call();
+        command(FetchOp.class).addRemote(remote.getName()).setDepth(depth.or(0))
+                .setProgressListener(progressListener).call();
 
         // Set up remote tracking branches
         final ImmutableSet<Ref> remoteRefs = command(LsRemote.class).retrieveTags(false)
@@ -216,5 +217,10 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
         progressListener.complete();
 
         return null;
+    }
+
+    @VisibleForTesting
+    public Optional<IRemoteRepo> getRemote(Repository localRepo, Remote remote) {
+        return RemoteResolver.newRemote(localRepo, remote, Hints.readOnly());
     }
 }

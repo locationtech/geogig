@@ -92,7 +92,6 @@ public class RepositoryImpl implements Repository {
         context.refDatabase().configure();
         context.objectDatabase().configure();
         context.indexDatabase().configure();
-        context.graphDatabase().configure();
     }
 
     @Override
@@ -116,13 +115,9 @@ public class RepositoryImpl implements Repository {
         if (!context.indexDatabase().checkConfig()) {
             context.indexDatabase().configure();
         }
-        if (!context.graphDatabase().checkConfig()) {
-            context.graphDatabase().configure();
-        }
         context.refDatabase().create();
         context.objectDatabase().open();
         context.indexDatabase().open();
-        context.graphDatabase().open();
         for (RepositoryListener l : listeners) {
             l.opened(this);
         }
@@ -138,7 +133,6 @@ public class RepositoryImpl implements Repository {
         close(context.refDatabase());
         close(context.objectDatabase());
         close(context.indexDatabase());
-        close(context.graphDatabase());
         close(context.configDatabase());
         for (RepositoryListener l : listeners) {
             try {// don't let a broken listener mess us up

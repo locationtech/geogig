@@ -82,7 +82,8 @@ public interface Context {
     public ConfigDatabase configDatabase();
 
     /**
-     * @return the {@link GraphDatabase} for this context
+     * @return the {@link GraphDatabase} for this context, this is a shortcut for
+     *         {@link ObjectDatabase#getGraphDatabase() objectDatabase().getGraphDatabase()}
      */
     public GraphDatabase graphDatabase();
 

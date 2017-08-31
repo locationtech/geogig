@@ -10,8 +10,6 @@
 package org.locationtech.geogig.rocksdb;
 
 import static com.google.common.base.Throwables.propagate;
-import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -31,11 +29,8 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.Varint;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -59,8 +54,6 @@ public class RocksdbGraphDatabase implements GraphDatabase {
 
     private static final GraphNodeBinding BINDING = new GraphNodeBinding();
 
-    private final ConfigDatabase configdb;
-
     private final File dbdir;
 
     private final boolean readOnly;
@@ -70,8 +63,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
     private DBHandle dbhandle;
 
     @Inject
-    public RocksdbGraphDatabase(ConfigDatabase configdb, Platform platform, Hints hints) {
-        this.configdb = configdb;
+    public RocksdbGraphDatabase(Platform platform, Hints hints) {
         this.readOnly = hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
         Optional<URI> uri = new ResolveGeogigURI(platform, hints).call();
         Preconditions.checkArgument(uri.isPresent(), "not in a geogig directory");
@@ -82,20 +74,9 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         this.dbdir = new File(basedir, "graph.rocksdb");
     }
 
-    RocksdbGraphDatabase(ConfigDatabase configdb, File dbdir, boolean readOnly) {
-        this.configdb = configdb;
+    RocksdbGraphDatabase(File dbdir, boolean readOnly) {
         this.dbdir = dbdir;
         this.readOnly = readOnly;
-    }
-
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        StorageType.GRAPH.configure(configdb, FORMAT_NAME, VERSION);
-    }
-
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.GRAPH.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
@@ -513,7 +494,8 @@ public class RocksdbGraphDatabase implements GraphDatabase {
 
         public boolean isSparse() {
             return properties.containsKey(SPARSE_FLAG)
-                    ? Boolean.valueOf(properties.get(SPARSE_FLAG)) : false;
+                    ? Boolean.valueOf(properties.get(SPARSE_FLAG))
+                    : false;
         }
     }
 }

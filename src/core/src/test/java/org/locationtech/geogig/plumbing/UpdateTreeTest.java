@@ -11,10 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.hashString;
 
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -23,36 +20,25 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.DepthSearch;
-import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.test.MemoryModule;
+import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
 
 /**
  *
  */
-public class UpdateTreeTest extends Assert {
+public class UpdateTreeTest extends RepositoryTestCase {
 
-    ObjectDatabase odb;
+    private Context context;
 
-    ConflictsDatabase conflicts;
+    private ObjectDatabase odb;
 
-    Context context;
-
-    @Before
-    public void setUp() {
-        context = Guice
-                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule()))
-                .getInstance(Context.class);
-
+    @Override
+    protected void setUpInternal() throws Exception {
+        context = super.repo.context();
         odb = context.objectDatabase();
-        odb.open();
-        context.refDatabase().create();
-        conflicts = context.conflictsDatabase();
     }
 
     @Test
@@ -238,4 +224,5 @@ public class UpdateTreeTest extends Assert {
     private Node blob(String path) {
         return Node.create(path, hashString(path), ObjectId.NULL, TYPE.FEATURE, null);
     }
+
 }

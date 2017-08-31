@@ -36,12 +36,13 @@ import com.google.inject.Inject;
  */
 public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
 
-    private Platform platform;
+    private @Nullable Platform platform;
 
-    private Hints hints;
+    private @Nullable Hints hints;
 
     @Inject
     public ResolveGeogigURI(Platform platform, @Nullable Hints hints) {
+        Preconditions.checkNotNull(platform);
         this.platform = platform;
         this.hints = hints;
     }

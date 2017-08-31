@@ -25,6 +25,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
 
@@ -186,8 +187,14 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     }
 
     @Override
+    public GraphDatabase getGraphDatabase() {
+        return subject.get().getGraphDatabase();
+    }
+
+    @Override
     public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
         return subject.get().getObjects(refs, listener, type);
     }
+
 }

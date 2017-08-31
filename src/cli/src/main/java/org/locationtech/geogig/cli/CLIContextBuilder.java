@@ -17,7 +17,6 @@ import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.impl.ContextBuilder;
-import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
@@ -36,8 +35,7 @@ public class CLIContextBuilder extends ContextBuilder {
     @Override
     public Context build(Hints hints) {
         return Guice
-                .createInjector(Modules
-                        .override(new GeogigModule(), new HintsModule(hints))
+                .createInjector(Modules.override(new GeogigModule(), new HintsModule(hints))
                         .with(new PluginsModule(), new DefaultPlugins()))
                 .getInstance(org.locationtech.geogig.repository.Context.class);
     }
@@ -83,16 +81,11 @@ public class CLIContextBuilder extends ContextBuilder {
                     .newMapBinder(binder(), VersionedFormat.class, IndexDatabase.class)
                     .permitDuplicates();
 
-            MapBinder<VersionedFormat, GraphDatabase> graphPlugins = MapBinder
-                    .newMapBinder(binder(), VersionedFormat.class, GraphDatabase.class)
-                    .permitDuplicates();
-
             Iterable<StorageProvider> providers = StorageProvider.findProviders();
 
             for (StorageProvider sp : providers) {
                 VersionedFormat objectDatabaseFormat = sp.getObjectDatabaseFormat();
                 VersionedFormat indexDatabaseFormat = sp.getIndexDatabaseFormat();
-                VersionedFormat graphDatabaseFormat = sp.getGraphDatabaseFormat();
                 VersionedFormat refsDatabaseFormat = sp.getRefsDatabaseFormat();
 
                 if (objectDatabaseFormat != null) {
@@ -100,9 +93,6 @@ public class CLIContextBuilder extends ContextBuilder {
                 }
                 if (indexDatabaseFormat != null) {
                     CLIContextBuilder.bind(indexPlugins, indexDatabaseFormat);
-                }
-                if (graphDatabaseFormat != null) {
-                    CLIContextBuilder.bind(graphPlugins, graphDatabaseFormat);
                 }
                 if (refsDatabaseFormat != null) {
                     CLIContextBuilder.bind(refPlugins, refsDatabaseFormat);

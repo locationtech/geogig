@@ -25,11 +25,7 @@ public class RocksdbStorageProvider extends StorageProvider {
      */
     public static final String VERSION = "1";
 
-    static final VersionedFormat GRAPH = new VersionedFormat(FORMAT_NAME, VERSION,
-            RocksdbGraphDatabase.class);
-
-    static final VersionedFormat REFS = new VersionedFormat("file", "1.0",
-            FileRefDatabase.class);
+    static final VersionedFormat REFS = new VersionedFormat("file", "1.0", FileRefDatabase.class);
 
     static final VersionedFormat OBJECTS = new VersionedFormat(FORMAT_NAME, VERSION,
             RocksdbObjectDatabase.class);
@@ -55,11 +51,6 @@ public class RocksdbStorageProvider extends StorageProvider {
     @Override
     public VersionedFormat getObjectDatabaseFormat() {
         return OBJECTS;
-    }
-
-    @Override
-    public VersionedFormat getGraphDatabaseFormat() {
-        return GRAPH;
     }
 
     @Override

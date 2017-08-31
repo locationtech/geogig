@@ -71,12 +71,19 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     private ReadOptions bulkReadOptions;
 
+    protected final Platform platform;
+
+    protected final @Nullable Hints hints;
+
     @Inject
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
         this(platform, hints, "objects.rocksdb");
     }
 
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints, String databaseName) {
+        checkNotNull(platform);
+        this.platform = platform;
+        this.hints = hints;
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
         URI uri = repoUriOpt.get();

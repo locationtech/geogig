@@ -12,20 +12,10 @@ package org.locationtech.geogig.spring.controller;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
-import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
-import static org.springframework.web.bind.annotation.RequestMethod.PATCH;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-import static org.springframework.web.bind.annotation.RequestMethod.PUT;
-import static org.springframework.web.bind.annotation.RequestMethod.TRACE;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,10 +25,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.LegacyStatsResponse;
 import org.locationtech.geogig.spring.service.RepositoryService;
-import org.locationtech.geogig.web.api.CommandSpecException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Common Controller functionality for controllers handling /repos/<i>repoName</i>/repo/* endpoints.
@@ -102,21 +89,14 @@ public abstract class AbstractRepositoryController extends AbstractController {
         return true;
     }
 
-    /**
-     * Validates the supplied ObjectId string.
-     * @param objectId String representation of the ObjectId to validate.
-     * @param response Response to which errors should be written.
-     * @param required true if the provided String id must not be null, false otherwise.
-     * @return a non-null ObjectId if the provided string is valid, null otherwise.
-     */
-    protected ObjectId getValidObjectId(String objectId, HttpServletResponse response,
-            boolean required) {
+    private ObjectId getValidObjectId(String objectId, HttpServletResponse response,
+            boolean required, String validMessageFragment, String missingMessageFragment) {
         if (required && objectId == null) {
             // id required, but is null
             response.setStatus(SC_BAD_REQUEST);
             response.setContentType(TEXT_PLAIN_VALUE);
             try (PrintWriter writer = response.getWriter()) {
-                writer.print("You must specify a commit id.");
+                writer.print("You must specify " + missingMessageFragment + " id.");
             } catch (IOException ioe) {
                 getLogger().error("Error writing response", ioe);
             }
@@ -129,12 +109,28 @@ public abstract class AbstractRepositoryController extends AbstractController {
                 response.setStatus(SC_BAD_REQUEST);
                 response.setContentType(TEXT_PLAIN_VALUE);
                 try (PrintWriter writer = response.getWriter()) {
-                    writer.print("You must specify a valid commit id.");
+                    writer.print("You must specify a valid " + validMessageFragment + " id.");
                 } catch (IOException ioe) {
                     getLogger().error("Error writing response", ioe);
                 }
             }
         }
         return null;
+    }
+    /**
+     * Validates the supplied ObjectId string.
+     * @param objectId String representation of the ObjectId to validate.
+     * @param response Response to which errors should be written.
+     * @param required true if the provided String id must not be null, false otherwise.
+     * @return a non-null ObjectId if the provided string is valid, null otherwise.
+     */
+    protected ObjectId getValidObjectId(String objectId, HttpServletResponse response,
+            boolean required) {
+        return getValidObjectId(objectId, response, required, "object", "an object");
+    }
+
+    protected ObjectId getValidCommitId(String objectId, HttpServletResponse response,
+            boolean required) {
+        return getValidObjectId(objectId, response, required, "commit", "a commit");
     }
 }

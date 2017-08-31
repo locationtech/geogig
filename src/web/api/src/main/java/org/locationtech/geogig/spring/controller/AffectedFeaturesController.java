@@ -65,7 +65,7 @@ public class AffectedFeaturesController extends AbstractRepositoryController {
                 return;
             }
             // the commitId is actually required, but we have a custom error if it's not provided
-            ObjectId oid = getValidObjectId(commitId, response, true);
+            ObjectId oid = getValidCommitId(commitId, response, true);
             if (oid == null) {
                 // commitID not valid
                 // response was already handled

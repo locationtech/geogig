@@ -32,6 +32,7 @@ import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.Exists;
 import org.locationtech.geogig.spring.dto.Merge;
 import org.locationtech.geogig.spring.dto.MergeFeatureRequest;
+import org.locationtech.geogig.spring.dto.Parents;
 import org.locationtech.geogig.spring.dto.RepositoryInfo;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -256,5 +257,14 @@ public class RepositoryService {
             return new Exists().setExists(repository.blobExists(oid));
         }
         return new Exists().setExists(false);
+    }
+
+    public Parents getParents(RepositoryProvider provider, String repoName, ObjectId oid) {
+        Repository repository = getRepository(provider, repoName);
+        Parents parents = new Parents();
+        if (repository != null && oid != null) {
+            parents.setParents(repository.graphDatabase().getParents(oid));
+        }
+        return parents;
     }
 }

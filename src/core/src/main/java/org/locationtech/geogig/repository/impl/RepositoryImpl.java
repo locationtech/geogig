@@ -118,6 +118,7 @@ public class RepositoryImpl implements Repository {
         context.refDatabase().create();
         context.objectDatabase().open();
         context.indexDatabase().open();
+        context.conflictsDatabase().open();
         for (RepositoryListener l : listeners) {
             l.opened(this);
         }
@@ -134,6 +135,7 @@ public class RepositoryImpl implements Repository {
         close(context.objectDatabase());
         close(context.indexDatabase());
         close(context.configDatabase());
+        close(context.conflictsDatabase());
         for (RepositoryListener l : listeners) {
             try {// don't let a broken listener mess us up
                 l.closed();

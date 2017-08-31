@@ -33,6 +33,9 @@ public class RocksdbStorageProvider extends StorageProvider {
     static final VersionedFormat INDEX = new VersionedFormat(FORMAT_NAME, VERSION,
             RocksdbIndexDatabase.class);
 
+    static final VersionedFormat CONFLICTS = new VersionedFormat(FORMAT_NAME, VERSION,
+            RocksdbConflictsDatabase.class);
+
     @Override
     public String getName() {
         return FORMAT_NAME;
@@ -63,4 +66,7 @@ public class RocksdbStorageProvider extends StorageProvider {
         return INDEX;
     }
 
+    public @Override VersionedFormat getConflictsDatabaseFormat() {
+        return CONFLICTS;
+    }
 }

@@ -33,6 +33,9 @@ public class PGStorageProvider extends StorageProvider {
     static final VersionedFormat INDEX = new VersionedFormat(FORMAT_NAME, VERSION,
             PGIndexDatabase.class);
 
+    static final VersionedFormat CONFLICTS = new VersionedFormat(FORMAT_NAME, VERSION,
+            PGConflictsDatabase.class);
+
     @Override
     public String getName() {
         return FORMAT_NAME;
@@ -61,5 +64,9 @@ public class PGStorageProvider extends StorageProvider {
     @Override
     public VersionedFormat getIndexDatabaseFormat() {
         return INDEX;
+    }
+
+    public @Override VersionedFormat getConflictsDatabaseFormat() {
+        return CONFLICTS;
     }
 }

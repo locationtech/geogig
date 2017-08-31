@@ -52,6 +52,11 @@ public abstract class StorageProvider {
     public abstract VersionedFormat getIndexDatabaseFormat();
 
     /**
+     * @return the format of the {@link ConflictsDatabase}
+     */
+    public abstract VersionedFormat getConflictsDatabaseFormat();
+
+    /**
      * @return the format of the {@link RefDatabase}
      */
     public abstract VersionedFormat getRefsDatabaseFormat();

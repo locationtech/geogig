@@ -21,6 +21,7 @@ import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import org.locationtech.geogig.repository.impl.StagingAreaImpl;
 import org.locationtech.geogig.repository.impl.WorkingTreeImpl;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -74,6 +75,7 @@ public class GeogigModule extends AbstractModule {
         bind(RefDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(ObjectDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(IndexDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
+        bind(ConflictsDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
 
         bindCommitGraphInterceptor();
 

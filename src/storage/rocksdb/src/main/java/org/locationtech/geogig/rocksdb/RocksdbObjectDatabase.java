@@ -30,8 +30,6 @@ import com.google.inject.Inject;
 
 public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectDatabase {
 
-    private RocksdbConflictsDatabase conflicts;
-
     private RocksdbBlobStore blobs;
 
     private final ConfigDatabase configdb;
@@ -60,11 +58,6 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
     }
 
     @Override
-    public RocksdbConflictsDatabase getConflictsDatabase() {
-        return conflicts;
-    }
-
-    @Override
     public RocksdbBlobStore getBlobStore() {
         return blobs;
     }
@@ -82,11 +75,8 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
         super.open();
         try {
             File basedir = new File(super.path).getParentFile();
-            File conflictsDir = new File(basedir, "conflicts");
             File blobsDir = new File(super.path, "blobs");
-            conflictsDir.mkdir();
             blobsDir.mkdir();
-            this.conflicts = new RocksdbConflictsDatabase(conflictsDir);
             this.blobs = new RocksdbBlobStore(blobsDir, super.readOnly);
             this.graph = new RocksdbGraphDatabase(platform, hints);
             this.graph.open();
@@ -104,14 +94,11 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
         try {
             super.close();
         } finally {
-            RocksdbConflictsDatabase conflicts = this.conflicts;
             RocksdbBlobStore blobs = this.blobs;
             RocksdbGraphDatabase graph = this.graph;
-            this.conflicts = null;
             this.blobs = null;
             this.graph = null;
             try {
-                Closeables.close(conflicts, true);
                 Closeables.close(blobs, true);
                 Closeables.close(graph, true);
             } catch (IOException e) {

@@ -39,7 +39,11 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
         conflicts = new ConcurrentHashMap<>();
     }
 
-    public synchronized void close() {
+    public @Override void open() {
+        // no-op
+    }
+
+    public @Override synchronized void close() {
         if (conflicts != null) {
             conflicts.clear();
             conflicts = null;

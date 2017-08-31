@@ -125,11 +125,7 @@ public class GuiceContext implements Context {
 
     @Override
     public ConflictsDatabase conflictsDatabase() {
-        ObjectDatabase objectDatabase = objectDatabase();
-        checkNotNull(objectDatabase);
-        ConflictsDatabase conflictsDatabase = objectDatabase.getConflictsDatabase();
-        checkNotNull(conflictsDatabase);
-        return getDecoratedInstance(conflictsDatabase);
+        return getDecoratedInstance(ConflictsDatabase.class);
     }
 
     @Override

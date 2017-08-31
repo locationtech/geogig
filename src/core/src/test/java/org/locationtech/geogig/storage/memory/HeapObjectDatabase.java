@@ -32,8 +32,6 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
 
     static HeapObjectDatabaseConnectionManager CONN_MANAGER = new HeapObjectDatabaseConnectionManager();
 
-    private HeapConflictsDatabase conflicts;
-
     private HeapBlobStore blobs;
 
     private HeapGraphDatabase graph;
@@ -68,11 +66,6 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public void close() {
         super.close();
-        if (conflicts != null) {
-            conflicts.close();
-            conflicts = null;
-            blobs = null;
-        }
         if (graph != null) {
             graph.close();
             graph = null;
@@ -88,7 +81,6 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
             return;
         }
         super.open();
-        conflicts = new HeapConflictsDatabase();
         blobs = new HeapBlobStore();
         graph = new HeapGraphDatabase(platform);
         graph.open();
@@ -97,11 +89,6 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public boolean isReadOnly() {
         return !super.canWrite;
-    }
-
-    @Override
-    public HeapConflictsDatabase getConflictsDatabase() {
-        return conflicts;
     }
 
     @Override

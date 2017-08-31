@@ -38,13 +38,8 @@ public interface ObjectDatabase extends ObjectStore {
      */
     public boolean checkConfig() throws RepositoryConnectionException;
 
-    /**
-     * @return the {@link ConflictsDatabase} associated with this {@code ObjectDatabase}
-     */
-    public ConflictsDatabase getConflictsDatabase();
-
     public GraphDatabase getGraphDatabase();
-    
+
     /**
      * @return the {@link BlobStore} associated with this {@code ObjectDatabase}
      */

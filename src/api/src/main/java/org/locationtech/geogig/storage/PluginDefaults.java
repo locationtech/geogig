@@ -24,6 +24,8 @@ public final class PluginDefaults {
 
     private VersionedFormat index;
 
+    private VersionedFormat conflicts;
+
     /**
      * Constructs a new {@code PluginDefaults} with no configured formats or versions.
      */
@@ -38,10 +40,12 @@ public final class PluginDefaults {
      * @param refs the format and version of the {@link RefDatabase}
      * @param index the format and version of the {@link IndexDatabase}
      */
-    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat index) {
+    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat index,
+            VersionedFormat conflicts) {
         this.refs = refs;
         this.objects = objects;
         this.index = index;
+        this.conflicts = conflicts;
     }
 
     /**
@@ -53,6 +57,7 @@ public final class PluginDefaults {
         refs = provider.getRefsDatabaseFormat();
         objects = provider.getObjectDatabaseFormat();
         index = provider.getIndexDatabaseFormat();
+        conflicts = provider.getConflictsDatabaseFormat();
     }
 
     /**
@@ -77,6 +82,10 @@ public final class PluginDefaults {
      */
     public Optional<VersionedFormat> getIndex() {
         return Optional.fromNullable(index);
+    }
+
+    public Optional<VersionedFormat> getConflicts() {
+        return Optional.fromNullable(conflicts);
     }
 
     /**
@@ -104,6 +113,10 @@ public final class PluginDefaults {
      */
     public void setIndex(VersionedFormat index) {
         this.index = index;
+    }
+
+    public void setConflicts(VersionedFormat conflicts) {
+        this.conflicts = conflicts;
     }
 
     /**

@@ -23,13 +23,17 @@ public class PluginDefaultsTest {
         final VersionedFormat refsFormat = new VersionedFormat("refs", "1.0", RefDatabase.class);
         final VersionedFormat indexFormat = new VersionedFormat("index", "1.0",
                 IndexDatabase.class);
+        final VersionedFormat conflictsFormat = new VersionedFormat("conflicts", "1.0",
+                ConflictsDatabase.class);
 
-        PluginDefaults defaults = new PluginDefaults(objectsFormat, refsFormat, indexFormat);
+        PluginDefaults defaults = new PluginDefaults(objectsFormat, refsFormat, indexFormat,
+                conflictsFormat);
         assertEquals(objectsFormat, defaults.getObjects().get());
         assertEquals(refsFormat, defaults.getRefs().get());
         assertEquals(indexFormat, defaults.getIndex().get());
+        assertEquals(conflictsFormat, defaults.getConflicts().get());
 
-        defaults = new PluginDefaults(null, null, null);
+        defaults = new PluginDefaults(null, null, null, null);
         assertFalse(defaults.getObjects().isPresent());
         assertFalse(defaults.getRefs().isPresent());
         assertFalse(defaults.getIndex().isPresent());
@@ -64,6 +68,11 @@ public class PluginDefaultsTest {
             public VersionedFormat getIndexDatabaseFormat() {
                 return indexFormat;
             }
+
+            public @Override VersionedFormat getConflictsDatabaseFormat() {
+                return conflictsFormat;
+            }
+
         };
 
         defaults = new PluginDefaults(testProvider);
@@ -79,7 +88,9 @@ public class PluginDefaultsTest {
         final VersionedFormat refsFormat = new VersionedFormat("refs", "1.0", RefDatabase.class);
         final VersionedFormat indexFormat = new VersionedFormat("index", "1.0",
                 IndexDatabase.class);
-        PluginDefaults defaults = new PluginDefaults(null, null, null);
+        final VersionedFormat conflictsFormat = new VersionedFormat("conflicts", "1.0",
+                ConflictsDatabase.class);
+        PluginDefaults defaults = new PluginDefaults(null, null, null, null);
         assertFalse(defaults.getObjects().isPresent());
         assertFalse(defaults.getRefs().isPresent());
         assertFalse(defaults.getIndex().isPresent());
@@ -87,9 +98,11 @@ public class PluginDefaultsTest {
         defaults.setObjects(objectsFormat);
         defaults.setRefs(refsFormat);
         defaults.setIndex(indexFormat);
+        defaults.setConflicts(conflictsFormat);
 
         assertEquals(objectsFormat, defaults.getObjects().get());
         assertEquals(refsFormat, defaults.getRefs().get());
         assertEquals(indexFormat, defaults.getIndex().get());
+        assertEquals(conflictsFormat, defaults.getConflicts().get());
     }
 }

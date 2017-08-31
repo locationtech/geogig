@@ -17,9 +17,11 @@ import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.rocksdb.RocksdbConflictsDatabase;
 import org.locationtech.geogig.rocksdb.RocksdbIndexDatabase;
 import org.locationtech.geogig.rocksdb.RocksdbObjectDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -47,6 +49,7 @@ public class RocksStorageModule extends AbstractModule {
         bind(RefDatabase.class).to(FileRefDatabase.class).in(Scopes.SINGLETON);
         bind(ObjectDatabase.class).to(RocksdbObjectDatabase.class).in(Scopes.SINGLETON);
         bind(IndexDatabase.class).to(RocksdbIndexDatabase.class).in(Scopes.SINGLETON);
+        bind(ConflictsDatabase.class).to(RocksdbConflictsDatabase.class).in(Scopes.SINGLETON);
     }
 
     static Context createContext(File repositoryDirectory) {

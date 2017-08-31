@@ -17,7 +17,6 @@ import java.net.URISyntaxException;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
@@ -33,7 +32,6 @@ import com.google.inject.Inject;
  * TODO: document/force use of {@code SET constraint_exclusion=ON}
  */
 public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
-    private PGConflictsDatabase conflicts;
 
     private PGBlobStore blobStore;
 
@@ -77,10 +75,8 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
         super.open();
         Preconditions.checkState(super.dataSource != null);
         final int repositoryId = config.getRepositoryId();
-        final String conflictsTable = config.getTables().conflicts();
         final String blobsTable = config.getTables().blobs();
 
-        conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
         blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
         graph = new PGGraphDatabase(config);
         graph.open();
@@ -95,20 +91,12 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
     public void close() {
         if (isOpen()) {
             try {
-                conflicts = null;
                 graph.close();
                 graph = null;
             } finally {
                 super.close();
             }
         }
-    }
-
-    @Override
-    public ConflictsDatabase getConflictsDatabase() {
-        Preconditions.checkState(isOpen(), "Database is closed");
-        config.checkRepositoryExists();
-        return conflicts;
     }
 
     @Override

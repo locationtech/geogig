@@ -3,13 +3,14 @@
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/org/documents/edl-v10.html
- *
+ * 
  * Contributors:
  * Erik Merkle (Boundless) - initial implementation
  */
 package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
+import static org.locationtech.geogig.spring.controller.AbstractController.NO_PROVIDER;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -24,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.locationtech.geogig.spring.dto.Depth;
+import org.locationtech.geogig.spring.dto.Parents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,10 +41,10 @@ import com.google.common.collect.Sets;
  *
  */
 @RestController
-@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/repo/getdepth")
-public class DepthController extends AbstractRepositoryController {
+@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/repo/getparents")
+public class ParentsController extends AbstractRepositoryController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DepthController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ParentsController.class);
 
     @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
     public void catchAll() {
@@ -52,7 +53,7 @@ public class DepthController extends AbstractRepositoryController {
     }
 
     @GetMapping
-    public void getDepth(@PathVariable(name = "repoName") String repoName,
+    public void getParents(@PathVariable(name = "repoName") String repoName,
             @RequestParam(name = "commitId", required = false) String commitId,
             HttpServletRequest request, HttpServletResponse response) {
         // get the provider
@@ -71,12 +72,10 @@ public class DepthController extends AbstractRepositoryController {
                 // response was already handled
                 return;
             }
-            // create the Depth object
-            Depth depth = new Depth();
-            // setht he depth
-            depth.setDepth(repositoryService.getDepth(provider, repoName, oid));
-            // encode the Depth
-            encode(depth, request, response);
+            // get the affected features
+            Parents parents =  repositoryService.getParents(provider, repoName, oid);
+            // encode the affected features
+            encode(parents, request, response);
         } else {
             throw NO_PROVIDER;
         }
@@ -92,5 +91,5 @@ public class DepthController extends AbstractRepositoryController {
     protected Logger getLogger() {
         return LOGGER;
     }
-
 }
+

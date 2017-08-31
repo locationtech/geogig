@@ -22,7 +22,7 @@ Feature: MergeFeature
      When I call "POST /repos/repo1/repo/mergefeature"
      Then the response status should be '400'
       And the response body should contain "Invalid POST data."
-  @400 @erik
+  @400
   Scenario: MergeFeature with an invalid json payload issues a 400 status code
     Given There is an empty repository named repo1
      When I "POST" content-type "text/plain" to "/repos/repo1/repo/mergefeature" with
@@ -122,7 +122,7 @@ Feature: MergeFeature
       And the response body should contain "new"
       And the response body should contain "500"
       And the response body should contain "POINT (1 1)"
-      @Erik
+
   Scenario: MergeFeature builds a new feature from provided merges (different versions of the same feature)
     Given There is a default multirepo server
       And I have committed "Point.1_modified" on the "repo1" repo in the "" transaction

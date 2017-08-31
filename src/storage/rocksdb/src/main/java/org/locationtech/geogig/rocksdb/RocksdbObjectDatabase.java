@@ -14,10 +14,17 @@ import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -25,6 +32,7 @@ import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 import com.google.inject.Inject;
 
@@ -74,7 +82,6 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
         }
         super.open();
         try {
-            File basedir = new File(super.path).getParentFile();
             File blobsDir = new File(super.path, "blobs");
             blobsDir.mkdir();
             this.blobs = new RocksdbBlobStore(blobsDir, super.readOnly);
@@ -104,6 +111,42 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
+        }
+    }
+
+    /**
+     * Overrides to add graphdb mapping on commits
+     */
+    public @Override boolean put(final RevObject object) {
+        final boolean added = super.put(object);
+        if (added && TYPE.COMMIT.equals(object.getType())) {
+            RevCommit c = (RevCommit) object;
+            graph.put(c.getId(), c.getParentIds());
+        }
+        return added;
+    }
+
+    protected @Override void putAll(Stream<RevObject> stream, BulkOpListener listener) {
+
+        final int commitsBatchSize = 10_000;
+        Set<RevCommit> insertedCommits = Sets.newHashSet();
+
+        Consumer<RevObject> updateCommits = (o) -> {
+            if (TYPE.COMMIT.equals(o.getType())) {
+                synchronized (insertedCommits) {
+                    insertedCommits.add((RevCommit) o);
+                    if (insertedCommits.size() >= commitsBatchSize) {
+                        graph.putAll(insertedCommits);
+                        insertedCommits.clear();
+                    }
+                }
+            }
+        };
+        // the stream will call updateCommits for each object as they're consumed
+        stream = stream.peek(updateCommits);
+        super.putAll(stream, listener);
+        if (!insertedCommits.isEmpty()) {
+            graph.putAll(insertedCommits);
         }
     }
 }

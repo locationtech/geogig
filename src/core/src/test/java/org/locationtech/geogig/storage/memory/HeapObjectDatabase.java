@@ -9,11 +9,25 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import java.nio.file.Path;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.Spliterator.DISTINCT;
+import static java.util.Spliterator.IMMUTABLE;
+import static java.util.Spliterator.NONNULL;
+import static java.util.Spliterators.spliteratorUnknownSize;
 
+import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
@@ -109,6 +123,38 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public boolean checkConfig() {
         return true;
+    }
+
+    public @Override boolean put(RevObject object) {
+        final boolean added = super.put(object);
+        if (added && TYPE.COMMIT.equals(object.getType())) {
+            RevCommit c = (RevCommit) object;
+            graph.put(c.getId(), c.getParentIds());
+        }
+        return added;
+    }
+
+    public @Override void putAll(Iterator<? extends RevObject> objects) {
+        putAll(objects, BulkOpListener.NOOP_LISTENER);
+    }
+
+    public @Override void putAll(Iterator<? extends RevObject> objects, BulkOpListener listener) {
+        checkNotNull(objects, "objects is null");
+        checkNotNull(listener, "listener is null");
+        checkState(isOpen(), "db is closed");
+        checkWritable();
+
+        final int characteristics = IMMUTABLE | NONNULL | DISTINCT;
+        Stream<? extends RevObject> stream;
+        stream = StreamSupport.stream(spliteratorUnknownSize(objects, characteristics), true);
+
+        stream.forEach((o) -> {
+            if (put(o)) {
+                listener.inserted(o.getId(), null);
+            } else {
+                listener.found(o.getId(), null);
+            }
+        });
     }
 
     @Override

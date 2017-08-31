@@ -26,21 +26,27 @@ import java.util.Queue;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.datastream.Varint;
+import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteBatchWithIndex;
 import org.rocksdb.WriteOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -51,6 +57,8 @@ import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
 public class RocksdbGraphDatabase implements GraphDatabase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RocksdbGraphDatabase.class);
 
     private static final GraphNodeBinding BINDING = new GraphNodeBinding();
 
@@ -138,40 +146,77 @@ public class RocksdbGraphDatabase implements GraphDatabase {
 
     @Override
     public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
-        @Nullable
-        NodeData node = getNodeInternal(commitId, false);
+        try (WriteBatchWithIndex batch = new WriteBatchWithIndex(); //
+                RocksDBReference dbRef = dbhandle.getReference();
+                WriteOptions wo = new WriteOptions()) {
+            wo.setSync(true);
 
-        boolean updated = false;
-        try (WriteBatch batch = new WriteBatch()) {
-            if (node == null) {
-                node = new NodeData(commitId, parentIds);
-                updated = true;
-            }
-            for (ObjectId parent : parentIds) {
-                if (!node.outgoing.contains(parent)) {
-                    node.outgoing.add(parent);
-                    updated = true;
-                }
-                NodeData parentNode = getNodeInternal(parent, false);
-                if (parentNode == null) {
-                    parentNode = new NodeData(parent);
-                    updated = true;
-                }
-                if (!parentNode.incoming.contains(commitId)) {
-                    parentNode.incoming.add(commitId);
-                    updated = true;
-                }
-                batch.put(parent.getRawValue(), BINDING.objectToEntry(parentNode));
-            }
-            batch.put(commitId.getRawValue(), BINDING.objectToEntry(node));
-            try (RocksDBReference dbRef = dbhandle.getReference();
-                    WriteOptions wo = new WriteOptions()) {
-                wo.setSync(true);
-                dbRef.db().write(wo, batch);
-            }
+            boolean updated = put(dbRef, commitId, parentIds, batch);
+            dbRef.db().write(wo, batch);
+            return updated;
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    /**
+     * Atomically inserts the graph entries for all the provided commits.
+     * 
+     * @param commits the commits to create the graph entries for (one entry for each commit/parent)
+     * 
+     * @implNote uses a {@link WriteBatchWithIndex} to query uncommitted data through
+     *           {@link WriteBatchWithIndex#getFromBatchAndDB getFromBatchAndDB}
+     */
+    public void putAll(Iterable<RevCommit> commits) {
+        int count = 0;
+        final Stopwatch sw = LOG.isTraceEnabled() ? Stopwatch.createStarted() : null;
+        try (WriteBatchWithIndex batch = new WriteBatchWithIndex(); //
+                RocksDBReference dbRef = dbhandle.getReference();
+                WriteOptions wo = new WriteOptions()) {
+            wo.setSync(true);
+            for (RevCommit c : commits) {
+                ObjectId commitId = c.getId();
+                ImmutableList<ObjectId> parentIds = c.getParentIds();
+                put(dbRef, commitId, parentIds, batch);
+                count++;
+            }
+            dbRef.db().write(wo, batch);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(String.format("Inserted %,d graph mappings in %s", count, sw.stop()));
+        }
+    }
+
+    private boolean put(RocksDBReference dbref, ObjectId commitId,
+            ImmutableList<ObjectId> parentIds, WriteBatchWithIndex batch) {
+
+        @Nullable
+        NodeData node = getNodeInternal(dbref, commitId, false, batch);
+
+        boolean updated = false;
+        if (node == null) {
+            node = new NodeData(commitId, parentIds);
+            updated = true;
+        }
+        for (ObjectId parent : parentIds) {
+            if (!node.outgoing.contains(parent)) {
+                node.outgoing.add(parent);
+                updated = true;
+            }
+            NodeData parentNode = getNodeInternal(dbref, parent, false, batch);
+            if (parentNode == null) {
+                parentNode = new NodeData(parent);
+                updated = true;
+            }
+            if (!parentNode.incoming.contains(commitId)) {
+                parentNode.incoming.add(commitId);
+                updated = true;
+            }
+            batch.put(parent.getRawValue(), BINDING.objectToEntry(parentNode));
+        }
+        batch.put(commitId.getRawValue(), BINDING.objectToEntry(node));
         return updated;
     }
 
@@ -200,26 +245,28 @@ public class RocksdbGraphDatabase implements GraphDatabase {
     public int getDepth(ObjectId commitId) {
         int depth = 0;
 
-        Queue<ObjectId> q = Lists.newLinkedList();
-        NodeData node = getNodeInternal(commitId, true);
-        Iterables.addAll(q, node.outgoing);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            Queue<ObjectId> q = Lists.newLinkedList();
+            NodeData node = getNodeInternal(dbRef, commitId, true, null);
+            Iterables.addAll(q, node.outgoing);
 
-        List<ObjectId> next = Lists.newArrayList();
-        while (!q.isEmpty()) {
-            depth++;
+            List<ObjectId> next = Lists.newArrayList();
             while (!q.isEmpty()) {
-                ObjectId n = q.poll();
-                NodeData parentNode = getNodeInternal(n, true);
-                List<ObjectId> parents = Lists.newArrayList(parentNode.outgoing);
-                if (parents.size() == 0) {
-                    return depth;
+                depth++;
+                while (!q.isEmpty()) {
+                    ObjectId n = q.poll();
+                    NodeData parentNode = getNodeInternal(dbRef, n, true, null);
+                    List<ObjectId> parents = Lists.newArrayList(parentNode.outgoing);
+                    if (parents.size() == 0) {
+                        return depth;
+                    }
+
+                    Iterables.addAll(next, parents);
                 }
 
-                Iterables.addAll(next, parents);
+                q.addAll(next);
+                next.clear();
             }
-
-            q.addAll(next);
-            next.clear();
         }
 
         return depth;
@@ -262,12 +309,26 @@ public class RocksdbGraphDatabase implements GraphDatabase {
     }
 
     @Nullable
-    protected NodeData getNodeInternal(final ObjectId id, final boolean failIfNotFound) {
+    private NodeData getNodeInternal(final ObjectId id, final boolean failIfNotFound) {
+
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            return getNodeInternal(dbRef, id, failIfNotFound, null);
+        }
+
+    }
+
+    private NodeData getNodeInternal(final RocksDBReference dbRef, final ObjectId id,
+            final boolean failIfNotFound, @Nullable WriteBatchWithIndex batch) {
         Preconditions.checkNotNull(id, "id");
         byte[] key = id.getRawValue();
         byte[] data;
-        try (RocksDBReference dbRef = dbhandle.getReference()) {
-            data = dbRef.db().get(key);
+        try (ReadOptions ro = new ReadOptions()) {
+            final RocksDB db = dbRef.db();
+            if (batch == null) {
+                data = db.get(key);
+            } else {
+                data = batch.getFromBatchAndDB(db, ro, key);
+            }
         } catch (RocksDBException e) {
             throw propagate(e);
         }

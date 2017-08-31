@@ -13,7 +13,14 @@ import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMA
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 
 import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -120,4 +127,32 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
             throw new IllegalStateException("db is read only.");
         }
     }
+
+    /**
+     * Overrides to add graphdb mapping on commits
+     */
+    public @Override boolean put(final RevObject object) {
+        final boolean added = super.put(object);
+        if (added && TYPE.COMMIT.equals(object.getType())) {
+            RevCommit c = (RevCommit) object;
+            graph.put(c.getId(), c.getParentIds());
+        }
+        return added;
+    }
+
+    /**
+     * Overrides to update the {@link GraphDatabase} before {@link #putAll} commits a batch of
+     * inserts, using the same connection and transaction
+     */
+    protected @Override void postInsert(final Connection cx,
+            final Map<EncodedObject, Boolean> insertResults) throws SQLException {
+
+        Stream<RevCommit> insertedCommits = insertResults.entrySet().stream()//
+                .filter((e) -> e.getValue().booleanValue() && TYPE.COMMIT == e.getKey().type())//
+                .map((e) -> (RevCommit) e.getKey().object());
+
+        graph.put(cx, insertedCommits);
+
+    }
+
 }

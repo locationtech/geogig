@@ -22,21 +22,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -59,6 +66,8 @@ public class PGGraphDatabase implements GraphDatabase {
 
     private Environment config;
 
+    private Version serverVersion;
+
     @Inject
     public PGGraphDatabase(Hints hints) throws URISyntaxException {
         this(Environment.get(hints));
@@ -79,6 +88,7 @@ public class PGGraphDatabase implements GraphDatabase {
     public synchronized void open() {
         if (dataSource == null) {
             dataSource = newDataSource(config);
+            serverVersion = PGStorage.getServerVersion(config);
         }
     }
 
@@ -140,9 +150,17 @@ public class PGGraphDatabase implements GraphDatabase {
 
     @Override
     public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
-        final PGId node = PGId.valueOf(commitId);
-        boolean updated;
         try (Connection cx = PGStorage.newConnection(dataSource)) {
+            return put(cx, commitId, parentIds);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
+
+    boolean put(Connection cx, ObjectId commitId, ImmutableList<ObjectId> parentIds) {
+        try {
+            boolean updated;
+            final PGId node = PGId.valueOf(commitId);
             updated = !exists(node, cx);
             // NOTE: runs in autoCommit mode to ignore statement failures due to duplicates (?)
             // TODO: if node was node added should we severe existing parent relationships?
@@ -150,11 +168,112 @@ public class PGGraphDatabase implements GraphDatabase {
                 boolean isDuplicate = relate(node, PGId.valueOf(p), cx);
                 updated = updated || !isDuplicate;
             }
+            return updated;
         } catch (SQLException e) {
-            throw propagate(e);
+            throw Throwables.propagate(e);
+        }
+    }
+
+    void put(Connection cx, Stream<RevCommit> commits) throws SQLException {
+        if (Version.V9_5_0.lowerOrEqualTo(this.serverVersion)) {
+            putWithUpsert(cx, commits);
+        } else {
+            putWithoutUpsert(cx, commits);
+        }
+    }
+
+    /**
+     * Bulk put compatible with PG < 9.5, can't use upsert
+     * 
+     * @throws SQLException
+     */
+    private void putWithoutUpsert(Connection cx, Stream<RevCommit> commits) throws SQLException {
+
+        Preconditions.checkArgument(!cx.getAutoCommit());
+
+        final Set<RevCommit> uniqueCommits = commits.collect(Collectors.toSet());
+        if (uniqueCommits.isEmpty()) {
+            return;
         }
 
-        return updated;
+        final String tmpTable = "graph_edge_tmp";
+        final String tmpTableSql = format(
+                "CREATE TEMPORARY TABLE %s (src OBJECTID, dst OBJECTID, PRIMARY KEY (src,dst)) ON COMMIT DROP",
+                tmpTable, EDGES);
+
+        // create temporary table. The temporary table is local to the transaction
+        try (Statement st = cx.createStatement()) {
+            st.execute(log(tmpTableSql, LOG));
+        }
+
+        // insert all rows to the tmp table
+        final String insert = "INSERT INTO " + tmpTable
+                + " (src, dst) VALUES (ROW(?,?,?), ROW(?,?,?))";
+
+        PGId src, dst;
+        try (PreparedStatement ps = cx.prepareStatement(insert)) {
+            for (RevCommit c : uniqueCommits) {
+                src = PGId.valueOf(c.getId());
+                for (ObjectId parent : c.getParentIds()) {
+                    dst = PGId.valueOf(parent);
+                    src.setArgs(ps, 1);
+                    dst.setArgs(ps, 4);
+                    ps.addBatch();
+                }
+            }
+            ps.executeBatch();
+        }
+
+        // copy all new rows to the edges table
+        final String insertUniqueSql = "INSERT INTO " + EDGES + "(src,dst)\n"//
+                + " SELECT DISTINCT src,dst FROM " + tmpTable + "\n"//
+                + " WHERE NOT EXISTS (\n"//
+                + "  SELECT 1 FROM " + EDGES + "\n"//
+                + "  WHERE \n" //
+                + "   " + tmpTable + ".src = " + EDGES + ".src \n"//
+                + "   AND " + tmpTable + ".dst = " + EDGES + ".dst\n"//
+                + ")";
+
+        try (Statement st = cx.createStatement()) {
+            st.execute(log(insertUniqueSql, LOG));
+        }
+    }
+
+    /**
+     * Bulk put compatible with PG 9.5+, using upsert
+     */
+    private void putWithUpsert(Connection cx, Stream<RevCommit> commits) throws SQLException {
+        // from PG 9.5+
+        final String upsert = format(
+                "INSERT INTO %s (src, dst) VALUES (ROW(?,?,?), ROW(?,?,?)) ON CONFLICT DO NOTHING",
+                EDGES);
+
+        final Stopwatch sw = LOG.isTraceEnabled() ? Stopwatch.createStarted() : null;
+
+        int count = 0;
+        PGId src, dst;
+        try (PreparedStatement ps = cx.prepareStatement(upsert)) {
+            Iterator<RevCommit> iterator = commits.iterator();
+            while (iterator.hasNext()) {
+                RevCommit c = iterator.next();
+                count++;
+                src = PGId.valueOf(c.getId());
+                for (ObjectId parent : c.getParentIds()) {
+                    dst = PGId.valueOf(parent);
+                    src.setArgs(ps, 1);
+                    dst.setArgs(ps, 4);
+                    ps.addBatch();
+                }
+            }
+            if (count > 0) {
+                int[] batchResults = ps.executeBatch();
+                if (LOG.isTraceEnabled()) {
+                    sw.stop();
+                    LOG.trace(String.format("%,d updates to graph in %s: %s", count, sw,
+                            Arrays.toString(batchResults)));
+                }
+            }
+        }
     }
 
     /**

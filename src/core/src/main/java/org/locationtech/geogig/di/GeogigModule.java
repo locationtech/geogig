@@ -77,8 +77,6 @@ public class GeogigModule extends AbstractModule {
         bind(IndexDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(ConflictsDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
 
-        bindCommitGraphInterceptor();
-
         bindConflictCheckingInterceptor();
 
         bindDecorator(binder(), new CommandHooksDecorator());
@@ -105,13 +103,6 @@ public class GeogigModule extends AbstractModule {
 
     private void bindConflictCheckingInterceptor() {
         bindDecorator(binder(), new ConflictInterceptor());
-    }
-
-    private void bindCommitGraphInterceptor() {
-
-        ObjectDatabasePutInterceptor commitGraphUpdater = new ObjectDatabasePutInterceptor();
-
-        bindDecorator(binder(), commitGraphUpdater);
     }
 
     public static void bindDecorator(Binder binder, Decorator decorator) {

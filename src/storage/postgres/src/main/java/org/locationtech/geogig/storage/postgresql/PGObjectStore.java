@@ -1078,17 +1078,39 @@ public class PGObjectStore implements ObjectStore {
         }
     }
 
-    private static class EncodedObject {
-        final ObjectId id;
+    protected static class EncodedObject {
 
-        final byte[] serialized;
+        private RevObject object;
 
-        final TYPE type;
+        private final byte[] serialized;
 
-        EncodedObject(final ObjectId id, final TYPE type, final byte[] serialized) {
-            this.id = id;
-            this.type = type;
+        EncodedObject(final RevObject object, final byte[] serialized) {
+            this.object = object;
             this.serialized = serialized;
+        }
+
+        ObjectId id() {
+            return object.getId();
+        }
+
+        TYPE type() {
+            return object.getType();
+        }
+
+        RevObject object() {
+            return object;
+        }
+
+        byte[] serialized() {
+            return serialized;
+        }
+
+        public @Override boolean equals(Object o) {
+            return (o instanceof EncodedObject) && ((EncodedObject) o).id().equals(id());
+        }
+
+        public @Override int hashCode() {
+            return object.hashCode();
         }
     }
 
@@ -1104,9 +1126,9 @@ public class PGObjectStore implements ObjectStore {
 
         private List<EncodedObject> batch;
 
-        public InsertDbOp(DataSource ds, AtomicBoolean abortFlag, List<EncodedObject> batch,
-                BulkOpListener listener, PGObjectStore objectStore) {
-            this.ds = ds;
+        InsertDbOp(AtomicBoolean abortFlag, List<EncodedObject> batch, BulkOpListener listener,
+                PGObjectStore objectStore) {
+            this.ds = objectStore.dataSource;
             this.abortFlag = abortFlag;
             this.batch = batch;
             this.listener = listener;
@@ -1118,7 +1140,7 @@ public class PGObjectStore implements ObjectStore {
             if (abortFlag.get()) {
                 return null;
             }
-            Map<ObjectId, Integer> insertResults = ImmutableMap.of();
+            Map<EncodedObject, Boolean> insertResults = ImmutableMap.of();
             try (Connection cx = PGStorage.newConnection(ds)) {
                 cx.setAutoCommit(false);
                 try {
@@ -1126,6 +1148,7 @@ public class PGObjectStore implements ObjectStore {
                     if (abortFlag.get()) {
                         cx.rollback();
                     } else {
+                        objectStore.postInsert(cx, insertResults);
                         cx.commit();
                     }
                 } catch (Exception executionEx) {
@@ -1143,22 +1166,23 @@ public class PGObjectStore implements ObjectStore {
             return null;
         }
 
-        private Map<ObjectId, Integer> doInsert(Connection cx, List<EncodedObject> partition)
+        private Map<EncodedObject, Boolean> doInsert(Connection cx, List<EncodedObject> partition)
                 throws Exception {
-            Map<String, PreparedStatement> perTableStatements = new HashMap<>();
-            ArrayListMultimap<String, ObjectId> perTableIds = ArrayListMultimap.create();
+
+            final Map<String, PreparedStatement> perTableStatements = new HashMap<>();
+            ArrayListMultimap<String, EncodedObject> perTableObjects = ArrayListMultimap.create();
 
             // partition the objects into chunks for batch processing
             for (Iterator<EncodedObject> it = partition.iterator(); it.hasNext()
                     && !abortFlag.get();) {
                 EncodedObject obj = it.next();
-                final TYPE type = obj.type;
-                final ObjectId id = obj.id;
+                final TYPE type = obj.type();
+                final ObjectId id = obj.id();
                 final PGId pgid = PGId.valueOf(id);
-                final byte[] bytes = obj.serialized;
+                final byte[] bytes = obj.serialized();
                 {
                     final String tableName = objectStore.tableNameForType(type, pgid);
-                    perTableIds.put(tableName, id);
+                    perTableObjects.put(tableName, obj);
 
                     PreparedStatement stmt = prepare(cx, tableName, perTableStatements);
                     pgid.setArgs(stmt, 1);
@@ -1167,20 +1191,21 @@ public class PGObjectStore implements ObjectStore {
                 }
             }
 
-            Map<ObjectId, Integer> insertResults = new HashMap<ObjectId, Integer>();
-            for (String tableName : new HashSet<String>(perTableIds.keySet())) {
+            Map<EncodedObject, Boolean> insertResults = new HashMap<>();
+            for (String tableName : new HashSet<String>(perTableObjects.keySet())) {
                 if (abortFlag.get()) {
                     return null;
                 }
                 PreparedStatement tableStatement;
                 tableStatement = perTableStatements.get(tableName);
-                List<ObjectId> ids = perTableIds.removeAll(tableName);
+                List<EncodedObject> tableObjs = perTableObjects.removeAll(tableName);
                 int[] batchResults = tableStatement.executeBatch();
                 tableStatement.clearParameters();
                 tableStatement.clearBatch();
 
                 for (int i = 0; i < batchResults.length; i++) {
-                    insertResults.put(ids.get(i), batchResults[i]);
+                    Boolean inserted = batchResults[i] > 0 ? Boolean.TRUE : Boolean.FALSE;
+                    insertResults.put(tableObjs.get(i), inserted);
                 }
             }
 
@@ -1206,10 +1231,20 @@ public class PGObjectStore implements ObjectStore {
     }
 
     private EncodedObject encode(RevObject o) {
-        ObjectId id = o.getId();
-        TYPE type = o.getType();
         byte[] serialized = encoder.encode(o);
-        return new EncodedObject(id, type, serialized);
+        return new EncodedObject(o, serialized);
+    }
+
+    /**
+     * Extension point to post-process inserts before {@link Connection#commit()}.
+     * <p>
+     * This method may be called concurrently
+     * 
+     * @throws SQLException
+     */
+    protected void postInsert(Connection cx, Map<EncodedObject, Boolean> insertResults)
+            throws SQLException {
+        // no-op
     }
 
     /**
@@ -1253,7 +1288,7 @@ public class PGObjectStore implements ObjectStore {
             List<InsertDbOp> tasks = new ArrayList<>(maxTasks);
             for (int i = 0; i < maxTasks && partitions.hasNext() && !abortFlag.get(); i++) {
                 List<EncodedObject> batch = partitions.next();
-                InsertDbOp task = new InsertDbOp(dataSource, abortFlag, batch, listener, this);
+                InsertDbOp task = new InsertDbOp(abortFlag, batch, listener, this);
                 tasks.add(task);
             }
             try {
@@ -1290,14 +1325,17 @@ public class PGObjectStore implements ObjectStore {
         }
     }
 
-    static int notifyInserted(Map<ObjectId, Integer> insertResults, BulkOpListener listener) {
+    static int notifyInserted(Map<EncodedObject, Boolean> insertResults, BulkOpListener listener) {
         int newObjects = 0;
-        for (Entry<ObjectId, Integer> entry : insertResults.entrySet()) {
-            if (entry.getValue() > 0) {
-                listener.inserted(entry.getKey(), null);
+        for (Entry<EncodedObject, Boolean> entry : insertResults.entrySet()) {
+            EncodedObject object = entry.getKey();
+            ObjectId id = object.id();
+            boolean inserted = entry.getValue().booleanValue();
+            if (inserted) {
+                listener.inserted(id, null);
                 newObjects++;
             } else {
-                listener.found(entry.getKey(), null);
+                listener.found(id, null);
             }
         }
         return newObjects;

@@ -9,14 +9,23 @@
  */
 package org.locationtech.geogig.storage.postgresql.functional;
 
-import org.locationtech.geogig.storage.postgresql.PGTestProperties;
+import org.junit.internal.AssumptionViolatedException;
+import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+
+import com.google.common.base.Preconditions;
 
 import cucumber.api.PendingException;
 
 public class PGTestUtil {
 
-    public static void checkPgTestsEnabled() throws PendingException {
-        if (!PGTestProperties.isTestsEnabled()) {
+    private static PGTestDataSourceProvider perTestSuiteDataSourceProvider;
+
+    public static void beforeClass() throws PendingException {
+        perTestSuiteDataSourceProvider = new PGTestDataSourceProvider();
+        try {
+            perTestSuiteDataSourceProvider.before();
+        } catch (AssumptionViolatedException disabled) {
             System.err.println(
                     "#######################################################################################################");
             System.err.println(
@@ -29,5 +38,15 @@ public class PGTestUtil {
                     "#######################################################################################################");
             throw new PendingException();
         }
+    }
+
+    public static void afterClass() {
+        perTestSuiteDataSourceProvider.after();
+    }
+
+    public static PGTemporaryTestConfig newTestConfig(String repoName) {
+        Preconditions.checkNotNull(perTestSuiteDataSourceProvider);
+        Preconditions.checkState(perTestSuiteDataSourceProvider.isEnabled());
+        return new PGTemporaryTestConfig(repoName, perTestSuiteDataSourceProvider);
     }
 }

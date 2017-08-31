@@ -34,7 +34,7 @@ import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, DataSource> {
+class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.Key, DataSource> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceManager.class);
 
@@ -126,7 +126,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
     }
 
     @Override
-    protected DataSource connect(Environment.ConnectionConfig config) {
+    protected DataSource connect(Environment.ConnectionConfig.Key connInfo) {
         if (!verifyDriverVersion()) {
             throw new IllegalStateException(
                     "PostgreSQL JDBC Driver version not supported by GeoGig: " + driverVersion);
@@ -134,11 +134,11 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         PGSimpleDataSource pgSimpleDataSource = new PGSimpleDataSource();
         pgSimpleDataSource.setBinaryTransfer(true);
         pgSimpleDataSource.setApplicationName("geogig");
-        pgSimpleDataSource.setServerName(config.getServer());
-        pgSimpleDataSource.setDatabaseName(config.getDatabaseName());
-        pgSimpleDataSource.setPortNumber(config.getPortNumber());
-        pgSimpleDataSource.setUser(config.getUser());
-        pgSimpleDataSource.setPassword(config.getPassword());
+        pgSimpleDataSource.setServerName(connInfo.server);
+        pgSimpleDataSource.setDatabaseName(connInfo.databaseName);
+        pgSimpleDataSource.setPortNumber(connInfo.portNumber);
+        pgSimpleDataSource.setUser(connInfo.user);
+        pgSimpleDataSource.setPassword(connInfo.password);
         pgSimpleDataSource.setAssumeMinServerVersion("9.4");
         // A value of {@code -1} stands for forceBinary
         pgSimpleDataSource.setPrepareThreshold(-1);
@@ -156,17 +156,16 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         hc.setMaximumPoolSize(10);
         hc.setMinimumIdle(0);
         // hc.setIdleTimeout(30/* seconds */);
-        hc.setUsername(config.getUser());
-        hc.setPassword(config.getPassword());
+        hc.setUsername(connInfo.user);
+        hc.setPassword(connInfo.password);
         hc.setConnectionTimeout(5000);
 
-        String jdbcUrl = config.getServer() + ":" + config.getPortNumber() + "/"
-                + config.getSchema() + "/" + config.getDatabaseName();
-        LOG.debug("Connecting to " + jdbcUrl + " as user " + config.getUser());
+        String jdbcUrl = connInfo.server + ":" + connInfo.portNumber + "/" + connInfo.databaseName;
+        LOG.debug("Connecting to " + jdbcUrl + " as user " + connInfo.user);
         HikariDataSource ds = new HikariDataSource(hc);
 
-        final String configTable = (config.getTablePrefix() == null
-                ? TableNames.DEFAULT_TABLE_PREFIX : config.getTablePrefix()) + "config";
+        final String configTable = (connInfo.tablePrefix == null ? TableNames.DEFAULT_TABLE_PREFIX
+                : connInfo.tablePrefix) + "config";
         try (Connection c = ds.getConnection()) {
             final String sql = format(
                     "SELECT value FROM %s WHERE repository = ? AND section = ? AND key = ?",
@@ -190,9 +189,9 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
                 // tables weren't set up yet
             }
 
-            LOG.debug("Connected to " + jdbcUrl + " as " + config.getUser());
+            LOG.debug("Connected to " + jdbcUrl + " as " + connInfo.user);
         } catch (SQLException e) {
-            LOG.error("Unable to connect to " + jdbcUrl + " as " + config.getUser(), e);
+            LOG.error("Unable to connect to " + jdbcUrl + " as " + connInfo.user, e);
             throw Throwables.propagate(e);
         }
         return ds;

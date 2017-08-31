@@ -14,6 +14,7 @@ import java.sql.Connection;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
 import org.mockito.Answers;
@@ -22,8 +23,10 @@ import org.mockito.Mock;
 public class PGConflictsDatabaseConformanceTest
         extends ConflictsDatabaseConformanceTest<PGConflictsDatabase> {
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
+    public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
+
+    public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
+            getClass().getSimpleName(), ds);
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Connection mockConnection;

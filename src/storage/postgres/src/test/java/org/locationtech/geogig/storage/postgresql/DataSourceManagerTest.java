@@ -53,15 +53,15 @@ public class DataSourceManagerTest {
     public @Test void testAcquireRelease() {
         DataSourceManager dsm = new DataSourceManager();
         ConnectionConfig config = testConfig.getEnvironment().connectionConfig;
-        DataSource ds1 = dsm.acquire(config);
+        DataSource ds1 = dsm.acquire(config.getKey());
         assertNotNull(ds1);
-        DataSource ds2 = dsm.acquire(config);
+        DataSource ds2 = dsm.acquire(config.getKey());
         assertSame(ds1, ds2);
 
         dsm.release(ds1);
         dsm.release(ds2);
 
-        DataSource ds3 = dsm.acquire(config);
+        DataSource ds3 = dsm.acquire(config.getKey());
         assertNotNull(ds1);
         assertNotSame(ds1, ds3);
         dsm.release(ds3);
@@ -113,6 +113,6 @@ public class DataSourceManagerTest {
 
         expected.expect(IllegalStateException.class);
         expected.expectMessage("PostgreSQL JDBC Driver version not supported by GeoGig: 9.11");
-        dsm.acquire(testConfig.getEnvironment().connectionConfig);
+        dsm.acquire(testConfig.getEnvironment().connectionConfig.getKey());
     }
 }

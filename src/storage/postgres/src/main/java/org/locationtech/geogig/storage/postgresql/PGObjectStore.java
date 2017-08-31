@@ -86,6 +86,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -1117,16 +1118,16 @@ public class PGObjectStore implements ObjectStore {
             if (abortFlag.get()) {
                 return null;
             }
+            Map<ObjectId, Integer> insertResults = ImmutableMap.of();
             try (Connection cx = PGStorage.newConnection(ds)) {
                 cx.setAutoCommit(false);
                 try {
-                    Map<ObjectId, Integer> insertResults = doInsert(cx, batch);
+                    insertResults = doInsert(cx, batch);
                     if (abortFlag.get()) {
                         cx.rollback();
                     } else {
                         cx.commit();
                     }
-                    notifyInserted(insertResults, listener);
                 } catch (Exception executionEx) {
                     rollbackAndRethrow(cx, executionEx);
                 } finally {
@@ -1134,6 +1135,10 @@ public class PGObjectStore implements ObjectStore {
                 }
             } catch (Exception connectEx) {
                 abortFlag.set(true);
+                throw Throwables.propagate(connectEx);
+            }
+            if (!abortFlag.get()) {
+                notifyInserted(insertResults, listener);
             }
             return null;
         }

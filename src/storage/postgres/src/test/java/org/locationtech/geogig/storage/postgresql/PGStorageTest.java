@@ -71,7 +71,7 @@ public class PGStorageTest {
                 schema, user, password, "another_repository", tablePrefix);
         assertNotEquals(repositoryName, noReposiotryName.getRepositoryName());
 
-        final DataSource expected = testConfig.openDataSource();
+        final DataSource expected = testConfig.getDataSource();
 
         DataSource actual = PGStorage.newDataSource(sameEnv);
         try {

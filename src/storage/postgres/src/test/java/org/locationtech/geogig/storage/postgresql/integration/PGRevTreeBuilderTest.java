@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.postgresql.integration;
 import java.io.IOException;
 
 import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilderTest;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -21,11 +22,14 @@ import org.locationtech.geogig.storage.postgresql.PGConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.PGObjectDatabase;
 import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 
 public class PGRevTreeBuilderTest extends CanonicalTreeBuilderTest {
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
+    public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
+
+    public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
+            getClass().getSimpleName(), ds);
 
     ConfigDatabase configDb;
 

@@ -3,18 +3,19 @@ Feature: IndexCreate
   The Index Create command allows a user to add spatial index to a specified layer
   The command must be executed using the HTTP PUT method
 
+  @404
   Scenario: Create index fails when repository does not exist
     Given There is an empty repository named repo1
      When I call "PUT /repos/noRepo/index/create?treeRefSpec=Point"
      Then the response body should contain "Repository not found."
      Then the response status should be '404'
-    
+  @405
   Scenario: Verify method not allowed on incorrect request type
     Given There is a repo with some data
      When I call "GET /repos/repo1/index/create?treeRefSpec=Points"
      Then the response status should be '405'
       And the response allowed methods should be "PUT"
-
+  @400
   Scenario: Create index fails when feature tree does not exist
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
@@ -128,7 +129,7 @@ Feature: IndexCreate
       And the repo1 repository's "master~2:Points" index should have the following features:
           |     index    | 
           |    Point.1   | 
-          
+  @500
   Scenario: Verify 500 status code when tree ref spec is not provided
     Given There is a repo with some data
      When I call "PUT /repos/repo1/index/create?extraAttributes=sp"

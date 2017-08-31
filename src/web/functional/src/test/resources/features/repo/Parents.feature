@@ -3,19 +3,20 @@ Feature: Parents
   The Parents resource returns the parents of a specific commit and is supported through the "/repos/{repository}/repo/getparents" endpoint
   The command must be executed using the HTTP GET method
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/repo/getparents"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-      
+  @404
   Scenario: Parents outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/repo/getparents"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
-   
+  @400
   Scenario: Parents with an invalid commit issues a 400 status code
     Given There is a default multirepo server
      When I call "GET /repos/repo1/repo/getparents?commitId=invalid"

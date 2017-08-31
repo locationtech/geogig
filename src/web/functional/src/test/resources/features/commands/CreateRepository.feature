@@ -5,13 +5,14 @@ Feature: Create Repository
   If a repository with the provided name already exists, then a 409 "Conflict" error code shall be returned
   If the command succeeds, the response status code is 201 "Created"
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty multirepo server
     When I call "GET /repos/repo1/init"
     Then the response status should be '405'
     And the response allowed methods should be "PUT"
 
-  @FileRepository
+  @FileRepository @409
   Scenario: Verify trying to create an existing repo issues 409 "Conflict"
     Given There is a default multirepo server
     And I have "extraRepo" that is not managed
@@ -35,13 +36,14 @@ Feature: Create Repository
     And the xpath "/response/repo/name/text()" equals "repo1"
     And the xpath "/response/repo/atom:link/@href" contains "/repos/repo1.xml"
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed", JSON requested response
     Given There is an empty multirepo server
     When I call "GET /repos/repo1/init.json"
     Then the response status should be '405'
     And the response allowed methods should be "PUT"
 
-  @FileRepository
+  @FileRepository @409
   Scenario: Verify trying to create an existing repo issues 409 "Conflict", JSON requested response
     Given There is a default multirepo server
     And I have "extraRepo" that is not managed
@@ -157,6 +159,7 @@ Feature: Create Repository
     And the parent directory of repository "repo1" equals System Temp directory
     And the Author config of repository "repo1" is set
 
+  @400
   Scenario: Verify Init with unsupported MediaType does not create a repository with defualt settings
     Given There is an empty multirepo server
     When I call "PUT /repos/repo1/init.json" with an unsupported media type

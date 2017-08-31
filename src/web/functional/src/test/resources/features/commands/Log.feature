@@ -3,12 +3,13 @@ Feature: Log
   The log command allows a user to view the commit log of a repo and is supported through the "/repos/{repository}/log" endpoint
   The command must be executed using the HTTP GET method
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/log"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-    
+  @404
   Scenario: Log outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/log"
@@ -130,13 +131,13 @@ Feature: Log
       And there is an xpath "/response/commit/message/text()" that contains "Added Point.2"
       And there is an xpath "/response/commit/id/text()" that equals "{@ObjectId|repo1|master~4}"
       And there is an xpath "/response/commit/message/text()" that contains "Added Point.1"
-      
+  @500
   Scenario: Using the summary parameter without a path issues a 500 status code
     Given There is a default multirepo server
      When I call "GET /repos/repo1/log?summary=true"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "You must specify a feature type path when getting a summary."
-      
+  @500
   Scenario: Using the summary parameter without using text/csv content type issues a 500 status code
     Given There is a default multirepo server
      When I call "GET /repos/repo1/log?path=Points&summary=true"

@@ -3,25 +3,26 @@ Feature: Config
   The config command allows a user to get and set config values and is supported through the "/repos/{repository}/config" endpoint
   The command must be executed using the HTTP GET or POST methods
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "DELETE /repos/repo1/config"
      Then the response status should be '405'
       And the response allowed methods should be "GET,POST"
-    
+  @404
   Scenario: Config outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/config"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
-      
+  @400
   Scenario: Config POST without specifying a key issues a 400 status code
     Given There is an empty repository named repo1
      When I call "POST /repos/repo1/config"
      Then the response status should be '400'
       And the xpath "/response/error/text()" contains "You must specify the key when setting a config key."
-      
+  @400
   Scenario: Config POST without specifying a value issues a 400 status code
     Given There is an empty repository named repo1
      When I call "POST /repos/repo1/config?name=user.name"

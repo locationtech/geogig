@@ -3,12 +3,13 @@ Feature: Branch
   The branch command allows a user to create and list branches and is supported through the "/repos/{repository}/branch" endpoint
   The command must be executed using the HTTP GET method
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/branch"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-    
+  @500
   Scenario: Calling branch without specifying list or a branch name issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/branch"
@@ -64,13 +65,13 @@ Feature: Branch
       And the xml response should contain "/response/BranchCreated/source" 1 times
      When I call "GET /repos/repo1/repo/manifest"
      Then the response body should contain "new_branch"
-     
+  @400
   Scenario: Calling branch with a branch name that already exists issues a 400 status code
     Given There is a default multirepo server
      When I call "GET /repos/repo1/branch?branchName=branch1"
      Then the response status should be '400'
       And the xpath "/response/error/text()" equals "A branch named 'branch1' already exists."
-      
+  @400
   Scenario: Calling branch with a source that does not exist issues a 400 status code
     Given There is a default multirepo server
      When I call "GET /repos/repo1/branch?branchName=new_branch&source=nonexistent"

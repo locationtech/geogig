@@ -11,6 +11,7 @@ package org.locationtech.geogig.spring.controller;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -36,7 +37,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 
 /**
  * Base Controller to hold common controller logic.
@@ -50,6 +50,21 @@ public abstract class AbstractController {
      * XML (JAXB2) and JSON (Google's Gson) when this parameter is in the request.
      */
     protected static final String API_V2 = "api_version=2";
+
+    /**
+     * Common 405 generator. Call this method from a controller to generate a 405.
+     * @param methods list of supported methods
+     */
+    protected void supportedMethods(Set<String> methods) {
+        throw new CommandSpecException("The request method is unsupported for this operation.",
+                HttpStatus.METHOD_NOT_ALLOWED, methods);
+    }
+
+    /**
+     * Exception for when no {@link RepositoryProvider} is provided in the request.
+     */
+    protected static final CommandSpecException NO_PROVIDER = new CommandSpecException(
+            "RepositoryProvider not specified in request", HttpStatus.BAD_REQUEST);
 
     /**
      * Extracts the {@link RepositoryProvider} from the HTTP request. The {@link RepositoryProvider}
@@ -147,11 +162,11 @@ public abstract class AbstractController {
     }
 
     /**
-     * Builds a {@link MultiValueMapParams} from a {@link RequestEntity}. Currently only supports
+     * Builds a {@link ParameterSet} from a {@link RequestEntity}. Currently only supports
      * JSON payload, and only basic JSON objects that are essentially key-value pairs, where the
      * values are primitives (String, numeric or boolean).
      * @param entity The RequestEntity payload, expected to be JSON.
-     * @return a {@link MultiValueMapParams} instance with key-value pairs from the JSON entity, or
+     * @return a {@link ParameterSet} instance with key-value pairs from the JSON entity, or
      * and empty instance if there is no body in the entity.
      */
     protected final ParameterSet getParamsFromEntity(RequestEntity<String> entity) {
@@ -190,7 +205,7 @@ public abstract class AbstractController {
             doc.getDocumentElement().normalize();
             return ParameterSetFactory.buildParameterSet(doc);
         } catch (IOException | ParserConfigurationException | SAXException ex) {
-            Throwables.propagate(ex);
+            getLogger().warn("Error handling XML contnet", ex);
         }
         return ParameterSetFactory.buildEmptyParameterSet();
     }

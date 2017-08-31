@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.spring.config;
 
+import org.locationtech.geogig.spring.service.LegacyMergeFeatureService;
 import org.locationtech.geogig.spring.service.RepositoryInitService;
 import org.locationtech.geogig.spring.service.RepositoryListService;
 import org.locationtech.geogig.spring.service.RepositoryService;
@@ -42,5 +43,10 @@ public class GeoGigWebAPISpringConfig {
     @Bean
     public RepositoryInitService getRepositoryInitService() {
         return new RepositoryInitService();
+    }
+
+    @Bean
+    public LegacyMergeFeatureService getLegacyMergeFeatureService() {
+        return new LegacyMergeFeatureService();
     }
 }

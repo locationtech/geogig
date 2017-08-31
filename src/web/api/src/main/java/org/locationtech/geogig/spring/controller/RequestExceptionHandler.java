@@ -28,6 +28,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -64,6 +65,13 @@ public class RequestExceptionHandler extends AbstractController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return buildResponse(ex, request, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler({ HttpMessageNotReadableException.class })
+    public ResponseEntity<Object> handleException(HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+        HttpHeaders headers = new HttpHeaders();
+        return buildResponse(ex, request, headers, HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<Object> buildResponse(Exception ex, HttpServletRequest request,

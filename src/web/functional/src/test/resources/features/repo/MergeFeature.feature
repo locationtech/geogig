@@ -76,7 +76,7 @@ Feature: MergeFeature
       """
      Then the response status should be '400'
       And the response body should contain "Invalid POST data."
-
+@Erik
   Scenario: MergeFeature builds a new feature from provided merges using ours and theirs (both features are the same)
     Given There is a default multirepo server
      When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with
@@ -85,11 +85,11 @@ Feature: MergeFeature
         "path"="Points/Point.1",
         "ours"="{@ObjectId|repo1|master}",
         "theirs"="{@ObjectId|repo1|branch1}",
-        "merges"=[
-          {"attribute"="ip", "ours"=true},
-          {"attribute"="sp", "theirs"=true},
-          {"attribute"="geom", "ours"=true}
-        ]
+        "merges"={
+          "ip"={"ours"=true},
+          "sp"={"theirs"=true},
+          "geom"={"ours"=true}
+        }
       }
       """
      Then the response status should be '200'
@@ -103,11 +103,11 @@ Feature: MergeFeature
         "path"="Points/Point.1",
         "ours"="{@ObjectId|repo1|master}",
         "theirs"="{@ObjectId|repo1|branch1}",
-        "merges"=[
-          {"attribute"="ip", "value"=500},
-          {"attribute"="sp", "value"="new"},
-          {"attribute"="geom", "value"="POINT (1 1)"}
-        ]
+        "merges"={
+          "ip"={"value"=500},
+          "sp"={"value"="new"},
+          "geom"={"value"="POINT (1 1)"}
+        }
       }
       """
      Then the response status should be '200'
@@ -132,11 +132,11 @@ Feature: MergeFeature
         "path"="Points/Point.1",
         "ours"="{@ObjectId|repo1|master}",
         "theirs"="{@ObjectId|repo1|branch1}",
-        "merges"=[
-          {"attribute"="ip", "ours"=true},
-          {"attribute"="sp", "theirs"=true},
-          {"attribute"="geom", "value"="POINT (1 1)"}
-        ]
+        "merges"={
+          "ip"={"ours"=true},
+          "sp"={"theirs"=true},
+          "geom"={"value"="POINT (1 1)"}
+        }
       }
       """
      Then the response status should be '200'

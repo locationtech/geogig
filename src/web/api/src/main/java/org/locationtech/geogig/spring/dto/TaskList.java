@@ -48,7 +48,7 @@ public class TaskList extends LegacyResponse {
     }
 
     @Override
-    public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+    public void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
         writer.writeStartElement("tasks");
         if (tasks != null) {
             for (TaskInfo task : tasks) {

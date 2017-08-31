@@ -9,10 +9,15 @@
  */
 package org.locationtech.geogig.spring.dto;
 
+import java.io.Writer;
+
 import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamingWriter;
+import org.locationtech.geogig.web.api.StreamingWriterFactory;
 import org.springframework.http.MediaType;
+
+import com.google.common.base.Throwables;
 
 /**
  * Base Response class that beans should implement if they wish to use the legacy code to build
@@ -21,14 +26,43 @@ import org.springframework.http.MediaType;
 public abstract class LegacyResponse {
 
     /**
-     * Encodes this Response to a {@link StreamingWriter} supplied by a Spring controller. The
-     * {@link StreamingWriter}s available support XML or JSON output.
-     *
-     * @param writer  StreamingWriter implementation to which this Response should encode itself.
-     * @param format  MediaType to use for the encoding.
+     * Encodes this Response to a {@link Writer} supplied by a Spring controller.
+     * 
+     * @param writer the writer to encode the response to
+     * @param format {@link MediaType} to use for the encoding
      * @param baseUrl
      */
-    public abstract void encode(StreamingWriter writer, MediaType format, String baseUrl);
+    public void encode(Writer writer, MediaType format, String baseUrl) {
+        try (StreamingWriter streamWriter = StreamingWriterFactory.getStreamWriter(format,
+                writer)) {
+            streamWriter.writeStartDocument();
+            encodeInternal(streamWriter, format, baseUrl);
+            streamWriter.writeEndDocument();
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    /**
+     * Resolve the MediaType of this response.
+     * 
+     * @param defaultMediaType the {@link MediaType} suggested by a Spring controller
+     * @return the {@link MediaType} to use for the response
+     */
+    public MediaType resolveMediaType(MediaType defaultMediaType) {
+        return defaultMediaType;
+    }
+
+    /**
+     * Encodes this Response to a {@link StreamingWriter}. The {@link StreamingWriter}s available
+     * support XML or JSON output.
+     *
+     * @param writer StreamingWriter implementation to which this Response should encode itself.
+     * @param format MediaType to use for the encoding.
+     * @param baseUrl
+     */
+    protected abstract void encodeInternal(StreamingWriter writer, MediaType format,
+            String baseUrl);
 
     /**
      * Encodes an Atom link element into a response.

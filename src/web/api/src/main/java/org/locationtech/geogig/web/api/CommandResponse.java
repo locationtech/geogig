@@ -51,7 +51,7 @@ public abstract class CommandResponse extends LegacyResponse {
     }
 
     @Override
-    public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+    public void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
         ResponseWriter out = new ResponseWriter(writer, format);
         try {
             write(out);

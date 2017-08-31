@@ -24,10 +24,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.LegacyResponse;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.StreamingWriter;
-import org.locationtech.geogig.web.api.StreamingWriterFactory;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.w3c.dom.Document;
@@ -82,19 +83,16 @@ public abstract class AbstractController {
         // Extract the baseURL from the request (NOTE: not reliable if proxies are involved)
         final String baseURL = getBaseUrl(request);
         // determine requested output format
-        final MediaType requestedResponseFormat = getMediaType(request);
+        final MediaType requestedResponseFormat = responseBean
+                .resolveMediaType(getMediaType(request));
         // set the Content-Type since we aren't using Spring's framework here
         response.setContentType(requestedResponseFormat.toString());
         // write the LegacyResponse object out to the Response stream
-        try (StreamingWriter streamWriter =
-                StreamingWriterFactory.getStreamWriter(requestedResponseFormat,
-                        response.getWriter())) {
-            streamWriter.writeStartDocument();
-            responseBean.encode(streamWriter, requestedResponseFormat, baseURL);
-            streamWriter.writeEndDocument();
-        } catch (Exception ex) {
-            getLogger().error("Error writing response", ex);
-            throw new RuntimeException(ex);
+        try {
+            responseBean.encode(response.getWriter(), requestedResponseFormat, baseURL);
+        } catch (Exception e) {
+            throw new CommandSpecException("Error writing response",
+                    HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
 

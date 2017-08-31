@@ -3,24 +3,25 @@ Feature: Cat
   The cat command allows a user to display the attributes of a repository object and is supported through the "/repos/{repository}/cat" endpoint
   The command must be executed using the HTTP GET method
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/cat"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-    
+  @500
   Scenario: Calling cat without specifying an object id issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/cat"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "Required parameter 'objectid' was not provided."
-      
+  @400
   Scenario: Calling cat with an invalid object id issues a 400 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/cat?objectid=notobjectid"
      Then the response status should be '400'
       And the xpath "/response/error/text()" contains "You must specify a valid non-null ObjectId."
-      
+  @400
   Scenario: Calling cat with a nonexistent object id issues a 400 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/cat?objectid=0123456789012345678901234567890123456789"

@@ -25,7 +25,6 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Method;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -48,7 +47,7 @@ public class RenameRepository extends AbstractWebAPICommand {
 
     @Override
     public boolean supports(final RequestMethod method) {
-        return Method.POST.equals(method);
+        return RequestMethod.POST.equals(method);
     }
 
     /**

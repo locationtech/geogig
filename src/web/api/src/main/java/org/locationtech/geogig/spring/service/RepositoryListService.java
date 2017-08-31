@@ -14,16 +14,12 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 import java.util.Iterator;
 
-import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.AtomLink;
-import org.locationtech.geogig.spring.dto.RepositoryInfo;
 import org.locationtech.geogig.spring.dto.RepositoryList;
 import org.locationtech.geogig.spring.dto.RepositoryListRepo;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-
-import com.google.common.base.Optional;
 
 /**
  * Internal service for constructing a {@link RepositoryList} DTO for Controllers to consume.
@@ -41,19 +37,6 @@ public class RepositoryListService {
             list.addRepo(listRepo);
         }
         return list;
-    }
-
-    public RepositoryInfo getRepository(RepositoryProvider provider, MediaType type, String baseUrl,
-            String repoName) {
-        Optional<Repository> geogig = provider.getGeogig(repoName);
-        if (geogig.isPresent()) {
-            Repository repo = geogig.get();
-            RepositoryInfo repoInfo = new RepositoryInfo().setName(repoName).
-                    setLocation(repo.getLocation().toString());
-            // TODO: need to set the ID, if it exists
-            return repoInfo;
-        }
-        return null;
     }
 
     private RepositoryListRepo getRepositoryListRepo(String repoName, MediaType type,

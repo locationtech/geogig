@@ -10,8 +10,7 @@
 package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
@@ -23,13 +22,13 @@ import static org.springframework.web.bind.annotation.RequestMethod.TRACE;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.locationtech.geogig.spring.dto.RepositoryList;
-import org.locationtech.geogig.spring.service.RepositoryListService;
+import org.locationtech.geogig.spring.dto.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,28 +36,13 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 
 /**
- * Controller for Repository List related endpoints.
- * <p>
- * <pre>
- * /repos
- * </pre>
+ *
  */
 @RestController
-@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE,
-        produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
-public class RepositoryListController extends AbstractController {
+@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/repo/objects")
+public class ObjectsController extends AbstractRepositoryController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryListController.class);
-
-    @Autowired
-    private RepositoryListService repositoryListService;
-
-    @GetMapping(params = API_V2)
-    public RepositoryList getRepositoryListV2(final HttpServletRequest request) {
-        // build the List
-        RepositoryList list = extractRepoList(request);
-        return list;
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObjectsController.class);
 
     @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
     public void catchAll() {
@@ -66,26 +50,37 @@ public class RepositoryListController extends AbstractController {
         supportedMethods(Sets.newHashSet(GET.toString()));
     }
 
-    @GetMapping()
-    public void getRepositoryList(HttpServletRequest request, HttpServletResponse response) {
-        // build the List
-        RepositoryList list = extractRepoList(request);
-        // encode using legacy output format
-        encode(list, request, response);
+    @GetMapping(path = "/{id}")
+    public void getObjects(@PathVariable(name = "repoName") String repoName,
+            @PathVariable(name = "id") String id,
+            HttpServletRequest request, HttpServletResponse response) {
+        // get the provider
+        Optional<RepositoryProvider> optional = getRepoProvider(request);
+        if (optional.isPresent()) {
+            final RepositoryProvider provider = optional.get();
+            // create a Objects object
+            Objects objects = new Objects();
+            // get the OID
+            ObjectId oid = ObjectId.valueOf(id);
+            // set it on the Objects object
+            objects.setRevObject(repositoryService.getRevObject(provider, repoName, oid));
+            // encode the response
+            encode(objects, request, response);
+        } else {
+            throw NO_PROVIDER;
+        }
+
     }
 
-    private RepositoryList extractRepoList(final HttpServletRequest request) {
-        // get the repositoryProvider form the request
-        Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
-        if (repoProvider.isPresent()) {
-            return repositoryListService.getRepositoryList(repoProvider.get(),
-                    getMediaType(request), getBaseUrl(request) + "/" + BASE_REPOSITORY_ROUTE);
-        }
-            throw NO_PROVIDER;
+    @Override
+    protected void preEncodeResponse(HttpServletRequest request, HttpServletResponse response) {
+        // setup the content-type
+        response.setContentType(TEXT_PLAIN_VALUE);
     }
 
     @Override
     protected Logger getLogger() {
-        return RepositoryListController.LOGGER;
+        return LOGGER;
     }
+
 }

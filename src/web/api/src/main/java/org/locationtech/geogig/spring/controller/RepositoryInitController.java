@@ -13,6 +13,13 @@ import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_RE
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
+import static org.springframework.web.bind.annotation.RequestMethod.PATCH;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
+import static org.springframework.web.bind.annotation.RequestMethod.TRACE;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,7 +29,6 @@ import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.InitRequest;
 import org.locationtech.geogig.spring.dto.RepositoryInitRepo;
 import org.locationtech.geogig.spring.service.RepositoryInitService;
-import org.locationtech.geogig.web.api.CommandSpecException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +38,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Optional;
@@ -52,53 +57,41 @@ public class RepositoryInitController extends AbstractController {
     @Autowired
     private RepositoryInitService repositoryInitService;
 
-    @RequestMapping(method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST,
-            RequestMethod.PUT})
+    @RequestMapping(method = {GET, POST, DELETE, PATCH, TRACE, OPTIONS})
+    public void catchAll() {
+        // if we hit this controller, it's a 405
+        supportedMethods(Sets.newHashSet(PUT.toString()));
+    }
+
+    @PutMapping
     public void initRepositoryNoBody(@PathVariable(name = "repoName") String repoName,
             HttpServletRequest request, HttpServletResponse response)
             throws RepositoryConnectionException {
-        if (request.getMethod().equals(RequestMethod.PUT.toString())) {
-            RepositoryInitRepo repo = initRepo(request, repoName);
-            response.setStatus(HttpStatus.CREATED.value());
-            encode(repo, request, response);
-        } else {
-            throw new CommandSpecException("The request method is unsupported for this operation.",
-                    HttpStatus.METHOD_NOT_ALLOWED, Sets.newHashSet(RequestMethod.PUT.toString()));
-        }
+        RepositoryInitRepo repo = initRepo(request, repoName);
+        response.setStatus(HttpStatus.CREATED.value());
+        encode(repo, request, response);
     }
 
-    @RequestMapping(method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST,
-            RequestMethod.PUT}, consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    @PutMapping(consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
     public void initRepositoryFromJsonOrXml(
             @PathVariable(name = "repoName")String repoName,
             @RequestBody InitRequest requestBody,
             HttpServletRequest request, HttpServletResponse response)
             throws RepositoryConnectionException {
-        if (request.getMethod().equals(RequestMethod.PUT.toString())) {
-            RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
-            response.setStatus(HttpStatus.CREATED.value());
-            encode(repo, request, response);
-        } else {
-            throw new CommandSpecException("The request method is unsupported for this operation.",
-                    HttpStatus.METHOD_NOT_ALLOWED, Sets.newHashSet(RequestMethod.PUT.toString()));
-        }
+        RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
+        response.setStatus(HttpStatus.CREATED.value());
+        encode(repo, request, response);
     }
 
-    @RequestMapping(method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST,
-            RequestMethod.PUT},  consumes = {APPLICATION_FORM_URLENCODED_VALUE})
+    @PutMapping(consumes = {APPLICATION_FORM_URLENCODED_VALUE})
     public void initRepositoryFromForm(
             @PathVariable(name = "repoName")String repoName,
             @RequestBody MultiValueMap<String, String> requestBody,
             HttpServletRequest request, HttpServletResponse response)
             throws RepositoryConnectionException {
-        if (request.getMethod().equals(RequestMethod.PUT.toString())) {
-            RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
-            response.setStatus(HttpStatus.CREATED.value());
-            encode(repo, request, response);
-        } else {
-            throw new CommandSpecException("The request method is unsupported for this operation.",
-                    HttpStatus.METHOD_NOT_ALLOWED, Sets.newHashSet(RequestMethod.PUT.toString()));
-        }
+        RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
+        response.setStatus(HttpStatus.CREATED.value());
+        encode(repo, request, response);
     }
 
     private RepositoryInitRepo initRepo(HttpServletRequest request, String repoName)
@@ -108,7 +101,7 @@ public class RepositoryInitController extends AbstractController {
             return repositoryInitService.initRepository(repoProvider.get(), repoName,
                     Maps.newHashMap());
         } else {
-            throw new CommandSpecException("No GeoGig repository provider set in the request.");
+            throw NO_PROVIDER;
         }
     }
 
@@ -120,7 +113,7 @@ public class RepositoryInitController extends AbstractController {
             return repositoryInitService.initRepository(repoProvider.get(), repoName,
                     (requestBody == null) ? Maps.newHashMap() : requestBody.getParameters());
         } else {
-            throw new CommandSpecException("No GeoGig repository provider set in the request.");
+            throw NO_PROVIDER;
         }
     }
 
@@ -132,7 +125,7 @@ public class RepositoryInitController extends AbstractController {
             return repositoryInitService.initRepository(repoProvider.get(), repoName,
                     (requestBody == null) ? Maps.newHashMap() : requestBody.toSingleValueMap());
         } else {
-            throw new CommandSpecException("No GeoGig repository provider set in the request.");
+            throw NO_PROVIDER;
         }
     }
 

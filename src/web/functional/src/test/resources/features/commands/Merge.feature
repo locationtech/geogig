@@ -3,25 +3,26 @@ Feature: Merge
   The merge command allows a user to merge two branches and is supported through the "/repos/{repository}/merge" endpoint
   The command must be executed using the HTTP GET method
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/merge"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-      
+  @500
   Scenario: Merge outside of a transaction issues 500 "Transaction required"
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/merge?commit=branch1"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "No transaction was specified"
-      
+  @404
   Scenario: Merge outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/merge?commit=branch1"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
-      
+  @500
   Scenario: Calling merge with no commit to merge issues a 500 status code
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo

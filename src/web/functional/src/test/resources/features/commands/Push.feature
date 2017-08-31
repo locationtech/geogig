@@ -3,12 +3,13 @@ Feature: Push
   The push command allows a user to push a local branch to a remote and is supported through the "/repos/{repository}/push" endpoint
   The command must be executed using the HTTP GET method
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/push"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-      
+  @404
   Scenario: Push outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/push"
@@ -44,7 +45,7 @@ Feature: Push
       And the xpath "/response/success/text()" equals "true"
       And the xpath "/response/Push/text()" equals "Success"
       And the xpath "/response/dataPushed/text()" equals "false"
-
+  @500
   Scenario: Pushing changes to a remote with other changes issues a 500 status code
     Given There is a default multirepo server with remotes
       And I have a transaction as "@txId" on the "repo4" repo
@@ -52,7 +53,7 @@ Feature: Push
      When I call "GET /repos/repo4/push?transactionId={@txId}&remoteName=origin&ref=master"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "Push failed: The remote repository has changes that would be lost in the event of a push."
-      
+  @500
   @HttpTest
   Scenario: Pushing changes to an http remote with other changes issues a 500 status code
     Given There is a default multirepo server with http remotes

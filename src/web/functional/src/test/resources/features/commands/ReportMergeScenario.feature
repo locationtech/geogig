@@ -3,37 +3,38 @@ Feature: ReportMergeScenario
   The ReportMergeScenario command allows a user to see the results of a merge between two branches and is supported through the "/repos/{repository}/reportMergeScenario" endpoint
   The command must be executed using the HTTP GET method
 
+  @405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/reportMergeScenario"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-      
+  @404
   Scenario: ReportMergeScenario outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/reportMergeScenario?ourCommit=master&theirCommit=branch1"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
-      
+  @500
   Scenario: Calling ReportMergeScenario with no "our" commit issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/reportMergeScenario?theirCommit=branch1"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "Required parameter 'ourCommit' was not provided."
-      
+  @500
   Scenario: Calling ReportMergeScenario with no "their" commit issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/reportMergeScenario?ourCommit=master"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "Required parameter 'theirCommit' was not provided."
-      
+  @500
   Scenario: Calling ReportMergeScenario with an invalid "our" commit issues a 500 status code
     Given There is a repository with multiple branches named repo1
      When I call "GET /repos/repo1/reportMergeScenario?ourCommit=nonexistent&theirCommit=branch1"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "'our' commit could not be resolved to a commit object."
-      
+  @500
   Scenario: Calling ReportMergeScenario with an invalid "their" commit issues a 500 status code
     Given There is a repository with multiple branches named repo1
      When I call "GET /repos/repo1/reportMergeScenario?ourCommit=master&theirCommit=nonexistent"

@@ -63,7 +63,7 @@ public class RepositoryInfo extends LegacyResponse {
     }
 
     @Override
-    public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+    public void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
         writer.writeStartElement("repository");
         if (!UNDEFINED.equals(id)) {
             writer.writeElement("id", id);

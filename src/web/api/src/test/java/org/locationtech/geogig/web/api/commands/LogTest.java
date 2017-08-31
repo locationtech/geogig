@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
 import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
-import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -28,13 +28,15 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.Variants;
+import org.locationtech.geogig.rest.repository.TestParams;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.rest.repository.TestParams;
-import org.restlet.resource.Representation;
+import org.springframework.http.MediaType;
 
 public class LogTest extends AbstractWebOpTest {
 
@@ -325,12 +327,15 @@ public class LogTest extends AbstractWebOpTest {
                 TestData.point1.getID());
         ParameterSet options = TestParams.of("path", path, "summary", "true");
         buildCommand(options).run(testContext.get());
+        LegacyResponse response = testContext.getCommandResponse();
 
-        Representation representation = null;// getResponseRepresentation(Variants.CSV.getMediaType());
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        representation.write(out);
+        // request format may not be CSV, but it should still output csv
+        assertEquals(Variants.CSV_MEDIA_TYPE,
+                response.resolveMediaType(MediaType.APPLICATION_JSON));
+        StringWriter writer = new StringWriter();
+        response.encode(writer, Variants.CSV_MEDIA_TYPE, "/geogig");
 
-        String content = out.toString();
+        String content = writer.toString();
         String[] lines = content.split("\n");
 
         assertEquals(2, lines.length);

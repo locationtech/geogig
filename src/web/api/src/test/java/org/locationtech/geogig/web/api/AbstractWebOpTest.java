@@ -111,14 +111,7 @@ public abstract class AbstractWebOpTest {
         try {
             LegacyResponse commandResponse = testContext.getCommandResponse();
             StringWriter writer = new StringWriter();
-            try (StreamingWriter streamWriter = StreamingWriterFactory
-                    .getStreamWriter(MediaType.APPLICATION_JSON, writer)) {
-                streamWriter.writeStartDocument();
-                commandResponse.encode(streamWriter, MediaType.APPLICATION_JSON, "/geogig");
-                streamWriter.writeEndDocument();
-            } catch (Exception ex) {
-                Throwables.propagate(ex);
-            }
+            commandResponse.encode(writer, MediaType.APPLICATION_JSON, "/geogig");
 
             String content = writer.toString();
             response = Json.createReader(new StringReader(content)).readObject();

@@ -70,12 +70,12 @@ public class TaskController extends AbstractController {
 
         encode(new LegacyResponse() {
             @Override
-            public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+            public void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
                 writer.writeStartArray("tasks");
                 for (AsyncCommand<? extends Object> c : all) {
                     writer.writeStartArrayElement("tasks");
                     AsyncCommandRepresentation<?> rep = Representations.newRepresentation(c, false);
-                    rep.encode(writer, format, baseUrl);
+                    rep.encodeInternal(writer, format, baseUrl);
                     writer.writeEndArrayElement();
                 }
                 writer.writeEndArray();

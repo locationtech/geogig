@@ -43,7 +43,7 @@ public abstract class AsyncCommandRepresentation<T> extends LegacyResponse {
         this.cleanup = cleanup;
     }
 
-    public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+    public void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
         this.mediaType = format;
         this.baseURL = baseUrl;
         write(writer);

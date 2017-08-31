@@ -50,7 +50,7 @@ public class RepositoryInitRepo extends LegacyResponse {
     }
 
     @Override
-    public void encode(StreamingWriter writer, MediaType format, String baseUrl) {
+    public void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
         writer.writeStartElement("response");
         {
             writer.writeElement("success", "true");

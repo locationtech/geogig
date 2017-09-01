@@ -3,7 +3,7 @@ Feature: Manifest
   The manifest resources provides a list of all the branches in the repository and is supported through the "/repos/{repository}/repo/manifest" endpoint
   The command must be executed using the HTTP GET method
 
-  @405
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/repo/manifest"

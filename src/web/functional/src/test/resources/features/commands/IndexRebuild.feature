@@ -3,13 +3,13 @@ Feature: IndexRebuild
   The Index Rebuild command allows a user to rebuild the spatial index for a specified layer
   The command must be executed using the HTTP POST method
 
-  @404
+  @Status404
   Scenario: Index Rebuild fails for non-existent repository
     Given There is an empty multirepo server
      When I call "PUT /repos/repo1/index/create?treeRefSpec=Points"
      Then the response body should contain "Repository not found."
       And the response status should be '404'
-  @405
+  @Status405
   Scenario: Verify method not allowed on incorrect request type
     Given There is a repo with some data
       And I call "PUT /repos/repo1/index/create?treeRefSpec=Points"
@@ -58,7 +58,7 @@ Feature: IndexRebuild
           |     index    | 
           |    Point.1   | 
       And the response status should be '201'
-  @500
+  @Status500
   Scenario: Verify 500 status code when tree ref spec is not provided
     Given There is a repo with some data
      When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"

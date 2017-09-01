@@ -3,13 +3,13 @@ Feature: Pull
   The pull command allows a user to merge a remote branch into a local one and is supported through the "/repos/{repository}/pull" endpoint
   The command must be executed using the HTTP GET method
 
-  @405
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/pull"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-  @404
+  @Status404
   Scenario: Pull outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/pull"

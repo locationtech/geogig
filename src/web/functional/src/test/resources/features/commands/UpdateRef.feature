@@ -3,32 +3,32 @@ Feature: UpdateRef
   The UpdateRef command allows a user to manually change the value of a ref and is supported through the "/repos/{repository}/updateref" endpoint
   The command must be executed using the HTTP GET method
 
-  @405
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/updateref"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-  @404
+  @Status404
   Scenario: UpdateRef outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/updateref?name=master"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
-  @500
+  @Status500
   Scenario: Calling UpdateRef without a ref name issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/updateref"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "Required parameter 'name' was not provided."
-  @500
+  @Status500
   Scenario: Calling UpdateRef without a new value or delete specified issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/updateref?name=master"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "Nothing specified to update with, must specify either deletion or new value to update to."
-  @500
+  @Status500
   Scenario: Calling UpdateRef without a nonexistent name issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/updateref?name=nonexistent&delete=true"

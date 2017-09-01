@@ -8,13 +8,13 @@ Feature: Export GeoPackage
   replyed on top of the repository.  
   
   API Spec: GET /repos/<repo>/export[.xml|.json]?format=gpkg[&root=<refspec>][&path=<layerName>[,<layerName>]+][&bbox=<boundingBox>][&interchange=<true|false>]
-  @405
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty multirepo server
      When I call "POST /repos/repo1/export?format=gpkg"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-  @400
+  @Status400
   Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request"
     Given There is a default multirepo server
      When I call "GET /repos/repo1/export"
@@ -22,7 +22,7 @@ Feature: Export GeoPackage
       And the response ContentType should be "application/xml"
       And the xpath "/response/success/text()" equals "false"
       And the xpath "/response/error/text()" contains "output format not provided"
-  @400
+  @Status400
   Scenario: Verify unsupported output format argument issues 400 "Bad request"
     Given There is a default multirepo server
      When I call "GET /repos/repo1/export?format=badFormat"
@@ -30,7 +30,7 @@ Feature: Export GeoPackage
       And the response ContentType should be "application/xml"
       And the xpath "/response/success/text()" equals "false"
       And the xpath "/response/error/text()" contains "Unsupported output format"
-  @404
+  @Status404
   Scenario: Verify export on a non existent repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/badRepo/export?format=gpkg"
@@ -49,13 +49,13 @@ Feature: Export GeoPackage
      When I call "GET /tasks/{@taskId}/download"
      Then the result is a valid GeoPackage file
 
-  @405
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed", JSON requested response
     Given There is an empty multirepo server
      When I call "POST /repos/repo1/export.json?format=gpkg"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-  @400
+  @Status400
   Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request", JSON requested response
     Given There is a default multirepo server
      When I call "GET /repos/repo1/export.json"
@@ -63,7 +63,7 @@ Feature: Export GeoPackage
       And the response ContentType should be "application/json"
       And the json object "response.success" equals "false"
       And the json object "response.error" equals "output format not provided"
-  @400
+  @Status400
   Scenario: Verify unsupported output format argument issues 400 "Bad request", JSON requested response
     Given There is a default multirepo server
      When I call "GET /repos/repo1/export.json?format=badFormat"
@@ -71,7 +71,7 @@ Feature: Export GeoPackage
       And the response ContentType should be "application/json"
       And the json object "response.success" equals "false"
       And the json object "response.error" equals "Unsupported output format: badFormat"
-  @404
+  @Status404
   Scenario: Verify export on a non existent repository issues 404 "Not found", JSON requested response
     Given There is an empty multirepo server
      When I call "GET /repos/badRepo/export.json?format=gpkg"

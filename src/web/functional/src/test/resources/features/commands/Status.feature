@@ -3,13 +3,13 @@ Feature: Status
   The Status command allows a user to see the current state of the repository and is supported through the "/repos/{repository}/status" endpoint
   The command must be executed using the HTTP GET method
 
-  @405
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/status"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-  @404
+  @Status404
   Scenario: Status outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/status"

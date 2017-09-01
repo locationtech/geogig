@@ -3,13 +3,13 @@ Feature: LsTree
   The LsTree command allows a user to view the contents of a tree in the repository and is supported through the "/repos/{repository}/ls-tree" endpoint
   The command must be executed using the HTTP GET method
 
-  @405
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/ls-tree"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-  @404
+  @Status404
   Scenario: LsTree outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/ls-tree"

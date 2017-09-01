@@ -25,10 +25,10 @@ import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
@@ -67,7 +67,7 @@ public class RevTreeBuilderPerformanceTest {
         odb.open();
     }
 
-    protected ObjectStore createObjectStore() throws Exception{
+    protected ObjectStore createObjectStore() throws Exception {
         return new HeapObjectStore();
     }
 
@@ -137,13 +137,13 @@ public class RevTreeBuilderPerformanceTest {
         testBuildUnordered(5000_000);
     }
 
-    //@Ignore
+    // @Ignore
     @Test
     public void testBuilUnordered_04_10M() {
         testBuildUnordered(10_000_000);
     }
 
-    //@Ignore
+    // @Ignore
     @Test
     public void testBuilUnordered_05_50M() {
         testBuildUnordered(50_000_000);
@@ -178,8 +178,7 @@ public class RevTreeBuilderPerformanceTest {
         System.err.printf("\tTotal time: %s\n", totalTime);
         if (odb instanceof HeapObjectStore) {
             HeapObjectStore hos = (HeapObjectStore) odb;
-            System.err.printf("\tTotal trees created: %,d, Stored size: %,d bytes\n", hos.size(),
-                    hos.storageSize());
+            System.err.printf("\tTotal trees created: %,d\n", hos.size());
         }
         assertEquals(size, tree.size());
     }
@@ -201,22 +200,22 @@ public class RevTreeBuilderPerformanceTest {
         int count = 0, s = 0;
         final int step = size / 100;
         Stopwatch sw = Stopwatch.createUnstarted();
-//        Iterable<List<Node>> partitions = Iterables.partition(nodes, 100_000);
-//        for (List<Node> partition : partitions) {
-            sw.start();
-            totalTime.start();
-            for (Node n : nodes) {
-                count++;
-                s++;
-                b.put(n);
-                if (s == step) {
-                    s = 0;
-                    System.err.print('#');
-                }
+        // Iterable<List<Node>> partitions = Iterables.partition(nodes, 100_000);
+        // for (List<Node> partition : partitions) {
+        sw.start();
+        totalTime.start();
+        for (Node n : nodes) {
+            count++;
+            s++;
+            b.put(n);
+            if (s == step) {
+                s = 0;
+                System.err.print('#');
             }
-            sw.stop();
-            totalTime.stop();
-//        }
+        }
+        sw.stop();
+        totalTime.stop();
+        // }
         System.err.printf("\n%,d nodes inserted in %s\n", count, sw);
         System.err.flush();
         return b;

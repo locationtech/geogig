@@ -3,12 +3,13 @@ Feature: IndexList
   The Index List command allows a user to display spatial index info for a feature tree
   The command must be executed using the HTTP GET method
 
+  @Status404
   Scenario: Index list fails non-existent repository
     Given There is a repo with some data
      When I call "GET /repos/noRepo/index/list?treeName=does_not_exist"
      Then the response body should contain "Repository not found."
       And the response status should be '404'
-
+  @Status405
   Scenario: Verify method not allowed on incorrect request type
     Given There is a repo with some data
       And I call "PUT /repos/repo1/index/create?treeRefSpec=Points"
@@ -35,7 +36,7 @@ Feature: IndexList
       And the xpath "/response/index/treeName/text()" equals "Points"
       And the response body should not contain "Lines"
       And the response status should be '200'
-
+  @Status404
   Scenario: Verify failed index list return for non-existent feature tree
     Given There is a repo with some data
      When I call "GET /repos/repo1/index/list?treeName=does_not_exist"

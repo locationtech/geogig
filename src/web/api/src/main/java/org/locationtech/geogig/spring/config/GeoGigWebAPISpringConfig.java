@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.spring.config;
 
+import org.locationtech.geogig.spring.service.LegacyMergeFeatureService;
+import org.locationtech.geogig.spring.service.RepositoryInitService;
+import org.locationtech.geogig.spring.service.RepositoryListService;
+import org.locationtech.geogig.spring.service.RepositoryService;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -23,4 +28,25 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 @ComponentScan(basePackages = "org.locationtech.geogig.spring")
 public class GeoGigWebAPISpringConfig {
+
+    // Service Beans
+    @Bean
+    public RepositoryService getRepositoryService() {
+        return new RepositoryService();
+    }
+
+    @Bean
+    public RepositoryListService getRepositoryListService() {
+        return new RepositoryListService();
+    }
+
+    @Bean
+    public RepositoryInitService getRepositoryInitService() {
+        return new RepositoryInitService();
+    }
+
+    @Bean
+    public LegacyMergeFeatureService getLegacyMergeFeatureService() {
+        return new LegacyMergeFeatureService();
+    }
 }

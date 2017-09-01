@@ -25,7 +25,7 @@ import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.spring.dto.LegacyResponse;
-import org.locationtech.geogig.spring.service.RepositoryListService;
+import org.locationtech.geogig.spring.service.RepositoryService;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -60,19 +60,17 @@ public class RepositoryCommandController extends AbstractController {
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCommandController.class);
 
     @Autowired
-    private RepositoryListService repositoryListService;
+    private RepositoryService repositoryService;
 
     @GetMapping
     public void getRepositoryInfo(@PathVariable String repoName,
             final HttpServletRequest request, HttpServletResponse response) {
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         if (repoProvider.isPresent()) {
-            encode(repositoryListService.getRepository(repoProvider.get(),
-                    getMediaType(request), getBaseUrl(request) + "/" + BASE_REPOSITORY_ROUTE,
-                    repoName), request, response);
+            encode(repositoryService.getRepositoryInfo(repoProvider.get(), repoName),
+                    request, response);
         } else {
-            throw new CommandSpecException("RepositoryProvider not specified in request",
-                    HttpStatus.BAD_REQUEST);
+            throw NO_PROVIDER;
         }
     }
 
@@ -93,20 +91,20 @@ public class RepositoryCommandController extends AbstractController {
                     HttpStatus.NOT_FOUND);
         }
     }
-    
+
     /**
      * Runs the given command.
-     * 
+     *
      * @param repoName the repository name
      * @param command the command name
      * @param params request parameters
+     * @param file File to upload
      * @param request the request
      * @param response the response object
      * @param entity the RequestEntity payload, if any
      * @throws IOException
      */
-    @RequestMapping(value = "/{command}", method = { RequestMethod.GET, RequestMethod.PUT,
-            RequestMethod.POST, RequestMethod.DELETE })
+    @RequestMapping(value = "/{command}")
     public void runCommand(@PathVariable String repoName, @PathVariable String command,
             @RequestParam MultiValueMap<String, String> params,
             @RequestParam(required = false, name = UploadCommandResource.UPLOAD_FILE_KEY) MultipartFile file,
@@ -150,7 +148,7 @@ public class RepositoryCommandController extends AbstractController {
 
     /**
      * Build an {@link AbstractWebAPICommand} from a command name.
-     * 
+     *
      * @param commandName the name of the command
      * @return
      */

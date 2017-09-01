@@ -12,6 +12,13 @@ package org.locationtech.geogig.spring.controller;
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
+import static org.springframework.web.bind.annotation.RequestMethod.PATCH;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
+import static org.springframework.web.bind.annotation.RequestMethod.TRACE;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,16 +26,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.RepositoryList;
 import org.locationtech.geogig.spring.service.RepositoryListService;
-import org.locationtech.geogig.web.api.CommandSpecException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Sets;
 
 /**
  * Controller for Repository List related endpoints.
@@ -54,6 +60,12 @@ public class RepositoryListController extends AbstractController {
         return list;
     }
 
+    @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
+    public void catchAll() {
+        // if we hit this controller, it's a 405
+        supportedMethods(Sets.newHashSet(GET.toString()));
+    }
+
     @GetMapping()
     public void getRepositoryList(HttpServletRequest request, HttpServletResponse response) {
         // build the List
@@ -69,8 +81,7 @@ public class RepositoryListController extends AbstractController {
             return repositoryListService.getRepositoryList(repoProvider.get(),
                     getMediaType(request), getBaseUrl(request) + "/" + BASE_REPOSITORY_ROUTE);
         }
-        throw new CommandSpecException("No Repository Provider found in request",
-                HttpStatus.BAD_REQUEST);
+            throw NO_PROVIDER;
     }
 
     @Override

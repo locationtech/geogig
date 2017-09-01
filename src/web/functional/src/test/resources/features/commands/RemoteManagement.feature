@@ -3,12 +3,13 @@ Feature: Remote
   The remote command allows a user to manage the remotes of a repository and is supported through the "/repos/{repository}/remote" endpoint
   The command must be executed using the HTTP GET method
 
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/remote"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-    
+  @Status404
   Scenario: Remote outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/remote"
@@ -32,7 +33,7 @@ Feature: Remote
       And the xpath "/response/success/text()" equals "true"
       And the xpath "/response/Remote/name/text()" equals "origin"
       And the xml response should contain "/response/Remote/url" 1 times
-      
+  @Status400
   Scenario: Supplying the ping parameter without a remote name issues a 400 status code
     Given There is a default multirepo server with remotes
      When I call "GET /repos/repo3/remote?ping=true"
@@ -52,13 +53,13 @@ Feature: Remote
      Then the response status should be '200'
       And the xpath "/response/success/text()" equals "true"
       And the xpath "/response/ping/success/text()" equals "false"
-      
+  @Status500
   Scenario: Supplying the remove parameter without a remote name issues a 500 status code
     Given There is a default multirepo server with remotes
      When I call "GET /repos/repo3/remote?remove=true"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "No remote was specified."
-      
+  @Status400
   Scenario: Removing a nonexistent remote issues a 400 status code
     Given There is a default multirepo server with remotes
      When I call "GET /repos/repo3/remote?remove=true&remoteName=nonexistent"
@@ -77,13 +78,13 @@ Feature: Remote
       And the xml response should contain "/response/Remote" 1 times
       And the response body should not contain "repo1"
       And the response body should contain "repo2"
-      
+  @Status500
   Scenario: Supplying the update parameter without a remote name issues a 500 status code
     Given There is a default multirepo server with remotes
      When I call "GET /repos/repo3/remote?update=true"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "No remote was specified."
-      
+  @Status500
   Scenario: Supplying the update parameter without a remote url issues a 500 status code
     Given There is a default multirepo server with remotes
      When I call "GET /repos/repo3/remote?update=true&remoteName=repo1"
@@ -114,13 +115,13 @@ Feature: Remote
       And the xml response should contain "/response/Remote" 2 times
       And the response body should contain "renamed"
       And the response body should contain "repo2"
-      
+  @Status500
   Scenario: Supplying the add parameter without a remote name issues a 500 status code
     Given There is a default multirepo server with remotes
      When I call "GET /repos/repo3/remote?add=true"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "No remote was specified."
-      
+  @Status500
   Scenario: Supplying the add parameter without a remote url issues a 500 status code
     Given There is a default multirepo server with remotes
      When I call "GET /repos/repo3/remote?add=true&remoteName=newRemote"

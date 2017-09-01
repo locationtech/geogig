@@ -3,31 +3,32 @@ Feature: Tag
   The Tag command allows a user to create, list, and delete tags and is supported through the "/repos/{repository}/tag" endpoint
   The command must be executed using the HTTP GET, POST, or DELETE methods
 
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/tag"
      Then the response status should be '405'
       And the response allowed methods should be "GET,POST,DELETE"
-      
+  @Status404
   Scenario: Tag outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/tag"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
-    
+  @Status500
   Scenario: Issuing a POST request to tag without a name issues a 500 status code
     Given There is an empty repository named repo1
      When I call "POST /repos/repo1/tag"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "You must specify list or delete, or provide a name, message, and commit for the new tag."
-   
+  @Status500
   Scenario: Issuing a POST request to tag without a commit issues a 500 status code
     Given There is an empty repository named repo1
      When I call "POST /repos/repo1/tag?name=newTag"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "You must specify a commit to point the tag to."
-      
+  @Status500
   Scenario: Issuing a POST request to tag with an invalid commit issues a 500 status code
     Given There is an empty repository named repo1
      When I call "POST /repos/repo1/tag?name=newTag&commit=nonexistent"
@@ -62,7 +63,7 @@ Feature: Tag
       And there is an xpath "/response/Tag/commitid/text()" that equals "{@ObjectId|repo1|branch1}"
       And there is an xpath "/response/Tag/name/text()" that equals "tag2"
       And there is an xpath "/response/Tag/message/text()" that equals "My Tag 2"
-      
+  @Status500
   Scenario: Issuing a DELETE request to tag without a name issues a 500 status code
     Given There is an empty repository named repo1
      When I call "DELETE /repos/repo1/tag"

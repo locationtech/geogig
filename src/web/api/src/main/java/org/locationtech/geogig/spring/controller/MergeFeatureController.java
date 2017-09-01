@@ -11,7 +11,6 @@ package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
@@ -128,12 +127,6 @@ public class MergeFeatureController extends AbstractRepositoryController {
         } else {
             throw NO_PROVIDER;
         }
-    }
-
-    @Override
-    protected void preEncodeResponse(HttpServletRequest request, HttpServletResponse response) {
-        // setup the content-type
-        response.setContentType(TEXT_PLAIN_VALUE);
     }
 
     @Override

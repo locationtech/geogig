@@ -10,8 +10,7 @@
 package org.locationtech.geogig.spring.dto;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -21,7 +20,7 @@ import com.google.common.base.Throwables;
 /**
  *
  */
-public class MergeFeatureResponse implements LegacyStatsResponse {
+public class MergeFeatureResponse extends LegacyRepoResponse {
 
     private RevFeature mergedFeature;
 
@@ -35,12 +34,12 @@ public class MergeFeatureResponse implements LegacyStatsResponse {
     }
 
     @Override
-    public void encode(OutputStream out) {
+    public void encode(Writer out) {
         if (mergedFeature != null) {
             final ObjectId oid = mergedFeature.getId();
             if (oid != null) {
-                try(OutputStreamWriter osw = new OutputStreamWriter(out)) {
-                    osw.write(oid.toString());
+                try {
+                    out.write(oid.toString());
                 } catch (IOException ioe) {
                     Throwables.propagate(ioe);
                 }

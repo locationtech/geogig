@@ -50,6 +50,7 @@ public class TaskControllerTest extends AbstractControllerTest {
     public void testTaskList() throws Exception {
         AsyncContext context = AsyncContext.get();
         AsyncTestOp op1 = new AsyncTestOp();
+        op1.stop(13);
         AsyncCommand<?> command1 = context.run(op1, "Op1 Description");
         int op1TaskId = Integer.parseInt(command1.getTaskId());
         AsyncTestOp op2 = new AsyncTestOp();
@@ -59,7 +60,9 @@ public class TaskControllerTest extends AbstractControllerTest {
         AsyncTestOp op3 = new AsyncTestOp();
         AsyncCommand<?> command3 = context.run(op3, "Op3 Description");
         int op3TaskId = Integer.parseInt(command3.getTaskId());
+        waitForCommandToFinish(command1);
         waitForCommandToFinish(command2);
+        waitForCommandToStart(command3);
 
         MockHttpServletRequestBuilder taskListRequest = MockMvcRequestBuilders.get("/tasks.json");
 
@@ -70,9 +73,12 @@ public class TaskControllerTest extends AbstractControllerTest {
                         jsonPath("$.tasks[?(@.task.description == \'Op1 Description\')]").exists())
                 .andExpect(jsonPath(
                         "$.tasks[?(@.task.description == \'Op1 Description\')].task.status")
-                                .value(Status.RUNNING.name()))
+                                .value(Status.FINISHED.name()))
                 .andExpect(jsonPath("$.tasks[?(@.task.description == \'Op1 Description\')].task.id")
                         .value(op1TaskId))
+                .andExpect(jsonPath(
+                        "$.tasks[?(@.task.description == \'Op1 Description\')].task.result.value")
+                                .value(13))
                 .andExpect(
                         jsonPath("$.tasks[?(@.task.description == \'Op2 Description\')]").exists())
                 .andExpect(jsonPath(
@@ -99,6 +105,8 @@ public class TaskControllerTest extends AbstractControllerTest {
         AsyncCommand<?> command = context.run(op, "Op Description");
         command.getProgressListener().setProgress(0.5f);
         command.getProgressListener().setDescription("Progress Description");
+
+        waitForCommandToStart(command);
 
         int taskId = Integer.parseInt(command.getTaskId());
 
@@ -138,6 +146,8 @@ public class TaskControllerTest extends AbstractControllerTest {
         AsyncCommand<?> command = context.run(op, "Op Description");
         command.getProgressListener().setProgress(0.5f);
         command.getProgressListener().setDescription("Progress Description");
+
+        waitForCommandToStart(command);
 
         int taskId = Integer.parseInt(command.getTaskId());
 
@@ -179,6 +189,8 @@ public class TaskControllerTest extends AbstractControllerTest {
         AsyncCommand<?> command = context.run(op, "Op Description");
         command.getProgressListener().setProgress(0.5f);
         command.getProgressListener().setDescription("Progress Description");
+
+        waitForCommandToStart(command);
 
         int taskId = Integer.parseInt(command.getTaskId());
 
@@ -305,6 +317,12 @@ public class TaskControllerTest extends AbstractControllerTest {
 
         perform(taskDownloadRequest).andExpect(status().isOk())
                 .andExpect(content().contentType(expectedMediaType));
+    }
+
+    private void waitForCommandToStart(AsyncCommand<?> command) throws InterruptedException {
+        while (command.getStatus().equals(Status.WAITING)) {
+            Thread.sleep(100);
+        }
     }
 
     private void waitForCommandToFinish(AsyncCommand<?> command) throws InterruptedException {

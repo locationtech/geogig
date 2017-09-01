@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.spring.dto;
 
-import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.repository.DiffEntry;
@@ -20,7 +20,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
  * AffectedFeatures uses an Iterator, which doesn't map to a JAXB marshaled element well. For now,
  * this response bean won't support XML marshaling.
  */
-public class AffectedFeatures implements LegacyStatsResponse {
+public class AffectedFeatures extends LegacyRepoResponse {
 
     private AutoCloseableIterator<DiffEntry> affectedFeatures;
 
@@ -34,7 +34,7 @@ public class AffectedFeatures implements LegacyStatsResponse {
     }
 
     @Override
-    public void encode(OutputStream out) {
+    protected void encode(Writer out) {
         PrintWriter writer = new PrintWriter(out);
         if (affectedFeatures != null) {
             while (affectedFeatures.hasNext()) {

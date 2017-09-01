@@ -10,13 +10,14 @@
 package org.locationtech.geogig.spring.dto;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.Writer;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.io.output.WriterOutputStream;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
@@ -28,7 +29,7 @@ import org.springframework.http.HttpStatus;
  */
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Objects implements LegacyStatsResponse {
+public class Objects extends LegacyRepoResponse {
 
     private static final ObjectSerializingFactory SERIALIZER =
             DataStreamSerializationFactoryV1.INSTANCE;
@@ -46,9 +47,9 @@ public class Objects implements LegacyStatsResponse {
     }
 
     @Override
-    public void encode(OutputStream out) {
-        try {
-            SERIALIZER.write(revObject, out);
+    public void encode(Writer out) {
+        try (WriterOutputStream outStream = new WriterOutputStream(out)) {
+            SERIALIZER.write(revObject, outStream);
         } catch (IOException ioe) {
             throw new CommandSpecException("Unexepcted error serializing object",
                     HttpStatus.INTERNAL_SERVER_ERROR, ioe);

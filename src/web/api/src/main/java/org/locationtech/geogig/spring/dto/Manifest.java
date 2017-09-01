@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.spring.dto;
 
-import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -28,7 +28,7 @@ import org.locationtech.geogig.model.SymRef;
  */
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Manifest implements LegacyStatsResponse {
+public class Manifest extends LegacyRepoResponse {
 
     @XmlElement
     private Ref currentHead;
@@ -67,7 +67,7 @@ public class Manifest implements LegacyStatsResponse {
     }
 
     @Override
-    public void encode(OutputStream out) {
+    public void encode(Writer out) {
         PrintWriter w = new PrintWriter(out);
         // Print out HEAD first
         if (!currentHead.getObjectId().equals(ObjectId.NULL)) {

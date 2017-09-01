@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.spring.dto;
 
-import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Depth implements LegacyStatsResponse {
+public class Depth extends LegacyRepoResponse {
 
     @XmlElement
     private Integer depth = null;
@@ -37,7 +37,7 @@ public class Depth implements LegacyStatsResponse {
     }
 
     @Override
-    public void encode(OutputStream out) {
+    protected void encode(Writer out) {
         PrintWriter writer = new PrintWriter(out);
         if (depth != null) {
             writer.write(depth.toString());

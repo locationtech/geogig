@@ -14,16 +14,13 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.locationtech.geogig.spring.dto.LegacyStatsResponse;
 import org.locationtech.geogig.spring.service.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,32 +31,6 @@ public abstract class AbstractRepositoryController extends AbstractController {
 
     @Autowired
     protected RepositoryService repositoryService;
-
-    protected final void encode(LegacyStatsResponse responseBean, final HttpServletRequest request,
-            final HttpServletResponse response) {
-        try (OutputStream responseStream = response.getOutputStream()) {
-            // call the preEncodeResponse method to handel customizations before encoding.
-            preEncodeResponse(request, response);
-            // encode the response
-            responseBean.encode(responseStream);
-        } catch (Exception ex) {
-            getLogger().error("Error writing response", ex);
-        }
-    }
-
-    /**
-     * Perform any response customizations prior to encoding onto the Response output stream.
-     * Subclasses can override this method to perform any desired Response customizations, such as
-     * setting the Content-Type or other header manipulation, as necessary, prior to the response
-     * being encoded to the connection output stream.
-     *
-     * @param request  Request being handled.
-     * @param response Response to customize.
-     */
-    protected void preEncodeResponse(final HttpServletRequest request,
-            final HttpServletResponse response) {
-        // do nothing
-    }
 
     /**
      * Verifies that the specified repository exists and is open. Subclasses can call this to assert

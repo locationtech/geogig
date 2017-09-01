@@ -10,8 +10,7 @@
 package org.locationtech.geogig.spring.dto;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -26,7 +25,7 @@ import org.springframework.http.HttpStatus;
  */
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Exists implements LegacyStatsResponse {
+public class Exists extends LegacyRepoResponse {
 
     @XmlElement
     private boolean exists;
@@ -41,9 +40,9 @@ public class Exists implements LegacyStatsResponse {
     }
 
     @Override
-    public void encode(OutputStream out) {
-        try (OutputStreamWriter osw = new OutputStreamWriter(out)) {
-            osw.write((exists) ? "1" : "0");
+    protected void encode(Writer out) {
+        try {
+            out.write((exists) ? "1" : "0");
         } catch (IOException ioe) {
             throw new CommandSpecException("Unexpected error writing to output stream",
                     HttpStatus.INTERNAL_SERVER_ERROR, ioe);

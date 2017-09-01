@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.spring.dto;
 
-import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -25,7 +25,7 @@ import org.locationtech.geogig.model.ObjectId;
  */
 @XmlRootElement()
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Parents implements LegacyStatsResponse {
+public class Parents extends LegacyRepoResponse {
 
     @XmlElement
     private List<ObjectId> parents;
@@ -40,7 +40,7 @@ public class Parents implements LegacyStatsResponse {
     }
 
     @Override
-    public void encode(OutputStream out) {
+    public void encode(Writer out) {
         if (parents != null) {
             try (PrintWriter writer = new PrintWriter(out)) {
                 for (ObjectId oid : parents) {

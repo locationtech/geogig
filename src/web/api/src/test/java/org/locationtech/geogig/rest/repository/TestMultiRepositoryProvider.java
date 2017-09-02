@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.rest.repository;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -16,11 +17,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.rules.ExternalResource;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.web.api.TestRepository;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 /**
@@ -97,6 +100,19 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
     @Deprecated
     @Override
     public void delete(org.restlet.data.Request request) {
+    }
+
+    @Override
+    public void delete(String repoName) {
+        Optional<Repository> geogig = getGeogig(repoName);
+        Preconditions.checkState(geogig.isPresent(), "No repository to delete.");
+
+        Repository ggig = geogig.get();
+        Optional<URI> repoUri = ggig.command(ResolveGeogigURI.class).call();
+        Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
+
+        TestRepository repo = this.repositories.remove(repoName);
+        repo.after();
     }
 
     @Override

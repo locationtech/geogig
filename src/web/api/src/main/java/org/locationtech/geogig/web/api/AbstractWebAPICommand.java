@@ -88,24 +88,6 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
         }
     }
 
-    /**
-     * Accessor for the status of the command
-     * 
-     * @return the command status.
-     */
-    @Override
-    public HttpStatus getStatus() {
-        return commandStatus;
-    }
-
-    /**
-     * Mutator for the command status.
-     * 
-     * @param status - the status of the command
-     */
-    protected void setStatus(HttpStatus status) {
-        this.commandStatus = status;
-    }
 
     /**
      * This function either builds a GeoGigTransaction to run commands off of if there is a

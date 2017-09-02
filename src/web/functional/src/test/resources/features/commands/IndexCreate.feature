@@ -7,14 +7,18 @@ Feature: IndexCreate
   Scenario: Create index fails when repository does not exist
     Given There is an empty repository named repo1
      When I call "PUT /repos/noRepo/index/create?treeRefSpec=Point"
-     Then the response body should contain "Repository not found."
      Then the response status should be '404'
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
+     
   @Status405
   Scenario: Verify method not allowed on incorrect request type
     Given There is a repo with some data
      When I call "GET /repos/repo1/index/create?treeRefSpec=Points"
      Then the response status should be '405'
       And the response allowed methods should be "PUT"
+      
   @Status400
   Scenario: Create index fails when feature tree does not exist
     Given There is an empty repository named repo1
@@ -129,6 +133,7 @@ Feature: IndexCreate
       And the repo1 repository's "master~2:Points" index should have the following features:
           |     index    | 
           |    Point.1   | 
+          
   @Status500
   Scenario: Verify 500 status code when tree ref spec is not provided
     Given There is a repo with some data

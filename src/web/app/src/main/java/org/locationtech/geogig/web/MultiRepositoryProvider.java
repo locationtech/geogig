@@ -251,6 +251,24 @@ public class MultiRepositoryProvider implements RepositoryProvider {
     }
 
     @Override
+    public void delete(String repoName) {
+        Optional<Repository> geogig = getGeogig(repoName);
+        Preconditions.checkState(geogig.isPresent(), "No repository to delete.");
+
+        Repository ggig = geogig.get();
+        Optional<URI> repoUri = ggig.command(ResolveGeogigURI.class).call();
+        Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
+
+        ggig.close();
+        try {
+            GeoGIG.delete(repoUri.get());
+            this.repositories.invalidate(repoName);
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    @Override
     public void invalidate(String repoName) {
         this.repositories.invalidate(repoName);
     }

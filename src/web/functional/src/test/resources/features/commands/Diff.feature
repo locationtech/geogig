@@ -9,19 +9,23 @@ Feature: Diff
      When I call "PUT /repos/repo1/diff"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
+      
   @Status404
   Scenario: Diff outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/diff?oldRefSpec=someRefSpec"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
+      
   @Status500
   Scenario: Calling diff without specifying an old ref spec issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/diff"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "Required parameter 'oldRefSpec' was not provided."
+      
   @Status500
   Scenario: Calling diff with an empty old ref spec issues a 500 status code
     Given There is an empty repository named repo1

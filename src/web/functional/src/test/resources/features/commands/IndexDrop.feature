@@ -7,8 +7,11 @@ Feature: IndexDrop
   Scenario: Index drop fails with non-existent repository
     Given There is an empty multirepo server
      When I call "DELETE /repos/noRepo/index/drop?treeRefSpec=Points"
-     Then the response body should contain "Repository not found."
       And the response status should be '404'
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
+      
   @Status405
   Scenario: Verify method not allowed on incorrect request type
     Given There is a repo with some data
@@ -29,6 +32,7 @@ Feature: IndexDrop
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/dropped/treeName/text()" equals "Points"
       And the repo1 repository's "HEAD:Points" should not have an index
+      
   @Status500
   Scenario: Verify 500 status code when tree ref spec is not provided
     Given There is a repo with some data

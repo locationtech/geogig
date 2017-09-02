@@ -28,7 +28,6 @@ import org.locationtech.geogig.rest.repository.CommandResource;
 import org.locationtech.geogig.rest.repository.FixedEncoder;
 import org.locationtech.geogig.rest.repository.InitCommandResource;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.locationtech.geogig.rest.repository.RepositoryResource;
 import org.locationtech.geogig.rest.repository.RepositoryRouter;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
@@ -124,7 +123,6 @@ public class Main extends Application {
                 singleRepoRouter);
         Router repo = new RepositoryRouter();
         Router postgis = new PGRouter();
-        singleRepoRouter.attach("", RepositoryResource.class);
         singleRepoRouter.attach("/postgis.{extension}", postgis);
         singleRepoRouter.attach("/postgis", postgis);
         singleRepoRouter.attach("/repo.{extension}", repo);

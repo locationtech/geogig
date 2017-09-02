@@ -15,20 +15,24 @@ Feature: Delete Repository
      When I call "POST /repos/repo1/delete"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
+      
   @Status404
   Scenario: Requesting a delete token for a non existent repository issues 404 "Not found"
     Given There is a default multirepo server
      When I call "GET /repos/nonExistentRepo/delete"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
+      
   @Status404
   Scenario: Try deleting a non existent repository issues 404 "Not found"
     Given There is a default multirepo server
      When I call "DELETE /repos/nonExistentRepo?token=someToken"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "error:No repository to delete."
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "No repository to delete."
 
   Scenario: Succesfully delete a repository
     Given There is a default multirepo server
@@ -49,20 +53,22 @@ Feature: Delete Repository
      When I call "POST /repos/repo1/delete.json"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
+      
   @Status404
   Scenario: Requesting a delete token for a non existent repository issues 404 "Not found", JSON requested response
     Given There is a default multirepo server
      When I call "GET /repos/nonExistentRepo/delete.json"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the json object "response.success" equals "false"
+      And the json object "response.error" equals "Repository not found."
+      
   @Status404
   Scenario: Try deleting a non existent repository issues 404 "Not found", JSON requested response
     Given There is a default multirepo server
      When I call "DELETE /repos/nonExistentRepo.json?token=someToken"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "error:No repository to delete."
+      And the json object "response.success" equals "false"
+      And the json object "response.error" equals "No repository to delete."
 
   Scenario: Succesfully delete a repository, JSON requested response
     Given There is a default multirepo server

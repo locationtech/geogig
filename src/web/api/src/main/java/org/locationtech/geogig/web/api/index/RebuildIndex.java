@@ -78,13 +78,17 @@ public class RebuildIndex extends AbstractWebAPICommand {
 
         context.setResponseContent(new CommandResponse() {
             @Override
+            public HttpStatus getStatus() {
+                return HttpStatus.CREATED;
+            }
+
+            @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
                 out.writeElement("treesRebuilt", Integer.toString(treesRebuilt));
                 out.finish();
             }
         });
-        setStatus(HttpStatus.CREATED);
     }
 
 }

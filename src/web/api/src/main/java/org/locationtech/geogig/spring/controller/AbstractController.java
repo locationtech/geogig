@@ -22,6 +22,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.LegacyResponse;
@@ -102,6 +103,8 @@ public abstract class AbstractController {
                 .resolveMediaType(getMediaType(request));
         // set the Content-Type since we aren't using Spring's framework here
         response.setContentType(requestedResponseFormat.toString());
+        // set the status
+        response.setStatus(responseBean.getStatus().value());
         // write the LegacyResponse object out to the Response stream
         try {
             responseBean.encode(response.getWriter(), requestedResponseFormat, baseURL);
@@ -124,8 +127,12 @@ public abstract class AbstractController {
      */
     protected final MediaType getMediaType(HttpServletRequest request) {
         final String requestURI = request.getRequestURI();
-        if (requestURI != null && requestURI.endsWith(".json")) {
-            return MediaType.APPLICATION_JSON;
+        if (requestURI != null) {
+            if (requestURI.endsWith(".json")) {
+                return MediaType.APPLICATION_JSON;
+            } else if (requestURI.endsWith(".csv")) {
+                return Variants.CSV_MEDIA_TYPE;
+            }
         }
         return MediaType.APPLICATION_XML;
     }

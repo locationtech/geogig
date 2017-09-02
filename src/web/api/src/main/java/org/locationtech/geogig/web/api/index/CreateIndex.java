@@ -117,6 +117,11 @@ public class CreateIndex extends AbstractWebAPICommand {
 
         context.setResponseContent(new CommandResponse() {
             @Override
+            public HttpStatus getStatus() {
+                return HttpStatus.CREATED;
+            }
+
+            @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
                 out.writeIndexInfo(index.info(), "index", false);
@@ -124,7 +129,6 @@ public class CreateIndex extends AbstractWebAPICommand {
                 out.finish();
             }
         });
-        setStatus(HttpStatus.CREATED);
     }
 
 }

@@ -7,8 +7,11 @@ Feature: IndexList
   Scenario: Index list fails non-existent repository
     Given There is a repo with some data
      When I call "GET /repos/noRepo/index/list?treeName=does_not_exist"
-     Then the response body should contain "Repository not found."
       And the response status should be '404'
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
+      
   @Status405
   Scenario: Verify method not allowed on incorrect request type
     Given There is a repo with some data
@@ -36,6 +39,7 @@ Feature: IndexList
       And the xpath "/response/index/treeName/text()" equals "Points"
       And the response body should not contain "Lines"
       And the response status should be '200'
+      
   @Status404
   Scenario: Verify failed index list return for non-existent feature tree
     Given There is a repo with some data

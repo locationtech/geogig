@@ -17,7 +17,6 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
@@ -73,7 +72,20 @@ public class SingleRepositoryProvider implements RepositoryProvider {
         } catch (Exception e) {
             Throwables.propagate(e);
         }
+    }
 
+    @Override
+    public void delete(String repoName) {
+        Preconditions.checkState(repo != null, "No repository to delete.");
+        Optional<URI> repoUri = repo.command(ResolveGeogigURI.class).call();
+        Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
+        repo.close();
+        try {
+            GeoGIG.delete(repoUri.get());
+            this.repo = null;
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     }
 
     @Override

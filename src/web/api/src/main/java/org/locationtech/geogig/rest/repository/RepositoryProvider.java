@@ -54,6 +54,8 @@ public interface RepositoryProvider {
     @Deprecated
     void delete(Request request);
 
+    void delete(String repoName);
+
     /**
      * Signals to the repository provider that a repository may no longer be valid.
      */

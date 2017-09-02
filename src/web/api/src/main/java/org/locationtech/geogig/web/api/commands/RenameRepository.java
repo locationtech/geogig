@@ -86,10 +86,14 @@ public class RenameRepository extends AbstractWebAPICommand {
 
         final String repositoryName = name;
 
-        setStatus(HttpStatus.PERMANENT_REDIRECT);
         context.getRepositoryProvider().invalidate(oldRepoName);
 
         context.setResponseContent(new CommandResponse() {
+            @Override
+            public HttpStatus getStatus() {
+                return HttpStatus.MOVED_PERMANENTLY;
+            }
+
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();

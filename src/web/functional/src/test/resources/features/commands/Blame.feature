@@ -9,24 +9,28 @@ Feature: Blame
      When I call "PUT /repos/repo1/blame"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
+      
   @Status500
   Scenario: Calling blame without a feature path issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/blame"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "Required parameter 'path' was not provided."
+      
   @Status500
   Scenario: Calling blame with an invalid commit issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/blame?commit=nonexistent&path=somePath"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "Could not resolve branch or commit"
+      
   @Status500
   Scenario: Calling blame with an invalid feature path issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/blame?path=nonexistent"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "The supplied path does not exist"
+      
   @Status500
   Scenario: Calling blame with a tree path issues a 500 status code
     Given There is a default multirepo server

@@ -15,6 +15,7 @@ import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamingWriter;
 import org.locationtech.geogig.web.api.StreamingWriterFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Throwables;
@@ -24,6 +25,15 @@ import com.google.common.base.Throwables;
  * responses.
  */
 public abstract class LegacyResponse {
+
+    /**
+     * The {@link HttpStatus} for this response.
+     * 
+     * @return
+     */
+    public HttpStatus getStatus() {
+        return HttpStatus.OK;
+    }
 
     /**
      * Encodes this Response to a {@link Writer} supplied by a Spring controller.

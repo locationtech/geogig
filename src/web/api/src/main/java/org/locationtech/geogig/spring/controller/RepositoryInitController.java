@@ -68,7 +68,6 @@ public class RepositoryInitController extends AbstractController {
             HttpServletRequest request, HttpServletResponse response)
             throws RepositoryConnectionException {
         RepositoryInitRepo repo = initRepo(request, repoName);
-        response.setStatus(HttpStatus.CREATED.value());
         encode(repo, request, response);
     }
 
@@ -79,7 +78,6 @@ public class RepositoryInitController extends AbstractController {
             HttpServletRequest request, HttpServletResponse response)
             throws RepositoryConnectionException {
         RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
-        response.setStatus(HttpStatus.CREATED.value());
         encode(repo, request, response);
     }
 
@@ -90,7 +88,6 @@ public class RepositoryInitController extends AbstractController {
             HttpServletRequest request, HttpServletResponse response)
             throws RepositoryConnectionException {
         RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
-        response.setStatus(HttpStatus.CREATED.value());
         encode(repo, request, response);
     }
 

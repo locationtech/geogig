@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.web.api;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
@@ -28,5 +27,4 @@ public interface WebAPICommand {
 
     boolean supports(RequestMethod method);
 
-    HttpStatus getStatus();
 }

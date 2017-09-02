@@ -55,18 +55,33 @@ public class JettyServer {
     }
 
     /**
-     * Starts the embedded server.
+     * Starts the embedded server and blocks until it stops.
      *
      * @throws Exception
      */
     public void start() throws Exception {
+        start(false);
+    }
+
+    /**
+     * Starts the embedded server.
+     * 
+     * @param async if {@code true} this function will return after starting the server, otherwise
+     *        it will block until the server stops
+     *
+     * @throws Exception
+     */
+    public void start(boolean async) throws Exception {
         server.setHandler(getServletContextHandler(getContext(), repoProvider));
         server.start();
         //server.dumpStdErr();
-        server.join();
+        if (!async) {
+            server.join();
+        }
     }
 
-    public void stop() {
+    public void stop() throws Exception {
+        server.stop();
     }
 
     public Server getServer() {

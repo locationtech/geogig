@@ -32,10 +32,12 @@ import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.StreamResponse;
+import org.locationtech.geogig.web.api.StreamingWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -76,20 +78,52 @@ public class RepositoryCommandController extends AbstractController {
 
     @DeleteMapping
     public void deleteRepository(@PathVariable String repoName,
-            final HttpServletRequest request, HttpServletResponse response) {
+            @RequestParam MultiValueMap<String, String> params, final HttpServletRequest request,
+            HttpServletResponse response, RequestEntity<String> entity) {
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         if (repoProvider.isPresent()) {
             RepositoryProvider provider = repoProvider.get();
             if (!provider.hasGeoGig(repoName)) {
-                throw new CommandSpecException("error:No repository to delete.",
+                throw new CommandSpecException("No repository to delete.",
                         HttpStatus.NOT_FOUND);
             }
-            // TODO: Handle deletes with transaction ID
-            throw new RuntimeException("IMPLEMENT DELETE");
+
+            Repository geogig = provider.getGeogig(repoName).get();
+            ParameterSet parameters = ParameterSet.concat(getParamsFromEntity(entity),
+                    ParameterSetFactory.buildParameterSet(params));
+            final String deleteToken = parameters.getFirstValue("token");
+            if (deleteToken == null) {
+                throw new CommandSpecException(
+                        "You must specify the correct token to delete a repository.",
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            final String deleteKey = deleteKeyForToken(deleteToken);
+
+            Optional<byte[]> blobValue = geogig.blobStore().getBlob(deleteKey);
+            if (!blobValue.isPresent()) {
+                throw new CommandSpecException("The specified token does not exist or has expired.",
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            provider.delete(repoName);
+            encode(new LegacyResponse() {
+
+                @Override
+                protected void encodeInternal(StreamingWriter writer, MediaType format,
+                        String baseUrl) {
+                    writer.writeElement("deleted", repoName);
+                }
+
+            }, request, response);
         } else {
-            throw new CommandSpecException("error:No repository to delete.",
+            throw new CommandSpecException("No repository to delete.",
                     HttpStatus.NOT_FOUND);
         }
+    }
+
+    public static String deleteKeyForToken(String token) {
+        return "command/delete/" + token;
     }
 
     /**

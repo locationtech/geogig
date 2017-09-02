@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.locationtech.geogig.web.api.StreamingWriter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 /**
@@ -47,6 +48,11 @@ public class RepositoryInitRepo extends LegacyResponse {
     public RepositoryInitRepo setLink(String link) {
         this.link = link;
         return this;
+    }
+
+    @Override
+    public HttpStatus getStatus() {
+        return HttpStatus.CREATED;
     }
 
     @Override

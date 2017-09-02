@@ -12,6 +12,7 @@ package org.locationtech.geogig.model;
 import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -19,8 +20,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -108,13 +107,6 @@ public abstract class Node implements Bounded, Comparable<Node> {
     }
 
     private static abstract class BaseNode extends Node {
-        /**
-         * "null object" used to shadow {@code null} values in {@link #getExtraData()}
-         * 
-         * @see #shadowNullValues
-         * @see #convertNullObjectValueToNull
-         */
-        private static final Object NULL_VALUE = new Object();
 
         /**
          * The name of the element
@@ -132,7 +124,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
          */
         private final ObjectId objectId;
 
-        private final ImmutableMap<String, Object> extraData;
+        private final ExtraData extraData;
 
         private final Float32Bounds bounds;
 
@@ -144,7 +136,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
             this.name = name;
             this.objectId = oid;
             this.metadataId = metadataId.isNull() ? null : metadataId;
-            this.extraData = shadowNullValues(extraData);
+            this.extraData = ExtraData.of(extraData);
             this.bounds = Float32Bounds.valueOf(bounds);
         }
 
@@ -185,30 +177,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
         @Override
         public Map<String, Object> getExtraData() {
-            return convertNullObjectValueToNull(extraData);
-        }
-
-        /**
-         * {@link ImmutableMap} does not allow {@code null} keys nor values, this method replaces
-         * any {@code null} value by a "null object", wich shall be unmasked by
-         * {@link #convertNullObjectValueToNull} by {@link #getExtraData()}
-         */
-        private ImmutableMap<String, Object> shadowNullValues(
-                @Nullable Map<String, Object> original) {
-            if (null == original || original.isEmpty()) {
-                return ImmutableMap.of();
-            }
-            Map<String, Object> nullsMasked = Maps.transformValues(original,
-                    (v) -> v == null ? NULL_VALUE : v);
-            // this performs better than ImmutableMap.copyOf
-            Builder<String, Object> builder = ImmutableMap.builder();
-            builder.putAll(nullsMasked);
-            return builder.build();
-        }
-
-        private Map<String, Object> convertNullObjectValueToNull(
-                ImmutableMap<String, Object> extraData) {
-            return Maps.transformValues(extraData, (v) -> v == NULL_VALUE ? null : v);
+            return extraData.asMap();
         }
 
     }
@@ -287,4 +256,53 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
     }
 
+    /**
+     * Holds on the node's extra data as an array of objects to lower the memory impact of HashMap,
+     * and makes sure the returned map is a recursive safe copy in order to preserve the node's
+     * immutability
+     *
+     */
+    private static class ExtraData {
+        private static ExtraData EMPTY = new ExtraData(new Object[0]);
+
+        private Object[] kvp;
+
+        ExtraData(Object[] kvp) {
+            this.kvp = kvp;
+        }
+
+        static ExtraData of(@Nullable Map<String, Object> map) {
+            if (null == map || map.isEmpty()) {
+                return EMPTY;
+            }
+            final int size = map.size();
+            Object[] kvp = new Object[2 * size];
+            int i = 0;
+            for (Map.Entry<String, Object> e : map.entrySet()) {
+                kvp[i] = e.getKey();
+                kvp[i + 1] = safeCopy(e.getValue());
+                i += 2;
+            }
+            return new ExtraData(kvp);
+        }
+
+        public Map<String, Object> asMap() {
+            final int size = kvp.length / 2;
+            if (0 == size) {
+                return ImmutableMap.of();
+            }
+            Map<String, Object> map = new HashMap<>(size);
+            for (int i = 0, j = 0; i < size; i++, j += 2) {
+                String k = (String) kvp[j];
+                Object v = safeCopy(kvp[j + 1]);
+                map.put(k, v);
+            }
+            return map;
+        }
+
+        private static Object safeCopy(Object v) {
+            Object safeCopy = FieldType.forValue(v).safeCopy(v);
+            return safeCopy;
+        }
+    }
 }

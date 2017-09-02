@@ -16,14 +16,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
+import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 public class NodeTest {
     @Rule
@@ -247,5 +253,53 @@ public class NodeTest {
                 TYPE.FEATURE, null);
 
         assertNotSame(node.hashCode(), node2.hashCode());
+    }
+
+    public @Test void testNestedExtraData() throws Exception {
+        Map<String, Object> map1, map2, extraData;
+        map1 = new HashMap<>();
+        map2 = new TreeMap<>();
+
+        map1.put("long", Long.valueOf(123));
+        map2.put("long", Long.valueOf(123));
+
+        map1.put("int", Integer.valueOf(456));
+        map2.put("int", Integer.valueOf(456));
+
+        map1.put("string", "hello");
+        map2.put("string", "hello");
+
+        map1.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
+        map2.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
+
+        extraData = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
+                (Object) map1, "and", (Object) map2);
+
+        Node n = Node.create("fid", RevTree.EMPTY_TREE_ID, ObjectId.NULL, TYPE.FEATURE, null,
+                extraData);
+
+        Map<String, Object> actual = n.getExtraData();
+        assertEqualsFully(extraData, actual);
+    }
+
+    private void assertEqualsFully(Map<?, ?> expected, Map<?, ?> actual) {
+        assertNotSame(expected, actual);
+        assertEquals(expected, actual);
+        for (Entry<?, ?> e : expected.entrySet()) {
+            String k = (String) e.getKey();
+            Object v = e.getValue();
+            Object v2 = actual.get(k);
+            assertEquals(k, v, v2);
+            if (v instanceof Map) {
+                assertEqualsFully((Map) v, (Map) v2);
+            } else if (v instanceof Geometry) {
+                assertNotSame("geometry is mutable, should have been safe copied", v, v2);
+            }
+        }
+    }
+
+    private Geometry geom(String wkt) throws ParseException {
+        Geometry value = new WKTReader2().read(wkt);
+        return value;
     }
 }

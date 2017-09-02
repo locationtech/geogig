@@ -28,6 +28,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.spring.main.JettyServer;
 import org.locationtech.geogig.spring.provider.MultiRepositoryProvider;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.test.TestPlatform;
@@ -64,6 +65,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
     private TestPlatform platform;
 
+    private JettyServer server = null;
+
     /**
      * Set up the context for a scenario.
      */
@@ -85,14 +88,16 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     @Override
     protected void tearDown() throws Exception {
         repoProvider.invalidateAll();
+        if (server != null) {
+            server.stop();
+            server = null;
+        }
     }
 
     @Override
     protected void serveHttpRepos() throws Exception {
-//        Component comp = new Component();
-//        comp.getDefaultHost().attach(this.app);
-//        this.server = comp.getServers().add(Protocol.HTTP, TEST_HTTP_PORT);
-//        this.server.start();
+        server = new JettyServer(TEST_HTTP_PORT, repoProvider);
+        server.start(true);
     }
 
     @Override
@@ -156,7 +161,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         try (FileInputStream fis = new FileInputStream(file)) {
             MockMultipartFile mFile = new MockMultipartFile(formFieldName, fis);
             MockMultipartHttpServletRequestBuilder request =
-                    MockMvcRequestBuilders.fileUpload(resourceUri).file(mFile);
+                    MockMvcRequestBuilders.fileUpload(new URI(resourceUri)).file(mFile);
             request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
@@ -177,11 +182,11 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         if (resourceUri.endsWith("/")) {
             resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
         }
-        MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(resourceUri)
-                .content(postContent);
-        request.requestAttr(RepositoryProvider.KEY, repoProvider);
         try {
+            MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+            MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                    .post(new URI(resourceUri)).content(postContent);
+            request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
             Throwables.propagate(e);
@@ -199,17 +204,23 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         if (resourceUri.endsWith("/")) {
             resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
         }
-        MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.request(method, resourceUri);
-        request.requestAttr(RepositoryProvider.KEY, repoProvider);
-        if (HttpMethod.PUT.equals(method) || HttpMethod.POST.equals(method)) {
-            // PUT and POST requests should have an entity.
-            // Since this method has no content argument, fill the entity with an empty JSON object.
-            // This method is hit for setting up repositories for many tests, making PUT calls to trigger the "init"
-            // command. The INIT Web API command only accepts JSON and Web Form entities, so we'll use JSON here.
-            request.content("{}").contentType(org.springframework.http.MediaType.APPLICATION_JSON);
-        }
+
         try {
+            MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+            MockHttpServletRequestBuilder request = MockMvcRequestBuilders.request(method,
+                    new URI(resourceUri));
+            request.requestAttr(RepositoryProvider.KEY, repoProvider);
+            if (HttpMethod.PUT.equals(method) || HttpMethod.POST.equals(method)) {
+                // PUT and POST requests should have an entity.
+                // Since this method has no content argument, fill the entity with an empty JSON
+                // object.
+                // This method is hit for setting up repositories for many tests, making PUT calls
+                // to trigger the "init"
+                // command. The INIT Web API command only accepts JSON and Web Form entities, so
+                // we'll use JSON here.
+                request.content("{}")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON);
+            }
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
             Throwables.propagate(e);
@@ -222,11 +233,13 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         if (resourceUri.endsWith("/")) {
             resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
         }
-        MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.request(method, resourceUri)
-                .content(content).contentType(contentType);
-        request.requestAttr(RepositoryProvider.KEY, repoProvider);
+
         try {
+            MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
+            MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                    .request(method, new URI(resourceUri)).content(content)
+                    .contentType(contentType);
+            request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
             Throwables.propagate(e);

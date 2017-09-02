@@ -9,13 +9,15 @@ Feature: Log
      When I call "PUT /repos/repo1/log"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
+      
   @Status404
   Scenario: Log outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/log"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
       
   Scenario: Log will return the history of the current branch
     Given There is a default multirepo server
@@ -131,12 +133,14 @@ Feature: Log
       And there is an xpath "/response/commit/message/text()" that contains "Added Point.2"
       And there is an xpath "/response/commit/id/text()" that equals "{@ObjectId|repo1|master~4}"
       And there is an xpath "/response/commit/message/text()" that contains "Added Point.1"
+      
   @Status500
   Scenario: Using the summary parameter without a path issues a 500 status code
     Given There is a default multirepo server
      When I call "GET /repos/repo1/log?summary=true"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "You must specify a feature type path when getting a summary."
+      
   @Status500
   Scenario: Using the summary parameter without using text/csv content type issues a 500 status code
     Given There is a default multirepo server

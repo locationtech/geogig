@@ -14,6 +14,7 @@ Feature: Export GeoPackage
      When I call "POST /repos/repo1/export?format=gpkg"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
+      
   @Status400
   Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request"
     Given There is a default multirepo server
@@ -22,6 +23,7 @@ Feature: Export GeoPackage
       And the response ContentType should be "application/xml"
       And the xpath "/response/success/text()" equals "false"
       And the xpath "/response/error/text()" contains "output format not provided"
+      
   @Status400
   Scenario: Verify unsupported output format argument issues 400 "Bad request"
     Given There is a default multirepo server
@@ -30,13 +32,15 @@ Feature: Export GeoPackage
       And the response ContentType should be "application/xml"
       And the xpath "/response/success/text()" equals "false"
       And the xpath "/response/error/text()" contains "Unsupported output format"
+      
   @Status404
   Scenario: Verify export on a non existent repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/badRepo/export?format=gpkg"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
 
   Scenario: Export defaults: all layers from current head
     Given There is a default multirepo server
@@ -55,6 +59,7 @@ Feature: Export GeoPackage
      When I call "POST /repos/repo1/export.json?format=gpkg"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
+      
   @Status400
   Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request", JSON requested response
     Given There is a default multirepo server
@@ -63,6 +68,7 @@ Feature: Export GeoPackage
       And the response ContentType should be "application/json"
       And the json object "response.success" equals "false"
       And the json object "response.error" equals "output format not provided"
+      
   @Status400
   Scenario: Verify unsupported output format argument issues 400 "Bad request", JSON requested response
     Given There is a default multirepo server
@@ -71,13 +77,15 @@ Feature: Export GeoPackage
       And the response ContentType should be "application/json"
       And the json object "response.success" equals "false"
       And the json object "response.error" equals "Unsupported output format: badFormat"
+      
   @Status404
   Scenario: Verify export on a non existent repository issues 404 "Not found", JSON requested response
     Given There is an empty multirepo server
      When I call "GET /repos/badRepo/export.json?format=gpkg"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/json"
+      And the json object "response.success" equals "false"
+      And the json object "response.error" equals "Repository not found."
 
   Scenario: Export defaults: all layers from current head, JSON requested response
     Given There is a default multirepo server

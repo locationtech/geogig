@@ -341,11 +341,19 @@ public class Log extends AbstractWebAPICommand {
 
                     @Override
                     public MediaType resolveMediaType(MediaType defaultMediaType) {
+                        if (!defaultMediaType.equals(Variants.CSV_MEDIA_TYPE)) {
+                            throw new CommandSpecException(
+                                    "Unsupported Media Type: This response is only compatible with text/csv.");
+                        }
                         return Variants.CSV_MEDIA_TYPE;
                     }
 
                     @Override
                     public void encode(Writer writer, MediaType format, String baseUrl) {
+                        if (!format.equals(Variants.CSV_MEDIA_TYPE)) {
+                            throw new CommandSpecException(
+                                    "Unsupported Media Type: This response is only compatible with text/csv.");
+                        }
                         try {
                             writeCSV(context.getRepository(), writer, log);
                         } catch (Exception e) {

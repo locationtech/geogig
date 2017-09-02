@@ -90,7 +90,6 @@ import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
 import org.locationtech.geogig.test.TestData;
-import org.mortbay.log.Log;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 import org.springframework.http.HttpMethod;
@@ -941,8 +940,6 @@ public class WebAPICucumberHooks {
             assertXmlIsAsyncTask(text);
             status = getAsyncTaskStatus(text);
         } while (!status.isTerminated());
-
-        Log.info("Task %s finished: %s", taskId, status);
     }
 
     private String getAsyncTaskAsXML(final Integer taskId) throws IOException {
@@ -1257,8 +1254,6 @@ public class WebAPICucumberHooks {
             assertJsonIsAsyncTask();
             status = AsyncContext.Status.valueOf(getStringFromJSONResponse("task.status"));
         } while (!status.isTerminated());
-
-        Log.info("Task %s finished: %s", taskId, status);
     }
 
     @Then("^the JSON task (@[^\"]*) status is ([^\"]*)$")

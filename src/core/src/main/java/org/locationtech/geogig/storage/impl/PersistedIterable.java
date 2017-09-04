@@ -36,6 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.datastream.Varint;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
@@ -60,9 +61,13 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
 
     private volatile long size;
 
+    private boolean flushOnClose = false;
+
+    private boolean deleteOnClose = true;
+
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    Path tmpFile;
+    Path serializedFile;
 
     public PersistedIterable(final @Nullable Path tmpDir, Serializer<T> serializer) {
         this(tmpDir, serializer, DEFAULT_BUFFER_SIZE, false);
@@ -80,6 +85,20 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         this.compress = compress;
     }
 
+    public PersistedIterable(final Path file, Serializer<T> serializer, boolean deleteOnClose,
+            boolean flushOnClose, boolean compress) {
+        checkNotNull(file);
+        checkNotNull(serializer);
+        this.tmpDir = null;
+        this.serializer = serializer;
+        this.serializedFile = file;
+        this.bufferSize = DEFAULT_BUFFER_SIZE;
+        this.buffer = new ArrayList<>(bufferSize);
+        this.deleteOnClose = deleteOnClose;
+        this.flushOnClose = flushOnClose;
+        this.compress = compress;
+    }
+
     public static PersistedIterable<String> newStringIterable(int bufferSize, boolean compress) {
         return newStringIterable(null, bufferSize, compress);
     }
@@ -89,18 +108,26 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         return new PersistedIterable<>(tmpDir, new StringSerializer(), bufferSize, compress);
     }
 
+    public static <T> PersistedIterable<T> create(Path file, Serializer<T> serializer,
+            boolean deleteOnClose, boolean flushOnClose, boolean compress) {
+        return new PersistedIterable<>(file, serializer, deleteOnClose, flushOnClose, compress);
+    }
+
     @Override
     public void close() {
         lock.writeLock().lock();
         try {
+            if (flushOnClose) {
+                save();
+            }
             this.buffer.clear();
-            if (this.tmpFile != null) {
+            if (deleteOnClose && this.serializedFile != null) {
                 try {
-                    Files.delete(this.tmpFile);
+                    Files.delete(this.serializedFile);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    this.tmpFile = null;
+                    this.serializedFile = null;
                 }
             }
         } finally {
@@ -134,10 +161,13 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
     }
 
     private void save() {
-        if (tmpFile == null) {
+        if (serializedFile == null || !Files.exists(serializedFile)) {
             createFile();
         }
-        try (DataOutputStream out = createOutStream(tmpFile)) {
+        if (buffer.isEmpty()) {
+            return;
+        }
+        try (DataOutputStream out = createOutStream(serializedFile)) {
             for (T val : buffer) {
                 serializer.write(out, val);
             }
@@ -158,16 +188,28 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
 
     private void createFile() {
         try {
-            final String prefix = "geogigPersistedIterable";
-            final String suffix = ".tmp";
-            if (this.tmpDir == null) {
-                this.tmpFile = Files.createTempFile(prefix, suffix);
+            if (serializedFile == null) {
+                final String prefix = "geogigPersistedIterable";
+                final String suffix = ".tmp";
+                if (this.tmpDir == null) {
+                    this.serializedFile = Files.createTempFile(prefix, suffix);
+                } else {
+                    this.serializedFile = Files.createTempFile(tmpDir, prefix, suffix);
+                }
             } else {
-                this.tmpFile = Files.createTempFile(tmpDir, prefix, suffix);
+                Files.createFile(serializedFile);
             }
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public InputStream getAsStream() throws IOException {
+        Preconditions.checkNotNull(this.serializedFile);
+        save();
+        Preconditions.checkState(Files.exists(this.serializedFile));
+        InputStream stream = Files.newInputStream(serializedFile, StandardOpenOption.READ);
+        return stream;
     }
 
     @Override
@@ -177,13 +219,13 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
 
         lock.readLock().lock();
         try {
-            final long streamLimit = this.tmpFile == null ? 0L
-                    : (Files.exists(this.tmpFile) ? Files.size(this.tmpFile) : 0L);
+            final long streamLimit = this.serializedFile == null ? 0L
+                    : (Files.exists(this.serializedFile) ? Files.size(this.serializedFile) : 0L);
 
             if (streamLimit > 0) {
                 InputStream in;
                 try {
-                    in = Files.newInputStream(tmpFile, StandardOpenOption.READ);
+                    in = Files.newInputStream(serializedFile, StandardOpenOption.READ);
                     in = new BufferedInputStream(in, 16 * 1024);
                     in = ByteStreams.limit(in, streamLimit);
                     if (this.compress) {

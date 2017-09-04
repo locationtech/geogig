@@ -59,7 +59,7 @@ public class PersistedIterableTest {
             assertEquals(expected.size(), actual.size());
             assertEquals(expected, actual);
             iterable.close();
-            assertNull(iterable.tmpFile);
+            assertNull(iterable.serializedFile);
         } finally {
         }
     }

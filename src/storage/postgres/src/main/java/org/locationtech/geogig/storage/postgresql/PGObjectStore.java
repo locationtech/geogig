@@ -48,7 +48,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
 import javax.sql.DataSource;
@@ -1113,7 +1113,7 @@ public class PGObjectStore implements ObjectStore {
 
         private final DataSource ds;
 
-        private final AtomicBoolean abortFlag;
+        private final AtomicReference<Throwable> abortFlag;
 
         private final BulkOpListener listener;
 
@@ -1121,8 +1121,8 @@ public class PGObjectStore implements ObjectStore {
 
         private List<EncodedObject> batch;
 
-        InsertDbOp(AtomicBoolean abortFlag, List<EncodedObject> batch, BulkOpListener listener,
-                PGObjectStore objectStore) {
+        InsertDbOp(AtomicReference<Throwable> abortFlag, List<EncodedObject> batch,
+                BulkOpListener listener, PGObjectStore objectStore) {
             this.ds = objectStore.dataSource;
             this.abortFlag = abortFlag;
             this.batch = batch;
@@ -1130,33 +1130,37 @@ public class PGObjectStore implements ObjectStore {
             this.objectStore = objectStore;
         }
 
+        private boolean isAborted() {
+            return null != abortFlag.get();
+        }
+
         @Override
         public Void call() {
-            if (abortFlag.get()) {
+            if (isAborted()) {
                 return null;
             }
-            Map<EncodedObject, Boolean> insertResults = ImmutableMap.of();
             try (Connection cx = PGStorage.newConnection(ds)) {
+                Map<EncodedObject, Boolean> insertResults = ImmutableMap.of();
                 cx.setAutoCommit(false);
                 try {
                     insertResults = doInsert(cx, batch);
-                    if (abortFlag.get()) {
+                    if (isAborted()) {
                         cx.rollback();
                     } else {
                         objectStore.postInsert(cx, insertResults);
                         cx.commit();
+                        if (!isAborted()) {
+                            notifyInserted(insertResults, listener);
+                        }
                     }
                 } catch (Exception executionEx) {
                     rollbackAndRethrow(cx, executionEx);
                 } finally {
                     cx.setAutoCommit(true);
                 }
-            } catch (Exception connectEx) {
-                abortFlag.set(true);
-                throw Throwables.propagate(connectEx);
-            }
-            if (!abortFlag.get()) {
-                notifyInserted(insertResults, listener);
+            } catch (Exception ex) {
+                abortFlag.set(ex);
+                throw Throwables.propagate(ex);
             }
             return null;
         }
@@ -1168,8 +1172,7 @@ public class PGObjectStore implements ObjectStore {
             ArrayListMultimap<String, EncodedObject> perTableObjects = ArrayListMultimap.create();
 
             // partition the objects into chunks for batch processing
-            for (Iterator<EncodedObject> it = partition.iterator(); it.hasNext()
-                    && !abortFlag.get();) {
+            for (Iterator<EncodedObject> it = partition.iterator(); it.hasNext() && !isAborted();) {
                 EncodedObject obj = it.next();
                 final TYPE type = obj.type();
                 final ObjectId id = obj.id();
@@ -1188,7 +1191,7 @@ public class PGObjectStore implements ObjectStore {
 
             Map<EncodedObject, Boolean> insertResults = new HashMap<>();
             for (String tableName : new HashSet<String>(perTableObjects.keySet())) {
-                if (abortFlag.get()) {
+                if (isAborted()) {
                     return null;
                 }
                 PreparedStatement tableStatement;
@@ -1278,17 +1281,18 @@ public class PGObjectStore implements ObjectStore {
         final Iterator<List<EncodedObject>> partitions;
         partitions = Iterators.partition(encoded, putAllBatchSize);
 
-        final AtomicBoolean abortFlag = new AtomicBoolean();
-        while (partitions.hasNext() && !abortFlag.get()) {
+        final AtomicReference<Throwable> abortFlag = new AtomicReference<>();
+        while (partitions.hasNext() && null == abortFlag.get()) {
             List<InsertDbOp> tasks = new ArrayList<>(maxTasks);
-            for (int i = 0; i < maxTasks && partitions.hasNext() && !abortFlag.get(); i++) {
+            for (int i = 0; i < maxTasks && partitions.hasNext() && null == abortFlag.get(); i++) {
                 List<EncodedObject> batch = partitions.next();
                 InsertDbOp task = new InsertDbOp(abortFlag, batch, listener, this);
                 tasks.add(task);
             }
             try {
                 List<Future<Void>> results = resources.executor().invokeAll(tasks);
-                if (abortFlag.get()) {
+                Throwable error = abortFlag.get();
+                if (null != error) {
                     try {
                         for (Future<Void> r : results) {
                             r.get();
@@ -1296,6 +1300,7 @@ public class PGObjectStore implements ObjectStore {
                     } catch (ExecutionException e) {
                         throw Throwables.propagate(e);
                     }
+                    throw Throwables.propagate(error);
                 }
             } catch (InterruptedException e) {
                 throw Throwables.propagate(e);

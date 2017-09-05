@@ -406,7 +406,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     }
 
     @Override
-    public void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+    public final void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
         checkWritable();
@@ -453,11 +453,9 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 insertedIds.add(id);
             }
 
-            // Stopwatch sw = Stopwatch.createStarted();
             dbRef.db().write(wo, batch);
             // need to notify listener once the objects are actually on the db
             insertedIds.forEach((id) -> listener.inserted(id, null));
-            // System.err.printf("--- synced writes in %s\n", sw.stop());
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }

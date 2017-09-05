@@ -128,8 +128,13 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     public @Override boolean put(RevObject object) {
         final boolean added = super.put(object);
         if (added && TYPE.COMMIT.equals(object.getType())) {
-            RevCommit c = (RevCommit) object;
-            graph.put(c.getId(), c.getParentIds());
+            try {
+                RevCommit c = (RevCommit) object;
+                graph.put(c.getId(), c.getParentIds());
+            } catch (RuntimeException e) {
+                super.delete(object.getId());
+                throw e;
+            }
         }
         return added;
     }

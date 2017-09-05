@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createCommits;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -25,8 +26,6 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
@@ -37,7 +36,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 
 /**
  *
@@ -242,7 +240,7 @@ public class RevParseTest extends RepositoryTestCase {
         // before the commit that added this test and patch, RevParse would StackOverflow at ~4300
         // or so
         final int numCommits = 10_000;
-        LinkedList<RevCommit> commits = createCommits(numCommits);
+        List<RevCommit> commits = createCommits(numCommits);
 
         repo.objectDatabase().putAll(commits.iterator());
         repo.command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commits.get(0).getId()).call();
@@ -257,7 +255,7 @@ public class RevParseTest extends RepositoryTestCase {
     }
 
     public @Test void testAbortsOnAncestorOfShallowClone() {
-        LinkedList<RevCommit> commits = createCommits(100);
+        LinkedList<RevCommit> commits = new LinkedList<>(createCommits(100));
         // a shallow clone will have it's eldest commit with a parent that doesn't exist, let's
         // simulate that here by not adding the first one to the ObjectStore
 
@@ -278,23 +276,4 @@ public class RevParseTest extends RepositoryTestCase {
         assertFalse(ancestorOfShallow.isPresent());
     }
 
-    private LinkedList<RevCommit> createCommits(final int numCommits) {
-        LinkedList<RevCommit> commits = new LinkedList<>();
-
-        // much faster way of creating several fake commits than running CommitOp N times
-        CommitBuilder builder = new CommitBuilder(repo.platform());
-        builder.setAuthor("gabe").setAuthorEmail("gabe@example.com").setCommitter("me")
-                .setCommitterEmail("me@too.com").setCommitterTimestamp(System.currentTimeMillis())
-                .setCommitterTimeZoneOffset(-1).setAuthorTimestamp(System.currentTimeMillis())
-                .setAuthorTimeZoneOffset(-3).setTreeId(RevTree.EMPTY_TREE_ID);
-
-        ObjectId parent = null;
-        for (int i = 1; i <= numCommits; i++) {
-            List<ObjectId> parents = parent == null ? null : ImmutableList.of(parent);
-            RevCommit commit = builder.setParentIds(parents).setMessage("commit " + i).build();
-            commits.addFirst(commit);
-            parent = commit.getId();
-        }
-        return commits;
-    }
 }

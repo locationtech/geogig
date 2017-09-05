@@ -14,10 +14,12 @@ import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -115,7 +117,7 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
     }
 
     /**
-     * Overrides to add graphdb mapping on commits
+     * Overrides to add graphdb commit to parents mappings on commits
      */
     public @Override boolean put(final RevObject object) {
         final boolean added = super.put(object);
@@ -127,26 +129,26 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
     }
 
     protected @Override void putAll(Stream<RevObject> stream, BulkOpListener listener) {
-
-        final int commitsBatchSize = 10_000;
-        Set<RevCommit> insertedCommits = Sets.newHashSet();
-
-        Consumer<RevObject> updateCommits = (o) -> {
-            if (TYPE.COMMIT.equals(o.getType())) {
-                synchronized (insertedCommits) {
-                    insertedCommits.add((RevCommit) o);
-                    if (insertedCommits.size() >= commitsBatchSize) {
-                        graph.putAll(insertedCommits);
-                        insertedCommits.clear();
-                    }
-                }
+        // collect all ids of commits being inserted
+        Set<ObjectId> visitedCommits = Sets.newConcurrentHashSet();
+        Consumer<RevObject> trackCommits = (o) -> {
+            if (TYPE.COMMIT == o.getType()) {
+                visitedCommits.add(o.getId());
             }
         };
-        // the stream will call updateCommits for each object as they're consumed
-        stream = stream.peek(updateCommits);
-        super.putAll(stream, listener);
-        if (!insertedCommits.isEmpty()) {
-            graph.putAll(insertedCommits);
+        // the stream will call trackCommits for each object as they're consumed
+        stream = stream.peek(trackCommits);
+        try {
+            super.putAll(stream, listener);
+        } finally {
+            // insert the mappings for all the commits that tried to be inserted and can be found in
+            // the objects db. It is ok to call graphdb.put with a commit that already exists, and
+            // this way we don't have to keep a potentially huge collection of RevCommits in memory
+            if (!visitedCommits.isEmpty()) {
+                Iterator<RevCommit> inserted = super.getAll(visitedCommits,
+                        BulkOpListener.NOOP_LISTENER, RevCommit.class);
+                graph.putAll(() -> inserted);
+            }
         }
     }
 }

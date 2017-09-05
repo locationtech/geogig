@@ -52,12 +52,6 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
         return repositories.keySet().iterator();
     }
 
-    @Deprecated
-    @Override
-    public Optional<Repository> getGeogig(org.restlet.data.Request request) {
-        return null;
-    }
-
     @Override
     public Optional<Repository> getGeogig(final String repositoryName) {
         if (null == repositoryName) {
@@ -95,11 +89,6 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
 
     public Repository getGeogigByName(final String repositoryName) {
         return repositories.get(repositoryName).getGeogig().getRepository();
-    }
-
-    @Deprecated
-    @Override
-    public void delete(org.restlet.data.Request request) {
     }
 
     @Override

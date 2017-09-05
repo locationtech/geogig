@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.locationtech.geogig.repository.Repository;
-import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
 
@@ -26,9 +25,6 @@ public interface RepositoryProvider {
      * {@link Request#getAttributes() request attributes}
      */
     String KEY = "__REPOSITORY_PROVIDER_KEY__";
-
-    @Deprecated
-    public Optional<Repository> getGeogig(Request request);
 
     public Optional<Repository> getGeogig(final String repositoryName);
 
@@ -47,13 +43,10 @@ public interface RepositoryProvider {
             final Map<String, String> parameters);
 
     /**
-     * Deletes the repository that resolved from the request argument.
+     * Deletes the repository that matches the given repository name.
      * <p>
      * Implementation detail: the repository instance is removed from the provider's cache.
      */
-    @Deprecated
-    void delete(Request request);
-
     void delete(String repoName);
 
     /**

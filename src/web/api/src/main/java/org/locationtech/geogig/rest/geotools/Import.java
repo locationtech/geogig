@@ -16,7 +16,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Representations;
-import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -79,12 +78,9 @@ import com.google.common.base.Preconditions;
  * <b>NOTE 1</b>: {@link DataStoreImportContextService} implementations may add additional format
  * specific request parameters.
  * <p>
- * <b>NOTE 2</b>: Currently, this operation is bound to the <i>import</i> command in the Web API.
- * This means that {@link UploadCommandResource} is involved in executing this operation. The
- * implementation of {@link UploadCommandResource} requires a file to be uploaded in the POST. The
- * file uploaded is added into the {@link ParameterSet} that is passed to the constructor of
- * instances of this operation. {@link DataStoreImportContextService} implementations may need to
- * access this upload to perform format specific functions, so it is passed along.
+ * <b>NOTE 2</b>: The file uploaded is added into the {@link ParameterSet} that is passed to the
+ * constructor of instances of this operation. {@link DataStoreImportContextService} implementations
+ * may need to access this upload to perform format specific functions, so it is passed along.
  * <p>
  * Usage: <br>
  * <b>

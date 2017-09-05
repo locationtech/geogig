@@ -7,10 +7,9 @@
  * Contributors:
  * Justin Deoliveira (Boundless) - initial implementation
  */
-package org.locationtech.geogig.web.cli.commands;
+package org.locationtech.geogig.spring.cli.commands;
 
 import java.io.IOException;
-import java.net.BindException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -27,11 +26,8 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
-import org.locationtech.geogig.web.Main;
-import org.locationtech.geogig.web.MultiRepositoryProvider;
-import org.restlet.Application;
-import org.restlet.Component;
-import org.restlet.data.Protocol;
+import org.locationtech.geogig.spring.main.JettyServer;
+import org.locationtech.geogig.spring.provider.MultiRepositoryProvider;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -44,8 +40,8 @@ import com.beust.jcommander.Parameters;
  * <li>{@code geogig serve [-p <port>] [<directory>]}
  * </ul>
  * </p>
- * 
- * @see Main
+ *
+ * @see JettServer
  */
 @RequiresRepository(false)
 @Parameters(commandNames = "serve", commandDescription = "Serves a repository through the web api")
@@ -80,35 +76,24 @@ public class Serve extends AbstractCommand {
             } catch (URISyntaxException e) {
                 throw new CommandFailedException("Unable to parse the root repository URI.", e);
             }
-    
+
             if (multiRepo) {
                 provider = new MultiRepositoryProvider(repoURI);
             } else {
                 provider = new SingleRepositoryProvider(loadGeoGIG(repoURI, cli));
             }
         }
-        
-        Application application = new Main(provider, multiRepo);
 
-        Component comp = new Component();
-
-        comp.getDefaultHost().attach(application);
-        comp.getServers().add(Protocol.HTTP, port);
-
-        cli.getConsole()
-                .println(String.format("Starting server on port %d, use CTRL+C to exit.", port));
-
+        // now run the Jetty embedded server
+        JettyServer server = new JettyServer(port, provider);
         try {
-            comp.start();
-            cli.setExitOnFinish(false);
-        } catch (BindException e) {
-            String msg = String.format(
-                    "Port %d already in use, use the --port parameter to specify a different port",
-                    port);
-            throw new CommandFailedException(msg, true);
+            cli.getConsole().println(
+                    String.format("Starting server on port %d, use CTRL+C to exit.", port));
+            server.start();
         } catch (Exception e) {
             throw new CommandFailedException("Unable to start server", e);
         }
+
     }
 
     Repository loadGeoGIG(URI repo, GeogigCLI cli) {

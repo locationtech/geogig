@@ -35,7 +35,7 @@ import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
-import org.locationtech.geogig.rest.repository.UploadCommandResource;
+import org.locationtech.geogig.spring.controller.RepositoryCommandController;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.impl.RocksdbMap;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -111,7 +111,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             final HashMap<String, Serializable> params = new HashMap<>(3);
             if (uploadedFile == null) {
                 throw new CommandSpecException("Request must specify one and only one "
-                    + UploadCommandResource.UPLOAD_FILE_KEY + " in the request body");
+                        + RepositoryCommandController.UPLOAD_FILE_KEY + " in the request body");
             }
             // fill in DataStore parameters
             params.put(GeoPkgDataStoreFactory.DBTYPE.key, "geopkg");

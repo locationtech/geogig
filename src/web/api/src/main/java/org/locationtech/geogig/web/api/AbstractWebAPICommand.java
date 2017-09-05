@@ -28,8 +28,6 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
 
     private UUID transactionId = null;
 
-    private HttpStatus commandStatus = HttpStatus.OK;
-
     protected AbstractWebAPICommand() {
     }
 

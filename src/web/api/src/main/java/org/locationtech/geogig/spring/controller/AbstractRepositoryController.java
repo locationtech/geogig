@@ -16,13 +16,18 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.spring.dto.LegacyRepoResponse;
 import org.locationtech.geogig.spring.service.RepositoryService;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
 /**
  * Common Controller functionality for controllers handling /repos/<i>repoName</i>/repo/* endpoints.
@@ -103,5 +108,25 @@ public abstract class AbstractRepositoryController extends AbstractController {
     protected ObjectId getValidCommitId(String objectId, HttpServletResponse response,
             boolean required) {
         return getValidObjectId(objectId, response, required, "commit", "a commit");
+    }
+
+    protected final void encodeToStream(LegacyRepoResponse responseBean,
+            final HttpServletRequest request, final HttpServletResponse response) {
+        // Extract the baseURL from the request (NOTE: not reliable if proxies are involved)
+        final String baseURL = getBaseUrl(request);
+        // determine requested output format
+        final MediaType requestedResponseFormat = responseBean
+                .resolveMediaType(getMediaType(request));
+        // set the Content-Type since we aren't using Spring's framework here
+        response.setContentType(requestedResponseFormat.toString());
+        // set the status
+        response.setStatus(responseBean.getStatus().value());
+        // write the LegacyResponse object out to the Response stream
+        try {
+            responseBean.encode(response.getOutputStream(), requestedResponseFormat, baseURL);
+        } catch (Exception e) {
+            throw new CommandSpecException("Error writing response",
+                    HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
     }
 }

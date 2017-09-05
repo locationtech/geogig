@@ -55,8 +55,6 @@ import com.google.inject.Inject;
  */
 public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
-    private final boolean readOnly;
-
     private int repositoryId;
 
     private final ValueSerializer valueEncoder = DataStreamValueSerializerV2.INSTANCE;
@@ -78,8 +76,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
     public PGIndexDatabase(final ConfigDatabase configdb, final Environment config,
             final boolean readOnly) {
-        super(configdb, config);
-        this.readOnly = readOnly;
+        super(configdb, config, readOnly);
     }
 
     @Override

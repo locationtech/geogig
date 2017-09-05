@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,8 @@ import java.util.Map;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -39,13 +38,13 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
     protected IndexDatabase indexDb;
 
     @Override
-    protected ObjectStore createOpen(Platform platform, Hints hints) {
-        this.indexDb = createIndexDatabase(platform, hints);
+    protected ObjectStore createOpen() throws IOException {
+        this.indexDb = createIndexDatabase(false);
         indexDb.open();
         return indexDb;
     }
 
-    protected abstract IndexDatabase createIndexDatabase(Platform platform, Hints hints);
+    protected abstract IndexDatabase createIndexDatabase(boolean readOnly) throws IOException;
 
     @Test
     public void testCreateIndex() {
@@ -274,7 +273,8 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
     public void testNullMetadata() {
         String treeName = "tree";
         String attributeName = "attribute";
-        IndexInfo index = indexDb.createIndexInfo(treeName, attributeName, IndexType.QUADTREE, null);
+        IndexInfo index = indexDb.createIndexInfo(treeName, attributeName, IndexType.QUADTREE,
+                null);
 
         assertEquals(treeName, index.getTreeName());
         assertEquals(attributeName, index.getAttributeName());
@@ -296,7 +296,8 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
     public void testIndexTreeMappings() {
         String treeName = "tree";
         String attributeName = "attribute";
-        IndexInfo index = indexDb.createIndexInfo(treeName, attributeName, IndexType.QUADTREE, null);
+        IndexInfo index = indexDb.createIndexInfo(treeName, attributeName, IndexType.QUADTREE,
+                null);
 
         ObjectId originalTreeId = RevObjectTestSupport.hashString("fake1");
         ObjectId indexedTreeId = RevObjectTestSupport.hashString("fake2");
@@ -312,12 +313,13 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         resolvedId = indexDb.resolveIndexedTree(index, notIndexedId);
         assertFalse(resolvedId.isPresent());
     }
-    
+
     @Test
     public void testUpdateIndexTreeMappings() {
         String treeName = "tree";
         String attributeName = "attribute";
-        IndexInfo index = indexDb.createIndexInfo(treeName, attributeName, IndexType.QUADTREE, null);
+        IndexInfo index = indexDb.createIndexInfo(treeName, attributeName, IndexType.QUADTREE,
+                null);
 
         ObjectId originalTreeId = RevObjectTestSupport.hashString("fake1");
         ObjectId indexedTreeId = RevObjectTestSupport.hashString("fake2");
@@ -332,9 +334,9 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
 
         resolvedId = indexDb.resolveIndexedTree(index, notIndexedId);
         assertFalse(resolvedId.isPresent());
-        
+
         indexDb.addIndexedTree(index, originalTreeId, notIndexedId);
-        
+
         resolvedId = indexDb.resolveIndexedTree(index, originalTreeId);
         assertTrue(resolvedId.isPresent());
 
@@ -439,7 +441,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
 
         resolvedId = indexDb.resolveIndexedTree(index, originalTreeId2);
         assertFalse(resolvedId.isPresent());
-        
+
     }
 
 }

@@ -44,8 +44,6 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     private PGGraphDatabase graph;
 
-    private final boolean readOnly;
-
     @Inject
     public PGObjectDatabase(final ConfigDatabase configdb, final Hints hints)
             throws URISyntaxException {
@@ -63,8 +61,7 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     public PGObjectDatabase(final ConfigDatabase configdb, final Environment config,
             final boolean readOnly) {
-        super(configdb, config);
-        this.readOnly = readOnly;
+        super(configdb, config, readOnly);
     }
 
     @Override
@@ -118,14 +115,6 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
         Preconditions.checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
         return new SynchronizedGraphDatabase(graph);
-    }
-
-    @Override
-    public void checkWritable() {
-        checkOpen();
-        if (readOnly) {
-            throw new IllegalStateException("db is read only.");
-        }
     }
 
     /**

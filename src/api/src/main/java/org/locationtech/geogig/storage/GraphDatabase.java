@@ -194,7 +194,7 @@ public interface GraphDatabase extends Closeable {
      * Gets the id of the commit that this commit is mapped to.
      * 
      * @param commitId the commit to find the mapping of
-     * @return the mapped commit id
+     * @return the mapped commit id, or {@link ObjectId#NULL}
      */
     public ObjectId getMapping(final ObjectId commitId);
 

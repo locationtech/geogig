@@ -5,25 +5,25 @@
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Johnathan Garrett (Prominent Edge) - initial implementation
+ * Gabriel Roldan (Boundless) - initial implementation
  */
 package org.locationtech.geogig.storage.memory;
 
 import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.IndexDatabase;
-import org.locationtech.geogig.storage.impl.IndexDatabaseConformanceTest;
+import org.locationtech.geogig.storage.impl.ObjectDatabaseConformanceTest;
 
-public class HeapIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest {
+public class HeapObjectDatabaseConformanceTest extends ObjectDatabaseConformanceTest {
 
     @Override
-    protected IndexDatabase createIndexDatabase(boolean readOnly) {
+    protected HeapObjectDatabase createOpen(boolean readOnly) {
         Platform platform = new DefaultPlatform();
         Hints hints = new Hints();
         hints.set(Hints.OBJECTS_READ_ONLY, readOnly);
-        HeapIndexDatabase heapIndexDatabase = new HeapIndexDatabase(platform, hints);
-        return heapIndexDatabase;
+        HeapObjectDatabase store = new HeapObjectDatabase(platform, hints);
+        store.open();
+        return store;
     }
 
 }

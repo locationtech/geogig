@@ -23,7 +23,6 @@ import static org.locationtech.geogig.storage.postgresql.Environment.KEY_THREADP
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.rollbackAndRethrow;
 
-import java.net.URISyntaxException;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -64,7 +63,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -94,7 +92,6 @@ import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.Inject;
 
 /**
  * PostgreSQL implementation for {@link ObjectStore}.
@@ -127,13 +124,10 @@ public class PGObjectStore implements ObjectStore {
 
     private SharedResourceReference resources;
 
-    @Inject
-    public PGObjectStore(final ConfigDatabase configdb, final Hints hints)
-            throws URISyntaxException {
-        this(configdb, Environment.get(hints));
-    }
+    protected final boolean readOnly;
 
-    public PGObjectStore(final ConfigDatabase configdb, final Environment config) {
+    public PGObjectStore(final ConfigDatabase configdb, final Environment config,
+            boolean readOnly) {
         Preconditions.checkNotNull(configdb);
         Preconditions.checkNotNull(config);
         Preconditions.checkNotNull(config.getRepositoryName(), "Repository id not provided");
@@ -142,6 +136,7 @@ public class PGObjectStore implements ObjectStore {
                 config.getRepositoryName());
         this.configdb = configdb;
         this.config = config;
+        this.readOnly = readOnly;
     }
 
     @Override
@@ -1399,8 +1394,11 @@ public class PGObjectStore implements ObjectStore {
         Preconditions.checkState(isOpen(), "Database is closed");
     }
 
-    public void checkWritable() {
+    protected void checkWritable() {
         checkOpen();
+        if (readOnly) {
+            throw new IllegalStateException("db is read only.");
+        }
     }
 
     private static class SharedResourceReference {

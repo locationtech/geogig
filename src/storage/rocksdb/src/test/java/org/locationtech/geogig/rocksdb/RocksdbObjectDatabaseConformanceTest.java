@@ -1,4 +1,4 @@
-/* Copyright (c) 2016 Boundless and others.
+/* Copyright (c) 2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -10,15 +10,21 @@
 package org.locationtech.geogig.rocksdb;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
+import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.impl.ObjectDatabaseConformanceTest;
+import org.locationtech.geogig.storage.memory.HeapConfigDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 
-public class RocksdbObjectStoreConformanceTest extends ObjectStoreConformanceTest {
+public class RocksdbObjectDatabaseConformanceTest extends ObjectDatabaseConformanceTest {
+
+    private ConfigDatabase configdb;
 
     public @Rule TemporaryFolder folder = new TemporaryFolder();
 
@@ -33,10 +39,19 @@ public class RocksdbObjectStoreConformanceTest extends ObjectStoreConformanceTes
         super.setUp();
     }
 
-    protected @Override RocksdbObjectStore createOpen() {
+    @Override
+    protected RocksdbObjectDatabase createOpen(boolean readOnly) {
         Hints hints = new Hints();
-        RocksdbObjectStore database = new RocksdbObjectStore(platform, hints);
+        hints.set(Hints.OBJECTS_READ_ONLY, readOnly);
+        configdb = new HeapConfigDatabase();
+        RocksdbObjectDatabase database = new RocksdbObjectDatabase(platform, hints, configdb);
         database.open();
         return database;
+    }
+
+    public @After void afterTest() throws IOException {
+        if (null != configdb) {
+            configdb.close();
+        }
     }
 }

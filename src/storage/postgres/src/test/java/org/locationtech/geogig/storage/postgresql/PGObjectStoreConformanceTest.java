@@ -25,14 +25,10 @@ import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
@@ -45,35 +41,30 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
     ConfigDatabase configdb;
 
     @Override
-    protected ObjectStore createOpen(Platform platform, Hints hints) {
+    protected PGObjectStore createOpen() throws IOException {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
 
         closeConfigDb();
 
         configdb = new PGConfigDatabase(config);
-        boolean readOnly = hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
-        PGObjectDatabase db = new PGObjectDatabase(configdb, config, readOnly);
+        PGObjectStore db = new PGObjectStore(configdb, config, false);
         db.open();
         return db;
     }
 
     @After
-    public void closeConfigDb() {
+    public void closeConfigDb() throws IOException {
         if (configdb != null) {
-            try {
-                configdb.close();
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
+            configdb.close();
             configdb = null;
         }
     }
 
     /**
-     * This tests the concurrency within the PGObjectDatabase by attempting to add the same object
-     * many times with a small batch size. This causes the same object to be added by multiple
-     * threads and should bring to light any concurrency issues with putting duplicate objects.
+     * This tests the concurrency within the PGObjectStore by attempting to add the same object many
+     * times with a small batch size. This causes the same object to be added by multiple threads
+     * and should bring to light any concurrency issues with putting duplicate objects.
      */
     @Test
     public void testPutAllConcurrency() {
@@ -83,7 +74,7 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
             objects.add(object);
         }
 
-        ((PGObjectDatabase) db).setPutAllBatchSize(1);
+        ((PGObjectStore) db).setPutAllBatchSize(1);
         db.putAll(objects.iterator());
         assertEquals(object, db.get(object.getId()));
     }
@@ -98,7 +89,7 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
         db.close();
 
         Environment config = testConfig.getEnvironment();
-        db = new PGObjectDatabase(configdb, config, false);
+        db = new PGObjectStore(configdb, config, false);
         db.open();
 
         RevObject originalObject = RevObjectTestSupport.feature(0, null, "some value");

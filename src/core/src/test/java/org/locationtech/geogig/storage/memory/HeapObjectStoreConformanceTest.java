@@ -9,18 +9,16 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
 
 public class HeapObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 
     @Override
-    protected ObjectStore createOpen(Platform platform, Hints hints) {
-        HeapObjectDatabase heapObjectDatabase = new HeapObjectDatabase(platform, hints);
-        heapObjectDatabase.open();
-        return heapObjectDatabase;
+    protected ObjectStore createOpen() {
+        HeapObjectStore store = new HeapObjectStore();
+        store.open();
+        return store;
     }
 
 }

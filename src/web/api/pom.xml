@@ -45,17 +45,6 @@
       <version>4.2.0</version>
     </dependency>-->
     <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet</artifactId>
-      <version>${restlet.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli</artifactId>
       <version>${project.version}</version>
@@ -63,12 +52,6 @@
     <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.json</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet.ext.fileupload</artifactId>
-      <version>${restlet.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

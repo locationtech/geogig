@@ -17,13 +17,12 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.Nullable;
-import org.restlet.util.ByteUtils;
+import org.locationtech.geogig.web.api.ParameterSet;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
-
-import org.locationtech.geogig.web.api.ParameterSet;
 
 public class TestParams extends MultiMapParams {
 
@@ -52,7 +51,7 @@ public class TestParams extends MultiMapParams {
                 try (FileOutputStream fos = new FileOutputStream(tempFile);
                     InputStream bais = new ByteArrayInputStream(fileUploadContents.getBytes(
                         StandardCharsets.UTF_8))) {
-                    ByteUtils.write(bais, fos);
+                    IOUtils.copy(bais, fos);
                     fos.flush();
                 }
                 this.uploadedFile = tempFile;

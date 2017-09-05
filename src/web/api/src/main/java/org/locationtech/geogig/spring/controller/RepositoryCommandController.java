@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.locationtech.geogig.spring.service.RepositoryService;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -58,6 +57,8 @@ import com.google.common.base.Optional;
 @RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}",
         produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
 public class RepositoryCommandController extends AbstractController {
+
+    public static final String UPLOAD_FILE_KEY = "fileUpload";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCommandController.class);
 
@@ -141,7 +142,7 @@ public class RepositoryCommandController extends AbstractController {
     @RequestMapping(value = "/{command}")
     public void runCommand(@PathVariable String repoName, @PathVariable String command,
             @RequestParam MultiValueMap<String, String> params,
-            @RequestParam(required = false, name = UploadCommandResource.UPLOAD_FILE_KEY) MultipartFile file,
+            @RequestParam(required = false, name = UPLOAD_FILE_KEY) MultipartFile file,
             HttpServletRequest request, HttpServletResponse response, RequestEntity<String> entity)
             throws IOException {
         AbstractWebAPICommand webCommand = buildCommand(command);
@@ -149,7 +150,7 @@ public class RepositoryCommandController extends AbstractController {
         File uploadedFile = null;
         if (file != null) {
             uploadedFile = File.createTempFile(
-                    "geogig-" + UploadCommandResource.UPLOAD_FILE_KEY + "-", ".tmp");
+                    "geogig-" + UPLOAD_FILE_KEY + "-", ".tmp");
             uploadedFile.deleteOnExit();
             file.transferTo(uploadedFile);
         }

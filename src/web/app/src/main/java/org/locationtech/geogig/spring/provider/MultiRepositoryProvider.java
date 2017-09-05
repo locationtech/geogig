@@ -10,7 +10,6 @@
 package org.locationtech.geogig.spring.provider;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -77,16 +76,6 @@ public class MultiRepositoryProvider implements RepositoryProvider {
     @Override
     public Iterator<String> findRepositories() {
         return resolver.listRepoNamesUnderRootURI(rootRepoURI).iterator();
-    }
-
-    @Deprecated
-    @Override
-    public Optional<Repository> getGeogig(org.restlet.data.Request request) {
-        final String repositoryName = getStringAttribute(request, "repository");
-        if (null == repositoryName) {
-            return Optional.absent();
-        }
-        return Optional.of(getGeogigByName(repositoryName));
     }
 
     @Override
@@ -216,26 +205,6 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         }
 
         return repository;
-    }
-
-    @Deprecated
-    @Override
-    public void delete(org.restlet.data.Request request) {
-        Optional<Repository> geogig = getGeogig(request);
-        Preconditions.checkState(geogig.isPresent(), "No repository to delete.");
-
-        final String repositoryName = getStringAttribute(request, "repository");
-        Repository ggig = geogig.get();
-        Optional<URI> repoUri = ggig.command(ResolveGeogigURI.class).call();
-        Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
-
-        ggig.close();
-        try {
-            GeoGIG.delete(repoUri.get());
-            this.repositories.invalidate(repositoryName);
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
     }
 
     @Override

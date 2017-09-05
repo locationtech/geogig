@@ -36,7 +36,6 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.springframework.http.MediaType;
 
 public class LogTest extends AbstractWebOpTest {
 
@@ -329,9 +328,6 @@ public class LogTest extends AbstractWebOpTest {
         buildCommand(options).run(testContext.get());
         LegacyResponse response = testContext.getCommandResponse();
 
-        // request format may not be CSV, but it should still output csv
-        assertEquals(Variants.CSV_MEDIA_TYPE,
-                response.resolveMediaType(MediaType.APPLICATION_JSON));
         StringWriter writer = new StringWriter();
         response.encode(writer, Variants.CSV_MEDIA_TYPE, "/geogig");
 

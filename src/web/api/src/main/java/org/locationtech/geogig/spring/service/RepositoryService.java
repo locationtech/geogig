@@ -49,12 +49,7 @@ import com.google.common.collect.ImmutableList;
  * Service for Repository stats.
  */
 @Service("repositoryService")
-public class RepositoryService {
-
-    public Repository getRepository(RepositoryProvider provider, String repoName) {
-        Optional<Repository> geogig = provider.getGeogig(repoName);
-        return geogig.orNull();
-    }
+public class RepositoryService extends AbstractRepositoryService {
 
     public RepositoryInfo getRepositoryInfo(RepositoryProvider provider, String repoName) {
         Repository repository = getRepository(provider, repoName);

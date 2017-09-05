@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.spring.dto;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Writer;
 
 import org.locationtech.geogig.web.api.StreamingWriter;
@@ -36,4 +38,28 @@ public abstract class LegacyRepoResponse extends LegacyResponse {
 
     protected abstract void encode(Writer out);
 
+    /**
+     * Encode to a provided OutputStream. This is similar to
+     * {@link #encode(java.io.Writer, org.springframework.http.MediaType, java.lang.String)} except
+     * that this method provides for direct OutputStream writing. This is to allow responses to
+     * reuse encoding logic that does not support writing to Writers.
+     * @param outputStream the stream to which to  write this response.
+     * @param format output format.
+     * @param baseURL Base URL for encoding relative links.
+     */
+    public final void encode(OutputStream outputStream, MediaType format, String baseURL) {
+        encode(outputStream);
+    }
+
+    /**
+     * Default encoding logic for Repository Command responses. The default implementation is to
+     * simply wrap the OutputStream with a PrintWriter and call {@link #encode(java.io.Writer)}.
+     * Subclasses that need access to the OutputStream itself should override this.
+     * @param out the stream to which to write this response.
+     */
+    protected void encode(OutputStream out) {
+        try (PrintWriter writer = new PrintWriter(out)) {
+            encode(writer);
+        }
+    }
 }

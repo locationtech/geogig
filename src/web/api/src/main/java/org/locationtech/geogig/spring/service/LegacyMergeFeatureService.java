@@ -59,12 +59,7 @@ import com.vividsolutions.jts.geom.Polygon;
  * Copy of the Restlet version of MergeFeatureResource code.
  */
 @Service("legacyMergeFeatureService")
-public class LegacyMergeFeatureService {
-
-    private Repository getRepository(RepositoryProvider provider, String repoName) {
-        Optional<Repository> geogig = provider.getGeogig(repoName);
-        return geogig.orNull();
-    }
+public class LegacyMergeFeatureService extends AbstractRepositoryService {
 
     public RevFeature mergeFeatures(RepositoryProvider provider, String repoName, String request) {
         // get the repo

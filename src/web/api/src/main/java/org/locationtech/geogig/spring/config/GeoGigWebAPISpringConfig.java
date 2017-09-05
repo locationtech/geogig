@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.spring.config;
 
+import org.locationtech.geogig.spring.service.LegacyApplyChangesService;
+import org.locationtech.geogig.spring.service.LegacyBatchObjectsService;
+import org.locationtech.geogig.spring.service.LegacyFilteredChangesService;
 import org.locationtech.geogig.spring.service.LegacyMergeFeatureService;
 import org.locationtech.geogig.spring.service.RepositoryInitService;
 import org.locationtech.geogig.spring.service.RepositoryListService;
@@ -48,5 +51,20 @@ public class GeoGigWebAPISpringConfig {
     @Bean
     public LegacyMergeFeatureService getLegacyMergeFeatureService() {
         return new LegacyMergeFeatureService();
+    }
+
+    @Bean
+    public LegacyApplyChangesService getApplyChangesService() {
+        return new LegacyApplyChangesService();
+    }
+
+    @Bean
+    public LegacyFilteredChangesService getLegacyFilteredChangesService() {
+        return new LegacyFilteredChangesService();
+    }
+
+    @Bean
+    public LegacyBatchObjectsService getLegacyBatchObjectsService() {
+        return new LegacyBatchObjectsService();
     }
 }

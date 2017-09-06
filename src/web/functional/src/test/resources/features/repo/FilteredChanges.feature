@@ -9,6 +9,7 @@ Feature: FilterChanges
      When I call "GET /repos/repo1/repo/filteredchanges"
      Then the response status should be '405'
       And the response allowed methods should be "POST"
+      
   @Status500
   Scenario: No commit specified returns 500
     Given There is a default multirepo server
@@ -18,7 +19,7 @@ Feature: FilterChanges
       }
       """
      Then the response status should be '500'
-      And the response body should contain "object does not exist: 0000000000000000000000000000000000000000"
+      And the response body should contain "Object does not exist: 0000000000000000000000000000000000000000"
 
   Scenario: Commit specified returns 200
     Given There is a default multirepo server

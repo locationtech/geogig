@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <title>geogig console emulator</title>
-    <script src="./jquery-1.7.1.min.js"></script>
-    <script src="./jqconsole.min.js"></script>
-    <link href="./jqconsole.css" rel="stylesheet"/>
+    <script src="/resources/jquery-1.7.1.min.js"></script>
+    <script src="/resources/jqconsole.min.js"></script>
+    <link href="/resources/jqconsole.css" rel="stylesheet"/>
     <script>
         jQuery(document).ready(function($) {
             var nextId = (function() {
@@ -37,7 +37,7 @@
                     };
                     $.ajax({
                         type: "POST",
-                        "url": "run-command",
+                        "url": "run-command.json",
                         "data": JSON.stringify(request),
                         "contentType" : "application/json; charset=UTF-8",
                         "dataType": "json",

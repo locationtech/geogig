@@ -15,6 +15,7 @@ import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 
+import java.net.URISyntaxException;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,6 +32,7 @@ import javax.sql.DataSource;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.slf4j.Logger;
@@ -42,6 +44,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
+import com.google.inject.Inject;
 
 /**
  * {@link ConflictsDatabase} implementation for PostgreSQL.
@@ -68,24 +71,63 @@ import com.google.common.collect.Iterables;
  * conflicts are encountered, and default to the empty string if the conflicts are on the
  * repository's head instead of inside a transaction.
  */
-class PGConflictsDatabase implements ConflictsDatabase {
+public class PGConflictsDatabase implements ConflictsDatabase {
 
     final static Logger LOG = LoggerFactory.getLogger(PGConflictsDatabase.class);
 
     private static final String NULL_NAMESPACE = "";
 
+    private final Environment environment;
+
     private final String conflictsTable;
 
-    private final int repositoryId;
+    private int repositoryId;
 
     @VisibleForTesting
-    final DataSource dataSource;
+    DataSource dataSource;
 
-    public PGConflictsDatabase(final DataSource dataSource, final String conflictsTable,
-            final int repositoryId) {
-        this.dataSource = dataSource;
-        this.conflictsTable = conflictsTable;
-        this.repositoryId = repositoryId;
+    /**
+     * @param hints
+     * @throws IllegalArgumentException if {@link Hints#REPOSITORY_URL} is not given in hints
+     * @throws URISyntaxException
+     */
+    @Inject
+    public PGConflictsDatabase(Hints hints) throws IllegalArgumentException, URISyntaxException {
+        checkNotNull(hints);
+        environment = Environment.get(hints);
+        Preconditions.checkNotNull(environment.getRepositoryName(), "Repository id not provided");
+        conflictsTable = environment.getTables().conflicts();
+        repositoryId = Environment.REPOSITORY_ID_UNSET;
+    }
+
+    @VisibleForTesting
+    PGConflictsDatabase(DataSource mockSource) {
+        dataSource = mockSource;
+        environment = null;
+        conflictsTable = "geogig_conflicts";
+    }
+
+    public @Override synchronized void open() {
+        if (dataSource == null) {
+            dataSource = PGStorage.newDataSource(environment);
+            boolean repoExists = PGStorage.repoExists(environment);
+            if (!repoExists) {
+                close();
+                throw new IllegalArgumentException(String.format("Repository %s does not exist",
+                        environment.getRepositoryName()));
+            }
+            repositoryId = environment.getRepositoryId();
+        }
+    }
+
+    public @Override synchronized void close() {
+        if (dataSource != null) {
+            try {
+                PGStorage.closeDataSource(dataSource);
+            } finally {
+                dataSource = null;
+            }
+        }
     }
 
     @Override

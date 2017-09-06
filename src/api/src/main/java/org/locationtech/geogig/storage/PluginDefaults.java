@@ -22,9 +22,9 @@ public final class PluginDefaults {
 
     private VersionedFormat objects;
 
-    private VersionedFormat graph;
-
     private VersionedFormat index;
+
+    private VersionedFormat conflicts;
 
     /**
      * Constructs a new {@code PluginDefaults} with no configured formats or versions.
@@ -38,15 +38,14 @@ public final class PluginDefaults {
      * 
      * @param objects the format and version of the {@link ObjectDatabase}
      * @param refs the format and version of the {@link RefDatabase}
-     * @param graph the format and version of the {@link GraphDatabase}
      * @param index the format and version of the {@link IndexDatabase}
      */
-    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat graph,
-            VersionedFormat index) {
+    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat index,
+            VersionedFormat conflicts) {
         this.refs = refs;
         this.objects = objects;
-        this.graph = graph;
         this.index = index;
+        this.conflicts = conflicts;
     }
 
     /**
@@ -57,8 +56,8 @@ public final class PluginDefaults {
     public PluginDefaults(StorageProvider provider) {
         refs = provider.getRefsDatabaseFormat();
         objects = provider.getObjectDatabaseFormat();
-        graph = provider.getGraphDatabaseFormat();
         index = provider.getIndexDatabaseFormat();
+        conflicts = provider.getConflictsDatabaseFormat();
     }
 
     /**
@@ -78,19 +77,15 @@ public final class PluginDefaults {
     }
 
     /**
-     * @return an {@link Optional} with the {@link GraphDatabase} format and version, or
-     *         {@link Optional#absent()} if there wasn't one
-     */
-    public Optional<VersionedFormat> getGraph() {
-        return Optional.fromNullable(graph);
-    }
-
-    /**
      * @return an {@link Optional} with the {@link IndexDatabase} format and version, or
      *         {@link Optional#absent()} if there wasn't one
      */
     public Optional<VersionedFormat> getIndex() {
         return Optional.fromNullable(index);
+    }
+
+    public Optional<VersionedFormat> getConflicts() {
+        return Optional.fromNullable(conflicts);
     }
 
     /**
@@ -112,21 +107,16 @@ public final class PluginDefaults {
     }
 
     /**
-     * Sets the {@link GraphDatabase} format and version to the provided one.
-     * 
-     * @param graph the format and version
-     */
-    public void setGraph(VersionedFormat graph) {
-        this.graph = graph;
-    }
-
-    /**
      * Sets the {@link IndexDatabase} format and version to the provided one.
      * 
      * @param index the format and version
      */
     public void setIndex(VersionedFormat index) {
         this.index = index;
+    }
+
+    public void setConflicts(VersionedFormat conflicts) {
+        this.conflicts = conflicts;
     }
 
     /**

@@ -13,23 +13,38 @@ import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME
 import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.Sets;
+import com.google.common.io.Closeables;
 import com.google.inject.Inject;
 
 public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectDatabase {
 
-    private RocksdbConflictsDatabase conflicts;
-
     private RocksdbBlobStore blobs;
 
     private final ConfigDatabase configdb;
+
+    private RocksdbGraphDatabase graph;
 
     @Inject
     public RocksdbObjectDatabase(Platform platform, Hints hints, ConfigDatabase configdb) {
@@ -53,13 +68,13 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
     }
 
     @Override
-    public RocksdbConflictsDatabase getConflictsDatabase() {
-        return conflicts;
+    public RocksdbBlobStore getBlobStore() {
+        return blobs;
     }
 
     @Override
-    public RocksdbBlobStore getBlobStore() {
-        return blobs;
+    public GraphDatabase getGraphDatabase() {
+        return new SynchronizedGraphDatabase(graph);
     }
 
     @Override
@@ -68,32 +83,71 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
             return;
         }
         super.open();
-        File basedir = new File(super.path).getParentFile();
-        File conflictsDir = new File(basedir, "conflicts");
-        File blobsDir = new File(super.path, "blobs");
-        conflictsDir.mkdir();
-        blobsDir.mkdir();
-        this.conflicts = new RocksdbConflictsDatabase(conflictsDir);
-        this.blobs = new RocksdbBlobStore(blobsDir, super.readOnly);
+        try {
+            File blobsDir = new File(super.path, "blobs");
+            blobsDir.mkdir();
+            this.blobs = new RocksdbBlobStore(blobsDir, super.readOnly);
+            this.graph = new RocksdbGraphDatabase(platform, hints);
+            this.graph.open();
+        } catch (RuntimeException e) {
+            close();
+            throw e;
+        }
     }
 
     @Override
     public synchronized void close() {
+        if (!isOpen()) {
+            return;
+        }
         try {
             super.close();
         } finally {
-            RocksdbConflictsDatabase conflicts = this.conflicts;
             RocksdbBlobStore blobs = this.blobs;
-            this.conflicts = null;
+            RocksdbGraphDatabase graph = this.graph;
             this.blobs = null;
+            this.graph = null;
             try {
-                if (conflicts != null) {
-                    conflicts.close();
-                }
-            } finally {
-                if (blobs != null) {
-                    blobs.close();
-                }
+                Closeables.close(blobs, true);
+                Closeables.close(graph, true);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+    }
+
+    /**
+     * Overrides to add graphdb commit to parents mappings on commits
+     */
+    public @Override boolean put(final RevObject object) {
+        final boolean added = super.put(object);
+        if (added && TYPE.COMMIT.equals(object.getType())) {
+            RevCommit c = (RevCommit) object;
+            graph.put(c.getId(), c.getParentIds());
+        }
+        return added;
+    }
+
+    protected @Override void putAll(Stream<RevObject> stream, BulkOpListener listener) {
+        // collect all ids of commits being inserted
+        Set<ObjectId> visitedCommits = Sets.newConcurrentHashSet();
+        Consumer<RevObject> trackCommits = (o) -> {
+            if (TYPE.COMMIT == o.getType()) {
+                visitedCommits.add(o.getId());
+            }
+        };
+        // the stream will call trackCommits for each object as they're consumed
+        stream = stream.peek(trackCommits);
+        try {
+            super.putAll(stream, listener);
+        } finally {
+            // insert the mappings for all the commits that tried to be inserted and can be found in
+            // the objects db. It is ok to call graphdb.put with a commit that already exists, and
+            // this way we don't have to keep a potentially huge collection of RevCommits in memory
+            if (!visitedCommits.isEmpty()) {
+                Iterator<RevCommit> inserted = super.getAll(visitedCommits,
+                        BulkOpListener.NOOP_LISTENER, RevCommit.class);
+                graph.putAll(() -> inserted);
             }
         }
     }

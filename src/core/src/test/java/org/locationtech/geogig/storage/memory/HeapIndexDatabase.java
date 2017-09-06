@@ -27,6 +27,7 @@ import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 
 /**
  * Provides an implementation of a GeoGig index database that utilizes the heap for the storage of
@@ -46,6 +47,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         super(new HeapObjectStore(), false);
     }
 
+    @Inject
     public HeapIndexDatabase(Platform platform, Hints hints) {
         super(connect(platform), readOnly(hints));
     }

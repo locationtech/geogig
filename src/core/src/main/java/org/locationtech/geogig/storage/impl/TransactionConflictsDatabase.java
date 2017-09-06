@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.impl;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +51,14 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
             final UUID transactionId) {
         this.database = database;
         this.txNamespace = transactionId.toString();
+    }
+
+    public @Override void open() {
+        database.open();
+    }
+
+    public @Override void close() throws IOException {
+        database.close();
     }
 
     /**

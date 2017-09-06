@@ -194,6 +194,15 @@ public abstract class RepositoryTestCase extends Assert {
 
         geogig = new GeoGIG(injector);
         repo = geogig.getOrCreateRepository();
+        assertNotNull(repo);
+        assertTrue(repo.isOpen());
+        assertNotNull(repo.configDatabase());
+        assertSame(injector, repo.context());
+        assertNotNull(repo.objectDatabase());
+        assertNotNull(repo.graphDatabase());
+        assertNotNull(repo.conflictsDatabase());
+        assertNotNull(repo.blobStore());
+
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("Gabriel Roldan").call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")

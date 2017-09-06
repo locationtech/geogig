@@ -16,7 +16,6 @@ import static java.util.Collections.emptyIterator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -27,7 +26,6 @@ import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureFor
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.hashString;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,9 +36,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -50,14 +46,11 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -71,26 +64,11 @@ import com.google.common.collect.Sets;
  */
 public abstract class ObjectStoreConformanceTest {
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
-
-    private TestPlatform platform;
-
-    private Hints hints;
-
     protected ObjectStore db;
 
     @Before
-    public void setUp() throws IOException {
-        File root = folder.getRoot();
-        folder.newFolder(".geogig");
-        File home = folder.newFolder("home");
-        platform = new TestPlatform(root);
-        platform.setUserHome(home);
-        hints = new Hints();
-
-        this.db = createOpen(platform, hints);
-        // this.db.open();
+    public void setUp() throws Exception {
+        this.db = createOpen();
     }
 
     @After
@@ -100,104 +78,7 @@ public abstract class ObjectStoreConformanceTest {
         }
     }
 
-    protected ObjectStore closeAndCreate(ObjectStore db, Platform platform, Hints hints) {
-        if (db != null) {
-            db.close();
-        }
-        return createOpen(platform, hints);
-    }
-
-    protected abstract ObjectStore createOpen(Platform platform, Hints hints);
-
-    @Test
-    public void testReadOnlyHint() {
-        hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
-        db = closeAndCreate(db, platform, hints);
-        RevObject obj = RevTree.EMPTY;
-        try {
-            db.put(obj);
-            fail("Expected UOE on read only hint");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("read only"));
-        }
-    }
-
-    @Test
-    public void testReadOnlyHintPreservedOnReopen() {
-        hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
-        db = closeAndCreate(db, platform, hints);
-        RevObject obj = RevTree.EMPTY;
-        try {
-            db.put(obj);
-            fail("Expected UOE on read only hint");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("read only"));
-        }
-
-        db.close();
-        db.open();
-        try {
-            db.put(obj);
-            fail("Expected UOE on read only hint");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("read only"));
-        }
-    }
-
-    @Test
-    public void testReadOnlyHint2() {
-        hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
-        db = closeAndCreate(db, platform, hints);
-        RevObject obj = RevTree.EMPTY;
-        try {
-            db.put(obj);
-            fail("Expected ISE on read only hint");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("read only"));
-        }
-
-        db.close();
-        hints.set(Hints.OBJECTS_READ_ONLY, Boolean.FALSE);
-        db = createOpen(platform, hints);
-
-        assertTrue(db.put(obj));
-    }
-
-    @Test
-    public void testReadOnlyHint3() {
-        hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
-        db = closeAndCreate(db, platform, hints);
-        RevObject obj = RevTree.EMPTY;
-        try {
-            db.put(obj);
-            fail("Expected UOE on read only hint");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("read only"));
-        }
-
-        hints.set(Hints.OBJECTS_READ_ONLY, Boolean.FALSE);
-        ObjectStore db2 = createOpen(platform, hints);
-
-        assertTrue(db2.put(obj));
-        db.close();
-        db2.close();
-    }
-
-    @Test
-    public void testMultipleInstances() {
-        try (ObjectStore db2 = createOpen(platform, hints)) {
-            assertNotSame(db, db2);
-
-            RevObject obj = RevTree.EMPTY;
-
-            assertTrue(db.put(obj));
-
-            assertFalse(db2.put(obj));
-
-            RevObject revObject = db2.get(obj.getId());
-            assertEquals(obj, revObject);
-        }
-    }
+    protected abstract ObjectStore createOpen() throws IOException;
 
     @Test
     public void testChecksClosed() {

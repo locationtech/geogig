@@ -213,13 +213,18 @@ public interface ObjectStore extends Closeable {
     public void putAll(Iterator<? extends RevObject> objects);
 
     /**
-     * Requests to insert all objects into the object database
+     * Inserts all objects into the object database
      * <p>
      * Objects already present (given its {@link RevObject#getId() id} shall not be inserted.
      * <p>
      * For each object that gets actually inserted (i.e. an object with the same id didn't
      * previously exist), {@link BulkOpListener#inserted(RevObject, Integer) listener.inserted}
      * method is called.
+     * <p>
+     * This method is not atomic, implementations might insert in batches and if at some point the
+     * operation fails, some of the objects might have been persisted and other don't. In any case,
+     * the listener's {@link BulkOpListener#inserted inserted} callback shall only be called for an
+     * object once it has effectively been stored.
      * 
      * @param objects the objects to request for insertion into the object database
      * @param listener a listener to get notifications of actually inserted objects

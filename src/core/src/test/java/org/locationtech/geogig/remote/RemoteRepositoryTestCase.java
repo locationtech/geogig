@@ -242,6 +242,8 @@ public abstract class RemoteRepositoryTestCase {
 
     protected CloneOp clone() {
         CloneOp clone = spy(localGeogig.geogig.command(CloneOp.class));
+        doReturn(Optional.of(remoteRepo)).when(clone).getRemote(any(), any());
+
         FetchOp fetch = fetch();
         // when(clone.command(FetchOp.class)).thenReturn(fetch);
         doReturn(fetch).when(clone).command(eq(FetchOp.class));

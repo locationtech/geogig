@@ -11,12 +11,15 @@ package org.locationtech.geogig.rocksdb;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 
+import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +32,10 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.rocksdb.RocksDB;
@@ -40,6 +46,7 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -49,8 +56,9 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.google.inject.Inject;
 
-class RocksdbConflictsDatabase implements ConflictsDatabase {
+public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbConflictsDatabase.class);
 
@@ -60,11 +68,40 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     private ConcurrentMap<String/* TxID */, DBHandle> dbsByTransaction = new ConcurrentHashMap<>();
 
-    RocksdbConflictsDatabase(File baseDirectory) {
+    public @Inject RocksdbConflictsDatabase(Platform platform, @Nullable Hints hints) {
+        checkNotNull(platform);
+        Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
+        checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
+        URI uri = repoUriOpt.get();
+        checkArgument("file".equals(uri.getScheme()));
+        this.baseDirectory = new File(new File(uri), "conflicts");
+        if (baseDirectory.exists()) {
+            checkArgument(baseDirectory.isDirectory() && baseDirectory.canWrite());
+        } else {
+            checkState(baseDirectory.mkdir(),
+                    "unable to create " + baseDirectory.getAbsolutePath());
+        }
+    }
+
+    @VisibleForTesting
+    public RocksdbConflictsDatabase(File baseDirectory) {
         checkNotNull(baseDirectory);
-        checkArgument(baseDirectory.exists(), "base directory does not exist: %s", baseDirectory);
-        checkArgument(baseDirectory.isDirectory() && baseDirectory.canWrite());
+        checkArgument(baseDirectory.exists() && baseDirectory.canWrite());
         this.baseDirectory = baseDirectory;
+    }
+
+    public @Override synchronized void open() {
+        // no-op
+    }
+
+    public @Override synchronized void close() {
+        try {
+            for (DBHandle db : dbsByTransaction.values()) {
+                RocksConnectionManager.INSTANCE.release(db);
+            }
+        } finally {
+            dbsByTransaction.clear();
+        }
     }
 
     private boolean dbExists(@Nullable String txId) {
@@ -141,16 +178,6 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
             }
         }
         file.delete();
-    }
-
-    public void close() {
-        try {
-            for (DBHandle db : dbsByTransaction.values()) {
-                RocksConnectionManager.INSTANCE.release(db);
-            }
-        } finally {
-            dbsByTransaction.clear();
-        }
     }
 
     private byte[] key(String path) {

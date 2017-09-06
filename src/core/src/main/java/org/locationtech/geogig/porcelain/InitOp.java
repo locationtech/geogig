@@ -216,7 +216,6 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
         refs = providedConfig.containsKey(refsKey) ? absent() : defaults.getRefs();
         objects = providedConfig.containsKey(objectsKey) ? absent() : defaults.getObjects();
-        graph = providedConfig.containsKey(graphKey) ? absent() : defaults.getGraph();
 
         if (refs.isPresent()) {
             configProps.put(refsKey, refs.get().getFormat());
@@ -225,10 +224,6 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         if (objects.isPresent()) {
             configProps.put(objectsKey, objects.get().getFormat());
             configProps.put(objects.get().getFormat() + ".version", objects.get().getVersion());
-        }
-        if (graph.isPresent()) {
-            configProps.put(graphKey, graph.get().getFormat());
-            configProps.put(graph.get().getFormat() + ".version", graph.get().getVersion());
         }
     }
 

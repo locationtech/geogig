@@ -13,13 +13,21 @@ import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMA
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 
 import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 
 import com.google.common.base.Preconditions;
@@ -31,11 +39,10 @@ import com.google.inject.Inject;
  * TODO: document/force use of {@code SET constraint_exclusion=ON}
  */
 public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
-    private PGConflictsDatabase conflicts;
 
     private PGBlobStore blobStore;
 
-    private final boolean readOnly;
+    private PGGraphDatabase graph;
 
     @Inject
     public PGObjectDatabase(final ConfigDatabase configdb, final Hints hints)
@@ -54,8 +61,7 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     public PGObjectDatabase(final ConfigDatabase configdb, final Environment config,
             final boolean readOnly) {
-        super(configdb, config);
-        this.readOnly = readOnly;
+        super(configdb, config, readOnly);
     }
 
     @Override
@@ -71,16 +77,13 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
     @Override
     public void open() {
         super.open();
-        if (dataSource == null) {
-            return;
-        }
-
+        Preconditions.checkState(super.dataSource != null);
         final int repositoryId = config.getRepositoryId();
-        final String conflictsTable = config.getTables().conflicts();
         final String blobsTable = config.getTables().blobs();
 
-        conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
         blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
+        graph = new PGGraphDatabase(config);
+        graph.open();
     }
 
     @Override
@@ -90,17 +93,14 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     @Override
     public void close() {
-        if (dataSource != null) {
-            conflicts = null;
+        if (isOpen()) {
+            try {
+                graph.close();
+                graph = null;
+            } finally {
+                super.close();
+            }
         }
-        super.close();
-    }
-
-    @Override
-    public ConflictsDatabase getConflictsDatabase() {
-        Preconditions.checkState(isOpen(), "Database is closed");
-        config.checkRepositoryExists();
-        return conflicts;
     }
 
     @Override
@@ -111,10 +111,37 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
     }
 
     @Override
-    public void checkWritable() {
-        checkOpen();
-        if (readOnly) {
-            throw new IllegalStateException("db is read only.");
-        }
+    public GraphDatabase getGraphDatabase() {
+        Preconditions.checkState(isOpen(), "Database is closed");
+        config.checkRepositoryExists();
+        return new SynchronizedGraphDatabase(graph);
     }
+
+    /**
+     * Overrides to add graphdb mapping on commits
+     */
+    public @Override boolean put(final RevObject object) {
+        final boolean added = super.put(object);
+        if (added && TYPE.COMMIT.equals(object.getType())) {
+            RevCommit c = (RevCommit) object;
+            graph.put(c.getId(), c.getParentIds());
+        }
+        return added;
+    }
+
+    /**
+     * Overrides to update the {@link GraphDatabase} before {@link #putAll} commits a batch of
+     * inserts, using the same connection and transaction
+     */
+    protected @Override void postInsert(final Connection cx,
+            final Map<EncodedObject, Boolean> insertResults) throws SQLException {
+
+        Stream<RevCommit> insertedCommits = insertResults.entrySet().stream()//
+                .filter((e) -> e.getValue().booleanValue() && TYPE.COMMIT == e.getKey().type())//
+                .map((e) -> (RevCommit) e.getKey().object());
+
+        graph.put(cx, insertedCommits);
+
+    }
+
 }

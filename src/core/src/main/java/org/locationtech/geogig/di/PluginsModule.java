@@ -18,7 +18,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
@@ -45,7 +45,7 @@ public class PluginsModule extends AbstractModule {
         bind(IndexDatabase.class).toProvider(PluginIndexDatabaseProvider.class)
                 .in(Scopes.SINGLETON);
         bind(RefDatabase.class).toProvider(PluginRefDatabaseProvider.class).in(Scopes.SINGLETON);
-        bind(GraphDatabase.class).toProvider(PluginGraphDatabaseProvider.class)
+        bind(ConflictsDatabase.class).toProvider(PluginConflictsDatabaseProvider.class)
                 .in(Scopes.SINGLETON);
     }
 
@@ -135,6 +135,7 @@ public class PluginsModule extends AbstractModule {
         protected final VersionedFormat readConfig(ConfigDatabase config) {
             final String formatKey = "storage.index";
             String versionKey = null;
+
             String format = null, version = null;
             try {
                 format = getConfig(formatKey, config).orNull();
@@ -210,19 +211,25 @@ public class PluginsModule extends AbstractModule {
         }
     }
 
-    private static class PluginGraphDatabaseProvider extends FormatSelector<GraphDatabase> {
-        private final PluginDefaults defaults;
+    private static class PluginConflictsDatabaseProvider extends FormatSelector<ConflictsDatabase> {
+
+        private PluginDefaults defaults;
 
         @Inject
-        public PluginGraphDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<GraphDatabase>> plugins) {
+        public PluginConflictsDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
+                Map<VersionedFormat, Provider<ConflictsDatabase>> plugins) {
             super(config, plugins);
             this.defaults = defaults;
         }
 
         @Override
         protected final VersionedFormat readConfig(ConfigDatabase config) {
-            final String formatKey = "storage.graph";
+            // reuse storage.objects config key in order to resolve the StorageProvider, instead of
+            // introducing a new config key. The plugin mechanism will be simplified to use
+            // RepositoryResolver to load the StorageProvider based on the repository URI so it
+            // makes no sense to introduce a new config key and deal with the backward
+            // compatibility issues now.
+            final String formatKey = "storage.objects";
             String versionKey = null;
             String format = null, version = null;
             try {
@@ -232,19 +239,21 @@ public class PluginsModule extends AbstractModule {
                     version = getConfig(versionKey, config).orNull();
                 }
             } catch (RuntimeException e) {
-                // ignore, the config may not be available when we need this
+                // ignore, the config may not be available when we need this.
             }
 
             if (format == null || version == null) {
                 // .get, not .orNull. we should only be using the plugin providers when there are
                 // plugins set up
-                return defaults.getGraph().get();
+                return defaults.getRefs().get();
             }
+
             for (StorageProvider p : StorageProvider.findProviders()) {
-                VersionedFormat graphFormat = p.getGraphDatabaseFormat();
-                if (graphFormat != null && format.equals(graphFormat.getFormat())
-                        && version.equals(graphFormat.getVersion())) {
-                    return graphFormat;
+                VersionedFormat conflictsFormat = p.getConflictsDatabaseFormat();
+                final String fmt = conflictsFormat.getFormat();
+                final String v = conflictsFormat.getVersion();
+                if (format.equals(fmt) && version.equals(v)) {
+                    return conflictsFormat;
                 }
             }
 

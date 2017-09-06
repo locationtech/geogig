@@ -11,26 +11,33 @@ package org.locationtech.geogig.rocksdb;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Spliterator.DISTINCT;
+import static java.util.Spliterator.IMMUTABLE;
+import static java.util.Spliterator.NONNULL;
+import static java.util.Spliterators.spliteratorUnknownSize;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -50,9 +57,12 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
@@ -60,6 +70,8 @@ import com.google.common.collect.Iterators;
 import com.google.inject.Inject;
 
 public class RocksdbObjectStore extends AbstractObjectStore implements ObjectStore {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RocksdbObjectStore.class);
 
     private volatile boolean open;
 
@@ -71,12 +83,19 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     private ReadOptions bulkReadOptions;
 
+    protected final Platform platform;
+
+    protected final @Nullable Hints hints;
+
     @Inject
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
         this(platform, hints, "objects.rocksdb");
     }
 
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints, String databaseName) {
+        checkNotNull(platform);
+        this.platform = platform;
+        this.hints = hints;
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
         URI uri = repoUriOpt.get();
@@ -340,60 +359,107 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return matches;
     }
 
+    protected static class EncodedObject {
+        final ObjectId id;
+
+        final TYPE type;
+
+        final byte[] serialform;
+
+        public EncodedObject(ObjectId id, TYPE type, byte[] serialform) {
+            this.id = id;
+            this.type = type;
+            this.serialform = serialform;
+        }
+    }
+
+    /**
+     * Creates a parallel stream out of {@code objects}, filtering out before encoding through
+     * {@link #exists} if {@code checkExists == true}
+     */
+    protected Stream<RevObject> toStream(Iterator<? extends RevObject> objects, boolean checkExists,
+            BulkOpListener listener) {
+
+        final int characteristics = IMMUTABLE | NONNULL | DISTINCT;
+        Stream<RevObject> stream;
+        stream = StreamSupport.stream(spliteratorUnknownSize(objects, characteristics), true);
+        if (checkExists) {
+            stream = stream.filter((o) -> {
+                if (exists(o.getId())) {
+                    listener.found(o.getId(), null);
+                    return false;
+                }
+                return true;
+            });
+        }
+        return stream;
+    }
+
+    private EncodedObject encode(RevObject o) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            serializer().write(o, out);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+        return new EncodedObject(o.getId(), o.getType(), out.toByteArray());
+    }
+
     @Override
-    public void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+    public final void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
         checkWritable();
 
         final boolean checkExists = !BulkOpListener.NOOP_LISTENER.equals(listener);
+        Stream<RevObject> stream = toStream(objects, checkExists, listener);
+        putAll(stream, listener);
+    }
 
-        ByteArrayOutputStream rawOut = new ByteArrayOutputStream(4096);
-        byte[] keybuff = new byte[ObjectId.NUM_BYTES];
+    protected void putAll(Stream<RevObject> stream, BulkOpListener listener) {
+        final Stopwatch sw = LOG.isTraceEnabled() ? Stopwatch.createStarted() : null;
 
-        Map<ObjectId, Integer> insertedIds = new HashMap<ObjectId, Integer>();
+        final int batchsize = 10_000;
+        // encodes on several threads
+        Stream<EncodedObject> encoded = stream.parallel().map(o -> encode(o));
+
+        int insertCount = 0;
+        final Iterator<EncodedObject> iterator = encoded.iterator();
+        while (iterator.hasNext()) {
+            Iterator<EncodedObject> batch = Iterators.limit(iterator, batchsize);
+            insertCount += insertBatch(batch, listener);
+        }
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(String.format("Inserted %,d objects in %s", insertCount, sw.stop()));
+        }
+    }
+
+    private int insertBatch(Iterator<EncodedObject> objects, BulkOpListener listener) {
+
+        final byte[] keybuff = new byte[ObjectId.NUM_BYTES];
+
+        Set<ObjectId> insertedIds = new HashSet<>();
 
         try (RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions(); //
                 WriteBatch batch = new WriteBatch()) {
             wo.setSync(true);
-            try (ReadOptions ro = new ReadOptions()) {
-                ro.setFillCache(false);
-                ro.setVerifyChecksums(false);
-                while (objects.hasNext()) {
-                    Iterator<? extends RevObject> partition = Iterators.limit(objects, 10_000);
-
-                    while (partition.hasNext()) {
-                        RevObject object = partition.next();
-                        rawOut.reset();
-                        writeObject(object, rawOut);
-
-                        object.getId().getRawValue(keybuff);
-                        final byte[] value = rawOut.toByteArray();
-
-                        boolean exists = checkExists ? exists(dbRef, ro, keybuff) : false;
-                        if (exists) {
-                            listener.found(object.getId(), null);
-                        } else {
-                            batch.put(keybuff, value);
-                            insertedIds.put(object.getId(), Integer.valueOf(value.length));
-                        }
-
-                    }
-                    // Stopwatch sw = Stopwatch.createStarted();
-                    dbRef.db().write(wo, batch);
-                    batch.clear();
-
-                    for (Entry<ObjectId, Integer> entry : insertedIds.entrySet()) {
-                        listener.inserted(entry.getKey(), entry.getValue());
-                    }
-                    insertedIds.clear();
-                    // System.err.printf("--- synced writes in %s\n", sw.stop());
-                }
+            while (objects.hasNext()) {
+                EncodedObject object = objects.next();
+                final ObjectId id = object.id;
+                id.getRawValue(keybuff);
+                final byte[] value = object.serialform;
+                batch.put(keybuff, value);
+                insertedIds.add(id);
             }
+
+            dbRef.db().write(wo, batch);
+            // need to notify listener once the objects are actually on the db
+            insertedIds.forEach((id) -> listener.inserted(id, null));
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
+        return insertedIds.size();
     }
 
     @Override

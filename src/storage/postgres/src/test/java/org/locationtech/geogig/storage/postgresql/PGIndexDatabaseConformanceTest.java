@@ -14,13 +14,9 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.impl.IndexDatabaseConformanceTest;
-
-import com.google.common.base.Throwables;
 
 public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest {
 
@@ -32,26 +28,21 @@ public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest
     ConfigDatabase configdb;
 
     @Override
-    protected IndexDatabase createIndexDatabase(Platform platform, Hints hints) {
+    protected IndexDatabase createIndexDatabase(boolean readOnly) throws IOException {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
 
         closeConfigDb();
 
         configdb = new PGConfigDatabase(config);
-        boolean readOnly = hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
         PGIndexDatabase db = new PGIndexDatabase(configdb, config, readOnly);
         return db;
     }
 
     @After
-    public void closeConfigDb() {
+    public void closeConfigDb() throws IOException {
         if (configdb != null) {
-            try {
-                configdb.close();
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
+            configdb.close();
             configdb = null;
         }
     }

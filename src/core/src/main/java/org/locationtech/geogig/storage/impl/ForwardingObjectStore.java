@@ -49,7 +49,7 @@ public class ForwardingObjectStore implements ObjectStore {
         this.canWrite = !readOnly;
     }
 
-    private void checkWritable() {
+    protected void checkWritable() {
         Preconditions.checkState(canWrite, "Database is read only");
     }
 

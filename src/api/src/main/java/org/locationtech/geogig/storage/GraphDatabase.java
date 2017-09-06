@@ -13,7 +13,6 @@ import java.io.Closeable;
 import java.util.Iterator;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
@@ -138,19 +137,6 @@ public interface GraphDatabase extends Closeable {
     public void open();
 
     /**
-     * Perform GeoGig configuration before the first connection to the database.
-     */
-    public void configure() throws RepositoryConnectionException;
-
-    /**
-     * Verify the configuration before opening the database
-     * 
-     * @return {@code true} if the config was set, {@code false} otherwise
-     * @throws RepositoryConnectionException if the config is incompatible
-     */
-    public boolean checkConfig() throws RepositoryConnectionException;
-
-    /**
      * @return true if the database is open, false otherwise
      */
     public boolean isOpen();
@@ -208,7 +194,7 @@ public interface GraphDatabase extends Closeable {
      * Gets the id of the commit that this commit is mapped to.
      * 
      * @param commitId the commit to find the mapping of
-     * @return the mapped commit id
+     * @return the mapped commit id, or {@link ObjectId#NULL}
      */
     public ObjectId getMapping(final ObjectId commitId);
 

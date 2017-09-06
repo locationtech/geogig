@@ -10,33 +10,22 @@
 package org.locationtech.geogig.storage.impl;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.GraphDatabase;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class SynchronizedGraphDatabase implements GraphDatabase {
     private final GraphDatabase delegate;
 
     public SynchronizedGraphDatabase(GraphDatabase delegate) {
+        Preconditions.checkNotNull(delegate);
         this.delegate = delegate;
     }
 
     public void open() {
         synchronized (delegate) {
             delegate.open();
-        }
-    }
-
-    public void configure() throws RepositoryConnectionException {
-        synchronized (delegate) {
-            delegate.configure();
-        }
-    }
-
-    public boolean checkConfig() throws RepositoryConnectionException {
-        synchronized (delegate) {
-            return delegate.checkConfig();
         }
     }
 

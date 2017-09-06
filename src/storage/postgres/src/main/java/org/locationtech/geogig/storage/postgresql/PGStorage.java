@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -135,6 +136,35 @@ public class PGStorage {
             }
         } catch (SQLException e) {
             throw Throwables.propagate(e);
+        }
+    }
+
+    public static Version getServerVersion(final Environment env) {
+        DataSource ds = newDataSource(env);
+        try (Connection cx = newConnection(ds)) {
+            return getServerVersion(cx);
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            closeDataSource(ds);
+        }
+    }
+
+    static Version getServerVersion(Connection cx) throws SQLException {
+        try (Statement st = cx.createStatement()) {
+            try (ResultSet rs = st.executeQuery("SHOW server_version")) {
+                Preconditions.checkState(rs.next(),
+                        "Query 'SHOW server_version' did not produce a result");
+                final String v = rs.getString(1);
+                List<Integer> versions = Lists.transform(Splitter.on('.').splitToList(v),
+                        (s) -> Integer.parseInt(s));
+                Preconditions.checkState(versions.size() == 3,
+                        "Expected version format x.y.z, got " + v);
+                int major = versions.get(0).intValue();
+                int minor = versions.get(1).intValue();
+                int patch = versions.get(2).intValue();
+                return new Version(major, minor, patch);
+            }
         }
     }
 

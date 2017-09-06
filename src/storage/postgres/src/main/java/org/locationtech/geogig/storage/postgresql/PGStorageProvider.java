@@ -24,9 +24,6 @@ public class PGStorageProvider extends StorageProvider {
      */
     public static final String VERSION = "1";
 
-    static final VersionedFormat GRAPH = new VersionedFormat(FORMAT_NAME, VERSION,
-            PGGraphDatabase.class);
-
     static final VersionedFormat REFS = new VersionedFormat(FORMAT_NAME, VERSION,
             PGRefDatabase.class);;
 
@@ -35,6 +32,9 @@ public class PGStorageProvider extends StorageProvider {
 
     static final VersionedFormat INDEX = new VersionedFormat(FORMAT_NAME, VERSION,
             PGIndexDatabase.class);
+
+    static final VersionedFormat CONFLICTS = new VersionedFormat(FORMAT_NAME, VERSION,
+            PGConflictsDatabase.class);
 
     @Override
     public String getName() {
@@ -57,11 +57,6 @@ public class PGStorageProvider extends StorageProvider {
     }
 
     @Override
-    public VersionedFormat getGraphDatabaseFormat() {
-        return GRAPH;
-    }
-
-    @Override
     public VersionedFormat getRefsDatabaseFormat() {
         return REFS;
     }
@@ -69,5 +64,9 @@ public class PGStorageProvider extends StorageProvider {
     @Override
     public VersionedFormat getIndexDatabaseFormat() {
         return INDEX;
+    }
+
+    public @Override VersionedFormat getConflictsDatabaseFormat() {
+        return CONFLICTS;
     }
 }

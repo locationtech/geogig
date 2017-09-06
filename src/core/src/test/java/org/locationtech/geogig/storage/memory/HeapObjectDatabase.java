@@ -9,14 +9,32 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import java.nio.file.Path;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.Spliterator.DISTINCT;
+import static java.util.Spliterator.IMMUTABLE;
+import static java.util.Spliterator.NONNULL;
+import static java.util.Spliterators.spliteratorUnknownSize;
 
+import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
+import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
+
+import com.google.inject.Inject;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
@@ -28,20 +46,26 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
 
     static HeapObjectDatabaseConnectionManager CONN_MANAGER = new HeapObjectDatabaseConnectionManager();
 
-    private HeapConflictsDatabase conflicts;
-
     private HeapBlobStore blobs;
+
+    private HeapGraphDatabase graph;
+
+    private Platform platform;
 
     public HeapObjectDatabase() {
         super(new HeapObjectStore(), false);
     }
 
+    @Inject
     public HeapObjectDatabase(Platform platform, Hints hints) {
         super(connect(platform), readOnly(hints));
+        this.platform = platform;
     }
 
     private static HeapObjectStore connect(Platform platform) {
-        return CONN_MANAGER.acquire(platform.pwd().toPath());
+        Path path = platform.pwd().toPath();
+        HeapObjectStore store = CONN_MANAGER.acquire(path);
+        return store;
     }
 
     private static boolean readOnly(Hints hints) {
@@ -56,10 +80,9 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public void close() {
         super.close();
-        if (conflicts != null) {
-            conflicts.close();
-            conflicts = null;
-            blobs = null;
+        if (graph != null) {
+            graph.close();
+            graph = null;
         }
     }
 
@@ -72,8 +95,9 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
             return;
         }
         super.open();
-        conflicts = new HeapConflictsDatabase();
         blobs = new HeapBlobStore();
+        graph = new HeapGraphDatabase(platform);
+        graph.open();
     }
 
     @Override
@@ -82,13 +106,13 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     }
 
     @Override
-    public HeapConflictsDatabase getConflictsDatabase() {
-        return conflicts;
+    public BlobStore getBlobStore() {
+        return blobs;
     }
 
     @Override
-    public BlobStore getBlobStore() {
-        return blobs;
+    public GraphDatabase getGraphDatabase() {
+        return new SynchronizedGraphDatabase(graph);
     }
 
     @Override
@@ -99,6 +123,43 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public boolean checkConfig() {
         return true;
+    }
+
+    public @Override boolean put(RevObject object) {
+        final boolean added = super.put(object);
+        if (added && TYPE.COMMIT.equals(object.getType())) {
+            try {
+                RevCommit c = (RevCommit) object;
+                graph.put(c.getId(), c.getParentIds());
+            } catch (RuntimeException e) {
+                super.delete(object.getId());
+                throw e;
+            }
+        }
+        return added;
+    }
+
+    public @Override void putAll(Iterator<? extends RevObject> objects) {
+        putAll(objects, BulkOpListener.NOOP_LISTENER);
+    }
+
+    public @Override void putAll(Iterator<? extends RevObject> objects, BulkOpListener listener) {
+        checkNotNull(objects, "objects is null");
+        checkNotNull(listener, "listener is null");
+        checkState(isOpen(), "db is closed");
+        checkWritable();
+
+        final int characteristics = IMMUTABLE | NONNULL | DISTINCT;
+        Stream<? extends RevObject> stream;
+        stream = StreamSupport.stream(spliteratorUnknownSize(objects, characteristics), true);
+
+        stream.forEach((o) -> {
+            if (put(o)) {
+                listener.inserted(o.getId(), null);
+            } else {
+                listener.found(o.getId(), null);
+            }
+        });
     }
 
     @Override

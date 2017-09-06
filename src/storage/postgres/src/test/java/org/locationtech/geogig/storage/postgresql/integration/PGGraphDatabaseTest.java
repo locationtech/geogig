@@ -9,23 +9,16 @@
  */
 package org.locationtech.geogig.storage.postgresql.integration;
 
-import java.io.IOException;
-
-import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.impl.GraphDatabaseTest;
 import org.locationtech.geogig.storage.postgresql.Environment;
-import org.locationtech.geogig.storage.postgresql.PGConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.PGGraphDatabase;
 import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
-
-import com.google.common.base.Throwables;
 
 public class PGGraphDatabaseTest extends GraphDatabaseTest {
 
@@ -34,27 +27,11 @@ public class PGGraphDatabaseTest extends GraphDatabaseTest {
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    ConfigDatabase configdb;
-
     @Override
     protected GraphDatabase createDatabase(Platform platform) throws Exception {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
-        closeConfigDb();
-        configdb = new PGConfigDatabase(config);
-        return new PGGraphDatabase(configdb, config);
-    }
-
-    @After
-    public void closeConfigDb() {
-        if (configdb != null) {
-            try {
-                configdb.close();
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
-            configdb = null;
-        }
+        return new PGGraphDatabase(config);
     }
 
 }

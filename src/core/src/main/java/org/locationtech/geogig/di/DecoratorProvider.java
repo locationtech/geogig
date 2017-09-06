@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.di;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +32,7 @@ class DecoratorProvider {
 
     @SuppressWarnings("unchecked")
     public <T> T get(final T undecorated) {
+        checkNotNull(undecorated);
         T decorated = undecorated;
         Class<? extends Object> undecoratedClass = decorated.getClass();
         {

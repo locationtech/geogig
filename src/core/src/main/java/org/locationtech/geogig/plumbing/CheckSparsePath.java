@@ -13,13 +13,11 @@ import java.util.Iterator;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.GraphDatabase.Direction;
 import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
 import org.locationtech.geogig.storage.GraphDatabase.GraphNode;
 
 import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
 
 /**
  * Determines if there are any sparse commits between the start commit and the end commit, not
@@ -30,18 +28,6 @@ public class CheckSparsePath extends AbstractGeoGigOp<Boolean> {
     private ObjectId start;
 
     private ObjectId end;
-
-    private GraphDatabase graphDb;
-
-    /**
-     * Construct a new {@code CheckSparsePath} using the specified {@link GraphDatabase}.
-     * 
-     * @param repository the repository
-     */
-    @Inject
-    public CheckSparsePath(GraphDatabase graphDb) {
-        this.graphDb = graphDb;
-    }
 
     /**
      * @param start the start {@link ObjectId}
@@ -70,7 +56,7 @@ public class CheckSparsePath extends AbstractGeoGigOp<Boolean> {
         Preconditions.checkState(start != null, "start commit has not been set.");
         Preconditions.checkState(end != null, "end commit has not been set.");
 
-        GraphNode node = graphDb.getNode(start);
+        GraphNode node = graphDatabase().getNode(start);
         return isSparsePath(node, end, false);
     }
 

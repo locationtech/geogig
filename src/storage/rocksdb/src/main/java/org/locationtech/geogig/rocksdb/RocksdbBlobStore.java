@@ -10,6 +10,7 @@
 package org.locationtech.geogig.rocksdb;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 
-class RocksdbBlobStore implements TransactionBlobStore {
+class RocksdbBlobStore implements TransactionBlobStore, Closeable {
 
     private final File dbdir;
 
@@ -120,7 +121,7 @@ class RocksdbBlobStore implements TransactionBlobStore {
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
-        
+
     }
 
     @Override

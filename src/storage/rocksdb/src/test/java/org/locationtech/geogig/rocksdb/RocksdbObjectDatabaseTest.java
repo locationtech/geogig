@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.BlobStore;
-import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
@@ -90,8 +89,6 @@ public class RocksdbObjectDatabaseTest {
     @Test
     public void testAccessors() {
         assertFalse(db.isReadOnly());
-        ConflictsDatabase conflicts = db.getConflictsDatabase();
-        assertTrue(conflicts instanceof RocksdbConflictsDatabase);
         BlobStore blobStore = db.getBlobStore();
         assertTrue(blobStore instanceof RocksdbBlobStore);
     }

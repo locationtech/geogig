@@ -9,16 +9,13 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
-import java.sql.Connection;
-
-import javax.sql.DataSource;
+import java.net.URI;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
-import org.mockito.Answers;
-import org.mockito.Mock;
 
 public class PGConflictsDatabaseConformanceTest
         extends ConflictsDatabaseConformanceTest<PGConflictsDatabase> {
@@ -28,19 +25,15 @@ public class PGConflictsDatabaseConformanceTest
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private Connection mockConnection;
-
     @Override
     protected PGConflictsDatabase createConflictsDatabase() throws Exception {
-        Environment environment = testConfig.getEnvironment();
-        PGStorage.createNewRepo(environment);
-        DataSource dataSource = PGStorage.newDataSource(environment);
+        Environment config = testConfig.getEnvironment();
+        PGStorage.createNewRepo(config);
 
-        String conflictsTable = environment.getTables().conflicts();
-        int repositoryId = environment.getRepositoryId();
-        PGConflictsDatabase conflicts = new PGConflictsDatabase(dataSource, conflictsTable,
-                repositoryId);
+        String repoURL = testConfig.getRepoURL();
+        Hints hints = new Hints().uri(URI.create(repoURL));
+        PGConflictsDatabase conflicts = new PGConflictsDatabase(hints);
+        conflicts.open();
         return conflicts;
     }
 

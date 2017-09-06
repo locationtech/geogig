@@ -21,22 +21,21 @@ public class PluginDefaultsTest {
         final VersionedFormat objectsFormat = new VersionedFormat("objects", "1.0",
                 ObjectDatabase.class);
         final VersionedFormat refsFormat = new VersionedFormat("refs", "1.0", RefDatabase.class);
-        final VersionedFormat graphFormat = new VersionedFormat("graph", "1.0",
-                GraphDatabase.class);
         final VersionedFormat indexFormat = new VersionedFormat("index", "1.0",
                 IndexDatabase.class);
+        final VersionedFormat conflictsFormat = new VersionedFormat("conflicts", "1.0",
+                ConflictsDatabase.class);
 
-        PluginDefaults defaults = new PluginDefaults(objectsFormat, refsFormat, graphFormat,
-                indexFormat);
+        PluginDefaults defaults = new PluginDefaults(objectsFormat, refsFormat, indexFormat,
+                conflictsFormat);
         assertEquals(objectsFormat, defaults.getObjects().get());
         assertEquals(refsFormat, defaults.getRefs().get());
-        assertEquals(graphFormat, defaults.getGraph().get());
         assertEquals(indexFormat, defaults.getIndex().get());
+        assertEquals(conflictsFormat, defaults.getConflicts().get());
 
         defaults = new PluginDefaults(null, null, null, null);
         assertFalse(defaults.getObjects().isPresent());
         assertFalse(defaults.getRefs().isPresent());
-        assertFalse(defaults.getGraph().isPresent());
         assertFalse(defaults.getIndex().isPresent());
 
         StorageProvider testProvider = new StorageProvider() {
@@ -61,11 +60,6 @@ public class PluginDefaultsTest {
             }
 
             @Override
-            public VersionedFormat getGraphDatabaseFormat() {
-                return graphFormat;
-            }
-
-            @Override
             public VersionedFormat getRefsDatabaseFormat() {
                 return refsFormat;
             }
@@ -74,12 +68,16 @@ public class PluginDefaultsTest {
             public VersionedFormat getIndexDatabaseFormat() {
                 return indexFormat;
             }
+
+            public @Override VersionedFormat getConflictsDatabaseFormat() {
+                return conflictsFormat;
+            }
+
         };
 
         defaults = new PluginDefaults(testProvider);
         assertEquals(objectsFormat, defaults.getObjects().get());
         assertEquals(refsFormat, defaults.getRefs().get());
-        assertEquals(graphFormat, defaults.getGraph().get());
         assertEquals(indexFormat, defaults.getIndex().get());
     }
 
@@ -88,24 +86,23 @@ public class PluginDefaultsTest {
         final VersionedFormat objectsFormat = new VersionedFormat("objects", "1.0",
                 ObjectDatabase.class);
         final VersionedFormat refsFormat = new VersionedFormat("refs", "1.0", RefDatabase.class);
-        final VersionedFormat graphFormat = new VersionedFormat("graph", "1.0",
-                GraphDatabase.class);
         final VersionedFormat indexFormat = new VersionedFormat("index", "1.0",
                 IndexDatabase.class);
+        final VersionedFormat conflictsFormat = new VersionedFormat("conflicts", "1.0",
+                ConflictsDatabase.class);
         PluginDefaults defaults = new PluginDefaults(null, null, null, null);
         assertFalse(defaults.getObjects().isPresent());
         assertFalse(defaults.getRefs().isPresent());
-        assertFalse(defaults.getGraph().isPresent());
         assertFalse(defaults.getIndex().isPresent());
 
         defaults.setObjects(objectsFormat);
         defaults.setRefs(refsFormat);
-        defaults.setGraph(graphFormat);
         defaults.setIndex(indexFormat);
+        defaults.setConflicts(conflictsFormat);
 
         assertEquals(objectsFormat, defaults.getObjects().get());
         assertEquals(refsFormat, defaults.getRefs().get());
-        assertEquals(graphFormat, defaults.getGraph().get());
         assertEquals(indexFormat, defaults.getIndex().get());
+        assertEquals(conflictsFormat, defaults.getConflicts().get());
     }
 }

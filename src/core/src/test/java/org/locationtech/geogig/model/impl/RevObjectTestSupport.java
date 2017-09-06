@@ -13,24 +13,29 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.HashCode;
 import com.vividsolutions.jts.geom.Envelope;
@@ -224,5 +229,33 @@ public class RevObjectTestSupport {
             depth = Math.max(depth, 1 + depth(store, btree));
         }
         return depth;
+    }
+
+    public static List<RevCommit> createCommits(final int numCommits) {
+        return createCommits(numCommits, (Platform) null);
+    }
+
+    public static List<RevCommit> createCommits(final int numCommits, @Nullable Platform platform) {
+        LinkedList<RevCommit> commits = new LinkedList<>();
+
+        // much faster way of creating several fake commits than running CommitOp N times
+        CommitBuilder builder = platform == null ? new CommitBuilder()
+                : new CommitBuilder(platform);
+        long timeStamp = System.currentTimeMillis();
+        builder.setAuthor("gabe").setAuthorEmail("gabe@example.com").setCommitter("me")
+                .setCommitterEmail("me@too.com").setCommitterTimestamp(timeStamp)
+                .setCommitterTimeZoneOffset(-1).setAuthorTimestamp(timeStamp)
+                .setAuthorTimeZoneOffset(-3).setTreeId(RevTree.EMPTY_TREE_ID);
+
+        ObjectId parent = null;
+        for (int i = 1; i <= numCommits; i++) {
+            ++timeStamp;
+            builder.setAuthorTimestamp(timeStamp).setCommitterTimestamp(timeStamp);
+            List<ObjectId> parents = parent == null ? null : ImmutableList.of(parent);
+            RevCommit commit = builder.setParentIds(parents).setMessage("commit " + i).build();
+            commits.addFirst(commit);
+            parent = commit.getId();
+        }
+        return commits;
     }
 }

@@ -176,7 +176,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             return new ByteArrayInputStream(bytes);
         }
         if (failIfNotFound) {
-            throw new IllegalArgumentException("object does not exist: " + id);
+            throw new IllegalArgumentException("Object does not exist: " + id);
         }
         return null;
     }

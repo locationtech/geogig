@@ -11,8 +11,10 @@ package org.locationtech.geogig.spring.config;
 
 import org.locationtech.geogig.spring.service.LegacyApplyChangesService;
 import org.locationtech.geogig.spring.service.LegacyBatchObjectsService;
+import org.locationtech.geogig.spring.service.LegacyPushService;
 import org.locationtech.geogig.spring.service.LegacyFilteredChangesService;
 import org.locationtech.geogig.spring.service.LegacyMergeFeatureService;
+import org.locationtech.geogig.spring.service.LegacySendObjectService;
 import org.locationtech.geogig.spring.service.RepositoryInitService;
 import org.locationtech.geogig.spring.service.RepositoryListService;
 import org.locationtech.geogig.spring.service.RepositoryService;
@@ -82,5 +84,15 @@ public class GeoGigWebAPISpringConfig extends WebMvcConfigurerAdapter {
     @Bean
     public LegacyBatchObjectsService getLegacyBatchObjectsService() {
         return new LegacyBatchObjectsService();
+    }
+
+    @Bean
+    public LegacySendObjectService getLegacySendObjectService() {
+        return new LegacySendObjectService();
+    }
+
+    @Bean
+    public LegacyPushService getPushService() {
+        return new LegacyPushService();
     }
 }

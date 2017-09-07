@@ -10,6 +10,7 @@
 package org.locationtech.geogig.spring.dto;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -23,6 +24,7 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
 /**
  *
@@ -47,12 +49,23 @@ public class Objects extends LegacyRepoResponse {
     }
 
     @Override
+    public MediaType resolveMediaType(MediaType defaultMediaType) {
+        // for Object responses, the mediatype should be octet-stream
+        return MediaType.APPLICATION_OCTET_STREAM;
+    }
+
+    @Override
     public void encode(Writer out) {
-        try (WriterOutputStream outStream = new WriterOutputStream(out)) {
-            SERIALIZER.write(revObject, outStream);
-        } catch (IOException ioe) {
-            throw new CommandSpecException("Unexepcted error serializing object",
-                    HttpStatus.INTERNAL_SERVER_ERROR, ioe);
+        throw new UnsupportedOperationException(
+                "Objects does not support java.io.Writer. Use java.io.OutputStream instead");
+    }
+
+    @Override
+    protected void encode(OutputStream out) {
+        try {
+            SERIALIZER.write(revObject, out);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 }

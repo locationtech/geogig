@@ -64,7 +64,7 @@ public class ObjectsController extends AbstractRepositoryController {
             // set it on the Objects object
             objects.setRevObject(repositoryService.getRevObject(provider, repoName, oid));
             // encode the response
-            encode(objects, request, response);
+            encodeToStream(objects, request, response);
         } else {
             throw NO_PROVIDER;
         }

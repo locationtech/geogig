@@ -152,8 +152,7 @@ public enum FieldType {
     DATE(0x1D, java.sql.Date.class), //
     TIME(0x1E, java.sql.Time.class), //
     TIMESTAMP(0x1F, java.sql.Timestamp.class), //
-    @SuppressWarnings({ "unchecked", "rawtypes" }) //
-    MAP(0x20, java.util.Map.class, (v) -> new HashMap<>((Map) v)), //
+    MAP(0x20, java.util.Map.class, (v) -> recursiveSafeCopy((Map<?, ?>) v)), //
     CHAR(0x21, Character.class), //
     CHAR_ARRAY(0x22, char[].class), //
     ENVELOPE_2D(0x23, Envelope.class, (v) -> new Envelope((Envelope) v)), //
@@ -178,6 +177,12 @@ public enum FieldType {
 
     private FieldType(int tagValue, Class<?> binding) {
         this(tagValue, binding, (val) -> val);
+    }
+
+    private static Map<Object, Object> recursiveSafeCopy(Map<?, ?> m) {
+        Map<Object, Object> copy = new HashMap<>(m.size());
+        m.forEach((k, v) -> copy.put(k, FieldType.forValue(v).safeCopy(v)));
+        return copy;
     }
 
     private FieldType(int tagValue, Class<?> binding,

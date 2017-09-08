@@ -9,29 +9,38 @@
  */
 package org.locationtech.geogig.storage.memory;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.getNext;
+import static java.util.Spliterator.DISTINCT;
+import static java.util.Spliterator.IMMUTABLE;
+import static java.util.Spliterator.NONNULL;
+import static java.util.Spliterators.spliteratorUnknownSize;
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectInfo;
-import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -42,12 +51,12 @@ import com.google.common.collect.Maps;
  * 
  * @see AbstractObjectStore
  */
-public class HeapObjectStore extends AbstractObjectStore {
+public class HeapObjectStore implements ObjectStore {
 
-    private ConcurrentMap<ObjectId, byte[]> objects;
+    private ConcurrentMap<ObjectId, RevObject> objects;
 
     public HeapObjectStore() {
-        super(new SerializationFactoryProxy());
+        //
     }
 
     /**
@@ -55,8 +64,7 @@ public class HeapObjectStore extends AbstractObjectStore {
      * 
      * @see org.locationtech.geogig.storage.ObjectDatabase#close()
      */
-    @Override
-    public void close() {
+    public @Override void close() {
         if (objects != null) {
             objects.clear();
             objects = null;
@@ -66,16 +74,14 @@ public class HeapObjectStore extends AbstractObjectStore {
     /**
      * @return true if the database is open, false otherwise
      */
-    @Override
-    public boolean isOpen() {
+    public @Override boolean isOpen() {
         return objects != null;
     }
 
     /**
      * Opens the database for use by GeoGig.
      */
-    @Override
-    public void open() {
+    public @Override void open() {
         if (isOpen()) {
             return;
         }
@@ -88,11 +94,46 @@ public class HeapObjectStore extends AbstractObjectStore {
      * @param id the id to search for
      * @return true if the object exists, false otherwise
      */
-    @Override
-    public boolean exists(ObjectId id) {
+    public @Override boolean exists(ObjectId id) {
         checkNotNull(id, "id is null");
         checkState(isOpen(), "db is closed");
         return objects.containsKey(id);
+    }
+
+    private <T extends RevObject> T get(ObjectId id, Class<T> type, boolean failIfAbsent)
+            throws IllegalArgumentException {
+        checkNotNull(id, "argument id is null");
+        checkNotNull(type, "argument class is null");
+        checkState(isOpen(), "db is closed");
+        RevObject o = objects.get(id);
+
+        if (null != o && !type.isAssignableFrom(o.getClass())) {
+            o = null;
+        }
+        final boolean fail = o == null && failIfAbsent;
+
+        if (fail) {
+            throw new IllegalArgumentException("object does not exist: " + id);
+        }
+        return o == null ? null : type.cast(o);
+    }
+
+    public @Override RevObject get(ObjectId id) throws IllegalArgumentException {
+        return get(id, RevObject.class, true);
+    }
+
+    public @Override <T extends RevObject> T get(ObjectId id, Class<T> type)
+            throws IllegalArgumentException {
+        return get(id, type, true);
+    }
+
+    public @Override @Nullable RevObject getIfPresent(ObjectId id) {
+        return get(id, RevObject.class, false);
+    }
+
+    public @Override @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> type)
+            throws IllegalArgumentException {
+        return get(id, type, false);
     }
 
     /**
@@ -100,16 +141,10 @@ public class HeapObjectStore extends AbstractObjectStore {
      * 
      * @param objectId the id of the object to delete
      */
-    @Override
-    public void delete(ObjectId objectId) {
+    public @Override void delete(ObjectId objectId) {
         checkNotNull(objectId, "objectId is null");
         checkState(isOpen(), "db is closed");
         objects.remove(objectId);
-    }
-
-    @Override
-    protected List<ObjectId> lookUpInternal(byte[] raw) {
-        throw new UnsupportedOperationException("we override lookup directly");
     }
 
     /**
@@ -118,8 +153,7 @@ public class HeapObjectStore extends AbstractObjectStore {
      * @param partialId the partial id to search for
      * @return a list of matching results
      */
-    @Override
-    public List<ObjectId> lookUp(final String partialId) {
+    public @Override List<ObjectId> lookUp(final String partialId) {
         checkNotNull(partialId, "partialId is null");
         Preconditions.checkArgument(partialId.length() > 7,
                 "partial id must be at least 8 characters long: ", partialId);
@@ -134,92 +168,92 @@ public class HeapObjectStore extends AbstractObjectStore {
         return matches;
     }
 
-    @Override
-    protected InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
-            throws IllegalArgumentException {
+    public @Override boolean put(final RevObject object) {
+        checkNotNull(object, "argument object is null");
+        checkArgument(!object.getId().isNull(), "ObjectId is NULL");
+        checkState(isOpen(), "db is closed");
 
-        byte[] data = objects.get(id);
-        if (data == null) {
-            if (failIfNotFound) {
-                throw new IllegalArgumentException(id + " does not exist");
+        ObjectId id = object.getId();
+        RevObject existing = objects.putIfAbsent(id, object);
+        return null == existing;
+    }
+
+    public @Override void putAll(Iterator<? extends RevObject> objects) {
+        putAll(objects, NOOP_LISTENER);
+    }
+
+    public @Override void putAll(Iterator<? extends RevObject> objects,
+            final BulkOpListener listener) {
+        checkNotNull(objects, "objects is null");
+        checkNotNull(listener, "listener is null");
+        checkState(isOpen(), "db is closed");
+
+        objects.forEachRemaining((o) -> {
+            if (put(o)) {
+                listener.inserted(o.getId(), null);
+            } else {
+                listener.found(o.getId(), null);
             }
-            return null;
-        }
-        return new ByteArrayInputStream(data);
+        });
     }
 
-    @Override
-    protected boolean putInternal(ObjectId id, byte[] rawData) {
-        byte[] previousValue = objects.putIfAbsent(id, rawData);
-        return previousValue == null;
+    public @Override void deleteAll(Iterator<ObjectId> ids) {
+        deleteAll(ids, NOOP_LISTENER);
     }
 
-    @Override
-    public void deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+    public @Override void deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
         checkState(isOpen(), "db is closed");
 
         while (ids.hasNext()) {
             ObjectId id = ids.next();
-            byte[] removed = this.objects.remove(id);
-            if (removed != null) {
-                listener.deleted(id);
-            } else {
+            RevObject removed = this.objects.remove(id);
+            if (removed == null) {
                 listener.notFound(id);
+            } else {
+                listener.deleted(id);
             }
         }
     }
 
-    @Override
-    public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
+    public @Override Iterator<RevObject> getAll(Iterable<ObjectId> ids) {
+        return getAll(ids, NOOP_LISTENER);
+    }
+
+    public @Override Iterator<RevObject> getAll(final Iterable<ObjectId> ids,
+            final BulkOpListener listener) {
         return getAll(ids, listener, RevObject.class);
     }
 
-    @Override
-    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
-            Class<T> type) {
+    public @Override <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
+            final BulkOpListener listener, final Class<T> type) {
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
         checkNotNull(type, "type is null");
         checkState(isOpen(), "db is closed");
 
-        return new AbstractIterator<T>() {
+        final int characteristics = IMMUTABLE | NONNULL | DISTINCT;
+        final boolean parallel = false;
 
-            final Iterator<ObjectId> iterator = Lists.newArrayList(ids).iterator();
-
-            @Override
-            protected T computeNext() {
-                T found = null;
-                ObjectId id;
-                byte[] raw;
-                while (iterator.hasNext() && found == null) {
-                    id = iterator.next();
-                    raw = objects.get(id);
-                    if (raw != null) {
-                        try {
-                            RevObject obj = serializer().read(id, new ByteArrayInputStream(raw));
-                            found = type.isAssignableFrom(obj.getClass()) ? type.cast(obj) : null;
-                        } catch (IOException e) {
-                            throw Throwables.propagate(e);
-                        }
-                        if (found == null) {
-                            listener.notFound(id);
-                        } else {
-                            listener.found(found.getId(), raw.length);
-                        }
-                    } else {
+        Stream<T> stream;
+        stream = StreamSupport
+                .stream(spliteratorUnknownSize(ids.iterator(), characteristics), parallel)//
+                .map((id) -> {
+                    T obj = getIfPresent(id, type);
+                    if (null == obj) {
                         listener.notFound(id);
+                    } else {
+                        listener.found(id, null);
                     }
-                }
+                    return obj;
+                })//
+                .filter((o) -> o != null);
 
-                return found == null ? endOfData() : found;
-            }
-        };
+        return stream.iterator();
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return getClass().getSimpleName();
     }
 
@@ -227,14 +261,7 @@ public class HeapObjectStore extends AbstractObjectStore {
         return this.objects.size();
     }
 
-    public long storageSize() {
-        final AtomicLong size = new AtomicLong();
-        this.objects.values().forEach((ba) -> size.addAndGet(ba.length));
-        return size.get();
-    }
-
-    @Override
-    public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
+    public @Override <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
 
         checkNotNull(refs, "refs is null");
@@ -264,4 +291,23 @@ public class HeapObjectStore extends AbstractObjectStore {
         return AutoCloseableIterator.fromIterator(it);
     }
 
+    public @Override RevTree getTree(ObjectId id) {
+        return get(id, RevTree.class, true);
+    }
+
+    public @Override RevFeature getFeature(ObjectId id) {
+        return get(id, RevFeature.class, true);
+    }
+
+    public @Override RevFeatureType getFeatureType(ObjectId id) {
+        return get(id, RevFeatureType.class, true);
+    }
+
+    public @Override RevCommit getCommit(ObjectId id) {
+        return get(id, RevCommit.class, true);
+    }
+
+    public @Override RevTag getTag(ObjectId id) {
+        return get(id, RevTag.class, true);
+    }
 }

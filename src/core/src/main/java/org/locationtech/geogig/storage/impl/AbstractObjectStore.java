@@ -160,7 +160,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
 
     }
 
-    private RevObject get(final ObjectId id, boolean failIfNotFound) {
+    protected RevObject get(final ObjectId id, boolean failIfNotFound) {
         InputStream raw = getRaw(id, failIfNotFound);
         if (null == raw) {
             return null;

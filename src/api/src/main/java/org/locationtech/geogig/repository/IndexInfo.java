@@ -120,14 +120,8 @@ public final class IndexInfo {
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getMaterializedAttributes(Node n) {
         Map<String, Object> extraData = n.getExtraData();
-        if (extraData == null) {
-            return ImmutableMap.of();
-        }
         Object v = extraData.get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
         Preconditions.checkArgument(v == null || v instanceof Map);
-        if (v == null) {
-            return ImmutableMap.of();
-        }
         return (Map<String, Object>) v;
     }
 

@@ -3,7 +3,7 @@
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/org/documents/edl-v10.html
- * 
+ *
  * Contributors:
  * Erik Merkle (Boundless) - initial implementation
  */
@@ -25,11 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.PushResponse;
 import org.locationtech.geogig.spring.service.LegacyPushService;
-import org.locationtech.geogig.web.api.CommandSpecException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

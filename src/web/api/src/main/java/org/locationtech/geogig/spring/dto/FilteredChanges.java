@@ -15,6 +15,7 @@ import java.io.Writer;
 
 import org.locationtech.geogig.remote.FilteredDiffIterator;
 import org.locationtech.geogig.remote.http.BinaryPackedChanges;
+import org.springframework.http.MediaType;
 
 /**
  *
@@ -67,5 +68,11 @@ public class FilteredChanges extends LegacyRepoResponse {
             }
         }
     }
+
+    @Override
+    public MediaType resolveMediaType(MediaType defaultMediaType) {
+        return MediaType.APPLICATION_OCTET_STREAM;
+    }
+
 
 }

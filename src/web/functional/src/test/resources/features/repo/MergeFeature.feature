@@ -76,7 +76,7 @@ Feature: MergeFeature
       """
      Then the response status should be '400'
       And the response body should contain "Invalid POST data."
-@Erik
+
   Scenario: MergeFeature builds a new feature from provided merges using ours and theirs (both features are the same)
     Given There is a default multirepo server
      When I "POST" content-type "application/json" to "/repos/repo1/repo/mergefeature" with

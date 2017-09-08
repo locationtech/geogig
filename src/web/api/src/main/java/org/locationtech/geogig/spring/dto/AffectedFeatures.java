@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.spring.dto;
 
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 
@@ -34,19 +35,25 @@ public class AffectedFeatures extends LegacyRepoResponse {
     }
 
     @Override
-    protected void encode(Writer out) {
+    protected void encode(OutputStream out) {
         PrintWriter writer = new PrintWriter(out);
         if (affectedFeatures != null) {
             while (affectedFeatures.hasNext()) {
                 DiffEntry diffEntry = affectedFeatures.next();
                 NodeRef oldObject = diffEntry.getOldObject();
                 if (oldObject != null) {
-                    writer.println(oldObject.getNode().getObjectId().toString());
+                    writer.print(oldObject.getNode().getObjectId().toString());
                 }
             }
             affectedFeatures.close();
         }
         writer.flush();
+    }
+
+    @Override
+    protected void encode(Writer out) {
+        throw new UnsupportedOperationException(
+                "AffectedFeatures does not support java.io.Writer. Use java.io.OutputStream instead");
     }
 
 }

@@ -75,14 +75,6 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-    <repository>
-      <id>mapfish</id> <!-- for com.noelios.restlet -->
-      <name>mapfish</name>
-      <url>http://dev.mapfish.org/maven/repository/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
   </repositories>
 
   <properties>
@@ -101,7 +93,6 @@
     <xmlunit.version>2.1.0</xmlunit.version>
     <logback.version>1.1.2</logback.version>
     <mockito.version>2.0.2-beta</mockito.version>
-    <restlet.version>1.0.8</restlet.version> <!-- matches version used in geoserver -->
     <slf4j.version>1.7.5</slf4j.version>
     <sqljdbc4.version>3.0</sqljdbc4.version>
     <hikaricp.version>2.4.2</hikaricp.version>
@@ -304,21 +295,6 @@
         <groupId>org.glassfish</groupId>
         <artifactId>javax.json</artifactId>
         <version>${jsonp.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.restlet</groupId>
-        <artifactId>org.restlet</artifactId>
-        <version>${restlet.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.noelios.restlet</groupId>
-        <artifactId>com.noelios.restlet.ext.jetty</artifactId>
-        <version>${restlet.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.noelios.restlet</groupId>
-        <artifactId>com.noelios.restlet.ext.servlet</artifactId>
-        <version>${restlet.version}</version>
       </dependency>
       <dependency>
         <!-- JDBC connection pool -->

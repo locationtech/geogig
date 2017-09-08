@@ -9,39 +9,18 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import static org.locationtech.geogig.rest.repository.InitCommandResource.AUTHOR_EMAIL;
-import static org.locationtech.geogig.rest.repository.InitCommandResource.AUTHOR_NAME;
-import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
-import static org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST;
-import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.servlet.http.HttpServletRequest;
 
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.rest.RestletException;
-import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Status;
-import org.restlet.resource.Representation;
-
-import com.google.common.base.Optional;
 
 /**
  * Utility for handling GeoGIG repository init requests. This class will pull repository creation
@@ -90,176 +69,6 @@ public class InitRequestUtil {
      * Database option for password.
      */
     static final String DB_PASSWORD = "dbPassword";
-
-    private void addParameter(Map<String, String> params, String key, String value) {
-        if (value != null) {
-            params.put(key, value);
-        }
-    }
-
-    @Deprecated
-    private void updateRequestWithAuthor(Request request, Map<String, String> params) {
-        // store author name and email in the attributes, if they were provided
-        if (params.containsKey(AUTHOR_NAME)) {
-            request.getAttributes().put(AUTHOR_NAME, params.get(AUTHOR_NAME));
-        }
-        if (params.containsKey(AUTHOR_EMAIL)) {
-            request.getAttributes().put(AUTHOR_EMAIL, params.get(AUTHOR_EMAIL));
-        }
-    }
-
-    private void updateRequestWithAuthor(HttpServletRequest request, Map<String, String> params) {
-        // store author name and email in the attributes, if they were provided
-        if (params.containsKey(AUTHOR_NAME)) {
-            request.setAttribute(AUTHOR_NAME, params.get(AUTHOR_NAME));
-        }
-        if (params.containsKey(AUTHOR_EMAIL)) {
-            request.setAttribute(AUTHOR_EMAIL, params.get(AUTHOR_EMAIL));
-        }
-    }
-
-    /**
-     * Adds JSON request parameters to the parameter Map. Look for known parameters in the JSON
-     * object and populate the supplied map with requested values. This method does the same thing as
-     * the {@link #addParameters(java.util.Map, org.restlet.data.Form)} version, except this one is
-     * for Requests with a JSON payload, as opposed to a URL encoded form.
-     *
-     * @param params Map to hold request parameters.
-     * @param json   JSONObject from a Request with parameters in a JSON payload.
-     */
-    private void addParameters(Map<String, String> params, JsonObject json) {
-        addParameter(params, DIR_PARENT_DIR, json.getString(DIR_PARENT_DIR, null));
-        addParameter(params, DB_HOST, json.getString(DB_HOST, null));
-        addParameter(params, DB_PORT, json.getString(DB_PORT, null));
-        addParameter(params, DB_NAME, json.getString(DB_NAME, null));
-        addParameter(params, DB_SCHEMA, json.getString(DB_SCHEMA, null));
-        addParameter(params, DB_USER, json.getString(DB_USER, null));
-        addParameter(params, DB_PASSWORD, json.getString(DB_PASSWORD, null));
-        addParameter(params, AUTHOR_NAME, json.getString(AUTHOR_NAME, null));
-        addParameter(params, AUTHOR_EMAIL, json.getString(AUTHOR_EMAIL, null));
-    }
-
-    /**
-     * Adds URL encoded request parameters to the parameter Map. Look for known parameters in the Form
-     * and populate the supplied map with requested values. This method does the same thing as the
-     * {@link #addParameters(java.util.Map, org.json.JSONObject)} version, except this one is for
-     * Requests with a URL encoded form, as opposed to a JSON payload.
-     *
-     * @param params Map to hold the request parameters.
-     * @param form   URL encoded Form from a Request with parameters encoded.
-     */
-    private void addParameters(Map<String, String> params, Form form) {
-        addParameter(params, DIR_PARENT_DIR, form.getFirstValue(DIR_PARENT_DIR, null));
-        addParameter(params, DB_HOST, form.getFirstValue(DB_HOST, null));
-        addParameter(params, DB_PORT, form.getFirstValue(DB_PORT, null));
-        addParameter(params, DB_NAME, form.getFirstValue(DB_NAME, null));
-        addParameter(params, DB_SCHEMA, form.getFirstValue(DB_SCHEMA, null));
-        addParameter(params, DB_USER, form.getFirstValue(DB_USER, null));
-        addParameter(params, DB_PASSWORD, form.getFirstValue(DB_PASSWORD, null));
-        addParameter(params, AUTHOR_NAME, form.getFirstValue(AUTHOR_NAME, null));
-        addParameter(params, AUTHOR_EMAIL, form.getFirstValue(AUTHOR_EMAIL, null));
-    }
-
-    private void addFormParameters(Map<String, String> params, HttpServletRequest request) {
-        addParameter(params, DIR_PARENT_DIR, request.getParameter(DIR_PARENT_DIR));
-        addParameter(params, DB_HOST, request.getParameter(DB_HOST));
-        addParameter(params, DB_PORT, request.getParameter(DB_PORT));
-        addParameter(params, DB_NAME, request.getParameter(DB_NAME));
-        addParameter(params, DB_SCHEMA, request.getParameter(DB_SCHEMA));
-        addParameter(params, DB_USER, request.getParameter(DB_USER));
-        addParameter(params, DB_PASSWORD, request.getParameter(DB_PASSWORD));
-        addParameter(params, AUTHOR_NAME, request.getParameter(AUTHOR_NAME));
-        addParameter(params, AUTHOR_EMAIL, request.getParameter(AUTHOR_EMAIL));
-    }
-
-    /**
-     * Parses Request entity for repository creation specifics and adds them to a key-value map. Currently, only
-     * URL Encoded web forms or JSON objects are supported in the Request entity. Any other Content-Type/MediaType in
-     * the request will be rejected with a 400 Bad Request. If the request entity is empty (for example, "{}" for a
-     * JSON payload), the default repository provider will be chosen when creating repositories. It is recommended to
-     * provide either a "parentDirectory" element (for file-backed GeoGig repositories) or the database elements (for
-     * Database-backed GeoGig repositories). If BOTH are specified, the "parentDirectory" will be used for a file-backed
-     * repository.
-     * @param request GeoGig Repository initialization request
-     * @return Key-Value Map of initialization parameters specified in the request entity.
-     */
-    @Deprecated
-    private Map<String, String> getRequestParameters(Request request) {
-        HashMap<String, String> params = new HashMap<>(10);
-        if (request.isEntityAvailable()) {
-            Representation entity = request.getEntity();
-            final MediaType reqMediaType = entity.getMediaType();
-
-            if (MediaType.APPLICATION_WWW_FORM.equals(reqMediaType, true)) {
-                // URL encoded form parameters
-                try {
-                    Form form = request.getEntityAsForm();
-                    addParameters(params, form);
-                } catch (Exception ex) {
-                    throw new RestletException("Error parsing URL encoded form request",
-                            CLIENT_ERROR_BAD_REQUEST, ex);
-                }
-            } else if (MediaType.APPLICATION_JSON.equals(reqMediaType, true)) {
-                // JSON encoded parameters
-                try {
-                    String jsonRep = entity.getText();
-                    JsonObject jsonObj = Json.createReader(new StringReader(jsonRep)).readObject();
-                    addParameters(params, jsonObj);
-                } catch (IOException ex) {
-                    throw new RestletException("Error parsing JSON request",CLIENT_ERROR_BAD_REQUEST, ex);
-                }
-            } else if (null != reqMediaType) {
-                // unsupported MediaType
-                throw new RestletException("Unsupported Request MediaType: " + reqMediaType,
-                        CLIENT_ERROR_BAD_REQUEST);
-            }
-            // no parameters specified
-        }
-        // the request body was just consumed and can't be retrieved again. If we parsed Author info,
-        // store that on the request for later processing.
-        updateRequestWithAuthor(request, params);
-        return params;
-    }
-
-    /**
-     * Parses Request entity for repository creation specifics and adds them to a key-value map.
-     * Currently, only URL Encoded web forms or JSON objects are supported in the Request entity.
-     * Any other Content-Type/MediaType in the request will be rejected with a 400 Bad Request. If
-     * the request entity is empty (for example, "{}" for a JSON payload), the default repository
-     * provider will be chosen when creating repositories. It is recommended to provide either a
-     * "parentDirectory" element (for file-backed GeoGig repositories) or the database elements (for
-     * Database-backed GeoGig repositories). If BOTH are specified, the "parentDirectory" will be
-     * used for a file-backed repository.
-     *
-     * @param request GeoGig Repository initialization request
-     *
-     * @return Key-Value Map of initialization parameters specified in the request entity.
-     */
-    private Map<String, String> getRequestParameters(HttpServletRequest request) {
-        HashMap<String, String> params = new HashMap<>(10);
-        // get the content type
-        String contentType = request.getContentType();
-        if (null != contentType) {
-            switch (contentType) {
-                case APPLICATION_FORM_URLENCODED_VALUE :
-                    addFormParameters(params, request);
-                    break;
-                case APPLICATION_JSON_VALUE :
-                    try {
-                        JsonObject jsonObject = Json.createReader(request.getReader()).readObject();
-                        addParameters(params, jsonObject);
-                    } catch (IOException ioe) {
-                        throw new RuntimeException(ioe);
-                    }
-                default :
-                    throw new RuntimeException("Unsupported Request MediaType: " + contentType);
-            }
-        }
-        // the request body was just consumed and can't be retrieved again. If we parsed Author info,
-        // store that on the request for later processing.
-        updateRequestWithAuthor(request, params);
-        return params;
-    }
 
     /**
      * Updates the provided Hints instance with a GeoGig Repository URL based on the supplied parameter map. This
@@ -318,26 +127,6 @@ public class InitRequestUtil {
         }
     }
 
-    @Deprecated
-    public static Hints createHintsFromRequest(Request request) throws UnsupportedEncodingException, URISyntaxException, IOException,
-            RepositoryConnectionException {
-        // get the repository name from the request
-        final Optional<String> nameOptional = Optional.fromNullable(getStringAttribute(request,
-                REPO_ATTR));
-        if (!nameOptional.isPresent()) {
-            // no repo name provided
-            throw new RestletException(String.format(
-                    "Cannot create GeoGIG repository. Missing '%s' resource", REPO_ATTR),
-                    Status.CLIENT_ERROR_BAD_REQUEST);
-        }
-        final String repoName = nameOptional.get();
-        final Hints hints = new Hints();
-        hints.set(Hints.REPOSITORY_NAME, repoName);
-        // try to build the Repo URI from any Request parameters.
-        INSTANCE.updateHintsWithParams(hints, INSTANCE.getRequestParameters(request));
-        return hints;
-    }
-
     public static Hints createHintsFromParameters(final String repositoryName,
             final Map<String, String> parameters) throws UnsupportedEncodingException,
             URISyntaxException, IOException, RepositoryConnectionException {
@@ -345,26 +134,6 @@ public class InitRequestUtil {
         hints.set(Hints.REPOSITORY_NAME, repositoryName);
         // try to build the Repo URI from any Request parameters.
         INSTANCE.updateHintsWithParams(hints, parameters);
-        return hints;
-    }
-
-    public static Hints createHintsFromRequest(HttpServletRequest request)
-            throws UnsupportedEncodingException, URISyntaxException, IOException,
-            RepositoryConnectionException {
-        // get the repository name from the request
-        final Optional<String> nameOptional = Optional.fromNullable(getStringAttribute(request,
-                REPO_ATTR));
-        if (!nameOptional.isPresent()) {
-            // no repo name provided
-            throw new RestletException(String.format(
-                    "Cannot create GeoGIG repository. Missing '%s' resource", REPO_ATTR),
-                    Status.CLIENT_ERROR_BAD_REQUEST);
-        }
-        final String repoName = nameOptional.get();
-        final Hints hints = new Hints();
-        hints.set(Hints.REPOSITORY_NAME, repoName);
-        // try to build the Repo URI from any Request parameters.
-        INSTANCE.updateHintsWithParams(hints, INSTANCE.getRequestParameters(request));
         return hints;
     }
 }

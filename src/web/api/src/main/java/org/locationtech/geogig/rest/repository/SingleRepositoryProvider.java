@@ -17,7 +17,6 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -31,11 +30,6 @@ public class SingleRepositoryProvider implements RepositoryProvider {
 
     public SingleRepositoryProvider(Repository repo) {
         this.repo = repo;
-    }
-
-    @Override
-    public Optional<Repository> getGeogig(Request request) {
-        return Optional.of(repo);
     }
 
     @Override
@@ -57,21 +51,6 @@ public class SingleRepositoryProvider implements RepositoryProvider {
             final Map<String, String> parameters) {
         throw new UnsupportedOperationException(
                 "Cannot create a repository with the single repo provider.");
-    }
-
-    @Override
-    public void delete(Request request) {
-        Repository repo = getGeogig(request).orNull();
-        Preconditions.checkState(repo != null, "No repository to delete.");
-        Optional<URI> repoUri = repo.command(ResolveGeogigURI.class).call();
-        Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
-        repo.close();
-        try {
-            GeoGIG.delete(repoUri.get());
-            this.repo = null;
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
     }
 
     @Override

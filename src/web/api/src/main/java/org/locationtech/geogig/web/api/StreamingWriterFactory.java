@@ -13,7 +13,7 @@ import java.io.Writer;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import org.restlet.data.MediaType;
+import org.springframework.http.MediaType;
 
 /**
  * Factory for retrieving {@link StreamingWriter} implementations.
@@ -21,19 +21,6 @@ import org.restlet.data.MediaType;
 public class StreamingWriterFactory {
 
     public static StreamingWriter getStreamWriter(MediaType format, Writer parent) {
-        final ServiceLoader<StreamingWriterService> svcLoader = ServiceLoader.load(StreamingWriterService.class);
-        final Iterator<StreamingWriterService> writerServices = svcLoader.iterator();
-        while (writerServices.hasNext()) {
-            final StreamingWriterService writerService = writerServices.next();
-            if (writerService.handles(format)) {
-                return writerService.createWriter(parent);
-            }
-        }
-        // no supported writer found
-        throw new IllegalArgumentException("Unsupported MediaType: '" + format + "'");
-    }
-
-    public static StreamingWriter getStreamWriter(org.springframework.http.MediaType format, Writer parent) {
         final ServiceLoader<StreamingWriterService> svcLoader = ServiceLoader.load(StreamingWriterService.class);
         final Iterator<StreamingWriterService> writerServices = svcLoader.iterator();
         while (writerServices.hasNext()) {

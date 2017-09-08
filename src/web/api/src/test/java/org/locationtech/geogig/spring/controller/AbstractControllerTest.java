@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.spring.controller;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -24,6 +28,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import com.google.gson.JsonObject;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonWriter;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { GeoGigWebAPISpringConfig.class })
@@ -48,4 +56,11 @@ public abstract class AbstractControllerTest {
         return mockMvc.perform(request);
 
     }
-}
+
+    protected final byte[] getBytes(JsonObject json) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (JsonWriter jsonWriter = new JsonWriter(new PrintWriter(baos))) {
+            Streams.write(json, jsonWriter);
+        }
+        return baos.toByteArray();
+    }}

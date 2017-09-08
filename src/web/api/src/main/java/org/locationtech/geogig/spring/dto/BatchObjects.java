@@ -20,6 +20,7 @@ import org.locationtech.geogig.remote.ObjectFunnels;
 import org.locationtech.geogig.remote.http.BinaryPackedObjects;
 import org.locationtech.geogig.repository.impl.Deduplicator;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.springframework.http.MediaType;
 
 import com.google.common.io.CountingOutputStream;
 
@@ -97,4 +98,11 @@ public class BatchObjects extends LegacyRepoResponse {
             }
         }
     }
+
+    @Override
+    public MediaType resolveMediaType(MediaType defaultMediaType) {
+        return MediaType.APPLICATION_OCTET_STREAM;
+    }
+
+
 }

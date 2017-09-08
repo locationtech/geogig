@@ -74,7 +74,7 @@ public class AffectedFeaturesController extends AbstractRepositoryController {
             AffectedFeatures afResponse = new AffectedFeatures().setAffectedFeatures(
                     repositoryService.getAffectedFeatures(provider, repoName, oid));
             // encode the affected features
-            encode(afResponse, request, response);
+            encodeToStream(afResponse, request, response);
         } else {
             throw NO_PROVIDER;
         }

@@ -1,0 +1,128 @@
+/* Copyright (c) 2017 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Erik Merkle (Boundless) - initial implementation
+ */
+package org.locationtech.geogig.spring.controller;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.ByteArrayOutputStream;
+import java.util.Iterator;
+
+import org.junit.Test;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.test.TestData;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+
+/**
+ *
+ */
+public class SendObjectControllerTest extends AbstractControllerTest {
+
+    @Test
+    public void testNoObjectData() throws Exception {
+        Repository repo = repoProvider.createGeogig("repo1", null);
+        repoProvider.getTestRepository("repo1").initializeRpository();
+        MockHttpServletRequestBuilder post =
+                MockMvcRequestBuilders.post("/repos/repo1/repo/sendobject");
+        perform(post).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+                .andExpect(content().string(""));
+        repo.close();
+    }
+
+    @Test
+    public void testInvalidObjectData() throws Exception {
+        Repository repo = repoProvider.createGeogig("repo1", null);
+        repoProvider.getTestRepository("repo1").initializeRpository();
+        String garbage = "This is just a bunch of random data that should cause the Object parser to choke";
+        // payload needs to end with byte value 0 for the serilaizer to know the data is finished
+        byte[] content = new byte[garbage.length() + 1];
+        System.arraycopy(garbage.getBytes(), 0, content, 0, content.length-1);
+        content[content.length-1] = 0;
+        MockHttpServletRequestBuilder post =
+                MockMvcRequestBuilders.post("/repos/repo1/repo/sendobject").content(content);
+        perform(post).andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_XML))
+                .andExpect(content().string(containsString("Unrecognized object header:")));
+        repo.close();
+    }
+
+    @Test
+    public void testSendObjects() throws Exception {
+        Repository repo = repoProvider.createGeogig("repo1", null);
+        repoProvider.getTestRepository("repo1").initializeRpository();
+        new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
+        Iterator<RevCommit> call = repo.command(LogOp.class).call();
+        assertTrue(call.hasNext());
+        // get the Object serializer
+        final ObjectSerializingFactory serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        while (call.hasNext()) {
+            RevCommit next = call.next();
+            // serialize the RevCommit
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // need to write the 20 byte ObjectId first?
+            byte[] oidHeader = next.getId().getRawValue();
+            assertEquals(20, oidHeader.length);
+            baos.write(oidHeader);
+            serialFac.write(next, baos);
+            // build the API request
+            MockHttpServletRequestBuilder post =
+                    MockMvcRequestBuilders.post(
+                            "/repos/repo1/repo/sendobject").content(baos.toByteArray());
+            perform(post).andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+                    .andExpect(content().string(""));
+            // TODO: The only way to know that this worked is to inspect the INFO logs as the API
+            // response is just a 200 OK wether or not objects were ingested.
+        }
+        repo.close();
+    }
+
+    @Test
+    public void testSendMultipleObjects() throws Exception {
+        Repository repo = repoProvider.createGeogig("repo1", null);
+        repoProvider.getTestRepository("repo1").initializeRpository();
+        new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
+        Iterator<RevCommit> call = repo.command(LogOp.class).call();
+        assertTrue(call.hasNext());
+        // get the Object serializer
+        final ObjectSerializingFactory serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        while (call.hasNext()) {
+            RevCommit next = call.next();
+            // serialize the RevCommit
+            // need to write the 20 byte ObjectId first?
+            byte[] oidHeader = next.getId().getRawValue();
+            assertEquals(20, oidHeader.length);
+            baos.write(oidHeader);
+            serialFac.write(next, baos);
+        }
+        // build the API request
+        MockHttpServletRequestBuilder post =
+                MockMvcRequestBuilders.post(
+                        "/repos/repo1/repo/sendobject").content(baos.toByteArray());
+        perform(post).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+                .andExpect(content().string(""));
+        // TODO: The only way to know that this worked is to inspect the INFO logs as the API
+        // response is just a 200 OK wether or not objects were ingested.
+        repo.close();
+    }
+}

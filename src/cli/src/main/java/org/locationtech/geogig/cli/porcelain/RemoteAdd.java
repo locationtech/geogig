@@ -18,8 +18,8 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.porcelain.RemoteAddOp;
-import org.locationtech.geogig.porcelain.RemoteException;
+import org.locationtech.geogig.remotes.RemoteAddOp;
+import org.locationtech.geogig.remotes.RemoteException;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

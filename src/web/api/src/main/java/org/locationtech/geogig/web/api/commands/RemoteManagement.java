@@ -11,13 +11,13 @@ package org.locationtech.geogig.web.api.commands;
 
 import java.util.List;
 
-import org.locationtech.geogig.porcelain.RemoteAddOp;
-import org.locationtech.geogig.porcelain.RemoteException;
-import org.locationtech.geogig.porcelain.RemoteListOp;
-import org.locationtech.geogig.porcelain.RemoteRemoveOp;
-import org.locationtech.geogig.porcelain.RemoteResolve;
-import org.locationtech.geogig.remote.IRemoteRepo;
-import org.locationtech.geogig.remote.RemoteResolver;
+import org.locationtech.geogig.remotes.RemoteAddOp;
+import org.locationtech.geogig.remotes.RemoteException;
+import org.locationtech.geogig.remotes.RemoteListOp;
+import org.locationtech.geogig.remotes.RemoteRemoveOp;
+import org.locationtech.geogig.remotes.RemoteResolve;
+import org.locationtech.geogig.remotes.internal.IRemoteRepo;
+import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;

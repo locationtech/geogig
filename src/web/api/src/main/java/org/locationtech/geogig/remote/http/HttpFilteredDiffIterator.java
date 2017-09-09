@@ -15,7 +15,7 @@ import java.util.Queue;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.remote.FilteredDiffIterator;
+import org.locationtech.geogig.remotes.internal.FilteredDiffIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 
 /**

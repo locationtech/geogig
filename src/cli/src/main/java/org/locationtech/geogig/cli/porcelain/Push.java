@@ -16,9 +16,9 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.porcelain.PushOp;
-import org.locationtech.geogig.porcelain.SynchronizationException;
-import org.locationtech.geogig.porcelain.TransferSummary;
+import org.locationtech.geogig.remotes.PushOp;
+import org.locationtech.geogig.remotes.SynchronizationException;
+import org.locationtech.geogig.remotes.TransferSummary;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

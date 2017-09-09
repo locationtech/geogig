@@ -32,7 +32,7 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
-import org.locationtech.geogig.porcelain.RemoteAddOp;
+import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.base.Optional;

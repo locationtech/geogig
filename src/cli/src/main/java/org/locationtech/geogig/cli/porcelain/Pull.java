@@ -21,10 +21,10 @@ import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffCount;
-import org.locationtech.geogig.porcelain.PullOp;
-import org.locationtech.geogig.porcelain.PullResult;
-import org.locationtech.geogig.porcelain.SynchronizationException;
-import org.locationtech.geogig.porcelain.TransferSummary;
+import org.locationtech.geogig.remotes.PullOp;
+import org.locationtech.geogig.remotes.PullResult;
+import org.locationtech.geogig.remotes.SynchronizationException;
+import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 

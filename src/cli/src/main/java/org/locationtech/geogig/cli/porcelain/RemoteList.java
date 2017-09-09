@@ -16,7 +16,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.porcelain.RemoteListOp;
+import org.locationtech.geogig.remotes.RemoteListOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigException;
 

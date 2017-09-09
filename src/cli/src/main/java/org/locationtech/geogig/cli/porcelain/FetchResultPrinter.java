@@ -15,9 +15,9 @@ import java.util.Map.Entry;
 
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.porcelain.TransferSummary;
-import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef;
-import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef.ChangeTypes;
+import org.locationtech.geogig.remotes.TransferSummary;
+import org.locationtech.geogig.remotes.TransferSummary.ChangedRef;
+import org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes;
 
 class FetchResultPrinter {
 

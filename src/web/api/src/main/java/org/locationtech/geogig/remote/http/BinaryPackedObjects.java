@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.remote.ObjectFunnel;
+import org.locationtech.geogig.remotes.internal.ObjectFunnel;
 import org.locationtech.geogig.repository.impl.Deduplicator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;

@@ -30,7 +30,6 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
@@ -45,6 +44,7 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.impl.Blobs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -365,7 +365,7 @@ public class RepositoryImpl implements Repository {
      */
     @Override
     public boolean isSparse() {
-        return blobStore().getBlob(AbstractMappedRemoteRepo.SPARSE_FILTER_BLOB_KEY).isPresent();
+        return blobStore().getBlob(Blobs.SPARSE_FILTER_BLOB_KEY).isPresent();
     }
 
     @Override

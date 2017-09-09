@@ -14,8 +14,8 @@ import java.net.PasswordAuthentication;
 import java.net.URI;
 
 import org.locationtech.geogig.plumbing.CreateDeduplicator;
-import org.locationtech.geogig.remote.IRemoteRepo;
-import org.locationtech.geogig.remote.RemoteResolver;
+import org.locationtech.geogig.remotes.internal.IRemoteRepo;
+import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;

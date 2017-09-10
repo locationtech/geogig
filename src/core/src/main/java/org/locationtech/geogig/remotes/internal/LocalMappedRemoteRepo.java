@@ -93,10 +93,9 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return the remote's HEAD {@link Ref}.
      */
     @Override
-    public Ref headRef() {
+    public Optional<Ref> headRef() {
         final Optional<Ref> currHead = remoteRepo.command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions.checkState(currHead.isPresent(), "Remote repository has no HEAD.");
-        return currHead.get();
+        return currHead;
     }
 
     /**
@@ -179,7 +178,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                 .setNewValue(commitId).setDelete(delete).call();
 
         if (updatedRef.isPresent()) {
-            final Ref remoteHead = headRef();
+            final Ref remoteHead = headRef().orNull();
             if (remoteHead instanceof SymRef) {
                 if (((SymRef) remoteHead).getTarget().equals(updatedRef.get().getName())) {
                     remoteRepo.command(UpdateSymRef.class).setName(Ref.HEAD)

@@ -115,15 +115,10 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      * @return the remote's HEAD {@link Ref}.
      */
     @Override
-    public Ref headRef() {
+    public Optional<Ref> headRef() {
         final Optional<Ref> currHead = remoteRepository.command(RefParse.class).setName(Ref.HEAD)
                 .call();
-        Preconditions.checkState(currHead.isPresent(), "Remote repository has no HEAD.");
-        if (currHead.get().getObjectId().equals(ObjectId.NULL)) {
-            return null;
-        } else {
-            return currHead.get();
-        }
+        return currHead;
     }
 
     /**
@@ -211,7 +206,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         Ref updatedRef = remoteRepository.command(UpdateRef.class).setName(nameToSet)
                 .setNewValue(ref.getObjectId()).call().get();
 
-        Ref remoteHead = headRef();
+        Ref remoteHead = headRef().orNull();
         if (remoteHead instanceof SymRef) {
             if (((SymRef) remoteHead).getTarget().equals(updatedRef.getName())) {
                 remoteRepository.command(UpdateSymRef.class).setName(Ref.HEAD)

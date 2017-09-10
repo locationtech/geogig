@@ -53,9 +53,10 @@ public interface IRemoteRepo extends Closeable {
     public ImmutableSet<Ref> listRefs(boolean getHeads, boolean getTags);
 
     /**
-     * @return the remote's HEAD {@link Ref}.
+     * @return the remote's {@link Ref#HEAD HEAD} ref, or {@link Optional#absent() absent} if the
+     *         remote repo has no {@link Ref#HEAD HEAD}.
      */
-    public Ref headRef();
+    public Optional<Ref> headRef();
 
     /**
      * Fetch all new objects from the specified {@link Ref} from the remote by invoking

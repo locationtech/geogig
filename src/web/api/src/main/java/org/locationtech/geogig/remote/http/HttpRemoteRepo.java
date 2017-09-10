@@ -118,7 +118,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
      * @return the remote's HEAD {@link Ref}.
      */
     @Override
-    public Ref headRef() {
+    public Optional<Ref> headRef() {
         HttpURLConnection connection = null;
         Ref headRef = null;
         try {
@@ -148,7 +148,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }
-        return headRef;
+        return Optional.fromNullable(headRef);
     }
 
     /**

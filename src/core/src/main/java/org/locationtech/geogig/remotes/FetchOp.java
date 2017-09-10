@@ -275,9 +275,9 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
                 // Update HEAD ref
                 if (!remote.getMapped()) {
-                    Ref remoteHead = remoteRepoInstance.headRef();
-                    if (remoteHead != null) {
-                        updateLocalRef(remoteHead, remote, localRemoteRefs);
+                    Optional<Ref> remoteHead = remoteRepoInstance.headRef();
+                    if (remoteHead.isPresent() && !remoteHead.get().getObjectId().isNull()) {
+                        updateLocalRef(remoteHead.get(), remote, localRemoteRefs);
                     }
                 }
             } catch (RepositoryConnectionException ce) {

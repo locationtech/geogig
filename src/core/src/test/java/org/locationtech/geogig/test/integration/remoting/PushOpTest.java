@@ -104,7 +104,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits

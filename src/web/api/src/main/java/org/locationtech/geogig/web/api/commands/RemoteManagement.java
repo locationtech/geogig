@@ -274,11 +274,10 @@ public class RemoteManagement extends AbstractWebAPICommand {
             Optional<IRemoteRepo> remoteRepo = RemoteResolver.newRemote(geogig.repository(),
                     remote.get(), Hints.readOnly());
             if (remoteRepo.isPresent()) {
-                try {
-                    remoteRepo.get().open();
-                    remoteRepo.get().headRef();
+                try (IRemoteRepo repo = remoteRepo.get()) {
+                    repo.open();
+                    repo.headRef();
                     remotePingResponse = true;
-                    remoteRepo.get().close();
                 } catch (RepositoryConnectionException e) {
                     // Do nothing, we will write the response later.
                 }

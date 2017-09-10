@@ -228,21 +228,9 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                     }
                 }
             }
-
-            Optional<IRemoteRepo> remoteRepo = getRemoteRepo(remote);
-
-            Preconditions.checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
-            IRemoteRepo remoteRepoInstance = remoteRepo.get();
-            try {
-                remoteRepoInstance.open();
-            } catch (RepositoryConnectionException e) {
-                Throwables.propagate(e);
-            }
-            try {
-                int refCount = 0;
+            try (IRemoteRepo remoteRepoInstance = openRemote(remote)) {
                 for (ChangedRef ref : needUpdate) {
                     if (ref.getType() != ChangeTypes.REMOVED_REF) {
-                        refCount++;
 
                         Optional<Integer> newFetchLimit = depth;
                         // If we haven't specified a depth, but this is a shallow repository, set
@@ -292,8 +280,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                         updateLocalRef(remoteHead, remote, localRemoteRefs);
                     }
                 }
-            } finally {
-                remoteRepoInstance.close();
+            } catch (RepositoryConnectionException ce) {
+                throw Throwables.propagate(ce);
             }
         }
 
@@ -311,9 +299,15 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     /**
      * @param remote the remote to get
      * @return an interface for the remote repository
+     * @throws RepositoryConnectionException
      */
-    public Optional<IRemoteRepo> getRemoteRepo(Remote remote) {
-        return RemoteResolver.newRemote(repository(), remote, Hints.readOnly());
+    public IRemoteRepo openRemote(Remote remote) throws RepositoryConnectionException {
+        Optional<IRemoteRepo> remoteRepo = RemoteResolver.newRemote(repository(), remote,
+                Hints.readOnly());
+        Preconditions.checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
+        IRemoteRepo repo = remoteRepo.get();
+        repo.open();
+        return repo;
     }
 
     private Ref updateLocalRef(Ref remoteRef, Remote remote, ImmutableSet<Ref> localRemoteRefs) {

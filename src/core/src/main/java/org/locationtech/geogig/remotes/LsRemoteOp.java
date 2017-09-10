@@ -109,22 +109,15 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
         if (local) {
             return locallyKnownRefs(remoteConfig);
         }
-        getProgressListener().setDescription("Obtaining remote " + remoteConfig.getName());
-        Optional<IRemoteRepo> remoteRepo = getRemoteRepo(remoteConfig);
-        Preconditions.checkState(remoteRepo.isPresent(), "Remote could not be opened.");
-        getProgressListener().setDescription("Connecting to remote " + remoteConfig.getName());
-        try {
-            remoteRepo.get().open();
+        ImmutableSet<Ref> remoteRefs;
+        try (IRemoteRepo remoteRepo = openRemote(remoteConfig)) {
+            getProgressListener().setDescription(
+                    "Connected to remote " + remoteConfig.getName() + ". Retrieving references");
+
+            remoteRefs = remoteRepo.listRefs(getHeads, getTags);
+
         } catch (RepositoryConnectionException e) {
             throw Throwables.propagate(e);
-        }
-        getProgressListener().setDescription(
-                "Connected to remote " + remoteConfig.getName() + ". Retrieving references");
-        ImmutableSet<Ref> remoteRefs;
-        try {
-            remoteRefs = remoteRepo.get().listRefs(getHeads, getTags);
-        } finally {
-            remoteRepo.get().close();
         }
         return remoteRefs;
     }
@@ -132,10 +125,18 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
     /**
      * @param remote the remote to get
      * @return an interface for the remote repository
+     * @throws RepositoryConnectionException
      */
-    public Optional<IRemoteRepo> getRemoteRepo(Remote remote) {
+    public IRemoteRepo openRemote(Remote remote) throws RepositoryConnectionException {
         Repository localRepository = repository();
-        return RemoteResolver.newRemote(localRepository, remote, Hints.readOnly());
+        Optional<IRemoteRepo> remoterepo;
+        getProgressListener().setDescription("Obtaining remote " + remote.getName());
+        remoterepo = RemoteResolver.newRemote(localRepository, remote, Hints.readOnly());
+        Preconditions.checkState(remoterepo.isPresent(), "Remote could not be opened.");
+        IRemoteRepo iRemoteRepo = remoterepo.get();
+        getProgressListener().setDescription("Connecting to remote " + remote.getName());
+        iRemoteRepo.open();
+        return iRemoteRepo;
     }
 
     /**

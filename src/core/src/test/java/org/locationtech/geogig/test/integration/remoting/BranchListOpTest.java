@@ -51,7 +51,7 @@ public class BranchListOpTest extends RemoteRepositoryTestCase {
         remoteGeogig.geogig.command(CommitOp.class).call();
 
         // clone from the remote
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
     }
 

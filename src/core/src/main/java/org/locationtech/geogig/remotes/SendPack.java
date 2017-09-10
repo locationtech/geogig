@@ -129,14 +129,12 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         checkState(remote != null, "no remote specified");
         checkState(!refsToPush.isEmpty(), "no refs to push specified");
 
-        final IRemoteRepo remoteRepo = openRemoteRepo(remote);
         TransferSummary transferResult;
-        try {
+        try (IRemoteRepo remoteRepo = openRemote(remote)) {
             transferResult = callInternal(remoteRepo);
             checkState(transferResult != null);
-        } finally {
-            remoteRepo.close();
         }
+
         return transferResult;
     }
 
@@ -179,7 +177,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         return result;
     }
 
-    private IRemoteRepo openRemoteRepo(final Remote remote) {
+    private IRemoteRepo openRemote(final Remote remote) {
         final IRemoteRepo remoteRepo;
         Optional<IRemoteRepo> resolvedRemoteRepo = getRemoteRepo(remote);
         checkState(resolvedRemoteRepo.isPresent(), "Failed to connect to the remote.");

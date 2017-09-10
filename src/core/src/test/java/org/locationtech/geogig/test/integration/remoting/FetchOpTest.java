@@ -52,7 +52,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     private void prepareForFetch(boolean doClone) throws Exception {
         if (doClone) {
             // clone the repository
-            CloneOp clone = clone();
+            CloneOp clone = doClone();
             clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
         }
 
@@ -159,7 +159,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(false);
 
         // clone the repository
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(2);
         String repositoryURL = remoteGeogig.envHome.toURI().toString();
         clone.setRepositoryURL(repositoryURL).call();
@@ -197,7 +197,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(false);
 
         // clone the repository
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(2);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
 
@@ -213,7 +213,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(false);
 
         // clone the repository
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(2);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
 
@@ -249,7 +249,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         commit = remoteGeogig.geogig.command(CommitOp.class).setMessage("3").call();
 
         // clone the repository
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(2);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
 
@@ -306,7 +306,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         assertEquals(expectedMaster, logged);
 
         // clone the repository
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(2);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
 

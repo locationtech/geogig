@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import java.io.Closeable;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.remotes.ReceivePack;
@@ -23,7 +25,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Provides an interface for interacting with remote repositories.
  */
-public interface IRemoteRepo {
+public interface IRemoteRepo extends Closeable {
 
     /**
      * Opens the remote repository.
@@ -35,11 +37,11 @@ public interface IRemoteRepo {
     public void open() throws RepositoryConnectionException;
 
     /**
-     * Closes the remote repository.
+     * Quietly closes the remote repository.
      * <p>
      * This method is idempotent.
      */
-    public void close();
+    public @Override void close();
 
     /**
      * List the remote's {@link Ref refs}.

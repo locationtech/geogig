@@ -56,6 +56,7 @@ import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.ContextBuilder;
 import org.locationtech.geogig.repository.impl.GeoGIG;
@@ -70,6 +71,7 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.vividsolutions.jts.io.ParseException;
@@ -227,22 +229,26 @@ public abstract class RemoteRepositoryTestCase {
     protected LsRemoteOp lsremote() {
         LsRemoteOp lsRemote = spy(localGeogig.geogig.command(LsRemoteOp.class));
 
-        doReturn(Optional.of(remoteRepo)).when(lsRemote).getRemoteRepo(any(Remote.class));
+        try {
+            doReturn(remoteRepo).when(lsRemote).openRemote(any(Remote.class));
+        } catch (RepositoryConnectionException e) {
+            throw Throwables.propagate(e);
+        }
 
         return lsRemote;
     }
 
-    protected FetchOp fetch() {
+    protected FetchOp fetch() throws RepositoryConnectionException {
         FetchOp remoteRepoFetch = spy(localGeogig.geogig.command(FetchOp.class));
 
-        doReturn(Optional.of(remoteRepo)).when(remoteRepoFetch).getRemoteRepo(any(Remote.class));
+        doReturn(remoteRepo).when(remoteRepoFetch).openRemote(any(Remote.class));
         LsRemoteOp lsRemote = lsremote();
         doReturn(lsRemote).when(remoteRepoFetch).command(eq(LsRemoteOp.class));
 
         return remoteRepoFetch;
     }
 
-    protected CloneOp clone() {
+    protected CloneOp doClone() throws RepositoryConnectionException {
         CloneOp clone = spy(localGeogig.geogig.command(CloneOp.class));
         doReturn(Optional.of(remoteRepo)).when(clone).getRemote(any(), any());
 
@@ -257,7 +263,7 @@ public abstract class RemoteRepositoryTestCase {
         return clone;
     }
 
-    protected PullOp pull() {
+    protected PullOp pull() throws RepositoryConnectionException {
         PullOp pull = spy(localGeogig.geogig.command(PullOp.class));
         FetchOp fetch = fetch();
         // when(pull.command(eq(FetchOp.class))).thenReturn(fetch);
@@ -270,7 +276,7 @@ public abstract class RemoteRepositoryTestCase {
         return pull;
     }
 
-    protected PushOp push() {
+    protected PushOp push() throws RepositoryConnectionException {
         SendPack sendPack = spy(localGeogig.geogig.command(SendPack.class));
         doReturn(Optional.of(remoteRepo)).when(sendPack).getRemoteRepo(any(Remote.class));
 
@@ -294,6 +300,7 @@ public abstract class RemoteRepositoryTestCase {
         tearDownInternal();
         localGeogig.tearDown();
         remoteGeogig.tearDown();
+        remoteRepo.close();
         localGeogig = null;
         remoteGeogig = null;
         System.gc();

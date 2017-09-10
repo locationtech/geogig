@@ -190,7 +190,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(0);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
 
@@ -255,7 +255,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         assertTrue(logged.isEmpty());
 
         // clone from the remote
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         // clone.setDepth(0);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
 
@@ -311,7 +311,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(0);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
 
@@ -377,7 +377,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(0);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
 
@@ -433,7 +433,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(0);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
 
@@ -711,7 +711,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         filter.put("default", "BBOX(pp,9, -80, 15, -70,'EPSG:4326')");
         createFilterFile(filter);
 
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         exception.expect(IllegalArgumentException.class);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
     }
@@ -722,7 +722,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         filter.put("default", "BBOX(pp,9, -80, 15, -70,'EPSG:4326')");
         createFilterFile(filter);
 
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(3).setBranch("master");
         exception.expect(IllegalStateException.class);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
@@ -765,7 +765,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = clone();
+        CloneOp clone = doClone();
         clone.setDepth(0);
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
 

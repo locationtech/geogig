@@ -7,11 +7,22 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
+
 package org.locationtech.geogig.remotes;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.filter;
+import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.ADDED_REF;
+import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.CHANGED_REF;
+import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.DEEPENED_REF;
+import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.REMOVED_REF;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
@@ -22,18 +33,15 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.remotes.TransferSummary.ChangedRef;
-import org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
@@ -47,27 +55,97 @@ import com.google.common.collect.Lists;
  */
 public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
-    private boolean all;
+    /**
+     * Immutable state of command arguments
+     */
+    private static class FetchArgs {
 
-    private boolean prune;
+        /**
+         * Builder for command arguments
+         */
+        private static class Builder {
+            private boolean all;
 
-    private boolean fullDepth = false;
+            private boolean prune;
 
-    private List<Remote> remotes = new ArrayList<Remote>();
+            private boolean fullDepth = false;
 
-    private Optional<Integer> depth = Optional.absent();
+            private List<Remote> remotes = new ArrayList<Remote>();
+
+            private Optional<Integer> depth = Optional.absent();
+
+            public FetchArgs build(Repository repo) {
+                if (all) {
+                    remotes.clear();
+                    // Add all remotes to list.
+                    ImmutableList<Remote> localRemotes = repo.command(RemoteListOp.class).call();
+                    remotes.addAll(localRemotes);
+                } else if (remotes.isEmpty()) {
+                    // If no remotes are specified, default to the origin remote
+                    Optional<Remote> origin;
+                    origin = repo.command(RemoteResolve.class)
+                            .setName(NodeRef.nodeFromPath(Ref.ORIGIN)).call();
+                    checkArgument(origin.isPresent(), "Remote could not be resolved.");
+                    remotes.add(origin.get());
+                }
+
+                final Optional<Integer> repoDepth = repo.getDepth();
+                if (repoDepth.isPresent()) {
+                    if (fullDepth) {
+                        depth = Optional.of(Integer.MAX_VALUE);
+                    }
+                    if (depth.isPresent()) {
+                        if (depth.get() > repoDepth.get()) {
+                            repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
+                                    .setScope(ConfigScope.LOCAL)
+                                    .setName(Repository.DEPTH_CONFIG_KEY)
+                                    .setValue(depth.get().toString()).call();
+                        }
+                    }
+                } else if (depth.isPresent() || fullDepth) {
+                    // Ignore depth, this is a full repository
+                    depth = Optional.absent();
+                    fullDepth = false;
+                }
+
+                return new FetchArgs(all, prune, fullDepth, ImmutableList.copyOf(remotes), depth);
+            }
+
+        }
+
+        final boolean all;
+
+        final boolean prune;
+
+        final boolean fullDepth;
+
+        final ImmutableList<Remote> remotes;
+
+        final Optional<Integer> depth;
+
+        private FetchArgs(boolean all, boolean prune, boolean fullDepth,
+                ImmutableList<Remote> remotes, Optional<Integer> depth) {
+            this.all = all;
+            this.prune = prune;
+            this.fullDepth = fullDepth;
+            this.remotes = remotes;
+            this.depth = depth;
+        }
+    }
+
+    private FetchArgs.Builder argsBuilder = new FetchArgs.Builder();
 
     /**
      * @param all if {@code true}, fetch from all remotes.
      * @return {@code this}
      */
     public FetchOp setAll(final boolean all) {
-        this.all = all;
+        argsBuilder.all = all;
         return this;
     }
 
     public boolean isAll() {
-        return all;
+        return argsBuilder.all;
     }
 
     /**
@@ -76,12 +154,12 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @return {@code this}
      */
     public FetchOp setPrune(final boolean prune) {
-        this.prune = prune;
+        argsBuilder.prune = prune;
         return this;
     }
 
     public boolean isPrune() {
-        return prune;
+        return argsBuilder.prune;
     }
 
     /**
@@ -93,13 +171,13 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      */
     public FetchOp setDepth(final int depth) {
         if (depth > 0) {
-            this.depth = Optional.of(depth);
+            argsBuilder.depth = Optional.of(depth);
         }
         return this;
     }
 
     public Integer getDepth() {
-        return this.depth.orNull();
+        return argsBuilder.depth.orNull();
     }
 
     /**
@@ -109,12 +187,12 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @return {@code this}
      */
     public FetchOp setFullDepth(boolean fullDepth) {
-        this.fullDepth = fullDepth;
+        argsBuilder.fullDepth = fullDepth;
         return this;
     }
 
     public boolean isFullDepth() {
-        return fullDepth;
+        return argsBuilder.fullDepth;
     }
 
     /**
@@ -122,12 +200,12 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @return {@code this}
      */
     public FetchOp addRemote(final String remoteName) {
-        Preconditions.checkNotNull(remoteName);
+        checkNotNull(remoteName);
         return addRemote(command(RemoteResolve.class).setName(remoteName));
     }
 
     public List<String> getRemoteNames() {
-        return Lists.transform(this.remotes, (remote) -> remote.getName());
+        return Lists.transform(argsBuilder.remotes, (remote) -> remote.getName());
     }
 
     /**
@@ -135,16 +213,16 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @return {@code this}
      */
     public FetchOp addRemote(Supplier<Optional<Remote>> remoteSupplier) {
-        Preconditions.checkNotNull(remoteSupplier);
+        checkNotNull(remoteSupplier);
         Optional<Remote> remote = remoteSupplier.get();
-        Preconditions.checkArgument(remote.isPresent(), "Remote could not be resolved.");
-        remotes.add(remote.get());
+        checkArgument(remote.isPresent(), "Remote could not be resolved.");
+        argsBuilder.remotes.add(remote.get());
 
         return this;
     }
 
     public List<Remote> getRemotes() {
-        return ImmutableList.copyOf(remotes);
+        return ImmutableList.copyOf(argsBuilder.remotes);
     }
 
     /**
@@ -155,145 +233,139 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      */
     @Override
     protected TransferSummary _call() {
-        if (all) {
-            // Add all remotes to list.
-            ImmutableList<Remote> localRemotes = command(RemoteListOp.class).call();
-            for (Remote remote : localRemotes) {
-                if (!remotes.contains(remote)) {
-                    remotes.add(remote);
-                }
-            }
-        } else if (remotes.size() == 0) {
-            // If no remotes are specified, default to the origin remote
-            addRemote("origin");
-        }
+        final Repository repository = repository();
+        final FetchArgs args = argsBuilder.build(repository);
 
-        final ProgressListener progressListener = getProgressListener();
-        progressListener.started();
-
-        Optional<Integer> repoDepth = repository().getDepth();
-        if (repoDepth.isPresent()) {
-            if (fullDepth) {
-                depth = Optional.of(Integer.MAX_VALUE);
-            }
-            if (depth.isPresent()) {
-                if (depth.get() > repoDepth.get()) {
-                    command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
-                            .setScope(ConfigScope.LOCAL).setName(Repository.DEPTH_CONFIG_KEY)
-                            .setValue(depth.get().toString()).call();
-                    repoDepth = depth;
-                }
-            }
-        } else if (depth.isPresent() || fullDepth) {
-            // Ignore depth, this is a full repository
-            depth = Optional.absent();
-            fullDepth = false;
-        }
+        getProgressListener().started();
 
         TransferSummary result = new TransferSummary();
 
-        for (Remote remote : remotes) {
-            final ImmutableSet<Ref> remoteRemoteRefs = command(LsRemoteOp.class)
-                    .setRemote(Suppliers.ofInstance(Optional.of(remote)))
-                    .retrieveTags(!remote.getMapped() && (!repoDepth.isPresent() || fullDepth))
-                    .call();
-            final ImmutableSet<Ref> localRemoteRefs = command(LsRemoteOp.class)
-                    .retrieveLocalRefs(true).setRemote(Suppliers.ofInstance(Optional.of(remote)))
-                    .call();
-
-            // If we have specified a depth to pull, we may have more history to pull from existing
-            // refs.
-            List<ChangedRef> needUpdate = findOutdatedRefs(remote, remoteRemoteRefs,
-                    localRemoteRefs, depth);
-
-            if (prune) {
-                // Delete local refs that aren't in the remote
-                List<Ref> locals = new ArrayList<Ref>();
-                // only branches, not tags, appear in the remoteRemoteRefs list so we will not catch
-                // any tags in this check. However, we do not track which remote originally
-                // provided a tag so it makes sense not to prune them anyway.
-                for (Ref remoteRef : remoteRemoteRefs) {
-                    Optional<Ref> localRef = findLocal(remoteRef, localRemoteRefs);
-                    if (localRef.isPresent()) {
-                        locals.add(localRef.get());
-                    }
-                }
-                for (Ref localRef : localRemoteRefs) {
-                    if (!(localRef instanceof SymRef) && !locals.contains(localRef)) {
-                        // Delete the ref
-                        ChangedRef changedRef = new ChangedRef(localRef, null,
-                                ChangeTypes.REMOVED_REF);
-                        needUpdate.add(changedRef);
-                        command(UpdateRef.class).setDelete(true).setName(localRef.getName()).call();
-                    }
-                }
-            }
-            try (IRemoteRepo remoteRepoInstance = openRemote(remote)) {
-                for (ChangedRef ref : needUpdate) {
-                    if (ref.getType() != ChangeTypes.REMOVED_REF) {
-
-                        Optional<Integer> newFetchLimit = depth;
-                        // If we haven't specified a depth, but this is a shallow repository, set
-                        // the
-                        // fetch limit to the current repository depth.
-                        if (!newFetchLimit.isPresent() && repoDepth.isPresent()
-                                && ref.getType() == ChangeTypes.ADDED_REF) {
-                            newFetchLimit = repoDepth;
-                        }
-                        // Fetch updated data from this ref
-                        Ref newRef = ref.getNewRef();
-                        remoteRepoInstance.fetchNewData(newRef, newFetchLimit, progressListener);
-
-                        if (repoDepth.isPresent() && !fullDepth) {
-                            // Update the repository depth if it is deeper than before.
-                            int newDepth;
-                            try {
-                                newDepth = repository().graphDatabase()
-                                        .getDepth(newRef.getObjectId());
-                            } catch (IllegalStateException e) {
-                                throw new RuntimeException(ref.toString(), e);
-                            }
-
-                            if (newDepth > repoDepth.get()) {
-                                command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
-                                        .setScope(ConfigScope.LOCAL)
-                                        .setName(Repository.DEPTH_CONFIG_KEY)
-                                        .setValue(Integer.toString(newDepth)).call();
-                                repoDepth = Optional.of(newDepth);
-                            }
-                        }
-
-                        // Update the ref
-                        Ref updatedRef = updateLocalRef(newRef, remote, localRemoteRefs);
-                        ref.setNewRef(updatedRef);
-                    }
-                }
-
-                if (needUpdate.size() > 0) {
-                    result.addAll(remote.getFetchURL(), needUpdate);
-                }
-
-                // Update HEAD ref
-                if (!remote.getMapped()) {
-                    Optional<Ref> remoteHead = remoteRepoInstance.headRef();
-                    if (remoteHead.isPresent() && !remoteHead.get().getObjectId().isNull()) {
-                        updateLocalRef(remoteHead.get(), remote, localRemoteRefs);
-                    }
-                }
-            } catch (RepositoryConnectionException ce) {
-                throw Throwables.propagate(ce);
+        for (Remote remote : args.remotes) {
+            List<ChangedRef> needUpdate = fetch(remote, args);
+            if (!needUpdate.isEmpty()) {
+                String fetchURL = remote.getFetchURL();
+                result.addAll(fetchURL, needUpdate);
             }
         }
 
-        if (fullDepth) {
+        if (args.fullDepth) {
             // The full history was fetched, this is no longer a shallow clone
-            command(ConfigOp.class).setAction(ConfigAction.CONFIG_UNSET).setScope(ConfigScope.LOCAL)
-                    .setName(Repository.DEPTH_CONFIG_KEY).call();
+            command(ConfigOp.class)//
+                    .setAction(ConfigAction.CONFIG_UNSET)//
+                    .setScope(ConfigScope.LOCAL)//
+                    .setName(Repository.DEPTH_CONFIG_KEY)//
+                    .call();
         }
 
-        progressListener.complete();
+        getProgressListener().complete();
 
         return result;
+    }
+
+    private List<ChangedRef> fetch(Remote remote, FetchArgs args) {
+
+        List<ChangedRef> needUpdate;
+
+        try (IRemoteRepo remoteRepo = openRemote(remote)) {
+            final Repository repository = repository();
+            final ImmutableSet<Ref> remoteRemoteRefs = getRemoteRefs(remoteRepo, args, remote);
+            final ImmutableSet<Ref> localRemoteRefs = getRemoteLocalRefs(remote);
+
+            // If we have specified a depth to pull, we may have more history to pull from
+            // existing
+            // refs.
+            needUpdate = findOutdatedRefs(remote, remoteRemoteRefs, localRemoteRefs, args.depth);
+            if (args.prune) {
+                prune(remoteRemoteRefs, localRemoteRefs, needUpdate);
+            }
+            for (ChangedRef ref : filter(needUpdate, (r) -> r.getType() != REMOVED_REF)) {
+                final Optional<Integer> repoDepth = repository.getDepth();
+                final boolean isShallow = repoDepth.isPresent();
+
+                // If we haven't specified a depth, but this is a shallow repository, set
+                // the fetch limit to the current repository depth.
+                final Optional<Integer> newFetchLimit = args.depth.or(
+                        isShallow && ref.getType() == ADDED_REF ? repoDepth : Optional.absent());
+
+                // Fetch updated data from this ref
+                final Ref newRef = ref.getNewRef();
+                remoteRepo.fetchNewData(newRef, newFetchLimit, getProgressListener());
+
+                if (isShallow && !args.fullDepth) {
+                    // Update the repository depth if it is deeper than before.
+                    int newDepth = repository.graphDatabase().getDepth(newRef.getObjectId());
+
+                    if (newDepth > repoDepth.get()) {
+                        command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
+                                .setScope(ConfigScope.LOCAL).setName(Repository.DEPTH_CONFIG_KEY)
+                                .setValue(Integer.toString(newDepth)).call();
+                    }
+                }
+
+                // Update the ref
+                Ref updatedRef = updateLocalRef(newRef, remote, localRemoteRefs);
+                ref.setNewRef(updatedRef);
+            }
+
+            // Update HEAD ref
+            if (!remote.getMapped()) {
+                Optional<Ref> remoteHead = remoteRepo.headRef();
+                if (remoteHead.isPresent() && !remoteHead.get().getObjectId().isNull()) {
+                    updateLocalRef(remoteHead.get(), remote, localRemoteRefs);
+                }
+            }
+        } catch (Exception ce) {
+            throw Throwables.propagate(ce);
+        }
+        return needUpdate;
+    }
+
+    private void prune(final ImmutableSet<Ref> remoteRemoteRefs,
+            final ImmutableSet<Ref> localRemoteRefs, List<ChangedRef> needUpdate) {
+        // Delete local refs that aren't in the remote
+        List<Ref> locals = new ArrayList<Ref>();
+        // only branches, not tags, appear in the remoteRemoteRefs list so we will not catch
+        // any tags in this check. However, we do not track which remote originally
+        // provided a tag so it makes sense not to prune them anyway.
+        for (Ref remoteRef : remoteRemoteRefs) {
+            Optional<Ref> localRef = findLocal(remoteRef, localRemoteRefs);
+            if (localRef.isPresent()) {
+                locals.add(localRef.get());
+            }
+        }
+        for (Ref localRef : localRemoteRefs) {
+            if (!(localRef instanceof SymRef) && !locals.contains(localRef)) {
+                // Delete the ref
+                ChangedRef changedRef = new ChangedRef(localRef, null, REMOVED_REF);
+                needUpdate.add(changedRef);
+                command(UpdateRef.class).setDelete(true).setName(localRef.getName()).call();
+            }
+        }
+    }
+
+    private ImmutableSet<Ref> getRemoteLocalRefs(Remote remote) {
+        final ImmutableSet<Ref> localRemoteRefs;
+        localRemoteRefs = command(LsRemoteOp.class)//
+                .retrieveLocalRefs(true)//
+                .setRemote(Suppliers.ofInstance(Optional.of(remote)))//
+                .call();
+        return localRemoteRefs;
+    }
+
+    private ImmutableSet<Ref> getRemoteRefs(final IRemoteRepo remoteRepo, final FetchArgs args,
+            Remote remote) {
+
+        final Optional<Integer> repoDepth = repository().getDepth();
+        final boolean getTags = !remote.getMapped() && (!repoDepth.isPresent() || args.fullDepth);
+
+        ImmutableSet<Ref> remoteRemoteRefs;
+        remoteRemoteRefs = command(LsRemoteOp.class)//
+                .setRemote(remoteRepo)//
+                .retrieveLocalRefs(false)//
+                .retrieveTags(getTags)//
+                .call();
+
+        return remoteRemoteRefs;
     }
 
     /**
@@ -304,7 +376,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     public IRemoteRepo openRemote(Remote remote) throws RepositoryConnectionException {
         Optional<IRemoteRepo> remoteRepo = RemoteResolver.newRemote(repository(), remote,
                 Hints.readOnly());
-        Preconditions.checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
+        checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
         IRemoteRepo repo = remoteRepo.get();
         repo.open();
         return repo;
@@ -353,19 +425,18 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             Optional<Ref> local = findLocal(remoteRef, localRemoteRefs);
             if (local.isPresent()) {
                 if (!local.get().getObjectId().equals(remoteRef.getObjectId())) {
-                    ChangedRef changedRef = new ChangedRef(local.get(), remoteRef,
-                            ChangeTypes.CHANGED_REF);
+                    ChangedRef changedRef = new ChangedRef(local.get(), remoteRef, CHANGED_REF);
                     changedRefs.add(changedRef);
                 } else if (depth.isPresent()) {
                     int commitDepth = graphDatabase().getDepth(local.get().getObjectId());
                     if (depth.get() > commitDepth) {
                         ChangedRef changedRef = new ChangedRef(local.get(), remoteRef,
-                                ChangeTypes.DEEPENED_REF);
+                                DEEPENED_REF);
                         changedRefs.add(changedRef);
                     }
                 }
             } else {
-                ChangedRef changedRef = new ChangedRef(null, remoteRef, ChangeTypes.ADDED_REF);
+                ChangedRef changedRef = new ChangedRef(null, remoteRef, ADDED_REF);
                 changedRefs.add(changedRef);
             }
         }

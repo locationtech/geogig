@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.remotes;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
@@ -33,7 +35,11 @@ import com.google.common.collect.ImmutableSet;
  */
 public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
 
+    // optional, if not supplied #remoteRepo is mandatory
     private Supplier<Optional<Remote>> remote;
+
+    // optional, if not supplied #remote is mandatory, if supplied #local must be false
+    private IRemoteRepo remoteRepo;
 
     private boolean getHeads;
 
@@ -45,8 +51,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      * Constructs a new {@code LsRemote}.
      */
     public LsRemoteOp() {
-        Optional<Remote> abstent = Optional.absent();
-        this.remote = Suppliers.ofInstance(abstent);
+        this.remote = Suppliers.ofInstance(Optional.absent());
         this.getHeads = true;
         this.getTags = true;
     }
@@ -57,6 +62,13 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      */
     public LsRemoteOp setRemote(Supplier<Optional<Remote>> remote) {
         this.remote = remote;
+        this.remoteRepo = null;
+        return this;
+    }
+
+    public LsRemoteOp setRemote(IRemoteRepo remoteRepo) {
+        this.remoteRepo = remoteRepo;
+        this.remote = Suppliers.ofInstance(Optional.absent());
         return this;
     }
 
@@ -103,22 +115,32 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      */
     @Override
     protected ImmutableSet<Ref> _call() {
-        Preconditions.checkState(remote.get().isPresent(), "Remote was not provided");
-        final Remote remoteConfig = remote.get().get();
+        final Remote remoteConfig = this.remote.get().orNull();
+
+        Preconditions.checkState(remoteRepo != null || remoteConfig != null,
+                "Remote was not provided");
 
         if (local) {
+            checkArgument(remoteConfig != null,
+                    "if retrieving local remote refs, a Remote must be provided");
             return locallyKnownRefs(remoteConfig);
         }
+
         ImmutableSet<Ref> remoteRefs;
-        try (IRemoteRepo remoteRepo = openRemote(remoteConfig)) {
-            getProgressListener().setDescription(
-                    "Connected to remote " + remoteConfig.getName() + ". Retrieving references");
+        if (remoteRepo == null) {
+            try (IRemoteRepo remoteRepo = openRemote(remoteConfig)) {
+                getProgressListener().setDescription("Connected to remote " + remoteConfig.getName()
+                        + ". Retrieving references");
 
+                remoteRefs = remoteRepo.listRefs(getHeads, getTags);
+
+            } catch (RepositoryConnectionException e) {
+                throw Throwables.propagate(e);
+            }
+        } else {
             remoteRefs = remoteRepo.listRefs(getHeads, getTags);
-
-        } catch (RepositoryConnectionException e) {
-            throw Throwables.propagate(e);
         }
+        
         return remoteRefs;
     }
 

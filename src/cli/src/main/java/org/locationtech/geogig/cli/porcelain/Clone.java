@@ -101,35 +101,33 @@ public class Clone extends AbstractCommand implements CLICommand {
                     "Sparse Clone: You must explicitly specify a remote branch to clone by using '--branch <branch>'.");
         }
 
-        final URI remoteURI;
         final URI cloneURI;
         final Platform platform = cli.getPlatform();
-        final String remoteArg = args.get(0);
-        try {
-            remoteURI = RepositoryResolver.resolveRepoUriFromString(platform, remoteArg);
-        } catch (URISyntaxException e) {
-            throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
-        }
-
+        final URI remoteURI = resolveRemoteURI(platform);
         final String targetArg;
-        if (args.size() == 2) {
-            targetArg = args.get(1);
-        } else {
-            RepositoryResolver remoteResolver = RepositoryResolver.lookup(remoteURI);
-            targetArg = remoteResolver.getName(remoteURI);
-        }
+        {
+            if (args.size() == 2) {
+                targetArg = args.get(1);
+            } else {
+                RepositoryResolver remoteResolver = RepositoryResolver.lookup(remoteURI);
+                targetArg = remoteResolver.getName(remoteURI);
+            }
 
-        try {
-            cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
-        } catch (URISyntaxException e) {
-            throw new CommandFailedException("Can't parse target URI '" + targetArg + "'", true);
-        }
+            try {
+                cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
+            } catch (URISyntaxException e) {
+                throw new CommandFailedException("Can't parse target URI '" + targetArg + "'",
+                        true);
+            }
 
-        if (cloneURI.normalize().equals(platform.pwd().toURI().normalize())) {
-            throw new CommandFailedException("Cannot clone into your current working directory.",
-                    true);
-        }
+            if (cloneURI.normalize().equals(platform.pwd().toURI().normalize())) {
+                throw new CommandFailedException(
+                        "Cannot clone into your current working directory.", true);
+            }
+            checkParameter(!cloneURI.equals(remoteURI),
+                    "Source and target repositories are the same");
 
+        }
         RepositoryResolver cloneInitializer = RepositoryResolver.lookup(cloneURI);
 
         if (cloneInitializer.repoExists(cloneURI)) {
@@ -179,5 +177,16 @@ public class Clone extends AbstractCommand implements CLICommand {
             }
         }
         console.println("Done.");
+    }
+
+    private URI resolveRemoteURI(final Platform platform) {
+        final URI remoteURI;
+        final String remoteArg = args.get(0);
+        try {
+            remoteURI = RepositoryResolver.resolveRepoUriFromString(platform, remoteArg);
+        } catch (URISyntaxException e) {
+            throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
+        }
+        return remoteURI;
     }
 }

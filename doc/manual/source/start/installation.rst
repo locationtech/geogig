@@ -21,8 +21,78 @@ Pre-built binaries are available for GeoGig.
 #. Extract this archive to your preferred program directory. (For example, :file:`C:\\Program Files\\GeoGig` or :file:`/opt/geogig`.)
 
    .. note:: The same packages can be used on Windows, OS X, and Linux.
-
+   
+   .. _pathsetup:
+   
 #. Add the `bin` directory to your ``PATH`` environment variable.
+
+   - OS X
+
+      1. Open ``Terminal`` from the Utilities folder in the Applications directory.
+   
+      2. Open the bash profile with nano.
+
+      .. code-block:: console
+
+         $ nano ~/.bash_profile
+   
+      3. Specify the java home directory inside the profile by adding the following line to the end of the file.
+
+      .. code-block:: console
+
+         export JAVA_HOME=$(/usr/libexec/java_home)
+   
+      4. Add the bin directory from your GeoGig install location to the ``PATH`` by adding the following line at the end of the file.  In this case, GeoGig was extracted to :file:`/opt/geogig`.
+
+      .. code-block:: console
+
+         export PATH=$PATH:/opt/geogig/bin
+   
+      5. Save the bash profile with Ctrl+O, and exit using Ctrl+X.
+
+      6. Reload the profile.
+
+      .. code-block:: console
+
+         $ source ~/.bash_profile
+   
+      7. Verify GeoGig functionality.
+
+      .. code-block:: console
+
+         $ geogig --help
+         usage: geogig [--repo <URI>] <command> [<args>]
+
+         The most commonly used geogig commands are:
+         ...
+
+   - Windows
+   
+      1. Open up ``System`` from the Windows control panel and click on ``Advanced system settings``.  Depending on how your control panel is displayed, this may be under the ``System and Security`` section.
+      
+      2. Click on ``Environment Variables``.
+      
+      3. Look through the ``System Variables`` section and find the ``PATH`` (or ``Path``) variable and click ``Edit...``.  If it does not exist, click ``New...``
+      
+      4. Add the bin directory from your GeoGig install location by adding the following path to the end of the existing value, separated by a semicolon.  In this case, GeoGig was extracted to :file:`C:\\Program Files\\GeoGig`.
+      
+      .. code-block:: console
+
+         C:\Program Files\GeoGig\bin
+         
+      .. note:: In newer versions of windows, the ``Path`` variable will be displayed as a list.  In this case, simply add a new entry for the above path.
+      
+      5. Click ``OK`` through each window to save the changes.
+      
+      6. Verify GeoGig functionality in a new Command Prompt window.
+
+      .. code-block:: console
+
+         > geogig --help
+         usage: geogig [--repo <URI>] <command> [<args>]
+
+         The most commonly used geogig commands are:
+         ...
 
 When finished, you should be able to run the ``geogig --help`` and see the command usage.
 

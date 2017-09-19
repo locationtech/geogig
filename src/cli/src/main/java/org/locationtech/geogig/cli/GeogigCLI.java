@@ -786,10 +786,6 @@ public class GeogigCLI {
 
                 private final Console console = getConsole();
 
-                private final NumberFormat percentFormat = NumberFormat.getPercentInstance();
-
-                private final NumberFormat numberFormat = NumberFormat.getIntegerInstance();
-
                 private final long delayNanos = TimeUnit.NANOSECONDS.convert(150,
                         TimeUnit.MILLISECONDS);
 
@@ -819,12 +815,12 @@ public class GeogigCLI {
                     if (super.isCompleted()) {
                         return;
                     }
-                    super.complete();
-                    super.dispose();
                     try {
-                        log(getProgress());
+                        logProgress();
                         console.println();
                         console.flush();
+                        super.complete();
+                        super.dispose();
                     } catch (IOException e) {
                         Throwables.propagate(e);
                     }
@@ -836,22 +832,19 @@ public class GeogigCLI {
                     long nanoTime = platform.nanoTime();
                     if ((nanoTime - lastRun) > delayNanos) {
                         lastRun = nanoTime;
-                        log(percent);
+                        logProgress();
                     }
                 }
 
-                private void log(float percent) {
+                private void logProgress() {
                     console.clearBuffer();
                     String description = getDescription();
                     try {
                         if (description != null) {
                             console.print(description);
                         }
-                        if (percent > 100) {
-                            console.print(numberFormat.format(percent));
-                        } else {
-                            console.print(percentFormat.format(percent / 100f));
-                        }
+                        String progressDescription = super.getProgressDescription();
+                        console.print(progressDescription);
                         console.redrawLine();
                         console.flush();
                     } catch (IOException e) {
@@ -860,6 +853,17 @@ public class GeogigCLI {
                 }
             };
 
+            this.progressListener.setProgressIndicator((p) -> {
+                final NumberFormat percentFormat = NumberFormat.getPercentInstance();
+                final NumberFormat numberFormat = NumberFormat.getIntegerInstance();
+
+                float percent = p.getProgress();
+                if (percent > 100) {
+                    return numberFormat.format(percent);
+                }
+                return percentFormat.format(percent / 100f);
+
+            });
         }
         return this.progressListener;
     }

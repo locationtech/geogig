@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.function.Function;
+
 /**
  * Interface for a GeoGig progress listener. Used for tracking the progress of various tasks and
  * operations.
@@ -16,6 +18,21 @@ package org.locationtech.geogig.repository;
  * @since 1.0
  */
 public interface ProgressListener {
+
+    static final Function<ProgressListener, String> DEFAULT_PROGRES_INDICATOR = (p) -> String
+            .valueOf(p.getProgress());
+
+    default void setProgressIndicator(Function<ProgressListener, String> progressIndicator) {
+        // do nothing, override as needed
+    }
+
+    public default Function<ProgressListener, String> progressIndicator() {
+        return DEFAULT_PROGRES_INDICATOR;
+    }
+
+    public default String getProgressDescription() {
+        return progressIndicator().apply(this);
+    }
 
     /**
      * Returns the description of the current task being run

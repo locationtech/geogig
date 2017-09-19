@@ -10,6 +10,7 @@
 package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
+import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
@@ -60,7 +61,8 @@ import com.google.common.collect.Maps;
  * Controller for postgis commands.
  */
 @RestController
-@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/postgis", produces = {
+@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
+        + "/{repoName}/postgis", produces = {
         APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE })
 public class PostgisController extends AbstractController {
 

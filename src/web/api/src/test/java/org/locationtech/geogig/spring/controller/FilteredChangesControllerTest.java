@@ -54,7 +54,7 @@ public class FilteredChangesControllerTest extends AbstractControllerTest {
         MockHttpServletRequestBuilder post =
                 MockMvcRequestBuilders.post("/repos/repo1/repo/filteredchanges");
         perform(post).andExpect(status().isInternalServerError())
-                .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+                .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString(
                         "Object does not exist: 0000000000000000000000000000000000000000")));
         repo.close();

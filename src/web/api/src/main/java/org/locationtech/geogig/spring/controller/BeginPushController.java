@@ -10,7 +10,7 @@
 package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
-import static org.locationtech.geogig.spring.controller.AbstractController.NO_PROVIDER;
+import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
@@ -41,7 +41,8 @@ import com.google.common.collect.Sets;
  *
  */
 @RestController
-@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/repo/beginpush")
+@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
+        + "/{repoName}/repo/beginpush")
 public class BeginPushController extends AbstractRepositoryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeginPushController.class);

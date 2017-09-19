@@ -10,6 +10,7 @@
 package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
+import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
@@ -48,7 +49,8 @@ import com.google.common.collect.Sets;
  * Controller for handing Repository INIT requests.
  */
 @RestController
-@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/init",
+@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
+        + "/{repoName}/init",
         produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
 public class RepositoryInitController extends AbstractController {
 

@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.spring.controller;
 
+import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Set;
@@ -17,7 +20,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpUtils;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,9 +32,11 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.StreamingWriter;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
+import org.springframework.util.MultiValueMap;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -43,6 +47,9 @@ import com.google.common.base.Optional;
  * Base Controller to hold common controller logic.
  */
 public abstract class AbstractController {
+
+    @Value(GEOGIG_ROUTE_PREFIX)
+    private String geogigRoutePrefix;
 
     /**
      * Request parameter for requesting API version 2 responses. This is currently not supported
@@ -162,10 +169,13 @@ public abstract class AbstractController {
      * @return A String representation of the GeoGig Web API base URL, from the server perspective.
      */
     protected final String getBaseUrl(HttpServletRequest request) {
-        // Extract the baseURL from the request (NOTE: not reliable if proxies are involved)
-        final String requestURL = HttpUtils.getRequestURL(request).toString();
-        final String requestURI = request.getRequestURI();
-        return requestURL.substring(0, requestURL.indexOf(requestURI));
+        StringBuilder urlBuilder = new StringBuilder(request.getScheme());
+        urlBuilder.append("://").append(request.getServerName());
+        if (request.getServerPort() != 80) {
+            urlBuilder.append(":").append(request.getServerPort());
+        }
+        urlBuilder.append(request.getContextPath()).append(geogigRoutePrefix);
+        return urlBuilder.toString();
     }
 
     /**

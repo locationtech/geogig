@@ -18,6 +18,15 @@ import com.google.common.base.Optional;
 
 public interface RepositoryProvider {
 
+    static final String GEOGIG_ROUTE_PREFIX_PROPERTY = "geogig.route.prefix";
+
+    /**
+     * Default route prefix is /geogig. This is because there have been issues configuring this
+     * prefix in geoserver, so for now it is easier to default it to what is needed there and
+     * override it in geogig itself.
+     */
+    static final String GEOGIG_ROUTE_PREFIX = "${" + GEOGIG_ROUTE_PREFIX_PROPERTY + ":/geogig}";
+
     static final String BASE_REPOSITORY_ROUTE = "repos";
 
     /**

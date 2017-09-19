@@ -1,6 +1,6 @@
 @Repo
 @EndPush
-Feature: ApplyChanges
+Feature: EndPush
   "/repos/{repository}/repo/endpush" endpoint
 
   @Status405

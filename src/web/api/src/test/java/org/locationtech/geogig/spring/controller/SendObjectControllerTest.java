@@ -11,6 +11,9 @@ package org.locationtech.geogig.spring.controller;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -19,7 +22,9 @@ import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
@@ -28,6 +33,8 @@ import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+
 
 
 /**
@@ -51,7 +58,8 @@ public class SendObjectControllerTest extends AbstractControllerTest {
     public void testInvalidObjectData() throws Exception {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        String garbage = "This is just a bunch of random data that should cause the Object parser to choke";
+        String garbage =
+                "This is just a bunch of random data that should cause the Object parser to choke";
         // payload needs to end with byte value 0 for the serilaizer to know the data is finished
         byte[] content = new byte[garbage.length() + 1];
         System.arraycopy(garbage.getBytes(), 0, content, 0, content.length-1);
@@ -79,7 +87,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             // need to write the 20 byte ObjectId first?
             byte[] oidHeader = next.getId().getRawValue();
-            assertEquals(20, oidHeader.length);
+            assertEquals(ObjectId.NUM_BYTES, oidHeader.length);
             baos.write(oidHeader);
             serialFac.write(next, baos);
             // build the API request
@@ -110,7 +118,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
             // serialize the RevCommit
             // need to write the 20 byte ObjectId first?
             byte[] oidHeader = next.getId().getRawValue();
-            assertEquals(20, oidHeader.length);
+            assertEquals(ObjectId.NUM_BYTES, oidHeader.length);
             baos.write(oidHeader);
             serialFac.write(next, baos);
         }
@@ -123,6 +131,47 @@ public class SendObjectControllerTest extends AbstractControllerTest {
                 .andExpect(content().string(""));
         // TODO: The only way to know that this worked is to inspect the INFO logs as the API
         // response is just a 200 OK wether or not objects were ingested.
+        repo.close();
+    }
+
+    @Test
+    public void testSendObject() throws Exception {
+        Repository repo = repoProvider.createGeogig("repo1", null);
+        repoProvider.getTestRepository("repo1").initializeRpository();
+        new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
+        // get the HEAD commit
+        Iterator<RevCommit> commitLogs = repo.command(LogOp.class).setLimit(1).call();
+        assertTrue(commitLogs.hasNext());
+        RevCommit headCommit = commitLogs.next();
+        assertFalse(commitLogs.hasNext());
+        // create a new commit that is basically a clone of the HEAD
+        CommitBuilder builder = new CommitBuilder(headCommit);
+        // alter the builder to make a distinct commit
+        builder.setMessage(headCommit.getMessage() + " MODIFIED FOR SEND OBJECT");
+        RevCommit sendObjectCommit = builder.build();
+        // ensure the new commit doesn't yet exist in the repo
+        RevCommit preCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
+                RevCommit.class);
+        assertNull("Modified commit should not be in the repository yet.", preCheck);
+        // get the Object serializer
+        final ObjectSerializingFactory serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // write the commit OID
+        byte[] commitOid = sendObjectCommit.getId().getRawValue();
+        baos.write(commitOid);
+        // serialize the commit
+        serialFac.write(sendObjectCommit, baos);
+        // build the API request
+        MockHttpServletRequestBuilder post =
+                MockMvcRequestBuilders.post(
+                        "/repos/repo1/repo/sendobject").content(baos.toByteArray());
+        perform(post).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+                .andExpect(content().string(""));
+        //now verify the commit is present in the repo
+        RevCommit postCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
+                RevCommit.class);
+        assertNotNull("Modified commit should be in the repository.", postCheck);
         repo.close();
     }
 }

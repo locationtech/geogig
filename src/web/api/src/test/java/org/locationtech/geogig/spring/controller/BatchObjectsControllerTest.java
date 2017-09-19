@@ -10,16 +10,21 @@
 package org.locationtech.geogig.spring.controller;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.ByteArrayInputStream;
 import java.util.Iterator;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -99,8 +104,33 @@ public class BatchObjectsControllerTest extends AbstractControllerTest {
         MockHttpServletRequestBuilder post =
                 MockMvcRequestBuilders.post("/repos/repo1/repo/batchobjects").contentType(
                         MediaType.APPLICATION_JSON).content(getBytes(json));
-        perform(post).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM));
+        byte[] content = perform(post).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
+                .andReturn().getResponse().getContentAsByteArray();
+        // get an InputStream from the content
+        ByteArrayInputStream bais = new ByteArrayInputStream(content);
+        // get the Object serializer
+        final ObjectSerializingFactory serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        // expected number of RevObjects to be read
+        final int expectedNumRevObjects = 14;
+        // actual number of RevObject read
+        int actualNumRevObjects = 0;
+        // parse the response. If parsing throws an error, this test fails
+        while (bais.available() > 0) {
+            // next 20 bytes should be an ObjectId
+            byte[] rawId = new byte[ObjectId.NUM_BYTES];
+            // read the OID bytes from the stream
+            bais.read(rawId);
+            // parse the OID into an object
+            ObjectId oid = ObjectId.createNoClone(rawId);
+            // now read the RevObject from the stream
+            serialFac.read(oid, bais);
+            // increment the number of RevObjects read
+            ++actualNumRevObjects;
+        }
+        // assert the number of RevObjects read
+        assertEquals("Incorrect number of RevObjects in BatchObjects response",
+                expectedNumRevObjects, actualNumRevObjects);
         repo.close();
     }
 }

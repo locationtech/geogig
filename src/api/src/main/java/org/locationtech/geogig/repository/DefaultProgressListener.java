@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.function.Function;
+
+import com.google.common.base.Preconditions;
+
 /**
  * A default progress listener to be used for extending it.
  * 
@@ -48,6 +52,8 @@ public class DefaultProgressListener implements ProgressListener {
      */
     protected float maxProgress = 100f;
 
+    private Function<ProgressListener, String> progressIndicator = DEFAULT_PROGRES_INDICATOR;
+
     /**
      * @return the description of the current task
      */
@@ -71,7 +77,7 @@ public class DefaultProgressListener implements ProgressListener {
      */
     @Override
     public void started() {
-        // do nothing
+        completed = false;
     }
 
     /**
@@ -151,5 +157,15 @@ public class DefaultProgressListener implements ProgressListener {
     @Override
     public float getMaxProgress() {
         return this.maxProgress;
+    }
+
+    public @Override void setProgressIndicator(
+            Function<ProgressListener, String> progressIndicator) {
+        Preconditions.checkNotNull(progressIndicator);
+        this.progressIndicator = progressIndicator;
+    }
+
+    public @Override Function<ProgressListener, String> progressIndicator() {
+        return progressIndicator;
     }
 }

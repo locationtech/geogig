@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.repository.impl;
 
+import static org.locationtech.geogig.storage.impl.Blobs.SPARSE_FILTER_BLOB_KEY;
+
 import java.io.Closeable;
 import java.net.URI;
 import java.util.List;
@@ -429,6 +431,22 @@ public class RepositoryImpl implements Repository {
     @Override
     public BlobStore blobStore() {
         return context().blobStore();
+    }
+
+    /**
+     * Returns the {@link RepositoryFilter} defined for {@code repo} as of its
+     * {@link Blobs#SPARSE_FILTER_BLOB_KEY sparse_filter} blobstore's blob
+     */
+    public static Optional<RepositoryFilter> getFilter(Repository repo)
+            throws IllegalStateException {
+
+        BlobStore blobStore = repo.blobStore();
+        Optional<byte[]> filterBlob = blobStore.getBlob(SPARSE_FILTER_BLOB_KEY);
+        IniRepositoryFilter filter = null;
+        if (filterBlob.isPresent()) {
+            filter = new IniRepositoryFilter(blobStore, SPARSE_FILTER_BLOB_KEY);
+        }
+        return Optional.fromNullable(filter);
     }
 
 }

@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -30,13 +28,11 @@ import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.SynchronizationException.StatusCode;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.IniRepositoryFilter;
-import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -52,23 +48,16 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
     public static String PLACEHOLDER_COMMIT_MESSAGE = "Placeholder Sparse Commit";
 
-    protected Repository localRepository;
 
-    protected RepositoryFilter filter;
+    private final Remote remote;
 
-    /**
-     * Constructs a new {@code AbstractMappedRemoteRepo} with the provided reference repository.
-     * 
-     * @param localRepository the local repository.
-     */
-    public AbstractMappedRemoteRepo(Repository localRepository) {
-        this.localRepository = localRepository;
+    protected AbstractMappedRemoteRepo(Remote remote) {
+        Preconditions.checkNotNull(remote);
+        this.remote = remote;
+    }
 
-        Optional<byte[]> filterBlob = localRepository.blobStore()
-                .getBlob(Blobs.SPARSE_FILTER_BLOB_KEY);
-        checkState(filterBlob.isPresent(), "No filter found for sparse clone.");
-
-        filter = new IniRepositoryFilter(localRepository.blobStore(), Blobs.SPARSE_FILTER_BLOB_KEY);
+    public @Override Remote getInfo() {
+        return remote;
     }
 
     /**
@@ -143,17 +132,11 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      */
     protected abstract RepositoryWrapper getRemoteWrapper();
 
-    /**
-     * Fetch all new objects from the specified {@link Ref} from the remote.
-     * 
-     * @param ref the remote ref that points to new commit data
-     * @param fetchLimit the maximum depth to fetch, note, a sparse clone cannot be a shallow clone
-     */
     @Override
-    public final void fetchNewData(Ref ref, Optional<Integer> fetchLimit,
+    public final void fetchNewData(Repository local, Ref ref, Optional<Integer> fetchLimit,
             ProgressListener progress) {
         Preconditions.checkState(!fetchLimit.isPresent(), "A sparse clone cannot be shallow.");
-        FetchCommitGatherer gatherer = new FetchCommitGatherer(getRemoteWrapper(), localRepository);
+        FetchCommitGatherer gatherer = new FetchCommitGatherer(getRemoteWrapper(), local);
 
         try {
             gatherer.traverse(ref.getObjectId());
@@ -162,7 +145,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                 ObjectId commitId = needed.pop();
                 // If the last commit is empty, add it anyways to preserve parentage of new commits.
                 boolean allowEmpty = needed.isEmpty();
-                fetchSparseCommit(commitId, allowEmpty);
+                fetchSparseCommit(local, commitId, allowEmpty);
             }
 
         } catch (Exception e) {
@@ -179,15 +162,16 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param commitId the commit id of the original, non-sparse commit
      * @param allowEmpty allow the function to create an empty sparse commit
      */
-    private void fetchSparseCommit(ObjectId commitId, boolean allowEmpty) {
+    private void fetchSparseCommit(final Repository local, final ObjectId commitId,
+            final boolean allowEmpty) {
 
         Optional<RevObject> object = getObject(commitId);
         if (object.isPresent() && object.get().getType().equals(TYPE.COMMIT)) {
             RevCommit commit = (RevCommit) object.get();
 
-            try (FilteredDiffIterator changes = getFilteredChanges(commit)) {
-                GraphDatabase graphDatabase = localRepository.graphDatabase();
-                ObjectStore objectDatabase = localRepository.objectDatabase();
+            try (FilteredDiffIterator changes = getFilteredChanges(local, commit)) {
+                GraphDatabase graphDatabase = local.graphDatabase();
+                ObjectStore objectDatabase = local.objectDatabase();
                 graphDatabase.put(commit.getId(), commit.getParentIds());
 
                 RevTree rootTree = RevTree.EMPTY;
@@ -196,10 +180,10 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                     // Map this commit to the last "sparse" commit in my ancestry
                     ObjectId mappedCommit = graphDatabase.getMapping(commit.getParentIds().get(0));
                     graphDatabase.map(commit.getId(), mappedCommit);
-                    Optional<ObjectId> treeId = localRepository.command(ResolveTreeish.class)
+                    Optional<ObjectId> treeId = local.command(ResolveTreeish.class)
                             .setTreeish(mappedCommit).call();
                     if (treeId.isPresent()) {
-                        rootTree = localRepository.getTree(treeId.get());
+                        rootTree = local.getTree(treeId.get());
                     }
 
                 } else {
@@ -216,7 +200,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
                 if (it.hasNext()) {
                     // Create new commit
-                    WriteTree writeTree = localRepository.command(WriteTree.class)
+                    WriteTree writeTree = local.command(WriteTree.class)
                             .setOldRoot(Suppliers.ofInstance(rootTree)).setDiffSupplier(
                                     Suppliers.ofInstance((AutoCloseableIterator<DiffEntry>) it));
 
@@ -282,32 +266,23 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param commit the commit to get changes from
      * @return an iterator for changes that match the repository filter
      */
-    protected abstract FilteredDiffIterator getFilteredChanges(RevCommit commit);
+    protected abstract FilteredDiffIterator getFilteredChanges(final Repository local,
+            RevCommit commit);
 
-    /**
-     * Push all new objects from the specified {@link Ref} to the remote.
-     * 
-     * @param ref the local ref that points to new commit data
-     */
     @Override
-    public void pushNewData(Ref ref, ProgressListener progress) throws SynchronizationException {
-        pushNewData(ref, ref.getName(), progress);
+    public void pushNewData(Repository local, Ref ref, ProgressListener progress)
+            throws SynchronizationException {
+        pushNewData(local, ref, ref.getName(), progress);
     }
 
-    /**
-     * Push all new objects from the specified {@link Ref} to the given refspec.
-     * 
-     * @param ref the local ref that points to new commit data
-     * @param refspec the refspec to push to
-     */
     @Override
-    public void pushNewData(Ref ref, String refspec, ProgressListener progress)
+    public void pushNewData(Repository local, Ref ref, String refspec, ProgressListener progress)
             throws SynchronizationException {
         Optional<Ref> remoteRef = getRemoteRef(refspec);
-        checkPush(ref, remoteRef);
+        checkPush(local, ref, remoteRef);
         beginPush();
 
-        PushCommitGatherer gatherer = new PushCommitGatherer(localRepository);
+        PushCommitGatherer gatherer = new PushCommitGatherer(local);
 
         try {
             gatherer.traverse(ref.getObjectId());
@@ -316,10 +291,10 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             while (!needed.isEmpty()) {
                 ObjectId commitToPush = needed.pop();
 
-                pushSparseCommit(commitToPush);
+                pushSparseCommit(local, commitToPush);
             }
 
-            ObjectId newCommitId = localRepository.graphDatabase().getMapping(ref.getObjectId());
+            ObjectId newCommitId = local.graphDatabase().getMapping(ref.getObjectId());
 
             ObjectId originalRemoteRefValue = ObjectId.NULL;
             if (remoteRef.isPresent()) {
@@ -377,7 +352,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * 
      * @param commitId the commit to push
      */
-    protected abstract void pushSparseCommit(ObjectId commitId);
+    protected abstract void pushSparseCommit(final Repository local, ObjectId commitId);
 
     /**
      * Determine if it is safe to push to the remote repository.
@@ -386,18 +361,18 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param remoteRef the ref to push to
      * @throws SynchronizationException
      */
-    protected void checkPush(Ref ref, Optional<Ref> remoteRef) throws SynchronizationException {
+    protected void checkPush(Repository local, Ref ref, Optional<Ref> remoteRef)
+            throws SynchronizationException {
         if (remoteRef.isPresent()) {
             if (remoteRef.get() instanceof SymRef) {
                 throw new SynchronizationException(StatusCode.CANNOT_PUSH_TO_SYMBOLIC_REF);
             }
-            ObjectId mappedId = localRepository.graphDatabase()
-                    .getMapping(remoteRef.get().getObjectId());
+            ObjectId mappedId = local.graphDatabase().getMapping(remoteRef.get().getObjectId());
             if (mappedId.equals(ref.getObjectId())) {
                 // The branches are equal, no need to push.
                 throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
-            } else if (localRepository.blobExists(mappedId)) {
-                Optional<ObjectId> ancestor = localRepository.command(FindCommonAncestor.class)
+            } else if (local.blobExists(mappedId)) {
+                Optional<ObjectId> ancestor = local.command(FindCommonAncestor.class)
                         .setLeftId(mappedId).setRightId(ref.getObjectId()).call();
                 if (!ancestor.isPresent()) {
                     // There is no common ancestor, a push will overwrite history

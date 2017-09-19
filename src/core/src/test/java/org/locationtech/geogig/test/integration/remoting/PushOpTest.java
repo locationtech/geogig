@@ -104,7 +104,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits
@@ -136,7 +136,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.call();
 
         // verify that the remote got the commit
@@ -163,7 +163,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.setRemote("origin").call();
 
         // verify that the remote got the commit
@@ -188,7 +188,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         insertAndAdd(localGeogig.geogig, lines3);
         localGeogig.geogig.command(CommitOp.class).call();
 
-        PushOp push = push();
+        PushOp push = pushOp();
         try {
             push.setRemote("origin").addRefSpec("HEAD").call();
             fail();
@@ -212,7 +212,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         expectedBranch.addFirst(commit2);
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.setAll(true).call();
 
         // verify that the remote got the commit on both branches
@@ -242,7 +242,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.addRefSpec("master:NewRemoteBranch");
         push.call();
 
@@ -274,7 +274,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.addRefSpec("master:NewRemoteBranch");
         push.addRefSpec("Branch1:NewRemoteBranch2");
         push.call();
@@ -306,7 +306,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
 
     @Test
     public void testDeleteRemoteBranch() throws Exception {
-        PushOp push = push();
+        PushOp push = pushOp();
         push.addRefSpec(":Branch1");
         push.call();
 
@@ -322,7 +322,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.addRefSpec(":");
         push.call();
 
@@ -346,7 +346,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         localGeogig.geogig.command(CheckoutOp.class).setSource("master").call();
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.addRefSpec("Branch1");
         push.call();
 
@@ -375,7 +375,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         localGeogig.geogig.command(CheckoutOp.class).setSource("master").call();
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.addRefSpec("+Branch1");
         push.call();
 
@@ -398,7 +398,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         expectedBranch.addFirst(commit);
 
         // Push the commit
-        PushOp push = push();
+        PushOp push = pushOp();
         push.addRefSpec("Branch1:master:HEAD");
         exception.expect(IllegalArgumentException.class);
         push.call();

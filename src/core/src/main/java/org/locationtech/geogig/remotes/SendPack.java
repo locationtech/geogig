@@ -12,9 +12,9 @@ package org.locationtech.geogig.remotes;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.ADDED_REF;
-import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.CHANGED_REF;
-import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.REMOVED_REF;
+import static org.locationtech.geogig.remotes.ChangedRef.Type.ADDED_REF;
+import static org.locationtech.geogig.remotes.ChangedRef.Type.CHANGED_REF;
+import static org.locationtech.geogig.remotes.ChangedRef.Type.REMOVED_REF;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,20 +25,15 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.remotes.ChangedRef.Type;
 import org.locationtech.geogig.remotes.SynchronizationException.StatusCode;
-import org.locationtech.geogig.remotes.TransferSummary.ChangedRef;
-import org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -157,7 +152,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
             if (ref.isDelete()) {
                 Optional<Ref> deleted = remoteRepo.deleteRef(remoteRefSpec);
                 if (deleted.isPresent()) {
-                    ChangedRef deleteResult = new ChangedRef(deleted.get(), null, REMOVED_REF);
+                    ChangedRef deleteResult = ChangedRef.added(deleted.get());
                     result.add(remote.getPushURL(), deleteResult);
                 }
             } else {
@@ -167,9 +162,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
                 Optional<Ref> newRef = push(remoteRepo, remote, localRef.get(), remoteRefSpec);
 
                 if (newRef.isPresent()) {
-                    ChangeTypes changeType = remoteRefSpec == null ? ADDED_REF : CHANGED_REF;
-                    ChangedRef deleteResult = new ChangedRef(localRef.get(), newRef.get(),
-                            changeType);
+                    ChangedRef deleteResult = new ChangedRef(localRef.get(), newRef.get());
                     result.add(remote.getPushURL(), deleteResult);
                 }
             }
@@ -177,33 +170,20 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         return result;
     }
 
-    private IRemoteRepo openRemote(final Remote remote) {
-        final IRemoteRepo remoteRepo;
-        Optional<IRemoteRepo> resolvedRemoteRepo = getRemoteRepo(remote);
-        checkState(resolvedRemoteRepo.isPresent(), "Failed to connect to the remote.");
-
-        remoteRepo = resolvedRemoteRepo.get();
-        try {
-            remoteRepo.open();
-        } catch (RepositoryConnectionException e) {
-            Throwables.propagate(e);
-        }
-        return remoteRepo;
-    }
-
     private Optional<Ref> push(IRemoteRepo remoteRepo, Remote remote, Ref localRef,
             @Nullable String remoteRefSpec) {
 
         String localRemoteRefName;
         try {
+            Repository localRepo = repository();
             if (null == remoteRefSpec) {
                 localRemoteRefName = Ref.append(Ref.REMOTES_PREFIX,
                         remote.getName() + "/" + localRef.localName());
-                remoteRepo.pushNewData(localRef, getProgressListener());
+                remoteRepo.pushNewData(localRepo, localRef, getProgressListener());
             } else {
                 localRemoteRefName = Ref.append(Ref.REMOTES_PREFIX,
                         remote.getName() + "/" + remoteRefSpec);
-                remoteRepo.pushNewData(localRef, remoteRefSpec, getProgressListener());
+                remoteRepo.pushNewData(localRepo, localRef, remoteRefSpec, getProgressListener());
             }
         } catch (SynchronizationException e) {
             if (e.statusCode == StatusCode.NOTHING_TO_PUSH) {
@@ -222,16 +202,8 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         return this.command(UpdateRef.class).setNewValue(objectId).setName(refName).call();
     }
 
-    /**
-     * @param remote the remote to get
-     * @return an interface for the remote repository
-     */
-    @VisibleForTesting
-    public Optional<IRemoteRepo> getRemoteRepo(Remote remote) {
-        Hints remoteHints = new Hints();
-        remoteHints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
-        Repository localRepository = repository();
-        return RemoteResolver.newRemote(localRepository, remote, remoteHints);
+    private IRemoteRepo openRemote(Remote remote) {
+        return command(OpenRemote.class).setRemote(remote).call();
     }
 
     private Optional<Ref> refParse(String refSpec) {

@@ -16,9 +16,11 @@ import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.SynchronizationException.StatusCode;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -28,15 +30,15 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class AbstractRemoteRepo implements IRemoteRepo {
 
-    protected Repository localRepository;
+    private final Remote remote;
 
-    /**
-     * Constructs a new {@code AbstractRemoteRepo} with the provided reference repository.
-     * 
-     * @param localRepository the local repository
-     */
-    public AbstractRemoteRepo(Repository localRepository) {
-        this.localRepository = localRepository;
+    protected AbstractRemoteRepo(Remote remote) {
+        Preconditions.checkNotNull(remote);
+        this.remote = remote;
+    }
+
+    public @Override Remote getInfo() {
+        return remote;
     }
 
     /**
@@ -183,9 +185,9 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
      * @param fetchLimit the fetch limit to use
      * @return the {@link CommitTraverser} to use.
      */
-    protected CommitTraverser getFetchTraverser(Optional<Integer> fetchLimit) {
+    protected CommitTraverser getFetchTraverser(Repository local, Optional<Integer> fetchLimit) {
 
-        RepositoryWrapper localWrapper = new LocalRepositoryWrapper(localRepository);
+        RepositoryWrapper localWrapper = new LocalRepositoryWrapper(local);
         RepositoryWrapper remoteWrapper = getRemoteWrapper();
 
         CommitTraverser traverser;
@@ -206,10 +208,10 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
      * @param remoteRef the remote ref to push to
      * @return the {@link CommitTraverser} to use.
      */
-    protected CommitTraverser getPushTraverser(Optional<Ref> remoteRef)
+    protected CommitTraverser getPushTraverser(Repository local, Optional<Ref> remoteRef)
             throws SynchronizationException {
 
-        RepositoryWrapper localWrapper = new LocalRepositoryWrapper(localRepository);
+        RepositoryWrapper localWrapper = new LocalRepositoryWrapper(local);
         RepositoryWrapper remoteWrapper = getRemoteWrapper();
 
         CommitTraverser traverser;
@@ -219,7 +221,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
                 pushDepth = remoteWrapper.getRepoDepth();
             }
             traverser = new ShallowCommitTraverser(localWrapper, remoteWrapper, pushDepth);
-        } else if (localRepository.getDepth().isPresent()) {
+        } else if (local.getDepth().isPresent()) {
             traverser = new ShallowFullCommitTraverser(localWrapper, remoteWrapper);
         } else {
             traverser = new FullCommitTraverser(localWrapper, remoteWrapper);
@@ -228,14 +230,10 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
         return traverser;
     }
 
-    /**
-     * Push all new objects from the specified {@link Ref} to the remote.
-     * 
-     * @param ref the local ref that points to new commit data
-     */
     @Override
-    public void pushNewData(Ref ref, ProgressListener progress) throws SynchronizationException {
-        pushNewData(ref, ref.getName(), progress);
+    public void pushNewData(Repository local, Ref ref, ProgressListener progress)
+            throws SynchronizationException {
+        pushNewData(local, ref, ref.getName(), progress);
     }
 
     /**
@@ -246,7 +244,8 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
      * @throws SynchronizationException if its not safe or possible to push to the given remote ref
      *         (see {@link StatusCode} for the possible reasons)
      */
-    protected void checkPush(Ref ref, Optional<Ref> remoteRefOpt) throws SynchronizationException {
+    protected void checkPush(Repository local, Ref ref, Optional<Ref> remoteRefOpt)
+            throws SynchronizationException {
         if (!remoteRefOpt.isPresent()) {
             return;// safe to push
         }
@@ -259,8 +258,8 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
         if (remoteObjectId.equals(localObjectId)) {
             // The branches are equal, no need to push.
             throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
-        } else if (localRepository.blobExists(remoteObjectId)) {
-            Optional<ObjectId> ancestor = localRepository.command(FindCommonAncestor.class)
+        } else if (local.blobExists(remoteObjectId)) {
+            Optional<ObjectId> ancestor = local.command(FindCommonAncestor.class)
                     .setLeftId(remoteObjectId).setRightId(localObjectId).call();
             if (!ancestor.isPresent()) {
                 // There is no common ancestor, a push will overwrite history

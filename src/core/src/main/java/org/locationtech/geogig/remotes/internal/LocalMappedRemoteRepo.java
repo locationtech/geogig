@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,9 +20,9 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.CheckSparsePath;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ForEachRef;
@@ -32,14 +34,17 @@ import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.WriteTree;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.RepositoryFilter;
+import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
@@ -56,13 +61,10 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
     private URI remoteRepoLocation;
 
     /**
-     * Constructs a new {@code MappedLocalRemoteRepo} with the given parameters.
-     * 
-     * @param injector the Guice injector for the new repository
      * @param remoteRepoLocation the directory of the remote repository
      */
-    public LocalMappedRemoteRepo(URI remoteRepoLocation, Repository localRepository) {
-        super(localRepository);
+    public LocalMappedRemoteRepo(Remote remote,URI remoteRepoLocation) {
+        super(remote);
         this.remoteRepoLocation = remoteRepoLocation;
     }
 
@@ -106,7 +108,8 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return an immutable set of refs from the remote
      */
     @Override
-    public ImmutableSet<Ref> listRefs(final boolean getHeads, final boolean getTags) {
+    public ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
+            final boolean getTags) {
         Predicate<Ref> filter = new Predicate<Ref>() {
             @Override
             public boolean apply(Ref input) {
@@ -128,10 +131,10 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
         ImmutableSet.Builder<Ref> builder = new ImmutableSet.Builder<Ref>();
         for (Ref remoteRef : remoteRefs) {
             Ref newRef = remoteRef;
-            if (!(newRef instanceof SymRef)
-                    && localRepository.graphDatabase().exists(remoteRef.getObjectId())) {
-                ObjectId mappedCommit = localRepository.graphDatabase()
-                        .getMapping(remoteRef.getObjectId());
+            GraphDatabase graphdb = local.graphDatabase();
+            ObjectId headId = remoteRef.getObjectId();
+            if (!(newRef instanceof SymRef) && graphdb.exists(headId)) {
+                ObjectId mappedCommit = graphdb.getMapping(headId);
                 if (mappedCommit != null) {
                     newRef = new Ref(remoteRef.getName(), mappedCommit);
                 }
@@ -200,8 +203,8 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param from the sparse repository
      * @param to the full repository
      */
-    protected void pushSparseCommit(ObjectId commitId) {
-        Repository from = localRepository;
+    protected @Override void pushSparseCommit(final Repository local, ObjectId commitId) {
+        Repository from = local;
         Repository to = remoteRepo;
         Optional<RevObject> object = from.command(RevObjectParse.class).setObjectId(commitId)
                 .call();
@@ -286,14 +289,8 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
         return remoteRepo.command(RevObjectParse.class).setObjectId(objectId).call();
     }
 
-    /**
-     * Gets all of the changes from the target commit that should be applied to the sparse clone.
-     * 
-     * @param commit the commit to get changes from
-     * @return an iterator for changes that match the repository filter
-     */
     @Override
-    protected FilteredDiffIterator getFilteredChanges(RevCommit commit) {
+    protected FilteredDiffIterator getFilteredChanges(final Repository local, RevCommit commit) {
         ObjectId parent = ObjectId.NULL;
         if (commit.getParentIds().size() > 0) {
             parent = commit.getParentIds().get(0);
@@ -302,7 +299,9 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
         AutoCloseableIterator<DiffEntry> changes = remoteRepo.command(DiffOp.class)
                 .setNewVersion(commit.getId()).setOldVersion(parent).setReportTrees(true).call();
 
-        return new LocalFilteredDiffIterator(changes, remoteRepo, localRepository, filter);
+        Optional<RepositoryFilter> filter = RepositoryImpl.getFilter(local);
+        checkState(filter.isPresent(), "No filter found for sparse clone.");
+        return new LocalFilteredDiffIterator(changes, remoteRepo, local, filter.get());
     }
 
     /**

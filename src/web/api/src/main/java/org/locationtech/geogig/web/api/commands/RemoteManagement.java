@@ -11,17 +11,15 @@ package org.locationtech.geogig.web.api.commands;
 
 import java.util.List;
 
+import org.locationtech.geogig.remotes.OpenRemote;
 import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.remotes.RemoteException;
 import org.locationtech.geogig.remotes.RemoteListOp;
 import org.locationtech.geogig.remotes.RemoteRemoveOp;
 import org.locationtech.geogig.remotes.RemoteResolve;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -271,16 +269,12 @@ public class RemoteManagement extends AbstractWebAPICommand {
         }
         boolean remotePingResponse = false;
         if (remote.isPresent()) {
-            Optional<IRemoteRepo> remoteRepo = RemoteResolver.newRemote(geogig.repository(),
-                    remote.get(), Hints.readOnly());
-            if (remoteRepo.isPresent()) {
-                try (IRemoteRepo repo = remoteRepo.get()) {
-                    repo.open();
-                    repo.headRef();
-                    remotePingResponse = true;
-                } catch (RepositoryConnectionException e) {
-                    // Do nothing, we will write the response later.
-                }
+            try (IRemoteRepo rr = geogig.command(OpenRemote.class).setRemote(remote.get())
+                    .readOnly().call()) {
+                rr.headRef();
+                remotePingResponse = true;
+            } catch (Exception e) {
+                // Do nothing, we will write the response later.
             }
         }
         final boolean pingSuccess = remotePingResponse;

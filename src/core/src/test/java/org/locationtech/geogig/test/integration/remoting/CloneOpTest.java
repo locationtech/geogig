@@ -60,7 +60,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         for (Feature f : features) {
             ObjectId oId = insertAndAdd(remoteGeogig.geogig, f);
-            final RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+            final RevCommit commit = remoteGeogig.geogig.command(CommitOp.class)
+                    .setMessage("commit of " + f.getIdentifier()).call();
             expected.addFirst(commit);
             Optional<RevObject> childObject = remoteGeogig.geogig.command(RevObjectParse.class)
                     .setObjectId(oId).call();
@@ -82,9 +83,11 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setDepth(0);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
 
         // Make sure the local repository got all of the commits
         logs = localGeogig.geogig.command(LogOp.class).call();
@@ -137,9 +140,11 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setDepth(0);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
 
         // Make sure the local repository got all of the commits
         logs = localGeogig.geogig.command(LogOp.class).call();
@@ -241,8 +246,10 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         remoteGeogig.geogig.command(BranchDeleteOp.class).setName("Branch1").call();
 
         // clone from the remote
-        CloneOp clone = doClone();
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
+        CloneOp clone = cloneOp();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())//
+                .setBranch("master").call();
 
         // Make sure the local repository got all of the commits
         logs = localGeogig.geogig.command(LogOp.class).setFirstParentOnly(true).call();
@@ -284,9 +291,12 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setDepth(2);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI());
+        clone.setCloneURI(localGeogig.envHome.toURI());
+        clone.call();
 
         // Make sure the local repository got only 2 commits
         logs = localGeogig.geogig.command(LogOp.class).call();
@@ -360,8 +370,10 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = doClone();
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
+        CloneOp clone = cloneOp();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())//
+                .setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits
         logs = localGeogig.geogig.command(LogOp.class).call();
@@ -386,22 +398,25 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
     @Test
     public void testCloneEmptyRepo() throws Exception {
-        CloneOp clone = doClone();
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        CloneOp clone = cloneOp();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
     }
 
     @Test
     public void testCloneNoRepoSpecified() throws Exception {
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         exception.expect(IllegalArgumentException.class);
         clone.call();
     }
 
     @Test
     public void testCloneEmptyRepoString() throws Exception {
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         exception.expect(IllegalArgumentException.class);
-        clone.setRepositoryURL("").call();
+        // clone.setRepositoryURL("").call();
+        clone.setRemoteURI(null).call();
     }
 
 }

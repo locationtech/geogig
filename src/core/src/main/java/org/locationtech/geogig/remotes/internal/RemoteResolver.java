@@ -15,7 +15,6 @@ import java.util.ServiceLoader;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
-import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
@@ -35,7 +34,6 @@ public interface RemoteResolver {
      * Resolves the {@link IRemoteRepo} based on the {@code remoteConfig} and {@code hints} if the
      * implementation can handle the kind of remote (e.g. local repository, HTTP remote, etc).
      * 
-     * @param localRepository a handle to the local repository for the {@link IRemoteRepo}
      * @param remoteConfig the information for the remote to connect to
      * @param remoteHints hints for the remote connection, currently only the
      *        {@link Hints#REMOTES_READ_ONLY} key might be of use
@@ -47,20 +45,17 @@ public interface RemoteResolver {
      *          {@link IRemoteRepo#open() open()} method would then fail with a
      *          {@link RepositoryConnectionException} if need be.
      */
-    public Optional<IRemoteRepo> resolve(Repository localRepository, Remote remoteConfig,
-            Hints remoteHints);
+    public Optional<IRemoteRepo> resolve(Remote remoteConfig, Hints remoteHints);
 
     /**
      * Constructs an interface to allow access to a remote repository.
      * 
-     * @param local the local repository
      * @param remote the remote to connect to
      * @param remoteHints hints for the remote repo, like read-only, etc.
      * @return an {@link Optional} of the interface to the remote repository, or
      *         {@link Optional#absent()} if a connection to the remote could not be established.
      */
-    public static Optional<IRemoteRepo> newRemote(Repository local, Remote remote,
-            @Nullable Hints remoteHints) {
+    public static Optional<IRemoteRepo> newRemote(Remote remote, @Nullable Hints remoteHints) {
 
         if (remoteHints == null) {
             remoteHints = new Hints();
@@ -70,7 +65,7 @@ public interface RemoteResolver {
 
         while (resolvers.hasNext()) {
             RemoteResolver resolver = resolvers.next();
-            Optional<IRemoteRepo> resolved = resolver.resolve(local, remote, remoteHints);
+            Optional<IRemoteRepo> resolved = resolver.resolve(remote, remoteHints);
             if (resolved.isPresent()) {
                 return resolved;
             }

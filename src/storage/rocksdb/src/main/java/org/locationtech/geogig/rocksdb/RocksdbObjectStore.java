@@ -443,7 +443,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         try (RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions(); //
                 WriteBatch batch = new WriteBatch()) {
-            wo.setSync(true);
+            wo.setSync(false);
+            wo.setDisableWAL(true);
             while (objects.hasNext()) {
                 EncodedObject object = objects.next();
                 final ObjectId id = object.id;

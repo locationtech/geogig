@@ -15,8 +15,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.locationtech.geogig.model.Ref;
-
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 
@@ -25,67 +23,16 @@ import com.google.common.collect.ArrayListMultimap;
  */
 public class TransferSummary {
 
-    private ArrayListMultimap<String, ChangedRef> changedRefs = ArrayListMultimap.create();
+    private ArrayListMultimap<String, ChangedRef> RefDiffs = ArrayListMultimap.create();
 
-    public Map<String, Collection<ChangedRef>> getChangedRefs() {
-        return changedRefs.asMap();
-    }
-
-    static public class ChangedRef {
-        public enum ChangeTypes {
-            ADDED_REF, REMOVED_REF, CHANGED_REF, DEEPENED_REF
-        }
-
-        private Ref oldRef;
-
-        private Ref newRef;
-
-        private ChangeTypes type;
-
-        public ChangedRef(Ref oldRef, Ref newRef, ChangeTypes type) {
-            this.oldRef = oldRef;
-            this.newRef = newRef;
-            this.type = type;
-        }
-
-        public Ref getOldRef() {
-            return oldRef;
-        }
-
-        public void setOldRef(Ref oldRef) {
-            this.oldRef = oldRef;
-        }
-
-        public Ref getNewRef() {
-            return newRef;
-        }
-
-        public void setNewRef(Ref newRef) {
-            this.newRef = newRef;
-        }
-
-        public ChangeTypes getType() {
-            return type;
-        }
-
-        public void setType(ChangeTypes type) {
-            this.type = type;
-        }
-
-        @Override
-        public String toString() {
-            return Objects.toStringHelper(ChangedRef.class) //
-                    .addValue(type) //
-                    .addValue(oldRef) //
-                    .addValue(newRef) //
-                    .toString();
-        }
+    public Map<String, Collection<ChangedRef>> getRefDiffs() {
+        return RefDiffs.asMap();
     }
 
     public void add(final String remoteURL, final ChangedRef changeResult) {
         checkNotNull(remoteURL);
         checkNotNull(changeResult);
-        changedRefs.put(remoteURL, changeResult);
+        RefDiffs.put(remoteURL, changeResult);
     }
 
     public void addAll(final String remoteURL, final List<ChangedRef> changes) {
@@ -94,18 +41,18 @@ public class TransferSummary {
         for (ChangedRef cr : changes) {
             checkNotNull(cr);
         }
-        changedRefs.putAll(remoteURL, changes);
+        RefDiffs.putAll(remoteURL, changes);
     }
 
     @Override
     public String toString() {
         return Objects.toStringHelper(TransferSummary.class) //
-                .addValue(changedRefs) //
+                .addValue(RefDiffs) //
                 .toString();
     }
 
     public boolean isEmpty() {
-        return changedRefs.isEmpty();
+        return RefDiffs.isEmpty();
     }
 
 }

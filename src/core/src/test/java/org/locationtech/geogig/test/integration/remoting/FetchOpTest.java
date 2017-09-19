@@ -33,6 +33,7 @@ import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
+import org.locationtech.geogig.remotes.RemoteRemoveOp;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -52,8 +53,10 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     private void prepareForFetch(boolean doClone) throws Exception {
         if (doClone) {
             // clone the repository
-            CloneOp clone = doClone();
-            clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+            CloneOp clone = cloneOp();
+            // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+            clone.setRemoteURI(remoteGeogig.envHome.toURI())
+                    .setCloneURI(localGeogig.envHome.toURI()).call();
         }
 
         // Commit several features to the remote
@@ -148,7 +151,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(true);
 
         // fetch from the remote
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.call();
 
         verifyFetch();
@@ -159,12 +162,14 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(false);
 
         // clone the repository
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setDepth(2);
         String repositoryURL = remoteGeogig.envHome.toURI().toString();
-        clone.setRepositoryURL(repositoryURL).call();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
 
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.setDepth(3);
         fetch.call();
 
@@ -197,11 +202,13 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(false);
 
         // clone the repository
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setDepth(2);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
 
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.setFullDepth(true);
         fetch.call();
 
@@ -213,9 +220,11 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(false);
 
         // clone the repository
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setDepth(2);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
 
         // Checkout master and commit some changes
         remoteGeogig.geogig.command(CheckoutOp.class).setSource("master").call();
@@ -224,7 +233,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.call();
 
         // Make sure the local repository got all of the commits from master
@@ -249,9 +258,11 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         commit = remoteGeogig.geogig.command(CommitOp.class).setMessage("3").call();
 
         // clone the repository
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setDepth(2);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
 
         // Checkout master and commit some changes
         remoteGeogig.geogig.command(CheckoutOp.class).setSource("master").call();
@@ -265,7 +276,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         insertAndAdd(remoteGeogig.geogig, lines3);
         commit = remoteGeogig.geogig.command(CommitOp.class).setMessage("7").call();
 
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         // fetch.setDepth(2);
         fetch.call();
 
@@ -306,9 +317,11 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         assertEquals(expectedMaster, logged);
 
         // clone the repository
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setDepth(2);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
 
         // Create and checkout branch1
         remoteGeogig.geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("Branch1")
@@ -329,7 +342,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
         assertEquals(expectedBranch, logged);
 
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.call();
 
         // Make sure the local repository got all of the commits from master
@@ -358,7 +371,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     public void testFetchDepthWithFullRepo() throws Exception {
         prepareForFetch(true);
 
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.setDepth(2);
         fetch.call();
 
@@ -369,7 +382,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     public void testFetchFullDepthWithFullRepo() throws Exception {
         prepareForFetch(true);
 
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.setFullDepth(true);
         fetch.call();
 
@@ -381,7 +394,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(true);
 
         // fetch from the remote
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.setAll(true).call();
 
         verifyFetch();
@@ -392,7 +405,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(true);
 
         // fetch from the remote
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.addRemote("origin").call();
 
         verifyFetch();
@@ -403,7 +416,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(true);
 
         // fetch from the remote
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.addRemote("origin").setAll(true).call();
 
         verifyFetch();
@@ -411,7 +424,8 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
     @Test
     public void testFetchNoRemotes() throws Exception {
-        FetchOp fetch = fetch();
+        localGeogig.geogig.command(RemoteRemoveOp.class).setName(REMOTE_NAME).call();
+        FetchOp fetch = fetchOp();
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Remote could not be resolved");
         fetch.call();
@@ -422,7 +436,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(true);
 
         // fetch from the remote
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.addRemote("origin").setAll(true).call();
 
         verifyFetch();
@@ -438,7 +452,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(true);
 
         // fetch from the remote
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.addRemote("origin").setAll(true).call();
 
         verifyFetch();
@@ -447,7 +461,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         remoteGeogig.geogig.command(BranchDeleteOp.class).setName("Branch1").call();
 
         // fetch again
-        fetch = fetch();
+        fetch = fetchOp();
         fetch.setPrune(true).call();
 
         verifyPrune();
@@ -458,7 +472,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         prepareForFetch(true);
 
         // fetch from the remote
-        FetchOp fetch = fetch();
+        FetchOp fetch = fetchOp();
         fetch.addRemote("origin").setAll(true).call();
 
         verifyFetch();
@@ -470,7 +484,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         remoteGeogig.geogig.command(BranchCreateOp.class).setName("Branch2").call();
 
         // fetch again
-        fetch = fetch();
+        fetch = fetchOp();
         fetch.setPrune(true).call();
 
         verifyPrune();

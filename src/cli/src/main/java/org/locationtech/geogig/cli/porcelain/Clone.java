@@ -27,6 +27,7 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.remotes.CloneOp;
+import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
@@ -154,10 +155,14 @@ public class Clone extends AbstractCommand implements CLICommand {
             console.flush();
 
             CloneOp clone = cloneRepo.command(CloneOp.class);
-            clone.setProgressListener(cli.getProgressListener());
-            clone.setBranch(branch).setRepositoryURL(remoteURI.toString());
-            clone.setUserName(username).setPassword(password);
-            clone.setDepth(depth);
+            clone.setBranch(branch)//
+                    // .setRepositoryURL(remoteURI.toString())//
+                    .setRemoteURI(remoteURI)//
+                    .setCloneURI(cloneURI)//
+                    .setUserName(username)//
+                    .setPassword(password)//
+                    .setDepth(depth)//
+                    .setProgressListener(cli.getProgressListener());
 
             clone.call();
             succeeded = true;
@@ -187,6 +192,6 @@ public class Clone extends AbstractCommand implements CLICommand {
         } catch (URISyntaxException e) {
             throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
         }
-        return remoteURI;
+        return remoteURI.normalize();
     }
 }

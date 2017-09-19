@@ -48,9 +48,9 @@ import org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.porcelain.BlameReport;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.remotes.ChangedRef;
 import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.remotes.TransferSummary;
-import org.locationtech.geogig.remotes.TransferSummary.ChangedRef;
 import org.locationtech.geogig.porcelain.ValueAndCommit;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Context;
@@ -673,8 +673,9 @@ public class ResponseWriter {
         for (Ref branch : remoteBranches) {
             if (!(branch instanceof SymRef)) {
                 out.writeStartArrayElement("Branch");
-                writeElement("remoteName",
-                        branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
+                String namespace = branch.namespace();
+                String remoteName = namespace.replace(Ref.REMOTES_PREFIX, "").replace("/", "");
+                writeElement("remoteName", remoteName);
                 writeElement("name", branch.localName());
                 out.writeEndArrayElement();
             }
@@ -783,8 +784,8 @@ public class ResponseWriter {
 
     public void writeFetchResponse(TransferSummary result) throws StreamWriterException {
         out.writeStartElement("Fetch");
-        if (result.getChangedRefs().entrySet().size() > 0) {
-            for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
+        if (result.getRefDiffs().entrySet().size() > 0) {
+            for (Entry<String, Collection<ChangedRef>> entry : result.getRefDiffs().entrySet()) {
                 out.writeStartElement("Remote");
                 writeElement("remoteURL", entry.getKey());
                 out.writeStartArray("Branch");

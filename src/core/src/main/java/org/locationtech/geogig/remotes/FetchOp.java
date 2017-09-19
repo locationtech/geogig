@@ -12,12 +12,8 @@ package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
-import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.ADDED_REF;
-import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.CHANGED_REF;
-import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.DEEPENED_REF;
-import static org.locationtech.geogig.remotes.TransferSummary.ChangedRef.ChangeTypes.REMOVED_REF;
+import static org.locationtech.geogig.remotes.ChangedRef.Type.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,14 +28,10 @@ import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
-import org.locationtech.geogig.remotes.TransferSummary.ChangedRef;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -73,6 +65,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             private List<Remote> remotes = new ArrayList<Remote>();
 
             private Optional<Integer> depth = Optional.absent();
+
+            private boolean fetchTags = true;
 
             public FetchArgs build(Repository repo) {
                 if (all) {
@@ -108,12 +102,11 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                     fullDepth = false;
                 }
 
-                return new FetchArgs(all, prune, fullDepth, ImmutableList.copyOf(remotes), depth);
+                return new FetchArgs(fetchTags, prune, fullDepth, ImmutableList.copyOf(remotes),
+                        depth);
             }
 
         }
-
-        final boolean all;
 
         final boolean prune;
 
@@ -123,9 +116,11 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         final Optional<Integer> depth;
 
-        private FetchArgs(boolean all, boolean prune, boolean fullDepth,
+        final boolean fetchTags;
+
+        private FetchArgs(boolean fetchTags, boolean prune, boolean fullDepth,
                 ImmutableList<Remote> remotes, Optional<Integer> depth) {
-            this.all = all;
+            this.fetchTags = fetchTags;
             this.prune = prune;
             this.fullDepth = fullDepth;
             this.remotes = remotes;
@@ -272,8 +267,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             final ImmutableSet<Ref> localRemoteRefs = getRemoteLocalRefs(remote);
 
             // If we have specified a depth to pull, we may have more history to pull from
-            // existing
-            // refs.
+            // existing refs.
             needUpdate = findOutdatedRefs(remote, remoteRemoteRefs, localRemoteRefs, args.depth);
             if (args.prune) {
                 prune(remoteRemoteRefs, localRemoteRefs, needUpdate);
@@ -289,7 +283,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
                 // Fetch updated data from this ref
                 final Ref newRef = ref.getNewRef();
-                remoteRepo.fetchNewData(newRef, newFetchLimit, getProgressListener());
+                remoteRepo.fetchNewData(repository, newRef, newFetchLimit, getProgressListener());
 
                 if (isShallow && !args.fullDepth) {
                     // Update the repository depth if it is deeper than before.
@@ -336,8 +330,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         for (Ref localRef : localRemoteRefs) {
             if (!(localRef instanceof SymRef) && !locals.contains(localRef)) {
                 // Delete the ref
-                ChangedRef changedRef = new ChangedRef(localRef, null, REMOVED_REF);
-                needUpdate.add(changedRef);
+                ChangedRef RefDiff = new ChangedRef(localRef, null);
+                needUpdate.add(RefDiff);
                 command(UpdateRef.class).setDelete(true).setName(localRef.getName()).call();
             }
         }
@@ -356,7 +350,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             Remote remote) {
 
         final Optional<Integer> repoDepth = repository().getDepth();
-        final boolean getTags = !remote.getMapped() && (!repoDepth.isPresent() || args.fullDepth);
+        final boolean getTags = args.fetchTags && !remote.getMapped()
+                && (!repoDepth.isPresent() || args.fullDepth);
 
         ImmutableSet<Ref> remoteRemoteRefs;
         remoteRemoteRefs = command(LsRemoteOp.class)//
@@ -368,18 +363,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         return remoteRemoteRefs;
     }
 
-    /**
-     * @param remote the remote to get
-     * @return an interface for the remote repository
-     * @throws RepositoryConnectionException
-     */
-    public IRemoteRepo openRemote(Remote remote) throws RepositoryConnectionException {
-        Optional<IRemoteRepo> remoteRepo = RemoteResolver.newRemote(repository(), remote,
-                Hints.readOnly());
-        checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
-        IRemoteRepo repo = remoteRepo.get();
-        repo.open();
-        return repo;
+    private IRemoteRepo openRemote(Remote remote) {
+        return command(OpenRemote.class).setRemote(remote).readOnly().call();
     }
 
     private Ref updateLocalRef(Ref remoteRef, Remote remote, ImmutableSet<Ref> localRemoteRefs) {
@@ -425,19 +410,18 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             Optional<Ref> local = findLocal(remoteRef, localRemoteRefs);
             if (local.isPresent()) {
                 if (!local.get().getObjectId().equals(remoteRef.getObjectId())) {
-                    ChangedRef changedRef = new ChangedRef(local.get(), remoteRef, CHANGED_REF);
+                    ChangedRef changedRef = new ChangedRef(local.get(), remoteRef);
                     changedRefs.add(changedRef);
                 } else if (depth.isPresent()) {
                     int commitDepth = graphDatabase().getDepth(local.get().getObjectId());
                     if (depth.get() > commitDepth) {
-                        ChangedRef changedRef = new ChangedRef(local.get(), remoteRef,
-                                DEEPENED_REF);
-                        changedRefs.add(changedRef);
+                        ChangedRef RefDiff = new ChangedRef(local.get(), remoteRef);
+                        changedRefs.add(RefDiff);
                     }
                 }
             } else {
-                ChangedRef changedRef = new ChangedRef(null, remoteRef, ADDED_REF);
-                changedRefs.add(changedRef);
+                ChangedRef RefDiff = new ChangedRef(null, remoteRef);
+                changedRefs.add(RefDiff);
             }
         }
         return changedRefs;
@@ -462,5 +446,10 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             }
             return Optional.absent();
         }
+    }
+
+    public FetchOp omitTags() {
+        argsBuilder.fetchTags = false;
+        return this;
     }
 }

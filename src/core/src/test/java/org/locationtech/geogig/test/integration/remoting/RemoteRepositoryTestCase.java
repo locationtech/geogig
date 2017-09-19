@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -33,6 +31,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -46,9 +45,10 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.remotes.LsRemoteOp;
+import org.locationtech.geogig.remotes.OpenRemote;
 import org.locationtech.geogig.remotes.PullOp;
 import org.locationtech.geogig.remotes.PushOp;
-import org.locationtech.geogig.remotes.SendPack;
+import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.LocalRemoteResolver;
 import org.locationtech.geogig.repository.Context;
@@ -71,12 +71,15 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.inject.AbstractModule;
+import com.google.inject.multibindings.Multibinder;
 import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RemoteRepositoryTestCase {
+
+    protected static final String REMOTE_NAME = "origin";
 
     protected static final String idL1 = "Lines.1";
 
@@ -136,6 +139,8 @@ public abstract class RemoteRepositoryTestCase {
 
         public Context injector;
 
+        public Optional<IRemoteRepo> remoteOverride = Optional.absent();
+
         public GeogigContainer(final String workingDirectory) throws IOException {
 
             envHome = tempFolder.newFolder(workingDirectory);
@@ -165,6 +170,32 @@ public abstract class RemoteRepositoryTestCase {
             return injector;
         }
 
+        private AbstractModule RemoteOpenOverrideModule = new AbstractModule() {
+            @Override
+            protected void configure() {
+                Decorator decorator = new Decorator() {
+
+                    @Override
+                    public <I> I decorate(I subject) {
+                        OpenRemote cmd = (OpenRemote) subject;
+                        if (remoteOverride.isPresent()) {
+                            cmd = spy(cmd);
+                            doReturn(remoteOverride.get()).when(cmd).call();
+                        }
+                        return (I) cmd;
+                    }
+
+                    @Override
+                    public boolean canDecorate(Object instance) {
+                        boolean canDecorate = instance instanceof OpenRemote;
+                        return canDecorate;
+                    }
+                };
+                Multibinder.newSetBinder(binder(), Decorator.class).addBinding()
+                        .toInstance(decorator);
+            }
+        };
+
         private ContextBuilder createInjectorBuilder() {
             Platform testPlatform = new TestPlatform(envHome) {
                 @Override
@@ -172,15 +203,13 @@ public abstract class RemoteRepositoryTestCase {
                     return 1000;
                 }
             };
-            return new TestContextBuilder(testPlatform);
+            return new TestContextBuilder(testPlatform, RemoteOpenOverrideModule);
         }
     }
 
     public GeogigContainer localGeogig;
 
     public GeogigContainer remoteGeogig;
-
-    public IRemoteRepo remoteRepo;
 
     // prevent recursion
     private boolean setup = false;
@@ -199,12 +228,15 @@ public abstract class RemoteRepositoryTestCase {
         localGeogig = new GeogigContainer("localtestrepository");
         remoteGeogig = new GeogigContainer("remotetestrepository");
         {
-            Repository local = localGeogig.repo;
+            String remoteURI = remoteGeogig.repo.getLocation().toString();
+            Remote remoteInfo = localGeogig.geogig.command(RemoteAddOp.class).setName(REMOTE_NAME)
+                    .setURL(remoteURI).call();
             Repository remote = remoteGeogig.geogig.getRepository();
-            IRemoteRepo remoteRepo = spy(LocalRemoteResolver.resolve(local, remote));
-            this.remoteRepo = remoteRepo;
+            IRemoteRepo remoteRepo = spy(LocalRemoteResolver.resolve(remoteInfo, remote));
+            remoteRepo.open();
+            doNothing().when(remoteRepo).close();
+            localGeogig.remoteOverride = Optional.of(remoteRepo);
         }
-        doNothing().when(remoteRepo).close();
 
         pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
 
@@ -226,72 +258,24 @@ public abstract class RemoteRepositoryTestCase {
         setUpInternal();
     }
 
-    protected LsRemoteOp lsremote() {
-        LsRemoteOp lsRemote = spy(localGeogig.geogig.command(LsRemoteOp.class));
-
-        try {
-            doReturn(remoteRepo).when(lsRemote).openRemote(any(Remote.class));
-        } catch (RepositoryConnectionException e) {
-            throw Throwables.propagate(e);
-        }
-
-        return lsRemote;
+    protected LsRemoteOp lsremoteOp() {
+        return localGeogig.geogig.command(LsRemoteOp.class);
     }
 
-    protected FetchOp fetch() throws RepositoryConnectionException {
-        FetchOp remoteRepoFetch = spy(localGeogig.geogig.command(FetchOp.class));
-
-        doReturn(remoteRepo).when(remoteRepoFetch).openRemote(any(Remote.class));
-        LsRemoteOp lsRemote = lsremote();
-        doReturn(lsRemote).when(remoteRepoFetch).command(eq(LsRemoteOp.class));
-
-        return remoteRepoFetch;
+    protected FetchOp fetchOp() throws RepositoryConnectionException {
+        return localGeogig.geogig.command(FetchOp.class);
     }
 
-    protected CloneOp doClone() throws RepositoryConnectionException {
-        CloneOp clone = spy(localGeogig.geogig.command(CloneOp.class));
-        doReturn(Optional.of(remoteRepo)).when(clone).getRemote(any(), any());
-
-        FetchOp fetch = fetch();
-        // when(clone.command(FetchOp.class)).thenReturn(fetch);
-        doReturn(fetch).when(clone).command(eq(FetchOp.class));
-
-        LsRemoteOp lsRemote = lsremote();
-        // when(clone.command(LsRemote.class)).thenReturn(lsRemote);
-        doReturn(lsRemote).when(clone).command(eq(LsRemoteOp.class));
-
-        return clone;
+    protected CloneOp cloneOp() {
+        return localGeogig.geogig.command(CloneOp.class).setRemoteName(REMOTE_NAME);
     }
 
-    protected PullOp pull() throws RepositoryConnectionException {
-        PullOp pull = spy(localGeogig.geogig.command(PullOp.class));
-        FetchOp fetch = fetch();
-        // when(pull.command(eq(FetchOp.class))).thenReturn(fetch);
-        doReturn(fetch).when(pull).command(eq(FetchOp.class));
-
-        LsRemoteOp lsRemote = lsremote();
-        // when(pull.command(eq(LsRemote.class))).thenReturn(lsRemote);
-        doReturn(lsRemote).when(pull).command(eq(LsRemoteOp.class));
-
-        return pull;
+    protected PullOp pullOp() {
+        return localGeogig.geogig.command(PullOp.class);
     }
 
-    protected PushOp push() throws RepositoryConnectionException {
-        SendPack sendPack = spy(localGeogig.geogig.command(SendPack.class));
-        doReturn(Optional.of(remoteRepo)).when(sendPack).getRemoteRepo(any(Remote.class));
-
-        PushOp push = spy(localGeogig.geogig.command(PushOp.class));
-        doReturn(sendPack).when(push).command(eq(SendPack.class));
-
-        FetchOp fetch = fetch();
-        // when(push.command(FetchOp.class)).thenReturn(fetch);
-        doReturn(fetch).when(push).command(eq(FetchOp.class));
-
-        LsRemoteOp lsRemote = lsremote();
-        // when(push.command(LsRemote.class)).thenReturn(lsRemote);
-        doReturn(lsRemote).when(push).command(eq(LsRemoteOp.class));
-
-        return push;
+    protected PushOp pushOp() throws RepositoryConnectionException {
+        return localGeogig.geogig.command(PushOp.class);
     }
 
     @After
@@ -300,7 +284,6 @@ public abstract class RemoteRepositoryTestCase {
         tearDownInternal();
         localGeogig.tearDown();
         remoteGeogig.tearDown();
-        remoteRepo.close();
         localGeogig = null;
         remoteGeogig = null;
         System.gc();

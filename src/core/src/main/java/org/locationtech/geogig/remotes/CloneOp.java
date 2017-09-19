@@ -10,7 +10,10 @@
 package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+
+import java.net.URI;
+import java.util.Collection;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
@@ -24,30 +27,26 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
-import com.google.common.base.Strings;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 
 /**
- * Clones a remote repository to a given directory.
+ * Clones a remote repository to a new repsitory.
  * 
  */
-public class CloneOp extends AbstractGeoGigOp<Void> {
+public class CloneOp extends AbstractGeoGigOp<Repository> {
 
     private Optional<String> branch = Optional.absent();
 
-    private String remoteURI;
+    private URI remoteURI;
+
+    private URI cloneURI;
 
     private String username = null;
 
@@ -57,11 +56,17 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
 
     private Optional<Integer> depth = Optional.absent();
 
+    @Deprecated
+    public CloneOp setRepositoryURL(String uri) {
+        this.remoteURI = URI.create(uri);
+        return this;
+    }
+
     /**
      * @param repositoryURL the URL of the repository to clone
-     * @return {@code this}"pori
+     * @return {@code this}
      */
-    public CloneOp setRepositoryURL(final String repositoryURL) {
+    public CloneOp setRemoteURI(final URI repositoryURL) {
         this.remoteURI = repositoryURL;
         return this;
     }
@@ -69,8 +74,21 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
     /**
      * Get the repository URL to be cloned
      */
-    public Optional<String> getRepositoryURL() {
-        return Optional.fromNullable(remoteURI);
+    public URI getRemoteURI() {
+        return remoteURI;
+    }
+
+    /**
+     * @param uri the URL of the repository to clone
+     * @return {@code this}
+     */
+    public CloneOp setCloneURI(final URI uri) {
+        this.cloneURI = uri;
+        return this;
+    }
+
+    public URI getCloneURI() {
+        return cloneURI;
     }
 
     /**
@@ -122,111 +140,183 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
     /**
      * Executes the clone operation.
      * 
-     * @return {@code null}
+     * @return the cloned repository, in an open state
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
     @Override
-    protected Void _call() {
-        checkArgument(!Strings.isNullOrEmpty(remoteURI), "No repository specified to clone from.");
-        Repository localRepo = repository();
-        if (localRepo.isSparse()) {
-            checkArgument(branch.isPresent(), "No branch specified for sparse clone.");
+    protected Repository _call() {
+        checkPreconditions();
+        getProgressListener().started();
+        final Repository cloneRepo = createClone();
+        try {
+            // Set up origin
+            final Remote remote = addRemote(cloneRepo);
+            final Integer depth = this.depth.or(() -> getRemoteDepth(remote));
+            setDepth(cloneRepo, depth);
+
+            final Iterable<ChangedRef> refs = fetchRemoteData(cloneRepo, remote, depth);
+            setUpRemoteTrackingBranches(cloneRepo, remote, refs);
+
+        } catch (Exception e) {
+            // something went wrong, need to delete the clone
+            cloneRepo.close();
+
+            // TODO: enable when this commands actually creates the
+            // try {
+            // GeoGIG.delete(cloneURI);
+            // } catch (Exception e1) {
+            // e1.printStackTrace();
+            // }
+            throw Throwables.propagate(e);
         }
+        getProgressListener().complete();
+        return cloneRepo;
+    }
 
-        ProgressListener progressListener = getProgressListener();
-        progressListener.started();
-
-        // Set up origin
-        Remote remote = command(RemoteAddOp.class).setName(remoteName).setURL(remoteURI)
-                .setMapped(localRepo.isSparse()).setUserName(username).setPassword(password)
-                .setBranch(localRepo.isSparse() ? branch.get() : null).call();
-
-        if (!depth.isPresent()) {
-            // See if we are cloning a shallow clone. If so, a depth must be specified.
-            Optional<IRemoteRepo> remoteRepo = getRemote(localRepo, remote);
-
-            checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
-            IRemoteRepo remoteRepoInstance = remoteRepo.get();
-            try {
-                remoteRepoInstance.open();
-            } catch (RepositoryConnectionException e) {
-                Throwables.propagate(e);
-            }
-            try {
-                depth = remoteRepoInstance.getDepth();
-            } finally {
-                remoteRepoInstance.close();
-            }
+    private Integer getRemoteDepth(Remote remote) {
+        try (IRemoteRepo remoteRepo = openRemote(remote)) {
+            return remoteRepo.getDepth().or(0);
         }
+    }
 
-        if (depth.isPresent()) {
-            String depthVal = depth.get().toString();
-            command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setScope(ConfigScope.LOCAL)
-                    .setName(Repository.DEPTH_CONFIG_KEY).setValue(depthVal).call();
-        }
-
+    private Collection<ChangedRef> fetchRemoteData(final Repository clone, final Remote remote,
+            final int depth) {
         // Fetch remote data
-        command(FetchOp.class).addRemote(remote.getName()).setDepth(depth.or(0))
-                .setProgressListener(progressListener).call();
+        final TransferSummary fetchResults;
+        final String remoteName = remote.getName();
+        final ProgressListener progress = getProgressListener();
 
-        // Set up remote tracking branches
-        final ImmutableSet<Ref> remoteRefs = command(LsRemoteOp.class).retrieveTags(false)
-                .setRemote(Suppliers.ofInstance(Optional.of(remote))).call();
+        fetchResults = clone.command(FetchOp.class)//
+                .addRemote(remoteName)//
+                .setDepth(depth)//
+                .setProgressListener(progress)//
+                .call();
+
+        Map<String, Collection<ChangedRef>> RefDiffs = fetchResults.getRefDiffs();
+        String fetchURL = remote.getFetchURL();
+        Collection<ChangedRef> refs = RefDiffs.get(fetchURL);
+        if (refs == null) {
+            refs = ImmutableList.of();
+        }
+        return refs;
+    }
+
+    private void setDepth(Repository clone, int depth) {
+        if (depth > 0) {
+            String name = Repository.DEPTH_CONFIG_KEY;
+            String value = String.valueOf(depth);
+            setConfig(clone, name, value);
+        }
+
+    }
+
+    private void setConfig(Repository clone, String name, String value) {
+        clone.command(ConfigOp.class)//
+                .setAction(ConfigAction.CONFIG_SET)//
+                .setScope(ConfigScope.LOCAL)//
+                .setName(name)//
+                .setValue(value).call();
+    }
+
+    private void setUpRemoteTrackingBranches(Repository clone, Remote remote,
+            Iterable<ChangedRef> refs) {
 
         boolean emptyRepo = true;
 
-        for (Ref remoteRef : remoteRefs) {
+        for (ChangedRef r : refs) {
+            Ref remoteRef = r.getNewRef();
+
             if (emptyRepo && !remoteRef.getObjectId().isNull()) {
                 emptyRepo = false;
             }
-            String branchName = remoteRef.localName();
             if (remoteRef instanceof SymRef) {
                 continue;
             }
-            if (!command(RefParse.class).setName(Ref.HEADS_PREFIX + branchName).call()
-                    .isPresent()) {
-                command(BranchCreateOp.class).setName(branchName)
+            final boolean isBranch = remoteRef.getName().startsWith(Ref.HEADS_PREFIX);
+            final boolean isTag = remoteRef.getName().startsWith(Ref.TAGS_PREFIX);
+            if (!(isBranch || isTag)) {
+                continue;
+            }
+            final String branchName = remoteRef.localName();
+            final String branchRef = (isBranch ? Ref.HEADS_PREFIX : Ref.TAGS_PREFIX) + branchName;
+            if (!clone.command(RefParse.class).setName(branchRef).call().isPresent()) {
+                clone.command(BranchCreateOp.class).setName(branchName)
                         .setSource(remoteRef.getObjectId().toString()).call();
             } else {
-                command(UpdateRef.class).setName(Ref.HEADS_PREFIX + branchName)
+                clone.command(UpdateRef.class).setName(branchRef)
                         .setNewValue(remoteRef.getObjectId()).call();
             }
 
-            command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setScope(ConfigScope.LOCAL)
-                    .setName("branches." + branchName + ".remote").setValue(remote.getName())
-                    .call();
-
-            command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setScope(ConfigScope.LOCAL)
-                    .setName("branches." + branchName + ".merge")
-                    .setValue(Ref.HEADS_PREFIX + remoteRef.localName()).call();
+            if (isBranch) {
+                setConfig(clone, "branches." + branchName + ".remote", remote.getName());
+                setConfig(clone, "branches." + branchName + ".merge",
+                        Ref.HEADS_PREFIX + remoteRef.localName());
+            }
         }
 
         if (!emptyRepo) {
             // checkout branch
             if (branch.isPresent()) {
-                command(CheckoutOp.class).setForce(true).setSource(branch.get()).call();
+                clone.command(CheckoutOp.class).setForce(true).setSource(branch.get()).call();
             } else {
                 // checkout the head
-                final Optional<Ref> currRemoteHead = command(RefParse.class)
+                final Optional<Ref> currRemoteHead = clone.command(RefParse.class)
                         .setName(Ref.REMOTES_PREFIX + remote.getName() + "/" + Ref.HEAD).call();
                 if (currRemoteHead.isPresent() && currRemoteHead.get() instanceof SymRef) {
                     final SymRef remoteHeadRef = (SymRef) currRemoteHead.get();
                     final String currentBranch = Ref.localName(remoteHeadRef.getTarget());
-                    command(CheckoutOp.class).setForce(true).setSource(currentBranch).call();
+                    clone.command(CheckoutOp.class).setForce(true).setSource(currentBranch).call();
                 } else {
                     // just leave at default; should be master since we just initialized the repo.
                 }
 
             }
         }
-
-        progressListener.complete();
-
-        return null;
     }
 
-    @VisibleForTesting
-    public Optional<IRemoteRepo> getRemote(Repository localRepo, Remote remote) {
-        return RemoteResolver.newRemote(localRepo, remote, Hints.readOnly());
+    private Remote addRemote(Repository clone) {
+        final boolean sparse = clone.isSparse();
+        if (sparse) {
+            checkArgument(this.branch.isPresent(), "No branch specified for sparse clone.");
+        }
+        {// won't be necessary once ClopeOp actually creates the clone repo
+            Optional<Remote> remote = clone.command(RemoteResolve.class).setName(remoteName).call();
+            if (remote.isPresent()) {
+                clone.command(RemoteRemoveOp.class).setName(remoteName).call();
+            }
+        }
+        final @Nullable String branch = this.branch.orNull();
+        Remote remote = clone.command(RemoteAddOp.class)//
+                .setName(remoteName)//
+                .setURL(remoteURI.toString())//
+                .setMapped(sparse)//
+                .setUserName(username)//
+                .setPassword(password)//
+                .setBranch(branch).//
+                call();
+
+        return remote;
+    }
+
+    private Repository createClone() {
+        // TODO: repository shall be created here instead of getting the context's, whish shall not
+        // exist
+        return repository();
+    }
+
+    private void checkPreconditions() throws IllegalArgumentException {
+        checkArgument(null != remoteURI, "No repository specified to clone from.");
+        // TODO: uncomment once this command creates the clone and cloneURI becomes mandatory
+        // checkArgument(null != cloneURI, "Clone repository URI not provided.");
+        checkArgument(!remoteURI.equals(cloneURI), "Source and target repositories are the same");
+    }
+
+    private IRemoteRepo openRemote(Remote remote) {
+        return command(OpenRemote.class).setRemote(remote).readOnly().call();
+    }
+
+    public CloneOp setRemoteName(String remoteName) {
+        this.remoteName = remoteName;
+        return this;
     }
 }

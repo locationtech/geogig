@@ -106,7 +106,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // clone from the remote
-        CloneOp clone = doClone();
+        CloneOp clone = cloneOp();
         clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits
@@ -138,7 +138,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Pull the commit
-        PullOp pull = pull();
+        PullOp pull = pullOp();
         pull.setRebase(true).setAll(true).call();
 
         Iterator<RevCommit> logs = localGeogig.geogig.command(LogOp.class).call();
@@ -163,7 +163,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
                 .call();
 
         // Pull the commit
-        PullOp pull = pull();
+        PullOp pull = pullOp();
         pull.setRebase(true).call();
 
         Iterator<RevCommit> logs = localGeogig.geogig.command(LogOp.class).call();
@@ -183,7 +183,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Pull the commit
-        PullOp pull = pull();
+        PullOp pull = pullOp();
         pull.setRemote("origin").call();
 
         Iterator<RevCommit> logs = localGeogig.geogig.command(LogOp.class).call();
@@ -203,7 +203,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Pull the commit
-        PullOp pull = pull();
+        PullOp pull = pullOp();
         pull.addRefSpec("master:newbranch");
         pull.setRebase(true).call();
 
@@ -232,7 +232,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Pull the commit
-        PullOp pull = pull();
+        PullOp pull = pullOp();
         pull.addRefSpec("+master:newbranch");
         pull.setRebase(true).call();
 
@@ -261,7 +261,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Pull the commit
-        PullOp pull = pull();
+        PullOp pull = pullOp();
         pull.addRefSpec("master:newbranch");
         pull.addRefSpec("Branch1:newbranch2");
         pull.setRebase(true).call();
@@ -300,7 +300,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         // Pull the commit
-        PullOp pull = pull();
+        PullOp pull = pullOp();
         pull.addRefSpec("master:newbranch:newbranch2");
         exception.expect(IllegalArgumentException.class);
         pull.setRebase(true).call();
@@ -318,7 +318,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
                 .setAutoCheckout(true).call();
 
         // Pull the commit
-        PullOp pull = pull();
+        PullOp pull = pullOp();
         pull.addRefSpec("master");
         pull.setRebase(true).call();
 

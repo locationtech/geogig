@@ -42,7 +42,9 @@ import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.remotes.SynchronizationException;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
@@ -70,18 +72,15 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
     private URI remoteRepoURI;
 
     /**
-     * Constructs a new {@code LocalRemoteRepo} with the given parameters.
-     * 
-     * @param injector the Guice injector for the new repository
      * @param remoteRepoURI the location of the remote repository
      */
-    public LocalRemoteRepo(URI remoteRepoURI, Repository localRepository) {
-        super(localRepository);
+    public LocalRemoteRepo(Remote remote,URI remoteRepoURI) {
+        super(remote);
         this.remoteRepoURI = remoteRepoURI;
     }
 
-    LocalRemoteRepo(Repository remoteRepo, Repository localRepository) {
-        super(localRepository);
+    LocalRemoteRepo(Remote remote,Repository remoteRepo) {
+        super(remote);
         this.remoteRepository = remoteRepo;
     }
 
@@ -121,15 +120,9 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         return currHead;
     }
 
-    /**
-     * List the remote's {@link Ref refs}.
-     * 
-     * @param getHeads whether to return refs in the {@code refs/heads} namespace
-     * @param getTags whether to return refs in the {@code refs/tags} namespace
-     * @return an immutable set of refs from the remote
-     */
     @Override
-    public ImmutableSet<Ref> listRefs(final boolean getHeads, final boolean getTags) {
+    public ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
+            final boolean getTags) {
         Predicate<Ref> filter = new Predicate<Ref>() {
             @Override
             public boolean apply(Ref input) {
@@ -149,16 +142,11 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         return remoteRepository.command(ForEachRef.class).setFilter(filter).call();
     }
 
-    /**
-     * Fetch all new objects from the specified {@link Ref} from the remote.
-     * 
-     * @param ref the remote ref that points to new commit data
-     * @param fetchLimit the maximum depth to fetch
-     */
     @Override
-    public void fetchNewData(Ref ref, Optional<Integer> fetchLimit, ProgressListener progress) {
+    public void fetchNewData(Repository local, Ref ref, Optional<Integer> fetchLimit,
+            ProgressListener progress) {
 
-        CommitTraverser traverser = getFetchTraverser(fetchLimit);
+        CommitTraverser traverser = getFetchTraverser(local, fetchLimit);
 
         try {
             progress.setDescription("Fetching objects from " + ref.getName());
@@ -167,7 +155,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             List<ObjectId> toSend = new LinkedList<ObjectId>(traverser.commits);
             Collections.reverse(toSend);// send oldest commits first
             for (ObjectId newHeadId : toSend) {
-                walkHead(newHeadId, true, progress);
+                walkHead(newHeadId, remoteRepository, local, progress);
             }
 
         } catch (Exception e) {
@@ -175,29 +163,23 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         }
     }
 
-    /**
-     * Push all new objects from the specified {@link Ref} to the given refspec.
-     * 
-     * @param ref the local ref that points to new commit data
-     * @param refspec the refspec to push to
-     */
     @Override
-    public void pushNewData(final Ref ref, final String refspec, final ProgressListener progress)
-            throws SynchronizationException {
+    public void pushNewData(final Repository local, final Ref ref, final String refspec,
+            final ProgressListener progress) throws SynchronizationException {
 
         Optional<Ref> remoteRef = remoteRepository.command(RefParse.class).setName(refspec).call();
         remoteRef = remoteRef.or(
                 remoteRepository.command(RefParse.class).setName(Ref.TAGS_PREFIX + refspec).call());
-        checkPush(ref, remoteRef);
+        checkPush(local, ref, remoteRef);
 
-        CommitTraverser traverser = getPushTraverser(remoteRef);
+        CommitTraverser traverser = getPushTraverser(local, remoteRef);
 
         traverser.traverse(ref.getObjectId());
         progress.setDescription("Uploading objects to " + refspec);
         progress.setProgress(0);
         while (!traverser.commits.isEmpty()) {
             ObjectId commitId = traverser.commits.pop();
-            walkHead(commitId, false, progress);
+            walkHead(commitId, local, remoteRepository, progress);
         }
 
         String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName()
@@ -230,16 +212,9 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         return deletedRef;
     }
 
-    protected void walkHead(final ObjectId newHeadId, final boolean fetch,
+    protected void walkHead(final ObjectId newHeadId, final Repository from, Repository to,
             final ProgressListener progress) {
 
-        Repository from = localRepository;
-        Repository to = remoteRepository;
-        if (fetch) {
-            Repository tmp = to;
-            to = from;
-            from = tmp;
-        }
         final ObjectDatabase fromDb = from.objectDatabase();
         final ObjectDatabase toDb = to.objectDatabase();
 
@@ -442,14 +417,13 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         return new LocalRepositoryWrapper(remoteRepository);
     }
 
-    /**
-     * Gets the depth of the remote repository.
-     * 
-     * @return the depth of the repository, or {@link Optional#absent()} if the repository is not
-     *         shallow
-     */
     @Override
     public Optional<Integer> getDepth() {
         return remoteRepository.getDepth();
     }
+
+    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+        return remoteRepository.command(commandClass);
+    }
+
 }

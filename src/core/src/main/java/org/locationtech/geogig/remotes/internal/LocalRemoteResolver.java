@@ -27,12 +27,11 @@ import com.google.common.base.Throwables;
  */
 public class LocalRemoteResolver implements RemoteResolver {
 
-    public static @VisibleForTesting IRemoteRepo resolve(Repository local, Repository remote) {
-        return new LocalRemoteRepo(remote, local);
+    public static @VisibleForTesting IRemoteRepo resolve(Remote remote, Repository remoteRepo) {
+        return new LocalRemoteRepo(remote, remoteRepo);
     }
 
-    public @Override Optional<IRemoteRepo> resolve(Repository local, Remote remote,
-            Hints remoteHints) {
+    public @Override Optional<IRemoteRepo> resolve(Remote remote, Hints remoteHints) {
 
         try {
             final String fetchURL = remote.getFetchURL();
@@ -43,9 +42,9 @@ public class LocalRemoteResolver implements RemoteResolver {
                 IRemoteRepo remoteRepo = null;
 
                 if (remote.getMapped()) {
-                    remoteRepo = new LocalMappedRemoteRepo(fetchURI, local);
+                    remoteRepo = new LocalMappedRemoteRepo(remote, fetchURI);
                 } else {
-                    remoteRepo = new LocalRemoteRepo(fetchURI, local);
+                    remoteRepo = new LocalRemoteRepo(remote, fetchURI);
                 }
                 return Optional.of(remoteRepo);
             }

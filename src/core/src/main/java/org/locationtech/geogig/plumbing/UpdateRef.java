@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -52,8 +53,8 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
      *        {@code "refs/origin/master"}
      * @return {@code this}
      */
-    public UpdateRef setNewValue(ObjectId newValue) {
-        this.newValue = newValue;
+    public UpdateRef setNewValue(@Nullable ObjectId newValue) {
+        this.newValue = newValue == null ? null : newValue;
         return this;
     }
 
@@ -62,8 +63,8 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
      *        {@code oldValue}
      * @return {@code this}
      */
-    public UpdateRef setOldValue(ObjectId oldValue) {
-        this.oldValue = oldValue.toString();
+    public UpdateRef setOldValue(@Nullable ObjectId oldValue) {
+        this.oldValue = oldValue == null ? null : oldValue.toString();
         return this;
     }
 

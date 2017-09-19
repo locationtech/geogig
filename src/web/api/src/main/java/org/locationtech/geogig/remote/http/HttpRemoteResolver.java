@@ -13,13 +13,10 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 
-import org.locationtech.geogig.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
-import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.DeduplicationService;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -29,19 +26,18 @@ import com.google.common.base.Throwables;
  */
 public class HttpRemoteResolver implements RemoteResolver {
 
-    public Optional<IRemoteRepo> resolve(Repository localRepository, Remote remoteConfig,
-            Hints remoteHints) {
+    public @Override Optional<IRemoteRepo> resolve(Remote remote, Hints remoteHints) {
 
         IRemoteRepo remoteRepo = null;
-        
+
         try {
-            String fetchURL = remoteConfig.getFetchURL();
+            String fetchURL = remote.getFetchURL();
             URI fetchURI = URI.create(fetchURL);
             final String protocol = fetchURI.getScheme();
 
             if ("http".equals(protocol) || "https".equals(protocol)) {
-                final String username = remoteConfig.getUserName();
-                final String password = remoteConfig.getPassword();
+                final String username = remote.getUserName();
+                final String password = remote.getPassword();
                 if (username != null && password != null) {
                     Authenticator.setDefault(new Authenticator() {
                         protected PasswordAuthentication getPasswordAuthentication() {
@@ -52,13 +48,10 @@ public class HttpRemoteResolver implements RemoteResolver {
                 } else {
                     Authenticator.setDefault(null);
                 }
-                if (remoteConfig.getMapped()) {
-                    remoteRepo = new HttpMappedRemoteRepo(fetchURI.toURL(), localRepository);
+                if (remote.getMapped()) {
+                    remoteRepo = new HttpMappedRemoteRepo(remote, fetchURI.toURL());
                 } else {
-                    DeduplicationService deduplicationService;
-                    deduplicationService = localRepository.command(CreateDeduplicator.class).call();
-                    remoteRepo = new HttpRemoteRepo(fetchURI.toURL(), localRepository,
-                            deduplicationService);
+                    remoteRepo = new HttpRemoteRepo(remote, fetchURI.toURL());
                 }
 
             }

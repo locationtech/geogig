@@ -101,7 +101,7 @@ public class Fetch extends AbstractCommand implements CLICommand {
         }
 
         Console console = cli.getConsole();
-        if (result.getChangedRefs().isEmpty()) {
+        if (result.getRefDiffs().isEmpty()) {
             console.println("Already up to date.");
         } else {
             FetchResultPrinter.print(result, console);

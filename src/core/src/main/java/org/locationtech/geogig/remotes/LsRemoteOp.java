@@ -14,19 +14,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
-import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -132,33 +127,18 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
                 getProgressListener().setDescription("Connected to remote " + remoteConfig.getName()
                         + ". Retrieving references");
 
-                remoteRefs = remoteRepo.listRefs(getHeads, getTags);
+                remoteRefs = remoteRepo.listRefs(repository(), getHeads, getTags);
 
-            } catch (RepositoryConnectionException e) {
-                throw Throwables.propagate(e);
             }
         } else {
-            remoteRefs = remoteRepo.listRefs(getHeads, getTags);
+            remoteRefs = remoteRepo.listRefs(repository(), getHeads, getTags);
         }
-        
+
         return remoteRefs;
     }
 
-    /**
-     * @param remote the remote to get
-     * @return an interface for the remote repository
-     * @throws RepositoryConnectionException
-     */
-    public IRemoteRepo openRemote(Remote remote) throws RepositoryConnectionException {
-        Repository localRepository = repository();
-        Optional<IRemoteRepo> remoterepo;
-        getProgressListener().setDescription("Obtaining remote " + remote.getName());
-        remoterepo = RemoteResolver.newRemote(localRepository, remote, Hints.readOnly());
-        Preconditions.checkState(remoterepo.isPresent(), "Remote could not be opened.");
-        IRemoteRepo iRemoteRepo = remoterepo.get();
-        getProgressListener().setDescription("Connecting to remote " + remote.getName());
-        iRemoteRepo.open();
-        return iRemoteRepo;
+    private IRemoteRepo openRemote(Remote remote) {
+        return command(OpenRemote.class).setRemote(remote).readOnly().call();
     }
 
     /**

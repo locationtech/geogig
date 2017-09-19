@@ -11,23 +11,26 @@ package org.locationtech.geogig.spring.controller;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.StreamingWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -40,47 +43,50 @@ public class RequestExceptionHandler extends AbstractController {
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestExceptionHandler.class);
 
     @ExceptionHandler({ RepositoryBusyException.class })
-    public ResponseEntity<Object> handleRepositoryBusyException(RepositoryBusyException ex,
-            HttpServletRequest request) {
+    public void handleRepositoryBusyException(RepositoryBusyException ex,
+            HttpServletRequest request, HttpServletResponse response) {
         HttpHeaders headers = new HttpHeaders();
-        return buildResponse(ex, request, headers, HttpStatus.SERVICE_UNAVAILABLE);
+        buildResponse(ex, request, response, headers, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler({ CommandSpecException.class })
-    public ResponseEntity<Object> handleCommandSpecException(CommandSpecException ex,
-            HttpServletRequest request) {
+    public void handleCommandSpecException(CommandSpecException ex, HttpServletRequest request,
+            HttpServletResponse response) {
         HttpHeaders headers = updateAllowedMethodsFromException(new HttpHeaders(), ex);
-        return buildResponse(ex, request, headers, ex.getStatus());
+        buildResponse(ex, request, response, headers, ex.getStatus());
     }
 
     @ExceptionHandler({ IllegalArgumentException.class })
-    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex,
-            HttpServletRequest request) {
+    public void handleIllegalArgumentException(IllegalArgumentException ex,
+            HttpServletRequest request, HttpServletResponse response) {
         HttpHeaders headers = new HttpHeaders();
-        return buildResponse(ex, request, headers, HttpStatus.BAD_REQUEST);
+        buildResponse(ex, request, response, headers, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({ Exception.class })
-    public ResponseEntity<Object> handleException(Exception ex, HttpServletRequest request) {
+    public void handleException(Exception ex, HttpServletRequest request,
+            HttpServletResponse response) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        return buildResponse(ex, request, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        buildResponse(ex, request, response, headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({ HttpMessageNotReadableException.class })
-    public ResponseEntity<Object> handleException(HttpMessageNotReadableException ex,
-            HttpServletRequest request) {
+    public void handleException(HttpMessageNotReadableException ex, HttpServletRequest request,
+            HttpServletResponse response) {
         HttpHeaders headers = new HttpHeaders();
-        return buildResponse(ex, request, headers, HttpStatus.BAD_REQUEST);
+        buildResponse(ex, request, response, headers, HttpStatus.BAD_REQUEST);
     }
 
-    private ResponseEntity<Object> buildResponse(Exception ex, HttpServletRequest request,
+    private void buildResponse(Exception ex, HttpServletRequest request,
+            HttpServletResponse response,
             HttpHeaders headers, HttpStatus status) {
-        if (this.getMediaType(request).isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            // JSON response, use JsonExceptionFormat
-            return new ResponseEntity<>(new JsonExceptionResponse(ex), headers, status);
+        for (Entry<String, List<String>> entry : headers.entrySet()) {
+            for (String value : entry.getValue()) {
+                response.addHeader(entry.getKey(), value);
+            }
         }
-        return new ResponseEntity<>(new ExceptionResponse(ex), headers, status);
+        encode(new ExceptionResponse(ex, status), request, response);
     }
 
     private HttpHeaders updateAllowedMethodsFromException(HttpHeaders headers,
@@ -106,32 +112,38 @@ public class RequestExceptionHandler extends AbstractController {
 
     @XmlRootElement(name = "response")
     @XmlAccessorType(XmlAccessType.FIELD)
-    public static class ExceptionResponse {
+    public static class ExceptionResponse extends LegacyResponse {
         @XmlElement
         boolean success = false;
 
         @XmlElement
         String error;
 
-        public ExceptionResponse() {
+        HttpStatus status;
+
+        public ExceptionResponse(HttpStatus status) {
             this.error = "";
+            this.status = status;
         }
 
-        public ExceptionResponse(Exception ex) {
+        public ExceptionResponse(Exception ex, HttpStatus status) {
             this.error = ex.getMessage();
-        }
-    }
-
-    public static class JsonExceptionResponse {
-        @XmlElement
-        private ExceptionResponse response;
-
-        public JsonExceptionResponse() {
-            this.response = new ExceptionResponse();
+            this.status = status;
         }
 
-        public JsonExceptionResponse(Exception ex) {
-            this.response = new ExceptionResponse(ex);
+        @Override
+        public HttpStatus getStatus() {
+            return status;
+        }
+
+        @Override
+        protected void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
+            writer.writeStartElement("response");
+            writer.writeElement("success", success);
+            if (error != null && !error.isEmpty()) {
+                writer.writeElement("error", error);
+            }
+            writer.writeEndElement();
         }
     }
 }

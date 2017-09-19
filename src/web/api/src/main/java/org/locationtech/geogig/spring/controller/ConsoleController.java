@@ -10,6 +10,7 @@
 package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
+import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
@@ -45,7 +46,8 @@ import com.google.common.collect.Sets;
  *
  */
 @Controller
-@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/repo/console")
+@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
+        + "/{repoName}/repo/console")
 public class ConsoleController extends AbstractRepositoryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleController.class);

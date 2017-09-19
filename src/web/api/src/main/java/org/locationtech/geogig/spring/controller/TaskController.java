@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.spring.controller;
 
+import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
@@ -57,7 +58,7 @@ import com.google.common.io.Files;
  * </pre>
  */
 @RestController
-@RequestMapping(path = "/tasks",
+@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/tasks",
         produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
 public class TaskController extends AbstractController {
 

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
+import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -45,7 +46,8 @@ import com.google.common.collect.Sets;
  *
  */
 @RestController
-@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE + "/{repoName}/repo/mergefeature")
+@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
+        + "/{repoName}/repo/mergefeature")
 public class MergeFeatureController extends AbstractRepositoryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MergeFeatureController.class);
@@ -62,9 +64,19 @@ public class MergeFeatureController extends AbstractRepositoryController {
     }
 
     @PostMapping
-    public void invalidPostData() {
-        // this matches any POST requests that don't have a MergeFeatureRequest entity
-        throw new IllegalArgumentException("Invalid POST data.");
+    public void invalidPostData(@PathVariable(name = "repoName") String repoName,
+            HttpServletRequest request, HttpServletResponse response) {
+        Optional<RepositoryProvider> optional = getRepoProvider(request);
+        if (optional.isPresent()) {
+            final RepositoryProvider provider = optional.get();
+            // ensure the repo exists and is opened (repo 404 should be issued before the 400)
+            if (!isOpenRepository(provider, repoName, response)) {
+                // done
+                return;
+            }
+            // this matches any POST requests that don't have a MergeFeatureRequest entity
+            throw new IllegalArgumentException("Invalid POST data.");
+        }
     }
 
     // API V2 version, not currently used

@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.spring.config;
 
+import java.util.Properties;
+
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.service.LegacyApplyChangesService;
 import org.locationtech.geogig.spring.service.LegacyBatchObjectsService;
 import org.locationtech.geogig.spring.service.LegacyConsoleService;
@@ -19,6 +22,7 @@ import org.locationtech.geogig.spring.service.LegacySendObjectService;
 import org.locationtech.geogig.spring.service.RepositoryInitService;
 import org.locationtech.geogig.spring.service.RepositoryListService;
 import org.locationtech.geogig.spring.service.RepositoryService;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -50,7 +54,16 @@ public class GeoGigWebAPISpringConfig extends WebMvcConfigurerAdapter {
         internalResourceViewResolver.setPrefix("/resources/");
         return internalResourceViewResolver;
     }
-    
+
+    @Bean
+    public static PropertyPlaceholderConfigurer getPropertyPlaceholderConfigurer() {
+        PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+        Properties props = new Properties();
+        props.setProperty(RepositoryProvider.GEOGIG_ROUTE_PREFIX_PROPERTY, "");
+        configurer.setProperties(props);
+        return configurer;
+    }
+
     // Service Beans
     @Bean
     public RepositoryService getRepositoryService() {

@@ -201,10 +201,6 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     protected void callInternal(HttpMethod method, String resourceUri) {
-        if (resourceUri.endsWith("/")) {
-            resourceUri = resourceUri.substring(0, resourceUri.length() - 1);
-        }
-
         try {
             MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
             MockHttpServletRequestBuilder request = MockMvcRequestBuilders.request(method,

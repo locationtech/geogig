@@ -10,6 +10,7 @@
 package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.BASE_REPOSITORY_ROUTE;
+import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
@@ -44,7 +45,7 @@ import com.google.common.collect.Sets;
  * </pre>
  */
 @RestController
-@RequestMapping(path = "/" + BASE_REPOSITORY_ROUTE,
+@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE,
         produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
 public class RepositoryListController extends AbstractController {
 
@@ -60,7 +61,7 @@ public class RepositoryListController extends AbstractController {
         return list;
     }
 
-    @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { PUT, POST, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(GET.toString()));

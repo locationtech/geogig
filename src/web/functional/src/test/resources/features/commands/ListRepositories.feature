@@ -20,14 +20,14 @@ Feature: List repositories
 
   Scenario: List repositories on a server with no repositories, JSON requested response
     Given There is an empty multirepo server
-     When I call "GET /repos.json/"
+     When I call "GET /repos.json"
      Then the response status should be '200'
       And the response ContentType should be "application/json"
       And the json response "repos" contains an empty "repo" array
 
   Scenario: Get list of repositories in default format, JSON requested response
     Given There is a default multirepo server
-     When I call "GET /repos.json/"
+     When I call "GET /repos.json"
      Then the response status should be '200'
       And the response ContentType should be "application/json"
       And the json response "repos.repo" should contain "name" 2 times

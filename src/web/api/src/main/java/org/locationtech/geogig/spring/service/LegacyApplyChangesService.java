@@ -29,6 +29,8 @@ import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.web.api.CommandSpecException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Optional;
@@ -92,7 +94,7 @@ public class LegacyApplyChangesService extends AbstractRepositoryService {
                 }
 
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new CommandSpecException(e.getMessage(), HttpStatus.BAD_REQUEST, e);
             }
         }
         return null;

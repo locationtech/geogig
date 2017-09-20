@@ -263,4 +263,9 @@ public class MultiRepositoryProvider implements RepositoryProvider {
             return Optional.absent();
         }
     }
+
+    @Override
+    public String getMaskedLocationString(Repository repo, String repoName) {
+        return repo.getLocation().toString();
+    }
 }

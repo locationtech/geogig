@@ -112,4 +112,11 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
     public void invalidateAll() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getMaskedLocationString(Repository repo, String repoName) {
+        return repo.getLocation().toString();
+    }
+
+
 }

@@ -80,4 +80,9 @@ public class SingleRepositoryProvider implements RepositoryProvider {
         String repoName = repo.command(ResolveRepositoryName.class).call();
         return Iterators.singletonIterator(repoName);
     }
+
+    @Override
+    public String getMaskedLocationString(Repository repo, String repoName) {
+        return repo.getLocation().toString();
+    }
 }

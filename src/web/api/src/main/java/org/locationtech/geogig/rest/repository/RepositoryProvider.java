@@ -67,4 +67,16 @@ public interface RepositoryProvider {
      * @return an Iterator that walks through the names of all the repositories provided.
      */
     public Iterator<String> findRepositories();
+
+    /**
+     * Returns a String representation of a masked Repository location. For most Providers, this
+     * will just be the location URI.toString() method. The GeoServer plugin Provider should
+     * override this to return a "geoserver://<repoName>" URI string.
+     *
+     * @param repo The Repository for which a masked URI String should be returned.
+     * @param repoName The repository name.
+     *
+     * @return A masked URI location string for the provided repository (if applicable).
+     */
+    public String getMaskedLocationString(Repository repo, String repoName);
 }

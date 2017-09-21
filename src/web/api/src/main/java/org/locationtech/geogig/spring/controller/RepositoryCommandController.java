@@ -16,6 +16,7 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +26,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.ParameterSetFactory;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.LegacyResponse;
+import org.locationtech.geogig.spring.dto.RepositoryInfo;
 import org.locationtech.geogig.spring.service.RepositoryService;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandBuilder;
@@ -36,6 +38,7 @@ import org.locationtech.geogig.web.api.StreamingWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -72,8 +75,20 @@ public class RepositoryCommandController extends AbstractController {
             final HttpServletRequest request, HttpServletResponse response) {
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         if (repoProvider.isPresent()) {
-            encode(repositoryService.getRepositoryInfo(repoProvider.get(), repoName),
-                    request, response);
+            RepositoryInfo repositoryInfo =
+                    repositoryService.getRepositoryInfo(repoProvider.get(), repoName);
+            if (repositoryInfo != null) {
+                encode(repositoryInfo, request, response);
+            } else {
+                // not found
+                response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                try (PrintWriter out = response.getWriter()) {
+                    out.print("not found");
+                } catch (IOException ioe) {
+                    throw new RuntimeException(ioe);
+                }
+            }
         } else {
             throw NO_PROVIDER;
         }

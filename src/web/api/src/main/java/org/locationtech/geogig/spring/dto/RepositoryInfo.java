@@ -24,16 +24,14 @@ import org.springframework.http.MediaType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RepositoryInfo extends LegacyResponse {
 
-    private static final String UNDEFINED = "UNDEFINED";
+    @XmlElement
+    private String id;
 
     @XmlElement
-    private String id = UNDEFINED;
+    private String name;
 
     @XmlElement
-    private String name = UNDEFINED;
-
-    @XmlElement
-    private String location = UNDEFINED;
+    private String location;
 
     public String getName() {
         return name;
@@ -65,7 +63,7 @@ public class RepositoryInfo extends LegacyResponse {
     @Override
     public void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
         writer.writeStartElement("repository");
-        if (!UNDEFINED.equals(id)) {
+        if (null != id) {
             writer.writeElement("id", id);
         }
         writer.writeElement("name", name);

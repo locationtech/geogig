@@ -115,8 +115,16 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
 
     @Override
     public String getMaskedLocationString(Repository repo, String repoName) {
-        return repo.getLocation().toString();
+        if (repo != null) {
+            return repo.getLocation() != null ? repo.getLocation().toString() : null;
+        }
+        return null;
     }
 
 
+    @Override
+    public String getRepositoryId(String repoName) {
+        // no ID applicable
+        return null;
+    }
 }

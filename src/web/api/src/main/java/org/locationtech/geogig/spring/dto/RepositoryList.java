@@ -57,7 +57,11 @@ public class RepositoryList extends LegacyResponse {
         if (repos != null) {
             for (RepositoryListRepo repo : repos) {
                 String repoName = repo.getName();
+                String repoId = repo.getId();
                 writer.writeStartArrayElement("repo");
+                if (repoId != null) {
+                    writer.writeElement("id", repoId);
+                }
                 writer.writeElement("name", repoName);
                 encodeAlternateAtomLink(writer, baseURL,
                         RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + repoName, format);

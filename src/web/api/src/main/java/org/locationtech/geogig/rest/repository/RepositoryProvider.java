@@ -79,4 +79,14 @@ public interface RepositoryProvider {
      * @return A masked URI location string for the provided repository (if applicable).
      */
     public String getMaskedLocationString(Repository repo, String repoName);
+
+    /**
+     * Returns the UUID for a given repository, if this provider can determine it.
+     *
+     * @param repoName the Repository's name.
+     *
+     * @return A UUID associated with the specified Repository, or null if not found or not
+     * applicable.
+     */
+    public String getRepositoryId(String repoName);
 }

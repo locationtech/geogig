@@ -22,6 +22,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RepositoryListRepo {
 
     @XmlElement
+    private String id;
+
+    @XmlElement
     private String name;
 
     @XmlElement(namespace = "http://www.w3.org/2005/Atom")
@@ -42,6 +45,15 @@ public class RepositoryListRepo {
 
     public RepositoryListRepo setLink(AtomLink link) {
         this.link = link;
+        return this;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public RepositoryListRepo setId(String id) {
+        this.id = id;
         return this;
     }
 }

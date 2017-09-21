@@ -34,6 +34,7 @@ public class RepositoryListService {
         while (repos.hasNext()) {
             final String repoName = repos.next();
             RepositoryListRepo listRepo = getRepositoryListRepo(repoName, type, basUrl);
+            listRepo.setId(provider.getRepositoryId(repoName));
             list.addRepo(listRepo);
         }
         return list;

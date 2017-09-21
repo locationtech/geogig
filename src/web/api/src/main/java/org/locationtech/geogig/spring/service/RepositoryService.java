@@ -53,11 +53,11 @@ public class RepositoryService extends AbstractRepositoryService {
 
     public RepositoryInfo getRepositoryInfo(RepositoryProvider provider, String repoName) {
         Repository repository = getRepository(provider, repoName);
-        if (repository != null) {
+        if (repository != null && repository.getLocation() != null) {
             RepositoryInfo repoInfo = new RepositoryInfo().setName(repoName).
                     // the location may need to be masked. Let the Provider do that.
-                    setLocation(provider.getMaskedLocationString(repository, repoName));
-            // TODO: need to set the ID, if it exists
+                    setLocation(provider.getMaskedLocationString(repository, repoName)).
+                    setId(provider.getRepositoryId(repoName));
             return repoInfo;
         }
         return null;

@@ -98,7 +98,7 @@ public class RefTest {
         assertEquals(Ref.REFS_PREFIX, ref);
 
         ref = Ref.namespace(Ref.REMOTES_PREFIX + "origin/branch1");
-        assertEquals(Ref.REMOTES_PREFIX + "/origin", ref);
+        assertEquals(Ref.REMOTES_PREFIX + "origin/", ref);
 
         ref = Ref.namespace(Ref.TAGS_PREFIX + "tag1");
         assertEquals(Ref.TAGS_PREFIX, ref);

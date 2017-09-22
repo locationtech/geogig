@@ -97,3 +97,20 @@ Feature: Export GeoPackage
       And the JSON task @taskId result contains "task.result.atom:link.href" with value "/tasks/{@taskId}/download"
      When I call "GET /tasks/{@taskId}/download"
      Then the result is a valid GeoPackage file
+
+  @Status400 @Erik
+  Scenario: Verify unsupported "format" argument issues 400 "Bad request", JSON output_fomrat requested
+    Given There is a default multirepo server
+     When I call "GET /repos/repo1/export?format=badFormat&output_format=json"
+     Then the response status should be '400'
+      And the response ContentType should be "application/json"
+      And the json object "response.success" equals "false"
+      And the json object "response.error" equals "Unsupported output format: badFormat"
+
+  @Status400 @Erik
+  Scenario: Verify unsupported "format" argument issues 400 "Bad request", invlaid output_fomrat requested
+    Given There is a default multirepo server
+     When I call "GET /repos/repo1/export?format=badFormat&output_format=invalid"
+     Then the response status should be '400'
+      And the response ContentType should be "text/plain"
+      And the response body should contain "Invalid output_format 'invalid' requested"

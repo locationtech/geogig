@@ -159,3 +159,46 @@ Feature: Log
       And the response body should not contain "ADDED,Points/Point.1"
       And the response body should not contain "Lines"
       And the response body should not contain "Polygons"
+
+  Scenario: The summary parameter summarizes all of the changes to a feature type as a CSV, using output_format
+    Given There is a default multirepo server
+     When I call "GET /repos/repo1/log?since=master~1&path=Points&summary=true&output_format=csv"
+     Then the response status should be '200'
+      And the response ContentType should be "text/csv"
+      And the response body should contain "ADDED,Points/Point.3"
+      And the response body should contain "{@ObjectId|repo1|master}"
+      And the response body should not contain "ADDED,Points/Point.2"
+      And the response body should not contain "ADDED,Points/Point.1"
+      And the response body should not contain "Lines"
+      And the response body should not contain "Polygons"
+  @Status500
+  Scenario: The summary parameter returns 500 when specifying XML as output_format
+    Given There is a default multirepo server
+     When I call "GET /repos/repo1/log?since=master~1&path=Points&summary=true&output_format=xml"
+     Then the response status should be '500'
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Unsupported Media Type: This response is only compatible with text/csv."
+  @Status400
+  Scenario: The summary parameter returns 400 when specifying an invlaid output_format
+    Given There is a default multirepo server
+     When I call "GET /repos/repo1/log?since=master~1&path=Points&summary=true&output_format=invalid"
+     Then the response status should be '400'
+      And the response ContentType should be "text/plain"
+      And the response body should contain "Invalid output_format 'invalid' requested"
+
+  Scenario: The offset parameter skips a number of log entries, JSON output_format
+    Given There is a default multirepo server
+     When I call "GET /repos/repo1/log?offset=2&output_format=json"
+     Then the response status should be '200'
+      And the response ContentType should be "application/json"
+      And the json object "response.success" equals "true"
+      And the json response "response.commit." should contain "id" 3 times
+      And the json response "response.commit." should contain "message" 3 times
+@Erik
+  Scenario: The offset parameter skips a number of log entries. invalid output_format
+    Given There is a default multirepo server
+     When I call "GET /repos/repo1/log?offset=2&output_format=invalid"
+     Then the response status should be '400'
+      And the response ContentType should be "text/plain"
+      And the response body should contain "Invalid output_format 'invalid' requested"

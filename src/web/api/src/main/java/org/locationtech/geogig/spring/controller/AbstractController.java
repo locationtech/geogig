@@ -11,7 +11,6 @@ package org.locationtech.geogig.spring.controller;
 
 import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_ROUTE_PREFIX;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Set;
@@ -36,7 +35,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
-import org.springframework.util.MultiValueMap;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -115,7 +113,7 @@ public abstract class AbstractController {
         // write the LegacyResponse object out to the Response stream
         try {
             responseBean.encode(response.getWriter(), requestedResponseFormat, baseURL);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new CommandSpecException("Error writing response",
                     HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
@@ -139,8 +137,30 @@ public abstract class AbstractController {
                 return MediaType.APPLICATION_JSON;
             } else if (requestURI.endsWith(".csv")) {
                 return Variants.CSV_MEDIA_TYPE;
+            } else if (requestURI.endsWith(".xml")) {
+                return MediaType.APPLICATION_XML;
             }
         }
+        // no format specified on the Request URI, see if the "output_format" request parameter is
+        // specified
+        final String format = request.getParameter("output_format");
+        if (format != null) {
+            // output_format was specified, ensure it's a supported format
+            if ("json".equalsIgnoreCase(format)) {
+                return MediaType.APPLICATION_JSON;
+            } else if ("csv".equalsIgnoreCase(format)) {
+                return Variants.CSV_MEDIA_TYPE;
+            } else if ("xml".equalsIgnoreCase(format)) {
+                return MediaType.APPLICATION_XML;
+            } else if ("gpkg".equalsIgnoreCase(format)) {
+                return Variants.GEOPKG_MEDIA_TYPE;
+            }
+            else {
+                // output_format specified, but not one we support
+                throw new RuntimeException("Invalid output_format '" + format + "' requested");
+            }
+        }
+        // return the default of XML
         return MediaType.APPLICATION_XML;
     }
 

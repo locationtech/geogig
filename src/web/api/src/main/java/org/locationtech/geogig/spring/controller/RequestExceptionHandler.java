@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.spring.controller;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -86,7 +88,26 @@ public class RequestExceptionHandler extends AbstractController {
                 response.addHeader(entry.getKey(), value);
             }
         }
-        encode(new ExceptionResponse(ex, status), request, response);
+        try {
+            encode(new ExceptionResponse(ex, status), request, response);
+        } catch (Exception ex2) {
+            // trying to write out an Exception threw an Exception....
+            encodeError(ex2, request, response);
+        }
+    }
+    protected final void encodeError(Exception ex, final HttpServletRequest request,
+            final HttpServletResponse response) {
+        // set the Content-Type
+        response.setContentType(MediaType.TEXT_PLAIN.toString());
+        // set the status
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        // write the LegacyResponse object out to the Response stream
+        try (Writer writer = response.getWriter()) {
+            writer.write(ex.getLocalizedMessage());
+        } catch (IOException e) {
+            throw new CommandSpecException("Error writing response",
+                    HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
     }
 
     private HttpHeaders updateAllowedMethodsFromException(HttpHeaders headers,

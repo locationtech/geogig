@@ -30,6 +30,16 @@ Feature: IndexList
       And there is an xpath "/response/index/treeName/text()" that equals "Lines"
       And the response status should be '200'
 
+  Scenario: Verify index list return for all feature trees, JSON output_format
+    Given There is a default multirepo server
+      And I call "PUT /repos/repo1/index/create?treeRefSpec=Points"
+      And I call "PUT /repos/repo1/index/create?treeRefSpec=Lines"
+     When I call "GET /repos/repo1/index/list?output_format=json"
+     Then the response status should be '200'
+      And the response ContentType should be "application/json"
+      And the json object "response.success" equals "true"
+      And the json response "response.index" should contain "treeName" 2 times
+
   Scenario: Verify correct index list return for a feature tree
     Given There is a repo with some data
       And I call "PUT /repos/repo1/index/create?treeRefSpec=Points"

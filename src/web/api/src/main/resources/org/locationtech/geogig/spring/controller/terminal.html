@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>geogig console emulator</title>
+    <script src="/resources/jquery-1.7.1.min.js"></script>
+    <script src="/resources/jqconsole.min.js"></script>
+    <link href="/resources/jqconsole.css" rel="stylesheet"/>
+    <script>
+        jQuery(document).ready(function($) {
+            var nextId = (function() {
+                var id = 0;
+                return function() { return ++id; };
+            })();
+
+            var welcomeText = 'Welcome to GeoGig Console. Enter a command, or type \'help\' for assistance.\n';
+            var promptText = 'geogig $ ';
+            var jqconsole = $('#console').jqconsole(welcomeText, promptText);
+            var startPrompt = function () {
+                // Start the prompt with history enabled.
+                jqconsole.Prompt(true, function (input) {
+                    // Output input with the class jqconsole-output.
+                    if(input.trim() == ''){
+                        startPrompt();
+                        return;
+                    }
+                    if(input.trim() == 'clear'){
+                    	jqconsole.Reset();
+                        startPrompt();
+                        return;
+                    }
+                    var request = {
+                        'jsonrpc' : '2.0',
+                        'method' : input,
+                        'params' : [],
+                        'id' : nextId()
+                    };
+                    $.ajax({
+                        type: "POST",
+                        "url": "run-command.json",
+                        "data": JSON.stringify(request),
+                        "contentType" : "application/json; charset=UTF-8",
+                        "dataType": "json",
+                        "success" : function(data) {
+                            if (data.error == null) {
+                                data.result && jqconsole.Write(data.result + '\n', 'jqconsole-output');
+                                console.log(data);
+                            } else {
+                                jqconsole.Write(data.error.message + "\n", 'jqconsole-output');
+                            }
+                            startPrompt();
+                        },
+                        "failure" : function(err) {
+                            jqconsole.Write("Server communication failed.");
+                            console && console.log(err);
+                            startPrompt();
+                        }
+                    });
+                    // jqconsole.Write(input + '\n', 'jqconsole-output');
+                    // Restart the prompt.
+                    // startPrompt();
+                });
+            };
+            startPrompt();
+        });
+    </script>
+  </head>
+<body>
+    <div id="console"></div>
+</body>
+</html>

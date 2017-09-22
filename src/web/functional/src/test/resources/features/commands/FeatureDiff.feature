@@ -3,25 +3,30 @@ Feature: FeatureDiff
   The feature diff command allows a user to see the difference between two versions of a specific feature and is supported through the "/repos/{repository}/featurediff" endpoint
   The command must be executed using the HTTP GET method
 
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/featurediff"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-    
+      
+  @Status404
   Scenario: Feature diff outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/featurediff?path=somePath"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
       
+  @Status500
   Scenario: Calling feature diff without specifying a path issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/featurediff"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "Required parameter 'path' was not provided."
       
+  @Status500
   Scenario: Calling feature diff with an empty path issues a 500 status code
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/featurediff?path=%20"

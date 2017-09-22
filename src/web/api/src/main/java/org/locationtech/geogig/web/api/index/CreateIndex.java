@@ -22,8 +22,8 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Method;
-import org.restlet.data.Status;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -80,12 +80,12 @@ public class CreateIndex extends AbstractWebAPICommand {
     }
 
     @Override
-    public boolean supports(final Method method) {
-        return Method.PUT.equals(method);
+    public boolean supports(final RequestMethod method) {
+        return RequestMethod.PUT.equals(method);
     }
 
     @Override
-    protected boolean requiresOpenRepo() {
+    public boolean requiresOpenRepo() {
         return true;
     }
 
@@ -117,6 +117,11 @@ public class CreateIndex extends AbstractWebAPICommand {
 
         context.setResponseContent(new CommandResponse() {
             @Override
+            public HttpStatus getStatus() {
+                return HttpStatus.CREATED;
+            }
+
+            @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
                 out.writeIndexInfo(index.info(), "index", false);
@@ -124,7 +129,6 @@ public class CreateIndex extends AbstractWebAPICommand {
                 out.finish();
             }
         });
-        setStatus(Status.SUCCESS_CREATED);
     }
 
 }

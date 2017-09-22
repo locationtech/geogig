@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -77,6 +78,13 @@ public class AsyncContext {
             INSTANCE = new AsyncContext();
         }
         return INSTANCE;
+    }
+
+    public static synchronized void close() {
+        if (INSTANCE != null) {
+            INSTANCE.shutDown();
+            INSTANCE = null;
+        }
     }
 
     private Map<String, AsyncCommand<?>> commands = new ConcurrentHashMap<>();
@@ -182,6 +190,10 @@ public class AsyncContext {
 
         public float getProgress() {
             return command.progress.getProgress();
+        }
+
+        public ProgressListener getProgressListener() {
+            return command.progress;
         }
 
         public boolean isDone() {

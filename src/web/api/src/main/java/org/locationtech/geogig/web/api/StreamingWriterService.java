@@ -11,7 +11,7 @@ package org.locationtech.geogig.web.api;
 
 import java.io.Writer;
 
-import org.restlet.data.MediaType;
+import org.springframework.http.MediaType;
 
 /**
  * Interface for StreamWriter service loading.

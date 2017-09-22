@@ -21,14 +21,29 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>${springweb.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet</artifactId>
-      <version>${restlet.version}</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
     </dependency>
+<!--    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.8.9</version>
+    </dependency>-->
+<!--    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>2.8.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>woodstox-core-asl</artifactId>
+      <version>4.2.0</version>
+    </dependency>-->
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli</artifactId>
@@ -39,20 +54,32 @@
       <artifactId>javax.json</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet.ext.fileupload</artifactId>
-      <version>${restlet.version}</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-      <dependency>
-        <groupId>org.xmlunit</groupId>
-        <artifactId>xmlunit-matchers</artifactId>
-        <scope>test</scope>
-      </dependency>
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-matchers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>1.1.0</version>
+      <scope>test</scope>
+	</dependency>
+	<dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path-assert</artifactId>
+      <version>1.1.0</version>
+      <scope>test</scope>
+	</dependency>
     <dependency>
         <groupId>org.locationtech.geogig</groupId>
         <artifactId>geogig-core</artifactId>
@@ -85,7 +112,10 @@
       <artifactId>slf4j-simple</artifactId>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+    </dependency>
   </dependencies>
 
   <profiles>

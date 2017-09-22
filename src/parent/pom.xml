@@ -75,14 +75,6 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-    <repository>
-      <id>mapfish</id> <!-- for com.noelios.restlet -->
-      <name>mapfish</name>
-      <url>http://dev.mapfish.org/maven/repository/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
   </repositories>
 
   <properties>
@@ -101,14 +93,14 @@
     <xmlunit.version>2.1.0</xmlunit.version>
     <logback.version>1.1.2</logback.version>
     <mockito.version>2.0.2-beta</mockito.version>
-    <restlet.version>1.0.8</restlet.version> <!-- matches version used in geoserver -->
     <slf4j.version>1.7.5</slf4j.version>
     <sqljdbc4.version>3.0</sqljdbc4.version>
     <hikaricp.version>2.4.2</hikaricp.version>
     <rocksdb.version>5.7.2</rocksdb.version>
     <postgresql.version>42.1.1</postgresql.version>
-    <springweb.version>4.2.5.RELEASE</springweb.version>
-
+    <springweb.version>4.3.7.RELEASE</springweb.version>
+    <servlet-api.version>3.1.0</servlet-api.version>
+    <jetty.version>9.4.1.v20170120</jetty.version>
     <appassembler.plugin.version>1.2.2</appassembler.plugin.version>
     <war.plugin.version>2.4</war.plugin.version>
     <jetty.plugin.version>7.1.6.v20100715</jetty.plugin.version>
@@ -305,21 +297,6 @@
         <version>${jsonp.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.restlet</groupId>
-        <artifactId>org.restlet</artifactId>
-        <version>${restlet.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.noelios.restlet</groupId>
-        <artifactId>com.noelios.restlet.ext.jetty</artifactId>
-        <version>${restlet.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.noelios.restlet</groupId>
-        <artifactId>com.noelios.restlet.ext.servlet</artifactId>
-        <version>${restlet.version}</version>
-      </dependency>
-      <dependency>
         <!-- JDBC connection pool -->
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
@@ -332,6 +309,29 @@
         <version>0.9.5</version>
       </dependency>
 
+      <!-- Spring MVC dependencies -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${springweb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>${servlet-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>${springweb.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <!-- Jetty Runner dependencies -->
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
       <!-- Test scope dependencies -->
       <dependency>
         <groupId>junit</groupId>
@@ -387,11 +387,6 @@
         <groupId>net.sf.py4j</groupId>
         <artifactId>py4j</artifactId>
         <version>0.8.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>${springweb.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -713,6 +708,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>2.20</version>
         <configuration>
           <aggregate>true</aggregate>
         </configuration>

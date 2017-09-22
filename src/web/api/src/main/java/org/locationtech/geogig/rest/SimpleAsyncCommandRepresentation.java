@@ -11,14 +11,12 @@ package org.locationtech.geogig.rest;
 
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.web.api.StreamWriterException;
-import org.restlet.data.MediaType;
 import org.locationtech.geogig.web.api.StreamingWriter;
 
 public class SimpleAsyncCommandRepresentation<T> extends AsyncCommandRepresentation<T> {
 
-    public SimpleAsyncCommandRepresentation(MediaType mediaType, AsyncCommand<T> c, String baseURL,
-            boolean cleanup) {
-        super(mediaType, c, baseURL, cleanup);
+    public SimpleAsyncCommandRepresentation(AsyncCommand<T> c, boolean cleanup) {
+        super(c, cleanup);
     }
 
     @Override

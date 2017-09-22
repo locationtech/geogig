@@ -3,25 +3,29 @@ Feature: Add
   The add command allows a user to stage features in the repository and is supported through the "/repos/{repository}/add" endpoint
   The command must be executed using the HTTP GET method
 
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/add"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
-    
+      
+  @Status500
   Scenario: Adding outside of a transaction issues 500 "Transaction required"
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/add"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "No transaction was specified"
-    
+      
+  @Status404
   Scenario: Adding outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/add"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
-    
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
+
   Scenario: Adding with no path filter stages all features
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
@@ -38,7 +42,7 @@ Feature: Add
           |    Points    |   Lines    |
           |    Point.1   |   Line.1   |
           |    Point.2   |            |
-          
+
   Scenario: Adding with a path filter stages specified features
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
@@ -54,7 +58,7 @@ Feature: Add
       And the repo1 repository's "STAGE_HEAD" in the @txId transaction should have the following features:
           |    Points    |
           |    Point.1   |
-          
+
   Scenario: Adding on a conflicted path resolves the conflict
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo

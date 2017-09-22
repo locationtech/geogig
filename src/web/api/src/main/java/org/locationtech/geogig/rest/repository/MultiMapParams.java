@@ -16,7 +16,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.collect.ArrayListMultimap;
 
-public class MultiMapParams extends AbstractParameterSet {
+class MultiMapParams extends AbstractParameterSet {
 
     protected ArrayListMultimap<String, String> options = ArrayListMultimap.create();
 

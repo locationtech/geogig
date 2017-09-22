@@ -43,15 +43,18 @@ public class TestRepository extends ExternalResource {
 
     private File homeDir;
 
+    private String repoName;
+
     @Override
-    protected void before() throws Throwable {
+    public void before() throws Throwable {
         tmpFolder = new TemporaryFolder();
         tmpFolder.create();
         homeDir = tmpFolder.newFolder("home");
+        repoName = REPO_NAME;
     }
 
     @Override
-    protected void after() {
+    public void after() {
         try {
             if (geogig != null) {
                 geogig.close();
@@ -62,7 +65,11 @@ public class TestRepository extends ExternalResource {
         }
     }
 
-    public GeoGIG createGeoGIG(String name) {
+    public void setRepoName(String repoName) {
+        this.repoName = repoName;
+    }
+
+    private void createGeoGIG(String name) {
         File dataDirectory = tmpFolder.getRoot();
         repoDir = new File(dataDirectory, name);
         Assert.assertTrue(repoDir.mkdir());
@@ -70,8 +77,7 @@ public class TestRepository extends ExternalResource {
         TestPlatform testPlatform = new TestPlatform(repoDir, homeDir);
         GlobalContextBuilder.builder(new CLITestContextBuilder(testPlatform));
         Context context = GlobalContextBuilder.builder().build(new Hints().platform(testPlatform));
-        GeoGIG geogig = new GeoGIG(context);
-        return geogig;
+        this.geogig = new GeoGIG(context);
     }
 
     public void initializeRpository() {
@@ -94,7 +100,7 @@ public class TestRepository extends ExternalResource {
 
     public GeoGIG getGeogig(boolean initialized) {
         if (this.geogig == null) {
-            this.geogig = createGeoGIG(REPO_NAME);
+            createGeoGIG(repoName);
             if (initialized && null == geogig.getRepository()) {
                 initializeRpository();
             }

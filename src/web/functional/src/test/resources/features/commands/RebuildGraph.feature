@@ -2,19 +2,21 @@
 Feature: RebuildGraph
   The RebuildGraph command allows a user to rebuild the graph database of a repository and is supported through the "/repos/{repository}/rebuildgraph" endpoint
   The command must be executed using the HTTP GET method
-
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/rebuildgraph"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
       
+  @Status404
   Scenario: RebuildGraph outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/rebuildgraph"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
       
   Scenario: RebuildGraph restores missing entries in the graph database
     Given There is a default multirepo server

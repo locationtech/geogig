@@ -6,13 +6,14 @@ Feature: Import GeoPackage
   Other URL arguments can be used to control some aspects of the import.
   
   API Spec: POST /repos/<repo>/import?format=gpkg[&add=<true|false>][&alter=<true|false>]
-  
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/import?format=gpkg"
      Then the response status should be '405'
       And the response allowed methods should be "POST"
       
+  @Status400
   Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request"
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
@@ -23,7 +24,8 @@ Feature: Import GeoPackage
       """
       <response><success>false</success><error>missing required 'format' parameter</error></response>
       """
-
+      
+  @Status400
   Scenario: Verify unsupported output format argument issues 400 "Bad request"
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
@@ -34,14 +36,16 @@ Feature: Import GeoPackage
       """
       <response><success>false</success><error>Unsupported input format: 'badFormat'</error></response>
       """
-
+      
+  @Status404
   Scenario: Verify import to a non existent repository issues 404 "Not found"
     Given There is an empty multirepo server
       And I have a geopackage file @gpkgFile
      When I post @gpkgFile as "fileUpload" to "/repos/badRepo/import?format=gpkg"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
 
   Scenario: Import to an empty repository
     Given There is an empty repository named targetRepo
@@ -159,12 +163,14 @@ Feature: Import GeoPackage
 #<task><id>1</id><status>FINISHED</status><transactionId>c4da5a9b-5b09-4cb6-9055-e340d02b57ac</transactionId><description>Importing GeoPackage database file.</description><atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="/tasks/1.xml" type="application/xml"/><result><RevCommit><id>a1cde458d0658e096998b740b2eaa7b10796e624</id><treeId>37987a1d4afbf60be906d55576392965654d5d9c</treeId></RevCommit></result></task>
 
 # JSON tests
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed", JSON requested response
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/import.json?format=gpkg"
      Then the response status should be '405'
       And the response allowed methods should be "POST"
-
+      
+  @Status400
   Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request", JSON requested response
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
@@ -173,7 +179,8 @@ Feature: Import GeoPackage
       And the response ContentType should be "application/json"
       And the json object "response.success" equals "false"
       And the json object "response.error" equals "missing required 'format' parameter"
-
+      
+  @Status400
   Scenario: Verify unsupported output format argument issues 400 "Bad request", JSON requested response
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
@@ -182,14 +189,16 @@ Feature: Import GeoPackage
       And the response ContentType should be "application/json"
       And the json object "response.success" equals "false"
       And the json object "response.error" equals "Unsupported input format: 'badFormat'"
-
+      
+  @Status404
   Scenario: Verify import to a non existent repository issues 404 "Not found", JSON requested response
     Given There is an empty multirepo server
       And I have a geopackage file @gpkgFile
      When I post @gpkgFile as "fileUpload" to "/repos/badRepo/import.json?format=gpkg"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/json"
+      And the json object "response.success" equals "false"
+      And the json object "response.error" equals "Repository not found."
 
   Scenario: Import to an empty repository, JSON requested response
     Given There is an empty repository named targetRepo

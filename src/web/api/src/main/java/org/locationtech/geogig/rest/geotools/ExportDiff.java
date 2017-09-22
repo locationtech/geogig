@@ -11,12 +11,10 @@ package org.locationtech.geogig.rest.geotools;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
-import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.Representations;
@@ -25,8 +23,6 @@ import org.locationtech.geogig.rest.geotools.Export.OutputFormat;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.restlet.data.MediaType;
-import org.restlet.resource.Representation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -88,7 +84,7 @@ public class ExportDiff extends AbstractWebAPICommand {
     }
 
     @Override
-    protected boolean requiresTransaction() {
+    public boolean requiresTransaction() {
         return false;
     }
 
@@ -149,19 +145,7 @@ public class ExportDiff extends AbstractWebAPICommand {
         }
         final AsyncCommand<?> asyncCommand = asyncContext.run(command, commandDescription);
 
-        Function<MediaType, Representation> rep = new Function<MediaType, Representation>() {
-
-            private final String baseUrl = context.getBaseURL();
-
-            @Override
-            public Representation apply(MediaType mediaType) {
-                AsyncCommandRepresentation<?> repr;
-                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl, false);
-                return repr;
-            }
-        };
-
-        context.setResponse(rep);
+        context.setResponseContent(Representations.newRepresentation(asyncCommand, false));
     }
 
     private OutputFormat resolveOutputFormat() {

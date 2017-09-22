@@ -122,12 +122,13 @@ public class LsTree extends AbstractWebAPICommand {
 
         final Context geogig = this.getRepositoryContext(context);
 
+        final Iterator<NodeRef> iter = geogig.command(LsTreeOp.class).setReference(ref)
+                .setStrategy(lsStrategy).call();
+
         context.setResponseContent(new CommandResponse() {
 
             @Override
             public void write(ResponseWriter out) throws Exception {
-                final Iterator<NodeRef> iter = geogig.command(LsTreeOp.class).setReference(ref)
-                        .setStrategy(lsStrategy).call();
                 out.start(true);
                 out.writeLsTreeResponse(iter, verbose);
                 out.finish();

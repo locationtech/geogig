@@ -9,12 +9,9 @@
  */
 package org.locationtech.geogig.web.api;
 
-import static org.restlet.data.MediaType.APPLICATION_XML;
-import static org.restlet.data.MediaType.TEXT_XML;
-
 import java.io.Writer;
 
-import org.restlet.data.MediaType;
+import org.springframework.http.MediaType;
 
 /**
  *
@@ -29,7 +26,6 @@ public class XMLStreamingWriterService implements StreamingWriterService {
     @Override
     public boolean handles(MediaType mediaType) {
         // true if the main/sub-types match, ignore extra parameters
-        return APPLICATION_XML.equals(mediaType, true) || TEXT_XML.equals(mediaType, true);
+        return MediaType.APPLICATION_XML.equals(mediaType) || MediaType.TEXT_XML.equals(mediaType);
     }
-
 }

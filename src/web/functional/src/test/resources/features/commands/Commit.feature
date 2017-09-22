@@ -3,24 +3,28 @@ Feature: Commit
   The commit command allows a user to commit staged changes and is supported through the "/repos/{repository}/commit" endpoint
   The command must be executed using the HTTP GET method
 
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/commit"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
       
+  @Status500
   Scenario: Commit outside of a transaction issues 500 "Transaction required"
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/commit"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "No transaction was specified"
       
+  @Status404
   Scenario: Commit outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/commit"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
       
   Scenario: Calling commit with no changes creates an empty commit
     Given There is an empty repository named repo1
@@ -46,7 +50,6 @@ Feature: Commit
       And the xpath "/response/added/text()" equals "0"
       And the xpath "/response/changed/text()" equals "0"
       And the xpath "/response/deleted/text()" equals "0"
-      
        
   Scenario: Calling commit with staged features commits all staged features
     Given There is an empty repository named repo1

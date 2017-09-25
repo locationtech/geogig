@@ -1,11 +1,12 @@
-/* Copyright (c) 2013-2016 Boundless and others.
+/* Copyright (c) 2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Johnathan Garrett (LMN Solutions) - initial implementation
+ * Johnathan Garrett (LMN Solutions) - initial implementation as part of Fetch/ClopeOpTest
+ * Gabiel Roldan (Boundless) refactored from Fetch/CloneOpTest into this sparse clone specific test suite
  */
 package org.locationtech.geogig.test.integration.remoting;
 

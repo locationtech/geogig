@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 Boundless and others.
+/* Copyright (c) 2012-2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -44,6 +44,11 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+/**
+ * {@link CloneOpTest} integration test suite for full clones (for shallow and sparse clones see
+ * {@link ShallowCloneTest} and {@link SparseCloneTest})
+ *
+ */
 public class CloneOpTest extends RemoteRepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -259,55 +264,6 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         }
 
         assertEquals(expectedMaster, logged);
-    }
-
-    @Test
-    public void testShallowClone() throws Exception {
-        // Commit several features to the remote
-        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        LinkedList<RevCommit> expected = new LinkedList<RevCommit>();
-
-        for (Feature f : features) {
-            ObjectId oId = insertAndAdd(remoteGeogig.geogig, f);
-            final RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
-            expected.addFirst(commit);
-            Optional<RevObject> childObject = remoteGeogig.geogig.command(RevObjectParse.class)
-                    .setObjectId(oId).call();
-            assertTrue(childObject.isPresent());
-        }
-
-        // Make sure the remote has all of the commits
-        Iterator<RevCommit> logs = remoteGeogig.geogig.command(LogOp.class).call();
-        List<RevCommit> logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
-        assertEquals(expected, logged);
-
-        // Make sure the local repository has no commits prior to clone
-        logs = localGeogig.geogig.command(LogOp.class).call();
-        assertNotNull(logs);
-        assertFalse(logs.hasNext());
-
-        // clone from the remote
-        CloneOp clone = cloneOp();
-        clone.setDepth(2);
-        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI());
-        clone.setCloneURI(localGeogig.envHome.toURI());
-        clone.call();
-
-        // Make sure the local repository got only 2 commits
-        logs = localGeogig.geogig.command(LogOp.class).call();
-        logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
-        assertEquals(2, logged.size());
-        assertEquals(expected.get(0), logged.get(0));
-        assertEquals(expected.get(1), logged.get(1));
     }
 
     @Test

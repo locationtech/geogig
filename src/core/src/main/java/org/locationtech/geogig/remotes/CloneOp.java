@@ -154,7 +154,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
             final Integer depth = this.depth.or(() -> getRemoteDepth(remote));
             setDepth(cloneRepo, depth);
 
-            final Iterable<ChangedRef> refs = fetchRemoteData(cloneRepo, remote, depth);
+            final Iterable<RefDiff> refs = fetchRemoteData(cloneRepo, remote, depth);
             setUpRemoteTrackingBranches(cloneRepo, remote, refs);
 
         } catch (Exception e) {
@@ -179,7 +179,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
         }
     }
 
-    private Collection<ChangedRef> fetchRemoteData(final Repository clone, final Remote remote,
+    private Collection<RefDiff> fetchRemoteData(final Repository clone, final Remote remote,
             final int depth) {
         // Fetch remote data
         final TransferSummary fetchResults;
@@ -192,9 +192,9 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
                 .setProgressListener(progress)//
                 .call();
 
-        Map<String, Collection<ChangedRef>> RefDiffs = fetchResults.getRefDiffs();
+        Map<String, Collection<RefDiff>> RefDiffs = fetchResults.getRefDiffs();
         String fetchURL = remote.getFetchURL();
-        Collection<ChangedRef> refs = RefDiffs.get(fetchURL);
+        Collection<RefDiff> refs = RefDiffs.get(fetchURL);
         if (refs == null) {
             refs = ImmutableList.of();
         }
@@ -219,11 +219,11 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
     }
 
     private void setUpRemoteTrackingBranches(Repository clone, Remote remote,
-            Iterable<ChangedRef> refs) {
+            Iterable<RefDiff> refs) {
 
         boolean emptyRepo = true;
 
-        for (ChangedRef r : refs) {
+        for (RefDiff r : refs) {
             Ref remoteRef = r.getNewRef();
 
             if (emptyRepo && !remoteRef.getObjectId().isNull()) {

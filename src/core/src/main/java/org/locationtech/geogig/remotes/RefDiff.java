@@ -1,6 +1,8 @@
 package org.locationtech.geogig.remotes;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 
@@ -9,7 +11,7 @@ import com.google.common.base.MoreObjects;
 /**
  * Represents the state of a {@link Ref} at two different points in time
  */
-public class ChangedRef {
+public class RefDiff {
 
     public enum Type {
         ADDED_REF, REMOVED_REF, CHANGED_REF
@@ -19,28 +21,31 @@ public class ChangedRef {
 
     private @Nullable Ref newRef;
 
-    public ChangedRef(@Nullable Ref oldRef, @Nullable Ref newRef) {
+    public RefDiff(@Nullable Ref oldRef, @Nullable Ref newRef) {
         checkArgument(oldRef != null || newRef != null);
-//        checkArgument(oldRef != null && newRef != null ? oldRef.getName().equals(newRef.getName())
-//                : true);
+        // REVISIT: enable check once we switch to the new remoting command implementations and this
+        // class is effectively immutable
+        // checkArgument(oldRef != null && newRef != null ?
+        // oldRef.getName().equals(newRef.getName())
+        // : true);
         this.oldRef = oldRef;
         this.newRef = newRef;
     }
 
-    public static ChangedRef added(Ref ref) {
+    public static RefDiff added(Ref ref) {
         checkNotNull(ref);
-        return new ChangedRef(null, ref);
+        return new RefDiff(null, ref);
     }
 
-    public static ChangedRef removed(Ref ref) {
+    public static RefDiff removed(Ref ref) {
         checkNotNull(ref);
-        return new ChangedRef(ref, null);
+        return new RefDiff(ref, null);
     }
 
-    public static ChangedRef updated(Ref oldRef, Ref newRef) {
+    public static RefDiff updated(Ref oldRef, Ref newRef) {
         checkNotNull(oldRef);
         checkNotNull(newRef);
-        return new ChangedRef(oldRef, newRef);
+        return new RefDiff(oldRef, newRef);
     }
 
     public boolean isDelete() {
@@ -67,11 +72,15 @@ public class ChangedRef {
         return newRef;
     }
 
+    /**
+     * @deprecated to be removed once we switch to the new remoting command implementations and this
+     *             class is effectively immutable
+     */
     public void setNewRef(Ref newRef) {
         this.newRef = newRef;
     }
 
-    public ChangedRef.Type getType() {
+    public RefDiff.Type getType() {
         Type type = Type.CHANGED_REF;
         if (oldRef == null) {
             type = Type.ADDED_REF;
@@ -83,7 +92,7 @@ public class ChangedRef {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(ChangedRef.class) //
+        return MoreObjects.toStringHelper(RefDiff.class) //
                 .addValue(getType()) //
                 .addValue(oldRef) //
                 .addValue(newRef) //

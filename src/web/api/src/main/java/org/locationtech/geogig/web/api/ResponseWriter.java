@@ -48,7 +48,7 @@ import org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.porcelain.BlameReport;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.remotes.ChangedRef;
+import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.porcelain.ValueAndCommit;
@@ -785,11 +785,11 @@ public class ResponseWriter {
     public void writeFetchResponse(TransferSummary result) throws StreamWriterException {
         out.writeStartElement("Fetch");
         if (result.getRefDiffs().entrySet().size() > 0) {
-            for (Entry<String, Collection<ChangedRef>> entry : result.getRefDiffs().entrySet()) {
+            for (Entry<String, Collection<RefDiff>> entry : result.getRefDiffs().entrySet()) {
                 out.writeStartElement("Remote");
                 writeElement("remoteURL", entry.getKey());
                 out.writeStartArray("Branch");
-                for (ChangedRef ref : entry.getValue()) {
+                for (RefDiff ref : entry.getValue()) {
                     out.writeStartArrayElement("Branch");
 
                     writeElement("changeType", ref.getType().toString());

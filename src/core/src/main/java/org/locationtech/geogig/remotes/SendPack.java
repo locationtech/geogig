@@ -12,9 +12,9 @@ package org.locationtech.geogig.remotes;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.remotes.ChangedRef.Type.ADDED_REF;
-import static org.locationtech.geogig.remotes.ChangedRef.Type.CHANGED_REF;
-import static org.locationtech.geogig.remotes.ChangedRef.Type.REMOVED_REF;
+import static org.locationtech.geogig.remotes.RefDiff.Type.ADDED_REF;
+import static org.locationtech.geogig.remotes.RefDiff.Type.CHANGED_REF;
+import static org.locationtech.geogig.remotes.RefDiff.Type.REMOVED_REF;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.remotes.ChangedRef.Type;
+import org.locationtech.geogig.remotes.RefDiff.Type;
 import org.locationtech.geogig.remotes.SynchronizationException.StatusCode;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -152,7 +152,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
             if (ref.isDelete()) {
                 Optional<Ref> deleted = remoteRepo.deleteRef(remoteRefSpec);
                 if (deleted.isPresent()) {
-                    ChangedRef deleteResult = ChangedRef.added(deleted.get());
+                    RefDiff deleteResult = RefDiff.added(deleted.get());
                     result.add(remote.getPushURL(), deleteResult);
                 }
             } else {
@@ -162,7 +162,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
                 Optional<Ref> newRef = push(remoteRepo, remote, localRef.get(), remoteRefSpec);
 
                 if (newRef.isPresent()) {
-                    ChangedRef deleteResult = new ChangedRef(localRef.get(), newRef.get());
+                    RefDiff deleteResult = new RefDiff(localRef.get(), newRef.get());
                     result.add(remote.getPushURL(), deleteResult);
                 }
             }

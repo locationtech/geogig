@@ -11,6 +11,8 @@ package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Set;
+
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
@@ -23,6 +25,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 /**
  * Connects to the specified remote, retrieves its {@link Ref refs}, closes the remote connection
@@ -36,18 +39,20 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
     // optional, if not supplied #remote is mandatory, if supplied #local must be false
     private IRemoteRepo remoteRepo;
 
-    private boolean getHeads;
+    private boolean getHead = false;
 
-    private boolean getTags;
+    private boolean getBranches = true;
 
-    private boolean local;
+    private boolean getTags = true;
+
+    private boolean local = false;
 
     /**
      * Constructs a new {@code LsRemote}.
      */
     public LsRemoteOp() {
         this.remote = Suppliers.ofInstance(Optional.absent());
-        this.getHeads = true;
+        this.getBranches = true;
         this.getTags = true;
     }
 
@@ -61,9 +66,15 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
         return this;
     }
 
+    public LsRemoteOp setRemote(Remote remote) {
+        this.remote = Suppliers.ofInstance(Optional.of(remote));
+        this.remoteRepo = null;
+        return this;
+    }
+
     public LsRemoteOp setRemote(IRemoteRepo remoteRepo) {
         this.remoteRepo = remoteRepo;
-        this.remote = Suppliers.ofInstance(Optional.absent());
+        this.remote = () -> Optional.of(remoteRepo.getInfo());
         return this;
     }
 
@@ -75,11 +86,12 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
     }
 
     /**
-     * @param getHeads tells whether to retrieve remote heads, defaults to {@code true}
+     * @param getHeads tells whether to retrieve remote heads (i.e. branches), defaults to
+     *        {@code true}
      * @return {@code this}
      */
-    public LsRemoteOp retrieveHeads(boolean getHeads) {
-        this.getHeads = getHeads;
+    public LsRemoteOp retrieveBranches(boolean getHeads) {
+        this.getBranches = getHeads;
         return this;
     }
 
@@ -104,6 +116,14 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
     }
 
     /**
+     * Whether to retrieve the remote's {@link Ref#HEAD HEAD} ref, deaults to {@code false}
+     */
+    public LsRemoteOp retrieveHead(boolean getHead) {
+        this.getHead = getHead;
+        return this;
+    }
+
+    /**
      * Lists all refs for the given remote.
      * 
      * @return an immutable set of the refs for the given remote
@@ -122,19 +142,33 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
         }
 
         ImmutableSet<Ref> remoteRefs;
+        IRemoteRepo remoteRepo = this.remoteRepo;
+        final boolean closeRemote = remoteRepo == null;
         if (remoteRepo == null) {
-            try (IRemoteRepo remoteRepo = openRemote(remoteConfig)) {
-                getProgressListener().setDescription("Connected to remote " + remoteConfig.getName()
-                        + ". Retrieving references");
-
-                remoteRefs = remoteRepo.listRefs(repository(), getHeads, getTags);
-
-            }
-        } else {
-            remoteRefs = remoteRepo.listRefs(repository(), getHeads, getTags);
+            remoteRepo = openRemote(remoteConfig);
+            getProgressListener().setDescription(
+                    "Connected to remote " + remoteConfig.getName() + ". Retrieving references");
         }
 
+        Optional<Ref> headRef = Optional.absent();
+        try {
+            remoteRefs = remoteRepo.listRefs(repository(), getBranches, getTags);
+            if (getHead) {
+                headRef = remoteRepo.headRef();
+            }
+        } finally {
+            if (closeRemote) {
+                remoteRepo.close();
+            }
+        }
+
+        if (headRef.isPresent()) {
+            Set<Ref> refs = Sets.newHashSet(remoteRefs);
+            refs.add(headRef.get());
+            remoteRefs = ImmutableSet.copyOf(refs);
+        }
         return remoteRefs;
+
     }
 
     private IRemoteRepo openRemote(Remote remote) {

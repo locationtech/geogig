@@ -13,7 +13,7 @@ import java.io.Closeable;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.remotes.ChangedRef;
+import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.SendPack;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -80,7 +80,7 @@ public interface IRemoteRepo extends Closeable, CommandFactory {
     public void fetchNewData(Repository local, Ref remoteRef, Optional<Integer> fetchLimit,
             ProgressListener progress);
 
-    public default void fetchNewData(final Repository local, Iterable<ChangedRef> refs,
+    public default void fetchNewData(final Repository local, Iterable<RefDiff> refs,
             final Optional<Integer> fetchLimit, final ProgressListener progress) {
         throw new UnsupportedOperationException();
     }

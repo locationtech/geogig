@@ -23,22 +23,22 @@ import com.google.common.collect.ArrayListMultimap;
  */
 public class TransferSummary {
 
-    private ArrayListMultimap<String, ChangedRef> RefDiffs = ArrayListMultimap.create();
+    private ArrayListMultimap<String, RefDiff> RefDiffs = ArrayListMultimap.create();
 
-    public Map<String, Collection<ChangedRef>> getRefDiffs() {
+    public Map<String, Collection<RefDiff>> getRefDiffs() {
         return RefDiffs.asMap();
     }
 
-    public void add(final String remoteURL, final ChangedRef changeResult) {
+    public void add(final String remoteURL, final RefDiff changeResult) {
         checkNotNull(remoteURL);
         checkNotNull(changeResult);
         RefDiffs.put(remoteURL, changeResult);
     }
 
-    public void addAll(final String remoteURL, final List<ChangedRef> changes) {
+    public void addAll(final String remoteURL, final List<RefDiff> changes) {
         checkNotNull(remoteURL);
         checkNotNull(changes);
-        for (ChangedRef cr : changes) {
+        for (RefDiff cr : changes) {
             checkNotNull(cr);
         }
         RefDiffs.putAll(remoteURL, changes);

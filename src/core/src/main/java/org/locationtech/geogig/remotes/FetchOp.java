@@ -13,7 +13,7 @@ package org.locationtech.geogig.remotes;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
-import static org.locationtech.geogig.remotes.ChangedRef.Type.*;
+import static org.locationtech.geogig.remotes.RefDiff.Type.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -236,7 +236,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         TransferSummary result = new TransferSummary();
 
         for (Remote remote : args.remotes) {
-            List<ChangedRef> needUpdate = fetch(remote, args);
+            List<RefDiff> needUpdate = fetch(remote, args);
             if (!needUpdate.isEmpty()) {
                 String fetchURL = remote.getFetchURL();
                 result.addAll(fetchURL, needUpdate);
@@ -257,9 +257,9 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         return result;
     }
 
-    private List<ChangedRef> fetch(Remote remote, FetchArgs args) {
+    private List<RefDiff> fetch(Remote remote, FetchArgs args) {
 
-        List<ChangedRef> needUpdate;
+        List<RefDiff> needUpdate;
 
         try (IRemoteRepo remoteRepo = openRemote(remote)) {
             final Repository repository = repository();
@@ -272,7 +272,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             if (args.prune) {
                 prune(remoteRemoteRefs, localRemoteRefs, needUpdate);
             }
-            for (ChangedRef ref : filter(needUpdate, (r) -> r.getType() != REMOVED_REF)) {
+            for (RefDiff ref : filter(needUpdate, (r) -> r.getType() != REMOVED_REF)) {
                 final Optional<Integer> repoDepth = repository.getDepth();
                 final boolean isShallow = repoDepth.isPresent();
 
@@ -315,7 +315,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     private void prune(final ImmutableSet<Ref> remoteRemoteRefs,
-            final ImmutableSet<Ref> localRemoteRefs, List<ChangedRef> needUpdate) {
+            final ImmutableSet<Ref> localRemoteRefs, List<RefDiff> needUpdate) {
         // Delete local refs that aren't in the remote
         List<Ref> locals = new ArrayList<Ref>();
         // only branches, not tags, appear in the remoteRemoteRefs list so we will not catch
@@ -330,7 +330,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         for (Ref localRef : localRemoteRefs) {
             if (!(localRef instanceof SymRef) && !locals.contains(localRef)) {
                 // Delete the ref
-                ChangedRef RefDiff = new ChangedRef(localRef, null);
+                RefDiff RefDiff = new RefDiff(localRef, null);
                 needUpdate.add(RefDiff);
                 command(UpdateRef.class).setDelete(true).setName(localRef.getName()).call();
             }
@@ -395,10 +395,10 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * Filters the remote references for the given remote that are not present or outdated in the
      * local repository
      */
-    private List<ChangedRef> findOutdatedRefs(Remote remote, ImmutableSet<Ref> remoteRefs,
+    private List<RefDiff> findOutdatedRefs(Remote remote, ImmutableSet<Ref> remoteRefs,
             ImmutableSet<Ref> localRemoteRefs, Optional<Integer> depth) {
 
-        List<ChangedRef> changedRefs = Lists.newLinkedList();
+        List<RefDiff> changedRefs = Lists.newLinkedList();
 
         for (Ref remoteRef : remoteRefs) {// refs/heads/xxx or refs/tags/yyy, though we don't handle
                                           // tags yet
@@ -410,17 +410,17 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             Optional<Ref> local = findLocal(remoteRef, localRemoteRefs);
             if (local.isPresent()) {
                 if (!local.get().getObjectId().equals(remoteRef.getObjectId())) {
-                    ChangedRef changedRef = new ChangedRef(local.get(), remoteRef);
+                    RefDiff changedRef = new RefDiff(local.get(), remoteRef);
                     changedRefs.add(changedRef);
                 } else if (depth.isPresent()) {
                     int commitDepth = graphDatabase().getDepth(local.get().getObjectId());
                     if (depth.get() > commitDepth) {
-                        ChangedRef RefDiff = new ChangedRef(local.get(), remoteRef);
+                        RefDiff RefDiff = new RefDiff(local.get(), remoteRef);
                         changedRefs.add(RefDiff);
                     }
                 }
             } else {
-                ChangedRef RefDiff = new ChangedRef(null, remoteRef);
+                RefDiff RefDiff = new RefDiff(null, remoteRef);
                 changedRefs.add(RefDiff);
             }
         }

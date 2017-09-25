@@ -15,17 +15,17 @@ import java.util.Map.Entry;
 
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.remotes.ChangedRef;
-import org.locationtech.geogig.remotes.ChangedRef.Type;
+import org.locationtech.geogig.remotes.RefDiff;
+import org.locationtech.geogig.remotes.RefDiff.Type;
 import org.locationtech.geogig.remotes.TransferSummary;
 
 class FetchResultPrinter {
 
     public static void print(TransferSummary result, Console console) throws IOException {
-        for (Entry<String, Collection<ChangedRef>> entry : result.getRefDiffs().entrySet()) {
+        for (Entry<String, Collection<RefDiff>> entry : result.getRefDiffs().entrySet()) {
             console.println("From " + entry.getKey());
 
-            for (ChangedRef ref : entry.getValue()) {
+            for (RefDiff ref : entry.getValue()) {
                 String line;
                 if (ref.getType() == Type.CHANGED_REF) {
                     line = "   " + ref.getOldRef().getObjectId().toString().substring(0, 8) + ".."

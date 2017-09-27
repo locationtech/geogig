@@ -98,7 +98,7 @@ Feature: Export GeoPackage
      When I call "GET /tasks/{@taskId}/download"
      Then the result is a valid GeoPackage file
 
-  @Status400 @Erik
+  @Status400
   Scenario: Verify unsupported "format" argument issues 400 "Bad request", JSON output_fomrat requested
     Given There is a default multirepo server
      When I call "GET /repos/repo1/export?format=badFormat&output_format=json"
@@ -107,7 +107,7 @@ Feature: Export GeoPackage
       And the json object "response.success" equals "false"
       And the json object "response.error" equals "Unsupported output format: badFormat"
 
-  @Status400 @Erik
+  @Status400
   Scenario: Verify unsupported "format" argument issues 400 "Bad request", invlaid output_fomrat requested
     Given There is a default multirepo server
      When I call "GET /repos/repo1/export?format=badFormat&output_format=invalid"

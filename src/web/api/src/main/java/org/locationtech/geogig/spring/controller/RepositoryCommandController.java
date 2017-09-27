@@ -14,8 +14,12 @@ import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashSet;
 
@@ -42,6 +46,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -169,7 +174,12 @@ public class RepositoryCommandController extends AbstractController {
             uploadedFile = File.createTempFile(
                     "geogig-" + UPLOAD_FILE_KEY + "-", ".tmp");
             uploadedFile.deleteOnExit();
-            file.transferTo(uploadedFile);
+            // copy the upload data
+            try (InputStream uploadInputStream = file.getInputStream();
+                    OutputStream uploadOutputStream = new BufferedOutputStream(
+                            new FileOutputStream(uploadedFile))) {
+                FileCopyUtils.copy(uploadInputStream, uploadOutputStream);
+            }
         }
         if (webCommand.supports(method)) {
             // build the PArameterSet from the request entity and parameters

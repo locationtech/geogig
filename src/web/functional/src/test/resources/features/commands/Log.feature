@@ -137,7 +137,7 @@ Feature: Log
   @Status500
   Scenario: Using the summary parameter without a path issues a 500 status code
     Given There is a default multirepo server
-     When I call "GET /repos/repo1/log?summary=true"
+     When I call "GET /repos/repo1/log.csv?summary=true"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "You must specify a feature type path when getting a summary."
       
@@ -147,7 +147,7 @@ Feature: Log
      When I call "GET /repos/repo1/log?path=Points&summary=true"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "Unsupported Media Type: This response is only compatible with text/csv."
-      
+
   Scenario: The summary parameter summarizes all of the changes to a feature type as a CSV
     Given There is a default multirepo server
      When I call "GET /repos/repo1/log.csv?since=master~1&path=Points&summary=true"

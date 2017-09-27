@@ -180,6 +180,9 @@ public class PostgisController extends AbstractController {
                         "A transaction with the provided ID could not be found.",
                         HttpStatus.BAD_REQUEST);
             }
+        } else {
+            throw new CommandSpecException(
+                    "No transaction was specified, this command requires a transaction to preserve the stability of the repository.");
         }
         return context;
     }

@@ -153,6 +153,15 @@ public class RequestExceptionHandler extends AbstractController {
         }
 
         @Override
+        public MediaType resolveMediaType(MediaType suggested) {
+            if (MediaType.APPLICATION_JSON.isCompatibleWith(suggested)
+                    || MediaType.APPLICATION_XML.isCompatibleWith(suggested)) {
+                return suggested;
+            }
+            return MediaType.APPLICATION_XML;
+        }
+
+        @Override
         public HttpStatus getStatus() {
             return status;
         }

@@ -11,6 +11,7 @@ package org.locationtech.geogig.spring.main;
 
 import java.io.IOException;
 
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -117,7 +118,10 @@ public class JettyServer {
         contextHandler.setGzipHandler(gzipHandler);
         //contextHandler.setErrorHandler(null);
         contextHandler.setContextPath("/");
-        contextHandler.addServlet(new ServletHolder(new DispatcherServlet(context)), "/");
+        ServletHolder servletHolder = new ServletHolder(new DispatcherServlet(context));
+        // configure the Servlet with Multipart support, just use defaults for now
+        servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement((String)null));
+        contextHandler.addServlet(servletHolder, "/");
         contextHandler.addEventListener(new ContextLoaderListener(context));
         // wrap it with our RequestHandler that inserts the repoProvider into the request attributes
         return new RequestHandlerWrapper(contextHandler, repoProvider);

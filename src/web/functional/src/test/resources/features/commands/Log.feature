@@ -195,7 +195,7 @@ Feature: Log
       And the json object "response.success" equals "true"
       And the json response "response.commit." should contain "id" 3 times
       And the json response "response.commit." should contain "message" 3 times
-@Erik
+
   Scenario: The offset parameter skips a number of log entries. invalid output_format
     Given There is a default multirepo server
      When I call "GET /repos/repo1/log?offset=2&output_format=invalid"

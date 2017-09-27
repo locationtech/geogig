@@ -16,7 +16,6 @@ import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.web.api.StreamWriterException;
-import org.restlet.data.MediaType;
 import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
@@ -29,9 +28,8 @@ import org.locationtech.geogig.web.api.StreamingWriter;
  */
 public class ImportRepresentation extends AsyncCommandRepresentation<RevTree> {
 
-    public ImportRepresentation(MediaType mediaType, AsyncCommand<RevTree> cmd, String baseURL,
-            boolean cleanup) {
-        super(mediaType, cmd, baseURL, cleanup);
+    public ImportRepresentation(AsyncCommand<RevTree> cmd, boolean cleanup) {
+        super(cmd, cleanup);
     }
 
     @Override
@@ -53,9 +51,9 @@ public class ImportRepresentation extends AsyncCommandRepresentation<RevTree> {
 
         @Override
         public AsyncCommandRepresentation<RevTree> newRepresentation(AsyncCommand<RevTree> cmd,
-                MediaType mediaType, String baseURL, boolean cleanup) {
+                boolean cleanup) {
 
-            return new ImportRepresentation(mediaType, cmd, baseURL, cleanup);
+            return new ImportRepresentation(cmd, cleanup);
         }
 
     }

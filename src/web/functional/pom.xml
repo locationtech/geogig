@@ -16,13 +16,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.restlet</groupId>
-      <artifactId>org.restlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.noelios.restlet</groupId>
-      <artifactId>com.noelios.restlet</artifactId>
-      <version>${restlet.version}</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -70,7 +65,7 @@
       <groupId>info.cukes</groupId>
       <artifactId>cucumber-guice</artifactId>
       <version>${cucumber-java.version}</version>
-    </dependency>  
+    </dependency>
     <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.json</artifactId>
@@ -115,6 +110,10 @@
         <artifactId>geogig-rocksdb</artifactId>
         <version>${project.version}</version>
         <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

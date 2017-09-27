@@ -9,8 +9,7 @@
  */
 package org.locationtech.geogig.web.api;
 
-import org.restlet.data.Method;
-import org.restlet.data.Status;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * A basic interface from which all Web API commands will be derived.
@@ -22,11 +21,10 @@ public interface WebAPICommand {
      * 
      * @param context the context for this command
      */
-    void run(CommandContext context);
+    public void run(CommandContext context);
 
     public void setParameters(ParameterSet options);
 
-    boolean supports(Method method);
+    boolean supports(RequestMethod method);
 
-    Status getStatus();
 }

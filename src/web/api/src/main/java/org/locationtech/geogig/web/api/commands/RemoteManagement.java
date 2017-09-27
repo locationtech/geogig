@@ -26,7 +26,7 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Status;
+import org.springframework.http.HttpStatus;
 
 import com.google.common.base.Optional;
 
@@ -200,7 +200,7 @@ public class RemoteManagement extends AbstractWebAPICommand {
                     .setUserName(username).setPassword(password).call();
         } catch (RemoteException re) {
             throw new CommandSpecException(re.statusCode.toString(),
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+                    HttpStatus.BAD_REQUEST);
         }
         context.setResponseContent(new CommandResponse() {
             @Override
@@ -247,7 +247,7 @@ public class RemoteManagement extends AbstractWebAPICommand {
             remote = geogig.command(RemoteRemoveOp.class).setName(remoteName).call();
         } catch (RemoteException e) {
             throw new CommandSpecException(e.statusCode.toString(),
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+                    HttpStatus.BAD_REQUEST);
         }
         context.setResponseContent(new CommandResponse() {
             @Override
@@ -265,7 +265,7 @@ public class RemoteManagement extends AbstractWebAPICommand {
             remote = geogig.command(RemoteResolve.class).setName(remoteName).call();
         } catch (RemoteException re) {
             throw new CommandSpecException(re.statusCode.toString(),
-                    Status.CLIENT_ERROR_BAD_REQUEST);
+                    HttpStatus.BAD_REQUEST);
         }
         boolean remotePingResponse = false;
         if (remote.isPresent()) {

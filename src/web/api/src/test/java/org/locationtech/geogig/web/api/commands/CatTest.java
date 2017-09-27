@@ -33,11 +33,11 @@ import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestParams;
 
 public class CatTest extends AbstractWebOpTest {
 

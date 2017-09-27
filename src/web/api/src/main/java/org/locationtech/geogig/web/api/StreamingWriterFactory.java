@@ -13,7 +13,7 @@ import java.io.Writer;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import org.restlet.data.MediaType;
+import org.springframework.http.MediaType;
 
 /**
  * Factory for retrieving {@link StreamingWriter} implementations.

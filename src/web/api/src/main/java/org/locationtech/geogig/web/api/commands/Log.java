@@ -36,6 +36,8 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.Variants;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -43,12 +45,14 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.locationtech.geogig.web.api.StreamResponse;
+import org.locationtech.geogig.web.api.StreamingWriter;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.springframework.http.MediaType;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 
 /**
@@ -333,11 +337,35 @@ public class Log extends AbstractWebAPICommand {
             });
         } else if (summary) {
             if (paths != null && paths.size() > 0) {
-                context.setResponseContent(new StreamResponse() {
+                context.setResponseContent(new LegacyResponse() {
 
                     @Override
-                    public void write(Writer out) throws Exception {
-                        writeCSV(context.getRepository(), out, log);
+                    public MediaType resolveMediaType(MediaType defaultMediaType) {
+                        if (!defaultMediaType.equals(Variants.CSV_MEDIA_TYPE)) {
+                            throw new CommandSpecException(
+                                    "Unsupported Media Type: This response is only compatible with text/csv.");
+                        }
+                        return Variants.CSV_MEDIA_TYPE;
+                    }
+
+                    @Override
+                    public void encode(Writer writer, MediaType format, String baseUrl) {
+                        if (!format.equals(Variants.CSV_MEDIA_TYPE)) {
+                            throw new CommandSpecException(
+                                    "Unsupported Media Type: This response is only compatible with text/csv.");
+                        }
+                        try {
+                            writeCSV(context.getRepository(), writer, log);
+                        } catch (Exception e) {
+                            Throwables.propagate(e);
+                        }
+
+                    }
+
+                    @Override
+                    protected void encodeInternal(StreamingWriter writer, MediaType format,
+                            String baseUrl) {
+                        // Unused
                     }
                 });
             } else {

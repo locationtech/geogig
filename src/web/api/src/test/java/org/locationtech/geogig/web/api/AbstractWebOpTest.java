@@ -12,8 +12,8 @@ package org.locationtech.geogig.web.api;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -22,10 +22,9 @@ import javax.json.JsonObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.rest.RestletException;
-import org.locationtech.geogig.rest.Variants;
-import org.restlet.data.MediaType;
-import org.restlet.resource.Representation;
+import org.locationtech.geogig.rest.repository.TestParams;
+import org.locationtech.geogig.spring.dto.LegacyResponse;
+import org.springframework.http.MediaType;
 
 import com.google.common.base.Throwables;
 
@@ -81,7 +80,7 @@ public abstract class AbstractWebOpTest {
             testContext.createUninitializedRepo();
             WebAPICommand cmd = buildCommand(null);
 
-            ex.expect(RestletException.class);
+            ex.expect(CommandSpecException.class);
             ex.expectMessage("Repository not found.");
             cmd.run(testContext.get());
         }
@@ -107,19 +106,14 @@ public abstract class AbstractWebOpTest {
         return command;
     }
 
-    public Representation getResponseRepresentation(MediaType mediaType) {
-        Representation representation = testContext.getRepresentation(mediaType);
-        return representation;
-    }
-
     public JsonObject getJSONResponse() {
         JsonObject response = null;
         try {
-            Representation representation = getResponseRepresentation(Variants.JSON.getMediaType());
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            representation.write(out);
+            LegacyResponse commandResponse = testContext.getCommandResponse();
+            StringWriter writer = new StringWriter();
+            commandResponse.encode(writer, MediaType.APPLICATION_JSON, "/geogig");
 
-            String content = out.toString();
+            String content = writer.toString();
             response = Json.createReader(new StringReader(content)).readObject();
         } catch (Exception e) {
             Throwables.propagate(e);

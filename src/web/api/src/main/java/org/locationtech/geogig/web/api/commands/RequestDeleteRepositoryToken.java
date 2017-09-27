@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.rest.repository.DeleteRepository;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -45,6 +44,10 @@ public class RequestDeleteRepositoryToken extends AbstractWebAPICommand {
         return false;
     }
 
+    public static String deleteKeyForToken(String token) {
+        return "command/delete/" + token;
+    }
+
     /**
      * Runs the command and builds the appropriate response
      * 
@@ -61,7 +64,7 @@ public class RequestDeleteRepositoryToken extends AbstractWebAPICommand {
         rnd.nextBytes(bytes);
         String deleteToken = Hashing.sipHash24().hashBytes(bytes).toString();
 
-        final String deleteKey = DeleteRepository.deleteKeyForToken(deleteToken);
+        final String deleteKey = deleteKeyForToken(deleteToken);
 
         final long now = geogig.platform().currentTimeMillis();
         byte[] nowBytes = ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong(now).array();

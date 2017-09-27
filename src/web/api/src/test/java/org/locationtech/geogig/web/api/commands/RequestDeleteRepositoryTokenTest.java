@@ -14,10 +14,10 @@ import static org.junit.Assert.assertTrue;
 import javax.json.JsonObject;
 
 import org.junit.Test;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
 public class RequestDeleteRepositoryTokenTest extends AbstractWebOpTest {

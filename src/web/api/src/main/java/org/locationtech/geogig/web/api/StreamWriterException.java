@@ -14,6 +14,8 @@ package org.locationtech.geogig.web.api;
  */
 public class StreamWriterException extends RuntimeException {
 
+    private static final long serialVersionUID = -3196319765350505927L;
+
     public StreamWriterException() {
     }
 

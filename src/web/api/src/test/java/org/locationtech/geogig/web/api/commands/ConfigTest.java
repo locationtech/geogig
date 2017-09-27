@@ -23,13 +23,13 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.junit.Test;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
-import org.restlet.data.Method;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Optional;
 
@@ -132,7 +132,7 @@ public class ConfigTest extends AbstractWebOpTest {
 
         ParameterSet options = TestParams.of("name", "config.key1", "value", "myTestValue");
         WebAPICommand cmd = buildCommand(options);
-        testContext.setRequestMethod(Method.POST);
+        testContext.setRequestMethod(RequestMethod.POST);
         cmd.run(testContext.get());
 
         Optional<String> value = configDb.get("config.key1");
@@ -148,7 +148,7 @@ public class ConfigTest extends AbstractWebOpTest {
     public void testConfigSetNoValue() throws Exception {
         ParameterSet options = TestParams.of("name", "config.key1");
         WebAPICommand cmd = buildCommand(options);
-        testContext.setRequestMethod(Method.POST);
+        testContext.setRequestMethod(RequestMethod.POST);
 
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("You must specify the value when setting a config key.");
@@ -159,7 +159,7 @@ public class ConfigTest extends AbstractWebOpTest {
     public void testConfigSetNoName() throws Exception {
         ParameterSet options = TestParams.of("value", "myTestValue");
         WebAPICommand cmd = buildCommand(options);
-        testContext.setRequestMethod(Method.POST);
+        testContext.setRequestMethod(RequestMethod.POST);
 
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("You must specify the key when setting a config key.");

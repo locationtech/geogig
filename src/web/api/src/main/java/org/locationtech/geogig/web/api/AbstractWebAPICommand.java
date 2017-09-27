@@ -15,9 +15,8 @@ import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
-import org.locationtech.geogig.rest.RestletException;
-import org.restlet.data.Method;
-import org.restlet.data.Status;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Optional;
 
@@ -28,8 +27,6 @@ import com.google.common.base.Optional;
 public abstract class AbstractWebAPICommand implements WebAPICommand {
 
     private UUID transactionId = null;
-
-    private Status commandStatus = Status.SUCCESS_OK;
 
     protected AbstractWebAPICommand() {
     }
@@ -47,8 +44,8 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
     protected abstract void setParametersInternal(ParameterSet options);
 
     @Override
-    public boolean supports(final Method method) {
-        return Method.GET.equals(method);
+    public boolean supports(final RequestMethod method) {
+        return RequestMethod.GET.equals(method);
     }
 
     /**
@@ -56,7 +53,7 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
      * 
      * @return whether or not this command requires an open repository.
      */
-    protected boolean requiresOpenRepo() {
+    public boolean requiresOpenRepo() {
         return true;
     }
 
@@ -65,7 +62,7 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
      * 
      * @return whether or not this command requires a transaction.
      */
-    protected boolean requiresTransaction() {
+    public boolean requiresTransaction() {
         return true;
     }
 
@@ -89,24 +86,6 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
         }
     }
 
-    /**
-     * Accessor for the status of the command
-     * 
-     * @return the command status.
-     */
-    @Override
-    public Status getStatus() {
-        return commandStatus;
-    }
-
-    /**
-     * Mutator for the command status.
-     * 
-     * @param status - the status of the command
-     */
-    protected void setStatus(Status status) {
-        this.commandStatus = status;
-    }
 
     /**
      * This function either builds a GeoGigTransaction to run commands off of if there is a
@@ -119,30 +98,31 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
         if (requiresTransaction() || transactionId != null) {
             return getTransactionContext(context);
         }
-        return context.context();
+        return context.getRepository().context();
     }
-    
+
     private Context getTransactionContext(CommandContext context) {
         if (transactionId == null) {
             throw new CommandSpecException(
                     "No transaction was specified, this command requires a transaction to preserve the stability of the repository.");
         } else {
-            Optional<GeogigTransaction> transaction = context.context()
+            Optional<GeogigTransaction> transaction = context.getRepository()
                     .command(TransactionResolve.class).setId(transactionId).call();
             if (transaction.isPresent()) {
                 return transaction.get();
             } else {
-                throw new RestletException("A transaction with the provided ID could not be found.",
-                        org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST);
+                throw new CommandSpecException(
+                        "A transaction with the provided ID could not be found.",
+                        HttpStatus.BAD_REQUEST);
             }
         }
     }
 
+    @Override
     public void run(CommandContext context) {
         Repository repo = context.getRepository();
         if (requiresOpenRepo() && (null == repo || !repo.isOpen())) {
-            throw new RestletException("Repository not found.",
-                    org.restlet.data.Status.CLIENT_ERROR_NOT_FOUND);
+            throw new CommandSpecException("Repository not found.", HttpStatus.NOT_FOUND);
         }
         runInternal(context);
     }

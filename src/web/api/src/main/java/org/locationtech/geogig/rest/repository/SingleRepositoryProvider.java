@@ -11,12 +11,12 @@ package org.locationtech.geogig.rest.repository;
 
 import java.net.URI;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -33,13 +33,28 @@ public class SingleRepositoryProvider implements RepositoryProvider {
     }
 
     @Override
-    public Optional<Repository> getGeogig(Request request) {
-        return Optional.of(repo);
+    public Optional<Repository> getGeogig(final String repositoryName) {
+        return Optional.fromNullable(repo);
     }
 
     @Override
-    public void delete(Request request) {
-        Repository repo = getGeogig(request).orNull();
+    public boolean hasGeoGig(String repositoryName) {
+        if (repo != null) {
+            String repoName = repo.command(ResolveRepositoryName.class).call();
+            return repoName.equals(repositoryName);
+        }
+        return false;
+    }
+
+    @Override
+    public Repository createGeogig(final String repositoryName,
+            final Map<String, String> parameters) {
+        throw new UnsupportedOperationException(
+                "Cannot create a repository with the single repo provider.");
+    }
+
+    @Override
+    public void delete(String repoName) {
         Preconditions.checkState(repo != null, "No repository to delete.");
         Optional<URI> repoUri = repo.command(ResolveGeogigURI.class).call();
         Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
@@ -50,7 +65,6 @@ public class SingleRepositoryProvider implements RepositoryProvider {
         } catch (Exception e) {
             Throwables.propagate(e);
         }
-
     }
 
     @Override
@@ -65,5 +79,19 @@ public class SingleRepositoryProvider implements RepositoryProvider {
         }
         String repoName = repo.command(ResolveRepositoryName.class).call();
         return Iterators.singletonIterator(repoName);
+    }
+
+    @Override
+    public String getMaskedLocationString(Repository repo, String repoName) {
+        if (repo != null) {
+            return repo.getLocation() != null ? repo.getLocation().toString() : null;
+        }
+        return null;
+    }
+
+    @Override
+    public String getRepositoryId(String repoName) {
+        // no ID applicable
+        return null;
     }
 }

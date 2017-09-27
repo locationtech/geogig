@@ -9,24 +9,18 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import java.util.function.Function;
-
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Representations;
-import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.resource.Representation;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -84,12 +78,9 @@ import com.google.common.base.Preconditions;
  * <b>NOTE 1</b>: {@link DataStoreImportContextService} implementations may add additional format
  * specific request parameters.
  * <p>
- * <b>NOTE 2</b>: Currently, this operation is bound to the <i>import</i> command in the Web API.
- * This means that {@link UploadCommandResource} is involved in executing this operation. The
- * implementation of {@link UploadCommandResource} requires a file to be uploaded in the POST. The
- * file uploaded is added into the {@link ParameterSet} that is passed to the constructor of
- * instances of this operation. {@link DataStoreImportContextService} implementations may need to
- * access this upload to perform format specific functions, so it is passed along.
+ * <b>NOTE 2</b>: The file uploaded is added into the {@link ParameterSet} that is passed to the
+ * constructor of instances of this operation. {@link DataStoreImportContextService} implementations
+ * may need to access this upload to perform format specific functions, so it is passed along.
  * <p>
  * Usage: <br>
  * <b>
@@ -195,25 +186,12 @@ public class Import extends AbstractWebAPICommand {
         final AsyncContext.AsyncCommand<?> asyncCommand = asyncContext.run(command,
                 commandDescription);
 
-        Function<MediaType, Representation> rep = new Function<MediaType, Representation>() {
-
-            private final String baseUrl = context.getBaseURL();
-
-            @Override
-            public Representation apply(MediaType mediaType) {
-                AsyncCommandRepresentation<?> repr;
-                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl, true);
-                return repr;
-
-            }
-        };
-
-        context.setResponse(rep);
+        context.setResponseContent(Representations.newRepresentation(asyncCommand, false));
     }
 
     @Override
-    public boolean supports(Method method) {
-        return Method.POST.equals(method);
+    public boolean supports(RequestMethod method) {
+        return RequestMethod.POST.equals(method);
     }
 
     private DataStoreImportOp<?> buildImportOp(

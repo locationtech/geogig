@@ -11,7 +11,7 @@ package org.locationtech.geogig.web.api;
 
 import java.io.Writer;
 
-import org.restlet.data.MediaType;
+import org.springframework.http.MediaType;
 
 /**
  *
@@ -26,7 +26,6 @@ public class JSONStreamingWriterService implements StreamingWriterService {
     @Override
     public boolean handles(MediaType mediaType) {
         // true if the main/sub-types match, ignore extra parameters
-        return MediaType.APPLICATION_JSON.equals(mediaType, true);
+        return MediaType.APPLICATION_JSON.equals(mediaType);
     }
-
 }

@@ -17,7 +17,6 @@ import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamWriterException;
-import org.restlet.data.MediaType;
 import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
@@ -27,9 +26,9 @@ import org.locationtech.geogig.web.api.StreamingWriter;
  */
 public class DataStoreImportRepresentation extends AsyncCommandRepresentation<RevCommit> {
 
-    public DataStoreImportRepresentation(MediaType mediaType,
-            AsyncContext.AsyncCommand<RevCommit> cmd, String baseURL, boolean cleanup) {
-        super(mediaType, cmd, baseURL, cleanup);
+    public DataStoreImportRepresentation(AsyncContext.AsyncCommand<RevCommit> cmd,
+            boolean cleanup) {
+        super(cmd, cleanup);
     }
 
     @Override
@@ -49,9 +48,8 @@ public class DataStoreImportRepresentation extends AsyncCommandRepresentation<Re
 
         @Override
         public AsyncCommandRepresentation<RevCommit> newRepresentation(
-                AsyncContext.AsyncCommand<RevCommit> cmd, MediaType mediaType, String baseURL,
-                boolean cleanup) {
-            return new DataStoreImportRepresentation(mediaType, cmd, baseURL, cleanup);
+                AsyncContext.AsyncCommand<RevCommit> cmd, boolean cleanup) {
+            return new DataStoreImportRepresentation(cmd, cleanup);
         }
 
     }

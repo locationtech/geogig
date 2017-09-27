@@ -3,12 +3,16 @@ Feature: IndexUpdate
   The Index Update command allows a user to update the spatial index with extra attributes
   The command must be executed using the HTTP POST method
 
+  @Status404
   Scenario: Index update fails with non-existent repository
     Given There is an empty multirepo server
      When I call "POST /repos/noRepo/index/update?treeRefSpec=Points&extraAttributes=ip&add=true"
-     Then the response body should contain "Repository not found."
       And the response status should be '404'
-
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
+      
+  @Status405
   Scenario: Verify method not allowed on incorrect request type
     Given There is a repo with some data
      When I call "GET /repos/repo1/index/update?treeRefSpec=Points&extraAttributes=ip&add=true"
@@ -220,7 +224,7 @@ Feature: IndexUpdate
           |    Point.1   | 
       And the response status should be '201'
       
-   
+  @Status500
   Scenario: Verify 500 status code when tree ref spec is not provided
     Given There is a repo with some data
      When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"

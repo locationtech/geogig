@@ -26,17 +26,16 @@ import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geotools.Export;
 import org.locationtech.geogig.rest.geotools.Export.OutputFormat;
-import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.StreamWriterException;
-import org.restlet.data.MediaType;
+import org.locationtech.geogig.web.api.StreamingWriter;
+import org.springframework.http.MediaType;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
-
-import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * {@link OutputFormat} implementation for exporting from a repository snapshot to a geopackage
@@ -165,17 +164,16 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
 
         @Override
         public AsyncCommandRepresentation<File> newRepresentation(AsyncCommand<File> cmd,
-                MediaType mediaType, String baseURL, boolean cleanup) {
+                boolean cleanup) {
 
-            return new GeopgkExportRepresentation(mediaType, cmd, baseURL, cleanup);
+            return new GeopgkExportRepresentation(cmd, cleanup);
         }
     }
 
     public static class GeopgkExportRepresentation extends AsyncCommandRepresentation<File> {
 
-        public GeopgkExportRepresentation(MediaType mediaType, AsyncCommand<File> cmd,
-                String baseURL, boolean cleanup) {
-            super(mediaType, cmd, baseURL, cleanup);
+        public GeopgkExportRepresentation(AsyncCommand<File> cmd, boolean cleanup) {
+            super(cmd, cleanup);
         }
 
         @Override
@@ -188,13 +186,12 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
 
         private void encodeDownloadURL(StreamingWriter w, String link) throws StreamWriterException {
 
-            final MediaType format = getMediaType();
             final MediaType outputFormat = Variants.GEOPKG_MEDIA_TYPE;
 
             w.writeStartElement("atom:link");
             w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
             w.writeAttribute("rel", "alternate");
-            w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, null));
+            w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, (MediaType)null));
             w.writeAttribute("type", outputFormat.toString());
             w.writeEndElement();
         }

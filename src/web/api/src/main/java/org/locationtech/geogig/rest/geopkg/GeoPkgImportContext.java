@@ -35,16 +35,15 @@ import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
-import org.locationtech.geogig.rest.repository.UploadCommandResource;
-import org.locationtech.geogig.storage.impl.RocksdbMap;
+import org.locationtech.geogig.spring.controller.RepositoryCommandController;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.impl.RocksdbMap;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamingWriter;
-import org.restlet.data.MediaType;
 
 import com.google.common.base.Optional;
 
@@ -112,7 +111,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             final HashMap<String, Serializable> params = new HashMap<>(3);
             if (uploadedFile == null) {
                 throw new CommandSpecException("Request must specify one and only one "
-                    + UploadCommandResource.UPLOAD_FILE_KEY + " in the request body");
+                        + RepositoryCommandController.UPLOAD_FILE_KEY + " in the request body");
             }
             // fill in DataStore parameters
             params.put(GeoPkgDataStoreFactory.DBTYPE.key, "geopkg");
@@ -150,19 +149,18 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
 
         @Override
         public AsyncCommandRepresentation<GeopkgImportResult> newRepresentation(
-                AsyncCommand<GeopkgImportResult> cmd, MediaType mediaType, String baseURL,
-                boolean cleanup) {
+                AsyncCommand<GeopkgImportResult> cmd, boolean cleanup) {
 
-            return new GeopkgAuditImportRepresentation(mediaType, cmd, baseURL, cleanup);
+            return new GeopkgAuditImportRepresentation(cmd, cleanup);
         }
     }
 
     public static class GeopkgAuditImportRepresentation
             extends AsyncCommandRepresentation<GeopkgImportResult> {
 
-        public GeopkgAuditImportRepresentation(MediaType mediaType,
-                AsyncCommand<GeopkgImportResult> cmd, String baseURL, boolean cleanup) {
-            super(mediaType, cmd, baseURL, cleanup);
+        public GeopkgAuditImportRepresentation(AsyncCommand<GeopkgImportResult> cmd,
+                boolean cleanup) {
+            super(cmd, cleanup);
         }
 
         @Override

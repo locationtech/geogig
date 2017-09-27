@@ -25,8 +25,8 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.restlet.data.Method;
-import org.restlet.data.Status;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Allows a user to rename a repository.
@@ -46,8 +46,8 @@ public class RenameRepository extends AbstractWebAPICommand {
     }
 
     @Override
-    public boolean supports(final Method method) {
-        return Method.POST.equals(method);
+    public boolean supports(final RequestMethod method) {
+        return RequestMethod.POST.equals(method);
     }
 
     /**
@@ -86,10 +86,14 @@ public class RenameRepository extends AbstractWebAPICommand {
 
         final String repositoryName = name;
 
-        setStatus(Status.REDIRECTION_PERMANENT);
         context.getRepositoryProvider().invalidate(oldRepoName);
 
         context.setResponseContent(new CommandResponse() {
+            @Override
+            public HttpStatus getStatus() {
+                return HttpStatus.MOVED_PERMANENTLY;
+            }
+
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();

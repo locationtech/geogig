@@ -354,6 +354,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                 connection.setDoInput(true);
                 connection.setUseCaches(false);
                 connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/octet-stream");
                 connection.setChunkedStreamingMode(4096);
                 connection.setRequestProperty("content-length", "-1");
                 connection.setRequestProperty("content-encoding", "gzip");
@@ -420,6 +421,8 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
             OutputStream out;
             final Writer writer;
             connection = (HttpURLConnection) resourceURL.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
             connection.setDoOutput(true);
             connection.setDoInput(true);
             connection.addRequestProperty("Accept-Encoding", "gzip");

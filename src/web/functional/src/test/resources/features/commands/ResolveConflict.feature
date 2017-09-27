@@ -3,25 +3,30 @@ Feature: ResolveConflict
   The ResolveConflict command allows a user to resolve a conflict with a specific objectId and is supported through the "/repos/{repository}/resolveconflict" endpoint
   The command must be executed using the HTTP GET method
 
+  @Status405
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty repository named repo1
      When I call "PUT /repos/repo1/resolveconflict"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
       
+  @Status500
   Scenario: ResolveConflict outside of a transaction issues 500 "Transaction required"
     Given There is an empty repository named repo1
      When I call "GET /repos/repo1/resolveconflict?path=somePath/1&objectid=someId"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "No transaction was specified"
       
+  @Status404
   Scenario: ResolveConflict outside of a repository issues 404 "Not found"
     Given There is an empty multirepo server
      When I call "GET /repos/repo1/resolveconflict?path=somePath/1&objectid=someId"
      Then the response status should be '404'
-      And the response ContentType should be "text/plain"
-      And the response body should contain "Repository not found"
+      And the response ContentType should be "application/xml"
+      And the xpath "/response/success/text()" equals "false"
+      And the xpath "/response/error/text()" equals "Repository not found."
       
+  @Status500
   Scenario: ResolveConflict without a path issues a 500 status code
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
@@ -29,13 +34,15 @@ Feature: ResolveConflict
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "Required parameter 'path' was not provided."
       
+  @Status500
   Scenario: ResolveConflict without an object ID issues a 500 status code
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo
      When I call "GET /repos/repo1/resolveconflict?transactionId={@txId}&path=Points/Point.1"
      Then the response status should be '500'
       And the xpath "/response/error/text()" contains "Required parameter 'objectid' was not provided."
-         
+      
+  @Status400
   Scenario: ResolveConflict with an invalid path issues a 400 status code
     Given There is an empty repository named repo1
       And I have a transaction as "@txId" on the "repo1" repo

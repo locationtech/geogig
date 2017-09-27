@@ -76,7 +76,7 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.feature.type.PropertyType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.restlet.data.MediaType;
+import org.springframework.http.MediaType;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -119,7 +119,6 @@ public class ResponseWriter {
      */
     public void finish() throws StreamWriterException {
         out.writeEndElement(); // results
-        out.writeEndDocument();
     }
 
     /**
@@ -138,7 +137,6 @@ public class ResponseWriter {
      * @throws StreamWriterException
      */
     public void start(boolean success) throws StreamWriterException {
-        out.writeStartDocument();
         out.writeStartElement("response");
         writeElement("success", Boolean.toString(success));
     }

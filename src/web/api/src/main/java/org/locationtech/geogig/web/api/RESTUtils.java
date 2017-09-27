@@ -12,36 +12,16 @@ package org.locationtech.geogig.web.api;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.rest.repository.RepositoryProvider;
-import org.restlet.data.MediaType;
-import org.restlet.data.Request;
+import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
+import org.springframework.http.MediaType;
+
 import com.google.common.base.Throwables;
 
 public class RESTUtils {
 
-    public static Optional<Repository> getGeogig(Request request) {
-        RepositoryProvider provider = repositoryProvider(request);
-        Optional<Repository> geogig = provider.getGeogig(request);
-        return geogig;
-    }
-
-    public static RepositoryProvider repositoryProvider(Request request) {
-        Object provider = request.getAttributes().get(RepositoryProvider.KEY);
-        Preconditions.checkNotNull(provider,
-                "No RepositoryProvider found in request attributes under the key %s",
-                RepositoryProvider.KEY);
-        Preconditions.checkState(provider instanceof RepositoryProvider,
-                "Request attribute %s is not of type RepositoryProvider: %s",
-                RepositoryProvider.KEY, provider.getClass());
-        return (RepositoryProvider) provider;
-    }
-
-    public static String getStringAttribute(final Request request, final String key) {
-        Object value = request.getAttributes().get(key);
+    public static String getStringAttribute(final HttpServletRequest request, final String key) {
+        Object value = request.getAttribute(key);
         if (value == null) {
             return null;
         }
@@ -55,16 +35,14 @@ public class RESTUtils {
 
     public static void encodeAlternateAtomLink(MediaType format, StreamingWriter w, String href)
             throws StreamWriterException {
-        if ("xml".equalsIgnoreCase(format.getSubType())) {
+        if ("xml".equalsIgnoreCase(format.getSubtype())) {
             w.writeStartElement("atom:link");
             w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
             w.writeAttribute("rel", "alternate");
             w.writeAttribute("href", href);
-            if (format != null) {
-                w.writeAttribute("type", format.toString());
-            }
+            w.writeAttribute("type", format.toString());
             w.writeEndElement();
-        } else if (MediaType.APPLICATION_JSON.equals(format, true)) {
+        } else if (org.springframework.http.MediaType.APPLICATION_JSON.equals(format)) {
             w.writeAttribute("href", href);
         }
     }
@@ -75,7 +53,7 @@ public class RESTUtils {
         // try to figure out extension
         String ext = null;
         if (format != null) {
-            ext = format.getSubType();
+            ext = format.getSubtype();
         }
 
         if (ext != null && ext.length() > 0) {

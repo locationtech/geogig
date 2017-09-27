@@ -11,16 +11,7 @@ package org.locationtech.geogig.rest.repository;
 
 import static org.locationtech.geogig.repository.Hints.REPOSITORY_NAME;
 import static org.locationtech.geogig.repository.Hints.REPOSITORY_URL;
-import static org.locationtech.geogig.rest.repository.InitRequestUtil.DB_HOST;
-import static org.locationtech.geogig.rest.repository.InitRequestUtil.DB_NAME;
-import static org.locationtech.geogig.rest.repository.InitRequestUtil.DB_PASSWORD;
-import static org.locationtech.geogig.rest.repository.InitRequestUtil.DB_PORT;
-import static org.locationtech.geogig.rest.repository.InitRequestUtil.DB_SCHEMA;
-import static org.locationtech.geogig.rest.repository.InitRequestUtil.DB_USER;
-import static org.locationtech.geogig.rest.repository.InitRequestUtil.DIR_PARENT_DIR;
 import static org.locationtech.geogig.rest.repository.InitRequestUtil.REPO_ATTR;
-import static org.restlet.data.MediaType.APPLICATION_JSON;
-import static org.restlet.data.MediaType.APPLICATION_WWW_FORM;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,39 +19,63 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.rest.RestletException;
-import org.restlet.data.Form;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Parameter;
-import org.restlet.data.Request;
-import org.restlet.resource.Representation;
-import org.restlet.resource.StringRepresentation;
+import org.locationtech.geogig.spring.config.GeoGigWebAPISpringConfig;
+import org.locationtech.geogig.spring.dto.InitRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
+import com.beust.jcommander.internal.Maps;
 import com.google.common.base.Optional;
 
-/**
- *
- */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { GeoGigWebAPISpringConfig.class })
+@WebAppConfiguration
 public class InitRequestUtilTest {
+
+    @Autowired
+    private WebApplicationContext appContext;
 
     @Rule
     public TemporaryFolder repoFolder = new TemporaryFolder();
 
-    private Request buildRequest(Representation entity) {
-        Request request = new Request(Method.PUT, "fake uri", entity);
-        request.getAttributes().put(REPO_ATTR, "testRepo");
-        return request;
+    private MockMvc mockMvc;
+
+    @Before
+    public void setup() {
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.appContext).build();
+    }
+
+    private MockHttpServletRequest buildRequest(@Nullable String content,
+            @Nullable MediaType contentType) {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.put("fake uri");
+        request.requestAttr(REPO_ATTR, "testRepo");
+        if (content != null) {
+            request.content(content);
+        }
+        if (contentType != null) {
+            request.contentType(contentType);
+        }
+        return request.buildRequest(appContext.getServletContext());
     }
 
     private void assertRepositoryName(Hints hints) {
@@ -69,22 +84,12 @@ public class InitRequestUtilTest {
                 hints.get(REPOSITORY_NAME).get());
     }
 
-    @Test(expected = RestletException.class)
-    public void testMissingRepositoryName() throws URISyntaxException, IOException, UnsupportedEncodingException,
-            RepositoryConnectionException {
-        Request request = new Request(Method.PUT, "fake uri");
-        // build the Hints without a repository name getting in the attributes
-        // should throw an Exception
-        Hints hints = InitRequestUtil.createHintsFromRequest(request);
-    }
-
     @Test
     public void testCreateGeoGIG_RepositoryName() throws URISyntaxException, IOException, UnsupportedEncodingException,
             RepositoryConnectionException {
-        // build an Init request with only a repository name
-        Request request = buildRequest(null);
-        // create the Hints from the request
-        Hints hints = InitRequestUtil.createHintsFromRequest(request);
+        Map<String, String> params = Maps.newHashMap();
+        Hints hints = InitRequestUtil.createHintsFromParameters("testRepo", params);
+
         // assert the correct Repository Name is in the Hints
         assertRepositoryName(hints);
         // REPOSITORY_URI should NOT be set in the Hints, it should be generated by the Repository
@@ -94,21 +99,15 @@ public class InitRequestUtilTest {
     }
 
     @Test
-    public void testJSONMediaType() throws URISyntaxException, IOException, UnsupportedEncodingException,
+    public void testFileRepo() throws URISyntaxException, IOException, UnsupportedEncodingException,
             RepositoryConnectionException {
         // temp directory for the repo
         File repoDir = repoFolder.getRoot().getAbsoluteFile().getCanonicalFile();
-        // populate a JSON payload for a Directory repo
-        JsonObject jsonObject = Json.createObjectBuilder()
-                .add(DIR_PARENT_DIR, repoDir.getCanonicalPath())
-                .build();
-        StringRepresentation entity = new StringRepresentation(jsonObject.toString(), APPLICATION_JSON);
-        // ensure the Content-Type is JSON
-        Assert.assertEquals("Bad MediaType", APPLICATION_JSON, entity.getMediaType());
-        // build the request
-        Request request = buildRequest(entity);
+        InitRequest request = new InitRequest();
+        request.setParentDirectory(repoDir.getCanonicalPath());
         // create the Hints from the Request
-        Hints hints = InitRequestUtil.createHintsFromRequest(request);
+        Hints hints = InitRequestUtil.createHintsFromParameters("testRepo",
+                request.getParameters());
         // assert the correct Repository Name is in the Hints
         assertRepositoryName(hints);
         // REPOSITORY_URI should be set in the Hints
@@ -122,52 +121,12 @@ public class InitRequestUtilTest {
     @Test
     public void testPGRepo() throws URISyntaxException, IOException, UnsupportedEncodingException,
             RepositoryConnectionException {
-        // populate a JSON payload for a PG repo
-        JsonObject jsonObject = Json.createObjectBuilder()
-        // add the DB attributes with no defaults at a minimum
-                .add(DB_NAME, "pgDatabaseName")
-                .add(DB_PASSWORD, "fakePassword")
-                .build();
-        StringRepresentation entity = new StringRepresentation(jsonObject.toString(), APPLICATION_JSON);
-        // ensure the Content-Type is JSON
-        Assert.assertEquals("Bad MediaType", APPLICATION_JSON, entity.getMediaType());
-        // build the Request
-        Request request = buildRequest(entity);
-        // create the Hints from the Request
-        Hints hints = InitRequestUtil.createHintsFromRequest(request);
-        // assert the correct Repository Name is in the Hints
-        assertRepositoryName(hints);
-        // REPOSITORY_URI should be set in the Hints
-        Optional<Serializable> repoURL = hints.get(REPOSITORY_URL);
-        Assert.assertTrue("Expected REPOSIOTRY_URL to be PRESENT", repoURL.isPresent());
-        URI actual = URI.create(repoURL.get().toString());
-        Assert.assertEquals("Unexpected URI Scheme", "postgresql", actual.getScheme());
-        Assert.assertEquals("Unexpected URI Host", "localhost", actual.getHost());
-        Assert.assertEquals("Unexpected URI Port", 5432, actual.getPort());
-        Assert.assertEquals("Unexpected URI Path", "/pgDatabaseName/public/testRepo", actual.getPath());
-        Assert.assertEquals("Unexpected URI Query", "user=postgres&password=fakePassword", actual.getQuery());
-    }
+        InitRequest request = new InitRequest();
+        request.setDbName("pgDatabaseName").setDbPassword("fakePassword").setDbSchema("fakeSchema")
+                .setDbUser("fakeUser").setDbHost("fakeHost").setDbPort(8899);
 
-    @Test
-    public void testAllPGParameters() throws URISyntaxException, IOException, UnsupportedEncodingException,
-            RepositoryConnectionException {
-        // populate a JSON payload for a PG repo
-        JsonObject jsonObject = Json.createObjectBuilder()
-        // add the DB attributes with no defaults at a minimum
-                .add(DB_NAME, "pgDatabaseName")
-                .add(DB_PASSWORD, "fakePassword")
-                .add(DB_SCHEMA, "fakeSchema")
-                .add(DB_USER, "fakeUser")
-                .add(DB_HOST, "fakeHost")
-                .add(DB_PORT, "8899")
-                .build();
-        StringRepresentation entity = new StringRepresentation(jsonObject.toString(), APPLICATION_JSON);
-        // ensure the Content-Type is JSON
-        Assert.assertEquals("Bad MediaType", APPLICATION_JSON, entity.getMediaType());
-        // build the Request
-        Request request = buildRequest(entity);
-        // create the Hints from the Request
-        Hints hints = InitRequestUtil.createHintsFromRequest(request);
+        Hints hints = InitRequestUtil.createHintsFromParameters("testRepo",
+                request.getParameters());
         // assert the correct Repository Name is in the Hints
         assertRepositoryName(hints);
         // REPOSITORY_URI should be set in the Hints
@@ -181,93 +140,5 @@ public class InitRequestUtilTest {
         Assert.assertEquals("Unexpected URI Port", 8899, actual.getPort());
         Assert.assertEquals("Unexpected URI Path", "/pgDatabaseName/fakeSchema/testRepo", actual.getPath());
         Assert.assertEquals("Unexpected URI Query", "user=fakeUser&password=fakePassword", actual.getQuery());
-    }
-
-    @Test
-    public void testPGRepoBadPort() throws URISyntaxException, IOException, UnsupportedEncodingException,
-            RepositoryConnectionException {
-        // populate a JSON payload for a PG repo
-        JsonObject jsonObject = Json.createObjectBuilder()
-        // add the DB attributes with no defaults at a minimum
-                .add(DB_NAME, "pgDatabaseName")
-                .add(DB_PASSWORD, "fakePassword")
-                // fill in junk for port
-                .add(DB_PORT, "non-parsable integer")
-                .build();
-        StringRepresentation entity = new StringRepresentation(jsonObject.toString(), APPLICATION_JSON);
-        // ensure the Content-Type is JSON
-        Assert.assertEquals("Bad MediaType", APPLICATION_JSON, entity.getMediaType());
-        // build the Request
-        Request request = buildRequest(entity);
-        // create the Hints from the Request
-        Hints hints = InitRequestUtil.createHintsFromRequest(request);
-        // assert the correct Repository Name is in the Hints
-        assertRepositoryName(hints);
-        // REPOSITORY_URI should be set in the Hints
-        Optional<Serializable> repoURL = hints.get(REPOSITORY_URL);
-        Assert.assertTrue("Expected REPOSIOTRY_URL to be PRESENT", repoURL.isPresent());
-        URI actual = URI.create(repoURL.get().toString());
-        Assert.assertEquals("Unexpected URI Scheme", "postgresql", actual.getScheme());
-        // default Postgres config
-        Assert.assertEquals("Unexpected URI Scheme", "postgresql", actual.getScheme());
-        Assert.assertEquals("Unexpected URI Host", "localhost", actual.getHost());
-        Assert.assertEquals("Unexpected URI Port", 5432, actual.getPort());
-        Assert.assertEquals("Unexpected URI Path", "/pgDatabaseName/public/testRepo", actual.getPath());
-        Assert.assertEquals("Unexpected URI Query", "user=postgres&password=fakePassword", actual.getQuery());
-    }
-
-    @Test
-    public void testURLEncodedForm() throws URISyntaxException, IOException, UnsupportedEncodingException,
-            RepositoryConnectionException {
-        // build an Init request with only a repository name
-        Request request = buildRequest(null);
-        // set the form encoded data
-        StringBuilder data = new StringBuilder(128);
-        data.append(DB_NAME).append("=").append("pgDatabaseName").append("&");
-        data.append(DB_PASSWORD).append("=").append("fakePassword").append("&");
-        data.append(DB_SCHEMA).append("=").append("fakeSchema").append("&");
-        data.append(DB_USER).append("=").append("fakeUser").append("&");
-        data.append(DB_HOST).append("=").append("fakeHost").append("&");
-        data.append(DB_PORT).append("=").append("8899");
-        request.setEntity(data.toString(), APPLICATION_WWW_FORM);
-        // create the Hints from the Request
-        Hints hints = InitRequestUtil.createHintsFromRequest(request);
-        // assert the correct Repository Name is in the Hints
-        assertRepositoryName(hints);
-        // REPOSITORY_URI should be set in the Hints
-        Optional<Serializable> repoURL = hints.get(REPOSITORY_URL);
-        Assert.assertTrue("Expected REPOSIOTRY_URL to be PRESENT", repoURL.isPresent());
-        URI actual = URI.create(repoURL.get().toString());
-        Assert.assertEquals("Unexpected URI Scheme", "postgresql", actual.getScheme());
-        // default Postgres config
-        // assert the attributes we built into the JSON request
-        Assert.assertEquals("Unexpected URI Scheme", "postgresql", actual.getScheme());
-        Assert.assertEquals("Unexpected URI Host", "fakeHost", actual.getHost());
-        Assert.assertEquals("Unexpected URI Port", 8899, actual.getPort());
-        Assert.assertEquals("Unexpected URI Path", "/pgDatabaseName/fakeSchema/testRepo", actual.getPath());
-        Assert.assertEquals("Unexpected URI Query", "user=fakeUser&password=fakePassword", actual.getQuery());
-    }
-    @Test
-    public void testCharsetContentType() throws Exception {
-        // temp directory for the repo
-        File repoDir = repoFolder.getRoot().getAbsoluteFile().getCanonicalFile();
-        // populate a JSON payload for a Directory repo
-        JsonObject jsonObject = Json.createObjectBuilder()
-                .add(DIR_PARENT_DIR, repoDir.getCanonicalPath())
-                .build();
-        // create a Media Type with charset
-        Parameter charset = new Parameter("charset", "utf-8");
-        Form form = new Form();
-        form.add(charset);
-        MediaType mt = new MediaType("application/json", form);
-        StringRepresentation entity = new StringRepresentation(jsonObject.toString(), mt);
-        // ensure the Content-Type is JSON, regardless of charset
-        Assert.assertTrue("Bad MediaType", APPLICATION_JSON.equals(entity.getMediaType(), true));
-        // build the request
-        Request request = buildRequest(entity);
-        // create the Hints from the Request
-        Hints hints = InitRequestUtil.createHintsFromRequest(request);
-        // assert the correct Repository Name is in the Hints
-        assertRepositoryName(hints);
     }
 }

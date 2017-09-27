@@ -23,13 +23,13 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestParams;
-import org.restlet.data.Method;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.ImmutableList;
 
@@ -108,7 +108,7 @@ public class TagTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
         ex.expect(CommandSpecException.class);
         ex.expectMessage("You must specify the tag name to delete.");
-        testContext.setRequestMethod(Method.DELETE);
+        testContext.setRequestMethod(RequestMethod.DELETE);
         buildCommand(options).run(testContext.get());
     }
 
@@ -132,7 +132,7 @@ public class TagTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "nonexistent");
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("Wrong tag name: nonexistent");
-        testContext.setRequestMethod(Method.DELETE);
+        testContext.setRequestMethod(RequestMethod.DELETE);
         buildCommand(options).run(testContext.get());
     }
 
@@ -154,7 +154,7 @@ public class TagTest extends AbstractWebOpTest {
                 .call();
 
         ParameterSet options = TestParams.of("name", "Branch1Tag");
-        testContext.setRequestMethod(Method.DELETE);
+        testContext.setRequestMethod(RequestMethod.DELETE);
         buildCommand(options).run(testContext.get());
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
@@ -177,7 +177,7 @@ public class TagTest extends AbstractWebOpTest {
         ex.expect(CommandSpecException.class);
         ex.expectMessage(
                 "You must specify list or delete, or provide a name, message, and commit for the new tag.");
-        testContext.setRequestMethod(Method.PUT);
+        testContext.setRequestMethod(RequestMethod.PUT);
         buildCommand(options).run(testContext.get());
     }
 
@@ -191,7 +191,7 @@ public class TagTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "MasterTag");
         ex.expect(CommandSpecException.class);
         ex.expectMessage("You must specify a commit to point the tag to.");
-        testContext.setRequestMethod(Method.PUT);
+        testContext.setRequestMethod(RequestMethod.PUT);
         buildCommand(options).run(testContext.get());
     }
 
@@ -205,7 +205,7 @@ public class TagTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "MasterTag", "commit", "nonexistent");
         ex.expect(CommandSpecException.class);
         ex.expectMessage("'nonexistent' could not be resolved.");
-        testContext.setRequestMethod(Method.PUT);
+        testContext.setRequestMethod(RequestMethod.PUT);
         buildCommand(options).run(testContext.get());
     }
 
@@ -220,7 +220,7 @@ public class TagTest extends AbstractWebOpTest {
                 .setName(Ref.MASTER).call().get();
 
         ParameterSet options = TestParams.of("name", "MasterTag", "commit", "master");
-        testContext.setRequestMethod(Method.PUT);
+        testContext.setRequestMethod(RequestMethod.PUT);
         buildCommand(options).run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
@@ -248,7 +248,7 @@ public class TagTest extends AbstractWebOpTest {
 
         ParameterSet options = TestParams.of("name", "MasterTag", "commit", "master", "message",
                 "My tag message");
-        testContext.setRequestMethod(Method.PUT);
+        testContext.setRequestMethod(RequestMethod.PUT);
         buildCommand(options).run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");

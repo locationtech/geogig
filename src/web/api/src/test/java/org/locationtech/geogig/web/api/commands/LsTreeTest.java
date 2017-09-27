@@ -19,11 +19,11 @@ import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.TestParams;
 
 public class LsTreeTest extends AbstractWebOpTest {
 
@@ -159,5 +159,19 @@ public class LsTreeTest extends AbstractWebOpTest {
         JsonArray nodes = response.getJsonArray("node");
         String expected = "[{\"path\":\"Point.1\"},{\"path\":\"Point.2\"},{\"path\":\"Point.3\"}]";
         assertTrue(jsonEquals(toJSONArray(expected), nodes, false));
+    }
+
+    @Test
+    public void testWrongPath() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        testData.loadDefaultData();
+
+        ParameterSet options = TestParams.of("showTree", "true", "recursive", "true", "path",
+                "nonexistent");
+        ex.expect(IllegalArgumentException.class);
+        ex.expectMessage("Invalid reference: nonexistent");
+        buildCommand(options).run(testContext.get());
     }
 }

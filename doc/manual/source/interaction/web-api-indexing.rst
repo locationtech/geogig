@@ -1,3 +1,5 @@
+.. _web-api-indexing-commands:
+
 Web API: Indexing Commands
 ==========================
 

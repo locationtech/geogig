@@ -56,7 +56,7 @@ public class SymRef extends Ref {
         return String.format("SymRef[%s -> Ref[%s -> %s]]", getName(), target, getObjectId());
     }
 
-    public Ref peel() {
+    public @Override Ref peel() {
         return new Ref(target, getObjectId());
     }
 

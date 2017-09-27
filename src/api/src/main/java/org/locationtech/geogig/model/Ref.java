@@ -287,4 +287,8 @@ public class Ref implements Comparable<Ref> {
         }
         return relative;
     }
+
+    public Ref peel() {
+        return this;
+    }
 }

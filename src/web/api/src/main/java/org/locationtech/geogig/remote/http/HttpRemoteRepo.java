@@ -36,12 +36,17 @@ import org.locationtech.geogig.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.porcelain.ConfigGet;
 import org.locationtech.geogig.remote.http.BinaryPackedObjects.IngestResults;
 import org.locationtech.geogig.remote.http.HttpUtils.ReportingOutputStream;
+import org.locationtech.geogig.remote.http.pack.HttpReceivePackClient;
+import org.locationtech.geogig.remote.http.pack.HttpSendPackClient;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.internal.AbstractRemoteRepo;
 import org.locationtech.geogig.remotes.internal.CommitTraverser;
 import org.locationtech.geogig.remotes.internal.ObjectFunnel;
 import org.locationtech.geogig.remotes.internal.ObjectFunnels;
 import org.locationtech.geogig.remotes.internal.RepositoryWrapper;
+import org.locationtech.geogig.remotes.pack.ReceivePackOp;
+import org.locationtech.geogig.remotes.pack.SendPackOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
@@ -493,5 +498,14 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
     @Override
     public Optional<Integer> getDepth() {
         return HttpUtils.getDepth(repositoryURL, null);
+    }
+
+    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+        if (SendPackOp.class.equals(commandClass)) {
+            return commandClass.cast(new HttpSendPackClient(this));
+        } else if (ReceivePackOp.class.equals(commandClass)) {
+            return commandClass.cast(new HttpReceivePackClient(this));
+        }
+        return super.command(commandClass);
     }
 }

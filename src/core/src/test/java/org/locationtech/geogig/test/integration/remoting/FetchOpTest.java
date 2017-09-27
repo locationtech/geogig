@@ -34,6 +34,7 @@ import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.remotes.RemoteRemoveOp;
+import org.locationtech.geogig.test.TestSupport;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -132,6 +133,8 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
         List<RevTag> tags = localGeogig.geogig.command(TagListOp.class).call();
         assertEquals(1, tags.size());
+
+        TestSupport.verifyRepositoryContents(localGeogig.geogig.getRepository());
     }
 
     private void verifyPrune() throws Exception {

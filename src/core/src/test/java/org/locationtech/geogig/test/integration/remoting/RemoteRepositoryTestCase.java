@@ -35,6 +35,7 @@ import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
@@ -52,6 +53,7 @@ import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.LocalRemoteResolver;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Remote;
@@ -65,16 +67,19 @@ import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.TestContextBuilder;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RemoteRepositoryTestCase {
@@ -301,14 +306,13 @@ public abstract class RemoteRepositoryTestCase {
         //
     }
 
-    protected Feature feature(SimpleFeatureType type, String id, Object... values)
-            throws ParseException {
+    protected Feature feature(SimpleFeatureType type, String id, Object... values) {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
             if (type.getDescriptor(i) instanceof GeometryDescriptor) {
                 if (value instanceof String) {
-                    value = new WKTReader2().read((String) value);
+                    value = geom((String) value);
                 }
             }
             builder.set(i, value);
@@ -348,7 +352,14 @@ public abstract class RemoteRepositoryTestCase {
     protected ObjectId insertAndAdd(GeoGIG geogig, Feature f) throws Exception {
         ObjectId objectId = insert(geogig, f);
 
-        geogig.command(AddOp.class).call();
+        add(geogig);
+        return objectId;
+    }
+
+    protected ObjectId insertAndAdd(Repository geogig, Feature f) throws Exception {
+        ObjectId objectId = insert(geogig, f);
+
+        add(geogig);
         return objectId;
     }
 
@@ -356,11 +367,15 @@ public abstract class RemoteRepositoryTestCase {
      * Inserts the feature to the index but does not stages it to be committed
      */
     protected ObjectId insert(GeoGIG geogig, Feature f) throws Exception {
-        final WorkingTree workTree = geogig.getRepository().workingTree();
+        return insert(geogig.getRepository(), f);
+    }
+
+    protected ObjectId insert(Repository repo, Feature f) throws Exception {
+        final WorkingTree workTree = repo.workingTree();
         Name name = f.getType().getName();
         String parentPath = name.getLocalPart();
         RevFeatureType type = RevFeatureTypeBuilder.build(f.getType());
-        geogig.getRepository().objectDatabase().put(type);
+        repo.objectDatabase().put(type);
         String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
         FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(f), type.getId(), path);
         workTree.insert(fi);
@@ -369,13 +384,52 @@ public abstract class RemoteRepositoryTestCase {
 
     protected void insertAndAdd(GeoGIG geogig, Feature... features) throws Exception {
         insert(geogig, features);
-        geogig.command(AddOp.class).call();
+        add(geogig);
+    }
+
+    protected void add(GeoGIG geogig) {
+        add(geogig.getRepository());
+    }
+
+    protected void add(Repository repo) {
+        repo.command(AddOp.class).call();
+    }
+
+    protected Geometry geom(String wkt) {
+        try {
+            return new WKTReader2().read(wkt);
+        } catch (ParseException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    protected void insert(Repository repo, Iterable<? extends Feature> features) throws Exception {
+        WorkingTree workingTree = repo.workingTree();
+
+        FeatureType type = features.iterator().next().getType();
+
+        repo.objectDatabase().put(RevFeatureTypeBuilder.build(type));
+
+        final String treePath = type.getName().getLocalPart();
+
+        Iterable<FeatureInfo> featureInfos = Iterables.transform(features,
+                (f) -> featureInfo(treePath, f));
+
+        workingTree.insert(featureInfos.iterator(), new DefaultProgressListener());
     }
 
     protected void insert(GeoGIG geogig, Feature... features) throws Exception {
         for (Feature f : features) {
             insert(geogig, f);
         }
+    }
+
+    public FeatureInfo featureInfo(String treePath, Feature f) {
+        final String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+        RevFeature feature = RevFeatureBuilder.build(f);
+        FeatureType type = f.getType();
+        RevFeatureType ftype = RevFeatureTypeBuilder.build(type);
+        return FeatureInfo.insert(feature, ftype.getId(), path);
     }
 
     /**
@@ -388,7 +442,7 @@ public abstract class RemoteRepositoryTestCase {
     protected boolean deleteAndAdd(GeoGIG geogig, Feature f) throws Exception {
         boolean existed = delete(geogig, f);
         if (existed) {
-            geogig.command(AddOp.class).call();
+            add(geogig);
         }
 
         return existed;

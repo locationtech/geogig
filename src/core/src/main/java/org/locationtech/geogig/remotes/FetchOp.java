@@ -13,7 +13,8 @@ package org.locationtech.geogig.remotes;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
-import static org.locationtech.geogig.remotes.RefDiff.Type.*;
+import static org.locationtech.geogig.remotes.RefDiff.Type.ADDED_REF;
+import static org.locationtech.geogig.remotes.RefDiff.Type.REMOVED_REF;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -230,6 +232,24 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     protected TransferSummary _call() {
         final Repository repository = repository();
         final FetchArgs args = argsBuilder.build(repository);
+        {
+            // defer to the new FetchOp implementation as long as it's not a shallow or sparse clone
+            // UNTIL its ready for shallow and sparse clones.
+            boolean isHttp = isHttp(args);// don't call new fetch on http(s) remotes until it's
+                                          // ready
+            boolean isShallow = repository.getDepth().isPresent() || anyRemoteIsShallow(args);
+            boolean isSparse = RepositoryImpl.getFilter(repository).isPresent();
+            if (!(isHttp || isShallow || isSparse)) {
+                return command(org.locationtech.geogig.remotes.pack.FetchOp.class)//
+                        .setAll(argsBuilder.all)//
+                        .setDepth(argsBuilder.depth.or(0))//
+                        .setFullDepth(argsBuilder.fullDepth)//
+                        .setPrune(argsBuilder.prune)//
+                        .addRemotes(argsBuilder.remotes)//
+                        .setProgressListener(getProgressListener())//
+                        .call();
+            }
+        }
 
         getProgressListener().started();
 
@@ -255,6 +275,27 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         getProgressListener().complete();
 
         return result;
+    }
+
+    private boolean isHttp(FetchArgs args) {
+        for (Remote r : args.remotes) {
+            if (r.getFetchURL().startsWith("http")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean anyRemoteIsShallow(FetchArgs args) {
+        for (Remote remote : args.remotes) {
+            try (IRemoteRepo repo = openRemote(remote)) {
+                Integer depth = repo.getDepth().or(0);
+                if (depth.intValue() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private List<RefDiff> fetch(Remote remote, FetchArgs args) {
@@ -378,15 +419,16 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         if (remoteRef instanceof SymRef) {
             String targetBranch = Ref.localName(((SymRef) remoteRef).getTarget());
             String newTarget = Ref.REMOTES_PREFIX + remote.getName() + "/" + targetBranch;
-            command(UpdateSymRef.class).setName(refName).setNewValue(newTarget).call();
+            updatedRef = command(UpdateSymRef.class).setName(refName).setNewValue(newTarget).call()
+                    .get();
         } else {
             ObjectId effectiveId = remoteRef.getObjectId();
 
             if (remote.getMapped() && !repository().commitExists(remoteRef.getObjectId())) {
                 effectiveId = graphDatabase().getMapping(effectiveId);
-                updatedRef = new Ref(remoteRef.getName(), effectiveId);
             }
-            command(UpdateRef.class).setName(refName).setNewValue(effectiveId).call();
+            updatedRef = command(UpdateRef.class).setName(refName).setNewValue(effectiveId).call()
+                    .get();
         }
         return updatedRef;
     }
@@ -446,10 +488,5 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             }
             return Optional.absent();
         }
-    }
-
-    public FetchOp omitTags() {
-        argsBuilder.fetchTags = false;
-        return this;
     }
 }

@@ -117,6 +117,8 @@ public class FetchTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "\"},"
                 + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
                 + master.getObjectId().toString() + "\"}]";
+        System.err.println(expected);
+        System.err.println(branch);
         assertTrue(jsonEquals(toJSONArray(expected), branch, false));
     }
 

@@ -28,6 +28,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.remotes.CloneOp;
@@ -35,6 +36,7 @@ import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestData;
+import org.locationtech.geogig.test.TestSupport;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -117,6 +119,8 @@ public class PullTest extends AbstractWebOpTest {
         assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
+        TestSupport.verifyRepositoryContents(geogig);
+
         assertTrue(response.getBoolean("success"));
         JsonObject pull = response.getJsonObject("Pull");
         JsonObject remoteObject = pull.getJsonObject("Fetch").getJsonObject("Remote");
@@ -220,6 +224,8 @@ public class PullTest extends AbstractWebOpTest {
 
         geogig.command(CloneOp.class).setRepositoryURL(remoteURI.toURL().toString()).call();
 
+        TestSupport.verifyRepositoryContents(geogig);
+
         ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
 
@@ -291,6 +297,7 @@ public class PullTest extends AbstractWebOpTest {
 
         URI remoteURI = remoteGeogig.command(ResolveGeogigURI.class).call().get();
         geogig.command(CloneOp.class).setRepositoryURL(remoteURI.toURL().toString()).call();
+        TestSupport.verifySameContents(remoteGeogig, geogig);
 
         remoteTestData.insert(TestData.point1_modified);
         remoteTestData.add();
@@ -303,8 +310,10 @@ public class PullTest extends AbstractWebOpTest {
 
         ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
+        TestSupport.verifyRepositoryContents(geogig);
 
         JsonObject response = getJSONResponse().getJsonObject("response");
+
         assertTrue(response.getBoolean("success"));
         JsonObject merge = response.getJsonObject("Merge");
         assertEquals(ours.getId().toString(), merge.getString("ours"));
@@ -342,8 +351,12 @@ public class PullTest extends AbstractWebOpTest {
         testData.init();
         testData.checkout("master");
 
-        URI remoteURI = remoteGeogig.command(ResolveGeogigURI.class).call().get();
-        geogig.command(CloneOp.class).setRepositoryURL(remoteURI.toURL().toString()).call();
+        geogig.command(CloneOp.class)//
+                .setRemoteURI(remoteGeogig.getLocation())//
+                .setCloneURI(geogig.getLocation())//
+                .call();
+
+        TestSupport.verifySameContents(remoteGeogig, geogig);
 
         remoteTestData.insert(TestData.point1_modified);
         remoteTestData.add();
@@ -354,6 +367,7 @@ public class PullTest extends AbstractWebOpTest {
         testData.add();
         RevCommit ours = geogig.command(CommitOp.class).setMessage("remove point1").call();
         testData.branchAndCheckout("branch1");
+        assertTrue(geogig.command(FindTreeChild.class).setChildPath("Points").call().isPresent());
 
         ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master:branch1");
         buildCommand(options).run(testContext.get());

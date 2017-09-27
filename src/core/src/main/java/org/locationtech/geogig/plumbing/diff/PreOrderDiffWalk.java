@@ -427,7 +427,9 @@ public class PreOrderDiffWalk {
 
                     ltree = lbucket == null ? RevTree.EMPTY : trees.get(lbucket.getObjectId());
                     rtree = rbucket == null ? RevTree.EMPTY : trees.get(rbucket.getObjectId());
-
+                    checkNotNull(ltree, "tree of %s not found ", lbucket);
+                    checkNotNull(rtree, "tree of %s not found ", rbucket);
+                    
                     WalkAction task;
                     task = new TraverseBucketBucket(info, ltree, rtree, lbucket, rbucket, index);
                     tasks.add(task);

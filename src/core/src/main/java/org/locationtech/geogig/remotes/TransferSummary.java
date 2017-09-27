@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ArrayListMultimap;
 
 /**
@@ -46,7 +46,7 @@ public class TransferSummary {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(TransferSummary.class) //
+        return MoreObjects.toStringHelper(TransferSummary.class) //
                 .addValue(RefDiffs) //
                 .toString();
     }

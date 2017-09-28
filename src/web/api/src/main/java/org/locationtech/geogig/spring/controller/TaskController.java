@@ -72,14 +72,29 @@ public class TaskController extends AbstractController {
         encode(new LegacyResponse() {
             @Override
             public void encodeInternal(StreamingWriter writer, MediaType format, String baseUrl) {
-                writer.writeStartArray("tasks");
+                // the StreamingWriter interface is a little lacking and can't handle this case for
+                // XML and JSON correctly, so we have to implement a small hack for now
+                final boolean isJSON = MediaType.APPLICATION_JSON.isCompatibleWith(format);
+                if (isJSON) {
+                    writer.writeStartArray("tasks");
+                } else {
+                    writer.writeStartElement("tasks");
+                }
                 for (AsyncCommand<? extends Object> c : all) {
-                    writer.writeStartArrayElement("tasks");
+                    if (isJSON) {
+                        writer.writeStartArrayElement("tasks");
+                    }
                     AsyncCommandRepresentation<?> rep = Representations.newRepresentation(c, false);
                     rep.encodeInternal(writer, format, baseUrl);
-                    writer.writeEndArrayElement();
+                    if (isJSON) {
+                        writer.writeEndArrayElement();
+                    }
                 }
-                writer.writeEndArray();
+                if (isJSON) {
+                    writer.writeEndArray();
+                } else {
+                    writer.writeEndElement();
+                }
 
             }
         }, request, response);

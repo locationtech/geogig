@@ -44,7 +44,6 @@ import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.BulkOpListener;
-import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -108,16 +107,12 @@ class PackImpl implements Pack {
 
         private final ObjectReporter processed;
 
-        private final CountingListener inserted;
-
-        AppliedProgressIndicator(ObjectReporter processed, CountingListener inserted) {
+        AppliedProgressIndicator(ObjectReporter processed) {
             this.processed = processed;
-            this.inserted = inserted;
         }
 
         public @Override String apply(final ProgressListener unused) {
-            return String.format("inserted %,d/%,d. %s", inserted.inserted(), processed.total.get(),
-                    processed);
+            return processed.toString();
         }
     }
 
@@ -133,8 +128,7 @@ class PackImpl implements Pack {
         final Function<ProgressListener, String> defaultProgressIndicator;
         defaultProgressIndicator = progress.progressIndicator();
         // set our custom progress indicator
-        final CountingListener listener = BulkOpListener.newCountingListener();
-        progress.setProgressIndicator(new AppliedProgressIndicator(objectReport, listener));
+        progress.setProgressIndicator(new AppliedProgressIndicator(objectReport));
 
         final List<RevCommit> commits = missingCommits.get(req);
         checkNotNull(commits);
@@ -150,11 +144,9 @@ class PackImpl implements Pack {
 
             final Stopwatch sw = Stopwatch.createStarted();
 
-            target.putAll(objects, listener);
-            progress.complete();
-            progress.started();
+            target.putAll(objects, objectReport);
             progress.setDescription(String.format("Objects inserted: %,d, repeated: %,d, time: %s",
-                    listener.inserted(), listener.found(), sw.stop()));
+                    objectReport.inserted(), objectReport.found(), sw.stop()));
         } finally {
             producerThread.shutdownNow();
             // restore previous progress indicator
@@ -326,7 +318,7 @@ class PackImpl implements Pack {
         });
     }
 
-    private static class ObjectReporter {
+    private static class ObjectReporter extends BulkOpListener.CountingListener {
 
         final AtomicLong total = new AtomicLong();
 
@@ -346,6 +338,16 @@ class PackImpl implements Pack {
 
         public ObjectReporter(ProgressListener progress) {
             this.progress = progress;
+        }
+
+        public @Override void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+            super.found(object, storageSizeBytes);
+            notifyProgressListener();
+        }
+
+        public @Override void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
+            super.inserted(object, storageSizeBytes);
+            notifyProgressListener();
         }
 
         public void addTree() {
@@ -388,8 +390,9 @@ class PackImpl implements Pack {
 
         public @Override String toString() {
             return String.format(
-                    "commits: %,d, trees: %,d, buckets: %,d, features: %,d, ftypes: %,d",
-                    commits.get(), trees.get(), buckets.get(), features.get(), featureTypes.get());
+                    "inserted %,d/%,d: commits: %,d, trees: %,d, buckets: %,d, features: %,d, ftypes: %,d",
+                    super.inserted(), total.get(), commits.get(), trees.get(), buckets.get(),
+                    features.get(), featureTypes.get());
         }
     }
 

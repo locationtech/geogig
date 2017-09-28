@@ -10,41 +10,34 @@
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>geogig-cli</artifactId>
+  <artifactId>geogig-remoting</artifactId>
   <packaging>jar</packaging>
-  <name>GeoGig Command Line Interface</name>
+  <name>Replication and synchronization</name>
 
+  <licenses>
+    <license>
+      <name>Eclipse Distribution License</name>
+      <url>https://www.eclipse.org/org/documents/edl-v10.html</url>
+      <distribution>repo</distribution>
+      <comments>The Eclipse Distribution License (a BSD-3 style license)</comments>
+    </license>
+  </licenses>
   <dependencies>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+     <!-- https://mvnrepository.com/artifact/org.rocksdb/rocksdbjni -->
     <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-remoting</artifactId>
-      <version>${project.version}</version>
+       <groupId>org.rocksdb</groupId>
+       <artifactId>rocksdbjni</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.fusesource.jansi</groupId>
-      <artifactId>jansi</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-shapefile</artifactId>
-    </dependency>
-
     <dependency>
       <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
       <groupId>com.google.guava</groupId>
@@ -55,31 +48,16 @@
       <artifactId>org.eclipse.jdt.annotation</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <classifier>no_aop</classifier>
-    </dependency>
-    
     <!-- Test scope dependencies -->
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>info.cukes</groupId>
-      <artifactId>cucumber-java</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>info.cukes</groupId>
-      <artifactId>cucumber-junit</artifactId>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -87,16 +65,21 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <!-- As the default storage provider (see CLIContextBuilder.defaults) -->
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-rocksdb</artifactId>
+      <artifactId>geogig-api</artifactId>
       <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-core</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
-    <plugins>
-    </plugins>
   </build>
 </project>

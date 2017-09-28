@@ -15,11 +15,10 @@ import java.io.Reader;
 import java.util.ArrayList;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.remote.http.BinaryPackedObjects;
+import org.locationtech.geogig.remotes.internal.DeduplicationService;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.DeduplicationService;
-import org.locationtech.geogig.repository.impl.Deduplicator;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.BatchObjects;
 import org.springframework.stereotype.Service;
@@ -71,9 +70,7 @@ public class LegacyBatchObjectsService extends AbstractRepositoryService {
         }
 
         final Repository repository = getRepository(provider, repoName);
-        final DeduplicationService deduplicatorService = repository
-                .command(CreateDeduplicator.class).call();
-        final Deduplicator deduplicator = deduplicatorService.createDeduplicator();
+        final Deduplicator deduplicator = DeduplicationService.create();
         BinaryPackedObjects packer = new BinaryPackedObjects(repository.objectDatabase());
         
         batchObjects.setDeduplicator(deduplicator).setHave(have).setPacker(packer).setWant(want);

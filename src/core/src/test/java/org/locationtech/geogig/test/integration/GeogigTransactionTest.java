@@ -32,7 +32,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
-import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.base.Optional;
@@ -572,9 +571,6 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         // make a commit
         insertAndAdd(points1);
         RevCommit headCommit = geogig.command(CommitOp.class).call();
-
-        geogig.command(RemoteAddOp.class).setName("upstream")
-                .setURL("http://test.com/geogig/upstream").call();
 
         final String remoteRef = "refs/remotes/upstream/master";
         final String unchangedRemoteRef = "refs/remotes/upstream/testbranch";

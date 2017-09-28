@@ -7,7 +7,7 @@
  * Contributors:
  * David Winslow (Boundless) - initial implementation
  */
-package org.locationtech.geogig.repository.impl;
+package org.locationtech.geogig.remotes.internal;
 
 import java.util.List;
 

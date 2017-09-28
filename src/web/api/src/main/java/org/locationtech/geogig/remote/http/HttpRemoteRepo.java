@@ -32,7 +32,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.porcelain.ConfigGet;
 import org.locationtech.geogig.remote.http.BinaryPackedObjects.IngestResults;
 import org.locationtech.geogig.remote.http.HttpUtils.ReportingOutputStream;
@@ -41,6 +40,8 @@ import org.locationtech.geogig.remote.http.pack.HttpSendPackClient;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.internal.AbstractRemoteRepo;
 import org.locationtech.geogig.remotes.internal.CommitTraverser;
+import org.locationtech.geogig.remotes.internal.DeduplicationService;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.remotes.internal.ObjectFunnel;
 import org.locationtech.geogig.remotes.internal.ObjectFunnels;
 import org.locationtech.geogig.remotes.internal.RepositoryWrapper;
@@ -50,8 +51,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.DeduplicationService;
-import org.locationtech.geogig.repository.impl.Deduplicator;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
@@ -85,9 +84,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
     private URL repositoryURL;
 
     protected Deduplicator createDeduplicator(Repository local) {
-        DeduplicationService deduplicationService;
-        deduplicationService = local.command(CreateDeduplicator.class).call();
-        return deduplicationService.createDeduplicator();
+        return DeduplicationService.create();
     }
 
     /**

@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,9 +33,14 @@ import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.PullOp;
+import org.locationtech.geogig.repository.Repository;
+import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
 
@@ -337,5 +343,50 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         }
 
         assertEquals(expectedMaster, logged);
+    }
+
+    @Test
+    public void testPullFailsToRunIfThereAreConflicts() throws Exception {
+        // Create the following revision graph
+        // o
+        // |
+        // o - Points 1,3 added
+        // |\
+        // | o - TestBranch - Points 1 modified and points 2 added
+        // |
+        // o - master - HEAD - Points 1 modifiedB
+        Repository local = localGeogig.repo;
+        {// set up a merge conflict scenario
+            insertAndAdd(localGeogig.geogig, points1, points3);
+            local.command(CommitOp.class).call();
+            local.command(BranchCreateOp.class).setName("TestBranch").call();
+            Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+                    "POINT(1 1)");
+            insertAndAdd(local, points1Modified);
+            local.command(CommitOp.class).call();
+            local.command(CheckoutOp.class).setSource("TestBranch").call();
+            Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+                    "POINT(1 1)");
+            insertAndAdd(local, points1ModifiedB);
+            insertAndAdd(local, points2);
+            local.command(CommitOp.class).call();
+
+            local.command(CheckoutOp.class).setSource("master").call();
+            Ref branch = local.command(RefParse.class).setName("TestBranch").call().get();
+            try {
+                local.command(MergeOp.class).addCommit(branch.getObjectId()).call();
+                fail();
+            } catch (MergeConflictsException e) {
+                assertTrue(e.getMessage().contains("conflict"));
+            }
+        }
+        try {
+            local.command(PullOp.class).call();
+            fail();
+        } catch (ConflictsException e) {
+            assertEquals(e.getMessage(),
+                    "Cannot run operation while merge or rebase conflicts exist.");
+        }
+
     }
 }

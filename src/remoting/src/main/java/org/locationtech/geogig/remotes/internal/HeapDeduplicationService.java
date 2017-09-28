@@ -7,10 +7,7 @@
  * Contributors:
  * David Winslow (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.memory;
-
-import org.locationtech.geogig.repository.impl.DeduplicationService;
-import org.locationtech.geogig.repository.impl.Deduplicator;
+package org.locationtech.geogig.remotes.internal;
 
 public class HeapDeduplicationService implements DeduplicationService {
     @Override

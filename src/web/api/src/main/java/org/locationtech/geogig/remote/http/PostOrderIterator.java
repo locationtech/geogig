@@ -26,7 +26,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.repository.impl.Deduplicator;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.AbstractIterator;
@@ -471,7 +471,7 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
      */
     private final static Successors unique(final Successors delegate) {
         return uniqueWithDeduplicator(delegate,
-                new org.locationtech.geogig.storage.memory.HeapDeduplicator());
+                new org.locationtech.geogig.remotes.internal.HeapDeduplicator());
     }
 
     private final static Successors uniqueWithDeduplicator(final Successors delegate,

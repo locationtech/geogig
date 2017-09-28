@@ -759,6 +759,7 @@
   <modules>
    <module>../api</module>
    <module>../core</module>
+   <module>../remoting</module>
    <module>../datastore</module>
    <module>../storage</module>
    <module>../cli</module>

@@ -7,38 +7,45 @@
  * Contributors:
  * David Winslow (Boundless) - initial implementation
  */
-package org.locationtech.geogig.plumbing;
+package org.locationtech.geogig.remotes.internal;
 
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.impl.DeduplicationService;
-import org.locationtech.geogig.storage.memory.HeapDeduplicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
 /**
- * Uses the standard Java {@link ServiceLoader SPI mechanism} to look up for an implementation of
- * {@link DeduplicationService} in the classpath and returns it, or returns
- * {@link HeapDeduplicationService} if none is found.
- *
+ * A service for providing deduplicators.
+ * <p>
+ * Implementations are to be looked up through the standard Java {@link ServiceLoader SPI mechanism}
+ * under {@code META-INF/services/org.locationtech.geogig.repository.DeduplicationService}
  */
-public class CreateDeduplicator extends AbstractGeoGigOp<DeduplicationService> {
+public interface DeduplicationService {
+    /**
+     * Create a new Deduplicator. Clients MUST ensure that the deduplicator's release() method is
+     * called. For example:
+     *
+     * <code>
+     *   Deduplicator deduplicator = deduplicationService().createDeduplicator();
+     *   try {
+     *       client.use(deduplicator);
+     *   } finally {
+     *       deduplicator.release();
+     *   }
+     * </code>
+     */
+    Deduplicator createDeduplicator();
 
-    private static final Logger LOG = LoggerFactory.getLogger(CreateDeduplicator.class);
-
-    @Override
-    protected DeduplicationService _call() {
+    public static Deduplicator create() {
+        final Logger LOG = LoggerFactory.getLogger(DeduplicationService.class);
         ServiceLoader<DeduplicationService> loader = ServiceLoader.load(DeduplicationService.class);
         List<DeduplicationService> services = Lists.newArrayList(loader.iterator());
 
         DeduplicationService service;
         if (services.isEmpty()) {
-            LOG.info("No " + DeduplicationService.class.getSimpleName()
-                    + " service found, using default heap based one");
             service = new HeapDeduplicationService();
         } else {
             service = services.get(0);
@@ -49,6 +56,7 @@ public class CreateDeduplicator extends AbstractGeoGigOp<DeduplicationService> {
                 LOG.trace("Using deduplicator service: {}", service.getClass().getName());
             }
         }
-        return service;
+        return service.createDeduplicator();
     }
+
 }

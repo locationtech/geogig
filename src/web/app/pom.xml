@@ -55,24 +55,7 @@
   </dependencies>
 
   <build>
-    <resources>
-     <resource>
-       <directory>src/main/resources</directory>
-     </resource>
-     <resource>
-       <directory>../api/src/main/resources</directory>
-     </resource>
-   </resources>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <archiveClasses>true</archiveClasses> <!-- create jar inside WEB-INF/lib with this module's classes -->
-          <attachClasses>true</attachClasses> <!-- install a jar with this web app classes with the "classes" classifier -->
-          <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>

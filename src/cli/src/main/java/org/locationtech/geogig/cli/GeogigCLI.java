@@ -800,6 +800,7 @@ public class GeogigCLI {
 
                 @Override
                 public void setDescription(String s) {
+                    lastRun = platform.nanoTime();
                     try {
                         console.println();
                         console.println(s);
@@ -816,7 +817,6 @@ public class GeogigCLI {
                         return;
                     }
                     try {
-                        logProgress();
                         console.println();
                         console.flush();
                         super.complete();
@@ -827,7 +827,7 @@ public class GeogigCLI {
                 }
 
                 @Override
-                public synchronized void setProgress(float percent) {
+                public void setProgress(float percent) {
                     super.setProgress(percent);
                     long nanoTime = platform.nanoTime();
                     if ((nanoTime - lastRun) > delayNanos) {

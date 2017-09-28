@@ -12,6 +12,7 @@ package org.locationtech.geogig.repository;
 import java.util.function.Function;
 
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.AtomicDouble;
 
 /**
  * A default progress listener to be used for extending it.
@@ -33,7 +34,7 @@ public class DefaultProgressListener implements ProgressListener {
     /**
      * Current progress value
      */
-    protected float progress;
+    private AtomicDouble progress = new AtomicDouble();
 
     /**
      * {@code true} if the action is canceled.
@@ -78,6 +79,7 @@ public class DefaultProgressListener implements ProgressListener {
     @Override
     public void started() {
         completed = false;
+        progress.set(0);
     }
 
     /**
@@ -87,7 +89,7 @@ public class DefaultProgressListener implements ProgressListener {
      */
     @Override
     public void setProgress(float progress) {
-        this.progress = progress;
+        this.progress.set(progress);
     }
 
     /**
@@ -95,7 +97,7 @@ public class DefaultProgressListener implements ProgressListener {
      */
     @Override
     public float getProgress() {
-        return progress;
+        return progress.floatValue();
     }
 
     /**
@@ -104,7 +106,7 @@ public class DefaultProgressListener implements ProgressListener {
      */
     @Override
     public void complete() {
-        this.progress = getMaxProgress();
+        setProgress(getMaxProgress());
         this.completed = true;
     }
 

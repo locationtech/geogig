@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes;
 
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 
 import com.google.common.base.Optional;

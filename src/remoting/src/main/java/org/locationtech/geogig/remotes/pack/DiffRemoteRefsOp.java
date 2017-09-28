@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.LsRemoteOp;
+import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 

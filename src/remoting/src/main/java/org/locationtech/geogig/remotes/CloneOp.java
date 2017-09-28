@@ -115,6 +115,9 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
         return this;
     }
 
+    /**
+     * @param remoteName the name to assign to the remote repository; defaults to {@code origin}
+     */
     public CloneOp setRemoteName(String remoteName) {
         this.remoteName = remoteName == null ? DEFAULT_REMOTE_NAME : remoteName;
         return this;

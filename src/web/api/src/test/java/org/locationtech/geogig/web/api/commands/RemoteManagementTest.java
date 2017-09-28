@@ -74,7 +74,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         URI localURI = geogig.command(ResolveGeogigURI.class).call().get();
 
         Repository remote1Geogig = remote1TestContext.get().getRepository();
-        remote1Geogig.command(CloneOp.class).setRepositoryURL(localURI.toURL().toString()).call();
+        remote1Geogig.command(CloneOp.class).setRemoteURI(localURI).call();
         remote1URI = remote1Geogig.command(ResolveGeogigURI.class).call().get();
         if (addFirst) {
             geogig.command(RemoteAddOp.class).setName("remote1")
@@ -82,7 +82,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         }
 
         Repository remote2Geogig = remote2TestContext.get().getRepository();
-        remote2Geogig.command(CloneOp.class).setRepositoryURL(localURI.toURL().toString()).call();
+        remote2Geogig.command(CloneOp.class).setRemoteURI(localURI).call();
         remote2URI = remote1Geogig.command(ResolveGeogigURI.class).call().get();
         if (addSecond) {
             geogig.command(RemoteAddOp.class).setName("remote2")

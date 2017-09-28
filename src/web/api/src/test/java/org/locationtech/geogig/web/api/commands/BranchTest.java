@@ -153,7 +153,7 @@ public class BranchTest extends AbstractWebOpTest {
 
         URI remoteURI = remoteGeogig.command(ResolveGeogigURI.class).call().get();
 
-        geogig.command(CloneOp.class).setRepositoryURL(remoteURI.toURL().toString()).call();
+        geogig.command(CloneOp.class).setRemoteURI(remoteURI).call();
 
         ParameterSet options = TestParams.of("list", "true", "remotes", "true");
         WebAPICommand cmd = buildCommand(options);

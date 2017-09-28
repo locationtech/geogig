@@ -222,7 +222,7 @@ public class PullTest extends AbstractWebOpTest {
 
         URI remoteURI = remoteGeogig.command(ResolveGeogigURI.class).call().get();
 
-        geogig.command(CloneOp.class).setRepositoryURL(remoteURI.toURL().toString()).call();
+        geogig.command(CloneOp.class).setRemoteURI(remoteURI).call();
 
         TestSupport.verifyRepositoryContents(geogig);
 
@@ -259,8 +259,7 @@ public class PullTest extends AbstractWebOpTest {
 
         // Set up the shallow clone
         Repository remoteGeogig = remoteTestContext.get().getRepository();
-        remoteGeogig.command(CloneOp.class).setDepth(1)
-                .setRepositoryURL(originalURI.toURL().toString()).call();
+        remoteGeogig.command(CloneOp.class).setDepth(1).setRemoteURI(originalURI).call();
 
         Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
@@ -296,7 +295,7 @@ public class PullTest extends AbstractWebOpTest {
         testData.checkout("master");
 
         URI remoteURI = remoteGeogig.command(ResolveGeogigURI.class).call().get();
-        geogig.command(CloneOp.class).setRepositoryURL(remoteURI.toURL().toString()).call();
+        geogig.command(CloneOp.class).setRemoteURI(remoteURI).call();
         TestSupport.verifySameContents(remoteGeogig, geogig);
 
         remoteTestData.insert(TestData.point1_modified);

@@ -194,8 +194,7 @@ public class FetchTest extends AbstractWebOpTest {
 
         // Set up the shallow clone
         Repository remoteGeogig = remoteTestContext.get().getRepository();
-        remoteGeogig.command(CloneOp.class).setDepth(1)
-                .setRepositoryURL(originalURI.toURL().toString()).call();
+        remoteGeogig.command(CloneOp.class).setDepth(1).setRemoteURI(originalURI).call();
 
         Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);

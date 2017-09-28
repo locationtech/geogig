@@ -156,7 +156,6 @@ public class Clone extends AbstractCommand implements CLICommand {
 
             CloneOp clone = cloneRepo.command(CloneOp.class);
             clone.setBranch(branch)//
-                    // .setRepositoryURL(remoteURI.toString())//
                     .setRemoteURI(remoteURI)//
                     .setCloneURI(cloneURI)//
                     .setUserName(username)//

@@ -16,6 +16,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.SendPack;
 import org.locationtech.geogig.remotes.SynchronizationException;
+import org.locationtech.geogig.remotes.pack.ReceivePackOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.CommandFactory;
 import org.locationtech.geogig.repository.ProgressListener;

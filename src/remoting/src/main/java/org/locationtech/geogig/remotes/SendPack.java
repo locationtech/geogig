@@ -12,9 +12,6 @@ package org.locationtech.geogig.remotes;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.remotes.RefDiff.Type.ADDED_REF;
-import static org.locationtech.geogig.remotes.RefDiff.Type.CHANGED_REF;
-import static org.locationtech.geogig.remotes.RefDiff.Type.REMOVED_REF;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +22,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.remotes.RefDiff.Type;
 import org.locationtech.geogig.remotes.SynchronizationException.StatusCode;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;

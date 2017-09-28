@@ -113,7 +113,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits
         logs = localGeogig.geogig.command(LogOp.class).call();

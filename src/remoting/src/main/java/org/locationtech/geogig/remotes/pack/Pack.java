@@ -13,7 +13,6 @@ import java.util.List;
 
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.storage.ObjectStore;
 
 public interface Pack {
 

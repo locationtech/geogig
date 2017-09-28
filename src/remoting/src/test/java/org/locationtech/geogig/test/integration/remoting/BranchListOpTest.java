@@ -52,7 +52,7 @@ public class BranchListOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("Branch1").call();
     }
 
     @Test

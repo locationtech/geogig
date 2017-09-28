@@ -198,7 +198,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         clone.setDepth(0);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("master").call();
 
         // The features that match the filter are "Cities.3", "Roads.1", "Roads.2", and "Roads.3",
         // the "Cities.1" commit should be present since it added the "Cities" tree, but "Cities.1"
@@ -258,7 +258,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setDepth(0);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("master").call();
 
         // Because all features match the filter, the history should be identical
 
@@ -308,7 +308,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         clone.setDepth(0);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("master").call();
 
         // Because only the first feature matches (Cities.1), the first commit should be the same,
         // there will also be the commit that adds the "Roads" tree but no features, and finally an
@@ -364,7 +364,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         clone.setDepth(0);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("master").call();
 
         // Because Cities.1 is first in our filter, then is modified to be outside the filter, it
         // should continue to be tracked. Therefore our histories should match.
@@ -410,7 +410,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         clone.setDepth(0);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("master").call();
 
         // Cities.1 initially lies outside the filter, so the commit that adds it will not be part
         // of the sparse clone. Later the feature is moved into the AOI so it will be added at that
@@ -672,7 +672,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
 
         CloneOp clone = cloneOp();
         exception.expect(IllegalArgumentException.class);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).call();
     }
 
     @Test
@@ -684,7 +684,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         CloneOp clone = cloneOp();
         clone.setDepth(3).setBranch("master");
         exception.expect(IllegalStateException.class);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).call();
     }
 
     private void setupSparseClone() throws Exception {
@@ -726,7 +726,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         clone.setDepth(0);
-        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("master").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("master").call();
 
         logs = localGeogig.geogig.command(LogOp.class).call();
         logged = new ArrayList<RevCommit>();

@@ -21,7 +21,7 @@ public class HeapDeduplicator implements Deduplicator {
 
     @Override
     public boolean visit(ObjectId id) {
-        return !seen.add(id);
+        return seen.add(id);
     }
 
     @Override

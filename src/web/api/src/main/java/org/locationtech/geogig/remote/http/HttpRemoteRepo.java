@@ -83,7 +83,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
 
     private URL repositoryURL;
 
-    protected Deduplicator createDeduplicator(Repository local) {
+    protected Deduplicator createDeduplicator() {
         return DeduplicationService.create();
     }
 
@@ -237,7 +237,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         Collections.reverse(toSend);
         Set<ObjectId> have = new HashSet<ObjectId>(traverser.have);
 
-        Deduplicator deduplicator = createDeduplicator(local);
+        Deduplicator deduplicator = createDeduplicator();
         try {
             sendPackedObjects(local, toSend, have, deduplicator, progress);
         } finally {

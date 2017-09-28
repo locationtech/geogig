@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,6 +39,8 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.remotes.RefDiff;
+import org.locationtech.geogig.remotes.internal.DeduplicationService;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -55,7 +56,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 class PackImpl implements Pack {
 
@@ -85,14 +85,18 @@ class PackImpl implements Pack {
         checkNotNull(target);
         checkNotNull(progress);
 
-        IdFilter visitedIds = new IdFilter();
-
         List<RefDiff> result = new ArrayList<>();
         List<RefRequest> reqs = Lists.newArrayList(missingCommits.keySet());
-        for (RefRequest req : reqs) {
-            RefDiff changedRef = applyToPreOrder(target, req, visitedIds, progress);
-            checkNotNull(changedRef);
-            result.add(changedRef);
+
+        Deduplicator deduplicator = DeduplicationService.create();
+        try {
+            for (RefRequest req : reqs) {
+                RefDiff changedRef = applyToPreOrder(target, req, deduplicator, progress);
+                checkNotNull(changedRef);
+                result.add(changedRef);
+            }
+        } finally {
+            deduplicator.release();
         }
 
         List<RevTag> tags = this.missingTags;
@@ -117,12 +121,12 @@ class PackImpl implements Pack {
         }
     }
 
-    private RefDiff applyToPreOrder(PackProcessor target, RefRequest req, IdFilter visitedIds,
+    private RefDiff applyToPreOrder(PackProcessor target, RefRequest req, Deduplicator deduplicator,
             ProgressListener progress) {
 
         progress.started();
 
-        progress.setDescription("Applying changes to " + req.name);
+        progress.setDescription("Applying changes of " + req.name);
         ObjectReporter objectReport = new ObjectReporter(progress);
 
         // back up current progress indicator
@@ -136,7 +140,7 @@ class PackImpl implements Pack {
         checkNotNull(commits);
 
         final ObjectDatabase sourceStore = source.objectDatabase();
-        final Producer producer = new Producer(sourceStore, target, commits, visitedIds,
+        final Producer producer = new Producer(sourceStore, target, commits, deduplicator,
                 objectReport);
 
         final ExecutorService producerThread = Executors.newSingleThreadExecutor();
@@ -172,7 +176,7 @@ class PackImpl implements Pack {
 
         private final PackProcessor target;
 
-        private final IdFilter visitedIds;
+        private final Deduplicator deduplicator;
 
         private LinkedBlockingQueue<ObjectId> queue = new LinkedBlockingQueue<>(1_000_000);
 
@@ -181,11 +185,11 @@ class PackImpl implements Pack {
         private final ObjectReporter objectReport;
 
         Producer(ObjectStore source, PackProcessor target, List<RevCommit> commits,
-                IdFilter visitedIds, ObjectReporter objectReport) {
+                Deduplicator deduplicator, ObjectReporter objectReport) {
             this.source = source;
             this.target = target;
             this.commits = commits;
-            this.visitedIds = visitedIds;
+            this.deduplicator = deduplicator;
             this.objectReport = objectReport;
         }
 
@@ -221,7 +225,7 @@ class PackImpl implements Pack {
                             : Optional.fromNullable(commitsById.get(parentId))
                                     .or(() -> source.getCommit(parentId));
 
-                    visitPreOrder(parent, commit, visitedIds, target, objectReport, this);
+                    visitPreOrder(parent, commit, deduplicator, target, objectReport, this);
                 }
             }
 
@@ -238,15 +242,16 @@ class PackImpl implements Pack {
         }
     }
 
-    private void visitPreOrder(@Nullable RevCommit parent, RevCommit commit, IdFilter visited,
-            PackProcessor target, ObjectReporter progress, Consumer<ObjectId> consumer) {
+    private void visitPreOrder(@Nullable RevCommit parent, RevCommit commit,
+            Deduplicator deduplicator, PackProcessor target, ObjectReporter progress,
+            Consumer<ObjectId> consumer) {
 
         // System.err.printf("processing %s against parent %s\n", commit, parent);
 
         final ObjectId leftRootId = parent == null ? EMPTY_TREE_ID : parent.getTreeId();
         final ObjectId rightRootId = commit.getTreeId();
 
-        if (visited.contains(rightRootId)) {
+        if (deduplicator.isDuplicate(rightRootId)) {
             return;
         }
 
@@ -261,7 +266,7 @@ class PackImpl implements Pack {
         walk.walk(new PreOrderDiffWalk.AbstractConsumer() {
 
             private boolean add(ObjectId objectId) {
-                if (visited.add(objectId)) {
+                if (deduplicator.visit(objectId)) {
                     consumer.accept(objectId);
                     return true;
                 }
@@ -319,22 +324,6 @@ class PackImpl implements Pack {
                 return false;
             }
         });
-    }
-
-    /**
-     * Naive {@code Set<ObjectId>} visited set implementation, might be replaced by a bloom or
-     * cuckoo filter based one.
-     */
-    private static class IdFilter {
-        private Set<ObjectId> visited = Sets.newConcurrentHashSet();
-
-        public boolean add(ObjectId id) {
-            return visited.add(id);
-        }
-
-        public boolean contains(ObjectId id) {
-            return visited.contains(id);
-        }
     }
 
     private static class ObjectReporter {

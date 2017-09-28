@@ -489,7 +489,7 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
             }
 
             public boolean previsit(ObjectId id) {
-                return (!deduplicator.visit(id)) && delegate.previsit(id);
+                return deduplicator.visit(id) && delegate.previsit(id);
             }
         };
     }

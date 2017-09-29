@@ -56,6 +56,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -83,6 +84,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RemoteRepositoryTestCase {
+
+    protected static final ProgressListener SIMPLE_PROGRESS = new DefaultProgressListener() {
+        public @Override void setDescription(String msg) {
+            System.err.println(msg);
+        }
+    };
 
     protected static final String REMOTE_NAME = "origin";
 

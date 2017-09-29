@@ -61,16 +61,18 @@ public interface RefDatabase extends Closeable {
      * 
      * @param name the name of the ref (e.g. {@code "refs/remotes/origin"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
+     * @throws IllegalArgumentException if the ref {@code name} IS a symbolic ref
      */
-    public abstract String getRef(String name);
+    public abstract String getRef(String name) throws IllegalArgumentException;
 
     /**
      * Retrieves a symbolic ref with the specified name.
      * 
      * @param name the name of the symbolic ref (e.g. {@code "HEAD"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
+     * @throws IllegalArgumentException if the ref {@code name} is NOT a symbolic ref
      */
-    public abstract String getSymRef(String name);
+    public abstract String getSymRef(String name) throws IllegalArgumentException;
 
     /**
      * Adds a ref to the database.

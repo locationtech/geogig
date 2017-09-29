@@ -40,7 +40,6 @@ import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.repository.DefaultProgressListener;
-import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 import org.opengis.feature.Feature;
@@ -151,12 +150,6 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         TestSupport.verifySameContents(remoteRepo, cloneRepo);
     }
-
-    private static final ProgressListener SIMPLE_PROGRESS = new DefaultProgressListener() {
-        public @Override void setDescription(String msg) {
-            System.err.println(msg);
-        }
-    };
 
     @Test
     public void testCloneLargerTreeSeveralCommitsAndChangeTypes() throws Exception {

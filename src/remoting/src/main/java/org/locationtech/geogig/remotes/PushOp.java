@@ -22,8 +22,10 @@ import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.remotes.SendPack.TransferableRef;
+import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -97,11 +99,27 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
     @Override
-    protected TransferSummary _call() {
-
+    protected TransferSummary _call() throws SynchronizationException{
         final String remoteName = this.remoteName == null ? "origin" : this.remoteName;
-
         final Remote remote = resolveRemote(remoteName);
+
+        {
+            // defer to the new FetchOp implementation as long as it's not a shallow or sparse clone
+            // UNTIL its ready for shallow and sparse clones.
+            boolean isHttp = isHttp(remote);// don't call new fetch on http(s) remotes until it's
+            // ready
+            boolean isShallow = repository().getDepth().isPresent() || isShallow(remote);
+            boolean isSparse = RepositoryImpl.getFilter(repository()).isPresent();
+            if (!(isHttp || isShallow || isSparse)) {
+                org.locationtech.geogig.remotes.pack.PushOp newFetch;
+                newFetch = command(org.locationtech.geogig.remotes.pack.PushOp.class)//
+                        .setAll(all)//
+                        .setRemote(remoteName);
+                this.refSpecs.forEach((rs) -> newFetch.addRefSpec(rs));
+                return newFetch.setProgressListener(getProgressListener())//
+                        .call();
+            }
+        }
 
         final List<TransferableRef> refsToPush = resolveRefs();
 
@@ -110,7 +128,22 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         sendPack.setRefs(refsToPush);
         sendPack.setProgressListener(getProgressListener());
         TransferSummary result = sendPack.call();
+        System.err.println(result);
         return result;
+    }
+
+    private boolean isHttp(Remote r) {
+        return r.getFetchURL().startsWith("http");
+    }
+
+    private boolean isShallow(Remote remote) {
+        try (IRemoteRepo repo = command(OpenRemote.class).setRemote(remote).call()) {
+            Integer depth = repo.getDepth().or(0);
+            if (depth.intValue() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<TransferableRef> resolveRefs() {

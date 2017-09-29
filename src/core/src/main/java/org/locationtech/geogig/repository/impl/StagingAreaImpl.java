@@ -129,10 +129,11 @@ public class StagingAreaImpl implements StagingArea {
      * Returns true if there are no unstaged changes, false otherwise
      */
     public boolean isClean() {
-        Optional<ObjectId> resolved = context.command(ResolveTreeish.class).setTreeish(Ref.HEAD)
-                .call();
-        ObjectId indexTreeId = resolved.get();
-        return getTree().getId().equals(indexTreeId);
+        Optional<ObjectId> head;
+        Optional<ObjectId> stageHead;
+        head = context.command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
+        stageHead = context.command(ResolveTreeish.class).setTreeish(Ref.STAGE_HEAD).call();
+        return head.equals(stageHead);
     }
 
     /**

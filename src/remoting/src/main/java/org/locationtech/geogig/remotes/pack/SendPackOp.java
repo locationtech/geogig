@@ -16,6 +16,7 @@ import java.util.List;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.CommandFactory;
@@ -30,6 +31,10 @@ import org.locationtech.geogig.repository.CommandFactory;
  * transfers the {@link RevObject} from the remote to the local needed to complement the receiving
  * repository's object graph in order to contain all reachable contents for the requested refs based
  * on the {@link PackRequest}.
+ * <p>
+ * The returned list of {@link RefDiff} objects indicate that the remote has its revision objects up
+ * to date up to each {@link RefDiff#getNewRef() newRef}'s object id and it's ok to
+ * {@link UpdateRef} that ref to that object id.
  *
  */
 @Hookable(name = "send-pack")

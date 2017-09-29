@@ -31,7 +31,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
@@ -259,7 +258,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             } else {
                 currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(), currentTypeTree);
+            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(),
+                    currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
             featureTypeTrees.put(typeTreePath, typeTreeBuilder);
         }
@@ -271,24 +271,11 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         final ConflictsDatabase conflictsDatabase = conflictsDatabase();
         final boolean hasConflicts = conflictsDatabase.hasConflicts(null);
         if (hasConflicts && !force) {
-            final long conflictCount = conflictsDatabase.getCountByPrefix(null, null);
-            Iterator<Conflict> conflicts = Iterators
-                    .limit(conflictsDatabase.getByPrefix(branchOrCommit, null), 25);
-            StringBuilder msg = new StringBuilder();
-            while (conflicts.hasNext()) {
-                Conflict conflict = conflicts.next();
-                msg.append("error: " + conflict.getPath() + " needs merge.\n");
-            }
-            if (conflictCount > 25) {
-                msg.append(String.format("and %,d more.\n", (conflictCount - 25)));
-            }
-            msg.append("You need to resolve your index first.\n");
-            throw new CheckoutException(msg.toString(), StatusCode.UNMERGED_PATHS);
+            throw buildConflictsException(conflictsDatabase);
         }
-        Optional<Ref> targetRef = Optional.absent();
+        Optional<Ref> targetRef = command(RefParse.class).setName(branchOrCommit).call();
         Optional<ObjectId> targetCommitId = Optional.absent();
         Optional<ObjectId> targetTreeId = Optional.absent();
-        targetRef = command(RefParse.class).setName(branchOrCommit).call();
         if (targetRef.isPresent()) {
             ObjectId commitId = targetRef.get().getObjectId();
             if (targetRef.get().getName().startsWith(Ref.REMOTES_PREFIX)) {
@@ -362,12 +349,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             if (targetRef.isPresent()) {
                 // update HEAD
                 Ref target = targetRef.get();
-                String refName;
-                if (target instanceof SymRef) {// beware of cyclic refs, peel symrefs
-                    refName = ((SymRef) target).getTarget();
-                } else {
-                    refName = target.getName();
-                }
+                // beware of cyclic refs, peel symrefs
+                String refName = target.peel().getName();
                 command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(refName).call();
                 result.setNewRef(targetRef.get());
                 result.setOid(targetCommitId.get());
@@ -385,5 +368,21 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             }
         }
         return result;
+    }
+
+    private CheckoutException buildConflictsException(final ConflictsDatabase conflictsDatabase) {
+        final long conflictCount = conflictsDatabase.getCountByPrefix(null, null);
+        Iterator<Conflict> conflicts = Iterators
+                .limit(conflictsDatabase.getByPrefix(branchOrCommit, null), 25);
+        StringBuilder msg = new StringBuilder();
+        while (conflicts.hasNext()) {
+            Conflict conflict = conflicts.next();
+            msg.append("error: " + conflict.getPath() + " needs merge.\n");
+        }
+        if (conflictCount > 25) {
+            msg.append(String.format("and %,d more.\n", (conflictCount - 25)));
+        }
+        msg.append("You need to resolve your index first.\n");
+        return new CheckoutException(msg.toString(), StatusCode.UNMERGED_PATHS);
     }
 }

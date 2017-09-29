@@ -185,7 +185,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
             if (e.statusCode == StatusCode.NOTHING_TO_PUSH) {
                 return Optional.absent();
             }
-            throw Throwables.propagate(e);
+            throw e;
         }
 
         // update the local copy of the remote ref

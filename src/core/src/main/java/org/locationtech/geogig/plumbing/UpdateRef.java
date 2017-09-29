@@ -10,6 +10,9 @@
 package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.model.Ref.HEAD;
+import static org.locationtech.geogig.model.Ref.STAGE_HEAD;
+import static org.locationtech.geogig.model.Ref.WORK_HEAD;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.hooks.Hookable;
@@ -99,6 +102,9 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
      */
     @Override
     protected Optional<Ref> _call() {
+        final String name = this.name;
+        final boolean delete = this.delete;
+        final ObjectId newValue = this.newValue;
         checkState(name != null, "name has not been set");
         checkState(delete || newValue != null, "value has not been set");
 
@@ -126,9 +132,29 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
         checkState(newValue.isNull() || objectDatabase().exists(newValue),
                 "Tried to update Ref %s to an object that doesn't exist: %s", name, newValue);
 
+        // if not changing a head
+        if (!HEAD.equals(name) && !WORK_HEAD.equals(name) && !STAGE_HEAD.equals(name)) {
+            final @Nullable String currentHeadTarget;
+            try {
+                currentHeadTarget = refDatabase.getSymRef(HEAD);
+                if (name.equals(currentHeadTarget)) {// and updating the current branch
+                    // and the working tree and staging are are clean...
+                    boolean workingTreeClean = workingTree().isClean();
+                    boolean stagingAreaClean = stagingArea().isClean();
+                    if (workingTreeClean && stagingAreaClean) {
+                        refDatabase.putSymRef(WORK_HEAD, name);
+                        refDatabase.putSymRef(STAGE_HEAD, name);
+                    }
+                }
+            } catch (IllegalArgumentException headIsDettached) {
+                // HEAD is in a dettached state
+            }
+        }
+
         refDatabase.putRef(name, newValue.toString());
         Optional<Ref> newRef = command(RefParse.class).setName(name).call();
         checkState(newRef.isPresent());
+
         return newRef;
     }
 

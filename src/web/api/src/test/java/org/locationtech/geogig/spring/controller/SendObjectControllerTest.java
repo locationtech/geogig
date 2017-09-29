@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
+import java.util.zip.GZIPOutputStream;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
@@ -165,6 +166,53 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         MockHttpServletRequestBuilder post =
                 MockMvcRequestBuilders.post(
                         "/repos/repo1/repo/sendobject").content(baos.toByteArray());
+        perform(post).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+                .andExpect(content().string(""));
+        //now verify the commit is present in the repo
+        RevCommit postCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
+                RevCommit.class);
+        assertNotNull("Modified commit should be in the repository.", postCheck);
+        repo.close();
+    }
+
+    @Test
+    public void testSendObject_gzipped() throws Exception {
+        Repository repo = repoProvider.createGeogig("repo1", null);
+        repoProvider.getTestRepository("repo1").initializeRpository();
+        new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
+        // get the HEAD commit
+        Iterator<RevCommit> commitLogs = repo.command(LogOp.class).setLimit(1).call();
+        assertTrue(commitLogs.hasNext());
+        RevCommit headCommit = commitLogs.next();
+        assertFalse(commitLogs.hasNext());
+        // create a new commit that is basically a clone of the HEAD
+        CommitBuilder builder = new CommitBuilder(headCommit);
+        // alter the builder to make a distinct commit
+        builder.setMessage(headCommit.getMessage() + " MODIFIED FOR SEND OBJECT");
+        RevCommit sendObjectCommit = builder.build();
+        // ensure the new commit doesn't yet exist in the repo
+        RevCommit preCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
+                RevCommit.class);
+        assertNull("Modified commit should not be in the repository yet.", preCheck);
+        // get the Object serializer
+        final ObjectSerializingFactory serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // wrap it with GZIP
+        GZIPOutputStream gzos = new GZIPOutputStream(baos, true);
+        // write the commit OID
+        byte[] commitOid = sendObjectCommit.getId().getRawValue();
+        gzos.write(commitOid);
+        // serialize the commit
+        serialFac.write(sendObjectCommit, gzos);
+        // flush and close
+        //gzos.close();
+        // build the API request
+        MockHttpServletRequestBuilder post =
+                MockMvcRequestBuilders.post(
+                        "/repos/repo1/repo/sendobject").content(baos.toByteArray())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-encoding", "gzip");
         perform(post).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));

@@ -19,7 +19,9 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 import static org.springframework.web.bind.annotation.RequestMethod.TRACE;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,7 +62,8 @@ public class SendObjectController extends AbstractRepositoryController {
 
     @PostMapping()
     public void postSendObject(@PathVariable(name = "repoName") String repoName,
-            InputStream requestInput, HttpServletRequest request, HttpServletResponse response) {
+            InputStream requestInput, HttpServletRequest request, HttpServletResponse response,
+            @RequestHeader(name = "Content-encoding", required = false) String contentEncoding) {
         // get the provider
         Optional<RepositoryProvider> optional = getRepoProvider(request);
         if (optional.isPresent()) {
@@ -70,10 +74,17 @@ public class SendObjectController extends AbstractRepositoryController {
                 return;
             }
             // get the FilteredChanges from the service
-            SendObject sendObject = legacySendObjectService.sendObject(provider, repoName,
-                    requestInput);
-            // encode to Stream
-            encodeToStream(sendObject, request, response);
+            // if the content-encoding indicates the InputStream is compressed, we need to wrap
+            // the stream.
+            try {
+                SendObject sendObject = legacySendObjectService.sendObject(provider, repoName,
+                        "gzip".equals(contentEncoding) ? new GZIPInputStream(requestInput):
+                                requestInput);
+                // encode to Stream
+                encodeToStream(sendObject, request, response);
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
         } else {
             throw NO_PROVIDER;
         }

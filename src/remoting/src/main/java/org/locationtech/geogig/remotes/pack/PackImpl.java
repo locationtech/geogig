@@ -19,11 +19,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -43,14 +41,12 @@ import org.locationtech.geogig.remotes.internal.DeduplicationService;
 import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
-import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -140,11 +136,25 @@ class PackImpl implements Pack {
         final ExecutorService producerThread = Executors.newSingleThreadExecutor();
         try {
             producerThread.submit(producer);
-            Iterator<RevObject> objects = producer.iterator();
+            Iterator<ObjectId> missingContentIds = producer.iterator();
 
+            Iterator<RevObject> allObjects;
+            {
+                Iterator<RevObject> missingContents;
+                Iterator<RevCommit> commitsIterator;
+                missingContents = source.objectDatabase().getAll(() -> missingContentIds);
+                commitsIterator = Iterators.filter(commits.iterator(), (c) -> {
+                    objectReport.addCommit();
+                    return true;
+                });
+
+                allObjects = Iterators.concat(missingContents, commitsIterator);
+            }
             final Stopwatch sw = Stopwatch.createStarted();
 
-            target.putAll(objects, objectReport);
+            target.putAll(allObjects, objectReport);
+            progress.complete();
+            progress.started();
             progress.setDescription(String.format("Objects inserted: %,d, repeated: %,d, time: %s",
                     objectReport.inserted(), objectReport.found(), sw.stop()));
         } finally {
@@ -185,22 +195,9 @@ class PackImpl implements Pack {
             this.objectReport = objectReport;
         }
 
-        public Iterator<RevObject> iterator() {
+        public Iterator<ObjectId> iterator() {
             Iterator<ObjectId> objectIds = new BlockingIterator<ObjectId>(queue, ObjectId.NULL);
-            Iterator<RevObject> objects = source.getAll(() -> objectIds);
-            Iterator<RevObject> commitsIterator = new AbstractIterator<RevObject>() {
-                private Iterator<RevCommit> it = commits.iterator();
-
-                @Override
-                protected RevObject computeNext() {
-                    if (it.hasNext()) {
-                        objectReport.addCommit();
-                        return it.next();
-                    }
-                    return endOfData();
-                }
-            };
-            return Iterators.concat(objects, commitsIterator);
+            return objectIds;
         }
 
         public @Override void run() {
@@ -232,194 +229,117 @@ class PackImpl implements Pack {
                 throw Throwables.propagate(e);
             }
         }
-    }
 
-    private void visitPreOrder(@Nullable RevCommit parent, RevCommit commit,
-            Deduplicator deduplicator, PackProcessor target, ObjectReporter progress,
-            Consumer<ObjectId> consumer) {
+        private void visitPreOrder(@Nullable RevCommit parent, RevCommit commit,
+                Deduplicator deduplicator, PackProcessor target, ObjectReporter progress,
+                Consumer<ObjectId> consumer) {
 
-        // System.err.printf("processing %s against parent %s\n", commit, parent);
+            final ObjectId leftRootId = parent == null ? EMPTY_TREE_ID : parent.getTreeId();
+            final ObjectId rightRootId = commit.getTreeId();
 
-        final ObjectId leftRootId = parent == null ? EMPTY_TREE_ID : parent.getTreeId();
-        final ObjectId rightRootId = commit.getTreeId();
+            if (deduplicator.isDuplicate(rightRootId)) {
+                return;
+            }
 
-        if (deduplicator.isDuplicate(rightRootId)) {
-            return;
-        }
+            final ObjectStore source = this.source;
+            final RevTree left = EMPTY_TREE_ID.equals(leftRootId) ? EMPTY
+                    : source.getTree(leftRootId);
+            final RevTree right = EMPTY_TREE_ID.equals(rightRootId) ? EMPTY
+                    : source.getTree(rightRootId);
 
-        final ObjectStore source = this.source.objectDatabase();
-        final RevTree left = EMPTY;// EMPTY_TREE_ID.equals(leftRootId) ? EMPTY :
-                                   // source.getTree(leftRootId);
-        final RevTree right = EMPTY_TREE_ID.equals(rightRootId) ? EMPTY
-                : source.getTree(rightRootId);
+            PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source, false);
 
-        PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source, false);
+            /**
+             * A diff consumer that reports only the new objects, with deduplication
+             */
+            walk.walk(new PreOrderDiffWalk.AbstractConsumer() {
 
-        walk.walk(new PreOrderDiffWalk.AbstractConsumer() {
+                /**
+                 * Checks whether the {@code left} has already been compared against {@code right}
+                 * 
+                 * @return {@code true} if the pair of ids weren't already visited and are marked
+                 *         visited as result to this call, {@code false} if this pair was already
+                 *         visited.
+                 */
+                private boolean visitPair(ObjectId left, ObjectId right) {
+                    return deduplicator.visit(left, right);
+                }
 
-            private boolean add(ObjectId objectId) {
-                if (deduplicator.visit(objectId)) {
-                    consumer.accept(objectId);
+                /**
+                 * Calls {@link Consumer#accept consumer.accept(ObjectId}} with this id if it wasn't
+                 * already visited and returns {@code true}, or {@code false} if the id was already
+                 * visited and hence consumed
+                 */
+                private boolean consume(ObjectId objectId) {
+                    if (deduplicator.visit(objectId)) {
+                        consumer.accept(objectId);
+                        return true;
+                    }
+                    return false;
+                }
+
+                public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+                    if (right != null && consume(right.getObjectId())) {
+                        progress.addFeature();
+                        addMetadataId(progress, right);
+                    }
                     return true;
                 }
-                return false;
-            }
 
-            public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
-                addFeature(progress, right);
-                return true;
-            }
+                public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+                    if (right == null) {
+                        // not interested in purely deleted content
+                        return false;
+                    }
+                    // which "old" object the "new" bucket is being compared against.
+                    ObjectId leftId = left == null ? RevTree.EMPTY_TREE_ID : left.getObjectId();
+                    boolean r = addTree(progress, leftId, right);
+                    return r;
+                }
 
-            public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
-                boolean r = addTree(progress, right);
-                return r;
-            }
+                public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                        BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
+                    if (rightParent == null || right == null) {
+                        // not interested in purely deleted content
+                        return false;
+                    }
 
-            public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
-                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
-                boolean r = addBucket(progress, right);
-                return r;
-            }
+                    // which "old" object the "new" bucket is being compared against.
+                    final ObjectId leftId = bucketIndex.left().getId();
+                    boolean r = addBucket(progress, leftId, right);
+                    return r;
+                }
 
-            private boolean addFeature(ObjectReporter progress, NodeRef right) {
-                if (right != null && add(right.getObjectId())) {
-                    progress.addFeature();
+                private boolean addTree(ObjectReporter progress, ObjectId left, NodeRef right) {
+                    if (visitPair(left, right.getObjectId())) {
+                        if (consume(right.getObjectId())) {
+                            progress.addTree();
+                        }
+                        addMetadataId(progress, right);
+                        return true;
+                    }
+                    return false;
+                }
+
+                private void addMetadataId(ObjectReporter progress, NodeRef right) {
                     if (right.getNode().getMetadataId().isPresent()) {
                         ObjectId md = right.getNode().getMetadataId().get();
-                        if (add(md)) {
+                        if (consume(md)) {
                             progress.addFeatureType();
                         }
                     }
                 }
-                return true;
-            }
 
-            private boolean addTree(ObjectReporter progress, NodeRef right) {
-                if (right != null && add(right.getObjectId())) {
-                    progress.addTree();
-                    if (right.getNode().getMetadataId().isPresent()) {
-                        ObjectId md = right.getNode().getMetadataId().get();
-                        if (add(md)) {
-                            progress.addFeatureType();
+                private boolean addBucket(ObjectReporter progress, ObjectId left, Bucket right) {
+                    if (visitPair(left, right.getObjectId())) {
+                        if (consume(right.getObjectId())) {
+                            progress.addBucket();
                         }
+                        return true;
                     }
-                    return true;
+                    return false;
                 }
-                return false;
-            }
-
-            private boolean addBucket(ObjectReporter progress, Bucket right) {
-                if (right != null && add(right.getObjectId())) {
-                    progress.addBucket();
-                    return true;
-                }
-                return false;
-            }
-        });
-    }
-
-    private static class ObjectReporter extends BulkOpListener.CountingListener {
-
-        final AtomicLong total = new AtomicLong();
-
-        final AtomicLong tags = new AtomicLong();
-
-        final AtomicLong commits = new AtomicLong();
-
-        final AtomicLong trees = new AtomicLong();
-
-        final AtomicLong buckets = new AtomicLong();
-
-        final AtomicLong features = new AtomicLong();
-
-        final AtomicLong featureTypes = new AtomicLong();
-
-        final ProgressListener progress;
-
-        public ObjectReporter(ProgressListener progress) {
-            this.progress = progress;
-        }
-
-        public @Override void found(ObjectId object, @Nullable Integer storageSizeBytes) {
-            super.found(object, storageSizeBytes);
-            notifyProgressListener();
-        }
-
-        public @Override void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
-            super.inserted(object, storageSizeBytes);
-            notifyProgressListener();
-        }
-
-        public void addTree() {
-            increment(trees);
-        }
-
-        public void addTag() {
-            increment(tags);
-        }
-
-        public void addBucket() {
-            increment(buckets);
-        }
-
-        public void addFeature() {
-            increment(features);
-        }
-
-        public void addFeatureType() {
-            increment(featureTypes);
-        }
-
-        public void addCommit() {
-            increment(commits);
-        }
-
-        private void increment(AtomicLong counter) {
-            counter.incrementAndGet();
-            total.incrementAndGet();
-            notifyProgressListener();
-        }
-
-        private void notifyProgressListener() {
-            progress.setProgress(progress.getProgress() + 1);
-        }
-
-        public void complete() {
-            progress.complete();
-        }
-
-        public @Override String toString() {
-            return String.format(
-                    "inserted %,d/%,d: commits: %,d, trees: %,d, buckets: %,d, features: %,d, ftypes: %,d",
-                    super.inserted(), total.get(), commits.get(), trees.get(), buckets.get(),
-                    features.get(), featureTypes.get());
-        }
-    }
-
-    private static class BlockingIterator<T> extends AbstractIterator<T> {
-
-        private final BlockingQueue<T> queue;
-
-        private final T terminalToken;
-
-        public BlockingIterator(BlockingQueue<T> queue, T terminalToken) {
-            this.queue = queue;
-            this.terminalToken = terminalToken;
-        }
-
-        @Override
-        protected T computeNext() {
-            T object;
-            try {
-                object = queue.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                throw Throwables.propagate(e);
-            }
-            if (terminalToken.equals(object)) {
-                return endOfData();
-            }
-            return object;
+            });
         }
     }
 

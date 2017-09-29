@@ -48,4 +48,8 @@ public interface Deduplicator {
      * deduplicator. After release() has been called, the deduplicator should no longer be used.
      */
     void release();
+
+    boolean visit(ObjectId left, ObjectId right);
+
+    boolean isDuplicate(ObjectId left, ObjectId right);
 }

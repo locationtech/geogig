@@ -72,7 +72,6 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
     @Override
     protected Repository _call() {
         checkPreconditions();
-        getProgressListener().started();
         final Repository cloneRepo = createClone();
         try {
             // Set up origin
@@ -96,7 +95,6 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
             // }
             throw Throwables.propagate(e);
         }
-        getProgressListener().complete();
         {
             // Repository source;
             // try {

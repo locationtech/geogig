@@ -15,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -163,11 +162,10 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     public void testCloneLargerTreeSeveralCommitsAndChangeTypes() throws Exception {
         final int nfeatures = 1_000;
         List<SimpleFeature> features = createPointFeatures(nfeatures);
-        List<RevCommit> commits;
         // inserts
         {
             final int featuresPerCommit = 100;
-            commits = insertAndCommit(features, featuresPerCommit);
+            insertAndCommit(features, featuresPerCommit);
         }
         // updates
         {
@@ -176,40 +174,82 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
             final int featuresPerCommit = 10;
             List<SimpleFeature> updates = features.subList(0, nfeatures / 2);
             updates.forEach((f) -> f.setAttribute("sp", f.getAttribute("sp") + " changed"));
-            List<RevCommit> updateCommits = insertAndCommit(updates, featuresPerCommit);
-            Collections.reverse(updateCommits);
-            updateCommits.forEach((c) -> commits.add(0, c));
+            insertAndCommit(updates, featuresPerCommit);
 
             checkout(remoteRepo, "master");
             createBranch(remoteRepo, "updates_branch2");
 
             updates.forEach((f) -> f.setAttribute("sp", f.getAttribute("sp") + " changed too"));
-            updateCommits = insertAndCommit(updates, featuresPerCommit);
-            Collections.reverse(updateCommits);
-            updateCommits.forEach((c) -> commits.add(0, c));
+            insertAndCommit(updates, featuresPerCommit);
         }
 
         createBranch(remoteRepo, "deletes_branch");
         // delete every other feauture
-        // {
-        // final String parent = pointsName + "/";
-        // List<String> featurePaths = new ArrayList<>();
-        // for (int i = 0; i < features.size(); i += 2) {
-        // featurePaths.add(parent + features.get(i).getID());
-        // }
-        // remoteRepo.workingTree().delete(featurePaths.iterator(), new DefaultProgressListener());
-        // add(remoteRepo);
-        // RevCommit deleteCommit = remoteRepo.command(CommitOp.class)
-        // .setMessage("several deletes").setProgressListener(SIMPLE_PROGRESS).call();
-        // commits.add(0, deleteCommit);
-        // }
+        {
+            final String parent = pointsName + "/";
+            List<String> featurePaths = new ArrayList<>();
+            for (int i = 0; i < features.size(); i += 2) {
+                featurePaths.add(parent + features.get(i).getID());
+            }
+            remoteRepo.workingTree().delete(featurePaths.iterator(), new DefaultProgressListener());
+            add(remoteRepo);
+            remoteRepo.command(CommitOp.class).setMessage("several deletes")
+                    .setProgressListener(SIMPLE_PROGRESS).call();
+        }
 
         checkout(remoteRepo, "master");
         mergeNoFF(remoteRepo, "updates_branch", "merge branch updates_branch onto master", true);
-        // mergeNoFF(remoteRepo, "deletes_branch", "merge branch deletes_branch onto master", true);
+        mergeNoFF(remoteRepo, "deletes_branch", "merge branch deletes_branch onto master", true);
 
-        List<RevCommit> logged = newArrayList(remoteRepo.command(LogOp.class).call());
-        // assertEquals(commits, logged);
+        // clone from the remote
+        CloneOp clone = cloneOp();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
+                .setCloneURI(localGeogig.envHome.toURI())//
+                .setProgressListener(SIMPLE_PROGRESS)//
+                .call();
+
+        TestSupport.verifySameRefs(remoteRepo, cloneRepo);
+        TestSupport.verifySameContents(remoteRepo, cloneRepo);
+    }
+
+    @Test
+    public void testCloneExpandedTree() throws Exception {
+        final int nfeatures = 1_000;
+        List<SimpleFeature> features = createPointFeatures(nfeatures);
+        RevCommit leafTreeCommit, bucketTreeCommit;
+        {
+            List<SimpleFeature> leafTreeNodes = features.subList(0, 512);
+            leafTreeCommit = insertAndCommit(leafTreeNodes, leafTreeNodes.size()).get(0);
+            bucketTreeCommit = insertAndCommit(features, features.size()).get(0);
+        }
+
+        // clone from the remote
+        CloneOp clone = cloneOp();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
+                .setCloneURI(localGeogig.envHome.toURI())//
+                .setProgressListener(SIMPLE_PROGRESS)//
+                .call();
+
+        TestSupport.verifySameRefs(remoteRepo, cloneRepo);
+        TestSupport.verifySameContents(remoteRepo, cloneRepo);
+    }
+
+    @Test
+    public void testCloneCollapsedTree() throws Exception {
+        final int nfeatures = 1_000;
+        List<SimpleFeature> features = createPointFeatures(nfeatures);
+        RevCommit leafTreeCommit, bucketTreeCommit;
+        {
+            bucketTreeCommit = insertAndCommit(features, features.size()).get(0);
+            List<SimpleFeature> removeNodes = features.subList(512, features.size());
+            super.delete(remoteRepo, removeNodes);
+            super.add(remoteRepo);
+            String msg = "Deleted features " + removeNodes.get(0).getID() + " to "
+                    + removeNodes.get(removeNodes.size() - 1).getID();
+            leafTreeCommit = super.commit(remoteRepo, msg);
+        }
 
         // clone from the remote
         CloneOp clone = cloneOp();

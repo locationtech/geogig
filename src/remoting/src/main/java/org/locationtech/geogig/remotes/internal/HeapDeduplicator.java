@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -17,21 +18,62 @@ import org.locationtech.geogig.model.ObjectId;
 import com.google.common.collect.Sets;
 
 public class HeapDeduplicator implements Deduplicator {
-    private Set<ObjectId> seen = Sets.newConcurrentHashSet();
+
+    private static class IdTuple {
+        private final ObjectId left;
+
+        private final ObjectId right;
+
+        private IdTuple(ObjectId left, ObjectId right) {
+            this.left = left;
+            this.right = right;
+        }
+
+        static IdTuple of(ObjectId left, ObjectId right) {
+            return new IdTuple(left, right);
+        }
+
+        public @Override boolean equals(Object o) {
+            IdTuple t = (IdTuple) o;
+            return left.equals(t.left) && right.equals(t.right);
+        }
+
+        public @Override int hashCode() {
+            return 31 * left.hashCode() + right.hashCode();
+        }
+    }
+
+    private Set<IdTuple> seen = Sets.newConcurrentHashSet();
 
     @Override
-    public boolean visit(ObjectId id) {
-        return seen.add(id);
+    public boolean visit(ObjectId right) {
+        return visit(ObjectId.NULL, right);
+    }
+
+    @Override
+    public boolean visit(ObjectId left, ObjectId right) {
+        return seen.add(IdTuple.of(left, right));
     }
 
     @Override
     public boolean isDuplicate(ObjectId id) {
-        return seen.contains(id);
+        return isDuplicate(ObjectId.NULL, id);
+    }
+
+    @Override
+    public boolean isDuplicate(ObjectId left, ObjectId right) {
+        return seen.contains(IdTuple.of(left, right));
     }
 
     @Override
     public void removeDuplicates(List<ObjectId> ids) {
-        ids.removeAll(seen);
+        Iterator<ObjectId> iterator = ids.iterator();
+        while (iterator.hasNext()) {
+            ObjectId id = iterator.next();
+            if (seen.contains(IdTuple.of(ObjectId.NULL, id))) {
+                iterator.remove();
+            }
+        }
     }
 
     @Override

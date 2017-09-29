@@ -817,11 +817,11 @@ public class GeogigCLI {
                         return;
                     }
                     try {
-                        console.println();
-                        console.flush();
+                        logProgress();
+                        console.clearBuffer();
                         super.complete();
                         super.dispose();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         Throwables.propagate(e);
                     }
                 }
@@ -836,7 +836,14 @@ public class GeogigCLI {
                     }
                 }
 
+                float lastProgress = -1;
+
                 private void logProgress() {
+                    float progress = getProgress();
+                    if (lastProgress == progress) {
+                        return;
+                    }
+                    lastProgress = progress;
                     console.clearBuffer();
                     String description = getDescription();
                     try {

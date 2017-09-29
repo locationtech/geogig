@@ -94,11 +94,11 @@ public class TestSupport {
         }
         ObjectDatabase store = repo.objectDatabase();
         RevObject obj = store.getIfPresent(tip);
+        pathToObject.push(tip.toString());
         if (obj == null) {
-            throw new NullPointerException(format("object %s does not exist", tip));
+            throw new NullPointerException(format("object %s does not exist at %s", tip, pathToObject));
         }
         allIds.add(obj.getId());
-        pathToObject.push(obj.getId().toString());
 
         switch (obj.getType()) {
         case TAG:

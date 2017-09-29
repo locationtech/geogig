@@ -457,6 +457,14 @@ public abstract class RemoteRepositoryTestCase {
         return existed;
     }
 
+    protected void delete(Repository repo, Iterable<? extends Feature> features) throws Exception {
+        final WorkingTree workTree = repo.workingTree();
+
+        Iterator<String> featurePaths = Iterators.transform(features.iterator(),
+                (f) -> f.getType().getName().getLocalPart() + "/" + f.getIdentifier().toString());
+        workTree.delete(featurePaths, new DefaultProgressListener());
+    }
+
     protected <E> List<E> toList(Iterator<E> logs) {
         List<E> logged = new ArrayList<E>();
         Iterators.addAll(logged, logs);
@@ -501,5 +509,9 @@ public abstract class RemoteRepositoryTestCase {
             bounds.include(fbounds);
         }
         return bounds;
+    }
+
+    public RevCommit commit(Repository repo, String msg) {
+        return repo.command(CommitOp.class).setMessage(msg).call();
     }
 }

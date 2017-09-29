@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -75,9 +76,9 @@ public class DiffCountConsumer extends PreOrderDiffWalk.AbstractConsumer {
 
     @Override
     public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-            Bucket left, Bucket right) {
+            @Nullable Bucket left, @Nullable Bucket right) {
 
-        if (left == null || right == null) {
+        if (bucketIndex.left().isEmpty() || bucketIndex.right().isEmpty()) {
             Bucket bucket = left == null ? right : left;
             addTreeFeatures(bucket.getObjectId(), left != null, right != null);
             return false;

@@ -66,3 +66,20 @@ Feature: Push
      When I call "GET /repos/repo4/push?transactionId={@txId}&remoteName=origin&ref=master"
      Then the response status should be '500'
       And the xpath "/response/error/text()" equals "Push failed: The remote repository has changes that would be lost in the event of a push."
+
+  @HttpTest
+  Scenario: Pushing changes to an http remote results in a success
+    Given There is a default multirepo server with http remotes
+      And I have a transaction as "@txId" on the "repo1" repo
+      And I have committed "Point.2_modified" on the "repo1" repo in the "@txId" transaction
+     When I call "GET /repos/repo1/push?transactionId={@txId}&remoteName=repo4&ref=master"
+     Then the response status should be '200'
+      And the xpath "/response/success/text()" equals "true"
+      And the xpath "/response/Push/text()" equals "Success"
+      And the xpath "/response/dataPushed/text()" equals "true"
+      And the variable "{@ObjectId|repo1|@txId|master}" equals "{@ObjectId|repo4|master}"
+     When I call "GET /repos/repo1/push?transactionId={@txId}&remoteName=repo4&ref=master"
+     Then the response status should be '200'
+      And the xpath "/response/success/text()" equals "true"
+      And the xpath "/response/Push/text()" equals "Success"
+      And the xpath "/response/dataPushed/text()" equals "false"

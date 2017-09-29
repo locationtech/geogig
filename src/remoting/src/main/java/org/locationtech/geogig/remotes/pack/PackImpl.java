@@ -154,9 +154,14 @@ class PackImpl implements Pack {
 
             target.putAll(allObjects, objectReport);
             progress.complete();
-            progress.started();
-            progress.setDescription(String.format("Objects inserted: %,d, repeated: %,d, time: %s",
-                    objectReport.inserted(), objectReport.found(), sw.stop()));
+            if (objectReport.total.get() > 0) {
+                progress.started();
+                String description = String.format("Objects inserted: %,d, repeated: %,d, time: %s",
+                        objectReport.inserted(), objectReport.found(), sw.stop());
+                progress.setDescription(description);
+
+                progress.complete();
+            }
         } finally {
             producerThread.shutdownNow();
             // restore previous progress indicator
@@ -166,8 +171,6 @@ class PackImpl implements Pack {
         Ref oldRef = req.have.isPresent() ? new Ref(req.name, req.have.get()) : null;
         Ref newRef = new Ref(req.name, req.want);
         RefDiff changedRef = new RefDiff(oldRef, newRef);
-
-        progress.complete();
 
         return changedRef;
     }

@@ -111,8 +111,8 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
                 // may be updating what used to be a symref to be a direct ref
                 storedValue = refDatabase.getSymRef(name);
             }
-            checkState(oldValue.equals(storedValue), "Old value (" + storedValue
-                    + ") doesn't match expected value '" + oldValue + "'");
+            checkState(storedValue == null || oldValue.equals(storedValue), "Old value ("
+                    + storedValue + ") doesn't match expected value '" + oldValue + "'");
         }
 
         if (delete) {

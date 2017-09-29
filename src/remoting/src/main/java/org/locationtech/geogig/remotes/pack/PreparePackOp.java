@@ -16,6 +16,7 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -168,22 +169,24 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
             checkArgument(!req.want.isNull(), "Requested NULL tip for ref %s", req.name);
 
             ObjectId wantCommit = req.want;
-            ObjectId haveCommit = req.have.orNull();
-            if (req.name.startsWith(Ref.TAGS_PREFIX)) {
-                wantCommit = local.objectDatabase().getTag(wantCommit).getCommitId();
-                if (haveCommit != null) {
-                    haveCommit = local.objectDatabase().getTag(haveCommit).getCommitId();
-                }
-            }
-
+            ObjectId haveCommit = req.have.or(ObjectId.NULL);
             Iterator<RevCommit> branchCommits;
+            if (wantCommit.equals(haveCommit)) {
+                branchCommits = Collections.emptyIterator();
+            } else {
+                if (req.name.startsWith(Ref.TAGS_PREFIX)) {
+                    wantCommit = local.objectDatabase().getTag(wantCommit).getCommitId();
+                    if (!haveCommit.isNull()) {
+                        haveCommit = local.objectDatabase().getTag(haveCommit).getCommitId();
+                    }
+                }
 
-            branchCommits = local.command(LogOp.class)//
-                    .setTopoOrder(true)//
-                    .setUntil(wantCommit)//
-                    .setSince(haveCommit)//
-                    .call();
-
+                branchCommits = local.command(LogOp.class)//
+                        .setTopoOrder(true)//
+                        .setUntil(wantCommit)//
+                        .setSince(haveCommit.isNull() ? null : haveCommit)//
+                        .call();
+            }
             int count = 0;
             while (branchCommits.hasNext()) {
                 RevCommit commit = branchCommits.next();

@@ -184,7 +184,12 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             Ref want = cr.getNewRef();
             if (want instanceof SymRef) {
                 symRefsOut.add(cr);
-                want = ((SymRef) want).peel();
+                want = want.peel();
+            }
+            // may the want commit exist in the local repository's object database nonetheless?
+            ObjectId wantId = want.getObjectId();
+            if (!wantId.isNull() && local.objectDatabase().exists(wantId)) {
+                haveTip = wantId;
             }
             req = RefRequest.want(want, haveTip);
             request.addRef(req);

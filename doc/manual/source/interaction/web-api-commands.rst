@@ -1311,14 +1311,14 @@ Examples
 
 .. _command_pull:
 
-Pull
-====
+Pull (-T)
+=========
 
 Pull the changes from a remote branch into a local one.  This operation may return merge conflicts that must be resolved before the merge can be completed (See :ref:`conflict_resolution`).
 
 ::
 
-    GET /repos/<repo>/pull[?remoteName=<remoteName>][&all=<true|false>][&ref=<ref>][&authorName=<authorName>][&authorEmail=<authorEmail>]
+    GET /repos/<repo>/pull?transactionId=<transactionId>[&remoteName=<remoteName>][&all=<true|false>][&ref=<ref>][&authorName=<authorName>][&authorEmail=<authorEmail>]
     
 Parameters
 ----------
@@ -1345,7 +1345,7 @@ Examples
 
 ::
 
-    $ curl -v "http://localhost:8182/repos/repo1/pull?remoteName=origin&ref=master:master" | xmllint --format -
+    $ curl -v "http://localhost:8182/repos/repo1/pull?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&remoteName=origin&ref=master:master" | xmllint --format -
     < HTTP/1.1 200 OK
     < Content-Type: application/xml 
     <?xml version="1.0"?>
@@ -1371,7 +1371,7 @@ Examples
 
 ::
 
-    $ curl -v "http://localhost:8182/repos/repo1/pull?remoteName=remote1&ref=master:master" | xmllint --format -
+    $ curl -v "http://localhost:8182/repos/repo1/pull?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&remoteName=remote1&ref=master:master" | xmllint --format -
     < HTTP/1.1 200 OK
     < Content-Type: application/xml 
     <?xml version="1.0"?>

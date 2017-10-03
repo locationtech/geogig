@@ -1,9 +1,9 @@
-GeoPackage import and export Web-API
-====================================
+Web API: GeoPackage Import and Export
+=====================================
 
 `GeoPackage <http://www.geopackage.org/>`_ is an open, standards-based, platform-independent, portable, self-describing, compact format for transferring geospatial information.
 
-The GeoPackage import/export GeoGig Web-API allows for downloading a repository snapshot, or a subset of it, as a GeoPackage file and for uploading a GeoPackage file and importing its vector layers into the GeoGig repository.
+The GeoPackage import/export GeoGig web API allows for downloading a repository snapshot, or a subset of it, as a GeoPackage file and for uploading a GeoPackage file and importing its vector layers into the GeoGig repository.
 
 
 GeoPackage export

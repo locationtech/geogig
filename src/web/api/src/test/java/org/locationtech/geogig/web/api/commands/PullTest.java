@@ -29,18 +29,20 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-import org.locationtech.geogig.rest.repository.TestParams;
 
 public class PullTest extends AbstractWebOpTest {
 
@@ -102,14 +104,17 @@ public class PullTest extends AbstractWebOpTest {
         Remote remote = geogig.command(RemoteAddOp.class).setName("origin")
                 .setURL(remoteURI.toURL().toString()).call();
 
-        ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("transactionId",
+                transaction.getTransactionId().toString(), "remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
 
-        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref master = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref branch1 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch1").call().get();
-        Ref branch2 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref branch2 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch2").call().get();
 
         assertEquals(remoteMaster.getObjectId(), master.getObjectId());
@@ -160,16 +165,20 @@ public class PullTest extends AbstractWebOpTest {
         Remote remote = geogig.command(RemoteAddOp.class).setName("origin")
                 .setURL(remoteURI.toURL().toString()).call();
 
-        ParameterSet options = TestParams.of("remoteName", "origin", "ref", "branch1:newbranch");
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("transactionId",
+                transaction.getTransactionId().toString(), "remoteName", "origin", "ref",
+                "branch1:newbranch");
         buildCommand(options).run(testContext.get());
 
-        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref master = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/master").call().get();
-        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref branch1 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch1").call().get();
-        Ref branch2 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref branch2 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch2").call().get();
-        Ref newbranch = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref newbranch = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("newbranch").call().get();
 
         assertEquals(remoteMaster.getObjectId(), master.getObjectId());
@@ -220,14 +229,17 @@ public class PullTest extends AbstractWebOpTest {
 
         geogig.command(CloneOp.class).setRepositoryURL(remoteURI.toURL().toString()).call();
 
-        ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("transactionId",
+                transaction.getTransactionId().toString(), "remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
 
-        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref master = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/master").call().get();
-        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref branch1 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch1").call().get();
-        Ref branch2 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        Ref branch2 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch2").call().get();
 
         assertEquals(remoteMaster.getObjectId(), master.getObjectId());
@@ -266,7 +278,10 @@ public class PullTest extends AbstractWebOpTest {
         geogig.command(RemoteAddOp.class).setName("origin").setURL(remoteURI.toURL().toString())
                 .call();
 
-        ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("transactionId",
+                transaction.getTransactionId().toString(), "remoteName", "origin", "ref", "master");
 
         ex.expect(CommandSpecException.class);
         ex.expectMessage("Unable to pull, the remote history is shallow.");
@@ -301,7 +316,10 @@ public class PullTest extends AbstractWebOpTest {
         testData.add();
         RevCommit ours = geogig.command(CommitOp.class).setMessage("remove point1").call();
 
-        ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("transactionId",
+                transaction.getTransactionId().toString(), "remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
@@ -355,7 +373,11 @@ public class PullTest extends AbstractWebOpTest {
         RevCommit ours = geogig.command(CommitOp.class).setMessage("remove point1").call();
         testData.branchAndCheckout("branch1");
 
-        ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master:branch1");
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("transactionId",
+                transaction.getTransactionId().toString(), "remoteName", "origin", "ref",
+                "master:branch1");
         buildCommand(options).run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");

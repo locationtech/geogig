@@ -1,7 +1,7 @@
-Web-API Asynchronous tasks
-==========================
+Web API: Asynchronous tasks
+===========================
 
-Some Web-API commands can run for a long time depending on how much data they're dealing with, and hence,
+Some web API commands can run for a long time depending on how much data they're dealing with, and hence,
 are executed asynchronously, meaning that, once invoked, they start the job in a background thread and return immediately.
 
 The response contains a unique identifier for the asynchronous task and information on the task's running status.

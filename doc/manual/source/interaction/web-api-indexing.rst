@@ -1,7 +1,7 @@
-Web-API indexing documentation
-==============================
+Web API: Indexing Commands
+==========================
 
-The GeoGig indexing web-API allows for the creation, updating, and listing of spatial indexes on feature trees within the repository.
+The GeoGig indexing web API allows for the creation, updating, and listing of spatial indexes on feature trees within the repository.
 
 Index create
 ------------

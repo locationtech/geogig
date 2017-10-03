@@ -29,7 +29,8 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -47,7 +48,7 @@ public class PostgisControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testImport() throws Exception {
+    public void testImportNoTransaction() throws Exception {
         PostgisController.dataStoreFactory = TestHelper.createTestFactory();
         repoProvider.createGeogig("testRepo", null);
         repoProvider.getTestRepository("testRepo").initializeRpository();
@@ -55,6 +56,27 @@ public class PostgisControllerTest extends AbstractControllerTest {
         MockHttpServletRequestBuilder importRequest = MockMvcRequestBuilders
                 .get("/repos/testRepo/postgis/import.json");
         importRequest.param("table", "table1");
+
+        perform(importRequest).andExpect(status().is5xxServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.response.success").value(false))
+                .andExpect(jsonPath("$.response.error").value(
+                        "No transaction was specified, this command requires a transaction to preserve the stability of the repository."));
+    }
+
+    @Test
+    public void testImport() throws Exception {
+        PostgisController.dataStoreFactory = TestHelper.createTestFactory();
+        repoProvider.createGeogig("testRepo", null);
+        repoProvider.getTestRepository("testRepo").initializeRpository();
+
+        GeogigTransaction transaction = repoProvider.getGeogig("testRepo").get()
+                .command(TransactionBegin.class).call();
+
+        MockHttpServletRequestBuilder importRequest = MockMvcRequestBuilders
+                .get("/repos/testRepo/postgis/import.json");
+        importRequest.param("table", "table1");
+        importRequest.param("transactionId", transaction.getTransactionId().toString());
 
         MvcResult result = perform(importRequest).andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -78,11 +100,11 @@ public class PostgisControllerTest extends AbstractControllerTest {
         rootObject = Json.createReader(new StringReader(jsonString)).readObject();
         String treeIdStr = rootObject.getJsonObject("task").getJsonObject("result")
                 .getJsonObject("RevTree").getString("treeId");
-        Repository geogig = repoProvider.getGeogig("testRepo").get();
-        Ref workHead = geogig.command(RefParse.class).setName(Ref.WORK_HEAD).call().get();
+
+        Ref workHead = transaction.command(RefParse.class).setName(Ref.WORK_HEAD).call().get();
         assertEquals(treeIdStr, workHead.getObjectId().toString());
 
-        List<NodeRef> nodes = Lists.newArrayList(geogig.command(LsTreeOp.class)
+        List<NodeRef> nodes = Lists.newArrayList(transaction.command(LsTreeOp.class)
                 .setReference(Ref.WORK_HEAD).setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call());
         assertEquals(2, nodes.size());
 

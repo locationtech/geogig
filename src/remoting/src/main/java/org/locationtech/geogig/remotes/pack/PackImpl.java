@@ -45,6 +45,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -250,7 +251,7 @@ class PackImpl implements Pack {
             final RevTree right = EMPTY_TREE_ID.equals(rightRootId) ? EMPTY
                     : source.getTree(rightRootId);
 
-            PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source, false);
+            PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source, true);
 
             /**
              * A diff consumer that reports only the new objects, with deduplication
@@ -334,6 +335,9 @@ class PackImpl implements Pack {
                 }
 
                 private boolean addBucket(ObjectReporter progress, ObjectId left, Bucket right) {
+                    Preconditions.checkNotNull(progress);
+                    Preconditions.checkNotNull(left);
+                    Preconditions.checkNotNull(right);
                     if (visitPair(left, right.getObjectId())) {
                         if (consume(right.getObjectId())) {
                             progress.addBucket();

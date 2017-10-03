@@ -9,21 +9,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.remotes.pack.PackRequest;
 import org.locationtech.geogig.remotes.pack.RefRequest;
 
-import com.google.common.base.Preconditions;
-
-class PackRequestIO {
+public class PackRequestIO {
 
     final byte[] delimiter = { 'p', 'a', 'c', 'k', 'r', 'e', 'q' };
+
+    private RefRequestIO refIO = new RefRequestIO();
 
     public void write(PackRequest request, OutputStream out) throws IOException {
         DataOutputStream dout = new DataOutputStream(out);
         dout.write(delimiter);
-
+        dout.writeInt(request.getMaxDepth().or(0));
         writeRequests(dout, request.getRefs());
 
         // final int maxDepth = request.getMaxDepth().or(0);
@@ -35,10 +33,13 @@ class PackRequestIO {
     public PackRequest read(InputStream in) throws IOException {
         DataInputStream din = new DataInputStream(in);
         require(din, delimiter);
+        final int depth = din.readInt();
+
         List<RefRequest> readRequests = readRequests(din);
         require(din, delimiter);
 
         PackRequest req = new PackRequest();
+        req.maxDepth(depth);
         readRequests.forEach((r) -> req.addRef(r));
         return req;
     }
@@ -56,7 +57,7 @@ class PackRequestIO {
     void writeRequests(DataOutputStream out, List<RefRequest> refs) throws IOException {
         out.writeInt(refs.size());
         for (RefRequest r : refs) {
-            writeRefReq(out, r);
+            refIO.write(out, r);
         }
     }
 
@@ -64,44 +65,9 @@ class PackRequestIO {
         final int size = in.readInt();
         List<RefRequest> refs = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            RefRequest r = readRequest(in);
+            RefRequest r = refIO.read(in);
             refs.add(r);
         }
         return refs;
-    }
-
-    private void writeRefReq(DataOutputStream out, RefRequest r) throws IOException {
-        String name = r.name;
-        ObjectId want = r.want;
-        ObjectId have = r.have.orNull();
-
-        out.writeUTF(name);
-        writeId(out, want);
-        writeId(out, have);
-    }
-
-    private RefRequest readRequest(DataInputStream in) throws IOException {
-        String name = in.readUTF();
-        final ObjectId want = readId(in);
-        final @Nullable ObjectId have = readId(in);
-        return RefRequest.create(name, want, have);
-    }
-
-    void writeId(DataOutputStream out, @Nullable ObjectId id) throws IOException {
-        out.writeByte(id == null ? 0 : 1);
-        if (id != null) {
-            id.writeTo(out);
-        }
-    }
-
-    @Nullable
-    ObjectId readId(DataInputStream in) throws IOException {
-        final int present = in.readByte() & 0xFF;
-        Preconditions.checkArgument(present == 0 || present == 1);
-        ObjectId id = null;
-        if (1 == present) {
-            id = ObjectId.readFrom(in);
-        }
-        return id;
     }
 }

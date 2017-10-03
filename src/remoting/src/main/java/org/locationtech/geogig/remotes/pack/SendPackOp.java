@@ -61,7 +61,7 @@ public class SendPackOp extends AbstractGeoGigOp<List<RefDiff>> {
         return results;
     }
 
-    protected PackBuilder newPackBuilder() {
+    protected PackBuilder getPackBuilder() {
         return new LocalPackBuilder(repository());
     }
 
@@ -75,7 +75,7 @@ public class SendPackOp extends AbstractGeoGigOp<List<RefDiff>> {
     }
 
     protected Pack preparePack(PackRequest request) {
-        PackBuilder packBuilder = newPackBuilder();
+        PackBuilder packBuilder = getPackBuilder();
         return command(PreparePackOp.class)//
                 .setRequest(request)//
                 .setPackBuilder(packBuilder)//

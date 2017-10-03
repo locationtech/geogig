@@ -22,6 +22,7 @@ public class HttpPostProcessor {
         connection.setDoInput(true);
         connection.setUseCaches(false);
         connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/octet-stream");
         connection.setChunkedStreamingMode(4096);
         connection.setRequestProperty("content-length", "-1");
         // connection.setRequestProperty("content-encoding", "gzip");

@@ -502,8 +502,10 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
 
     public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
         if (SendPackOp.class.equals(commandClass)) {
+            // invoked when a local repo calls fetch for an http remote
             return commandClass.cast(new HttpSendPackClient(this));
         } else if (ReceivePackOp.class.equals(commandClass)) {
+            // invoked when a local repo calls push on an http remote
             return commandClass.cast(new HttpReceivePackClient(this));
         }
         return super.command(commandClass);

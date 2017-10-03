@@ -34,6 +34,23 @@ public class ReceivePackOp extends AbstractGeoGigOp<List<RefDiff>> {
 
     private Pack pack;
 
+    @Override
+    protected List<RefDiff> _call() {
+        checkState(pack != null, "No pack supplied");
+
+        PackProcessor processor = getPackProcessor();
+        List<RefDiff> appliedChanges = pack.applyTo(processor, getProgressListener());
+        checkNotNull(appliedChanges);
+        appliedChanges.forEach((c) -> checkNotNull(c));
+        return appliedChanges;
+    }
+
+    protected PackProcessor getPackProcessor() {
+        Repository repo = repository();
+        ObjectDatabase store = repo.objectDatabase();
+        return new LocalPackProcessor(store);
+    }
+
     public ReceivePackOp setPack(Pack pack) {
         this.pack = pack;
         return this;
@@ -42,22 +59,4 @@ public class ReceivePackOp extends AbstractGeoGigOp<List<RefDiff>> {
     public Pack getPack() {
         return pack;
     }
-
-    @Override
-    protected List<RefDiff> _call() {
-        checkState(pack != null, "No pack supplied");
-
-        PackProcessor processor = newPackProcessor();
-        List<RefDiff> appliedChanges = pack.applyTo(processor, getProgressListener());
-        checkNotNull(appliedChanges);
-        appliedChanges.forEach((c) -> checkNotNull(c));
-        return appliedChanges;
-    }
-
-    protected PackProcessor newPackProcessor() {
-        Repository repo = repository();
-        ObjectDatabase store = repo.objectDatabase();
-        return new LocalPackProcessor(store);
-    }
-
 }

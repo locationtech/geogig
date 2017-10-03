@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -55,7 +56,7 @@ public class PackRequest {
 
     public PackRequest maxDepth(int maxDepth) {
         checkArgument(maxDepth >= 0);
-        this.maxDepth = maxDepth;
+        this.maxDepth = maxDepth == 0 ? null : maxDepth;
         return this;
     }
 
@@ -77,5 +78,15 @@ public class PackRequest {
      */
     public List<RefRequest> getRefs() {
         return Lists.newArrayList(refs.values());
+    }
+
+    public @Override boolean equals(Object o) {
+        if (!(o instanceof PackRequest)) {
+            return false;
+        }
+        PackRequest p = (PackRequest) o;
+        return Objects.equals(maxDepth, p.maxDepth) //
+                && Objects.equals(sparseFilter, p.sparseFilter)//
+                && Objects.equals(refs, p.refs);
     }
 }

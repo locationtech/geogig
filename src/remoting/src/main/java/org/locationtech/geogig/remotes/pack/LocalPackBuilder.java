@@ -12,33 +12,9 @@ package org.locationtech.geogig.remotes.pack;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-
-import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.collect.Lists;
-
-public class LocalPackBuilder implements PackBuilder {
-
-    private enum Status {
-        IDLE, READY, PROCESS_REF
-    }
-
-    private Status status = Status.IDLE;
-
-    private List<RevTag> tags;
-
-    private RefRequest currentRef;
-
-    private List<RevCommit> currentRefCommits;
-
-    private LinkedHashMap<RefRequest, List<RevCommit>> missingCommits;
+public class LocalPackBuilder extends AbstractPackBuilder {
 
     private final Repository localRepo;
 
@@ -46,54 +22,6 @@ public class LocalPackBuilder implements PackBuilder {
         checkNotNull(localRepo);
         checkState(localRepo.isOpen());
         this.localRepo = localRepo;
-    }
-
-    private void require(Status expected) {
-        checkState(this.status == expected, "Expected status %s, but it's %s", expected,
-                this.status);
-    }
-
-    private void set(Status newStatus) {
-        this.status = newStatus;
-    }
-
-    private void requireAndSet(Status expected, Status newStatus) {
-        require(expected);
-        set(newStatus);
-    }
-
-    @Override
-    public void start(Set<RevTag> tags) {
-        checkNotNull(tags);
-        require(Status.IDLE);
-        this.missingCommits = new LinkedHashMap<>();
-        this.tags = Lists.newArrayList(tags);
-        set(Status.READY);
-    }
-
-    @Override
-    public void startRefResponse(RefRequest req) {
-        checkNotNull(req);
-        requireAndSet(Status.READY, Status.PROCESS_REF);
-        this.currentRef = req;
-        this.currentRefCommits = new ArrayList<>();
-    }
-
-    @Override
-    public void addCommit(RevCommit commit) {
-        checkNotNull(commit);
-        require(Status.PROCESS_REF);
-        this.currentRefCommits.add(commit);
-    }
-
-    @Override
-    public void endRefResponse() {
-        require(Status.PROCESS_REF);
-        Collections.reverse(currentRefCommits);
-        missingCommits.put(currentRef, currentRefCommits);
-        currentRef = null;
-        currentRefCommits = null;
-        set(Status.READY);
     }
 
     @Override

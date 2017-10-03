@@ -4,12 +4,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.BulkOpListener;
 
-class ObjectReporter extends BulkOpListener.CountingListener {
+public class ObjectReporter extends BulkOpListener.CountingListener {
 
-    final AtomicLong total = new AtomicLong();
+    public final AtomicLong total = new AtomicLong();
 
     final AtomicLong tags = new AtomicLong();
 
@@ -48,7 +49,8 @@ class ObjectReporter extends BulkOpListener.CountingListener {
     }
 
     public void addBucket() {
-        increment(buckets);
+        // increment(buckets);
+        increment(trees);
     }
 
     public void addFeature() {
@@ -78,9 +80,35 @@ class ObjectReporter extends BulkOpListener.CountingListener {
     }
 
     public @Override String toString() {
+        // return String.format(
+        // "inserted %,d/%,d: commits: %,d, trees: %,d, buckets: %,d, features: %,d, ftypes: %,d",
+        // super.inserted(), total.get(), commits.get(), trees.get(), buckets.get(),
+        // features.get(), featureTypes.get());
         return String.format(
-                "inserted %,d/%,d: commits: %,d, trees: %,d, buckets: %,d, features: %,d, ftypes: %,d",
-                super.inserted(), total.get(), commits.get(), trees.get(), buckets.get(),
-                features.get(), featureTypes.get());
+                "inserted %,d/%,d: commits: %,d, trees: %,d, features: %,d, ftypes: %,d",
+                super.inserted(), total.get(), commits.get(), trees.get(), features.get(),
+                featureTypes.get());
+    }
+
+    public void add(TYPE type) {
+        switch (type) {
+        case COMMIT:
+            addCommit();
+            break;
+        case FEATURE:
+            addFeature();
+            break;
+        case FEATURETYPE:
+            addFeatureType();
+            break;
+        case TAG:
+            addTag();
+            break;
+        case TREE:
+            addTree();
+            break;
+        default:
+            break;
+        }
     }
 }

@@ -254,11 +254,6 @@ Use the ``Refresh`` button bellow the cache attributes and statistics table to o
 
 Use the ``Clear cache`` button to prune all the objects currently in the cache, making the memory used immediately available to the Java Garbage Collector. This operation is non destructive, meaning the cache statistics will remain valid and further cache queries and inserts made by GeoGig will affect them.
 
-Automated repository synchronization
-====================================
-
-Repositories configured by GeoServer can be configured with remotes and Automated Repository Synchronization.
-
 .. _current-limitations:
 
 Current limitations

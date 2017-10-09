@@ -46,7 +46,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Optional;
@@ -163,7 +162,6 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
         try (IRemoteRepo remoteRepo = openRemote(remote)) {
             final Set<Ref> remoteRefs = getRemoteRefs(remoteRepo);
-
             final List<PushReq> pushRequests = parseRequests(remoteRefs);
             final PackRequest request = prepareRequest(pushRequests, remoteRefs);
 
@@ -174,8 +172,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                     .call();
             // the remote has all the objects needed for the refs to be updated to the objectids
             // they point to
-            List<RefDiff> updateResults = updateRemoteRefs(pushRequests, dataTransferResults,
-                    remoteRepo);
+            List<RefDiff> updateResults = updateRemoteRefs(pushRequests, remoteRefs,
+                    dataTransferResults, remoteRepo);
             summary.addAll(remote.getPushURL(), updateResults);
         }
 
@@ -266,12 +264,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                 Optional<Ref> remoteRef = resolveRemoteRef(remoterefspec, remoteRefs);
                 if (remoteRef.isPresent()) {
                     Ref ref = remoteRef.get();
-                    if (ref instanceof SymRef) {
-                        throw new SynchronizationException(StatusCode.CANNOT_PUSH_TO_SYMBOLIC_REF);
-                    }
                     remoteRefName = ref.getName();
-                } else if (Ref.HEAD.equals(remoterefspec)) {
-                    remoteRefName = Ref.HEAD;
                 } else {
                     final String specParentPath = Ref.parentPath(remoterefspec);
                     final boolean isTag;
@@ -306,8 +299,19 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         return Optional.absent();
     }
 
-    private List<RefDiff> updateRemoteRefs(List<PushReq> pushRequests, List<RefDiff> dataResults,
-            IRemoteRepo remoteRepo) {
+    /**
+     * @param pushRequests what was actually requested to push
+     * @param previousRemoteRefs the state of the remote refs before the data transfer
+     * @param dataResults the result of what's been transfered
+     * @param remoteRepo the remote repo
+     * @return the updated list of what's currently in the remote and what's been updated on the
+     *         remote refs once this method finishes
+     */
+    private List<RefDiff> updateRemoteRefs(List<PushReq> pushRequests, Set<Ref> previousRemoteRefs,
+            List<RefDiff> dataResults, IRemoteRepo remoteRepo) {
+
+        final Map<String, Ref> beforeRemoteRefs = Maps.uniqueIndex(previousRemoteRefs,
+                (r) -> r.getName());
 
         List<RefDiff> results = new ArrayList<>();
 
@@ -315,6 +319,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
         for (PushReq pr : pushRequests) {
             if (pr.delete) {
+                // REVISIT: should remote remove the ref only if it still has the same value it had
+                // before the op?
                 Optional<Ref> deleted = remoteRepo.deleteRef(pr.remoteRef);
                 if (deleted.isPresent()) {
                     results.add(RefDiff.removed(deleted.get()));
@@ -322,9 +328,16 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                 continue;
             }
             final String updateRefName = pr.remoteRef;
-            ObjectId updateValue = pr.localRef.getObjectId();
+            final @Nullable Ref oldRef = beforeRemoteRefs.get(updateRefName);
+            final @Nullable ObjectId oldValue = oldRef == null ? null : oldRef.getObjectId();
+            final ObjectId updateValue = pr.localRef.getObjectId();
+            if (updateValue.equals(oldValue)) {
+                continue;
+            }
+            // will fail if current value has changed
             Optional<Ref> remoteRef = remoteRepo.command(UpdateRef.class)//
                     .setName(updateRefName)//
+                    .setOldValue(oldRef == null ? null : oldRef.getObjectId())//
                     .setNewValue(updateValue)//
                     .call();
 
@@ -337,6 +350,9 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                     .setName(localRemoteRef.getName())//
                     .setNewValue(localRemoteRef.getObjectId())//
                     .call();
+
+            RefDiff result = new RefDiff(oldRef, remoteRef.get());
+            results.add(result);
         }
         return results;
     }
@@ -364,27 +380,32 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
             checkNotNull(localRef);
             checkNotNull(remoteRefName);
 
-            ObjectId have = null;
-            final ObjectDatabase localdb = objectDatabase();
-
+            final ObjectId want = localRef.getObjectId();
             Ref resolvedRemoteRef = remoteRefsByName.get(remoteRefName);
-            if (resolvedRemoteRef == null) {
-                resolvedRemoteRef = remoteRefsByName.get(localRef.getName());
-            }
-            if (resolvedRemoteRef == null) {
-                final ObjectId want = localRef.getObjectId();
+            final @Nullable ObjectId have;
+            if (preq.forceUpdate) {
                 have = findShallowestCommonAncestor(want,
                         Sets.newHashSet(Iterables.transform(remoteRefs, (r) -> r.getObjectId())));
             } else {
-                have = resolvedRemoteRef.getObjectId();
-                if (!have.equals(localRef.getObjectId())) {
-                    if (!localdb.exists(have)) {
-                        if (preq.forceUpdate) {
-                            have = null;
-                        } else {
-                            throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
-                        }
+                try {
+                    checkPush(localRef, resolvedRemoteRef);
+                } catch (SynchronizationException e) {
+                    if (e.statusCode == StatusCode.NOTHING_TO_PUSH) {
+                        continue;
                     }
+                    throw e;
+                }
+                if (resolvedRemoteRef == null) {
+                    resolvedRemoteRef = remoteRefsByName.get(localRef.getName());
+                }
+                if (resolvedRemoteRef == null) {
+                    // creating a new branch on the remote from a branch in the local repo, lets
+                    // check if we can figure out a common ancestor
+                    have = findShallowestCommonAncestor(want, Sets
+                            .newHashSet(Iterables.transform(remoteRefs, (r) -> r.getObjectId())));
+                } else {
+                    // have is guaranteed to be in the local repo because of checkPush above
+                    have = resolvedRemoteRef.getObjectId();
                 }
             }
 
@@ -395,7 +416,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         return req;
     }
 
-    private ObjectId findShallowestCommonAncestor(ObjectId tip, Set<ObjectId> otherTips) {
+    private @Nullable ObjectId findShallowestCommonAncestor(ObjectId tip, Set<ObjectId> otherTips) {
         ObjectDatabase localdb = objectDatabase();
         Set<ObjectId> commonAncestors = new HashSet<>();
         for (ObjectId remoteTip : otherTips) {
@@ -455,6 +476,47 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
     private Optional<Ref> refParse(String refSpec) {
         return command(RefParse.class).setName(refSpec).call();
+    }
+
+    /**
+     * Determine if it is safe to push to the remote repository.
+     * 
+     * @param localRef the ref to push
+     * @param remoteRefOpt the ref to push to
+     * @throws SynchronizationException if its not safe or possible to push to the given remote ref
+     *         (see {@link StatusCode} for the possible reasons)
+     */
+    private void checkPush(final Ref localRef, final @Nullable Ref remoteRef)
+            throws SynchronizationException {
+        if (null == remoteRef) {
+            return;// safe to push
+        }
+        if (remoteRef instanceof SymRef) {
+            throw new SynchronizationException(StatusCode.CANNOT_PUSH_TO_SYMBOLIC_REF);
+        }
+        final ObjectId localObjectId = localRef.getObjectId();
+        final ObjectId remoteObjectId = remoteRef.getObjectId();
+        if (remoteObjectId.equals(localObjectId)) {
+            // The branches are equal, no need to push.
+            throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
+        } else if (objectDatabase().exists(remoteObjectId)) {
+            Optional<ObjectId> ancestor = command(FindCommonAncestor.class)
+                    .setLeftId(remoteObjectId).setRightId(localObjectId).call();
+            if (!ancestor.isPresent()) {
+                // There is no common ancestor, a push will overwrite history
+                throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
+            } else if (ancestor.get().equals(localObjectId)) {
+                // My last commit is the common ancestor, the remote already has my data.
+                throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
+            } else if (!ancestor.get().equals(remoteObjectId)) {
+                // The remote branch's latest commit is not my ancestor, a push will cause a
+                // loss of history.
+                throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
+            }
+        } else if (!remoteObjectId.isNull()) {
+            // The remote has data that I do not, a push will cause this data to be lost.
+            throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
+        }
     }
 
     private static class PushReq {

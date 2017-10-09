@@ -81,6 +81,9 @@ public class PushTest extends AbstractWebOpTest {
         remoteTestData.init();
         remoteTestData.checkout("master");
 
+        Ref remoteMaster = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName(Ref.MASTER).call().get();
+
         URI remoteURI = remoteGeogig.command(ResolveGeogigURI.class).call().get();
 
         geogig.command(RemoteAddOp.class).setName("origin").setURL(remoteURI.toURL().toString())
@@ -89,7 +92,7 @@ public class PushTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
 
-        Ref remoteMaster = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+        remoteMaster = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         assertEquals(master.getObjectId(), remoteMaster.getObjectId());

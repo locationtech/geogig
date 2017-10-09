@@ -23,16 +23,16 @@ import com.google.common.collect.ArrayListMultimap;
  */
 public class TransferSummary {
 
-    private ArrayListMultimap<String, RefDiff> RefDiffs = ArrayListMultimap.create();
+    private ArrayListMultimap<String, RefDiff> refDiffs = ArrayListMultimap.create();
 
     public Map<String, Collection<RefDiff>> getRefDiffs() {
-        return RefDiffs.asMap();
+        return refDiffs.asMap();
     }
 
     public void add(final String remoteURL, final RefDiff changeResult) {
         checkNotNull(remoteURL);
         checkNotNull(changeResult);
-        RefDiffs.put(remoteURL, changeResult);
+        refDiffs.put(remoteURL, changeResult);
     }
 
     public void addAll(final String remoteURL, final List<RefDiff> changes) {
@@ -41,18 +41,18 @@ public class TransferSummary {
         for (RefDiff cr : changes) {
             checkNotNull(cr);
         }
-        RefDiffs.putAll(remoteURL, changes);
+        refDiffs.putAll(remoteURL, changes);
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(TransferSummary.class) //
-                .addValue(RefDiffs) //
+                .addValue(refDiffs) //
                 .toString();
     }
 
     public boolean isEmpty() {
-        return RefDiffs.isEmpty();
+        return refDiffs.isEmpty();
     }
 
 }

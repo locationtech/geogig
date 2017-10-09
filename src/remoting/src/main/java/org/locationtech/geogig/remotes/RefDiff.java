@@ -16,6 +16,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
 
 /**
  * Represents the state of a {@link Ref} at two different points in time
@@ -106,5 +107,13 @@ public class RefDiff {
                 .addValue(oldRef) //
                 .addValue(newRef) //
                 .toString();
+    }
+
+    public Optional<Ref> oldRef() {
+        return Optional.fromNullable(oldRef);
+    }
+
+    public Optional<Ref> newRef() {
+        return Optional.fromNullable(newRef);
     }
 }

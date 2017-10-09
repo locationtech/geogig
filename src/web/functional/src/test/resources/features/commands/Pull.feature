@@ -19,10 +19,18 @@ Feature: Pull
       And the xpath "/response/success/text()" equals "false"
       And the xpath "/response/error/text()" equals "Repository not found."
       
+  @Status500
+  Scenario: Pull outside of a transaction issues 500 "Transaction required"
+    Given There is an empty repository named repo1
+     When I call "GET /repos/repo1/pull"
+     Then the response status should be '500'
+      And the xpath "/response/error/text()" contains "No transaction was specified"
+      
   Scenario: Pulling from a remote with remote changes updates the local ref
     Given There is a default multirepo server with remotes
       And the variable "{@ObjectId|repo4|master}" equals "{@ObjectId|repo1|master~2}"
-     When I call "GET /repos/repo4/pull?remoteName=origin&ref=master"
+      And I have a transaction as "@txId" on the "repo4" repo
+     When I call "GET /repos/repo4/pull?transactionId={@txId}&remoteName=origin&ref=master"
      Then the response status should be '200'
       And the xpath "/response/success/text()" equals "true"
       And the xpath "/response/Pull/Merge/ours/text()" equals "{@ObjectId|repo1|master~2}"
@@ -32,13 +40,14 @@ Feature: Pull
       And the xpath "/response/Pull/Added/text()" equals "6"
       And the xpath "/response/Pull/Modified/text()" equals "0"
       And the xpath "/response/Pull/Removed/text()" equals "0"
-      And the variable "{@ObjectId|repo4|master}" equals "{@ObjectId|repo1|master}"
+      And the variable "{@ObjectId|repo4|@txId|master}" equals "{@ObjectId|repo1|master}"
       
   @HttpTest
   Scenario: Pulling from an http remote with remote changes updates the local ref
     Given There is a default multirepo server with http remotes
       And the variable "{@ObjectId|repo4|master}" equals "{@ObjectId|repo1|master~2}"
-     When I call "GET /repos/repo4/pull?remoteName=origin&ref=master"
+      And I have a transaction as "@txId" on the "repo4" repo
+     When I call "GET /repos/repo4/pull?transactionId={@txId}&remoteName=origin&ref=master"
      Then the response status should be '200'
       And the xpath "/response/success/text()" equals "true"
       And the xpath "/response/Pull/Merge/ours/text()" equals "{@ObjectId|repo1|master~2}"
@@ -48,7 +57,7 @@ Feature: Pull
       And the xpath "/response/Pull/Added/text()" equals "6"
       And the xpath "/response/Pull/Modified/text()" equals "0"
       And the xpath "/response/Pull/Removed/text()" equals "0"
-      And the variable "{@ObjectId|repo4|master}" equals "{@ObjectId|repo1|master}"
+      And the variable "{@ObjectId|repo4|@txId|master}" equals "{@ObjectId|repo1|master}"
       
   Scenario: Pulling from a remote with both local and remote changes creates a merge commit
     Given There is a default multirepo server with remotes

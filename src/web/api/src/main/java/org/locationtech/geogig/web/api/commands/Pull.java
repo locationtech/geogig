@@ -64,11 +64,6 @@ public class Pull extends AbstractWebAPICommand {
         setAuthorEmail(options.getFirstValue("authorEmail", null));
     }
 
-    @Override
-    public boolean requiresTransaction() {
-        return false;
-    }
-
     /**
      * Mutator for the remoteName variable
      * 

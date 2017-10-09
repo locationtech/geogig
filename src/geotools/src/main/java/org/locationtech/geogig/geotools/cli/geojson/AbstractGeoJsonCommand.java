@@ -17,6 +17,7 @@ import java.io.InputStream;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.memory.MemoryDataStore;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -33,8 +34,8 @@ public abstract class AbstractGeoJsonCommand extends AbstractCommand implements 
             FeatureJSON fjson = new FeatureJSON();
             @SuppressWarnings("rawtypes")
             FeatureCollection fc = fjson.readFeatureCollection(in);
-            @SuppressWarnings("unchecked")
-            DataStore dataStore = new MemoryDataStore(fc);
+            MemoryDataStore dataStore = new MemoryDataStore();
+            dataStore.addFeatures((SimpleFeatureIterator) fc.features());
             return dataStore;
         } catch (IOException ioe) {
             throw new CommandFailedException("Error opening GeoJSON: " + ioe.getMessage(), ioe);

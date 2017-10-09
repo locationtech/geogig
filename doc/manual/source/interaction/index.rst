@@ -9,10 +9,15 @@ This section will discuss alternate ways of interacting with GeoGig, both local 
    :maxdepth: 1
 
    networking
-   web-repository-management
    geoserver_ui
    geoserver_web-api
-   web-api
-   indexing-web-api
-   async-tasks
-   geopackage-import-export
+   web-api-overview
+   web-api-transactions
+   web-api-commands
+   web-api-indexing
+   web-api-geopackage
+   web-api-postgis
+   web-api-conflict-resolution
+   web-api-repository-management
+   web-api-async-tasks
+   web-api-issues

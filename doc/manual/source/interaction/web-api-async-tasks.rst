@@ -1,7 +1,7 @@
-Web-API Asynchronous tasks
-==========================
+Web API: Asynchronous tasks
+===========================
 
-Some Web-API commands can run for a long time depending on how much data they're dealing with, and hence,
+Some web API commands can run for a long time depending on how much data they're dealing with, and hence,
 are executed asynchronously, meaning that, once invoked, they start the job in a background thread and return immediately.
 
 The response contains a unique identifier for the asynchronous task and information on the task's running status.
@@ -54,7 +54,12 @@ Or the JSON format:
          "id":5,
          "status":"RUNNING",
          "description":"osm download filter: null, bbox: -32.9621,-60.6309,-32.9541,-60.6154",
-         "href":"http:\/\/localhost:8182\/tasks\/5.json"
+         "href":"http://localhost:8182/tasks/5.json"
+         "progress" :
+         {
+             "task" : "Connecting to http://overpass-api.de/api/interpreter...",
+             "amount" : 0.0
+         }
       }
    }
 
@@ -67,7 +72,7 @@ as a spot frees up in the thread pool. The others are self-explanatory.
 
 The content of the task query response varies slightly depending on the task status.
 
-Running tasks may contain a progress indicator.
+Running tasks may or may not contain a progress indicator. It will depend on the type of task and how far along the task is at the point the response is generated.
 
 ::
 

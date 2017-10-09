@@ -1,9 +1,9 @@
 .. _web_repository_management:
 
-Serving and Managing Repositories
-=================================
+Web API: Serving and Managing Repositories
+==========================================
 
-The GeoGig Web-API allows you to serve up multiple repositories from a single endpoint via the ``geogig serve`` command.  The Web-API documentation goes over using this command to serve a single repository, but this section will discuss using the command to serve and manage multiple repositories.
+The GeoGig web API allows you to serve up multiple repositories from a single endpoint via the ``geogig serve`` command.  The web API documentation goes over using this command to serve a single repository, but this section will discuss using the command to serve and manage multiple repositories.
 
 
 Serving Multiple Repositories
@@ -226,7 +226,7 @@ Example request:
 Renaming Repositories
 *********************
 
-If you wish to change the name of a repository after it has been created, you can do so by issuing a ``POST`` request to the ``rename`` endpoint of the repository with the new name.  Because the repository's name is used in web-api calls, renaming a repository will cause the endpoint for that repository to change to the new name.
+If you wish to change the name of a repository after it has been created, you can do so by issuing a ``POST`` request to the ``rename`` endpoint of the repository with the new name.  Because the repository's name is used in web API calls, renaming a repository will cause the endpoint for that repository to change to the new name.
 
 ::
 
@@ -275,7 +275,7 @@ The repository has now been deleted.
 Asynchronous Requests
 ---------------------
 
-Just like when serving a single repository, asynchronous web-api tasks can be polled via the ``tasks`` endpoint.  All repositories share the same tasks endpoint.
+Just like when serving a single repository, asynchronous web API tasks can be polled via the ``tasks`` endpoint.  All repositories share the same tasks endpoint.
 
 ::
 

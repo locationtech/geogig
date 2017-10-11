@@ -126,7 +126,7 @@ public class TestData {
 
     public static final SimpleFeature line1, line2, line3;
 
-    public static final SimpleFeature poly1, poly2, poly3;
+    public static final SimpleFeature poly1, poly2, poly3, poly4, poly1_modified1, poly1_modified2;
 
     static {
         try {
@@ -156,7 +156,12 @@ public class TestData {
                 "POLYGON ((-11 -11, -11 -9, -9 -9, -9 -11, -11 -11))");
         poly3 = feature(polysType, "Polygon.3", "StringProp3_3", 3000,
                 "POLYGON ((9 9, 9 11, 11 11, 11 9, 9 9))");
-
+        poly4 = feature(polysType, "Polygon.4", "StringProp3_4", 4000,
+                "POLYGON ((4 4, 4 5, 5 5, 5 4, 4 4))");
+        poly1_modified1 = feature(polysType, "Polygon.1", "StringProp3_1", 1000,
+                "POLYGON ((-4 -4, -4 4, 4 4, 4 -4, -4 -4))");
+        poly1_modified2 = feature(polysType, "Polygon.1", "StringProp3_1", 1000,
+                "POLYGON ((-5 -5, -5 5, 5 5, 5 -5, -5 -5))");
     }
 
     private Repository repo;

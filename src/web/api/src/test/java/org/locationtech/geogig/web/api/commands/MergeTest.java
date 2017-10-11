@@ -206,4 +206,71 @@ public class MergeTest extends AbstractWebOpTest {
         assertEquals(ObjectId.NULL.toString(), feature.getString("theirvalue"));
     }
 
+    // This scenario sets up 3 features on the master branch, creates a "branch1" branch from the
+    // initial commit, then adds a 4th feature to both branches, edits feature 1 differently on each
+    // branch, and deletes feature 2 on master, and deletes feature 3 on branch1 and finally tries
+    // to merge "branch1" onto "master. It should produce a merge conflict, and the deleted features
+    // shouldn't cause the conlfict report to throw a NullPointerException.
+    @Test
+    public void testMergeConflict2() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        // add 3 polys to "master"
+        testData.checkout("master");
+        testData.insert(TestData.poly1, TestData.poly2, TestData.poly3);
+        testData.add();
+        RevCommit ancestor = geogig.command(CommitOp.class).setMessage("initial commit").call();
+        // create "branch1"
+        testData.branch("branch1");
+        // add a feature, modifiy a feature and delete a feature
+        testData.insert(TestData.poly1_modified1, TestData.poly4);
+        testData.remove(TestData.poly2);
+        testData.add();
+        // commit the change to "master"
+        RevCommit masterCommit = geogig.command(CommitOp.class).setMessage("master edit").call();
+        // get the feature ID for poly1
+        ObjectId oursPoly1Id = RevFeatureBuilder.build(TestData.poly1_modified1).getId();
+        // checkout "branch1"
+        testData.checkout("branch1");
+        // add a feature, modify the same feature above, but differently, and delete a different
+        // feature
+        testData.insert(TestData.poly1_modified2, TestData.poly4);
+        testData.remove(TestData.poly3);
+        testData.add();
+        // commit the change to "branch1"
+        RevCommit branch1Commit = geogig.command(CommitOp.class).setMessage("branch1 edit").call();
+        // get the feature ID for poly1
+        ObjectId theirsPoly1Id = RevFeatureBuilder.build(TestData.poly1_modified2).getId();
+        // checkout "master"
+        testData.checkout("master");
+        // now build the Merge command
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("commit", "branch1", "authorName", "Tester",
+                "authorEmail", "tester@example.com", "transactionId",
+                transaction.getTransactionId().toString());
+        buildCommand(options).run(testContext.get());
+
+        JsonObject response = getJSONResponse().getJsonObject("response");
+        assertTrue(response.getBoolean("success"));
+        JsonObject merge = response.getJsonObject("Merge");
+        assertEquals(masterCommit.getId().toString(), merge.getString("ours"));
+        assertEquals(ancestor.getId().toString(), merge.getString("ancestor"));
+        assertEquals(branch1Commit.getId().toString(), merge.getString("theirs"));
+        assertEquals(1, merge.getInt("conflicts"));
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
+        assertEquals("CONFLICT", feature.getString("change"));
+        String path = NodeRef.appendChild(TestData.polysType.getTypeName(),
+                TestData.poly1.getID());
+        assertEquals(path, feature.getString("id"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POLYGON ((-4 -4, -4 4, 4 4, 4 -4, -4 -4))", geometry);
+        assertEquals(oursPoly1Id.toString(), feature.getString("ourvalue"));
+        assertEquals(theirsPoly1Id.toString(), feature.getString("theirvalue"));
+    }
 }

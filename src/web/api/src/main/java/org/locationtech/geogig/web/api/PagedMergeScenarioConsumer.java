@@ -96,7 +96,7 @@ public class PagedMergeScenarioConsumer extends MergeScenarioConsumer {
      */
     @Override
     public void unconflicted(DiffEntry diff) {
-        if (diff.newObjectType().equals(RevObject.TYPE.FEATURE) && shouldKeep()) {
+        if (RevObject.TYPE.FEATURE.equals(diff.newObjectType()) && shouldKeep()) {
             unconflicted.add(diff);
         }
     }

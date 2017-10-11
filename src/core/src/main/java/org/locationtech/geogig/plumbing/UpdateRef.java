@@ -51,13 +51,12 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
     }
 
     /**
-     * @param newValue the value to set the reference to. It can be an object id
-     *        {@link ObjectId#toString() hash code} or a symbolic name such as
-     *        {@code "refs/origin/master"}
+     * @param newValue the value to set the reference to, {@code null} valid only if
+     *        {@link #setDelete delete} is {@code true}
      * @return {@code this}
      */
     public UpdateRef setNewValue(@Nullable ObjectId newValue) {
-        this.newValue = newValue == null ? null : newValue;
+        this.newValue = newValue;
         return this;
     }
 

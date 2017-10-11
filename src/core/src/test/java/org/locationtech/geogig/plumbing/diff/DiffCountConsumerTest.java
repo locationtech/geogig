@@ -82,7 +82,7 @@ public class DiffCountConsumerTest extends Assert {
     }
 
     private DiffObjectCount count(RevTree left, RevTree right) {
-        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, odb, odb, true);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, odb, odb);
         DiffCountConsumer consumer = new DiffCountConsumer(odb);
         visitor.walk(consumer);
         DiffObjectCount count = consumer.get();

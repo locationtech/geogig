@@ -429,7 +429,9 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             Iterator<EncodedObject> batch = Iterators.limit(iterator, batchsize);
             insertCount += insertBatch(batch, listener);
         }
-        if (LOG.isTraceEnabled()) {
+        if (LOG.isTraceEnabled())
+
+        {
             LOG.trace(String.format("Inserted %,d objects in %s", insertCount, sw.stop()));
         }
     }
@@ -443,8 +445,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         try (RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions(); //
                 WriteBatch batch = new WriteBatch()) {
-            wo.setSync(false);
-            wo.setDisableWAL(true);
+            wo.setSync(true);
             while (objects.hasNext()) {
                 EncodedObject object = objects.next();
                 final ObjectId id = object.id;

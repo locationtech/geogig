@@ -251,7 +251,7 @@ class PackImpl implements Pack {
             final RevTree right = EMPTY_TREE_ID.equals(rightRootId) ? EMPTY
                     : source.getTree(rightRootId);
 
-            PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source, true);
+            PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source);
 
             /**
              * A diff consumer that reports only the new objects, with deduplication

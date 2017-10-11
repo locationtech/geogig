@@ -11,7 +11,6 @@ package org.locationtech.geogig.remotes.pack;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.filter;
 
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
@@ -47,20 +45,35 @@ import com.google.common.collect.Lists;
  * Fetches named heads or tags from one or more other repositories, along with the objects necessary
  * to complete them.
  * <p>
- * remote.send-pack(pack-request) -> local.receive-pack(pack)
+ * For each {@link #addRemote remote} specified, the fetch process consists of three basic steps:
+ * <ul>
+ * <li>Resolve the {@link RefDiff} differences between the local copies of the remote refs and the
+ * current state of the remote refs in the remote repository
+ * <li>Having resolved the outdated refs in the local copy of the remote refs, prepare a
+ * {@link PackRequest} and call {@link SendPackOp} on the remote repository with that request, and
+ * the local repository as the target. This transfers all the missing {@link RevObject} instances
+ * from the remote to the local repository, as {@link SendPackOp} will call {@link ReceivePackOp} on
+ * the target repo.
+ * <li>Finally, update the local copies of the remote references so they point to the
+ * {@link RevObject}s identified in the first step.
+ * </ul>
+ * <p>
+ * This process is essentially the same than {@link PushOp} with inverted source and target
+ * repositories. That is, {@code FetchOp} calls {@link SendPackOp} on the remote repository with the
+ * local as target, and {@link PushOp} calls {@link SendPackOp} on the local repository with the
+ * remote as target. Then both update the needed {@link Ref refs} at either side.
+ * <p>
+ * The result is a {@link TransferSummary} whose {@link TransferSummary#getRefDiffs() refDiffs} map
+ * has a single entry keyed by the remote's {@link Remote#getPushURL() pushURL}, with one
+ * {@link RefDiff} entry for each <b>remote</b> reference updated (i.e. the refs in the remote
+ * repository under its {@code refs/heads/ or {@code refs/tags} namespaces that were created,
+ * deleted, or updated.
  */
 public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
     private FetchArgs.Builder argsBuilder = new FetchArgs.Builder();
 
-    /**
-     * Executes the fetch operation.
-     * 
-     * @return {@code null}
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
-     */
-    @Override
-    protected TransferSummary _call() {
+    protected @Override TransferSummary _call() {
         final Repository localRepo = repository();
         final FetchArgs args = argsBuilder.build(localRepo);
 
@@ -72,15 +85,11 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         for (Remote remote : args.remotes) {
             try (IRemoteRepo remoteRepo = openRemote(remote)) {
                 // get ref diffs in the remote's local namespace (i.e. refs/heads/<branch>)
-                // this represents which remote refs we need to update, and how they'll end up in
-                // the local repo's refs/remotes/* refs
+                // this represents which remote refs we need to update
                 final List<RefDiff> refDiffs = diffRemoteRefs(remoteRepo, args.fetchTags);
-                // prepare the request to fetch the missing RevObjects
-                final List<RefDiff> symRefs = new ArrayList<>();
                 // This is what needs to be transferred (what I want and what I already have for
                 // each ref)
-                final PackRequest request;
-                request = prepareRequest(localRepo, remoteRepo, refDiffs, symRefs);
+                final PackRequest request = prepareRequest(localRepo, refDiffs);
 
                 // tell the remote to send us the missing objects
                 Iterable<RefDiff> localRemoteResults;
@@ -90,13 +99,10 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                         .setProgressListener(progress)//
                         .call();
 
-                checkNotNull(localRemoteResults);
-
                 Iterable<RefDiff> remoteRemoteRefs;
 
                 // apply the ref diffs to our local remotes namespace and obtain the diffs in the
                 // refs/remotes/... namespace
-                localRemoteResults = concat(localRemoteResults, symRefs);
                 remoteRemoteRefs = updateLocalRemoteRefs(remote, refDiffs, args.prune);
                 result.addAll(remote.getFetchURL(), Lists.newArrayList(remoteRemoteRefs));
             }
@@ -156,13 +162,9 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * filtered out.
      * 
      * @param local
-     * @param remote
      * @param refdiffs
-     * @param symRefsOut output parameter where to add {@link SymRef} for later update since they're
-     *        {@link SymRef#peel() peeled} before being added to the {@link PackRequest}
      */
-    private PackRequest prepareRequest(Repository local, IRemoteRepo remote, List<RefDiff> refdiffs,
-            List<RefDiff> symRefsOut) {
+    private PackRequest prepareRequest(Repository local, List<RefDiff> refdiffs) {
 
         PackRequest request = new PackRequest();
 
@@ -182,11 +184,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             default:
                 throw new IllegalStateException();
             }
-            Ref want = cr.getNewRef();
-            if (want instanceof SymRef) {
-                symRefsOut.add(cr);
-                want = want.peel();
-            }
+            Ref want = cr.getNewRef().peel();
             // may the want commit exist in the local repository's object database nonetheless?
             ObjectId wantId = want.getObjectId();
             if (!wantId.isNull() && local.objectDatabase().exists(wantId)) {

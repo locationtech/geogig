@@ -56,6 +56,9 @@ public class SymRef extends Ref {
         return String.format("SymRef[%s -> Ref[%s -> %s]]", getName(), target, getObjectId());
     }
 
+    /**
+     * @return the non-symbolic {@link Ref} this symbolic reference points to.
+     */
     public @Override Ref peel() {
         return new Ref(target, getObjectId());
     }

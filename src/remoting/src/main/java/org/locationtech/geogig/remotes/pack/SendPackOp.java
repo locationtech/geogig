@@ -27,10 +27,10 @@ import org.locationtech.geogig.repository.CommandFactory;
  * calling {@link ReceivePackOp} on it.
  * <p>
  * Note this command <b>does not</b> update the state of any {@link Ref} in the remote (the one it's
- * being executed on) or the local (the one it's receivng the pack) repositories, but merely
- * transfers the {@link RevObject} from the remote to the local needed to complement the receiving
- * repository's object graph in order to contain all reachable contents for the requested refs based
- * on the {@link PackRequest}.
+ * being executed on) or the local (the one it's receiving the pack) repositories, but merely
+ * transfers the missing set of {@link RevObject}s from the source to the target repo needed to
+ * complement the receiving repository's object graph in order to contain all reachable contents for
+ * the requested refs based on the {@link PackRequest}.
  * <p>
  * The returned list of {@link RefDiff} objects indicate that the remote has its revision objects up
  * to date up to each {@link RefDiff#getNewRef() newRef}'s object id and it's ok to

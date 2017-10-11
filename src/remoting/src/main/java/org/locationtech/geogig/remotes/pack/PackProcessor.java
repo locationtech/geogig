@@ -14,6 +14,14 @@ import java.util.Iterator;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.BulkOpListener;
 
+/**
+ * Applies changes of a pack to a repository.
+ * <p>
+ * The abstraction serves to separate the concern of whether the pack is being directly applied to a
+ * repository's object database or being transferred over the wire to be applied to a remote
+ * repository's object database.
+ *
+ */
 public interface PackProcessor {
 
     public void putAll(Iterator<? extends RevObject> iterator, BulkOpListener listener);

@@ -14,7 +14,16 @@ import java.util.List;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.repository.ProgressListener;
 
+/**
+ * @author groldan
+ *
+ */
 public interface Pack {
 
+    /**
+     * @param target
+     * @param progress
+     * @return
+     */
     public List<RefDiff> applyTo(PackProcessor target, ProgressListener progress);
 }

@@ -15,11 +15,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.locationtech.geogig.repository.Remote;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ArrayListMultimap;
 
 /**
- *
+ * A summary changes performed to a repository after calling {@link FetchOp} or {@link PushOp}
+ * grouped by each {@link Remote} the command acted upon.
  */
 public class TransferSummary {
 

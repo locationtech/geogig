@@ -77,6 +77,32 @@ import com.google.common.collect.Sets;
  * If the expression has no {@code <src>}, then it means the remote ref shall be deleted.
  * </ul>
  * <p>
+ * For the {@link #setRemote remote} specified, the fetch process consists of three basic steps:
+ * <ul>
+ * <li>Parse the {@link #addRefSpec refSpecs} and resolve the {@link RefDiff} differences between
+ * the local copies of the remote refs and the current state of the remote refs in the remote
+ * repository
+ * <li>Having resolved the outdated refs in the remote, prepare a {@link PackRequest} and call
+ * {@link SendPackOp} on the local repository with that request, and the remote repository as the
+ * target. This transfers all the missing {@link RevObject} instances from the local to the remote
+ * repository, as {@link SendPackOp} will call {@link ReceivePackOp} on the local repo.
+ * <li>Finally, update refs on the remote repo as well as the local copies of the remote references
+ * so they point to the {@link RevObject}s identified in the first step.
+ * </ul>
+ * 
+ * <p>
+ * This process is essentially the same than {@link FetchOp} with inverted source and target
+ * repositories. That is, {@link FetchOp} calls {@link SendPackOp} on the remote repository with the
+ * local as target, and {@code PushOp} calls {@link SendPackOp} on the local repository with the
+ * remote as target. Then both update the needed {@link Ref refs} at either side.
+ * <p>
+ * The result is a {@link TransferSummary} whose {@link TransferSummary#getRefDiffs() refDiffs} map
+ * is keyed by each remote's {@link Remote#getFetchURL() fetchURL} with one {@link RefDiff} entry
+ * for each "local remote" reference updated (i.e. the refs in the local repository under the
+ * {@code refs/remotes/<remote>/} or {@code refs/tags} namespaces that were created, deleted, or
+ * updated.
+ * 
+ * <p>
  * <b>NOTE:</b> so far we don't have the ability to merge non conflicting changes. Instead, the diff
  * list we get acts on whole objects, , so its possible that this operation overrides non
  * conflicting changes when pushing a branch that has non conflicting changes at both sides. This
@@ -94,6 +120,33 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
     private List<String> refSpecs = new ArrayList<String>();
 
     private String remoteName;
+
+    protected @Override TransferSummary _call() {
+        final Remote remote = resolveRemote();
+        final Repository localRepo = repository();
+
+        final ProgressListener progress = getProgressListener();
+
+        final TransferSummary summary = new TransferSummary();
+
+        try (IRemoteRepo remoteRepo = openRemote(remote)) {
+            final Set<Ref> remoteRefs = getRemoteRefs(remoteRepo);
+            final List<PushReq> pushRequests = parseRequests(remoteRefs);
+            final PackRequest request = prepareRequest(pushRequests, remoteRefs);
+
+            List<RefDiff> dataTransferResults = localRepo.command(SendPackOp.class)//
+                    .setRequest(request)//
+                    .setTarget(remoteRepo)//
+                    .setProgressListener(progress)//
+                    .call();
+            // the remote has all the objects needed for the refs to be updated to the objectids
+            // they point to
+            List<RefDiff> updateResults = updateRemoteRefs(pushRequests, remoteRefs, remoteRepo);
+            summary.addAll(remote.getPushURL(), updateResults);
+        }
+
+        return summary;
+    }
 
     /**
      * @param all if {@code true}, push all refs under refs/heads/
@@ -143,41 +196,6 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         } catch (IllegalArgumentException e) {
             return Optional.absent();
         }
-    }
-
-    /**
-     * Executes the push operation.
-     * 
-     * @return {@code null}
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
-     */
-    @Override
-    protected TransferSummary _call() {
-        final Remote remote = resolveRemote();
-        final Repository localRepo = repository();
-
-        final ProgressListener progress = getProgressListener();
-
-        final TransferSummary summary = new TransferSummary();
-
-        try (IRemoteRepo remoteRepo = openRemote(remote)) {
-            final Set<Ref> remoteRefs = getRemoteRefs(remoteRepo);
-            final List<PushReq> pushRequests = parseRequests(remoteRefs);
-            final PackRequest request = prepareRequest(pushRequests, remoteRefs);
-
-            List<RefDiff> dataTransferResults = localRepo.command(SendPackOp.class)//
-                    .setRequest(request)//
-                    .setTarget(remoteRepo)//
-                    .setProgressListener(progress)//
-                    .call();
-            // the remote has all the objects needed for the refs to be updated to the objectids
-            // they point to
-            List<RefDiff> updateResults = updateRemoteRefs(pushRequests, remoteRefs,
-                    dataTransferResults, remoteRepo);
-            summary.addAll(remote.getPushURL(), updateResults);
-        }
-
-        return summary;
     }
 
     private Set<Ref> getRemoteRefs(IRemoteRepo remote) {
@@ -302,13 +320,12 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
     /**
      * @param pushRequests what was actually requested to push
      * @param previousRemoteRefs the state of the remote refs before the data transfer
-     * @param dataResults the result of what's been transfered
      * @param remoteRepo the remote repo
      * @return the updated list of what's currently in the remote and what's been updated on the
      *         remote refs once this method finishes
      */
     private List<RefDiff> updateRemoteRefs(List<PushReq> pushRequests, Set<Ref> previousRemoteRefs,
-            List<RefDiff> dataResults, IRemoteRepo remoteRepo) {
+            IRemoteRepo remoteRepo) {
 
         final Map<String, Ref> beforeRemoteRefs = Maps.uniqueIndex(previousRemoteRefs,
                 (r) -> r.getName());

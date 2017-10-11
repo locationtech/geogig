@@ -74,13 +74,14 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
     /**
      * @param remoteRepoURI the location of the remote repository
      */
-    public LocalRemoteRepo(Remote remote,URI remoteRepoURI) {
+    public LocalRemoteRepo(Remote remote, URI remoteRepoURI) {
         super(remote);
         this.remoteRepoURI = remoteRepoURI;
     }
 
-    LocalRemoteRepo(Remote remote,Repository remoteRepo) {
+    LocalRemoteRepo(Remote remote, Repository remoteRepo) {
         super(remote);
+        checkNotNull(remoteRepo);
         this.remoteRepository = remoteRepo;
     }
 
@@ -126,9 +127,6 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         Predicate<Ref> filter = new Predicate<Ref>() {
             @Override
             public boolean apply(Ref input) {
-                if (input.getObjectId().equals(ObjectId.NULL)) {
-                    return false;
-                }
                 boolean keep = false;
                 if (getHeads) {
                     keep = input.getName().startsWith(Ref.HEADS_PREFIX);
@@ -139,6 +137,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 return keep;
             }
         };
+        checkNotNull(remoteRepository);
         return remoteRepository.command(ForEachRef.class).setFilter(filter).call();
     }
 

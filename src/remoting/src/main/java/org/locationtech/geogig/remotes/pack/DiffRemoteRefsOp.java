@@ -19,12 +19,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.remotes.LsRemoteOp;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
@@ -65,7 +68,7 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
                         .call();
             }
             // current local local copy of the remote refs (e.g. refs/remotes/<remote>/<branch>
-            Iterable<Ref> remoteLocalRefs = getRemoteLocalRefs();
+            List<Ref> remoteLocalRefs = Lists.newArrayList(getRemoteLocalRefs());
             if (!formatAsRemoteRefs) {
                 // format local repository copies of the remote refs to the remote's local namespace
                 remoteLocalRefs = command(MapRef.class)//
@@ -73,6 +76,17 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
                         .convertToLocal()//
                         .addAll(remoteLocalRefs)//
                         .call();
+            }
+            if (this.getTags) {
+                Map<String, RevTag> tags = Maps.uniqueIndex(command(TagListOp.class).call(),
+                        (t) -> t.getName());
+                for (Ref rf : remoteRefs) {
+                    if (rf.getName().startsWith(Ref.TAGS_PREFIX)
+                            && tags.containsKey(rf.localName())) {
+                        RevTag tag = tags.get(rf.localName());
+                        remoteLocalRefs.add(new Ref(Ref.TAGS_PREFIX + tag.getName(), tag.getId()));
+                    }
+                }
             }
             remotes = Maps.uniqueIndex(remoteRefs, (r) -> r.getName());
             locals = Maps.uniqueIndex(remoteLocalRefs, (r) -> r.getName());

@@ -25,6 +25,8 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 
+import com.google.common.collect.Iterables;
+
 public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
 
     /**
@@ -48,12 +50,26 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
 
         final List<RefDiff> localRemoteRefs = convertToRemote(remoteLocalRefs);
 
+        // update symrefs after refs so their target are present
+        updateRefs(Iterables.filter(localRemoteRefs, (r) -> !isSymRef(r)));
+        updateRefs(Iterables.filter(localRemoteRefs, (r) -> isSymRef(r)));
+
+        return localRemoteRefs;
+    }
+
+    private boolean isSymRef(RefDiff cr) {
+        final boolean delete = cr.isDelete();
+        final boolean symRef = (delete ? cr.getOldRef() : cr.getNewRef()) instanceof SymRef;
+        return symRef;
+    }
+
+    private void updateRefs(final Iterable<RefDiff> localRemoteRefs) {
         for (RefDiff cr : localRemoteRefs) {
             final Ref oldRef = cr.getOldRef();
             final Ref newRef = cr.getNewRef();
 
             final boolean delete = cr.isDelete();
-            final boolean symRef = (delete ? oldRef : newRef) instanceof SymRef;
+            final boolean symRef = isSymRef(cr);
             final String name = delete ? oldRef.getName() : newRef.getName();
 
             if (symRef) {
@@ -81,8 +97,6 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
                 cmd.call();
             }
         }
-
-        return localRemoteRefs;
     }
 
     private List<RefDiff> convertToRemote(List<RefDiff> remoteLocalRefs) {

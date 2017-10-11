@@ -72,11 +72,15 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         for (Remote remote : args.remotes) {
             try (IRemoteRepo remoteRepo = openRemote(remote)) {
                 // get ref diffs in the remote's local namespace (i.e. refs/heads/<branch>)
+                // this represents which remote refs we need to update, and how they'll end up in
+                // the local repo's refs/remotes/* refs
                 final List<RefDiff> refDiffs = diffRemoteRefs(remoteRepo, args.fetchTags);
                 // prepare the request to fetch the missing RevObjects
                 final List<RefDiff> symRefs = new ArrayList<>();
-                final PackRequest request = prepareRequest(localRepo, remoteRepo, refDiffs,
-                        symRefs);
+                // This is what needs to be transferred (what I want and what I already have for
+                // each ref)
+                final PackRequest request;
+                request = prepareRequest(localRepo, remoteRepo, refDiffs, symRefs);
 
                 // tell the remote to send us the missing objects
                 Iterable<RefDiff> localRemoteResults;
@@ -93,14 +97,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 // apply the ref diffs to our local remotes namespace and obtain the diffs in the
                 // refs/remotes/... namespace
                 localRemoteResults = concat(localRemoteResults, symRefs);
-                remoteRemoteRefs = updateLocalRemoteRefs(remote, localRemoteResults);
-
-                if (args.prune) {
-                    // prune any local remote ref that's been deleted
-                    Iterable<RefDiff> prunable = filter(refDiffs, (rd) -> rd.isDelete());
-                    List<RefDiff> pruned = updateLocalRemoteRefs(remote, prunable);
-                    remoteRemoteRefs = Iterables.concat(remoteRemoteRefs, pruned);
-                }
+                remoteRemoteRefs = updateLocalRemoteRefs(remote, refDiffs, args.prune);
                 result.addAll(remote.getFetchURL(), Lists.newArrayList(remoteRemoteRefs));
             }
         }
@@ -119,8 +116,12 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         return result;
     }
 
-    private List<RefDiff> updateLocalRemoteRefs(Remote remote,
-            Iterable<RefDiff> localRemoteResults) {
+    private List<RefDiff> updateLocalRemoteRefs(Remote remote, Iterable<RefDiff> localRemoteResults,
+            boolean prune) {
+
+        if (!prune) {
+            localRemoteResults = Iterables.filter(localRemoteResults, (d) -> !d.isDelete());
+        }
         List<RefDiff> remoteRemoteRefs;
         remoteRemoteRefs = command(UpdateRemoteRefOp.class)//
                 .addAll(localRemoteResults)//

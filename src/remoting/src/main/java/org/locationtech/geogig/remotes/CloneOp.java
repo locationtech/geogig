@@ -24,7 +24,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
@@ -247,16 +246,15 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
         final Set<String> createdBranches = new HashSet<>();
         for (Ref localRef : localRefs) {
             final String refName = localRef.getName();
-            if (localRef instanceof SymRef) {
-                Optional<Ref> ref = command(UpdateSymRef.class).setName(refName)
-                        .setNewValue(((SymRef) localRef).getTarget()).call();
-                checkState(ref.isPresent());
-            } else {
+            final boolean isSymRef = localRef instanceof SymRef;
+            final boolean isBranch = !isSymRef && refName.startsWith(Ref.HEADS_PREFIX);
+
+            if (!isSymRef) {
+                // can't create branches out of symrefs
                 Optional<Ref> ref = command(UpdateRef.class).setName(refName)
                         .setNewValue(localRef.getObjectId()).call();
                 checkState(ref.isPresent());
             }
-            final boolean isBranch = refName.startsWith(Ref.HEADS_PREFIX);
 
             if (isBranch) {
                 String branchName = localRef.localName();

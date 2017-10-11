@@ -273,18 +273,18 @@ public class DiffCountConsumerTest extends Assert {
     public void testBucketChildren() {
         CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(odb, bucketsFeatureTree);
         RevTree changed;
-        for (int i = 0; i < CanonicalNodeNameOrder.normalizedSizeLimit(0); i++) {
+        int normalizedSizeLimit = CanonicalNodeNameOrder.normalizedSizeLimit(0);
+        for (int i = 0; i < normalizedSizeLimit; i++) {
             builder.remove(String.valueOf(i));
         }
         changed = builder.build();
         odb.put(changed);
-        assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), changed.size());
+        assertEquals(normalizedSizeLimit, changed.size());
         assertTrue(changed.buckets().isEmpty());
 
-        assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0),
-                count(bucketsFeatureTree, changed).featureCount());
-        assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0),
-                count(changed, bucketsFeatureTree).featureCount());
+        assertEquals(normalizedSizeLimit, count(bucketsFeatureTree, changed).getFeaturesRemoved());
+        assertEquals(normalizedSizeLimit, count(bucketsFeatureTree, changed).featureCount());
+        assertEquals(normalizedSizeLimit, count(changed, bucketsFeatureTree).featureCount());
     }
 
     @Test

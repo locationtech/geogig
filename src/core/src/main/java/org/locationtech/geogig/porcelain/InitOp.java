@@ -26,7 +26,6 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
-import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -38,6 +37,7 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.VersionedFormat;
+import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -138,7 +138,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                     throw new FileNotFoundException("No filter file found at " + filterFile + ".");
                 }
 
-                repository().blobStore().putBlob(AbstractMappedRemoteRepo.SPARSE_FILTER_BLOB_KEY,
+                repository().blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY,
                         Files.toByteArray(oldFilterFile));
             } catch (Exception e) {
                 throw new IllegalStateException("Unable to copy filter file at path " + filterFile

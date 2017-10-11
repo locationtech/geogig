@@ -17,11 +17,11 @@ import org.junit.Test;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
 public class BeginTransactionTest extends AbstractWebOpTest {

@@ -46,13 +46,13 @@ import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.Status;
 import org.locationtech.geogig.rest.geotools.Import;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.JsonUtils;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.rest.repository.TestParams;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Optional;

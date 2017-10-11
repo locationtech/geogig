@@ -103,9 +103,17 @@ Feature: "clone" command
       And I run the command "clone ${remoterepo} ${repoURI}"
      Then the response should contain "Destination repository already exists"
      
-  Scenario: Try to clone a remote repository with a single argument
+  Scenario: Try to clone a repository to itself
     Given I am in an empty directory
       And there is a remote repository
-     When I run the command "clone fakeRepo"
-     Then the response should contain "Remote repository has no HEAD"
+     When I run the command "clone ${remoterepo} ${remoterepo}"
+     Then the response should contain "Source and target repositories are the same"
+     
+  #annotate with FileSystemReposOnly because other kind of repo to file would succeed
+  @FileSystemReposOnly
+  Scenario: Try to clone a repository to the same parent folder without specifying target 
+    Given I am in an empty directory
+      And there is a remote repository
+     When I run the command "clone ${remoterepo}"
+     Then the response should contain "Destination repository already exists"
 

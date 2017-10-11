@@ -48,10 +48,10 @@ import org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.porcelain.BlameReport;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.porcelain.PullResult;
-import org.locationtech.geogig.porcelain.TransferSummary;
-import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef;
 import org.locationtech.geogig.porcelain.ValueAndCommit;
+import org.locationtech.geogig.remotes.PullResult;
+import org.locationtech.geogig.remotes.RefDiff;
+import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
@@ -81,7 +81,9 @@ import org.springframework.http.MediaType;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -671,8 +673,9 @@ public class ResponseWriter {
         for (Ref branch : remoteBranches) {
             if (!(branch instanceof SymRef)) {
                 out.writeStartArrayElement("Branch");
-                writeElement("remoteName",
-                        branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
+                String namespace = branch.namespace();
+                String remoteName = namespace.replace(Ref.REMOTES_PREFIX, "").replace("/", "");
+                writeElement("remoteName", remoteName);
                 writeElement("name", branch.localName());
                 out.writeEndArrayElement();
             }
@@ -781,30 +784,34 @@ public class ResponseWriter {
 
     public void writeFetchResponse(TransferSummary result) throws StreamWriterException {
         out.writeStartElement("Fetch");
-        if (result.getChangedRefs().entrySet().size() > 0) {
-            for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
-                out.writeStartElement("Remote");
-                writeElement("remoteURL", entry.getKey());
-                out.writeStartArray("Branch");
-                for (ChangedRef ref : entry.getValue()) {
-                    out.writeStartArrayElement("Branch");
-
-                    writeElement("changeType", ref.getType().toString());
-                    if (ref.getOldRef() != null) {
-                        writeElement("name", ref.getOldRef().localName());
-                        writeElement("oldValue", ref.getOldRef().getObjectId().toString());
-                    }
-                    if (ref.getNewRef() != null) {
-                        if (ref.getOldRef() == null) {
-                            writeElement("name", ref.getNewRef().localName());
-                        }
-                        writeElement("newValue", ref.getNewRef().getObjectId().toString());
-                    }
-                    out.writeEndArrayElement();
-                }
-                out.writeEndArray();
-                out.writeEndElement();
+        for (Entry<String, Collection<RefDiff>> entry : result.getRefDiffs().entrySet()) {
+            Iterable<RefDiff> branches = Iterables.filter(entry.getValue(), //
+                    (e) -> !(e.getNewRef() instanceof SymRef));
+            List<RefDiff> refs = Lists.newArrayList(branches);
+            if (refs.isEmpty()) {
+                continue;
             }
+            out.writeStartElement("Remote");
+            writeElement("remoteURL", entry.getKey());
+            out.writeStartArray("Branch");
+            for (RefDiff ref : refs) {
+                out.writeStartArrayElement("Branch");
+
+                writeElement("changeType", ref.getType().toString());
+                if (ref.getOldRef() != null) {
+                    writeElement("name", ref.getOldRef().localName());
+                    writeElement("oldValue", ref.getOldRef().getObjectId().toString());
+                }
+                if (ref.getNewRef() != null) {
+                    if (ref.getOldRef() == null) {
+                        writeElement("name", ref.getNewRef().localName());
+                    }
+                    writeElement("newValue", ref.getNewRef().getObjectId().toString());
+                }
+                out.writeEndArrayElement();
+            }
+            out.writeEndArray();
+            out.writeEndElement();
         }
         out.writeEndElement();
     }

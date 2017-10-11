@@ -49,7 +49,6 @@ import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
-import org.locationtech.geogig.porcelain.PullOp;
 import org.locationtech.geogig.porcelain.StatusOp;
 import org.locationtech.geogig.porcelain.StatusOp.StatusSummary;
 import org.locationtech.geogig.repository.Conflict;
@@ -327,7 +326,6 @@ public class MergeOpTest extends RepositoryTestCase {
 
         verifyCancelledCleanly(master);
     }
-
 
     @Test
     public void testSpecifyAuthor() throws Exception {
@@ -1164,7 +1162,7 @@ public class MergeOpTest extends RepositoryTestCase {
         }
 
         try {
-            geogig.command(PullOp.class).call();
+            geogig.command(CommitOp.class).call();
             fail();
         } catch (ConflictsException e) {
             assertEquals(e.getMessage(),

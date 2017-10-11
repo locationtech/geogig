@@ -62,7 +62,7 @@ public class SubProgressListener extends DefaultProgressListener {
      */
     @Override
     public float getProgress() {
-        return progress;
+        return super.getProgress();
     }
 
     /**
@@ -72,7 +72,7 @@ public class SubProgressListener extends DefaultProgressListener {
      */
     @Override
     public void setProgress(float progress) {
-        this.progress = progress;
+        super.setProgress(progress);
         float percent = progress / getMaxProgress();
         parentProgressListener.setProgress(start + (amount * percent));
     }

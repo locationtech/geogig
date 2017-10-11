@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.junit.Test;
-import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
-import org.locationtech.geogig.storage.impl.INIBlob;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class INIBlobTest extends RepositoryTestCase {
@@ -36,7 +34,7 @@ public class INIBlobTest extends RepositoryTestCase {
 
         final String filterFile = filterFileBuilder.toString();
 
-        geogig.getRepository().blobStore().putBlob(AbstractMappedRemoteRepo.SPARSE_FILTER_BLOB_KEY,
+        geogig.getRepository().blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY,
                 filterFile.getBytes());
 
         INIBlob test = new INIBlob() {

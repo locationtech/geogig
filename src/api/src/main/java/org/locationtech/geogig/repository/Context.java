@@ -26,15 +26,7 @@ import com.google.common.annotations.Beta;
  * 
  * @since 1.0
  */
-public interface Context {
-
-    /**
-     * Finds and returns an instance of a command of the specified class.
-     * 
-     * @param commandClass the kind of command to locate and instantiate
-     * @return a new instance of the requested command class, with its dependencies resolved
-     */
-    public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass);
+public interface Context extends CommandFactory {
 
     /**
      * @return the {@link WorkingTree} for this context

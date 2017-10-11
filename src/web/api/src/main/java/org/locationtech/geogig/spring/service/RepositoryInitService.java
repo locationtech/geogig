@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.spring.service;
 
-import static org.locationtech.geogig.porcelain.ConfigOp.ConfigAction.CONFIG_GET;
 import static org.locationtech.geogig.porcelain.ConfigOp.ConfigAction.CONFIG_SET;
 import static org.locationtech.geogig.porcelain.ConfigOp.ConfigScope.LOCAL;
 

@@ -29,16 +29,16 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.BranchListOp;
-import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
 import com.google.common.collect.ImmutableList;
@@ -153,7 +153,7 @@ public class BranchTest extends AbstractWebOpTest {
 
         URI remoteURI = remoteGeogig.command(ResolveGeogigURI.class).call().get();
 
-        geogig.command(CloneOp.class).setRepositoryURL(remoteURI.toURL().toString()).call();
+        geogig.command(CloneOp.class).setRemoteURI(remoteURI).call();
 
         ParameterSet options = TestParams.of("list", "true", "remotes", "true");
         WebAPICommand cmd = buildCommand(options);

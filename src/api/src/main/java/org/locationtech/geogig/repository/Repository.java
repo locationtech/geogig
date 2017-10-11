@@ -38,7 +38,7 @@ import com.google.common.base.Optional;
  * 
  * @since 1.0
  */
-public interface Repository {
+public interface Repository extends CommandFactory{
 
     String DEPTH_CONFIG_KEY = "core.depth";
 

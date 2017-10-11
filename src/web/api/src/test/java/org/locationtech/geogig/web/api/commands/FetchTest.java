@@ -23,17 +23,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.porcelain.CloneOp;
-import org.locationtech.geogig.porcelain.RemoteAddOp;
+import org.locationtech.geogig.remotes.CloneOp;
+import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-import org.locationtech.geogig.rest.repository.TestParams;
 
 public class FetchTest extends AbstractWebOpTest {
 
@@ -117,6 +117,8 @@ public class FetchTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "\"},"
                 + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
                 + master.getObjectId().toString() + "\"}]";
+        System.err.println(expected);
+        System.err.println(branch);
         assertTrue(jsonEquals(toJSONArray(expected), branch, false));
     }
 
@@ -192,8 +194,7 @@ public class FetchTest extends AbstractWebOpTest {
 
         // Set up the shallow clone
         Repository remoteGeogig = remoteTestContext.get().getRepository();
-        remoteGeogig.command(CloneOp.class).setDepth(1)
-                .setRepositoryURL(originalURI.toURL().toString()).call();
+        remoteGeogig.command(CloneOp.class).setDepth(1).setRemoteURI(originalURI).call();
 
         Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);

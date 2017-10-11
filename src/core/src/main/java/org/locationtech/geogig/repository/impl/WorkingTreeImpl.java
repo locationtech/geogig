@@ -470,9 +470,11 @@ public class WorkingTreeImpl implements WorkingTree {
      */
     @Override
     public boolean isClean() {
-        Optional<ObjectId> resolved = context.command(ResolveTreeish.class)
-                .setTreeish(Ref.STAGE_HEAD).call();
-        return getTree().getId().equals(resolved.or(ObjectId.NULL));
+        Optional<ObjectId> stageHead;
+        Optional<ObjectId> workHead;
+        stageHead = context.command(ResolveTreeish.class).setTreeish(Ref.STAGE_HEAD).call();
+        workHead = context.command(ResolveTreeish.class).setTreeish(Ref.WORK_HEAD).call();
+        return workHead.equals(stageHead);
     }
 
     /**

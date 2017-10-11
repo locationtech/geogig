@@ -419,7 +419,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     protected void putAll(Stream<RevObject> stream, BulkOpListener listener) {
         final Stopwatch sw = LOG.isTraceEnabled() ? Stopwatch.createStarted() : null;
 
-        final int batchsize = 10_000;
+        final int batchsize = 1000;
         // encodes on several threads
         Stream<EncodedObject> encoded = stream.parallel().map(o -> encode(o));
 
@@ -429,7 +429,9 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             Iterator<EncodedObject> batch = Iterators.limit(iterator, batchsize);
             insertCount += insertBatch(batch, listener);
         }
-        if (LOG.isTraceEnabled()) {
+        if (LOG.isTraceEnabled())
+
+        {
             LOG.trace(String.format("Inserted %,d objects in %s", insertCount, sw.stop()));
         }
     }

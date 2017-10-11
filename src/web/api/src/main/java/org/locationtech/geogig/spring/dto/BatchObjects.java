@@ -9,16 +9,15 @@
  */
 package org.locationtech.geogig.spring.dto;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.remote.ObjectFunnel;
-import org.locationtech.geogig.remote.ObjectFunnels;
 import org.locationtech.geogig.remote.http.BinaryPackedObjects;
-import org.locationtech.geogig.repository.impl.Deduplicator;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
+import org.locationtech.geogig.remotes.internal.ObjectFunnel;
+import org.locationtech.geogig.remotes.internal.ObjectFunnels;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.springframework.http.MediaType;
 

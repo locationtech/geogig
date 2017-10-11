@@ -21,5 +21,6 @@
 package org.locationtech.geogig.spring.dto;
 
 import static javax.xml.bind.annotation.XmlNsForm.QUALIFIED;
-import javax.xml.bind.annotation.XmlSchema;
+
 import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlSchema;

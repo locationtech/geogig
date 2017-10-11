@@ -71,7 +71,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -446,7 +445,7 @@ public class FormatCommonV2 {
     /**
      * Reads a bucket body (i.e assumes the head unsigned int "index" has been read already)
      */
-    protected  Bucket readBucketBody(DataInput in) throws IOException {
+    protected Bucket readBucketBody(DataInput in) throws IOException {
         ObjectId objectId = readObjectId(in);
         final int boundsMask = in.readByte() & 0xFF;
         @Nullable
@@ -625,8 +624,11 @@ public class FormatCommonV2 {
         SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
                 Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
         RevFeatureType revtype;
-        revtype = RevFeatureTypeBuilder.create(id, ftype);
-
+        if (id == null) {
+            revtype = RevFeatureTypeBuilder.build(ftype);
+        } else {
+            revtype = RevFeatureTypeBuilder.create(id, ftype);
+        }
         return revtype;
     }
 

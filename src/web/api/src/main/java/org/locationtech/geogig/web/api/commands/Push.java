@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.porcelain.PushOp;
-import org.locationtech.geogig.porcelain.SynchronizationException;
-import org.locationtech.geogig.porcelain.TransferSummary;
+import org.locationtech.geogig.remotes.PushOp;
+import org.locationtech.geogig.remotes.SynchronizationException;
+import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;

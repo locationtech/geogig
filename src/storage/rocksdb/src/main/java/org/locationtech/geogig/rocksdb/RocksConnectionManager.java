@@ -17,6 +17,8 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
+import org.rocksdb.BlockBasedTableConfig;
+import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -24,6 +26,7 @@ import org.rocksdb.CompressionType;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.TableFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,6 +181,13 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
 
     private ColumnFamilyOptions newColFamilyOptions() {
         ColumnFamilyOptions colFamilyOptions = new ColumnFamilyOptions();
+
+        // enable bloom filter to speed up RocksDB.get() calls
+        BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+        BloomFilter bloomFilter = new BloomFilter();
+        tableFormatConfig.setFilter(bloomFilter);
+        colFamilyOptions.setTableFormatConfig(tableFormatConfig);
+        
         // cause the Windows jar doesn't come with
         // snappy and hence fails
         colFamilyOptions.setCompressionType(CompressionType.NO_COMPRESSION);

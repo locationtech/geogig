@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.repository.impl;
 
+import static org.locationtech.geogig.storage.impl.Blobs.SPARSE_FILTER_BLOB_KEY;
+
 import java.io.Closeable;
 import java.net.URI;
 import java.util.List;
@@ -30,7 +32,6 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
@@ -45,6 +46,7 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.impl.Blobs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -365,7 +367,7 @@ public class RepositoryImpl implements Repository {
      */
     @Override
     public boolean isSparse() {
-        return blobStore().getBlob(AbstractMappedRemoteRepo.SPARSE_FILTER_BLOB_KEY).isPresent();
+        return blobStore().getBlob(Blobs.SPARSE_FILTER_BLOB_KEY).isPresent();
     }
 
     @Override
@@ -429,6 +431,22 @@ public class RepositoryImpl implements Repository {
     @Override
     public BlobStore blobStore() {
         return context().blobStore();
+    }
+
+    /**
+     * Returns the {@link RepositoryFilter} defined for {@code repo} as of its
+     * {@link Blobs#SPARSE_FILTER_BLOB_KEY sparse_filter} blobstore's blob
+     */
+    public static Optional<RepositoryFilter> getFilter(Repository repo)
+            throws IllegalStateException {
+
+        BlobStore blobStore = repo.blobStore();
+        Optional<byte[]> filterBlob = blobStore.getBlob(SPARSE_FILTER_BLOB_KEY);
+        IniRepositoryFilter filter = null;
+        if (filterBlob.isPresent()) {
+            filter = new IniRepositoryFilter(blobStore, SPARSE_FILTER_BLOB_KEY);
+        }
+        return Optional.fromNullable(filter);
     }
 
 }

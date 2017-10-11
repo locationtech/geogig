@@ -162,7 +162,7 @@ public class Ref implements Comparable<Ref> {
     }
 
     /**
-     * @return the namespace for this ref
+     * @return the namespace for this ref, ends with a /
      */
     public String namespace() {
         return namespace(name);
@@ -180,7 +180,7 @@ public class Ref implements Comparable<Ref> {
         } else if (ref.startsWith(REMOTES_PREFIX)) {
             String remote = ref.substring(REMOTES_PREFIX.length());
             remote = remote.substring(0, remote.indexOf('/'));
-            return REMOTES_PREFIX + "/" + remote;
+            return REMOTES_PREFIX + remote + "/";
         } else if (ref.startsWith(REFS_PREFIX)) {
             return REFS_PREFIX;
         }
@@ -251,8 +251,7 @@ public class Ref implements Comparable<Ref> {
      */
     @Override
     public String toString() {
-        return new StringBuilder("Ref").append('[').append(name).append(" -> ").append(objectId)
-                .append(']').toString();
+        return String.format("Ref[%s -> %s]", name, objectId);
     }
 
     public static String append(String namespace, String child) {
@@ -287,5 +286,9 @@ public class Ref implements Comparable<Ref> {
             relative = relative.substring(1);
         }
         return relative;
+    }
+
+    public Ref peel() {
+        return this;
     }
 }

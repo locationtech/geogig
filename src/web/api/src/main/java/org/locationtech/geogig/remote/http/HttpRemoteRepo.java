@@ -26,24 +26,31 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.porcelain.ConfigGet;
-import org.locationtech.geogig.porcelain.SynchronizationException;
-import org.locationtech.geogig.remote.AbstractRemoteRepo;
-import org.locationtech.geogig.remote.CommitTraverser;
-import org.locationtech.geogig.remote.ObjectFunnel;
-import org.locationtech.geogig.remote.ObjectFunnels;
-import org.locationtech.geogig.remote.RepositoryWrapper;
 import org.locationtech.geogig.remote.http.BinaryPackedObjects.IngestResults;
 import org.locationtech.geogig.remote.http.HttpUtils.ReportingOutputStream;
+import org.locationtech.geogig.remote.http.pack.HttpReceivePackClient;
+import org.locationtech.geogig.remote.http.pack.HttpSendPackClient;
+import org.locationtech.geogig.remotes.SynchronizationException;
+import org.locationtech.geogig.remotes.internal.AbstractRemoteRepo;
+import org.locationtech.geogig.remotes.internal.CommitTraverser;
+import org.locationtech.geogig.remotes.internal.DeduplicationService;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
+import org.locationtech.geogig.remotes.internal.ObjectFunnel;
+import org.locationtech.geogig.remotes.internal.ObjectFunnels;
+import org.locationtech.geogig.remotes.internal.RepositoryWrapper;
+import org.locationtech.geogig.remotes.pack.ReceivePackOp;
+import org.locationtech.geogig.remotes.pack.SendPackOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.DeduplicationService;
-import org.locationtech.geogig.repository.impl.Deduplicator;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
@@ -76,26 +83,28 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
 
     private URL repositoryURL;
 
-    final private DeduplicationService deduplicationService;
+    protected Deduplicator createDeduplicator() {
+        return DeduplicationService.create();
+    }
 
     /**
-     * Constructs a new {@code HttpRemoteRepo} with the given parameters.
-     * 
-     * @param repositoryURL the url of the remote repository
+     * @param remoteURI the url of the remote repository
      */
-    public HttpRemoteRepo(URL repositoryURL, Repository localRepository,
-            DeduplicationService deduplicationService) {
-        super(localRepository);
-        this.deduplicationService = deduplicationService;
-        String url = repositoryURL.toString();
+    public HttpRemoteRepo(Remote remote, URL remoteURI) {
+        super(remote);
+        String url = remoteURI.toString();
         if (url.endsWith("/")) {
             url = url.substring(0, url.lastIndexOf('/'));
         }
         try {
             this.repositoryURL = new URL(url);
         } catch (MalformedURLException e) {
-            this.repositoryURL = repositoryURL;
+            this.repositoryURL = remoteURI;
         }
+    }
+
+    public URL getRemoteURL() {
+        return repositoryURL;
     }
 
     /**
@@ -118,7 +127,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
      * @return the remote's HEAD {@link Ref}.
      */
     @Override
-    public Ref headRef() {
+    public Optional<Ref> headRef() {
         HttpURLConnection connection = null;
         Ref headRef = null;
         try {
@@ -146,20 +155,18 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
             Throwables.propagate(e);
 
         } finally {
-            HttpUtils.consumeErrStreamAndCloseConnection(connection);
+            closeSafely(connection);
         }
-        return headRef;
+        return Optional.fromNullable(headRef);
     }
 
-    /**
-     * List the remote's {@link Ref refs}.
-     * 
-     * @param getHeads whether to return refs in the {@code refs/heads} namespace
-     * @param getTags whether to return refs in the {@code refs/tags} namespace
-     * @return an immutable set of refs from the remote
-     */
+    public void closeSafely(@Nullable HttpURLConnection connection) {
+        HttpUtils.consumeErrStreamAndCloseConnection(connection);
+    }
+
     @Override
-    public ImmutableSet<Ref> listRefs(final boolean getHeads, final boolean getTags) {
+    public ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
+            final boolean getTags) {
         HttpURLConnection connection = null;
         ImmutableSet.Builder<Ref> builder = new ImmutableSet.Builder<Ref>();
         try {
@@ -184,21 +191,16 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            HttpUtils.consumeErrStreamAndCloseConnection(connection);
+            closeSafely(connection);
         }
         return builder.build();
     }
 
-    /**
-     * Fetch all new objects from the specified {@link Ref} from the remote.
-     * 
-     * @param ref the remote ref that points to new commit data
-     * @param fetchLimit the maximum depth to fetch
-     */
     @Override
-    public void fetchNewData(Ref ref, Optional<Integer> fetchLimit, ProgressListener progress) {
+    public void fetchNewData(Repository local, Ref ref, Optional<Integer> fetchLimit,
+            ProgressListener progress) {
 
-        CommitTraverser traverser = getFetchTraverser(fetchLimit);
+        CommitTraverser traverser = getFetchTraverser(local, fetchLimit);
 
         try {
             progress.setDescription("Fetching objects from " + ref.getName());
@@ -210,30 +212,24 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
             have.addAll(traverser.have);
             while (!want.isEmpty()) {
                 progress.setProgress(0);
-                fetchMoreData(want, have, progress);
+                fetchMoreData(local, want, have, progress);
             }
         } catch (Exception e) {
             Throwables.propagate(e);
         }
     }
 
-    /**
-     * Push all new objects from the specified {@link Ref} to the remote.
-     * 
-     * @param ref the local ref that points to new commit data
-     * @param refspec the remote branch to push to
-     */
     @Override
-    public void pushNewData(Ref ref, String refspec, ProgressListener progress)
-            throws SynchronizationException {
+    public void pushNewData(final Repository local, Ref ref, String refspec,
+            ProgressListener progress) throws SynchronizationException {
         Optional<Ref> remoteRef = HttpUtils.getRemoteRef(repositoryURL, refspec);
-        checkPush(ref, remoteRef);
+        checkPush(local, ref, remoteRef);
         beginPush();
 
         progress.setDescription("Uploading objects to " + refspec);
         progress.setProgress(0);
 
-        CommitTraverser traverser = getPushTraverser(remoteRef);
+        CommitTraverser traverser = getPushTraverser(local, remoteRef);
 
         traverser.traverse(ref.getObjectId());
 
@@ -241,9 +237,9 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         Collections.reverse(toSend);
         Set<ObjectId> have = new HashSet<ObjectId>(traverser.have);
 
-        Deduplicator deduplicator = deduplicationService.createDeduplicator();
+        Deduplicator deduplicator = createDeduplicator();
         try {
-            sendPackedObjects(toSend, have, deduplicator, progress);
+            sendPackedObjects(local, toSend, have, deduplicator, progress);
         } finally {
             deduplicator.release();
         }
@@ -259,8 +255,8 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         endPush(nameToSet, ref.getObjectId(), originalRemoteRefValue.toString());
     }
 
-    private void sendPackedObjects(final List<ObjectId> toSend, final Set<ObjectId> roots,
-            Deduplicator deduplicator, final ProgressListener progress) {
+    private void sendPackedObjects(Repository local, final List<ObjectId> toSend,
+            final Set<ObjectId> roots, Deduplicator deduplicator, final ProgressListener progress) {
         Set<ObjectId> sent = new HashSet<ObjectId>();
         while (!toSend.isEmpty()) {
             try {
@@ -277,7 +273,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                         }
                     }
                 };
-                ObjectStore database = localRepository.objectDatabase();
+                ObjectStore database = local.objectDatabase();
                 BinaryPackedObjects packer = new BinaryPackedObjects(database);
 
                 ImmutableList<ObjectId> have = ImmutableList.copyOf(roots);
@@ -289,7 +285,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                 ObjectFunnel objectFunnel;
 
                 outFactory = new SendObjectsConnectionFactory(repositoryURL);
-                int pushBytesLimit = parsePushLimit();
+                int pushBytesLimit = parsePushLimit(local);
                 objectFunnel = ObjectFunnels.newFunnel(outFactory, serializer, pushBytesLimit);
                 final long writtenObjectsCount = packer.write(objectFunnel, toSend, have, sent,
                         callback, traverseCommits, deduplicator);
@@ -308,10 +304,9 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         }
     }
 
-    private int parsePushLimit() {
+    private int parsePushLimit(Repository local) {
         final String confKey = "push.chunk.limit";
-        Optional<String> configLimit = localRepository.command(ConfigGet.class).setName(confKey)
-                .call();
+        Optional<String> configLimit = local.command(ConfigGet.class).setName(confKey).call();
         int limit = DEFAULT_PUSH_BATCH_LIMIT;
         if (configLimit.isPresent()) {
             String climit = configLimit.get();
@@ -320,9 +315,8 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
             try {
                 int tmpLimit = Integer.parseInt(climit);
                 if (tmpLimit < 1024) {
-                    LOGGER.warn(
-                            "Value for push batch limit '{}' is set too low ({}). "
-                                    + "A minimum of 1024 bytes is needed. Using the default value of {} bytes",
+                    LOGGER.warn("Value for push batch limit '{}' is set too low ({}). "
+                            + "A minimum of 1024 bytes is needed. Using the default value of {} bytes",
                             confKey, tmpLimit, limit);
                 } else {
                     limit = tmpLimit;
@@ -408,8 +402,8 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
      * @param have a list of ObjectIds that are in common with the remote repository
      * @param progress
      */
-    private void fetchMoreData(final List<ObjectId> want, final Set<ObjectId> have,
-            final ProgressListener progress) {
+    private void fetchMoreData(final Repository local, final List<ObjectId> want,
+            final Set<ObjectId> have, final ProgressListener progress) {
         final JsonObject message = createFetchMessage(want, have);
         final URL resourceURL;
         try {
@@ -440,7 +434,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
 
         final HttpUtils.ReportingInputStream in = HttpUtils.getResponseStream(connection);
 
-        BinaryPackedObjects unpacker = new BinaryPackedObjects(localRepository.objectDatabase());
+        BinaryPackedObjects unpacker = new BinaryPackedObjects(local.objectDatabase());
         BinaryPackedObjects.Callback callback = new BinaryPackedObjects.Callback() {
             @Override
             public void callback(Supplier<RevObject> supplier) {
@@ -504,5 +498,16 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
     @Override
     public Optional<Integer> getDepth() {
         return HttpUtils.getDepth(repositoryURL, null);
+    }
+
+    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+        if (SendPackOp.class.equals(commandClass)) {
+            // invoked when a local repo calls fetch for an http remote
+            return commandClass.cast(new HttpSendPackClient(this));
+        } else if (ReceivePackOp.class.equals(commandClass)) {
+            // invoked when a local repo calls push on an http remote
+            return commandClass.cast(new HttpReceivePackClient(this));
+        }
+        return super.command(commandClass);
     }
 }

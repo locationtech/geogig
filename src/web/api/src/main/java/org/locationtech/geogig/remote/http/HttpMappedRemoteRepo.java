@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.remote.http;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,12 +34,15 @@ import org.locationtech.geogig.plumbing.CheckSparsePath;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.DiffOp;
-import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
-import org.locationtech.geogig.remote.FilteredDiffIterator;
-import org.locationtech.geogig.remote.RepositoryWrapper;
+import org.locationtech.geogig.remotes.internal.AbstractMappedRemoteRepo;
+import org.locationtech.geogig.remotes.internal.FilteredDiffIterator;
+import org.locationtech.geogig.remotes.internal.RepositoryWrapper;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.locationtech.geogig.repository.impl.RepositoryFilter.FilterDescription;
+import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
@@ -66,8 +71,8 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param repositoryURL the URL of the repository
      * @param localRepository the local sparse repository
      */
-    public HttpMappedRemoteRepo(URL repositoryURL, Repository localRepository) {
-        super(localRepository);
+    public HttpMappedRemoteRepo(Remote remote, URL repositoryURL) {
+        super(remote);
         String url = repositoryURL.toString();
         if (url.endsWith("/")) {
             url = url.substring(0, url.lastIndexOf('/'));
@@ -102,7 +107,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return an immutable set of refs from the remote
      */
     @Override
-    public ImmutableSet<Ref> listRefs(boolean getHeads, boolean getTags) {
+    public ImmutableSet<Ref> listRefs(Repository local, boolean getHeads, boolean getTags) {
         HttpURLConnection connection = null;
         ImmutableSet.Builder<Ref> builder = new ImmutableSet.Builder<Ref>();
         try {
@@ -124,9 +129,9 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                             || (getTags && line.startsWith("refs/tags"))) {
                         Ref remoteRef = HttpUtils.parseRef(line);
                         Ref newRef = remoteRef;
-                        if (!(newRef instanceof SymRef) && localRepository.graphDatabase()
-                                .exists(remoteRef.getObjectId())) {
-                            ObjectId mappedCommit = localRepository.graphDatabase()
+                        if (!(newRef instanceof SymRef)
+                                && local.graphDatabase().exists(remoteRef.getObjectId())) {
+                            ObjectId mappedCommit = local.graphDatabase()
                                     .getMapping(remoteRef.getObjectId());
                             if (mappedCommit != null) {
                                 newRef = new Ref(remoteRef.getName(), mappedCommit);
@@ -151,7 +156,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return the remote's HEAD {@link Ref}.
      */
     @Override
-    public Ref headRef() {
+    public Optional<Ref> headRef() {
         HttpURLConnection connection = null;
         Ref headRef = null;
         try {
@@ -186,7 +191,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }
-        return headRef;
+        return Optional.fromNullable(headRef);
     }
 
     /**
@@ -214,19 +219,19 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return an iterator for changes that match the repository filter
      */
     @Override
-    protected FilteredDiffIterator getFilteredChanges(RevCommit commit) {
+    protected FilteredDiffIterator getFilteredChanges(final Repository local, RevCommit commit) {
         // Get affected features
         ImmutableList<ObjectId> affectedFeatures = HttpUtils.getAffectedFeatures(repositoryURL,
                 commit.getId());
         // Create a list of features I have
         List<ObjectId> tracked = new LinkedList<ObjectId>();
         for (ObjectId id : affectedFeatures) {
-            if (localRepository.blobExists(id)) {
+            if (local.blobExists(id)) {
                 tracked.add(id);
             }
         }
         // Get changes from commit, pass filter and my list of features
-        final JsonObject message = createFetchMessage(commit.getId(), tracked);
+        final JsonObject message = createFetchMessage(local, commit.getId(), tracked);
         final URL resourceURL;
         try {
             resourceURL = new URL(repositoryURL.toString() + "/repo/filteredchanges");
@@ -257,12 +262,13 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
             throw Throwables.propagate(e);
         }
 
-        BinaryPackedChanges unpacker = new BinaryPackedChanges(localRepository);
+        BinaryPackedChanges unpacker = new BinaryPackedChanges(local);
 
         return new HttpFilteredDiffIterator(in, unpacker);
     }
 
-    private JsonObject createFetchMessage(ObjectId commitId, List<ObjectId> tracked) {
+    private JsonObject createFetchMessage(Repository local, ObjectId commitId,
+            List<ObjectId> tracked) {
         JsonObject message = new JsonObject();
         JsonArray trackedArray = new JsonArray();
         for (ObjectId id : tracked) {
@@ -271,7 +277,9 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
         message.add("commitId", new JsonPrimitive(commitId.toString()));
         message.add("tracked", trackedArray);
         JsonArray filterArray = new JsonArray();
-        ImmutableList<FilterDescription> repoFilters = filter.getFilterDescriptions();
+        Optional<RepositoryFilter> filter = RepositoryImpl.getFilter(local);
+        checkState(filter.isPresent(), "No filter found for sparse clone.");
+        ImmutableList<FilterDescription> repoFilters = filter.get().getFilterDescriptions();
         for (FilterDescription description : repoFilters) {
             JsonObject typeFilter = new JsonObject();
             typeFilter.add("featurepath", new JsonPrimitive(description.getFeaturePath()));
@@ -315,14 +323,9 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
         HttpUtils.endPush(repositoryURL, refspec, newCommitId, originalRefValue);
     }
 
-    /**
-     * Pushes a sparse commit to a remote repository and updates all mappings.
-     * 
-     * @param commitId the commit to push
-     */
     @Override
-    protected void pushSparseCommit(ObjectId commitId) {
-        Repository from = localRepository;
+    protected void pushSparseCommit(final Repository local, ObjectId commitId) {
+        Repository from = local;
         Optional<RevObject> object = from.command(RevObjectParse.class).setObjectId(commitId)
                 .call();
         if (object.isPresent() && object.get().getType().equals(TYPE.COMMIT)) {

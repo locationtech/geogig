@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 Boundless and others.
+/* Copyright (c) 2012-2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -26,7 +26,7 @@ package org.locationtech.geogig.model;
  */
 public class SymRef extends Ref {
 
-    private Ref target;
+    private String target;
 
     /**
      * Constructs a new {@code SymRef} with the given name and target reference.
@@ -36,6 +36,11 @@ public class SymRef extends Ref {
      */
     public SymRef(String name, Ref target) {
         super(name, target.getObjectId());
+        this.target = target.getName();
+    }
+
+    public SymRef(String name, String target, ObjectId targetId) {
+        super(name, targetId);
         this.target = target;
     }
 
@@ -43,13 +48,16 @@ public class SymRef extends Ref {
      * @return the reference that this symbolic ref points to
      */
     public String getTarget() {
-        return target.getName();
+        return target;
     }
 
     @Override
     public String toString() {
-        return new StringBuilder("SymRef").append('[').append(getName()).append(" -> ")
-                .append(target.toString()).append(']').toString();
+        return String.format("SymRef[%s -> Ref[%s -> %s]]", getName(), target, getObjectId());
+    }
+
+    public @Override Ref peel() {
+        return new Ref(target, getObjectId());
     }
 
 }

@@ -23,6 +23,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class Blobs {
 
+    public static String SPARSE_FILTER_BLOB_KEY = "sparse_filter";
+
     public static void putBlob(BlobStore blobStore, String blobName, CharSequence contents) {
         byte[] blob = contents.toString().getBytes(Charsets.UTF_8);
         blobStore.putBlob(blobName, blob);

@@ -160,6 +160,10 @@ public class Remote {
         return password;
     }
 
+    public @Override String toString() {
+        return String.format("%s", getName());
+    }
+
     /**
      * Determines if this Remote is the same as the given Remote.
      * 

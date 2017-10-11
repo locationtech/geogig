@@ -1,0 +1,19 @@
+<configuration debug="false" scan="false" scanPeriod="30 seconds">
+  <!-- Note: set debug="true" only if logback complains about a problem parsing this configuration file -->
+  <!-- scan="true" (defaults to false) tells logback to scan for changes to the configuration file and automatically apply 
+    them -->
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <logger name="org.locationtech.geogig" level="INFO" />
+
+  <root level="WARN">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+</configuration>

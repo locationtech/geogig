@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016 Boundless and others.
+/* Copyright (c) 2013-2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,17 +9,20 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.transform;
+
+import java.util.Iterator;
 import java.util.List;
 
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.plumbing.ForEachRef;
-import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.BulkOpListener;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 /**
  * Returns a list of all tags
@@ -29,15 +32,17 @@ public class TagListOp extends AbstractGeoGigOp<ImmutableList<RevTag>> {
 
     @Override
     protected ImmutableList<RevTag> _call() {
-        List<Ref> refs = Lists
-                .newArrayList(command(ForEachRef.class).setPrefixFilter(Ref.TAGS_PREFIX).call());
-        List<RevTag> list = Lists.newArrayList();
-        for (Ref ref : refs) {
-            Optional<RevTag> tag = command(RevObjectParse.class).setObjectId(ref.getObjectId())
-                    .call(RevTag.class);
-            list.add(tag.get());
-        }
-        return ImmutableList.copyOf(list);
+        List<Ref> refs = newArrayList(
+                command(ForEachRef.class).setPrefixFilter(Ref.TAGS_PREFIX).call());
+
+        List<ObjectId> tagIds = transform(refs, (r) -> r.getObjectId());
+
+        Iterator<RevTag> alltags;
+        alltags = objectDatabase().getAll(tagIds, BulkOpListener.NOOP_LISTENER, RevTag.class);
+
+        ImmutableList<RevTag> res = ImmutableList.copyOf(alltags);
+
+        return res;
     }
 
 }

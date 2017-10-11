@@ -18,9 +18,9 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
-import org.locationtech.geogig.porcelain.FetchOp;
-import org.locationtech.geogig.porcelain.SynchronizationException;
-import org.locationtech.geogig.porcelain.TransferSummary;
+import org.locationtech.geogig.remotes.FetchOp;
+import org.locationtech.geogig.remotes.SynchronizationException;
+import org.locationtech.geogig.remotes.TransferSummary;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -101,7 +101,7 @@ public class Fetch extends AbstractCommand implements CLICommand {
         }
 
         Console console = cli.getConsole();
-        if (result.getChangedRefs().isEmpty()) {
+        if (result.getRefDiffs().isEmpty()) {
             console.println("Already up to date.");
         } else {
             FetchResultPrinter.print(result, console);

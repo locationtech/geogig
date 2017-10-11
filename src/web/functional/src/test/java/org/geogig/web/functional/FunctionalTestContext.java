@@ -11,6 +11,7 @@ package org.geogig.web.functional;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,10 +31,10 @@ import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.porcelain.BranchDeleteOp;
-import org.locationtech.geogig.porcelain.CloneOp;
-import org.locationtech.geogig.porcelain.RemoteAddOp;
 import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.remotes.CloneOp;
+import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
@@ -208,7 +209,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
         Repository repo2 = createRepo("repo2")//
                 .init("geogigUser", "repo2_Owner@geogig.org").getRepo();
 
-        repo2.command(CloneOp.class).setRepositoryURL(repo1Url).call();
+        repo2.command(CloneOp.class).setRemoteURI(URI.create(repo1Url)).call();
 
         String repo2Url = http ? getHttpLocation("repo2") : repo2.getLocation().toString();
         
@@ -234,7 +235,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
         Repository repo4 = createRepo("repo4")//
                 .init("geogigUser", "repo4_Owner@geogig.org").getRepo();
 
-        repo4.command(CloneOp.class).setRepositoryURL(repo1Url).call();
+        repo4.command(CloneOp.class).setRemoteURI(URI.create(repo1Url)).call();
 
         Optional<RevObject> masterOriginal = repo4.command(RevObjectParse.class)
                 .setRefSpec("master~2").call();
@@ -266,12 +267,10 @@ public abstract class FunctionalTestContext extends ExternalResource {
                 .loadDefaultData()//
                 .getRepo();
 
-        String repo1Url = repo1.getLocation().toString();
-
         Repository repo2 = createRepo("shallow")//
                 .init("geogigUser", "shallow_Owner@geogig.org").getRepo();
 
-        repo2.command(CloneOp.class).setRepositoryURL(repo1Url).setDepth(1).call();
+        repo2.command(CloneOp.class).setRemoteURI(repo1.getLocation()).setDepth(1).call();
 
         repo1.close();
         repo2.close();

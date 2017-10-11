@@ -50,10 +50,10 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.AbstractConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
@@ -486,7 +486,7 @@ public class PreOrderDiffWalkTest {
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
         final int leftBucketCount = left.buckets().size();
-        final int expectedBucketCalls = leftBucketCount - 1;
+        final int expectedBucketCalls = leftBucketCount;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
 
@@ -518,7 +518,7 @@ public class PreOrderDiffWalkTest {
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
         final int leftBucketCount = right.buckets().size();
-        final int expectedBucketCalls = leftBucketCount - 1;
+        final int expectedBucketCalls = leftBucketCount;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
 
@@ -767,7 +767,7 @@ public class PreOrderDiffWalkTest {
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
         final int leftBucketCount = left.buckets().size();
-        final int expectedBucketCalls = leftBucketCount - 1;
+        final int expectedBucketCalls = leftBucketCount;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
 

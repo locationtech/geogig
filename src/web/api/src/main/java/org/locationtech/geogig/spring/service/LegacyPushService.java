@@ -17,7 +17,6 @@ import org.locationtech.geogig.rest.repository.PushManager;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.BeginPush;
 import org.locationtech.geogig.spring.dto.EndPush;
-import org.locationtech.geogig.spring.dto.PushResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

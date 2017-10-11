@@ -22,7 +22,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -39,8 +39,8 @@ public class PostOrderDiffWalk {
 
     private PreOrderDiffWalk inOrder;
 
-    public PostOrderDiffWalk(RevTree left, RevTree right, ObjectDatabase leftSource,
-            ObjectDatabase rightSource) {
+    public PostOrderDiffWalk(RevTree left, RevTree right, ObjectStore leftSource,
+            ObjectStore rightSource) {
         this.inOrder = new PreOrderDiffWalk(left, right, leftSource, rightSource);
     }
 

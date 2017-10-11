@@ -25,8 +25,9 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.InitOp;
+import org.locationtech.geogig.remotes.CloneOp;
+import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
@@ -101,35 +102,33 @@ public class Clone extends AbstractCommand implements CLICommand {
                     "Sparse Clone: You must explicitly specify a remote branch to clone by using '--branch <branch>'.");
         }
 
-        final URI remoteURI;
         final URI cloneURI;
         final Platform platform = cli.getPlatform();
-        final String remoteArg = args.get(0);
-        try {
-            remoteURI = RepositoryResolver.resolveRepoUriFromString(platform, remoteArg);
-        } catch (URISyntaxException e) {
-            throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
-        }
-
+        final URI remoteURI = resolveRemoteURI(platform);
         final String targetArg;
-        if (args.size() == 2) {
-            targetArg = args.get(1);
-        } else {
-            RepositoryResolver remoteResolver = RepositoryResolver.lookup(remoteURI);
-            targetArg = remoteResolver.getName(remoteURI);
-        }
+        {
+            if (args.size() == 2) {
+                targetArg = args.get(1);
+            } else {
+                RepositoryResolver remoteResolver = RepositoryResolver.lookup(remoteURI);
+                targetArg = remoteResolver.getName(remoteURI);
+            }
 
-        try {
-            cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
-        } catch (URISyntaxException e) {
-            throw new CommandFailedException("Can't parse target URI '" + targetArg + "'", true);
-        }
+            try {
+                cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
+            } catch (URISyntaxException e) {
+                throw new CommandFailedException("Can't parse target URI '" + targetArg + "'",
+                        true);
+            }
 
-        if (cloneURI.normalize().equals(platform.pwd().toURI().normalize())) {
-            throw new CommandFailedException("Cannot clone into your current working directory.",
-                    true);
-        }
+            if (cloneURI.normalize().equals(platform.pwd().toURI().normalize())) {
+                throw new CommandFailedException(
+                        "Cannot clone into your current working directory.", true);
+            }
+            checkParameter(!cloneURI.equals(remoteURI),
+                    "Source and target repositories are the same");
 
+        }
         RepositoryResolver cloneInitializer = RepositoryResolver.lookup(cloneURI);
 
         if (cloneInitializer.repoExists(cloneURI)) {
@@ -156,10 +155,13 @@ public class Clone extends AbstractCommand implements CLICommand {
             console.flush();
 
             CloneOp clone = cloneRepo.command(CloneOp.class);
-            clone.setProgressListener(cli.getProgressListener());
-            clone.setBranch(branch).setRepositoryURL(remoteURI.toString());
-            clone.setUserName(username).setPassword(password);
-            clone.setDepth(depth);
+            clone.setBranch(branch)//
+                    .setRemoteURI(remoteURI)//
+                    .setCloneURI(cloneURI)//
+                    .setUserName(username)//
+                    .setPassword(password)//
+                    .setDepth(depth)//
+                    .setProgressListener(cli.getProgressListener());
 
             clone.call();
             succeeded = true;
@@ -179,5 +181,16 @@ public class Clone extends AbstractCommand implements CLICommand {
             }
         }
         console.println("Done.");
+    }
+
+    private URI resolveRemoteURI(final Platform platform) {
+        final URI remoteURI;
+        final String remoteArg = args.get(0);
+        try {
+            remoteURI = RepositoryResolver.resolveRepoUriFromString(platform, remoteArg);
+        } catch (URISyntaxException e) {
+            throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
+        }
+        return remoteURI.normalize();
     }
 }

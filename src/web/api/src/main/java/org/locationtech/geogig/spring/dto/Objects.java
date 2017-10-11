@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.spring.dto;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 
@@ -18,12 +17,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.io.output.WriterOutputStream;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
-import org.locationtech.geogig.web.api.CommandSpecException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 /**

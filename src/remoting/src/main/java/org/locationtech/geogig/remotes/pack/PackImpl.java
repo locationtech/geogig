@@ -100,19 +100,6 @@ class PackImpl implements Pack {
         return result;
     }
 
-    private static class AppliedProgressIndicator implements Function<ProgressListener, String> {
-
-        private final ObjectReporter processed;
-
-        AppliedProgressIndicator(ObjectReporter processed) {
-            this.processed = processed;
-        }
-
-        public @Override String apply(final ProgressListener unused) {
-            return processed.toString();
-        }
-    }
-
     private RefDiff applyToPreOrder(PackProcessor target, RefRequest req, Deduplicator deduplicator,
             ProgressListener progress) {
 
@@ -125,14 +112,14 @@ class PackImpl implements Pack {
         final Function<ProgressListener, String> defaultProgressIndicator;
         defaultProgressIndicator = progress.progressIndicator();
         // set our custom progress indicator
-        progress.setProgressIndicator(new AppliedProgressIndicator(objectReport));
+        progress.setProgressIndicator((p) -> objectReport.toString());
 
         final List<RevCommit> commits = missingCommits.get(req);
         checkNotNull(commits);
 
         final ObjectDatabase sourceStore = source.objectDatabase();
-        final Producer producer = new Producer(sourceStore, target, commits, deduplicator,
-                objectReport);
+        final ContentIdsProducer producer = new ContentIdsProducer(sourceStore, commits,
+                deduplicator, objectReport);
 
         final ExecutorService producerThread = Executors.newSingleThreadExecutor();
         try {
@@ -176,11 +163,9 @@ class PackImpl implements Pack {
         return changedRef;
     }
 
-    private class Producer implements Consumer<ObjectId>, Runnable {
+    private class ContentIdsProducer implements Consumer<ObjectId>, Runnable {
 
         private final ObjectStore source;
-
-        private final PackProcessor target;
 
         private final Deduplicator deduplicator;
 
@@ -190,10 +175,9 @@ class PackImpl implements Pack {
 
         private final ObjectReporter objectReport;
 
-        Producer(ObjectStore source, PackProcessor target, List<RevCommit> commits,
-                Deduplicator deduplicator, ObjectReporter objectReport) {
+        ContentIdsProducer(ObjectStore source, List<RevCommit> commits, Deduplicator deduplicator,
+                ObjectReporter objectReport) {
             this.source = source;
-            this.target = target;
             this.commits = commits;
             this.deduplicator = deduplicator;
             this.objectReport = objectReport;
@@ -218,7 +202,7 @@ class PackImpl implements Pack {
                             : Optional.fromNullable(commitsById.get(parentId))
                                     .or(() -> source.getCommit(parentId));
 
-                    visitPreOrder(parent, commit, deduplicator, target, objectReport, this);
+                    visitPreOrder(parent, commit, deduplicator, objectReport, this);
                 }
             }
 
@@ -235,8 +219,7 @@ class PackImpl implements Pack {
         }
 
         private void visitPreOrder(@Nullable RevCommit parent, RevCommit commit,
-                Deduplicator deduplicator, PackProcessor target, ObjectReporter progress,
-                Consumer<ObjectId> consumer) {
+                Deduplicator deduplicator, ObjectReporter progress, Consumer<ObjectId> consumer) {
 
             final ObjectId leftRootId = parent == null ? EMPTY_TREE_ID : parent.getTreeId();
             final ObjectId rightRootId = commit.getTreeId();

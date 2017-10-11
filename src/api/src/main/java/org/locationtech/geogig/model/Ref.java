@@ -288,6 +288,12 @@ public class Ref implements Comparable<Ref> {
         return relative;
     }
 
+    /**
+     * Returns the resolved ref this ref points to.
+     * <p>
+     * For regular refs, just returns {@code this}, {@link SymRef symbolic refs} return the ref they
+     * point to.
+     */
     public Ref peel() {
         return this;
     }

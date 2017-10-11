@@ -21,6 +21,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
@@ -28,6 +29,7 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
+import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.pack.MapRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -41,8 +43,32 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
- * Clones a remote repository to a new repsitory.
+ * Clones a remote repository to a new repository.
+ * <p>
+ * Cloning is the process of creating a new repository that's an exact copy of another one's local
+ * reachable revision history.
+ * <p>
+ * A repository's local reachable revision history is the set of all {@link RevObject revision
+ * objects} reachable from its tips (i.e. branches and tags) that are in its local refs namespace
+ * (i.e. those in the {@code refs/heads/*} and {@code refs/tags} namespaces. That is, objects and
+ * branches that are only addressed by references to copies of a remote repository (those in
+ * {@code refs/remotes/} namespace) are not subject to be cloned, as well as any other object
+ * (commits, trees, features, etc) that might exist in the remote repository but are not reachable
+ * from any of its tips (for example, because a branch has been deleted).
+ * <p>
+ * To perform a clone, given an existing repository, the following steps are followed:
+ * <ul>
+ * <li>Create the new repository (see {@link InitOp});
+ * <li>Configure the repository to be cloned a remote in the new repository (see
+ * {@link RemoteAddOp}), named {@code origin} by default, a different name can be assigned through
+ * {@link #setRemoteName};
+ * <li>Get all the contents and remote refs from the remote to the clone (see {@link FetchOp});
+ * <li>Finally, for each remote ref created by {@link FetchOp} that represents a branch, create a
+ * new local branch ref in the cloned repo (e.g. create a {@code refs/heads/master} matching
+ * {@code refs/remotes/origin/master}, and so on);
+ * </ul>
  * 
+ * @since 1.0
  */
 public class CloneOp extends AbstractGeoGigOp<Repository> {
 

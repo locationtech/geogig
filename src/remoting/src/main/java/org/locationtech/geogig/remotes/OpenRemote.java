@@ -22,7 +22,9 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
 /**
- * Connects to a remote repository and returns its {@link IRemoteRepo} facade.
+ * Connects to a remote repository and returns its {@link IRemoteRepo} facade in an
+ * {@link IRemoteRepo#open() open} state; callers must ensure to {@link IRemoteRepo#close() close}
+ * it once it's no longer needed.
  */
 public class OpenRemote extends AbstractGeoGigOp<IRemoteRepo> {
 

@@ -26,6 +26,12 @@ import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
+/**
+ * Packages up a set of {@link RefRequest} for {@link SendPackOp} to ask a repository to send all
+ * the missing contents to a target repo that are needed for the target to fully contain the
+ * revision graph objects enclose the requested tips.
+ *
+ */
 public class PackRequest {
 
     /**

@@ -10,19 +10,15 @@
 package org.locationtech.geogig.test.integration.remoting;
 
 import static com.google.common.base.Optional.absent;
-import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,7 +31,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.PushOp;
-import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.RemoteResolve;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.SynchronizationException.StatusCode;
@@ -46,7 +41,6 @@ import org.locationtech.geogig.test.TestSupport;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 public class PushOpTest extends RemoteRepositoryTestCase {
     @Rule
@@ -128,26 +122,6 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         remote = localRepo.command(RemoteResolve.class).setName(REMOTE_NAME).call().get();
     }
 
-    private Optional<Ref> getRef(Repository repo, String refspec) {
-        return repo.command(RefParse.class).setName(refspec).call();
-    }
-
-    private void assertSummary(TransferSummary result, @Nullable Ref before, @Nullable Ref after) {
-        assertSummary(result, fromNullable(before), fromNullable(after));
-    }
-
-    private void assertSummary(TransferSummary result, Optional<Ref> before, Optional<Ref> after) {
-        assertNotNull(result);
-        Collection<RefDiff> diffs = result.getRefDiffs().get(remote.getPushURL());
-        assertNotNull(diffs);
-        String name = before.or(after).get().getName();
-        RefDiff diff = Maps.uniqueIndex(diffs, (d) -> d.oldRef().or(d.newRef()).get().getName())
-                .get(name);
-        assertNotNull(diff);
-        assertEquals(before, diff.oldRef());
-        assertEquals(after, diff.newRef());
-    }
-
     @Test
     public void testPush() throws Exception {
         // Add a commit to the local repository
@@ -161,7 +135,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         // Push the commit
         PushOp push = pushOp();
         TransferSummary summary = push.setProgressListener(SIMPLE_PROGRESS).call();
-        assertSummary(summary, oldRef, newRef);
+        assertSummary(summary, remote.getPushURL(), oldRef, newRef);
 
         // verify that the remote got the commit
         List<RevCommit> logged = newArrayList(remoteRepo.command(LogOp.class).call());
@@ -199,7 +173,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         // Push the commit
         PushOp push = pushOp();
         TransferSummary summary = push.setRemote("origin").call();
-        assertSummary(summary, oldBranch, getRef(localRepo, "master"));
+        assertSummary(summary, remote.getPushURL(), oldBranch, getRef(localRepo, "master"));
 
         // verify that the remote got the commit
         List<RevCommit> logged = newArrayList(remoteRepo.command(LogOp.class).call());
@@ -248,8 +222,8 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         // Push the commit
         PushOp push = pushOp();
         TransferSummary summary = push.setAll(true).setProgressListener(SIMPLE_PROGRESS).call();
-        assertSummary(summary, oldMaster, getRef(localRepo, "master"));
-        assertSummary(summary, oldBranch, getRef(localRepo, "Branch1"));
+        assertSummary(summary, remote.getPushURL(), oldMaster, getRef(localRepo, "master"));
+        assertSummary(summary, remote.getPushURL(), oldBranch, getRef(localRepo, "Branch1"));
 
         // verify that the remote got the commit on both branches
         remoteRepo.command(CheckoutOp.class).setSource("master").call();
@@ -273,7 +247,8 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         PushOp push = pushOp();
         push.addRefSpec("master:NewRemoteBranch");
         TransferSummary summary = push.setProgressListener(SIMPLE_PROGRESS).call();
-        assertSummary(summary, null, new Ref("refs/heads/NewRemoteBranch", commit.getId()));
+        assertSummary(summary, remote.getPushURL(), null,
+                new Ref("refs/heads/NewRemoteBranch", commit.getId()));
         assertTrue(getRef(remoteRepo, "NewRemoteBranch").isPresent());
 
         // verify that the remote got the commit
@@ -305,9 +280,9 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         push.addRefSpec("master:NewRemoteBranch");
         push.addRefSpec("Branch1:NewRemoteBranch2");
         TransferSummary summary = push.call();
-        assertSummary(summary, absent(),
+        assertSummary(summary, remote.getPushURL(), absent(),
                 Optional.of(new Ref("refs/heads/NewRemoteBranch", master.getObjectId())));
-        assertSummary(summary, absent(),
+        assertSummary(summary, remote.getPushURL(), absent(),
                 Optional.of(new Ref("refs/heads/NewRemoteBranch2", branch1.getObjectId())));
 
         assertTrue(
@@ -343,7 +318,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         PushOp push = pushOp();
         push.addRefSpec("newbranch");
         TransferSummary summary = push.call();
-        assertSummary(summary, absent(),
+        assertSummary(summary, remote.getPushURL(), absent(),
                 Optional.of(new Ref("refs/heads/newbranch", branch1.getObjectId())));
 
         TestSupport.verifyRepositoryContents(remoteRepo);
@@ -374,7 +349,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         PushOp push = pushOp();
         push.addRefSpec(refSpec);
         TransferSummary summary = push.call();
-        assertSummary(summary, ref, absent());
+        assertSummary(summary, remote.getPushURL(), ref, absent());
         assertFalse(remoteRepo.command(RefParse.class).setName(refName).call().isPresent());
     }
 
@@ -391,7 +366,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         PushOp push = pushOp();
         push.addRefSpec(":");
         TransferSummary summary = push.call();
-        assertSummary(summary, oldBranch, getRef(localRepo, "master"));
+        assertSummary(summary, remote.getPushURL(), oldBranch, getRef(localRepo, "master"));
 
         // verify that the remote got the commit
         List<RevCommit> logged = newArrayList(remoteRepo.command(LogOp.class).call());
@@ -413,7 +388,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         PushOp push = pushOp();
         push.addRefSpec("Branch1");
         TransferSummary summary = push.call();
-        assertSummary(summary, oldBranch, getRef(localRepo, "Branch1"));
+        assertSummary(summary, remote.getPushURL(), oldBranch, getRef(localRepo, "Branch1"));
 
         // verify that the remote got the commit
         Optional<Ref> remoteRef = remoteRepo.command(RefParse.class).setName("Branch1").call();
@@ -445,7 +420,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         PushOp push = pushOp();
         push.addRefSpec("+Branch1");
         TransferSummary summary = push.setProgressListener(SIMPLE_PROGRESS).call();
-        assertSummary(summary, oldBranch, getRef(localRepo, "Branch1"));
+        assertSummary(summary, remote.getPushURL(), oldBranch, getRef(localRepo, "Branch1"));
 
         // verify that the remote got the commit
         remoteRepo.command(CheckoutOp.class).setSource("Branch1").call();

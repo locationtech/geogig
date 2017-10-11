@@ -35,6 +35,10 @@ public class OpenRemote extends AbstractGeoGigOp<IRemoteRepo> {
         return this;
     }
 
+    public Remote getRemote() {
+        return remote;
+    }
+
     public OpenRemote readOnly() {
         remoteHints.set(Hints.REMOTES_READ_ONLY, Boolean.TRUE);
         return this;

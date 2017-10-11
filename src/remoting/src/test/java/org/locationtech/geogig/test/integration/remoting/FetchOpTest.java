@@ -9,14 +9,17 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
+import static com.google.common.base.Optional.absent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,7 +36,13 @@ import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
+import org.locationtech.geogig.remotes.RemoteAddOp;
 import org.locationtech.geogig.remotes.RemoteRemoveOp;
+import org.locationtech.geogig.remotes.RemoteResolve;
+import org.locationtech.geogig.remotes.TransferSummary;
+import org.locationtech.geogig.remotes.pack.MapRef;
+import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 
 import com.google.common.base.Optional;
@@ -52,18 +61,28 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
     LinkedList<RevCommit> expectedBranch;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    private Repository originRepo, localRepo, upstreamRepo;
+
+    private Remote origin, upstream;
+
+    private Optional<Ref> originMaster, originBranch1, originTag;
+
+    private Optional<Ref> upstreamMaster, upstreamBranch1, upstreamTag;
+
+    private Optional<Ref> localOriginMaster;
+
+    @After
+    public final void tearDownUpstream() throws Exception {
+        upstreamGeogig.tearDown();
     }
 
-    private void prepareForFetch(boolean doClone) throws Exception {
-        if (doClone) {
-            // clone the repository
-            CloneOp clone = cloneOp();
-            // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-            clone.setRemoteURI(remoteGeogig.envHome.toURI())
-                    .setCloneURI(localGeogig.envHome.toURI()).call();
-        }
+    @Override
+    protected void setUpInternal() throws Exception {
+        // clone the repository
+        CloneOp clone = cloneOp();
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
 
         // Commit several features to the remote
 
@@ -114,6 +133,35 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         logs = remoteGeogig.geogig.command(LogOp.class).call();
         logged = Lists.newArrayList(logs);
         assertEquals(expectedMaster, logged);
+
+        localRepo = localGeogig.repo;
+        originRepo = remoteGeogig.repo;
+        upstreamRepo = upstreamGeogig.repo;
+
+        upstreamRepo.command(CloneOp.class).setRemoteURI(originRepo.getLocation())
+                .setRemoteName("origin").call();
+
+        upstream = localRepo.command(RemoteAddOp.class).setName("upstream")
+                .setURL(upstreamRepo.getLocation().toString()).call();
+
+        localGeogig.addRemoteOverride(upstream, upstreamRepo);
+
+        origin = localRepo.command(RemoteResolve.class).setName(REMOTE_NAME).call().get();
+
+        originMaster = Optional.of(toRemote(origin, getRef(originRepo, "master").get()));
+        originBranch1 = Optional.of(toRemote(origin, getRef(originRepo, "Branch1").get()));
+        originTag = Optional.of(toRemote(origin, getRef(originRepo, "test").get()));
+
+        upstreamMaster = Optional.of(toRemote(upstream, getRef(upstreamRepo, "master").get()));
+        upstreamBranch1 = Optional.of(toRemote(upstream, getRef(upstreamRepo, "Branch1").get()));
+        upstreamTag = Optional.of(toRemote(upstream, getRef(upstreamRepo, "test").get()));
+
+        localOriginMaster = getRef(localRepo, "refs/remotes/origin/master");
+    }
+
+    private Ref toRemote(Remote remote, Ref local) {
+        return localRepo.command(MapRef.class).setRemote(remote).add(local).convertToRemote().call()
+                .get(0);
     }
 
     private void verifyFetch() throws Exception {
@@ -154,46 +202,70 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     }
 
     @Test
-    public void testFetch() throws Exception {
-
-        prepareForFetch(true);
-
+    public void testFetchNoArgsDefaultsToOrigin() throws Exception {
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        fetch.call();
 
+        TransferSummary summary = fetch.call();
+        assertNotNull(summary);
+        assertEquals(1, summary.getRefDiffs().size());
+        assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
+        assertSummary(summary, origin.getFetchURL(), localOriginMaster, originMaster);
+        assertSummary(summary, origin.getFetchURL(), absent(), originBranch1);
+        assertSummary(summary, origin.getFetchURL(), absent(), originTag);
         verifyFetch();
     }
 
     @Test
     public void testFetchAll() throws Exception {
-        prepareForFetch(true);
-
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        fetch.setAll(true).call();
+        TransferSummary summary = fetch.setAll(true).call();
+        assertEquals(2, summary.getRefDiffs().size());
+        assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
+        assertTrue(summary.getRefDiffs().containsKey(upstream.getFetchURL()));
+
+        assertSummary(summary, origin.getFetchURL(), localOriginMaster, originMaster);
+        assertSummary(summary, origin.getFetchURL(), absent(), originBranch1);
+        assertSummary(summary, origin.getFetchURL(), absent(), originTag);
+
+        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamMaster);
+        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamBranch1);
 
         verifyFetch();
     }
 
     @Test
     public void testFetchSpecificRemote() throws Exception {
-        prepareForFetch(true);
-
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        fetch.addRemote("origin").call();
+        TransferSummary summary = fetch.addRemote("upstream").call();
+        assertEquals(1, summary.getRefDiffs().size());
+        assertTrue(summary.getRefDiffs().containsKey(upstream.getFetchURL()));
 
-        verifyFetch();
+        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamMaster);
+        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamTag);
+        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamBranch1);
+
+        TestSupport.verifySameContents(upstreamRepo, localRepo);
     }
 
     @Test
     public void testFetchSpecificRemoteAndAll() throws Exception {
-        prepareForFetch(true);
-
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        fetch.addRemote("origin").setAll(true).call();
+        TransferSummary summary = fetch.addRemote("upstream").setAll(true).call();
+
+        assertEquals(2, summary.getRefDiffs().size());
+        assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
+        assertTrue(summary.getRefDiffs().containsKey(upstream.getFetchURL()));
+
+        assertSummary(summary, origin.getFetchURL(), localOriginMaster, originMaster);
+        assertSummary(summary, origin.getFetchURL(), absent(), originBranch1);
+        assertSummary(summary, origin.getFetchURL(), absent(), originTag);
+
+        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamMaster);
+        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamBranch1);
 
         verifyFetch();
     }
@@ -209,66 +281,74 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
     @Test
     public void testFetchNoChanges() throws Exception {
-        prepareForFetch(true);
-
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        fetch.addRemote("origin").setAll(true).call();
-
+        TransferSummary summary = fetch.addRemote("origin").call();
+        assertEquals(1, summary.getRefDiffs().size());
+        assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
+        assertSummary(summary, origin.getFetchURL(), localOriginMaster, originMaster);
+        assertSummary(summary, origin.getFetchURL(), absent(), originBranch1);
+        assertSummary(summary, origin.getFetchURL(), absent(), originTag);
         verifyFetch();
 
         // fetch again
-        fetch.call();
-
-        verifyFetch();
+        summary = fetch.call();
+        assertTrue(summary.toString(), summary.isEmpty());
     }
 
     @Test
     public void testFetchWithPrune() throws Exception {
-        prepareForFetch(true);
-
         // fetch from the remote
         FetchOp fetch = fetchOp();
         fetch.addRemote("origin").setAll(true).call();
 
         verifyFetch();
+        Optional<Ref> localOriginBranch1 = getRef(localRepo, "refs/remotes/origin/Branch1");
+        assertTrue(localOriginBranch1.isPresent());
 
         // Remove a branch from the remote
         remoteGeogig.geogig.command(BranchDeleteOp.class).setName("Branch1").call();
 
         // fetch again
         fetch = fetchOp();
-        fetch.setPrune(true).call();
+        TransferSummary summary = fetch.setPrune(true).call();
+        assertSummary(summary, origin.getFetchURL(), localOriginBranch1, absent());
 
         verifyPrune();
     }
 
     @Test
     public void testFetchWithPruneAndBranchAdded() throws Exception {
-        prepareForFetch(true);
-
         // fetch from the remote
         FetchOp fetch = fetchOp();
         fetch.addRemote("origin").setAll(true).call();
 
         verifyFetch();
 
+        Optional<Ref> localOriginBranch1 = getRef(localRepo, "refs/remotes/origin/Branch1");
+        assertTrue(localOriginBranch1.isPresent());
+
         // Remove a branch from the remote
         remoteGeogig.geogig.command(BranchDeleteOp.class).setName("Branch1").call();
 
         // Add another branch
-        remoteGeogig.geogig.command(BranchCreateOp.class).setName("Branch2").call();
+        Ref branch2 = remoteGeogig.geogig.command(BranchCreateOp.class).setName("Branch2").call();
 
         // fetch again
         fetch = fetchOp();
-        fetch.setPrune(true).call();
+        TransferSummary summary = fetch.setPrune(true).call();
+        assertEquals(1, summary.getRefDiffs().size());
+        assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
+        assertSummary(summary, origin.getFetchURL(), localOriginBranch1, absent());
+
+        Ref expectedNew = toRemote(origin, branch2);
+        assertSummary(summary, origin.getFetchURL(), null, expectedNew);
 
         verifyPrune();
 
-        // Make sure the local repository has Branch2
-        Optional<Ref> missing = localGeogig.geogig.command(RefParse.class)
-                .setName("refs/remotes/origin/Branch2").call();
-
+        Optional<Ref> pruned = getRef(localRepo, "refs/remotes/origin/Branch1");
+        assertFalse(pruned.isPresent());
+        Optional<Ref> missing = getRef(localRepo, "refs/remotes/origin/Branch2");
         assertTrue(missing.isPresent());
     }
 }

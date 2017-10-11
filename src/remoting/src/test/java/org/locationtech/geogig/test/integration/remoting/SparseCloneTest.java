@@ -154,9 +154,8 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
                     new LocalMappedRemoteRepo(remoteInfo.get(), remoteGeogig.envHome.toURI()));
 
             doNothing().when(remoteRepo).close();
-
             remoteRepo.setRepository(remoteGeogig.geogig.getRepository());
-            localGeogig.remoteOverride = Optional.of(remoteRepo);
+            localGeogig.remoteOverride.put(REMOTE_NAME, remoteRepo);
 
         } catch (Exception e) {
             e.printStackTrace();

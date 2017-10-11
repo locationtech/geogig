@@ -9,17 +9,23 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
+import static com.google.common.base.Optional.fromNullable;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.SchemaException;
@@ -34,11 +40,13 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
@@ -49,7 +57,9 @@ import org.locationtech.geogig.remotes.LsRemoteOp;
 import org.locationtech.geogig.remotes.OpenRemote;
 import org.locationtech.geogig.remotes.PullOp;
 import org.locationtech.geogig.remotes.PushOp;
+import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.RemoteAddOp;
+import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.LocalRemoteResolver;
 import org.locationtech.geogig.repository.Context;
@@ -75,9 +85,11 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 import com.vividsolutions.jts.geom.Geometry;
@@ -142,6 +154,23 @@ public abstract class RemoteRepositoryTestCase {
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
+    public static class OpenRemoteOverride extends OpenRemote {
+
+        private Map<String, IRemoteRepo> remoteOverride;
+
+        public OpenRemoteOverride setOverrides(Map<String, IRemoteRepo> remoteOverride) {
+            this.remoteOverride = remoteOverride;
+            return this;
+        }
+
+        public @Override IRemoteRepo _call() {
+            String name = getRemote().getName();
+            IRemoteRepo override = remoteOverride.get(name);
+            Preconditions.checkNotNull(override, "remote override %s not provided", name);
+            return override;
+        }
+    }
+
     protected class GeogigContainer {
         public GeoGIG geogig;
 
@@ -151,7 +180,7 @@ public abstract class RemoteRepositoryTestCase {
 
         public Context injector;
 
-        public Optional<IRemoteRepo> remoteOverride = Optional.absent();
+        public Map<String, IRemoteRepo> remoteOverride = new HashMap<>();
 
         public GeogigContainer(final String workingDirectory) throws IOException {
 
@@ -178,6 +207,17 @@ public abstract class RemoteRepositoryTestCase {
             injector = null;
         }
 
+        public void addRemoteOverride(Remote remote, Repository override) {
+            IRemoteRepo remoteRepo = spy(LocalRemoteResolver.resolve(remote, override));
+            try {
+                remoteRepo.open();
+            } catch (RepositoryConnectionException e) {
+                throw Throwables.propagate(e);
+            }
+            doNothing().when(remoteRepo).close();
+            this.remoteOverride.put(remote.getName(), remoteRepo);
+        }
+
         public Context getInjector() {
             return injector;
         }
@@ -190,16 +230,13 @@ public abstract class RemoteRepositoryTestCase {
                     @Override
                     public <I> I decorate(I subject) {
                         OpenRemote cmd = (OpenRemote) subject;
-                        if (remoteOverride.isPresent()) {
-                            cmd = spy(cmd);
-                            doReturn(remoteOverride.get()).when(cmd).call();
-                        }
+                        cmd = cmd.command(OpenRemoteOverride.class).setOverrides(remoteOverride);
                         return (I) cmd;
                     }
 
                     @Override
                     public boolean canDecorate(Object instance) {
-                        boolean canDecorate = instance instanceof OpenRemote;
+                        boolean canDecorate = OpenRemote.class.equals(instance.getClass());
                         return canDecorate;
                     }
                 };
@@ -223,6 +260,8 @@ public abstract class RemoteRepositoryTestCase {
 
     public GeogigContainer remoteGeogig;
 
+    public GeogigContainer upstreamGeogig;
+
     // prevent recursion
     private boolean setup = false;
 
@@ -239,15 +278,17 @@ public abstract class RemoteRepositoryTestCase {
     protected final void doSetUp() throws IOException, SchemaException, ParseException, Exception {
         localGeogig = new GeogigContainer("localtestrepository");
         remoteGeogig = new GeogigContainer("remotetestrepository");
+        upstreamGeogig = new GeogigContainer("upstream");
         {
             String remoteURI = remoteGeogig.repo.getLocation().toString();
-            Remote remoteInfo = localGeogig.geogig.command(RemoteAddOp.class).setName(REMOTE_NAME)
+            Remote originInfo = localGeogig.geogig.command(RemoteAddOp.class).setName(REMOTE_NAME)
                     .setURL(remoteURI).call();
-            Repository remote = remoteGeogig.geogig.getRepository();
-            IRemoteRepo remoteRepo = spy(LocalRemoteResolver.resolve(remoteInfo, remote));
-            remoteRepo.open();
-            doNothing().when(remoteRepo).close();
-            localGeogig.remoteOverride = Optional.of(remoteRepo);
+            Repository originRepo = remoteGeogig.geogig.getRepository();
+            localGeogig.addRemoteOverride(originInfo, originRepo);
+
+            originInfo = upstreamGeogig.geogig.command(RemoteAddOp.class).setName(REMOTE_NAME)
+                    .setURL(remoteURI).call();
+            upstreamGeogig.addRemoteOverride(originInfo, originRepo);
         }
 
         pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
@@ -296,6 +337,7 @@ public abstract class RemoteRepositoryTestCase {
         tearDownInternal();
         localGeogig.tearDown();
         remoteGeogig.tearDown();
+        upstreamGeogig.tearDown();
         localGeogig = null;
         remoteGeogig = null;
         System.gc();
@@ -520,5 +562,27 @@ public abstract class RemoteRepositoryTestCase {
 
     public RevCommit commit(Repository repo, String msg) {
         return repo.command(CommitOp.class).setMessage(msg).call();
+    }
+
+    protected Optional<Ref> getRef(Repository repo, String refspec) {
+        return repo.command(RefParse.class).setName(refspec).call();
+    }
+
+    protected void assertSummary(TransferSummary result, String remoteURL, @Nullable Ref before,
+            @Nullable Ref after) {
+        assertSummary(result, remoteURL, fromNullable(before), fromNullable(after));
+    }
+
+    protected void assertSummary(TransferSummary result, String remoteURL, Optional<Ref> before,
+            Optional<Ref> after) {
+        assertNotNull(result);
+        Collection<RefDiff> diffs = result.getRefDiffs().get(remoteURL);
+        assertNotNull(diffs);
+        String name = before.or(after).get().getName();
+        RefDiff diff = Maps.uniqueIndex(diffs, (d) -> d.oldRef().or(d.newRef()).get().getName())
+                .get(name);
+        assertNotNull(diff);
+        assertEquals(before, diff.oldRef());
+        assertEquals(after, diff.newRef());
     }
 }

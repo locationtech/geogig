@@ -157,4 +157,8 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
         return newRef;
     }
 
+    public boolean isDelete() {
+        return delete;
+    }
+
 }

@@ -38,10 +38,11 @@ public class UpdateIndexesHook implements CommandHook {
     public <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
             @Nullable RuntimeException exception) throws Exception {
 
+        final UpdateRef op = (UpdateRef) command;
         @SuppressWarnings("unchecked")
         final Optional<Ref> updatedRef = (Optional<Ref>) retVal;
 
-        if (exception == null && updatedRef.isPresent()) {
+        if (!op.isDelete() && exception == null && updatedRef.isPresent()) {
             final Ref ref = updatedRef.get();
             final String refName = ref.getName();
             // update indexes only for branch updates

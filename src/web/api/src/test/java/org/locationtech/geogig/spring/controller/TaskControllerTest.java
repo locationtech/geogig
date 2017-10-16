@@ -41,11 +41,6 @@ import com.google.common.io.Files;
 
 public class TaskControllerTest extends AbstractControllerTest {
 
-    @After
-    public void after() {
-        AsyncContext.close();
-    }
-
     @Test
     public void testTaskList() throws Exception {
         AsyncContext context = AsyncContext.get();

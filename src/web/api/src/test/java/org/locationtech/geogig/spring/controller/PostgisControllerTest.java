@@ -42,11 +42,6 @@ import com.google.common.collect.Lists;
 
 public class PostgisControllerTest extends AbstractControllerTest {
 
-    @After
-    public void after() {
-        AsyncContext.close();
-    }
-
     @Test
     public void testImportNoTransaction() throws Exception {
         PostgisController.dataStoreFactory = TestHelper.createTestFactory();

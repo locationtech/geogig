@@ -85,10 +85,11 @@ public class ParentsControllerTest extends AbstractControllerTest {
             MockHttpServletRequestBuilder get =
                     MockMvcRequestBuilders.get(
                             "/repos/repo1/repo/getparents?commitId=" + oid);
-            String[] actualIds = perform(get).andExpect(status().isOk())
+            String response = perform(get).andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                     // verify the bytes
-                    .andReturn().getResponse().getContentAsString().split("\\s");
+                    .andReturn().getResponse().getContentAsString();
+            String[] actualIds = response.split("\\s+");
             if (actualIds.length == 1 && actualIds[0].isEmpty()) {
                 // the actual IDs is empty
                 actualIds = new String[0];

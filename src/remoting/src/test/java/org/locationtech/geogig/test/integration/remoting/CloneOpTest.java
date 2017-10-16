@@ -23,7 +23,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
@@ -36,6 +35,8 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.remotes.CloneOp;
@@ -47,6 +48,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -124,6 +126,85 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
         clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
                 .call();
+        TestSupport.verifySameRefs(remoteRepo, cloneRepo);
+        TestSupport.verifySameContents(remoteRepo, cloneRepo);
+    }
+
+    @Test
+    public void testCloneComplexHistory() throws Exception {
+        // Commit several features to the remote
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
+
+        for (Feature f : features) {
+            insertAndAdd(remoteRepo, f);
+        }
+
+        remoteRepo.command(CommitOp.class).setMessage("initial commit").call();
+
+        createBranch(remoteRepo, "branch1");
+        checkout(remoteRepo, "master");
+
+        insertAndAdd(remoteRepo, points1_modified);
+        commit(remoteRepo, "left modify 1");
+
+        createBranch(remoteRepo, "intermediate_left");
+        checkout(remoteRepo, "branch1");
+
+        insertAndAdd(remoteRepo, points2_modified);
+        commit(remoteRepo, "right modify 1");
+
+        checkout(remoteRepo, "intermediate_left");
+
+        mergeNoFF(remoteRepo, "branch1", "merge 1", true);
+
+        createBranch(remoteRepo, "intermediate_right");
+        checkout(remoteRepo, "master");
+
+        insertAndAdd(remoteRepo, points3_modified);
+        commit(remoteRepo, "left modify 2");
+
+        checkout(remoteRepo, "intermediate_left");
+
+        MergeReport merge2_left = mergeNoFF(remoteRepo, "master", "merge 2 left", true);
+
+        checkout(remoteRepo, "master");
+        remoteRepo.command(ResetOp.class).setMode(ResetMode.HARD)
+                .setCommit(Suppliers.ofInstance(merge2_left.getMergeCommit().getId())).call();
+
+        checkout(remoteRepo, "branch1");
+
+        insertAndAdd(remoteRepo, lines1_modified);
+        commit(remoteRepo, "right modify 2");
+
+        checkout(remoteRepo, "intermediate_right");
+
+        MergeReport merge2_right = mergeNoFF(remoteRepo, "branch1", "merge 2 right", true);
+
+        checkout(remoteRepo, "branch1");
+        remoteRepo.command(ResetOp.class).setMode(ResetMode.HARD)
+                .setCommit(Suppliers.ofInstance(merge2_right.getMergeCommit().getId())).call();
+
+        checkout(remoteRepo, "master");
+
+        mergeNoFF(remoteRepo, "branch1", "final merge", true);
+
+        // Make sure the local repository has no commits prior to clone
+        List<RevCommit> logged = newArrayList(cloneRepo.command(LogOp.class).call());
+        assertEquals(0, logged.size());
+
+        // clone from the remote
+        CloneOp clone = cloneOp();
+        clone.setDepth(0);
+        // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
+                .call();
+
+        // Make sure the local repository got all of the commits
+        logged = newArrayList(cloneRepo.command(LogOp.class).call());
+        List<RevCommit> expected = newArrayList(
+                remoteRepo.command(LogOp.class).call());
+
+        assertEquals(expected, logged);
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
         TestSupport.verifySameContents(remoteRepo, cloneRepo);
     }
@@ -254,30 +335,6 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
         TestSupport.verifySameContents(remoteRepo, cloneRepo);
-    }
-
-    private MergeReport mergeNoFF(Repository repo, String branch, String mergeMessage,
-            boolean mergeOurs) {
-        Ref branchRef = repo.command(RefParse.class).setName(branch).call().get();
-        ObjectId updatesBranchTip = branchRef.getObjectId();
-        MergeReport mergeReport = remoteRepo.command(MergeOp.class)//
-                .setMessage(mergeMessage)//
-                .setNoFastForward(true)//
-                .addCommit(updatesBranchTip)//
-                .setOurs(mergeOurs)//
-                .setTheirs(!mergeOurs)//
-                .setProgressListener(SIMPLE_PROGRESS)//
-                .call();
-        return mergeReport;
-    }
-
-    private void createBranch(Repository repo, String branch) {
-        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName(branch)
-                .setProgressListener(SIMPLE_PROGRESS).call();
-    }
-
-    private void checkout(Repository repo, String branch) {
-        repo.command(CheckoutOp.class).setSource(branch).call();
     }
 
     private List<RevCommit> insertAndCommit(List<? extends Feature> features,

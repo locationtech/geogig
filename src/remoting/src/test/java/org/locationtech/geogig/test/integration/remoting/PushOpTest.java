@@ -16,6 +16,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,6 +30,9 @@ import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.PushOp;
 import org.locationtech.geogig.remotes.RemoteResolve;
@@ -38,9 +42,12 @@ import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
+import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 
 public class PushOpTest extends RemoteRepositoryTestCase {
     @Rule
@@ -147,6 +154,90 @@ public class PushOpTest extends RemoteRepositoryTestCase {
                 .setName(Ref.append(Ref.REMOTES_PREFIX, "origin/master")).call();
         assertTrue(ref.isPresent());
         assertEquals(logged.get(0).getId(), ref.get().getObjectId());
+    }
+
+    @Test
+    public void testPushComplexHistory() throws Exception {
+        // Commit several features to the remote
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
+
+        for (Feature f : features) {
+            insertAndAdd(localRepo, f);
+        }
+
+        List<RevCommit> commitsToPush = Lists.newLinkedList();
+
+        commitsToPush.add(commit(localRepo, "root commit"));
+
+        createBranch(localRepo, "master_alt");
+        checkout(localRepo, "master");
+
+        insertAndAdd(localRepo, points1_modified);
+        commitsToPush.add(commit(localRepo, "left modify 1"));
+
+        createBranch(localRepo, "intermediate_left");
+        checkout(localRepo, "master_alt");
+
+        insertAndAdd(localRepo, points2_modified);
+        commitsToPush.add(commit(localRepo, "right modify 1"));
+
+        checkout(localRepo, "intermediate_left");
+
+        commitsToPush.add(mergeNoFF(localRepo, "master_alt", "merge 1", true).getMergeCommit());
+
+        createBranch(localRepo, "intermediate_right");
+        checkout(localRepo, "master");
+
+        insertAndAdd(localRepo, points3_modified);
+        commitsToPush.add(commit(localRepo, "left modify 2"));
+
+        checkout(localRepo, "intermediate_left");
+
+        MergeReport merge2_left = mergeNoFF(localRepo, "master", "merge 2 left", true);
+        commitsToPush.add(merge2_left.getMergeCommit());
+
+        checkout(localRepo, "master");
+        localRepo.command(ResetOp.class).setMode(ResetMode.HARD)
+                .setCommit(Suppliers.ofInstance(merge2_left.getMergeCommit().getId())).call();
+
+        checkout(localRepo, "master_alt");
+
+        insertAndAdd(localRepo, lines1_modified);
+        commitsToPush.add(commit(localRepo, "right modify 2"));
+
+        checkout(localRepo, "intermediate_right");
+
+        MergeReport merge2_right = mergeNoFF(localRepo, "master_alt", "merge 2 right", true);
+        commitsToPush.add(merge2_right.getMergeCommit());
+
+        checkout(localRepo, "master_alt");
+        localRepo.command(ResetOp.class).setMode(ResetMode.HARD)
+                .setCommit(Suppliers.ofInstance(merge2_right.getMergeCommit().getId())).call();
+
+        checkout(localRepo, "master");
+
+        commitsToPush.add(mergeNoFF(localRepo, "master_alt", "final merge", true).getMergeCommit());
+
+        Optional<Ref> oldRef = getRef(remoteRepo, "master");
+        Optional<Ref> newRef = getRef(localRepo, "master");
+
+        // Push the commit
+        PushOp push = pushOp();
+        TransferSummary summary = push.setProgressListener(SIMPLE_PROGRESS).call();
+        assertSummary(summary, remote.getPushURL(), oldRef, newRef);
+
+        for (RevCommit commit : commitsToPush) {
+            assertTrue(remoteRepo.objectDatabase().exists(commit.getId()));
+            assertTrue(remoteRepo.objectDatabase().exists(commit.getTreeId()));
+        }
+
+
+        // Make sure the local repository got all of the commits
+        List<RevCommit> logged = newArrayList(remoteRepo.command(LogOp.class).call());
+        List<RevCommit> expected = newArrayList(localRepo.command(LogOp.class).call());
+
+        assertEquals(expected, logged);
+        TestSupport.verifySameContents(remoteRepo, localRepo);
     }
 
     @Test

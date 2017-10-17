@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +18,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.geotools.util.Range;
 import org.junit.Rule;
@@ -32,8 +35,12 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.Feature;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -48,6 +55,109 @@ public class LogOpTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
         logOp = geogig.command(LogOp.class);
     }
+
+    @Test
+    public void testComplex() throws Exception {
+        // Commit several features to the remote
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
+
+        for (Feature f : features) {
+            insertAndAdd(f);
+        }
+
+        geogig.command(CommitOp.class).setMessage("initial commit").call();
+
+        createBranch("branch1");
+        checkout("master");
+
+        insertAndAdd(points1_modified);
+        commit("left modify 1");
+
+        createBranch("intermediate_left");
+        checkout("branch1");
+
+        insertAndAdd(points2_modified);
+        commit("right modify 1");
+
+        checkout("intermediate_left");
+
+        mergeNoFF("branch1", "merge 1", true);
+
+        createBranch("intermediate_right");
+        checkout("master");
+
+        insertAndAdd(points3_modified);
+        commit("left modify 2");
+
+        checkout("intermediate_left");
+
+        MergeReport merge2_left = mergeNoFF("master", "merge 2 left", true);
+
+        checkout("master");
+        geogig.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
+                .setCommit(Suppliers.ofInstance(merge2_left.getMergeCommit().getId())).call();
+
+        checkout("branch1");
+
+        insertAndAdd(lines1_modified);
+        commit("right modify 2");
+
+        checkout("intermediate_right");
+
+        MergeReport merge2_right = mergeNoFF("branch1", "merge 2 right", true);
+
+        checkout("branch1");
+        geogig.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
+                .setCommit(Suppliers.ofInstance(merge2_right.getMergeCommit().getId())).call();
+
+        checkout("master");
+
+        mergeNoFF("branch1", "final merge", true);
+
+        // both arrays should have 9 elements and contain the same commits (in different order)
+        List<RevCommit> log_topo = newArrayList(
+                geogig.command(LogOp.class).setTopoOrder(true).call());
+
+        assertEquals(log_topo.size(), 9);
+
+        List<RevCommit> log_chrono = newArrayList(
+                geogig.command(LogOp.class).setTopoOrder(false).call());
+
+        assertEquals(log_chrono.size(), 9);
+
+        List<ObjectId> log_topo_ids = log_topo.stream().map(c -> c.getId()).sorted().collect(Collectors.toList());
+        List<ObjectId> log_chrono_ids = log_chrono.stream().map(c -> c.getId()).sorted().collect(Collectors.toList());
+
+        assertTrue(log_topo_ids.equals(log_chrono_ids));
+    }
+
+    protected static final ProgressListener SIMPLE_PROGRESS = new DefaultProgressListener() {
+        public @Override
+        void setDescription(String msg) {
+            System.err.println(msg);
+        }
+    };
+
+    protected void createBranch(String branch) {
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName(branch)
+                .setProgressListener(SIMPLE_PROGRESS).call();
+    }
+
+    protected MergeReport mergeNoFF(String branch, String mergeMessage,
+                                    boolean mergeOurs) {
+        Ref branchRef = geogig.command(RefParse.class).setName(branch).call().get();
+        ObjectId updatesBranchTip = branchRef.getObjectId();
+        MergeReport mergeReport = geogig.command(MergeOp.class)//
+                .setMessage(mergeMessage)//
+                .setNoFastForward(true)//
+                .addCommit(updatesBranchTip)//
+                .setOurs(mergeOurs)//
+                .setTheirs(!mergeOurs)//
+                .setProgressListener(SIMPLE_PROGRESS)//
+                .call();
+        return mergeReport;
+    }
+
 
     @Test
     public void testEmptyRepo() throws Exception {
@@ -480,6 +590,69 @@ public class LogOpTest extends RepositoryTestCase {
         assertNotNull(iterator);
         assertTrue(iterator.hasNext());
         assertEquals(mergeCommit, iterator.next());
+        assertFalse(iterator.hasNext());
+    }
+
+    @Test
+    public void testTopoWithMergedAndSince() throws Exception {
+        // Create the following revision graph
+        // o
+        // |
+        // o - Points 1 added
+        // |\
+        // | o - branch1 - Points 2 added
+        // |
+        // o - Points 3 added
+        // |
+        // o - master - HEAD - Lines 1 added
+        insertAndAdd(points1);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+
+        // create branch1 and checkout
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        insertAndAdd(points2);
+        final RevCommit points2Added = geogig.command(CommitOp.class)
+                .setMessage("commit for " + idP2).call();
+
+        // checkout master
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        insertAndAdd(points3);
+        RevCommit sinceCommit = geogig.command(CommitOp.class).setMessage("commit for " + idP3)
+                .call();
+        insertAndAdd(lines1);
+        RevCommit lines1Added = geogig.command(CommitOp.class).setMessage("commit for " + idL1)
+                .call();
+
+        // Merge branch1 into master to create the following revision graph
+        // o
+        // |
+        // o - Points 1 added
+        // |\
+        // | o - branch1 - Points 2 added
+        // | |
+        // o | - Points 3 added ("since" commit)
+        // | |
+        // o | - Lines 1 added
+        // |/
+        // o - master - HEAD - Merge commit
+
+        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+                .setMessage("My merge message.").call();
+
+        RevCommit mergeCommit = mergeReport.getMergeCommit();
+
+        Iterator<RevCommit> iterator = logOp.setTopoOrder(true).setSince(sinceCommit.getId())
+                .call();
+
+        // The log should include Merge commit, Lines 1 added, and Points 2 Added.
+        assertNotNull(iterator);
+        assertTrue(iterator.hasNext());
+        assertEquals(mergeCommit, iterator.next());
+        assertTrue(iterator.hasNext());
+        assertEquals(lines1Added, iterator.next());
+        assertTrue(iterator.hasNext());
+        assertEquals(points2Added, iterator.next());
         assertFalse(iterator.hasNext());
     }
 

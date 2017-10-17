@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Suppliers;
 import org.geotools.util.Range;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,13 +38,11 @@ import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.Feature;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 public class LogOpTest extends RepositoryTestCase {
 
@@ -591,6 +590,69 @@ public class LogOpTest extends RepositoryTestCase {
         assertNotNull(iterator);
         assertTrue(iterator.hasNext());
         assertEquals(mergeCommit, iterator.next());
+        assertFalse(iterator.hasNext());
+    }
+
+    @Test
+    public void testTopoWithMergedAndSince() throws Exception {
+        // Create the following revision graph
+        // o
+        // |
+        // o - Points 1 added
+        // |\
+        // | o - branch1 - Points 2 added
+        // |
+        // o - Points 3 added
+        // |
+        // o - master - HEAD - Lines 1 added
+        insertAndAdd(points1);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+
+        // create branch1 and checkout
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        insertAndAdd(points2);
+        final RevCommit points2Added = geogig.command(CommitOp.class)
+                .setMessage("commit for " + idP2).call();
+
+        // checkout master
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        insertAndAdd(points3);
+        RevCommit sinceCommit = geogig.command(CommitOp.class).setMessage("commit for " + idP3)
+                .call();
+        insertAndAdd(lines1);
+        RevCommit lines1Added = geogig.command(CommitOp.class).setMessage("commit for " + idL1)
+                .call();
+
+        // Merge branch1 into master to create the following revision graph
+        // o
+        // |
+        // o - Points 1 added
+        // |\
+        // | o - branch1 - Points 2 added
+        // | |
+        // o | - Points 3 added ("since" commit)
+        // | |
+        // o | - Lines 1 added
+        // |/
+        // o - master - HEAD - Merge commit
+
+        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+                .setMessage("My merge message.").call();
+
+        RevCommit mergeCommit = mergeReport.getMergeCommit();
+
+        Iterator<RevCommit> iterator = logOp.setTopoOrder(true).setSince(sinceCommit.getId())
+                .call();
+
+        // The log should include Merge commit, Lines 1 added, and Points 2 Added.
+        assertNotNull(iterator);
+        assertTrue(iterator.hasNext());
+        assertEquals(mergeCommit, iterator.next());
+        assertTrue(iterator.hasNext());
+        assertEquals(lines1Added, iterator.next());
+        assertTrue(iterator.hasNext());
+        assertEquals(points2Added, iterator.next());
         assertFalse(iterator.hasNext());
     }
 

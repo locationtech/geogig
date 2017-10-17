@@ -48,9 +48,13 @@ import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.remotes.LsRemoteOp;
@@ -133,7 +137,11 @@ public abstract class RemoteRepositoryTestCase {
 
     protected Feature points2;
 
+    protected Feature points2_modified;
+
     protected Feature points3;
+
+    protected Feature points3_modified;
 
     protected static final String linesNs = "http://geogig.lines";
 
@@ -147,9 +155,15 @@ public abstract class RemoteRepositoryTestCase {
 
     protected Feature lines1;
 
+    protected Feature lines1_modified;
+
     protected Feature lines2;
 
+    protected Feature lines2_modified;
+
     protected Feature lines3;
+
+    protected Feature lines3_modified;
 
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
@@ -297,16 +311,26 @@ public abstract class RemoteRepositoryTestCase {
         points1_modified = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
                 "POINT(1 2)");
         points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
+        points2_modified = feature(pointsType, idP2, "StringProp1_2a", new Integer(2001),
+                "POINT(2 3)");
         points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
+        points3_modified = feature(pointsType, idP3, "StringProp1_3a", new Integer(3001),
+                "POINT(3 4)");
 
         linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
 
         lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
                 "LINESTRING (1 1, 2 2)");
+        lines1_modified = feature(linesType, idL1, "StringProp2_1a", new Integer(1001),
+                "LINESTRING (1 2, 2 2)");
         lines2 = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
                 "LINESTRING (3 3, 4 4)");
+        lines2_modified = feature(linesType, idL2, "StringProp2_2a", new Integer(2001),
+                "LINESTRING (3 4, 4 4)");
         lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
                 "LINESTRING (5 5, 6 6)");
+        lines3_modified = feature(linesType, idL3, "StringProp2_3a", new Integer(3001),
+                "LINESTRING (5 6, 6 6)");
 
         setUpInternal();
     }
@@ -524,6 +548,30 @@ public abstract class RemoteRepositoryTestCase {
         List<E> logged = new ArrayList<E>();
         Iterables.addAll(logged, logs);
         return logged;
+    }
+
+    protected void createBranch(Repository repo, String branch) {
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName(branch)
+                .setProgressListener(SIMPLE_PROGRESS).call();
+    }
+
+    protected void checkout(Repository repo, String branch) {
+        repo.command(CheckoutOp.class).setSource(branch).call();
+    }
+
+    protected MergeReport mergeNoFF(Repository repo, String branch, String mergeMessage,
+            boolean mergeOurs) {
+        Ref branchRef = repo.command(RefParse.class).setName(branch).call().get();
+        ObjectId updatesBranchTip = branchRef.getObjectId();
+        MergeReport mergeReport = repo.command(MergeOp.class)//
+                .setMessage(mergeMessage)//
+                .setNoFastForward(true)//
+                .addCommit(updatesBranchTip)//
+                .setOurs(mergeOurs)//
+                .setTheirs(!mergeOurs)//
+                .setProgressListener(SIMPLE_PROGRESS)//
+                .call();
+        return mergeReport;
     }
 
     /**

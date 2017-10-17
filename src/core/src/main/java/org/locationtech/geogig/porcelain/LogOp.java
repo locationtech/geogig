@@ -25,6 +25,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -262,7 +263,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 commits.add(newestCommitId);
             }
             if (topo) {
-                history = new TopologicalHistoryIterator(commits, repository(), graphDatabase());
+                history = new TopologicalHistoryIterator(commits, repository(), graphDatabase(),
+                        oldestCommitId);
             } else {
                 history = new ChronologicalHistoryIterator(commits, repository());
             }
@@ -381,6 +383,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
         private GraphDatabase graphDb;
 
+        private ObjectId oldestCommitId;
+
         /**
          * Constructs a new {@code LinearHistoryIterator} with the given parameters.
          * 
@@ -389,10 +393,12 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * @param graphDb
          */
         public TopologicalHistoryIterator(final List<ObjectId> tipsList, final Repository repo,
-                GraphDatabase graphDb) {
+                GraphDatabase graphDb, ObjectId oldestCommitId) {
             this.graphDb = graphDb;
             tips = new Stack<RevCommit>();
             stopPoints = Lists.newArrayList();
+            stopPoints.add(oldestCommitId);
+            this.oldestCommitId = oldestCommitId;
             for (ObjectId tip : tipsList) {
                 if (!tip.isNull()) {
                     final RevCommit commit = repo.getCommit(tip);
@@ -433,6 +439,15 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                     return endOfData();
                 } else {
                     lastCommit = tips.pop();
+                    if (!ObjectId.NULL.equals(oldestCommitId)) {
+                        // Add the common ancestor of oldestCommitId and the new tip to the
+                        // stopPoints to make sure we only hit relevant commits
+                        Optional<ObjectId> ancestor = repo.command(FindCommonAncestor.class)
+                                .setLeftId(lastCommit.getId()).setRightId(oldestCommitId).call();
+                        if (ancestor.isPresent()) {
+                            stopPoints.add(ancestor.get());
+                        }
+                    }
                 }
             } else {
                 List<ObjectId> parents = lastCommit.getParentIds();

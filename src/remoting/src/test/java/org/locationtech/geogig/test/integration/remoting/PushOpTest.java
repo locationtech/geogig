@@ -237,7 +237,6 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         List<RevCommit> expected = newArrayList(localRepo.command(LogOp.class).call());
 
         assertEquals(expected, logged);
-        TestSupport.verifySameRefs(remoteRepo, localRepo);
         TestSupport.verifySameContents(remoteRepo, localRepo);
     }
 

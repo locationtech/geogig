@@ -122,6 +122,10 @@ public abstract class RepositoryTestCase extends Assert {
 
     protected Feature points3;
 
+    protected Feature points2_modified;
+
+    protected Feature points3_modified;
+
     public static final String linesNs = "http://geogig.lines";
 
     public static final String linesName = "Lines";
@@ -133,6 +137,9 @@ public abstract class RepositoryTestCase extends Assert {
     public SimpleFeatureType linesType;
 
     public Feature lines1;
+
+    Feature lines1_modified;
+
 
     public Feature lines2;
 
@@ -240,6 +247,16 @@ public abstract class RepositoryTestCase extends Assert {
                 "POLYGON ((6 6, 7 7, 8 8, 9 9, 6 6))");
         poly3 = feature(polyType, idPG3, "StringProp3_3", new Integer(3000),
                 "POLYGON ((11 11, 12 12, 13 13, 14 14, 11 11))");
+
+
+        points2_modified = feature(pointsType, idP2, "StringProp1_2a", new Integer(2001),
+                "POINT(2 3)");
+
+        points3_modified = feature(pointsType, idP3, "StringProp1_3a", new Integer(3001),
+                "POINT(3 4)");
+
+        lines1_modified = feature(linesType, idL1, "StringProp2_1a", new Integer(1001),
+                "LINESTRING (1 2, 2 2)");
 
         setUpInternal();
     }

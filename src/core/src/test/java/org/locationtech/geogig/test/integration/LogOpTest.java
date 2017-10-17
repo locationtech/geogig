@@ -16,7 +16,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.google.common.base.Suppliers;
 import org.geotools.util.Range;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,10 +34,16 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.Feature;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 public class LogOpTest extends RepositoryTestCase {
 
@@ -48,6 +56,109 @@ public class LogOpTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
         logOp = geogig.command(LogOp.class);
     }
+
+    @Test
+    public void testComplex() throws Exception {
+        // Commit several features to the remote
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
+
+        for (Feature f : features) {
+            insertAndAdd(f);
+        }
+
+        geogig.command(CommitOp.class).setMessage("initial commit").call();
+
+        createBranch("branch1");
+        checkout("master");
+
+        insertAndAdd(points1_modified);
+        commit("left modify 1");
+
+        createBranch("intermediate_left");
+        checkout("branch1");
+
+        insertAndAdd(points2_modified);
+        commit("right modify 1");
+
+        checkout("intermediate_left");
+
+        mergeNoFF("branch1", "merge 1", true);
+
+        createBranch("intermediate_right");
+        checkout("master");
+
+        insertAndAdd(points3_modified);
+        commit("left modify 2");
+
+        checkout("intermediate_left");
+
+        MergeReport merge2_left = mergeNoFF("master", "merge 2 left", true);
+
+        checkout("master");
+        geogig.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
+                .setCommit(Suppliers.ofInstance(merge2_left.getMergeCommit().getId())).call();
+
+        checkout("branch1");
+
+        insertAndAdd(lines1_modified);
+        commit("right modify 2");
+
+        checkout("intermediate_right");
+
+        MergeReport merge2_right = mergeNoFF("branch1", "merge 2 right", true);
+
+        checkout("branch1");
+        geogig.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
+                .setCommit(Suppliers.ofInstance(merge2_right.getMergeCommit().getId())).call();
+
+        checkout("master");
+
+        mergeNoFF("branch1", "final merge", true);
+
+        // both arrays should have 9 elements and contain the same commits (in different order)
+        List<RevCommit> log_topo = newArrayList(
+                geogig.command(LogOp.class).setTopoOrder(true).call());
+
+        assertEquals(log_topo.size(), 9);
+
+        List<RevCommit> log_chrono = newArrayList(
+                geogig.command(LogOp.class).setTopoOrder(false).call());
+
+        assertEquals(log_chrono.size(), 9);
+
+        List<ObjectId> log_topo_ids = log_topo.stream().map(c -> c.getId()).sorted().collect(Collectors.toList());
+        List<ObjectId> log_chrono_ids = log_chrono.stream().map(c -> c.getId()).sorted().collect(Collectors.toList());
+
+        assertTrue(log_topo_ids.equals(log_chrono_ids));
+    }
+
+    protected static final ProgressListener SIMPLE_PROGRESS = new DefaultProgressListener() {
+        public @Override
+        void setDescription(String msg) {
+            System.err.println(msg);
+        }
+    };
+
+    protected void createBranch(String branch) {
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName(branch)
+                .setProgressListener(SIMPLE_PROGRESS).call();
+    }
+
+    protected MergeReport mergeNoFF(String branch, String mergeMessage,
+                                    boolean mergeOurs) {
+        Ref branchRef = geogig.command(RefParse.class).setName(branch).call().get();
+        ObjectId updatesBranchTip = branchRef.getObjectId();
+        MergeReport mergeReport = geogig.command(MergeOp.class)//
+                .setMessage(mergeMessage)//
+                .setNoFastForward(true)//
+                .addCommit(updatesBranchTip)//
+                .setOurs(mergeOurs)//
+                .setTheirs(!mergeOurs)//
+                .setProgressListener(SIMPLE_PROGRESS)//
+                .call();
+        return mergeReport;
+    }
+
 
     @Test
     public void testEmptyRepo() throws Exception {

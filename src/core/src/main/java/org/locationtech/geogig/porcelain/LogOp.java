@@ -417,6 +417,10 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
             Optional<ObjectId> parent = Optional.absent();
             int index = 0;
             for (ObjectId parentId : lastCommit.getParentIds()) {
+                if (stopPoints.contains(parentId)){
+                    index++;
+                    continue;
+                }
                 if (repo.commitExists(parentId)) {
                     parent = Optional.of(parentId);
                     break;
@@ -439,10 +443,12 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                     }
                 }
                 lastCommit = repo.getCommit(parent.get());
-                ImmutableList<ObjectId> children = this.graphDb.getChildren(parent.get());
-                if (children.size() > 1) {
-                    stopPoints.add(parent.get());
-                }
+            }
+
+
+            ImmutableList<ObjectId> children = this.graphDb.getChildren(lastCommit.getId());
+            if (children.size() > 1) {
+                stopPoints.add(lastCommit.getId());
             }
 
             return lastCommit;

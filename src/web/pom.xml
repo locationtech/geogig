@@ -6,12 +6,12 @@
   <parent>
     <groupId>org.locationtech.geogig</groupId>
     <artifactId>geogig</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.3-SNAPSHOT</version>
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>web</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Web modules</name>
 

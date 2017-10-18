@@ -1,3 +1,21 @@
+#GeoGig 1.2.0 Release Notes (work in progress)
+
+October 19, 2017.
+
+##Clone/Fetch/Replication Improvements
+
+Details forthcoming
+
+##Web API Refresh
+
+The GeoGig web API has been re-implemented using Spring MVC (replaces Restlet). This change preserves the API (endpoints and Request-Response interchanges), but enables the GeoServer plugin for GeoGig to be compatible with GeoServer 2.12 and newer.
+However, the change prevents newer versions of GeoGig from being used with older versions of GeoServer, and vice versa.
+
+For GeoServer 2.12 and newer, you must use GeoGig version 1.2.0 or newer.
+For GeoServer 2.11 and older, you must use GeoGig version 1.1.1.
+
+The GeoGig [releases page](https://github.com/locationtech/geogig/releases) contains the GeoServer plugin bundles with the appropriate versions of GeoGig.
+
 #GeoGig 1.1.1 Release Notes
 
 July 10, 2017.

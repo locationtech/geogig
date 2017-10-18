@@ -10,11 +10,13 @@ Details
 
 Project Lead: [Gabriel Roldan](https://github.com/groldan)
 
-Status: 
+Status:
+
+Version 1.2.0-RC1 has been released and it is available for [download](https://github.com/locationtech/geogig/releases/tag/v1.2.0-RC1).
 
 Version 1.1.1 has been released and it is available for [download](https://github.com/locationtech/geogig/releases/tag/v1.1.1).
 
-The build is actively monitored at [LocationTech Build Server](https://hudson.locationtech.org/geogig/).
+The build is actively monitored at [LocationTech Build Server](https://ci.locationtech.org/geogig/).
 
 License
 -------
@@ -27,9 +29,9 @@ GeoGig is proudly open source:
 Download
 --------
 
-The latest release [Version 1.1.1](https://github.com/locationtech/geogig/releases/tag/v1.1.1) is available on GitHub.
+The latest release [Version 1.2.0-RC1](https://github.com/locationtech/geogig/releases/tag/v1.2.0-RC1) is available on GitHub.
 
-The previous release [Version 1.1.0](https://github.com/locationtech/geogig/releases/tag/v1.1.0) is also available on GitHub.
+Previous releases are also available on GitHub [here](https://github.com/locationtech/geogig/releases).
 
 Installation
 ------------

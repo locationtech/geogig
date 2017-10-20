@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Installation &mdash; GeoGig 1.1.1 User Manual</title>
+  <title>Installation &mdash; GeoGig 1.2.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1.1',
+        VERSION:     '1.2.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
       <link rel="up" title="Starting out with GeoGig" href="index.html" />
       <link rel="next" title="Runtime configuration" href="runtime.html" />
       <link rel="prev" title="Introduction" href="introduction.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Starting out with GeoGig</a> &raquo;</li>
   <li>Installation</li>
 </ul>
@@ -115,7 +115,77 @@
 <p class="last">The same packages can be used on Windows, OS X, and Linux.</p>
 </div>
 </li>
-<li><p class="first">Add the <cite>bin</cite> directory to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.</p>
+<li id="pathsetup"><p class="first">Add the <cite>bin</cite> directory to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.</p>
+<ul>
+<li><p class="first">OS X</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Open <code class="docutils literal"><span class="pre">Terminal</span></code> from the Utilities folder in the Applications directory.</li>
+<li>Open the bash profile with nano.</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> nano ~/.bash_profile
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Specify the java home directory inside the profile by adding the following line to the end of the file.</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">export JAVA_HOME=$(/usr/libexec/java_home)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li>Add the bin directory from your GeoGig install location to the <code class="docutils literal"><span class="pre">PATH</span></code> by adding the following line at the end of the file.  In this case, GeoGig was extracted to <code class="file docutils literal"><span class="pre">/opt/geogig</span></code>.</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">export PATH=$PATH:/opt/geogig/bin</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li>Save the bash profile with Ctrl+O, and exit using Ctrl+X.</li>
+<li>Reload the profile.</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> <span class="nb">source</span> ~/.bash_profile
+</pre></div>
+</div>
+<ol class="arabic simple" start="7">
+<li>Verify GeoGig functionality.</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> geogig --help
+<span class="go">usage: geogig [--repo &lt;URI&gt;] &lt;command&gt; [&lt;args&gt;]</span>
+
+<span class="go">The most commonly used geogig commands are:</span>
+<span class="go">...</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Windows</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Open up <code class="docutils literal"><span class="pre">System</span></code> from the Windows control panel and click on <code class="docutils literal"><span class="pre">Advanced</span> <span class="pre">system</span> <span class="pre">settings</span></code>.  Depending on how your control panel is displayed, this may be under the <code class="docutils literal"><span class="pre">System</span> <span class="pre">and</span> <span class="pre">Security</span></code> section.</li>
+<li>Click on <code class="docutils literal"><span class="pre">Environment</span> <span class="pre">Variables</span></code>.</li>
+<li>Look through the <code class="docutils literal"><span class="pre">System</span> <span class="pre">Variables</span></code> section and find the <code class="docutils literal"><span class="pre">PATH</span></code> (or <code class="docutils literal"><span class="pre">Path</span></code>) variable and click <code class="docutils literal"><span class="pre">Edit...</span></code>.  If it does not exist, click <code class="docutils literal"><span class="pre">New...</span></code></li>
+<li>Add the bin directory from your GeoGig install location by adding the following path to the end of the existing value, separated by a semicolon.  In this case, GeoGig was extracted to <code class="file docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\GeoGig</span></code>.</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">C:\Program Files\GeoGig\bin</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In newer versions of windows, the <code class="docutils literal"><span class="pre">Path</span></code> variable will be displayed as a list.  In this case, simply add a new entry for the above path.</p>
+</div>
+<ol class="arabic simple" start="5">
+<li>Click <code class="docutils literal"><span class="pre">OK</span></code> through each window to save the changes.</li>
+<li>Verify GeoGig functionality in a new Command Prompt window.</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">&gt;</span> geogig --help
+<span class="go">usage: geogig [--repo &lt;URI&gt;] &lt;command&gt; [&lt;args&gt;]</span>
+
+<span class="go">The most commonly used geogig commands are:</span>
+<span class="go">...</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
 </li>
 </ol>
 <p>When finished, you should be able to run the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">--help</span></code> and see the command usage.</p>

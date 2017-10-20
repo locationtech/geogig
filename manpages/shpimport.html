@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>geogig-shp-import documentation &mdash; GeoGig 1.1.1 Man Pages</title>
+  <title>geogig-shp-import documentation &mdash; GeoGig 1.2.0 Man Pages</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.1',
+        VERSION:     '1.2.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.1.1 Man Pages" href="index.html" />
+      <link rel="top" title="GeoGig 1.2.0 Man Pages" href="index.html" />
 </head>
 <body class="shpimport">
     <div id="blacktop"></div>
@@ -77,7 +77,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.1.1 Man Pages</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.2.0 Man Pages</a> &raquo;</li>
   <li>geogig-shp-import documentation</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -90,7 +90,7 @@
 <span id="geogig-shp-import"></span><h1>geogig-shp-import documentation<a class="headerlink" href="#geogig-shp-import-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>geogig shp import &lt;shapefile&gt; [&lt;shapefile&gt;]… [–path &lt;path&gt;] [–fid-attrib &lt;attrib_name&gt;] [–add] [–alter]</p>
+<p>geogig shp import &lt;shapefile&gt; [&lt;shapefile&gt;]… [–dest &lt;path&gt;] [–fid-attrib &lt;attrib_name&gt;] [–add] [–alter]</p>
 </div>
 <div class="section" id="options">
 <h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
@@ -98,9 +98,10 @@
 <col class="option" />
 <col class="description" />
 <tbody valign="top">
-<tr><td class="option-group">
-<kbd><span class="option">--path <var>&lt;path&gt;</var></span></kbd></td>
-<td>The path to import to. If not specified, it uses the filename of the shapefile</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-d</span>, <span class="option">--dest <var>&lt;path&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&#160;</td><td>The path to import to. If not specified, it uses the filename of the shapefile</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--fid-attrib <var>&lt;attrib_name&gt;</var></span></kbd></td>
 </tr>
@@ -112,7 +113,7 @@
 <kbd><span class="option">--alter</span></kbd></td>
 <td>Same as the <code class="docutils literal"><span class="pre">--add</span></code> switch, but if the feature type of the imported features is different to that of the destination tree, the default feature type is changed and all previous features are modified to use that feature type</td></tr>
 <tr><td class="option-group" colspan="2">
-<kbd><span class="option">--force--featuretype</span></kbd></td>
+<kbd><span class="option">--force-featuretype</span></kbd></td>
 </tr>
 <tr><td>&#160;</td><td>Use the feature type of the features to import and do not try to adapt them to the default feature type of the destination tree</td></tr>
 </tbody>

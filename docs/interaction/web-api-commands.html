@@ -1,0 +1,2367 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Web API: Commands &mdash; GeoGig 1.2.0 User Manual</title>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+   <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
+      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
+      <link rel="next" title="Web API: Indexing Commands" href="web-api-indexing.html" />
+      <link rel="prev" title="Web API: Transactions" href="web-api-transactions.html" />
+</head>
+<body class="interaction/web-api-commands">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/locationtech/geogig">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8">
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
+  <li>Web API: Commands</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="web-api-indexing.html" title="Web API: Indexing Commands"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="web-api-transactions.html" title="Web API: Transactions"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="web-api-commands">
+<h1>Web API: Commands<a class="headerlink" href="#web-api-commands" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="add-t">
+<span id="command-add"></span><h2>Add (-T)<a class="headerlink" href="#add-t" title="Permalink to this headline">¶</a></h2>
+<p>Moves features from the working tree to the staging area to prepare them for committing.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/add?transactionId=&lt;transactionId&gt;[&amp;path=&lt;pathToFeature&gt;]
+</pre></div>
+</div>
+<div class="section" id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Optional. If specified, only the features or tree named will be added to the staging area.  If not specified, all unstaged changes will be staged.</p>
+</div>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<p><strong>Stage all unstaged changes</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/add?transactionId=145708c3-aad2-4695-afa0-f7dd91ea91a5&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Add&gt;Success&lt;/Add&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Stage a single feature</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/add?transactionId=145708c3-aad2-4695-afa0-f7dd91ea91a5&amp;path=points/d06e56902&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Add&gt;Success&lt;/Add&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Stage all features of a given type</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/add?transactionId=145708c3-aad2-4695-afa0-f7dd91ea91a5&amp;path=points&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Add&gt;Success&lt;/Add&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="blame">
+<span id="command-blame"></span><h2>Blame<a class="headerlink" href="#blame" title="Permalink to this headline">¶</a></h2>
+<p>Returns all of the attribute values of a feature and the commit within which they were last changed.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/blame?path=&lt;pathToFeature&gt;[&amp;commit=&lt;branchOrCommit&gt;]
+</pre></div>
+</div>
+<div class="section" id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Mandatory.  The path of the feature to perform the operation on.</p>
+<p><strong>commit:</strong>
+Optional.  The branch or commit to blame from.  If not specified, the <code class="docutils literal"><span class="pre">HEAD</span></code> commit will be used.</p>
+</div>
+<div class="section" id="id2">
+<h3>Examples<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p><strong>Perform blame on a feature</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/blame?path=points/d06e56902&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Blame&gt;
+    &lt;Attribute&gt;
+      &lt;name&gt;str_attr&lt;/name&gt;
+      &lt;value&gt;Point 2&lt;/value&gt;
+      &lt;commit&gt;
+        &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+        ...
+      &lt;/commit&gt;
+    &lt;/Attribute&gt;
+    &lt;Attribute&gt;
+      &lt;name&gt;num_attr&lt;/name&gt;
+      &lt;value&gt;34&lt;/value&gt;
+      &lt;commit&gt;
+        &lt;id&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/id&gt;
+        ...
+      &lt;/commit&gt;
+    &lt;/Attribute&gt;
+    &lt;Attribute&gt;
+      &lt;name&gt;the_geom&lt;/name&gt;
+      &lt;value&gt;POINT (-60.948837209302326 -11.134883720930318)&lt;/value&gt;
+      &lt;commit&gt;
+        &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+        ...
+      &lt;/commit&gt;
+    &lt;/Attribute&gt;
+  &lt;/Blame&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Perform blame on a feature from an alternate commit</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/blame?path=points/d06e56902&amp;commit=HEAD~1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Blame&gt;
+    &lt;Attribute&gt;
+      &lt;name&gt;str_attr&lt;/name&gt;
+      &lt;value&gt;Point 2&lt;/value&gt;
+      &lt;commit&gt;
+        &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+        ...
+      &lt;/commit&gt;
+    &lt;/Attribute&gt;
+    &lt;Attribute&gt;
+      &lt;name&gt;num_attr&lt;/name&gt;
+      &lt;value&gt;32&lt;/value&gt;
+      &lt;commit&gt;
+        &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+        ...
+      &lt;/commit&gt;
+    &lt;/Attribute&gt;
+    &lt;Attribute&gt;
+      &lt;name&gt;the_geom&lt;/name&gt;
+      &lt;value&gt;POINT (-60.948837209302326 -11.134883720930318)&lt;/value&gt;
+      &lt;commit&gt;
+        &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+        ...
+      &lt;/commit&gt;
+    &lt;/Attribute&gt;
+  &lt;/Blame&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="branch">
+<span id="command-branch"></span><h2>Branch<a class="headerlink" href="#branch" title="Permalink to this headline">¶</a></h2>
+<p>List the branches of a repository, or create a new one.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/branch?list=true[&amp;remotes=&lt;true|false&gt;]
+GET /repos/&lt;repo&gt;/branch?branchName=&lt;branchName&gt;[&amp;source=&lt;branchOrCommit&gt;]
+</pre></div>
+</div>
+<div class="section" id="id3">
+<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p><strong>list:</strong>
+Mandatory when listing branches.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the branches of the repository will be listed.  Otherwise, <code class="docutils literal"><span class="pre">branchName</span></code> must be specified in order to create a new branch.</p>
+<p><strong>remotes:</strong>
+Optional.  Only valid if <code class="docutils literal"><span class="pre">list</span></code> is set to <code class="docutils literal"><span class="pre">true</span></code>.  If <code class="docutils literal"><span class="pre">true</span></code>, remote branches will be listed along with the remote they belong to.  Local branches will also be listed.</p>
+<p><strong>branchName:</strong>
+Mandatory when creating a branch. Only valid if <code class="docutils literal"><span class="pre">list</span></code> is not set to <code class="docutils literal"><span class="pre">true</span></code>.  Specifies the name of the new branch to create.</p>
+<p><strong>source:</strong>
+Optional.  Only valid if <code class="docutils literal"><span class="pre">branchName</span></code> is specified.  Specifies the branch or commit to base the new branch on.  If not specified, the <code class="docutils literal"><span class="pre">HEAD</span></code> commit will be used.</p>
+</div>
+<div class="section" id="id4">
+<h3>Examples<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p><strong>List local branches</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/branch?list=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Local&gt;
+    &lt;Branch&gt;
+      &lt;name&gt;branch1&lt;/name&gt;
+    &lt;/Branch&gt;
+    &lt;Branch&gt;
+      &lt;name&gt;branch2&lt;/name&gt;
+    &lt;/Branch&gt;
+    &lt;Branch&gt;
+      &lt;name&gt;master&lt;/name&gt;
+    &lt;/Branch&gt;
+  &lt;/Local&gt;
+  &lt;Remote/&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>List local and remote branches</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/branch?list=true&amp;remotes=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Local&gt;
+    &lt;Branch&gt;
+      &lt;name&gt;branch1&lt;/name&gt;
+    &lt;/Branch&gt;
+    &lt;Branch&gt;
+      &lt;name&gt;master&lt;/name&gt;
+    &lt;/Branch&gt;
+  &lt;/Local&gt;
+  &lt;Remote&gt;
+    &lt;Branch&gt;
+      &lt;remoteName&gt;origin&lt;/remoteName&gt;
+      &lt;name&gt;branch1&lt;/name&gt;
+    &lt;/Branch&gt;
+    &lt;Branch&gt;
+      &lt;remoteName&gt;origin&lt;/remoteName&gt;
+      &lt;name&gt;branch2&lt;/name&gt;
+    &lt;/Branch&gt;
+    &lt;Branch&gt;
+      &lt;remoteName&gt;origin&lt;/remoteName&gt;
+      &lt;name&gt;master&lt;/name&gt;
+    &lt;/Branch&gt;
+  &lt;/Remote&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Create a new branch</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/branch?branchName=branch1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;BranchCreated&gt;
+    &lt;name&gt;branch1&lt;/name&gt;
+    &lt;source&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/source&gt;
+  &lt;/BranchCreated&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Create a new branch based on an alternate commit</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/branch?branchName=branch2&amp;source=HEAD~2&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;BranchCreated&gt;
+    &lt;name&gt;branch2&lt;/name&gt;
+    &lt;source&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/source&gt;
+  &lt;/BranchCreated&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="cat">
+<span id="command-cat"></span><h2>Cat<a class="headerlink" href="#cat" title="Permalink to this headline">¶</a></h2>
+<p>Returns information about the GeoGig object with the provided ID.  This can be a commit, tree, feature, feature type, or tag.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/cat?objectid=&lt;objectId&gt;
+</pre></div>
+</div>
+<div class="section" id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p><strong>objectid:</strong>
+Mandatory.  The ID of the GeoGig object to describe.</p>
+</div>
+<div class="section" id="id6">
+<h3>Examples<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p><strong>Describe a commit</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/cat?objectid=4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;commit&gt;
+    &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+    &lt;tree&gt;630831297cb8831ca744db7543510affdde20229&lt;/tree&gt;
+    &lt;parents&gt;
+      &lt;id&gt;71140aa1439d74312165ca16fc852d5138bea5e7&lt;/id&gt;
+    &lt;/parents&gt;
+    &lt;author&gt;
+      &lt;name&gt;Test User&lt;/name&gt;
+      &lt;email&gt;example@geogig.org&lt;/email&gt;
+      &lt;timestamp&gt;1506564413249&lt;/timestamp&gt;
+      &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+    &lt;/author&gt;
+    &lt;committer&gt;
+      &lt;name&gt;GeoGig Server&lt;/name&gt;
+      &lt;email&gt;server@geogig.org&lt;/email&gt;
+      &lt;timestamp&gt;1506564413249&lt;/timestamp&gt;
+      &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+    &lt;/committer&gt;
+    &lt;message&gt;&lt;![CDATA[added points/b38e3abb1 and points/d06e56902]]&gt;&lt;/message&gt;
+  &lt;/commit&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Describe a tree</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/cat?objectid=630831297cb8831ca744db7543510affdde20229&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;tree&gt;
+    &lt;id&gt;630831297cb8831ca744db7543510affdde20229&lt;/id&gt;
+    &lt;size&gt;2&lt;/size&gt;
+    &lt;numtrees&gt;1&lt;/numtrees&gt;
+    &lt;subtree&gt;
+      &lt;name&gt;points&lt;/name&gt;
+      &lt;type&gt;TREE&lt;/type&gt;
+      &lt;objectid&gt;32f9b9ef6783cffc12dc8dd062403cfb2a9229fb&lt;/objectid&gt;
+      &lt;metadataid&gt;e4bce1331e8b2b4a59f81f421c77781a2585b686&lt;/metadataid&gt;
+    &lt;/subtree&gt;
+  &lt;/tree&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Describe a feature</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/cat?objectid=568e38e7b18e64a027342fe1046b1bb371eac7c7&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;feature&gt;
+    &lt;id&gt;568e38e7b18e64a027342fe1046b1bb371eac7c7&lt;/id&gt;
+    &lt;attribute&gt;
+      &lt;type&gt;POINT&lt;/type&gt;
+      &lt;value&gt;POINT (-101.67906976744186 -19.339534883721)&lt;/value&gt;
+    &lt;/attribute&gt;
+    &lt;attribute&gt;
+      &lt;type&gt;STRING&lt;/type&gt;
+      &lt;value&gt;Point 1&lt;/value&gt;
+    &lt;/attribute&gt;
+    &lt;attribute&gt;
+      &lt;type&gt;INTEGER&lt;/type&gt;
+      &lt;value&gt;15&lt;/value&gt;
+    &lt;/attribute&gt;
+  &lt;/feature&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Describe a feature type</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/cat?objectid=e4bce1331e8b2b4a59f81f421c77781a2585b686&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;featuretype&gt;
+    &lt;id&gt;e4bce1331e8b2b4a59f81f421c77781a2585b686&lt;/id&gt;
+    &lt;name&gt;http://www.opengis.net/gml:points&lt;/name&gt;
+    &lt;attribute&gt;
+      &lt;name&gt;the_geom&lt;/name&gt;
+      &lt;type&gt;POINT&lt;/type&gt;
+      &lt;minoccurs&gt;0&lt;/minoccurs&gt;
+      &lt;maxoccurs&gt;1&lt;/maxoccurs&gt;
+      &lt;nillable&gt;true&lt;/nillable&gt;
+      &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;/attribute&gt;
+    &lt;attribute&gt;
+      &lt;name&gt;str_attr&lt;/name&gt;
+      &lt;type&gt;STRING&lt;/type&gt;
+      &lt;minoccurs&gt;0&lt;/minoccurs&gt;
+      &lt;maxoccurs&gt;1&lt;/maxoccurs&gt;
+      &lt;nillable&gt;true&lt;/nillable&gt;
+    &lt;/attribute&gt;
+    &lt;attribute&gt;
+      &lt;name&gt;num_attr&lt;/name&gt;
+      &lt;type&gt;INTEGER&lt;/type&gt;
+      &lt;minoccurs&gt;0&lt;/minoccurs&gt;
+      &lt;maxoccurs&gt;1&lt;/maxoccurs&gt;
+      &lt;nillable&gt;true&lt;/nillable&gt;
+    &lt;/attribute&gt;
+  &lt;/featuretype&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Describe a tag</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/cat?objectid=b6dbb92f7f96e1dea36c2c834e53cd602e5ef6a8&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;tag&gt;
+    &lt;id&gt;b6dbb92f7f96e1dea36c2c834e53cd602e5ef6a8&lt;/id&gt;
+    &lt;commitid&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/commitid&gt;
+    &lt;name&gt;tag1&lt;/name&gt;
+    &lt;message&gt;MyTagMessage&lt;/message&gt;
+    &lt;tagger&gt;
+      &lt;name&gt;Test User&lt;/name&gt;
+      &lt;email&gt;example@geogig.org&lt;/email&gt;
+      &lt;timestamp&gt;1506567453031&lt;/timestamp&gt;
+      &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+    &lt;/tagger&gt;
+  &lt;/tag&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="checkout-t">
+<span id="command-checkout"></span><h2>Checkout (-T)<a class="headerlink" href="#checkout-t" title="Permalink to this headline">¶</a></h2>
+<p>Checkout the specified branch or a single feature during conflict resolution.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/checkout?transactionId=&lt;transactionId&gt;&amp;branch=&lt;branchName&gt;
+GET /repos/&lt;repo&gt;/checkout?transactionId=&lt;transactionId&gt;&amp;path=&lt;pathToFeature&gt;&amp;&lt;ours=true|theirs=true&gt;
+</pre></div>
+</div>
+<div class="section" id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p><strong>branch:</strong>
+Optional.  The branch to checkout.  If not specified, <code class="docutils literal"><span class="pre">path</span></code> must be specified to checkout a feature during conflict resolution.</p>
+<p><strong>path:</strong>
+Optional.  Only valid during conflict resolution.  The path of a feature to checkout during conflict resolution.</p>
+<p><strong>ours:</strong>
+Optional.  Only valid when <code class="docutils literal"><span class="pre">path</span></code> is specified.  Checkout the version of the feature on <code class="docutils literal"><span class="pre">our</span></code> side of the merge.</p>
+<p><strong>theirs:</strong>
+Optional.  Only valid when <code class="docutils literal"><span class="pre">path</span></code> is specified.  Checkout the version of the feature on <code class="docutils literal"><span class="pre">their</span></code> side of the merge.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If <code class="docutils literal"><span class="pre">path</span></code> is specified then you MUST specify either <code class="docutils literal"><span class="pre">ours</span></code> or <code class="docutils literal"><span class="pre">theirs</span></code>.</p>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>Examples<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p><strong>Checkout a branch</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/checkout?transactionId=11b1088c-6dfe-4377-872a-b64c538fbca0&amp;branch=branch1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;OldTarget&gt;refs/heads/master&lt;/OldTarget&gt;
+  &lt;NewTarget&gt;branch1&lt;/NewTarget&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Resolve a conflict</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/checkout?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&amp;path=points/d06e56902&amp;ours=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Path&gt;points/d06e56902&lt;/Path&gt;
+  &lt;Strategy&gt;ours&lt;/Strategy&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="commit-t">
+<span id="command-commit"></span><h2>Commit (-T)<a class="headerlink" href="#commit-t" title="Permalink to this headline">¶</a></h2>
+<p>Commit staged changes to the transaction and returns the commit ID and a count of the things that were added, changed, and deleted.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/commit?transactionId=&lt;transactionId&gt;[&amp;message=&lt;commitMessage&gt;][&amp;all=&lt;true|false&gt;][&amp;authorName=&lt;authorName&gt;][&amp;authorEmail=&lt;authorEmail&gt;]
+</pre></div>
+</div>
+<div class="section" id="id9">
+<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p><strong>message:</strong>
+Optional.  The message to use for the commit.  If not specified, no commit message will be used.</p>
+<p><strong>all:</strong>
+Optional.  If set to <code class="docutils literal"><span class="pre">true</span></code>, all staged and unstaged changes will also be committed.</p>
+<p><strong>authorName:</strong>
+Optional.  If specified, the provided author name will be used for the commit.  Otherwise the committer name will be used.</p>
+<p><strong>authorEmail:</strong>
+Optional.  If specified, the provided author email will be used for the commit.  Otherwise the committer email will be used.</p>
+</div>
+<div class="section" id="id10">
+<h3>Examples<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p><strong>Commit staged changes</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/commit?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&amp;message=MyMessage&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;commitId&gt;fe2b96c6f4b48dfe856c30cc97632025a38bd61c&lt;/commitId&gt;
+  &lt;added&gt;0&lt;/added&gt;
+  &lt;changed&gt;1&lt;/changed&gt;
+  &lt;deleted&gt;0&lt;/deleted&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="config">
+<span id="command-config"></span><h2>Config<a class="headerlink" href="#config" title="Permalink to this headline">¶</a></h2>
+<p>View and set config options on the GeoGig repository.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/config[?name=&lt;configKey&gt;]
+POST /repos/&lt;repo&gt;/config?name=&lt;configKey&gt;&amp;value=&lt;configValue&gt;
+</pre></div>
+</div>
+<div class="section" id="id11">
+<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<p><strong>name:</strong></p>
+<p><em>GET</em></p>
+<p>Optional.  If specified, the entry that matches the config key will be returned, otherwise all local config entries will be returned.</p>
+<p><em>POST</em></p>
+<p>Mandatory.  The key of the config entry to set.</p>
+<p><strong>value:</strong></p>
+<p><em>POST</em></p>
+<p>Mandatory.  The value of the config entry to set.</p>
+</div>
+<div class="section" id="id12">
+<h3>Examples<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<p><strong>List all local config entries</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/config&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;config&gt;
+    &lt;name&gt;storage.index&lt;/name&gt;
+    &lt;value&gt;rocksdb&lt;/value&gt;
+  &lt;/config&gt;
+  &lt;config&gt;
+    &lt;name&gt;rocksdb.version&lt;/name&gt;
+    &lt;value&gt;1&lt;/value&gt;
+  &lt;/config&gt;
+  &lt;config&gt;
+    &lt;name&gt;repo.name&lt;/name&gt;
+    &lt;value&gt;repo1&lt;/value&gt;
+  &lt;/config&gt;
+  &lt;config&gt;
+    &lt;name&gt;storage.objects&lt;/name&gt;
+    &lt;value&gt;rocksdb&lt;/value&gt;
+  &lt;/config&gt;
+  &lt;config&gt;
+    &lt;name&gt;storage.refs&lt;/name&gt;
+    &lt;value&gt;file&lt;/value&gt;
+  &lt;/config&gt;
+  &lt;config&gt;
+    &lt;name&gt;file.version&lt;/name&gt;
+    &lt;value&gt;1.0&lt;/value&gt;
+  &lt;/config&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Get a config entry</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/config?name=repo.name&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;value&gt;repo1&lt;/value&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Set a config entry</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST -v &quot;http://localhost:8182/repos/repo1/config?name=my.key&amp;value=my.value&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="diff">
+<span id="command-diff"></span><h2>Diff<a class="headerlink" href="#diff" title="Permalink to this headline">¶</a></h2>
+<p>Returns a comparison of two different versions of a repository.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/diff?oldRefSpec=&lt;branchOrCommit&gt;[&amp;newRefSpec=&lt;branchOrCommit&gt;][&amp;pathFilter=&lt;path&gt;][&amp;showGeometryChanges=&lt;true|false&gt;][&amp;page=&lt;pageNumber&gt;][&amp;show=&lt;elementsPerPage&gt;]
+</pre></div>
+</div>
+<div class="section" id="id13">
+<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<p><strong>oldRefSpec:</strong>
+Mandatory.  The old branch or commit to perform a diff against.</p>
+<p><strong>newRefSpec:</strong>
+Optional.  The new branch or commit to perform a diff against.  If not specified, the <code class="docutils literal"><span class="pre">HEAD</span></code> commit will be used.</p>
+<p><strong>pathFilter:</strong>
+Optional.  If specified, only changes made on the given path will be returned.</p>
+<p><strong>showGeometryChanges:</strong>
+Optional.  If set to <code class="docutils literal"><span class="pre">true</span></code>, the actual geometry of the features will be returned as part of the diff.</p>
+<p><strong>page:</strong>
+Optional.  Page number of the results to view.  If the number of changes in the diff exceed the value of <code class="docutils literal"><span class="pre">show</span></code>, the results will be paged and must be retrieved with multiple requests.  If not specified, the first page of results will be returned.  If there are additional pages, the response will contain a <code class="docutils literal"><span class="pre">nextPage</span></code> element with a value of <code class="docutils literal"><span class="pre">true</span></code>.</p>
+<p><strong>show:</strong>
+Optional.  Number of changes to show per page.  If not specified, 30 changes will be shown per page.</p>
+</div>
+<div class="section" id="id14">
+<h3>Examples<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p><strong>Perform a diff</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/diff?oldRefSpec=HEAD~2&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;diff&gt;
+    &lt;changeType&gt;MODIFIED&lt;/changeType&gt;
+    &lt;newPath&gt;points/b38e3abb1&lt;/newPath&gt;
+    &lt;newObjectId&gt;568e38e7b18e64a027342fe1046b1bb371eac7c7&lt;/newObjectId&gt;
+    &lt;path&gt;points/b38e3abb1&lt;/path&gt;
+    &lt;oldObjectId&gt;ed0a1c03414c3ae1e56c98fa0ca4613fd446128f&lt;/oldObjectId&gt;
+  &lt;/diff&gt;
+  &lt;diff&gt;
+    &lt;changeType&gt;MODIFIED&lt;/changeType&gt;
+    &lt;newPath&gt;points/d06e56902&lt;/newPath&gt;
+    &lt;newObjectId&gt;ba7db31656fa1abb7e09a0e37ca4c4a9681dbcdb&lt;/newObjectId&gt;
+    &lt;path&gt;points/d06e56902&lt;/path&gt;
+    &lt;oldObjectId&gt;5f9570d6424963490434156b331b5f9772b6f271&lt;/oldObjectId&gt;
+  &lt;/diff&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Perform a diff with a path filter</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/diff?oldRefSpec=HEAD~3&amp;newRefSpec=HEAD~1&amp;pathFilter=points/d06e56902&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;diff&gt;
+    &lt;changeType&gt;ADDED&lt;/changeType&gt;
+    &lt;newPath&gt;points/d06e56902&lt;/newPath&gt;
+    &lt;newObjectId&gt;5f9570d6424963490434156b331b5f9772b6f271&lt;/newObjectId&gt;
+    &lt;path/&gt;
+    &lt;oldObjectId&gt;0000000000000000000000000000000000000000&lt;/oldObjectId&gt;
+  &lt;/diff&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Get paged results of a diff</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/diff?oldRefSpec=HEAD~2&amp;page=0&amp;show=1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;diff&gt;
+    &lt;changeType&gt;MODIFIED&lt;/changeType&gt;
+    &lt;newPath&gt;points/b38e3abb1&lt;/newPath&gt;
+    &lt;newObjectId&gt;568e38e7b18e64a027342fe1046b1bb371eac7c7&lt;/newObjectId&gt;
+    &lt;path&gt;points/b38e3abb1&lt;/path&gt;
+    &lt;oldObjectId&gt;ed0a1c03414c3ae1e56c98fa0ca4613fd446128f&lt;/oldObjectId&gt;
+  &lt;/diff&gt;
+  &lt;nextPage&gt;true&lt;/nextPage&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="featurediff">
+<span id="command-featurediff"></span><h2>FeatureDiff<a class="headerlink" href="#featurediff" title="Permalink to this headline">¶</a></h2>
+<p>Returns the list of attributes for that feature with the before and after values, the changetype, and, if it is the geometry, it returns the CRS with it.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/featurediff?path=&lt;pathToFeature&gt;[&amp;oldTreeish=&lt;branchOrCommit&gt;][&amp;newTreeish=&lt;branchOrCommit&gt;][&amp;all=&lt;true|false&gt;]
+</pre></div>
+</div>
+<div class="section" id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Mandatory.  The path to the feature to show changes on.</p>
+<p><strong>oldTreeish:</strong>
+Optional.  The commit or branch from which to get the old version of the feature.  If not specified, <code class="docutils literal"><span class="pre">newTreeish</span></code> must be specified and the diff will show all attributes as added.</p>
+<p><strong>newTreeish:</strong>
+Optional.  The commit or branch from which to get the new version of the feature.  If not specified, <code class="docutils literal"><span class="pre">oldTreeish</span></code> must be specified and the diff will show all attributes as deleted.</p>
+<p><strong>all:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, all attributes will be returned instead of only the ones that were changed between the two versions.</p>
+</div>
+<div class="section" id="id16">
+<h3>Examples<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<p><strong>Show the changes the last commit made to a feature</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/featurediff?path=points/d06e56902&amp;oldTreeish=HEAD~1&amp;newTreeish=HEAD&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;diff&gt;
+    &lt;attributename&gt;num_attr&lt;/attributename&gt;
+    &lt;changetype&gt;MODIFIED&lt;/changetype&gt;
+    &lt;oldvalue&gt;32&lt;/oldvalue&gt;
+    &lt;newvalue&gt;34&lt;/newvalue&gt;
+  &lt;/diff&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Show all attributes of a feature diff</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/featurediff?path=points/d06e56902&amp;oldTreeish=HEAD~1&amp;newTreeish=HEAD&amp;all=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;diff&gt;
+    &lt;attributename&gt;str_attr&lt;/attributename&gt;
+    &lt;changetype&gt;NO_CHANGE&lt;/changetype&gt;
+    &lt;oldvalue&gt;Point 2&lt;/oldvalue&gt;
+  &lt;/diff&gt;
+  &lt;diff&gt;
+    &lt;attributename&gt;num_attr&lt;/attributename&gt;
+    &lt;changetype&gt;MODIFIED&lt;/changetype&gt;
+    &lt;oldvalue&gt;32&lt;/oldvalue&gt;
+    &lt;newvalue&gt;34&lt;/newvalue&gt;
+  &lt;/diff&gt;
+  &lt;diff&gt;
+    &lt;geometry&gt;true&lt;/geometry&gt;
+    &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;attributename&gt;the_geom&lt;/attributename&gt;
+    &lt;changetype&gt;NO_CHANGE&lt;/changetype&gt;
+    &lt;oldvalue&gt;POINT (-60.948837209302326 -11.134883720930318)&lt;/oldvalue&gt;
+  &lt;/diff&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="fetch">
+<span id="command-fetch"></span><h2>Fetch<a class="headerlink" href="#fetch" title="Permalink to this headline">¶</a></h2>
+<p>Fetch updates from a remote repository. Returns the remote that was fetched from, and the branches that were updated.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/fetch[?remote=&lt;remoteName&gt;][&amp;all=&lt;true|false&gt;][&amp;prune=&lt;true|false&gt;]
+</pre></div>
+</div>
+<div class="section" id="id17">
+<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<p><strong>remote:</strong>
+Optional.  The name of the remote to fetch changes from.  If not specified, it will try to fetch from the <code class="docutils literal"><span class="pre">origin</span></code> remote.</p>
+<p><strong>all:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the command will fetch changes from all remotes.</p>
+<p><strong>prune:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, any remote tracking branches that no longer exist remotely will be pruned locally.</p>
+</div>
+<div class="section" id="id18">
+<h3>Examples<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<p><strong>Fetch from a specific remote</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/fetch?remote=origin&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Fetch&gt;
+    &lt;Remote&gt;
+      &lt;remoteURL&gt;http://localhost:8182/repos/repo1_origin&lt;/remoteURL&gt;
+      &lt;Branch&gt;
+        &lt;changeType&gt;CHANGED_REF&lt;/changeType&gt;
+        &lt;name&gt;master&lt;/name&gt;
+        &lt;oldValue&gt;3f933a6e8eadf1caece05d5daaf49663f6fd17b8&lt;/oldValue&gt;
+        &lt;newValue&gt;02b50e0fafe0bb660369bfd491d676737144025b&lt;/newValue&gt;
+      &lt;/Branch&gt;
+    &lt;/Remote&gt;
+  &lt;/Fetch&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Fetch from all remotes</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/fetch?all=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Fetch&gt;
+    &lt;Remote&gt;
+      &lt;remoteURL&gt;http://localhost:8182/repos/repo2&lt;/remoteURL&gt;
+      &lt;Branch&gt;
+        &lt;changeType&gt;ADDED_REF&lt;/changeType&gt;
+        &lt;name&gt;branch1&lt;/name&gt;
+        &lt;newValue&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/newValue&gt;
+      &lt;/Branch&gt;
+      &lt;Branch&gt;
+        &lt;changeType&gt;ADDED_REF&lt;/changeType&gt;
+        &lt;name&gt;branch2&lt;/name&gt;
+        &lt;newValue&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/newValue&gt;
+      &lt;/Branch&gt;
+      &lt;Branch&gt;
+        &lt;changeType&gt;ADDED_REF&lt;/changeType&gt;
+        &lt;name&gt;master&lt;/name&gt;
+        &lt;newValue&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/newValue&gt;
+      &lt;/Branch&gt;
+    &lt;/Remote&gt;
+  &lt;/Fetch&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Prune remote branch that was deleted</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/fetch?remote=remote1&amp;prune=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Fetch&gt;
+    &lt;Remote&gt;
+      &lt;remoteURL&gt;http://localhost:8182/repos/repo2&lt;/remoteURL&gt;
+      &lt;Branch&gt;
+        &lt;changeType&gt;REMOVED_REF&lt;/changeType&gt;
+        &lt;name&gt;branch2&lt;/name&gt;
+        &lt;oldValue&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/oldValue&gt;
+      &lt;/Branch&gt;
+    &lt;/Remote&gt;
+  &lt;/Fetch&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="getcommitgraph">
+<span id="command-getcommitgraph"></span><h2>GetCommitGraph<a class="headerlink" href="#getcommitgraph" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of the GetCommitGraph function is to traverse the entire commit graph. It starts at the specified commitId and works its way down the graph to either the initial commit or the specified depth. Since it traverses the actual commit graph, unlike log, it will display multiple parents and will list every single commit that runs down each parents history.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/getCommitGraph?commitId=&lt;commitId&gt;[&amp;depth=&lt;traversalDepth&gt;][&amp;page=&lt;pageNumber&gt;][&amp;show=&lt;elementsPerPage&gt;]
+</pre></div>
+</div>
+<div class="section" id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<p><strong>commitId:</strong>
+Mandatory.  The ID of the commit to start traversing from.</p>
+<p><strong>depth:</strong>
+Optional.  If specified, the traversal will be limited to given depth.  If set to <code class="docutils literal"><span class="pre">0</span></code> or not specified, the traversal will cover all commits.</p>
+<p><strong>page:</strong>
+Optional.  Page number of the results to view.  If the number of commits exceed the value of <code class="docutils literal"><span class="pre">show</span></code>, the results will be paged and must be retrieved with multiple requests.  If not specified, the first page of results will be returned.  If there are additional pages, the response will contain a <code class="docutils literal"><span class="pre">nextPage</span></code> element with a value of <code class="docutils literal"><span class="pre">true</span></code>.</p>
+<p><strong>show:</strong>
+Optional.  Number of commits to show per page.  If not specified, 30 commits will be shown per page.</p>
+</div>
+<div class="section" id="id20">
+<h3>Examples<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<p><strong>Get the commit graph of a repository</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/getCommitGraph?commitId=e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;commit&gt;
+    &lt;id&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/id&gt;
+    ...
+  &lt;/commit&gt;
+  &lt;commit&gt;
+    &lt;id&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/id&gt;
+    ...
+  &lt;/commit&gt;
+  &lt;commit&gt;
+    &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+    ...
+  &lt;/commit&gt;
+  &lt;commit&gt;
+    &lt;id&gt;71140aa1439d74312165ca16fc852d5138bea5e7&lt;/id&gt;
+    ...
+  &lt;/commit&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Get the commit graph of a repository, limiting depth</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/getCommitGraph?commitId=e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&amp;depth=2&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;commit&gt;
+    &lt;id&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/id&gt;
+    ..
+  &lt;/commit&gt;
+  &lt;commit&gt;
+    &lt;id&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/id&gt;
+    ..
+  &lt;/commit&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="log">
+<span id="command-log"></span><h2>Log<a class="headerlink" href="#log" title="Permalink to this headline">¶</a></h2>
+<p>Returns the history of the repository as a list of commits.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/log[?path=&lt;path&gt;][&amp;limit=&lt;limit&gt;][&amp;offset=&lt;offset&gt;][&amp;since=&lt;commitId&gt;][&amp;until=&lt;commitId&gt;][&amp;sinceTime=&lt;timestamp&gt;][&amp;untilTime=&lt;timestamp&gt;][&amp;firstParentOnly=&lt;true|false&gt;][&amp;countChanges=&lt;true|false&gt;][&amp;returnRange=&lt;true|false&gt;][&amp;summary=&lt;true|false&gt;][&amp;page=&lt;pageNumber&gt;][&amp;show=&lt;elementsPerPage&gt;]
+</pre></div>
+</div>
+<div class="section" id="id21">
+<h3>Parameters<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Optional.  Can be specified multiple times.  If specified, only show commits in which the given path(s) were affected.</p>
+<p><strong>limit:</strong>
+Optional.  If specified, the log will stop after the given number of commits have been traversed.</p>
+<p><strong>offset:</strong>
+Optional.  If specified, the log will skip the given number of commits before beginning.</p>
+<p><strong>since:</strong>
+Optional.  If specified, only commits that occurred after the given commit ID will be logged. This excludes the <code class="docutils literal"><span class="pre">since</span></code> commit.</p>
+<p><strong>until:</strong>
+Optional.  If specified, only commits that occurred before the given commit ID will be logged.  This includes the <code class="docutils literal"><span class="pre">until</span></code> commit.</p>
+<p><strong>sinceTime:</strong>
+Optional.  If specified, only commits that occurred after the given timestamp will be logged.</p>
+<p><strong>untilTime:</strong>
+Optional.  If specified, only commits that occurred before the given timestamp will be logged.</p>
+<p><strong>firstParentOnly:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, commits will be listed linearly with only the first parent of any commit with multiple parents.  Otherwise, commits will be listed chronologically.</p>
+<p><strong>countChanges:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the log will calculate and return the number of adds, modifies, and deletes for each commit.</p>
+<p><strong>returnRange:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, only the first and last commit in the log’s range will be returned, as well as a count of the commits in the range between them.</p>
+<p><strong>summary:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code> and the output format is specified as <code class="docutils literal"><span class="pre">CSV</span></code>, it prompts for download a summary file of changes for each commit in CSV format.  When using <code class="docutils literal"><span class="pre">summary</span></code>, a feature type <code class="docutils literal"><span class="pre">path</span></code> must be specified.</p>
+<p><strong>page:</strong>
+Optional.  Page number of the results to view.  If the number of commits exceed the value of <code class="docutils literal"><span class="pre">show</span></code>, the results will be paged and must be retrieved with multiple requests.  If not specified, the first page of results will be returned.  If there are additional pages, the response will contain a <code class="docutils literal"><span class="pre">nextPage</span></code> element with a value of <code class="docutils literal"><span class="pre">true</span></code>.</p>
+<p><strong>show:</strong>
+Optional.  Number of commits to show per page.  If not specified, 30 commits will be shown per page.</p>
+</div>
+<div class="section" id="id22">
+<h3>Examples<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<p><strong>Get the log of repository</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/log&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;commit&gt;
+    &lt;id&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/id&gt;
+    ...
+  &lt;/commit&gt;
+  &lt;commit&gt;
+    &lt;id&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/id&gt;
+    ...
+  &lt;/commit&gt;
+  &lt;commit&gt;
+    &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+    ...
+  &lt;/commit&gt;
+  &lt;commit&gt;
+    &lt;id&gt;71140aa1439d74312165ca16fc852d5138bea5e7&lt;/id&gt;
+    ...
+  &lt;/commit&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Count the changes for each commit between two commit IDs</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/log?countChanges=true&amp;since=4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&amp;until=e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;commit&gt;
+    &lt;id&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/id&gt;
+    ...
+    &lt;adds&gt;0&lt;/adds&gt;
+    &lt;modifies&gt;1&lt;/modifies&gt;
+    &lt;removes&gt;0&lt;/removes&gt;
+  &lt;/commit&gt;
+  &lt;commit&gt;
+    &lt;id&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/id&gt;
+    ...
+    &lt;adds&gt;0&lt;/adds&gt;
+    &lt;modifies&gt;1&lt;/modifies&gt;
+    &lt;removes&gt;0&lt;/removes&gt;
+  &lt;/commit&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Get the log summary as a CSV file</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/log?summary=true&amp;output_format=csv&amp;path=points&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: text/csv
+ChangeType,FeatureId,CommitId,Parent CommitIds,Author Name,Author Email,Author Commit Time,Committer Name,Committer Email,Committer Commit Time,Commit Message,the_geom,str_attr,num_attr
+MODIFIED,points/d06e56902 -&gt; points/d06e56902,e227ba80d3bc2b8ee8ebd5e611edf291c2227b84,af8dfd7718f293aa5532ba948249fca274a0aa13,Test User,example@geogig.org,09/27/2017 22:09:20 EDT,GeoGig Server,server@geogig.org,09/27/2017 22:09:20 EDT,&quot;modified points/d06e56902&quot;,POINT (-60.948837209302326 -11.134883720930318),Point 2,34
+MODIFIED,points/b38e3abb1 -&gt; points/b38e3abb1,af8dfd7718f293aa5532ba948249fca274a0aa13,4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a,Test User,example@geogig.org,09/27/2017 22:08:45 EDT,GeoGig Server,server@geogig.org,09/27/2017 22:08:45 EDT,&quot;modified points/b38e3abb1&quot;,POINT (-101.67906976744186 -19.339534883721),Point 1,15
+ADDED,points/b38e3abb1,4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a,71140aa1439d74312165ca16fc852d5138bea5e7,Test User,example@geogig.org,09/27/2017 22:06:53 EDT,GeoGig Server,server@geogig.org,09/27/2017 22:06:53 EDT,&quot;added points/b38e3abb1 and points/d06e56902&quot;,POINT (-99.04186046511626 -29.88837209302335),Point 1,15
+ADDED,points/d06e56902,4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a,71140aa1439d74312165ca16fc852d5138bea5e7,Test User,example@geogig.org,09/27/2017 22:06:53 EDT,GeoGig Server,server@geogig.org,09/27/2017 22:06:53 EDT,&quot;added points/b38e3abb1 and points/d06e56902&quot;,POINT (-60.948837209302326 -11.134883720930318),Point 2,32
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="lstree">
+<span id="command-ls-tree"></span><h2>LsTree<a class="headerlink" href="#lstree" title="Permalink to this headline">¶</a></h2>
+<p>Return the details of a GeoGig revision tree and its contents.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/ls-tree[?path=&lt;reference&gt;][&amp;showTree=&lt;true|false&gt;][&amp;onlyTree=&lt;true|false&gt;][&amp;recursive=&lt;true|false&gt;][&amp;verbose=&lt;true|false&gt;]
+</pre></div>
+</div>
+<div class="section" id="id23">
+<h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Optional.  If specified, start traversing from the given reference.  This can be a branch/commit, path, or both.  If not specified, the current working tree will be used.</p>
+<p><strong>showTree:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, tree nodes will be returned in the response in addition to feature nodes.  Otherwise only feature nodes will be returned.</p>
+<p><strong>onlyTree:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, only tree nodes will be returned in the response.</p>
+<p><strong>recursive:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the traversal will recurse into subtrees.  Otherwise only the top level nodes will be visited.</p>
+<p><strong>verbose:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the type, medatadata ID, and object ID of each node will be returned.</p>
+</div>
+<div class="section" id="id24">
+<h3>Examples<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<p><strong>List all feature type trees</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/ls-tree&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;node&gt;
+    &lt;path&gt;points&lt;/path&gt;
+  &lt;/node&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>List all features in a given feature type tree</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/ls-tree?path=points&amp;verbose=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;node&gt;
+    &lt;path&gt;b38e3abb1&lt;/path&gt;
+    &lt;metadataId&gt;e4bce1331e8b2b4a59f81f421c77781a2585b686&lt;/metadataId&gt;
+    &lt;type&gt;feature&lt;/type&gt;
+    &lt;objectId&gt;568e38e7b18e64a027342fe1046b1bb371eac7c7&lt;/objectId&gt;
+  &lt;/node&gt;
+  &lt;node&gt;
+    &lt;path&gt;d06e56902&lt;/path&gt;
+    &lt;metadataId&gt;e4bce1331e8b2b4a59f81f421c77781a2585b686&lt;/metadataId&gt;
+    &lt;type&gt;feature&lt;/type&gt;
+    &lt;objectId&gt;ba7db31656fa1abb7e09a0e37ca4c4a9681dbcdb&lt;/objectId&gt;
+  &lt;/node&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>List all trees and features in the repository</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/ls-tree?recursive=true&amp;showTree=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;node&gt;
+    &lt;path&gt;points&lt;/path&gt;
+  &lt;/node&gt;
+  &lt;node&gt;
+    &lt;path&gt;points/b38e3abb1&lt;/path&gt;
+  &lt;/node&gt;
+  &lt;node&gt;
+    &lt;path&gt;points/d06e56902&lt;/path&gt;
+  &lt;/node&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="merge-t">
+<span id="command-merge"></span><h2>Merge (-T)<a class="headerlink" href="#merge-t" title="Permalink to this headline">¶</a></h2>
+<p>Merges a branch or commit into the currently checked out branch.  This operation may return merge conflicts that must be resolved before the merge can be completed (See <a class="reference internal" href="web-api-conflict-resolution.html#conflict-resolution"><span class="std std-ref">Web API: Conflict Resolution</span></a>).</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/merge?transactionId=&lt;transactionId&gt;&amp;commit=&lt;branchOrCommit&gt;[&amp;noCommit=&lt;true|false&gt;][&amp;authorName=&lt;authorName&gt;][&amp;authorEmail=&lt;authorEmail&gt;]
+</pre></div>
+</div>
+<div class="section" id="id25">
+<h3>Parameters<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<p><strong>commit:</strong>
+Mandatory.  The branch or commit to merge into the currently checked out branch.</p>
+<p><strong>noCommit:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code> the operation will leave the results of the merge in the staging area without committing them.  The <code class="docutils literal"><span class="pre">commit</span></code> operation can later be used to commit the merge.</p>
+<p><strong>authorName:</strong>
+Optional.  If specified, the provided author name will be used for the merge commit.  Otherwise the committer name will be used.</p>
+<p><strong>authorEmail:</strong>
+Optional.  If specified, the provided author email will be used for the merge commit.  Otherwise the committer email will be used.</p>
+</div>
+<div class="section" id="id26">
+<h3>Examples<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
+<p><strong>Merge a branch</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/merge?transactionId=8d3a7b4d-eb58-4382-a586-844b00554246&amp;commit=branch1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Merge&gt;
+    &lt;ours&gt;fb4a412f36dbbadac3b0edcff947addfe02a6970&lt;/ours&gt;
+    &lt;theirs&gt;4951d2455501ead23e62eec53020002943a4a42d&lt;/theirs&gt;
+    &lt;ancestor&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/ancestor&gt;
+    &lt;mergedCommit&gt;5c8b1c422c6f18b1b21c46b17064770ed8b8345b&lt;/mergedCommit&gt;
+  &lt;/Merge&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Merge a branch with conflicts</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/merge?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&amp;commit=branch1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Merge&gt;
+    &lt;ours&gt;fb4a412f36dbbadac3b0edcff947addfe02a6970&lt;/ours&gt;
+    &lt;theirs&gt;1fbe206f8034a23da88a05ff8b5a4df2cfe1f3f4&lt;/theirs&gt;
+    &lt;ancestor&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/ancestor&gt;
+    &lt;conflicts&gt;1&lt;/conflicts&gt;
+    &lt;Feature&gt;
+      &lt;change&gt;MODIFIED&lt;/change&gt;
+      &lt;id&gt;points/b38e3abb1&lt;/id&gt;
+      &lt;geometry&gt;POINT (-101.67906976744186 -19.339534883721)&lt;/geometry&gt;
+      &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;/Feature&gt;
+    &lt;Feature&gt;
+      &lt;change&gt;CONFLICT&lt;/change&gt;
+      &lt;id&gt;points/d06e56902&lt;/id&gt;
+      &lt;ourvalue&gt;ee5ebe180982445f29f0dde64ab1e51ad70980c3&lt;/ourvalue&gt;
+      &lt;theirvalue&gt;d6fd128a83363ef84500822ce61286a4ff91a130&lt;/theirvalue&gt;
+      &lt;geometry&gt;POINT (-61.42671331549701 -16.869396995266598)&lt;/geometry&gt;
+      &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;/Feature&gt;
+  &lt;/Merge&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pull-t">
+<span id="command-pull"></span><h2>Pull (-T)<a class="headerlink" href="#pull-t" title="Permalink to this headline">¶</a></h2>
+<p>Pull the changes from a remote branch into a local one.  This operation may return merge conflicts that must be resolved before the merge can be completed (See <a class="reference internal" href="web-api-conflict-resolution.html#conflict-resolution"><span class="std std-ref">Web API: Conflict Resolution</span></a>).</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/pull?transactionId=&lt;transactionId&gt;[&amp;remoteName=&lt;remoteName&gt;][&amp;all=&lt;true|false&gt;][&amp;ref=&lt;ref&gt;][&amp;authorName=&lt;authorName&gt;][&amp;authorEmail=&lt;authorEmail&gt;]
+</pre></div>
+</div>
+<div class="section" id="id27">
+<h3>Parameters<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<p><strong>remoteName:</strong>
+Optional.  The name of the remote to pull changes from.  If not specified, changes will be pulled from the <code class="docutils literal"><span class="pre">origin</span></code> remote.  This operation may return merge conflicts that must be resolved before the merge can be completed.</p>
+<p><strong>all:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, all remotes will be fetched prior to the pull.</p>
+<p><strong>ref:</strong>
+Optional.  The ref to pull, in the format <code class="docutils literal"><span class="pre">&lt;remoteref&gt;[:&lt;localref&gt;]</span></code> where <code class="docutils literal"><span class="pre">&lt;remoteref&gt;</span></code> is the remote branch to pull and <code class="docutils literal"><span class="pre">&lt;localref&gt;</span></code> is the local branch to pull to.  If not specified, the remote branch of the currently checked out branch will be pulled.</p>
+<p><strong>authorName:</strong>
+Optional.  If specified, the provided author name will be used for the merge commit.  Otherwise the committer name will be used.</p>
+<p><strong>authorEmail:</strong>
+Optional.  If specified, the provided author email will be used for the merge commit.  Otherwise the committer email will be used.</p>
+</div>
+<div class="section" id="id28">
+<h3>Examples<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
+<p><strong>Pull changes from the origin remote</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/pull?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&amp;remoteName=origin&amp;ref=master:master&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Pull&gt;
+    &lt;Fetch/&gt;
+    &lt;Remote&gt;http://localhost:8182/repos/repo1_origin&lt;/Remote&gt;
+    &lt;Ref&gt;master&lt;/Ref&gt;
+    &lt;Added&gt;1&lt;/Added&gt;
+    &lt;Modified&gt;0&lt;/Modified&gt;
+    &lt;Removed&gt;0&lt;/Removed&gt;
+    &lt;Merge&gt;
+      &lt;ours&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/ours&gt;
+      &lt;theirs&gt;02b50e0fafe0bb660369bfd491d676737144025b&lt;/theirs&gt;
+      &lt;ancestor&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/ancestor&gt;
+      &lt;mergedCommit&gt;02b50e0fafe0bb660369bfd491d676737144025b&lt;/mergedCommit&gt;
+    &lt;/Merge&gt;
+  &lt;/Pull&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Pull changes with conflicts</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/pull?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&amp;remoteName=remote1&amp;ref=master:master&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Merge&gt;
+    &lt;ours&gt;fb4a412f36dbbadac3b0edcff947addfe02a6970&lt;/ours&gt;
+    &lt;theirs&gt;f231fca23b59b7b690689e323aacc7472986a2fa&lt;/theirs&gt;
+    &lt;ancestor&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/ancestor&gt;
+    &lt;conflicts&gt;1&lt;/conflicts&gt;
+    &lt;Feature&gt;
+      &lt;change&gt;CONFLICT&lt;/change&gt;
+      &lt;id&gt;points/d06e56902&lt;/id&gt;
+      &lt;ourvalue&gt;ee5ebe180982445f29f0dde64ab1e51ad70980c3&lt;/ourvalue&gt;
+      &lt;theirvalue&gt;974aac999492d92d56f32f64a42d6cc9f159ed8b&lt;/theirvalue&gt;
+      &lt;geometry&gt;POINT (-61.42671331549701 -16.869396995266598)&lt;/geometry&gt;
+      &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;/Feature&gt;
+  &lt;/Merge&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="push">
+<span id="command-push"></span><h2>Push<a class="headerlink" href="#push" title="Permalink to this headline">¶</a></h2>
+<p>Push local changes to a remote repository.  If the remote branch has changes that are not on the local branch being pushed, the push will fail.  Those changes should be pulled into the local branch before pushing to avoid loss of data.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/push[?remoteName=&lt;remoteName&gt;][&amp;ref=&lt;ref&gt;][&amp;all=&lt;true|false&gt;]
+</pre></div>
+</div>
+<div class="section" id="id29">
+<h3>Parameters<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<p><strong>remoteName:</strong>
+Optional.  The name of the remote to push to.  If not specified, changes will be pushed to the <code class="docutils literal"><span class="pre">origin</span></code> remote.</p>
+<p><strong>ref:</strong>
+Optional.  The ref to push, in the format <code class="docutils literal"><span class="pre">&lt;localref&gt;[:&lt;remoteref&gt;]</span></code> where <code class="docutils literal"><span class="pre">&lt;localref&gt;</span></code> is the local branch to push and <code class="docutils literal"><span class="pre">&lt;remoteref&gt;</span></code> is the remote branch to push to.  If not specified, currently checked out branch will be pushed to the branch of the same name or the one that it is tracking in the remote.</p>
+<p><strong>all:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, all branches will be pushed to the remote.</p>
+</div>
+<div class="section" id="id30">
+<h3>Examples<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<p><strong>Push a branch to the origin remote</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/push&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Push&gt;Success&lt;/Push&gt;
+  &lt;dataPushed&gt;true&lt;/dataPushed&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Push all branches to a remote</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/push?remoteName=remote1&amp;all=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Push&gt;Success&lt;/Push&gt;
+  &lt;dataPushed&gt;true&lt;/dataPushed&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="rebuildgraph">
+<span id="command-rebuildgraph"></span><h2>RebuildGraph<a class="headerlink" href="#rebuildgraph" title="Permalink to this headline">¶</a></h2>
+<p>Rebuilds the graph database and returns any graph elements that were repaired.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/rebuildgraph[?quiet=true]
+</pre></div>
+</div>
+<div class="section" id="id31">
+<h3>Parameters<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
+<p><strong>quiet:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, only the number of updated graph elements will be returned.</p>
+</div>
+<div class="section" id="id32">
+<h3>Examples<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<p><strong>Rebuild the graph</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/rebuildgraph&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml &lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;RebuildGraph&gt;
+    &lt;updatedGraphElements&gt;3&lt;/updatedGraphElements&gt;
+    &lt;UpdatedObject&gt;
+      &lt;ref&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/ref&gt;
+    &lt;/UpdatedObject&gt;
+    &lt;UpdatedObject&gt;
+      &lt;ref&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/ref&gt;
+    &lt;/UpdatedObject&gt;
+    &lt;UpdatedObject&gt;
+      &lt;ref&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/ref&gt;
+    &lt;/UpdatedObject&gt;
+  &lt;/RebuildGraph&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="refparse">
+<span id="command-refparse"></span><h2>RefParse<a class="headerlink" href="#refparse" title="Permalink to this headline">¶</a></h2>
+<p>Parses a ref and returns the ref name and object ID.  If it was a symbolic ref, it returns the target as well.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/refparse?name=&lt;ref&gt;
+</pre></div>
+</div>
+<div class="section" id="id33">
+<h3>Parameters<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
+<p><strong>name:</strong>
+Mandatory.  The branch, tag, or symbolic reference to parse.</p>
+</div>
+<div class="section" id="id34">
+<h3>Examples<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
+<p><strong>Parse a symbolic ref</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/refparse?name=HEAD&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Ref&gt;
+    &lt;name&gt;HEAD&lt;/name&gt;
+    &lt;objectId&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/objectId&gt;
+    &lt;target&gt;refs/heads/master&lt;/target&gt;
+  &lt;/Ref&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Parse a ref</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/refparse?name=master&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Ref&gt;
+    &lt;name&gt;refs/heads/master&lt;/name&gt;
+    &lt;objectId&gt;fb4a412f36dbbadac3b0edcff947addfe02a6970&lt;/objectId&gt;
+  &lt;/Ref&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="remote">
+<span id="command-remote"></span><h2>Remote<a class="headerlink" href="#remote" title="Permalink to this headline">¶</a></h2>
+<p>List, add, update, remove, or ping remotes from the repository.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/remote?list=true[&amp;verbose=&lt;true|false&gt;]
+GET /repos/&lt;repo&gt;/remote?remoteName=&lt;name&gt;&amp;remoteURL=&lt;url&gt;[&amp;username=&lt;name&gt;][&amp;password=&lt;password&gt;]
+GET /repos/&lt;repo&gt;/remote?update=true&amp;remoteName=&lt;name&gt;&amp;remoteURL=&lt;url&gt;[&amp;newName=&lt;name&gt;][&amp;username=&lt;name&gt;][&amp;password=&lt;password&gt;]
+GET /repos/&lt;repo&gt;?remove=true&amp;remoteName=&lt;name&gt;
+GET /repos/&lt;repo&gt;?ping=true&amp;remoteName=&lt;name&gt;
+</pre></div>
+</div>
+<div class="section" id="id35">
+<h3>Parameters<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
+<p><strong>list:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the names of all remotes will be returned.</p>
+<p><strong>verbose:</strong>
+Optional.  Only valid when <code class="docutils literal"><span class="pre">list</span></code> is <code class="docutils literal"><span class="pre">true</span></code>.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, more information will be returned for each remote.</p>
+<p><strong>remove:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the specified remote will be removed.</p>
+<p><strong>update:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the specified remote will be updated.</p>
+<p><strong>ping:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the specified remote will be pinged.</p>
+<p><strong>remoteName:</strong>
+Mandatory unless <code class="docutils literal"><span class="pre">list</span></code> is specified as <code class="docutils literal"><span class="pre">true</span></code>.  The name of the remote to perform operations on.</p>
+<p><strong>remoteURL:</strong>
+Mandatory for adding and updating remotes.  The URL of the remote to add or update.</p>
+<p><strong>newName:</strong>
+Optional.  Only valid when <code class="docutils literal"><span class="pre">update</span></code> is <code class="docutils literal"><span class="pre">true</span></code>.  If specified, the specified remote will be renamed to the new name.</p>
+<p><strong>username:</strong>
+Optional.  The username to use when connecting to the remote.</p>
+<p><strong>password:</strong>
+Optional.  The password to use when connecting to the remote.</p>
+</div>
+<div class="section" id="id36">
+<h3>Examples<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
+<p><strong>List remotes</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/remote?list=true&amp;verbose=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Remote&gt;
+    &lt;name&gt;origin&lt;/name&gt;
+    &lt;url&gt;http://localhost:8182/repos/repo1_origin&lt;/url&gt;
+  &lt;/Remote&gt;
+  &lt;Remote&gt;
+    &lt;name&gt;remote2&lt;/name&gt;
+    &lt;url&gt;http://localhost:8182/repos/repo3&lt;/url&gt;
+  &lt;/Remote&gt;
+  &lt;Remote&gt;
+    &lt;name&gt;remote1&lt;/name&gt;
+    &lt;url&gt;http://localhost:8182/repos/repo2&lt;/url&gt;
+  &lt;/Remote&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Add a new remote</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/remote?remoteName=remote1&amp;remoteURL=http://localhost:8182/repos/repo2&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;name&gt;remote1&lt;/name&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Rename a remote</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/remote?update=true&amp;remoteName=remote2&amp;remoteURL=http://localhost:8182/repos/repo3&amp;newName=remote2_renamed&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;name&gt;remote2_renamed&lt;/name&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Remove a remote</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/remote?remove=true&amp;remoteName=remote2&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;name&gt;remote2&lt;/name&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Ping a remote</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/remote?ping=true&amp;remoteName=remote1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;ping&gt;
+    &lt;success&gt;true&lt;/success&gt;
+  &lt;/ping&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="remove-t">
+<span id="command-remove"></span><h2>Remove (-T)<a class="headerlink" href="#remove-t" title="Permalink to this headline">¶</a></h2>
+<p>Remove a feature or tree from the staging area.  The <code class="docutils literal"><span class="pre">commit</span></code> endpoint should be called to commit the removal to the transaction.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/remove?transactionId=&lt;transactionId&gt;&amp;path=&lt;pathToRemove&gt;[&amp;recursive=&lt;true|false&gt;]
+</pre></div>
+</div>
+<div class="section" id="id37">
+<h3>Parameters<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Mandatory.  The path of the feature or tree to remove.  If removing a tree, <code class="docutils literal"><span class="pre">recursive</span></code> must be set to <code class="docutils literal"><span class="pre">true</span></code>.</p>
+<p><strong>recursive:</strong>
+Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, the tree and all features in it will be removed.</p>
+</div>
+<div class="section" id="id38">
+<h3>Examples<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h3>
+<p><strong>Remove a feature</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/remove?transactionId=9c0be77c-8e85-4554-bf4a-3b869fc4a7b6&amp;path=points/d06e56902&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Deleted&gt;points/d06e56902&lt;/Deleted&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Remove a feature type tree</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/remove?transactionId=9c0be77c-8e85-4554-bf4a-3b869fc4a7b6&amp;path=points&amp;recursive=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Deleted&gt;points&lt;/Deleted&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="reportmergescenario">
+<span id="command-reportmergescenario"></span><h2>ReportMergeScenario<a class="headerlink" href="#reportmergescenario" title="Permalink to this headline">¶</a></h2>
+<p>Reports conflicts between changes introduced by two different histories. Given a commit and another reference commit, it returns the set of changes from the common ancestor to the first commit, classified according to whether they can or not be safely applied onto the reference commit. Changes that will have no effect on the target commit are not included as unconflicted.  This endpoint does not leave the repository in a conflicted state and can be used as a preview for merge operations.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/reportMergeScenario?ourCommit=&lt;branchOrCommit&gt;&amp;theirCommit=&lt;branchOrCommit&gt;[&amp;page=&lt;pageNumber&gt;][&amp;elementsPerPage=&lt;elementsPerPage&gt;]
+</pre></div>
+</div>
+<div class="section" id="id39">
+<h3>Parameters<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
+<p><strong>ourCommit:</strong>
+Mandatory.  The branch or commit to merge changes into.</p>
+<p><strong>theirCommit:</strong>
+Mandatory.  The branch or commit that contains changes that need to be merged.</p>
+<p><strong>page:</strong>
+Optional.  Page number of the results to view.  If the number of conflicts exceed the value of <code class="docutils literal"><span class="pre">elementsPerPage</span></code>, the results will be paged and must be retrieved with multiple requests.  If not specified, the first page of results will be returned.  If there are additional pages, the response will contain an <code class="docutils literal"><span class="pre">additionalChanges</span></code> element with a value of <code class="docutils literal"><span class="pre">true</span></code>.</p>
+<p><strong>elementsPerPage:</strong>
+Optional.  Number of changes to show per page.  If not specified, 1000 changes will be shown per page.</p>
+</div>
+<div class="section" id="id40">
+<h3>Examples<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
+<p><strong>Report a merge scenario</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/reportMergeScenario?ourCommit=master&amp;theirCommit=branch1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Merge&gt;
+    &lt;Feature&gt;
+      &lt;change&gt;MODIFIED&lt;/change&gt;
+      &lt;id&gt;points/b38e3abb1&lt;/id&gt;
+      &lt;geometry&gt;POINT (-101.67906976744186 -19.339534883721)&lt;/geometry&gt;
+      &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;/Feature&gt;
+  &lt;/Merge&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Report a merge scenario with conflicts</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/reportMergeScenario?ourCommit=master&amp;theirCommit=branch1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Merge&gt;
+    &lt;Feature&gt;
+      &lt;change&gt;MODIFIED&lt;/change&gt;
+      &lt;id&gt;points/b38e3abb1&lt;/id&gt;
+      &lt;geometry&gt;POINT (-101.67906976744186 -19.339534883721)&lt;/geometry&gt;
+      &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;/Feature&gt;
+    &lt;Feature&gt;
+      &lt;change&gt;CONFLICT&lt;/change&gt;
+      &lt;id&gt;points/d06e56902&lt;/id&gt;
+      &lt;ourvalue&gt;ee5ebe180982445f29f0dde64ab1e51ad70980c3&lt;/ourvalue&gt;
+      &lt;theirvalue&gt;d6fd128a83363ef84500822ce61286a4ff91a130&lt;/theirvalue&gt;
+      &lt;geometry&gt;POINT (-61.42671331549701 -16.869396995266598)&lt;/geometry&gt;
+      &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;/Feature&gt;
+  &lt;/Merge&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="resolveconflict-t">
+<span id="command-resolveconflict"></span><h2>ResolveConflict (-T)<a class="headerlink" href="#resolveconflict-t" title="Permalink to this headline">¶</a></h2>
+<p>Resolve a conflict at the provided path with the provided feature object ID.  This can be used in conjunction with the output response of a <code class="docutils literal"><span class="pre">MergeFeature</span></code> request.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/resolveconflict?transactionId=&lt;transactionId&gt;&amp;path=&lt;pathToFeature&gt;&amp;objectid=&lt;objectId&gt;
+</pre></div>
+</div>
+<div class="section" id="id41">
+<h3>Parameters<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Mandatory.  The path to the feature to resolve the conflict for.</p>
+<p><strong>objectid:</strong>
+Mandatory.  The object ID of the feature to resolve the conflict with.</p>
+</div>
+<div class="section" id="id42">
+<h3>Examples<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h3>
+<p><strong>Resolve a conflicted feature</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/resolveconflict?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&amp;path=points/b38e3abb1&amp;objectid=3b1f12f33d00676533d113cdee5494b82f383e46&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Add&gt;Success&lt;/Add&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="revertfeature-t">
+<span id="command-revertfeature"></span><h2>RevertFeature (-T)<a class="headerlink" href="#revertfeature-t" title="Permalink to this headline">¶</a></h2>
+<p>Revert the changes made to a single feature as a new commit.  This is done by finding all changes made between two commits to a single feature, creating a new commit based off of the later commit, and then merging that commit into the currently checked out branch.  This is done so that any changes made to the feature after the later commit are not lost.  Because of this, the operation may return merge conflicts that must be resolved before the merge can be completed (See <a class="reference internal" href="web-api-conflict-resolution.html#conflict-resolution"><span class="std std-ref">Web API: Conflict Resolution</span></a>).</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/revertfeature?transactionId=&lt;transactionId&gt;&amp;oldCommitId=&lt;commitId&gt;&amp;newCommitId=&lt;commitId&gt;&amp;path=&lt;pathToFeature&gt;[&amp;commitMessage=&lt;message&gt;][&amp;mergeMessage=&lt;message&gt;][&amp;authorName=&lt;authorName&gt;][&amp;authorEmail=&lt;authorEmail&gt;]
+</pre></div>
+</div>
+<div class="section" id="id43">
+<h3>Parameters<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Mandatory.  The path of the feature to revert.</p>
+<p><strong>oldCommitId:</strong>
+Mandatory.  The commit that contains the version of the feature to revert to.</p>
+<p><strong>newCommitId:</strong>
+Mandatory.  The commit that contains the version of the feature with changes that need to be reverted.</p>
+<p><strong>commitMessage:</strong>
+Optional.  The message to use for the revert commit.</p>
+<p><strong>mergeMessage:</strong>
+Optional.  The message to use for the merge of the revert commit into the currently checked out branch.</p>
+<p><strong>authorName:</strong>
+Optional.  If specified, the provided author name will be used for the commits.  Otherwise the committer name will be used.</p>
+<p><strong>authorEmail:</strong>
+Optional.  If specified, the provided author email will be used for the commits.  Otherwise the committer email will be used.</p>
+</div>
+<div class="section" id="id44">
+<h3>Examples<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
+<p><strong>Revert changes made to a feature</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/revertfeature?transactionId=7069620a-d32f-4c04-9c38-12176c2166d9&amp;oldCommitId=af8dfd7718f293aa5532ba948249fca274a0aa13&amp;newCommitId=e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&amp;path=points/d06e56902&amp;commitMessage=Undo&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Merge&gt;
+    &lt;ours&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/ours&gt;
+    &lt;theirs&gt;21efb042e40278a2ebc786155282bd9963e71b04&lt;/theirs&gt;
+    &lt;ancestor&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/ancestor&gt;
+    &lt;mergedCommit&gt;21efb042e40278a2ebc786155282bd9963e71b04&lt;/mergedCommit&gt;
+  &lt;/Merge&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Revert changes made to a feature, with conflicts</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/revertfeature?transactionId=80f328f2-c202-416f-8ff0-f3110f329e6b&amp;oldCommitId=71140aa1439d74312165ca16fc852d5138bea5e7&amp;newCommitId=4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&amp;path=points/d06e56902&amp;commitMessage=UndoAdd&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Merge&gt;
+    &lt;ours&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/ours&gt;
+    &lt;theirs&gt;a7950a08cc4a28fa3b9bd9b427d6a8c6dcde1c2e&lt;/theirs&gt;
+    &lt;ancestor&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/ancestor&gt;
+    &lt;conflicts&gt;1&lt;/conflicts&gt;
+    &lt;Feature&gt;
+      &lt;change&gt;CONFLICT&lt;/change&gt;
+      &lt;id&gt;points/d06e56902&lt;/id&gt;
+      &lt;ourvalue&gt;ba7db31656fa1abb7e09a0e37ca4c4a9681dbcdb&lt;/ourvalue&gt;
+      &lt;theirvalue&gt;0000000000000000000000000000000000000000&lt;/theirvalue&gt;
+      &lt;geometry&gt;POINT (-60.948837209302326 -11.134883720930318)&lt;/geometry&gt;
+      &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+    &lt;/Feature&gt;
+  &lt;/Merge&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="statistics">
+<span id="command-statistics"></span><h2>Statistics<a class="headerlink" href="#statistics" title="Permalink to this headline">¶</a></h2>
+<p>Returns repository statistics such as the number of commits, the number and type of changes made, as well as information about the authors that have contributed to a branch.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/statistics[?path=&lt;pathFilter&gt;][&amp;since=&lt;timestamp&gt;][&amp;branch=&lt;branchOrCommit&gt;]
+</pre></div>
+</div>
+<div class="section" id="id45">
+<h3>Parameters<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
+<p><strong>path:</strong>
+Optional.  If specified, only commits that have affected the given path will be considered in the statistics.</p>
+<p><strong>since:</strong>
+Optional.  If specified, only commits that occurred after the given timestamp will be considered in the statistics.</p>
+<p><strong>branch:</strong>
+Optional.  The branch to get statistics on.  If not specified, statistics will be computed for the currently checked out branch.</p>
+</div>
+<div class="section" id="id46">
+<h3>Examples<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
+<p><strong>Get the statistics of a branch</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/statistics?branch=branch1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Statistics&gt;
+    &lt;FeatureTypes&gt;
+      &lt;FeatureType&gt;
+        &lt;name&gt;points&lt;/name&gt;
+        &lt;numFeatures&gt;2&lt;/numFeatures&gt;
+      &lt;/FeatureType&gt;
+    &lt;/FeatureTypes&gt;
+    &lt;latestCommit&gt;
+      &lt;id&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/id&gt;
+      ...
+    &lt;/latestCommit&gt;
+    &lt;firstCommit&gt;
+      &lt;id&gt;71140aa1439d74312165ca16fc852d5138bea5e7&lt;/id&gt;
+      ...
+    &lt;/firstCommit&gt;
+    &lt;totalCommits&gt;2&lt;/totalCommits&gt;
+    &lt;Authors&gt;
+      &lt;Author&gt;
+        &lt;name&gt;GeoGig Server&lt;/name&gt;
+        &lt;email&gt;server@geogig.org&lt;/email&gt;
+      &lt;/Author&gt;
+      &lt;Author&gt;
+        &lt;name&gt;Test User&lt;/name&gt;
+        &lt;email&gt;example@geogig.org&lt;/email&gt;
+      &lt;/Author&gt;
+      &lt;totalAuthors&gt;2&lt;/totalAuthors&gt;
+    &lt;/Authors&gt;
+  &lt;/Statistics&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Get the statistics of a feature tree</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/statistics?path=points&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Statistics&gt;
+    &lt;FeatureTypes&gt;
+      &lt;FeatureType&gt;
+        &lt;name&gt;points&lt;/name&gt;
+        &lt;numFeatures&gt;2&lt;/numFeatures&gt;
+      &lt;/FeatureType&gt;
+    &lt;/FeatureTypes&gt;
+    &lt;latestCommit&gt;
+      &lt;id&gt;e227ba80d3bc2b8ee8ebd5e611edf291c2227b84&lt;/id&gt;
+      ...
+    &lt;/latestCommit&gt;
+    &lt;firstCommit&gt;
+      &lt;id&gt;71140aa1439d74312165ca16fc852d5138bea5e7&lt;/id&gt;
+      ...
+    &lt;/firstCommit&gt;
+    &lt;totalCommits&gt;4&lt;/totalCommits&gt;
+    &lt;Authors&gt;
+      &lt;Author&gt;
+        &lt;name&gt;GeoGig Server&lt;/name&gt;
+        &lt;email&gt;server@geogig.org&lt;/email&gt;
+      &lt;/Author&gt;
+      &lt;Author&gt;
+        &lt;name&gt;Test User&lt;/name&gt;
+        &lt;email&gt;example@geogig.org&lt;/email&gt;
+      &lt;/Author&gt;
+      &lt;totalAuthors&gt;2&lt;/totalAuthors&gt;
+    &lt;/Authors&gt;
+  &lt;/Statistics&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="status">
+<span id="command-status"></span><h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<p>Returns the branch name of the currently checked out branch as well as a list of the staged, unstaged, and unmerged features.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/status[?limit=&lt;limit&gt;][&amp;offset=&lt;offset&gt;]
+</pre></div>
+</div>
+<div class="section" id="id47">
+<h3>Parameters<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h3>
+<p><strong>limit:</strong>
+Optional.  The number of staged and unstaged changes to show.  If not specified, up to 50 changes will be shown.</p>
+<p><strong>offset:</strong>
+Optional.  The number of changes to skip before listing changes.  Defaults to 0.</p>
+</div>
+<div class="section" id="id48">
+<h3>Examples<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
+<p><strong>Show the status of the repository</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/status?transactionId=80f328f2-c202-416f-8ff0-f3110f329e6b&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;header&gt;
+    &lt;branch&gt;master&lt;/branch&gt;
+  &lt;/header&gt;
+  &lt;staged&gt;
+    &lt;changeType&gt;REMOVED&lt;/changeType&gt;
+    &lt;newPath/&gt;
+    &lt;newObjectId&gt;0000000000000000000000000000000000000000&lt;/newObjectId&gt;
+    &lt;path&gt;points/b38e3abb1&lt;/path&gt;
+    &lt;oldObjectId&gt;568e38e7b18e64a027342fe1046b1bb371eac7c7&lt;/oldObjectId&gt;
+  &lt;/staged&gt;
+  &lt;unmerged&gt;
+    &lt;changeType&gt;CONFLICT&lt;/changeType&gt;
+    &lt;path&gt;points/d06e56902&lt;/path&gt;
+    &lt;ours&gt;ba7db31656fa1abb7e09a0e37ca4c4a9681dbcdb&lt;/ours&gt;
+    &lt;theirs&gt;0000000000000000000000000000000000000000&lt;/theirs&gt;
+    &lt;ancestor&gt;5f9570d6424963490434156b331b5f9772b6f271&lt;/ancestor&gt;
+  &lt;/unmerged&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="tag">
+<span id="command-tag"></span><h2>Tag<a class="headerlink" href="#tag" title="Permalink to this headline">¶</a></h2>
+<p>List, create, or delete tags from the repository.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/tag
+PUT /repos/&lt;repo&gt;/tag?name=&lt;tagName&gt;&amp;message=&lt;tagMessage&gt;&amp;commit=&lt;ref&gt;
+DELETE /repos/&lt;repo&gt;/tag?name=&lt;tagName&gt;
+</pre></div>
+</div>
+<div class="section" id="id49">
+<h3>Parameters<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
+<p><strong>name:</strong>
+Mandatory for creating and deleting tags.  The name of the tag to create or delete.</p>
+<p><strong>message:</strong>
+Mandatory for creating a tag.  The message of the tag to create.</p>
+<p><strong>commit:</strong>
+Mandatory for creating a tag.  The branch or commit that the tag should point to.</p>
+</div>
+<div class="section" id="id50">
+<h3>Examples<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h3>
+<p><strong>List all tags</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/tag&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Tag&gt;
+    &lt;id&gt;b6dbb92f7f96e1dea36c2c834e53cd602e5ef6a8&lt;/id&gt;
+    &lt;commitid&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/commitid&gt;
+    &lt;name&gt;tag1&lt;/name&gt;
+    &lt;message&gt;MyTagMessage&lt;/message&gt;
+    &lt;tagger&gt;
+      &lt;name&gt;Test User&lt;/name&gt;
+      &lt;email&gt;example@geogig.org&lt;/email&gt;
+      &lt;timestamp&gt;1506567453031&lt;/timestamp&gt;
+      &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+    &lt;/tagger&gt;
+  &lt;/Tag&gt;
+  &lt;Tag&gt;
+    &lt;id&gt;d0502b03f092d3c38009fb0585e283dcaa9f6339&lt;/id&gt;
+    &lt;commitid&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/commitid&gt;
+    &lt;name&gt;tag2&lt;/name&gt;
+    &lt;message&gt;MySecondTag&lt;/message&gt;
+    &lt;tagger&gt;
+      &lt;name&gt;Test User&lt;/name&gt;
+      &lt;email&gt;example@geogig.org&lt;/email&gt;
+      &lt;timestamp&gt;1506572141806&lt;/timestamp&gt;
+      &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+    &lt;/tagger&gt;
+  &lt;/Tag&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Create a new tag</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST -v &quot;http://localhost:8182/repos/repo1/tag?name=tag1&amp;message=MyTagMessage&amp;commit=HEAD~2&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;Tag&gt;
+    &lt;id&gt;b6dbb92f7f96e1dea36c2c834e53cd602e5ef6a8&lt;/id&gt;
+    &lt;commitid&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/commitid&gt;
+    &lt;name&gt;tag1&lt;/name&gt;
+    &lt;message&gt;MyTagMessage&lt;/message&gt;
+    &lt;tagger&gt;
+      &lt;name&gt;Test User&lt;/name&gt;
+      &lt;email&gt;example@geogig.org&lt;/email&gt;
+      &lt;timestamp&gt;1506567453031&lt;/timestamp&gt;
+      &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+    &lt;/tagger&gt;
+  &lt;/Tag&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Delete a tag</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X DELETE -v &quot;http://localhost:8182/repos/repo1/tag?name=tag2&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;DeletedTag&gt;
+    &lt;id&gt;d0502b03f092d3c38009fb0585e283dcaa9f6339&lt;/id&gt;
+    &lt;commitid&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/commitid&gt;
+    &lt;name&gt;tag2&lt;/name&gt;
+    &lt;message&gt;MySecondTag&lt;/message&gt;
+    &lt;tagger&gt;
+      &lt;name&gt;Test User&lt;/name&gt;
+      &lt;email&gt;example@geogig.org&lt;/email&gt;
+      &lt;timestamp&gt;1506572141806&lt;/timestamp&gt;
+      &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+    &lt;/tagger&gt;
+  &lt;/DeletedTag&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="updateref">
+<span id="command-updateref"></span><h2>UpdateRef<a class="headerlink" href="#updateref" title="Permalink to this headline">¶</a></h2>
+<p>Update or delete a ref in the repository.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/updateref?name=&lt;refName&gt;&amp;newValue=&lt;value&gt;
+GET /repos/&lt;repo&gt;/updateref?name=&lt;refName&gt;&amp;delete=true
+</pre></div>
+</div>
+<div class="section" id="id51">
+<h3>Parameters<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
+<p><strong>name:</strong>
+Mandatory.  The name of the ref to update or delete.</p>
+<p><strong>newValue:</strong>
+Mandatory when updating a ref.  The new value to change the ref to.</p>
+<p><strong>delete:</strong>
+Mandatory to specify as <code class="docutils literal"><span class="pre">true</span></code> when deleting a ref.</p>
+</div>
+<div class="section" id="id52">
+<h3>Examples<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
+<p><strong>Update a ref</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/updateref?name=branch1&amp;newValue=af8dfd7718f293aa5532ba948249fca274a0aa13&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;ChangedRef&gt;
+    &lt;name&gt;refs/heads/branch1&lt;/name&gt;
+    &lt;objectId&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/objectId&gt;
+  &lt;/ChangedRef&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Update a symbolic ref</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/updateref?name=HEAD&amp;newValue=refs%2Fheads%2Fbranch1&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;ChangedRef&gt;
+    &lt;name&gt;HEAD&lt;/name&gt;
+    &lt;objectId&gt;4dbae82f2f4a568ec8cc7a33f0d7be19ff73059a&lt;/objectId&gt;
+    &lt;target&gt;refs/heads/branch1&lt;/target&gt;
+  &lt;/ChangedRef&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p><strong>Delete a ref</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/updateref?name=branch2&amp;delete=true&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;ChangedRef&gt;
+    &lt;name&gt;refs/heads/branch2&lt;/name&gt;
+    &lt;objectId&gt;af8dfd7718f293aa5532ba948249fca274a0aa13&lt;/objectId&gt;
+  &lt;/ChangedRef&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="version">
+<span id="command-version"></span><h2>Version<a class="headerlink" href="#version" title="Permalink to this headline">¶</a></h2>
+<p>Returns all of the information for the running version of GeoGig.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span><span class="o">&gt;/</span><span class="n">version</span>
+</pre></div>
+</div>
+<div class="section" id="id53">
+<h3>Parameters<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
+<p>None.</p>
+</div>
+<div class="section" id="id54">
+<h3>Examples<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h3>
+<p><strong>Get GeoGig version</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/version&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;true&lt;/success&gt;
+  &lt;ProjectVersion&gt;...&lt;/ProjectVersion&gt;
+  &lt;BuildTime&gt;...&lt;/BuildTime&gt;
+  &lt;BuildUserName&gt;...&lt;/BuildUserName&gt;
+  &lt;BuildUserEmail&gt;...&lt;/BuildUserEmail&gt;
+  &lt;GitBranch&gt;...&lt;/GitBranch&gt;
+  &lt;GitCommitID&gt;...&lt;/GitCommitID&gt;
+  &lt;GitCommitTime&gt;...&lt;/GitCommitTime&gt;
+  &lt;GitCommitAuthorName&gt;...&lt;/GitCommitAuthorName&gt;
+  &lt;GitCommitAuthorEmail&gt;...&lt;/GitCommitAuthorEmail&gt;
+  &lt;GitCommitMessage&gt;...&lt;/GitCommitMessage&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="web-api-repo-commands">
+<h1>Web API: Repo Commands<a class="headerlink" href="#web-api-repo-commands" title="Permalink to this headline">¶</a></h1>
+<p>These commands can be used by using the <code class="docutils literal"><span class="pre">repos/&lt;repo</span> <span class="pre">name&gt;/repo/</span></code> endpoint, instead of the standard <code class="docutils literal"><span class="pre">repos/&lt;repo</span> <span class="pre">name&gt;/</span></code> endpoint.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The output format for all repo commands is plain text.</p>
+</div>
+</div></blockquote>
+<div class="section" id="mergefeature">
+<span id="command-mergefeature"></span><h2>MergeFeature<a class="headerlink" href="#mergefeature" title="Permalink to this headline">¶</a></h2>
+<p>This endpoint can be used to merge two features into a new one.  It will return the object ID of the new feature when the operation completes. This endpoint must be accessed by using a <code class="docutils literal"><span class="pre">POST</span></code> request that contains a JSON object to tell GeoGig how to merge the feature.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span><span class="o">&gt;/</span><span class="n">repo</span><span class="o">/</span><span class="n">mergefeature</span>
+</pre></div>
+</div>
+<div class="section" id="id55">
+<h3>Parameters<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h3>
+<p>None.</p>
+</div>
+<div class="section" id="id56">
+<h3>Examples<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
+<p>The following is an example of the JSON <code class="docutils literal"><span class="pre">POST</span></code> data to merge a feature with three attributes.</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+  path: &#39;featureType/feature&#39;,
+  ours: &#39;commitId that contains the left feature&#39;,
+  theirs: &#39;commitId that contains the right feature&#39;,
+  merges: {
+     attr1: {
+         ours: true // use the value from the left feature
+     },
+     attr2: {
+         theirs: true // use the value from the right feature
+     },
+     attr3: {
+         value: &#39;custom value&#39; // use our own value
+     }
+  }
+}
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span> <span class="mi">200</span> <span class="n">OK</span>
+<span class="o">&lt;</span> <span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">text</span><span class="o">/</span><span class="n">plain</span>
+<span class="mf">568e38</span><span class="n">e7b18e64a027342fe1046b1bb371eac7c7</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="manifest">
+<span id="command-manifest"></span><h2>Manifest<a class="headerlink" href="#manifest" title="Permalink to this headline">¶</a></h2>
+<p>This endpoint can be used to get a list of all refs in the repository and what they point to.  Similar to the <a class="reference internal" href="#branch">Branch</a> command with the list option from above.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span><span class="o">&gt;/</span><span class="n">repo</span><span class="o">/</span><span class="n">manifest</span>
+</pre></div>
+</div>
+<div class="section" id="id57">
+<h3>Parameters<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h3>
+<p>None.</p>
+</div>
+<div class="section" id="id58">
+<h3>Examples<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h3>
+<p><strong>Get the manifest</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/repo/manifest&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: text/plain
+HEAD refs/heads/master 4f1c842f9d453817160f4304316b799b1b80aaf8
+refs/heads/branch1 1fbe206f8034a23da88a05ff8b5a4df2cfe1f3f4
+refs/heads/master 4f1c842f9d453817160f4304316b799b1b80aaf8
+refs/tags/tag1 b6dbb92f7f96e1dea36c2c834e53cd602e5ef6a8
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="web-api-transactions.html" title="previous chapter">Web API: Transactions</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="web-api-indexing.html" title="next chapter">Web API: Indexing Commands</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc">
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Web API: Commands</a><ul>
+<li><a class="reference internal" href="#add-t">Add (-T)</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#blame">Blame</a><ul>
+<li><a class="reference internal" href="#id1">Parameters</a></li>
+<li><a class="reference internal" href="#id2">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#branch">Branch</a><ul>
+<li><a class="reference internal" href="#id3">Parameters</a></li>
+<li><a class="reference internal" href="#id4">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cat">Cat</a><ul>
+<li><a class="reference internal" href="#id5">Parameters</a></li>
+<li><a class="reference internal" href="#id6">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#checkout-t">Checkout (-T)</a><ul>
+<li><a class="reference internal" href="#id7">Parameters</a></li>
+<li><a class="reference internal" href="#id8">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#commit-t">Commit (-T)</a><ul>
+<li><a class="reference internal" href="#id9">Parameters</a></li>
+<li><a class="reference internal" href="#id10">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#config">Config</a><ul>
+<li><a class="reference internal" href="#id11">Parameters</a></li>
+<li><a class="reference internal" href="#id12">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#diff">Diff</a><ul>
+<li><a class="reference internal" href="#id13">Parameters</a></li>
+<li><a class="reference internal" href="#id14">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#featurediff">FeatureDiff</a><ul>
+<li><a class="reference internal" href="#id15">Parameters</a></li>
+<li><a class="reference internal" href="#id16">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fetch">Fetch</a><ul>
+<li><a class="reference internal" href="#id17">Parameters</a></li>
+<li><a class="reference internal" href="#id18">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#getcommitgraph">GetCommitGraph</a><ul>
+<li><a class="reference internal" href="#id19">Parameters</a></li>
+<li><a class="reference internal" href="#id20">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#log">Log</a><ul>
+<li><a class="reference internal" href="#id21">Parameters</a></li>
+<li><a class="reference internal" href="#id22">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lstree">LsTree</a><ul>
+<li><a class="reference internal" href="#id23">Parameters</a></li>
+<li><a class="reference internal" href="#id24">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#merge-t">Merge (-T)</a><ul>
+<li><a class="reference internal" href="#id25">Parameters</a></li>
+<li><a class="reference internal" href="#id26">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pull-t">Pull (-T)</a><ul>
+<li><a class="reference internal" href="#id27">Parameters</a></li>
+<li><a class="reference internal" href="#id28">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#push">Push</a><ul>
+<li><a class="reference internal" href="#id29">Parameters</a></li>
+<li><a class="reference internal" href="#id30">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rebuildgraph">RebuildGraph</a><ul>
+<li><a class="reference internal" href="#id31">Parameters</a></li>
+<li><a class="reference internal" href="#id32">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#refparse">RefParse</a><ul>
+<li><a class="reference internal" href="#id33">Parameters</a></li>
+<li><a class="reference internal" href="#id34">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#remote">Remote</a><ul>
+<li><a class="reference internal" href="#id35">Parameters</a></li>
+<li><a class="reference internal" href="#id36">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#remove-t">Remove (-T)</a><ul>
+<li><a class="reference internal" href="#id37">Parameters</a></li>
+<li><a class="reference internal" href="#id38">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reportmergescenario">ReportMergeScenario</a><ul>
+<li><a class="reference internal" href="#id39">Parameters</a></li>
+<li><a class="reference internal" href="#id40">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#resolveconflict-t">ResolveConflict (-T)</a><ul>
+<li><a class="reference internal" href="#id41">Parameters</a></li>
+<li><a class="reference internal" href="#id42">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#revertfeature-t">RevertFeature (-T)</a><ul>
+<li><a class="reference internal" href="#id43">Parameters</a></li>
+<li><a class="reference internal" href="#id44">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#statistics">Statistics</a><ul>
+<li><a class="reference internal" href="#id45">Parameters</a></li>
+<li><a class="reference internal" href="#id46">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#status">Status</a><ul>
+<li><a class="reference internal" href="#id47">Parameters</a></li>
+<li><a class="reference internal" href="#id48">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tag">Tag</a><ul>
+<li><a class="reference internal" href="#id49">Parameters</a></li>
+<li><a class="reference internal" href="#id50">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#updateref">UpdateRef</a><ul>
+<li><a class="reference internal" href="#id51">Parameters</a></li>
+<li><a class="reference internal" href="#id52">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version">Version</a><ul>
+<li><a class="reference internal" href="#id53">Parameters</a></li>
+<li><a class="reference internal" href="#id54">Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#web-api-repo-commands">Web API: Repo Commands</a><ul>
+<li><a class="reference internal" href="#mergefeature">MergeFeature</a><ul>
+<li><a class="reference internal" href="#id55">Parameters</a></li>
+<li><a class="reference internal" href="#id56">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#manifest">Manifest</a><ul>
+<li><a class="reference internal" href="#id57">Parameters</a></li>
+<li><a class="reference internal" href="#id58">Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="web-api-transactions.html" title="previous chapter">Web API: Transactions</a></li>
+            <li>Next: <a href="web-api-indexing.html" title="next chapter">Web API: Indexing Commands</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/interaction/web-api-commands.rst.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>GeoGig is published using the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse Distribution License</a> (EDL). This is an open source initiative approved BSD-3 Clause license.</p>
+          
+          <p>This documentation is licensed under a <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>. Page template includes work by the JQuery Foundation (<a href="https://github.com/jquery/jquery/blob/master/LICENSE.txt">MIT License</a>).</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> available on LocationTech. Website maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.min.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

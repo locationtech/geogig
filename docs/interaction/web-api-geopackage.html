@@ -1,0 +1,565 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Web API: GeoPackage Import and Export &mdash; GeoGig 1.2.0 User Manual</title>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+   <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="index" title="Index" href="../genindex.html" />
+      <link rel="search" title="Search" href="../search.html" />
+      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
+      <link rel="next" title="Web API: PostGIS Import" href="web-api-postgis.html" />
+      <link rel="prev" title="Web API: Indexing Commands" href="web-api-indexing.html" />
+</head>
+<body class="interaction/web-api-geopackage">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/locationtech/geogig">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8">
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
+  <li>Web API: GeoPackage Import and Export</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="web-api-postgis.html" title="Web API: PostGIS Import"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="web-api-indexing.html" title="Web API: Indexing Commands"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="web-api-geopackage-import-and-export">
+<h1>Web API: GeoPackage Import and Export<a class="headerlink" href="#web-api-geopackage-import-and-export" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://www.geopackage.org/">GeoPackage</a> is an open, standards-based, platform-independent, portable, self-describing, compact format for transferring geospatial information.</p>
+<p>The GeoPackage import/export GeoGig web API allows for downloading a repository snapshot, or a subset of it, as a GeoPackage file and for uploading a GeoPackage file and importing its vector layers into the GeoGig repository.</p>
+<div class="section" id="geopackage-export">
+<h2>GeoPackage export<a class="headerlink" href="#geopackage-export" title="Permalink to this headline">¶</a></h2>
+<p>Exports a repository snapshot or a subset of it as a GeoPackage file.</p>
+<p>A repository snapshot is the data (layers and their features) addressable from a certain commit.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/export[.xml|.json]?format=gpkg[&amp;root=&lt;refspec&gt;][&amp;path=&lt;layerName&gt;[,&lt;layerName&gt;]+][&amp;bbox=&lt;boundingBox&gt;][&amp;interchange=&lt;true|false&gt;]
+</pre></div>
+</div>
+<div class="section" id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
+<p><strong>format:</strong>
+Mandatory. Must be <code class="docutils literal"><span class="pre">gpkg</span></code> (case-insensitive). Defines the output format of the export operation.</p>
+<p><strong>root:</strong>
+Optional. Defaults to <code class="docutils literal"><span class="pre">HEAD</span></code>. The ref spec that resolves to the root tree from where to export data (e.g. <code class="docutils literal"><span class="pre">HEAD</span></code>, <code class="docutils literal"><span class="pre">WORK_HEAD</span></code>, a branch name like <code class="docutils literal"><span class="pre">master</span></code>, <code class="docutils literal"><span class="pre">refs/heads/master</span></code>, a commit ID, possibly abbreviated like <code class="docutils literal"><span class="pre">50e295dd</span></code>, a relative ref spec like <code class="docutils literal"><span class="pre">HEAD~2</span></code>, <code class="docutils literal"><span class="pre">master^4</span></code>, etc)</p>
+<p><strong>path:</strong>
+Optional. A comma-separated list of layer names to export. Defaults to exporting all layers in the resolved root tree.</p>
+<p><strong>bbox:</strong>
+Optional. A bounding box filter. If present, only features matching the indicated bounding box filter will be exported. Applies to all exported layers. Format is <code class="docutils literal"><span class="pre">minx,miny,maxx,maxy,&lt;SRS&gt;</span></code>, where <code class="docutils literal"><span class="pre">SRS</span></code> is the EPSG code for the coordinates (e.g. <code class="docutils literal"><span class="pre">EPSG:4326</span></code>, <code class="docutils literal"><span class="pre">EPSG:26986</span></code>, etc), always using “longitude first” axis order.</p>
+<p><strong>interchange:</strong>
+Optional. Boolean indicating whether to enable GeoGig’s interchange format extension for GeoPackage. The “GeoGig GeoPackage Extension” is an extension to the GeoPackage format that (transparently) records all changes made to vector layers, in hidden audit tables, that can then be used to replay those changes on top of the repository.</p>
+</div>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="missing-format-argument">
+<h4>Missing format argument:<a class="headerlink" href="#missing-format-argument" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/export&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;response&gt;
+  &lt;success&gt;false&lt;/success&gt;
+  &lt;error&gt;output format not provided&lt;/error&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="bad-refspec">
+<h4>Bad refspec:<a class="headerlink" href="#bad-refspec" title="Permalink to this headline">¶</a></h4>
+<p>Note, since the command is run asynchronously, you’ll only see the error once the async task status is polled.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/export?format=GPKG&amp;root=nonExistingBranch&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;2&lt;/id&gt;
+  &lt;status&gt;RUNNING&lt;/status&gt;
+  &lt;description&gt;Export to Geopackage database&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/2.xml&quot; type=&quot;application/xml&quot;/&gt;
+&lt;/task&gt;
+
+$ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;2&lt;/id&gt;
+  &lt;status&gt;FAILED&lt;/status&gt;
+  &lt;description&gt;Export to Geopackage database&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/2.xml&quot; type=&quot;application/xml&quot;/&gt;
+  &lt;error&gt;
+    &lt;message&gt;RefSpec doesn&#39;t resolve to a tree: &#39;nonExistingBranch&#39;&lt;/message&gt;
+    &lt;stackTrace&gt;&lt;![CDATA[java.lang.IllegalArgumentException: RefSpec doesn&#39;t resolve to a tree: &#39;nonExistingBranch&#39;
+        at com.google.common.base.Preconditions.checkArgument(Preconditions.java:145)
+        at org.locationtech.geogig.geotools.plumbing.DataStoreExportOp.resolveExportLayerRefSpecs(DataStoreExportOp.java:178)
+]]&gt;&lt;/stackTrace&gt;
+  &lt;/error&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="export-all-layers-in-the-current-head">
+<h4>Export all layers in the current HEAD:<a class="headerlink" href="#export-all-layers-in-the-current-head" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/export?format=GPKG&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;3&lt;/id&gt;
+  &lt;status&gt;RUNNING&lt;/status&gt;
+  &lt;description&gt;Export to Geopackage database&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/3.xml&quot; type=&quot;application/xml&quot;/&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+<p>Poll task status until it’s FINISHED:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;3&lt;/id&gt;
+  &lt;status&gt;RUNNING&lt;/status&gt;
+  &lt;description&gt;Export to Geopackage database&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/3.xml&quot; type=&quot;application/xml&quot;/&gt;
+  &lt;progress&gt;
+    &lt;task&gt;Exporting from d77a84bee98ae2972953308775c0b0f318f0df6d:ne_10m_roads to ne_10m_roads... &lt;/task&gt;
+    &lt;amount&gt;99.29507&lt;/amount&gt;
+  &lt;/progress&gt;
+&lt;/task&gt;
+
+
+$ curl -v &quot;http://localhost:8182/tasks/3.xml&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;3&lt;/id&gt;
+  &lt;status&gt;FINISHED&lt;/status&gt;
+  &lt;description&gt;Export to Geopackage database&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/3.xml&quot; type=&quot;application/xml&quot;/&gt;
+  &lt;result&gt;
+    &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/3/download&quot; type=&quot;application/octet-stream;type=geopackage&quot;/&gt;
+  &lt;/result&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+<p>Note, once the task is finished, the <cite>result</cite> element contains the download link for the generated GeoPackage file.</p>
+<p>Finally, download the GeoPackage:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/tasks/3/download&quot; &gt; all_layers_current_head.gpkg
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/octet-stream;type=geopackage
+&lt; Content-Length: 80854016
+100 77.1M  100 77.1M    0     0   842M      0 --:--:-- --:--:-- --:--:--  847M
+* Connection #0 to host localhost left intact
+</pre></div>
+</div>
+<p>That <cite>curl</cite> command downloaded the geopackage to the <cite>all_layers_current_head.gpkg</cite> file.</p>
+<p>Now you can open it, for example, in QGIS.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ qgis all_layers_current_head.gpkg
+</pre></div>
+</div>
+<div class="figure">
+<img alt="../_images/qgis_exported_geopackage.png" src="../_images/qgis_exported_geopackage.png" />
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="geopackage-import">
+<h2>GeoPackage import<a class="headerlink" href="#geopackage-import" title="Permalink to this headline">¶</a></h2>
+<p>Imports features from a GeoPackage into the repository. The GeoPackage file should be posted to the endpoint as <code class="docutils literal"><span class="pre">fileUpload</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>POST /repos/&lt;repo&gt;/import[.xml|.json]?format=gpkg&amp;transactionId=&lt;transactionId&gt;[&amp;root=&lt;refspec&gt;][&amp;layer=&lt;layerName&gt;][&amp;interchange=&lt;true|false&gt;][&amp;add=&lt;true|false&gt;][&amp;alter=&lt;true|false&gt;][&amp;forceFeatureType=&lt;true|false&gt;][&amp;dest=&lt;destPath&gt;][&amp;fidAttribute=&lt;fidAttribute&gt;][&amp;authorName=&lt;name&gt;][&amp;authorEmail=&lt;email&gt;][&amp;message=&lt;message&gt;]
+</pre></div>
+</div>
+<div class="section" id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><strong>fileUpload:</strong>
+Mandatory. The GeoPackage file to import from.</p>
+<p><strong>format:</strong>
+Mandatory. Must be <code class="docutils literal"><span class="pre">gpkg</span></code> (case insensitive). Defines the input format of the import operation.</p>
+<p><strong>transactionId</strong>
+Mandatory.  Import must be run on a transaction to preserve the stability of the repository.</p>
+<p><strong>root:</strong>
+Optional. Defaults to <code class="docutils literal"><span class="pre">HEAD</span></code>. The branch onto which the imported features will be imported.</p>
+<p><strong>layer:</strong>
+Optional. The layer from the GeoPackage to import. If not specified, all features from the GeoPackage will be imported.  If using the interchange format, all layers must originate from the same commit.</p>
+<p><strong>interchange:</strong>
+Optional. Boolean indicating whether or not the GeoPackage has the GeoGig GeoPackage Extension. If so, the changes will be imported on top of the commit they were exported from and merged into the branch specified by the <code class="docutils literal"><span class="pre">root</span></code> parameter or <code class="docutils literal"><span class="pre">HEAD</span></code>.</p>
+<p><strong>add:</strong>
+Optional: Boolean indicating if features should only be added (true) or replace the whole feature tree.  Not used with interchange import.</p>
+<p><strong>alter:</strong>
+Optional: Boolean indicating if destination tables should be altered to match the feature type of the imported features or not.  Not used with interchange import.</p>
+<p><strong>forceFeatureType:</strong>
+Optional: Boolean indicating if the imported feature type should be used even if it does not match the default feature type of the destination.  Not used with interchange import.</p>
+<p><strong>dest:</strong>
+Optional: String indicating the destination path name if it should be different than the path of the features being imported.  Not used with interchange import.</p>
+<p><strong>fidAttribute:</strong>
+Optional: String indicating the feature attribute to use when generating Feature Ids if the default Id creation should be overridden.  Not used with interchange import.</p>
+<p><strong>authorName:</strong>
+Optional: String indicating the author name to use for the resulting commit.  The name will also be used for the merge commit if one is needed during an <code class="docutils literal"><span class="pre">interchange</span></code> import.</p>
+<p><strong>authorEmail:</strong>
+Optional: String indicating the author email to use for the resulting commit.  The email will also be used for the merge commit if one is needed during an <code class="docutils literal"><span class="pre">interchange</span></code> import.</p>
+<p><strong>message:</strong>
+Optional: String indicating the commit message to use for the resulting commit.</p>
+</div>
+<div class="section" id="id2">
+<h3>Examples<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="import-without-interchange-format">
+<h4>Import without interchange format:<a class="headerlink" href="#import-without-interchange-format" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=b6f3edb5-c831-4bfb-9e82-e7c0f1f8ed96&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;1&lt;/id&gt;
+  &lt;status&gt;RUNNING&lt;/status&gt;
+  &lt;description&gt;Importing GeoPackage database file.&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/1.xml&quot; type=&quot;application/xml&quot;/&gt;
+&lt;/task&gt;
+
+$ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;2&lt;/id&gt;
+  &lt;status&gt;FINISHED&lt;/status&gt;
+  &lt;transactionId&gt;b6f3edb5-c831-4bfb-9e82-e7c0f1f8ed96&lt;/transactionId&gt;
+  &lt;description&gt;Importing GeoPackage database file.&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/1.xml&quot; type=&quot;application/xml&quot;/&gt;
+  &lt;result&gt;
+    &lt;commit&gt;
+      &lt;id&gt;f7653f2a6199f735fbeda293f9cc0ff37108f731&lt;/id&gt;
+      &lt;tree&gt;5221dd3c6ec7e02c866c9ca5a909d0b2a1712c3a&lt;/tree&gt;
+      &lt;parents&gt;
+        &lt;id&gt;4edd6c30ac54519b8eb9df27acda31ff7c98a15f&lt;/id&gt;
+      &lt;/parents&gt;
+      &lt;author&gt;
+        &lt;name/&gt;
+        &lt;email/&gt;
+        &lt;timestamp&gt;1462318476065&lt;/timestamp&gt;
+        &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+      &lt;/author&gt;
+      &lt;committer&gt;
+        &lt;name&gt;Johnathan Garrett&lt;/name&gt;
+        &lt;email&gt;jd@prominentedge.com&lt;/email&gt;
+        &lt;timestamp&gt;1462318476065&lt;/timestamp&gt;
+        &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+      &lt;/committer&gt;
+      &lt;message&gt;
+        &lt;![CDATA[ Import GeoPackage ]]&gt;
+      &lt;/message&gt;
+    &lt;/commit&gt;
+  &lt;/result&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="import-with-interchange-format">
+<h4>Import with interchange format:<a class="headerlink" href="#import-with-interchange-format" title="Permalink to this headline">¶</a></h4>
+<p>Using the interchange format allows proper handling of features that were modified in the repository since the export happened. This is done by creating a new commit with all of the modified features and then merging that commit into the current <code class="docutils literal"><span class="pre">HEAD</span></code> or specified branch.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;interchange=true&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=fd72b710-2f1c-481b-9c0c-34ac6567e96d&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;1&lt;/id&gt;
+  &lt;status&gt;RUNNING&lt;/status&gt;
+  &lt;description&gt;Importing GeoPackage database file.&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/1.xml&quot; type=&quot;application/xml&quot;/&gt;
+&lt;/task&gt;
+
+$ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;1&lt;/id&gt;
+  &lt;status&gt;FINISHED&lt;/status&gt;
+  &lt;transactionId&gt;fd72b710-2f1c-481b-9c0c-34ac6567e96d&lt;/transactionId&gt;
+  &lt;description&gt;Importing GeoPackage database file.&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/1.xml&quot; type=&quot;application/xml&quot;/&gt;
+  &lt;result&gt;
+    &lt;commit&gt;
+      &lt;id&gt;c552789ee64b6a308420e02d24bf48b3f5647761&lt;/id&gt;
+      &lt;tree&gt;7d06b74d37ce7a82804af7be2d56680cfe256bc5&lt;/tree&gt;
+      &lt;parents&gt;
+        &lt;id&gt;4edd6c30ac54519b8eb9df27acda31ff7c98a15f&lt;/id&gt;
+        &lt;id&gt;e2389ae3e85f83cf3239390648fa3698f2b1b949&lt;/id&gt;
+      &lt;/parents&gt;
+      &lt;author&gt;
+        &lt;name&gt;Johnathan Garrett&lt;/name&gt;
+        &lt;email&gt;jd@prominentedge.com&lt;/email&gt;
+        &lt;timestamp&gt;1462320893272&lt;/timestamp&gt;
+        &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+      &lt;/author&gt;
+      &lt;committer&gt;
+        &lt;name&gt;Johnathan Garrett&lt;/name&gt;
+        &lt;email&gt;jd@prominentedge.com&lt;/email&gt;
+        &lt;timestamp&gt;1462320893272&lt;/timestamp&gt;
+        &lt;timeZoneOffset&gt;-14400000&lt;/timeZoneOffset&gt;
+      &lt;/committer&gt;
+      &lt;message&gt;
+        &lt;![CDATA[ Merge: Import GeoPackage ]]&gt;
+      &lt;/message&gt;
+    &lt;/commit&gt;
+  &lt;/result&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="import-with-interchange-format-with-conflicts">
+<h4>Import with interchange format with conflicts:<a class="headerlink" href="#import-with-interchange-format-with-conflicts" title="Permalink to this headline">¶</a></h4>
+<p>When importing with the interchange format, it is possible that the same feature was modified in both the GeoPackage and in the main repository in the time since the export was performed.  In this case, merge conflicts will occur during the import. They must be resolved before ending the transaction.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -X POST --form &quot;fileUpload=@database.gpkg&quot; &quot;http://localhost:8182/repos/repo1/import?format=gpkg&amp;interchange=true&amp;message=Import%20GeoPackage&amp;layer=ptLayer&amp;transactionId=aa58fce6-df67-4f87-90f3-d8d684bef52a&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;1&lt;/id&gt;
+  &lt;status&gt;RUNNING&lt;/status&gt;
+  &lt;description&gt;Importing GeoPackage database file.&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/1.xml&quot; type=&quot;application/xml&quot;/&gt;
+&lt;/task&gt;
+
+$ curl -v &quot;http://localhost:8182/tasks/1.xml&quot; | xmllint --format -
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;task&gt;
+  &lt;id&gt;3&lt;/id&gt;
+  &lt;status&gt;FAILED&lt;/status&gt;
+  &lt;transactionId&gt;aa58fce6-df67-4f87-90f3-d8d684bef52a&lt;/transactionId&gt;
+  &lt;description&gt;Importing GeoPackage database file.&lt;/description&gt;
+  &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/1.xml&quot; type=&quot;application/xml&quot;/&gt;
+  &lt;result&gt;
+    &lt;Merge&gt;
+      &lt;ours&gt;4edd6c30ac54519b8eb9df27acda31ff7c98a15f&lt;/ours&gt;
+      &lt;theirs&gt;caeccb7018dbe189c7794efab7ad5081ccff1292&lt;/theirs&gt;
+      &lt;ancestor&gt;27ae08a815da0fcd1a854174aef452163c9a90f0&lt;/ancestor&gt;
+      &lt;conflicts&gt;1&lt;/conflicts&gt;
+      &lt;Feature&gt;
+        &lt;change&gt;MODIFIED&lt;/change&gt;
+        &lt;id&gt;ptLayer/1&lt;/id&gt;
+        &lt;geometry&gt;POINT (-0.5668599255813954 -0.3289057739534884)&lt;/geometry&gt;
+        &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+      &lt;/Feature&gt;
+      &lt;Feature&gt;
+        &lt;change&gt;CONFLICT&lt;/change&gt;
+        &lt;id&gt;ptLayer/3&lt;/id&gt;
+        &lt;ourvalue&gt;a185f35bc5f1484a518fbecb8515c3216d37399b&lt;/ourvalue&gt;
+        &lt;theirvalue&gt;d65364e87bfd3bb5b6ce1493393152b73084a339&lt;/theirvalue&gt;
+        &lt;geometry&gt;POINT (-0.4604323232323232 -0.3628242424242424)&lt;/geometry&gt;
+        &lt;crs&gt;EPSG:4326&lt;/crs&gt;
+      &lt;/Feature&gt;
+    &lt;/Merge&gt;
+  &lt;/result&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you specify a root branch to import features onto, conflicts will leave the transaction on that branch.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="web-api-indexing.html" title="previous chapter">Web API: Indexing Commands</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="web-api-postgis.html" title="next chapter">Web API: PostGIS Import</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc">
+          <a class="btn btn-default" href="/docs/">User Manual</a>
+          <a class="btn btn-default" href="/technical/">Technical Manual</a>
+          <a class="btn btn-default" href="/manpages/">Man Pages</a>
+          <a class="btn btn-default" href="/workshop/">Workshop</a>
+          <a class="btn btn-default" href="/upgrade/">Upgrading</a>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Web API: GeoPackage Import and Export</a><ul>
+<li><a class="reference internal" href="#geopackage-export">GeoPackage export</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#missing-format-argument">Missing format argument:</a></li>
+<li><a class="reference internal" href="#bad-refspec">Bad refspec:</a></li>
+<li><a class="reference internal" href="#export-all-layers-in-the-current-head">Export all layers in the current HEAD:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geopackage-import">GeoPackage import</a><ul>
+<li><a class="reference internal" href="#id1">Parameters</a></li>
+<li><a class="reference internal" href="#id2">Examples</a><ul>
+<li><a class="reference internal" href="#import-without-interchange-format">Import without interchange format:</a></li>
+<li><a class="reference internal" href="#import-with-interchange-format">Import with interchange format:</a></li>
+<li><a class="reference internal" href="#import-with-interchange-format-with-conflicts">Import with interchange format with conflicts:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="web-api-indexing.html" title="previous chapter">Web API: Indexing Commands</a></li>
+            <li>Next: <a href="web-api-postgis.html" title="next chapter">Web API: PostGIS Import</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/interaction/web-api-geopackage.rst.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>GeoGig is published using the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse Distribution License</a> (EDL). This is an open source initiative approved BSD-3 Clause license.</p>
+          
+          <p>This documentation is licensed under a <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>. Page template includes work by the JQuery Foundation (<a href="https://github.com/jquery/jquery/blob/master/LICENSE.txt">MIT License</a>).</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> available on LocationTech. Website maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.min.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

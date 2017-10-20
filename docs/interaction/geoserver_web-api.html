@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoServer REST configuration integration &mdash; GeoGig 1.1.1 User Manual</title>
+  <title>GeoServer REST configuration integration &mdash; GeoGig 1.2.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,16 +17,16 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1.1',
+        VERSION:     '1.2.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.1.1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
-      <link rel="next" title="Web-API Documentation" href="web-api.html" />
+      <link rel="next" title="Web API: Overview" href="web-api-overview.html" />
       <link rel="prev" title="GeoServer GUI configuration" href="geoserver_ui.html" />
 </head>
 <body class="interaction/geoserver_web-api">
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.1.1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>GeoServer REST configuration integration</li>
 </ul>
@@ -89,7 +89,7 @@
     <a href="../genindex.html" title="General Index"
        accesskey="I">index</a></li>
   <li>
-    <a href="web-api.html" title="Web-API Documentation"
+    <a href="web-api-overview.html" title="Web API: Overview"
        accesskey="N">next</a>|</li>
   <li>
     <a href="geoserver_ui.html" title="GeoServer GUI configuration"
@@ -99,19 +99,19 @@
   <div class="section" id="geoserver-rest-configuration-integration">
 <span id="geoserver-web-api"></span><h1>GeoServer REST configuration integration<a class="headerlink" href="#geoserver-rest-configuration-integration" title="Permalink to this headline">¶</a></h1>
 <p>GeoGig integrates well with the standard GeoServer REST configuration API in order to configure vector datastores and layers from GeoGig repositories.</p>
-<p>You can use a combination of GeoGig’s own “Web API” and GeoServer’s REST configuration API to create a wide variety of scripts.</p>
-<div class="section" id="geogig-s-plugin-web-api">
-<h2>GeoGig’s plugin Web-API<a class="headerlink" href="#geogig-s-plugin-web-api" title="Permalink to this headline">¶</a></h2>
-<p>With the GeoGig GeoServer plug-in, like with the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span> <span class="pre">--multirepo</span></code> command, it is possible to expose several repositories. To do so, the GeoGig plug-in installs REST entry points under the <code class="docutils literal"><span class="pre">&lt;geoserver</span> <span class="pre">context&gt;/geogig/repos</span></code> context (e.g. <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos</span></code>).</p>
+<p>You can use a combination of GeoGig’s own web API and GeoServer’s REST configuration API to create a wide variety of scripts.</p>
+<div class="section" id="geoserver-plugin-for-geogig">
+<h2>GeoServer plugin for GeoGig<a class="headerlink" href="#geoserver-plugin-for-geogig" title="Permalink to this headline">¶</a></h2>
+<p>With the GeoServer plug-in for GeoGig, like with the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span> <span class="pre">--multirepo</span></code> command, it is possible to expose several repositories. To do so, the plug-in installs web API entry points under the <code class="docutils literal"><span class="pre">&lt;geoserver</span> <span class="pre">context&gt;/geogig/repos</span></code> context (e.g. <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos</span></code>).</p>
 <p>That root context can be used to query which repositories are being served by GeoServer.</p>
 <p>GeoSever managed repositories are internally identified by a UUID automatically assigned when the repository is first added to the GeoServer configuration, and published through their names. The repository name is assigned by the user and must also be unique across all the configured repositories.</p>
-<p>Each specific repository’s Web-API is accessed through the <code class="docutils literal"><span class="pre">&lt;geosever</span> <span class="pre">context&gt;/geogig/repos/&lt;repository</span> <span class="pre">name&gt;</span></code> entry point, a path change from when using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code> command that exposes the repository at the <code class="docutils literal"><span class="pre">/repos</span></code> application context.</p>
+<p>Each specific repository’s web API is accessed through the <code class="docutils literal"><span class="pre">&lt;geosever</span> <span class="pre">context&gt;/geogig/repos/&lt;repository</span> <span class="pre">name&gt;</span></code> entry point, a path change from when using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code> command that exposes the repository at the <code class="docutils literal"><span class="pre">/repos</span></code> application context.</p>
 <p>So, for example, whenever you would list the current HEAD’s commits by querying <code class="docutils literal"><span class="pre">http://localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> if serving a single repository with <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>, the same command, as served by GeoServer, would be at <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code>.</p>
-<p>From that point on, the commands available are exactly the same then when using the standalone Web API.</p>
+<p>From that point on, the commands available are exactly the same then when using the standalone web API.</p>
 </div>
-<div class="section" id="plugin-rest-api-for-creating-geogig-repositories">
-<span id="geoserver-web-api-plugin-init"></span><h2>Plugin REST API for creating GeoGig repositories<a class="headerlink" href="#plugin-rest-api-for-creating-geogig-repositories" title="Permalink to this headline">¶</a></h2>
-<p>In order to create a GeoGig Repository via the plugin’s REST API, you must send a <strong>PUT</strong> request to GeoServer that follows this URL form:</p>
+<div class="section" id="plugin-web-api-for-creating-geogig-repositories">
+<span id="geoserver-web-api-plugin-init"></span><h2>Plugin web API for creating GeoGig repositories<a class="headerlink" href="#plugin-web-api-for-creating-geogig-repositories" title="Permalink to this headline">¶</a></h2>
+<p>In order to create a GeoGig Repository via the plugin’s web API, you must send a <strong>PUT</strong> request to GeoServer that follows this URL form:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">geoserver</span><span class="o">&gt;/</span><span class="n">geogig</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repository</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">init</span>
 </pre></div>
 </div>
@@ -277,7 +277,7 @@ repository</td>
 </div>
 <div class="section" id="creating-a-geogig-datastore-with-rest">
 <h2>Creating a GeoGig datastore with REST<a class="headerlink" href="#creating-a-geogig-datastore-with-rest" title="Permalink to this headline">¶</a></h2>
-<p>To create a GeoGig datastore through the GeoServer REST API, you must already have a GeoGig repository configured in GeoServer. See <a class="reference internal" href="#geoserver-web-api-plugin-init"><span class="std std-ref">Plugin REST API for creating GeoGig repositories</span></a> for creating a GeoGig Repository in GeoServer.</p>
+<p>To create a GeoGig datastore through the GeoServer REST API, you must already have a GeoGig repository configured in GeoServer. See <a class="reference internal" href="#geoserver-web-api-plugin-init"><span class="std std-ref">Plugin web API for creating GeoGig repositories</span></a> for creating a GeoGig Repository in GeoServer.</p>
 <p>Once you have a GeoGig repository, you need only follow the <a class="reference external" href="http://docs.geoserver.org/stable/en/user/rest/api/datastores.html">standard procedure</a>, knowing which datastore connection parameters to use.</p>
 <p>That is, issuing a <code class="docutils literal"><span class="pre">POST</span></code> request to <code class="docutils literal"><span class="pre">/workspaces/&lt;ws&gt;/datastores[.&lt;format&gt;]</span></code>, where the request body for the XML representation appears:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>&lt;dataStore&gt;
@@ -285,34 +285,40 @@ repository</td>
    &lt;connectionParameters&gt;
       &lt;entry key=&quot;geogig_repository&quot;&gt;${repository URI}&lt;/entry&gt;
       &lt;entry key=&quot;branch&quot;&gt;${branch}&lt;/entry&gt;
+      &lt;entry key=&quot;autoIndexing&quot;&gt;${autoIndexing}&lt;/entry&gt;
    &lt;/connectionParameters&gt;
 &lt;/dataStore&gt;
 </pre></div>
 </div>
 <p>That’s all the information needed to create a GeoGig datastore.</p>
 <ul class="simple">
-<li>${datastore name} is the name to be given to the datastore, which then will be accessible through <code class="docutils literal"><span class="pre">/workspaces/&lt;ws&gt;/datastores/&lt;datastore</span> <span class="pre">name&gt;</span></code>.</li>
-<li>${repository URI} is a GeoServer URI string that identifies the GeoGig repository in GeoServer. It should be in the form <code class="docutils literal"><span class="pre">geoserver://&lt;repository</span> <span class="pre">name&gt;</span></code></li>
-<li>${branch} is optional and represents the name of the branch the datastore is going to serve its data from. If not provided, the datastore will use whichever is the currently checked out branch in the repository each time it (or the datastore) is accessed.</li>
+<li><strong>${datastore name}</strong> is the name to be given to the datastore, which then will be accessible through <code class="docutils literal"><span class="pre">/workspaces/&lt;ws&gt;/datastores/&lt;datastore</span> <span class="pre">name&gt;</span></code>.</li>
+<li><strong>${repository URI}</strong> is a GeoServer URI string that identifies the GeoGig repository in GeoServer. It should be in the form <code class="docutils literal"><span class="pre">geoserver://&lt;repository</span> <span class="pre">name&gt;</span></code></li>
+<li><strong>${branch}</strong> is optional. It represents the name of the branch the datastore is going to serve its data from. If not provided, the datastore will use whichever is the currently checked out branch in the repository each time it (or the datastore) is accessed.</li>
+<li><strong>${autoIndexing}</strong> is optional. It is a boolean value (<code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">false</span></code>) that controls whether or not GeoGig repository indexes should be created/updated in this repository when layers are added/edited. The default value, if not specified, is <code class="docutils literal"><span class="pre">false</span></code>.</li>
 </ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Enabling <code class="docutils literal"><span class="pre">autoIndexing</span></code> is highly recommended for increasing GeoGig repository performance. See <a class="reference internal" href="geoserver_ui.html#automatic-indexing-geoserver-ui"><span class="std std-ref">Advanced Options: Automatic Indexing</span></a> for more.</p>
 </div>
 <div class="section" id="quick-example">
-<h2>Quick example:<a class="headerlink" href="#quick-example" title="Permalink to this headline">¶</a></h2>
+<h3>Quick example<a class="headerlink" href="#quick-example" title="Permalink to this headline">¶</a></h3>
 <p>For the impatient, here’s a very quick cheat sheet on how to create a datastore and layer for a repository.</p>
 <p>Suppose you have a repository named <code class="docutils literal"><span class="pre">myrepo</span></code> in GeoServer, it contains a <code class="docutils literal"><span class="pre">roads</span></code> feature type tree, and GeoServer has a workspace named <code class="docutils literal"><span class="pre">ws1</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &quot;&lt;dataStore&gt;&lt;name&gt;my_geogig_repo&lt;/name&gt;&lt;connectionParameters&gt;&lt;entry key=\&quot;geogig_repository\&quot;&gt;geoserver://myrepo&lt;/entry&gt;&lt;/connectionParameters&gt;&lt;/dataStore&gt;&quot; http://localhost:8080/geoserver/rest/workspaces/ws1/datastores
+<div class="highlight-default"><div class="highlight"><pre><span></span>curl -v -u admin:geoserver -XPOST -H &quot;Content-type: application/xml&quot; -d &quot;&lt;dataStore&gt;&lt;name&gt;my_geogig_repo&lt;/name&gt;&lt;connectionParameters&gt;&lt;entry key=\&quot;geogig_repository\&quot;&gt;geoserver://myrepo&lt;/entry&gt;&lt;/connectionParameters&gt;&lt;/dataStore&gt;&quot; http://localhost:8080/geoserver/rest/workspaces/ws1/datastores
 &lt; HTTP/1.1 201 Created
-$ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &quot;&lt;featureType&gt;&lt;name&gt;roads&lt;/name&gt;&lt;/featureType&gt;&quot; http://localhost:8080/geoserver/rest/workspaces/ws1/datastores/my_geogig_repo/featuretypes
+$ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: application/xml&quot; -d &quot;&lt;featureType&gt;&lt;name&gt;roads&lt;/name&gt;&lt;/featureType&gt;&quot; http://localhost:8080/geoserver/rest/workspaces/ws1/datastores/my_geogig_repo/featuretypes
 &lt; HTTP/1.1 201 Created
 </pre></div>
 </div>
 <p>For a more thorough example take a look at the tutorial below.</p>
 </div>
+</div>
 <div class="section" id="curl-tutorial">
 <h2>cURL tutorial<a class="headerlink" href="#curl-tutorial" title="Permalink to this headline">¶</a></h2>
-<p>The following is a short tutorial on how to use a combination of GeoGig and GeoServer web APIs to configure datastores and layers from a GeoGig repository.</p>
+<p>The following is a short tutorial on how to use a combination of GeoGig’s web API and GeoServer’s REST API to configure datastores and layers from a GeoGig repository.</p>
 <p>Lets start by listing the available repositories, given there are none yet added to GeoServer:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -H &quot;Accept: application/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -320,33 +326,42 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
 </pre></div>
 </div>
 <p>We got an empty list of repositories.</p>
-<p>Now lets create an empty repository in GeoServer. Follow one of the procedures <a class="reference internal" href="#geoserver-web-api-plugin-init-parentdirectory"><span class="std std-ref">here</span></a> or <a class="reference internal" href="#geoserver-web-api-plugin-init-postgres"><span class="std std-ref">here</span></a>.</p>
+<div class="section" id="create-an-empty-repository">
+<h3>Create an Empty Repository<a class="headerlink" href="#create-an-empty-repository" title="Permalink to this headline">¶</a></h3>
+<p>Now lets create an empty repository in GeoServer. Follow one of the procedures for <a class="reference internal" href="#geoserver-web-api-plugin-init-parentdirectory"><span class="std std-ref">directory backed repositories</span></a> or <a class="reference internal" href="#geoserver-web-api-plugin-init-postgres"><span class="std std-ref">PostgreSQL backed repositories</span></a>.</p>
+</div>
+<div class="section" id="create-a-geoserver-workspace">
+<h3>Create a GeoServer Workspace<a class="headerlink" href="#create-a-geoserver-workspace" title="Permalink to this headline">¶</a></h3>
 <p>Now lets create a workspace in GeoServer to hold our datastore:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &quot;&lt;workspace&gt;&lt;name&gt;geogigtest&lt;/name&gt;&lt;/workspace&gt;&quot; http://localhost:8080/geoserver/rest/workspaces
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: application/xml&quot; -d &quot;&lt;workspace&gt;&lt;name&gt;geogigtest&lt;/name&gt;&lt;/workspace&gt;&quot; http://localhost:8080/geoserver/rest/workspaces
 &gt; POST /geoserver/rest/workspaces HTTP/1.1
 &lt; HTTP/1.1 201 Created
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Beware of not calling your namespace <code class="docutils literal"><span class="pre">geogig</span></code> as it’s “local workspace catalog” entry point will conflict with the <code class="docutils literal"><span class="pre">/geogig</span></code> REST API entry point.</p>
+<p class="last">Beware of not calling your namespace <code class="docutils literal"><span class="pre">geogig</span></code> as it’s “local workspace catalog” entry point will conflict with the <code class="docutils literal"><span class="pre">/geogig</span></code> web API entry point.</p>
 </div>
+</div>
+<div class="section" id="create-a-geogig-datastore">
+<h3>Create a GeoGig Datastore<a class="headerlink" href="#create-a-geogig-datastore" title="Permalink to this headline">¶</a></h3>
 <p>Create a GeoGig datastore called <code class="docutils literal"><span class="pre">geogig_datastore_test</span></code> inside that workspace. To do so, create a file named <code class="docutils literal"><span class="pre">datastore.xml</span></code> in the current directory with the following content (note the value of the <code class="docutils literal"><span class="pre">geogig_repository</span></code> connection parameter is the repository directory):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">dataStore</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="n">geogig_datastore_test</span><span class="o">&lt;/</span><span class="n">name</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">connectionParameters</span><span class="o">&gt;</span>
       <span class="o">&lt;</span><span class="n">entry</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;geogig_repository&quot;</span><span class="o">&gt;</span><span class="n">geoserver</span><span class="p">:</span><span class="o">//</span><span class="n">myrepo</span><span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">entry</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;autoIndexing&quot;</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
    <span class="o">&lt;/</span><span class="n">connectionParameters</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">dataStore</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>The run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -T datastore.xml http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: application/xml&quot; -T datastore.xml http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores
 &lt; HTTP/1.1 201 Created
 </pre></div>
 </div>
 <p>And verify the datastore exists:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XGET -H &quot;Accept: text/xml&quot; http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores/geogig_datastore_test
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XGET -H &quot;Accept: application/xml&quot; http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores/geogig_datastore_test
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;dataStore&gt;
@@ -360,6 +375,7 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
   &lt;connectionParameters&gt;
     &lt;entry key=&quot;geogig_repository&quot;&gt;geoserver://myrepo&lt;/entry&gt;
     &lt;entry key=&quot;namespace&quot;&gt;http://geogigtest&lt;/entry&gt;
+    &lt;entry key=&quot;autoIndexing&quot;&gt;true&lt;/entry&gt;
   &lt;/connectionParameters&gt;
   &lt;__default&gt;false&lt;/__default&gt;
   &lt;featureTypes&gt;
@@ -368,31 +384,38 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
 &lt;/dataStore&gt;
 </pre></div>
 </div>
+</div>
+<div class="section" id="import-shapefile-into-datastore">
+<h3>Import Shapefile into Datastore<a class="headerlink" href="#import-shapefile-into-datastore" title="Permalink to this headline">¶</a></h3>
 <p>Now, let’s import some data. For this example, we are importing a ZIP of a Shapefile called <code class="docutils literal"><span class="pre">railways.zip</span></code> that is located in the current working directory:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XPUT -H &quot;Content-type: application/zip&quot; --data-binary @railways.zip http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores/geogig_datastore_test/file.shp
 </pre></div>
 </div>
-<p>You can create a second datastore for the same repository using the repository and different branch.  To verify, let’s create a branch in the repository, and a new datastore that uses that branch, instead. To do so, copy the following XML fragment to a file called <code class="docutils literal"><span class="pre">datastore_branch.xml</span></code>. This fragment has a different name, an extra <code class="docutils literal"><span class="pre">branch</span></code> connection parameter, and the same repository directory:</p>
+</div>
+<div class="section" id="create-a-new-branch-and-datastore">
+<h3>Create a new Branch and Datastore<a class="headerlink" href="#create-a-new-branch-and-datastore" title="Permalink to this headline">¶</a></h3>
+<p>You can create a second datastore for the same repository using the repository and different branch. First, let’s create a new branch called <code class="docutils literal"><span class="pre">experimental</span></code> in the repository:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XGET http://localhost:8080/geoserver/geogig/repos/myrepo/branch?branchName=experimental
+</pre></div>
+</div>
+<p>Now, let’s create a new datastore that uses this branch. To do so, copy the following XML fragment to a file called <code class="docutils literal"><span class="pre">datastore_branch.xml</span></code>. This fragment has a different name, an extra <code class="docutils literal"><span class="pre">branch</span></code> connection parameter, and the same repository URI:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">dataStore</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="n">experimental</span><span class="o">&lt;/</span><span class="n">name</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">connectionParameters</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">entry</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;geogig_repository&quot;</span><span class="o">&gt;</span><span class="n">geoserver</span><span class="p">:</span><span class="o">//</span><span class="n">myrepo</span><span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">entry</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;branch&quot;</span><span class="o">&gt;</span><span class="n">experimental</span><span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">entry</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;autoIndexing&quot;</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">connectionParameters</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">dataStore</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>Then create the branch called <code class="docutils literal"><span class="pre">experimental</span></code> in the repository:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XGET http://localhost:8080/geoserver/geogig/repos/myrepo/branch?branchName=experimental
-</pre></div>
-</div>
 <p>Then call the GeoServer REST API to create the new datastore:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -T datastore_branch.xml http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: application/xml&quot; -T datastore_branch.xml http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores
 &lt; HTTP/1.1 201 Created
 </pre></div>
 </div>
 <p>Finally get the new repository information:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -u admin:geoserver -XGET -H &quot;Accept: text/xml&quot; http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores/experimental
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -u admin:geoserver -XGET -H &quot;Accept: application/xml&quot; http://localhost:8080/geoserver/rest/workspaces/geogigtest/datastores/experimental
 &lt;dataStore&gt;
   &lt;name&gt;experimental&lt;/name&gt;
   &lt;type&gt;GeoGIG&lt;/type&gt;
@@ -405,6 +428,7 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
     &lt;entry key=&quot;geogig_repository&quot;&gt;geoserver://myrepo&lt;/entry&gt;
     &lt;entry key=&quot;namespace&quot;&gt;http://geogigtest&lt;/entry&gt;
     &lt;entry key=&quot;branch&quot;&gt;experimental&lt;/entry&gt;
+    &lt;entry key=&quot;autoIndexing&quot;&gt;true&lt;/entry&gt;
   &lt;/connectionParameters&gt;
   &lt;__default&gt;false&lt;/__default&gt;
   &lt;featureTypes&gt;
@@ -414,8 +438,11 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
 </pre></div>
 </div>
 <p>Now you have two different datastores, served from the same GeoGig repository, at different branches. These two different branches may have different feature type trees (i.e. “layers”) or different versions of the same.</p>
-<p>Let’s revisit the initial query in this tutorial and check the list of available repositories using GeoGig’s own REST API:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos&quot;
+</div>
+<div class="section" id="verify-layers-and-branches">
+<h3>Verify Layers and Branches<a class="headerlink" href="#verify-layers-and-branches" title="Permalink to this headline">¶</a></h3>
+<p>Let’s revisit the initial query in this tutorial and check the list of available repositories using GeoGig’s own web API:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -H &quot;Accept: application/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos&quot;
 &lt; HTTP/1.1 200 OK
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;repos&gt;
@@ -425,7 +452,7 @@ $ curl -v -u admin:geoserver -XPOST -H &quot;Content-type: text/xml&quot; -d &qu
     &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8080/geoserver/geogig/repos/myrepo.xml&quot; type=&quot;application/xml&quot;/&gt;
   &lt;/repo&gt;
 &lt;/repos&gt;
-$ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos/myrepo.xml&quot;
+$ curl -v -u admin:geoserver -H &quot;Accept: application/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos/myrepo.xml&quot;
 &lt; HTTP/1.1 200 OK
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
 &lt;repository&gt;
@@ -436,7 +463,7 @@ $ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localho
 </pre></div>
 </div>
 <p>Also make sure the repository contains the expected feature type trees using the <code class="docutils literal"><span class="pre">ls-tree</span></code> command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -H &quot;Accept:application/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos/myrepo/ls-tree&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v -u admin:geoserver -H &quot;Accept: application/xml&quot; &quot;http://localhost:8080/geoserver/geogig/repos/myrepo/ls-tree&quot;
 &lt; HTTP/1.1 200 OK
 &lt;response&gt;
    &lt;success&gt;true&lt;/success&gt;
@@ -445,7 +472,7 @@ $ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localho
 </pre></div>
 </div>
 <p>Finally, let’s query the layer for the <code class="docutils literal"><span class="pre">railways</span></code> feature type (it was created when we imported the shapefile ZIP above):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -u admin:geoserver -XGET -H &quot;Accept: text/xml&quot; http://localhost:8080/geoserver/rest/layers
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -u admin:geoserver -XGET -H &quot;Accept: application/xml&quot; http://localhost:8080/geoserver/rest/layers
 &lt;layers&gt;
   ....
   &lt;layer&gt;
@@ -458,11 +485,12 @@ $ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localho
 <p>Changing the configuration of either the feature types or the layers is just a matter of utilizing the usual GeoServer REST API to do so. See <a class="reference external" href="http://docs.geoserver.org/stable/en/user/rest/api/featuretypes.html">Feature types</a> and <a class="reference external" href="http://docs.geoserver.org/stable/en/user/rest/api/layers.html">Layers</a> in the GeoServer user manual for more information. The GeoServer <a class="reference external" href="http://docs.geoserver.org/stable/en/user/rest/examples/curl.html">cURL examples</a> are also a good source of information.</p>
 </div>
 </div>
+</div>
 
 
       <div class="selfclear pagination-nav">
           <div class="leftwise"><strong>Previous</strong>: <a href="geoserver_ui.html" title="previous chapter">GeoServer GUI configuration</a></div>
-          <div class="rightwise"><strong>Next</strong>: <a href="web-api.html" title="next chapter">Web-API Documentation</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="web-api-overview.html" title="next chapter">Web API: Overview</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
       </div><!-- /#content> -->
@@ -488,13 +516,23 @@ $ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localho
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
 <li><a class="reference internal" href="#">GeoServer REST configuration integration</a><ul>
-<li><a class="reference internal" href="#geogig-s-plugin-web-api">GeoGig’s plugin Web-API</a></li>
-<li><a class="reference internal" href="#plugin-rest-api-for-creating-geogig-repositories">Plugin REST API for creating GeoGig repositories</a></li>
+<li><a class="reference internal" href="#geoserver-plugin-for-geogig">GeoServer plugin for GeoGig</a></li>
+<li><a class="reference internal" href="#plugin-web-api-for-creating-geogig-repositories">Plugin web API for creating GeoGig repositories</a></li>
 <li><a class="reference internal" href="#creating-a-geogig-repository-in-a-specific-parent-directory">Creating a GeoGig repository in a specific parent directory</a></li>
 <li><a class="reference internal" href="#creating-a-geogig-repository-backed-by-postgresql">Creating a GeoGig repository backed by PostgreSQL</a></li>
-<li><a class="reference internal" href="#creating-a-geogig-datastore-with-rest">Creating a GeoGig datastore with REST</a></li>
-<li><a class="reference internal" href="#quick-example">Quick example:</a></li>
-<li><a class="reference internal" href="#curl-tutorial">cURL tutorial</a></li>
+<li><a class="reference internal" href="#creating-a-geogig-datastore-with-rest">Creating a GeoGig datastore with REST</a><ul>
+<li><a class="reference internal" href="#quick-example">Quick example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#curl-tutorial">cURL tutorial</a><ul>
+<li><a class="reference internal" href="#create-an-empty-repository">Create an Empty Repository</a></li>
+<li><a class="reference internal" href="#create-a-geoserver-workspace">Create a GeoServer Workspace</a></li>
+<li><a class="reference internal" href="#create-a-geogig-datastore">Create a GeoGig Datastore</a></li>
+<li><a class="reference internal" href="#import-shapefile-into-datastore">Import Shapefile into Datastore</a></li>
+<li><a class="reference internal" href="#create-a-new-branch-and-datastore">Create a new Branch and Datastore</a></li>
+<li><a class="reference internal" href="#verify-layers-and-branches">Verify Layers and Branches</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -505,7 +543,7 @@ $ curl -v -u admin:geoserver -H &quot;Accept:text/xml&quot; &quot;http://localho
           <h3>Continue Reading</h3>
           <ul>
             <li>Previous: <a href="geoserver_ui.html" title="previous chapter">GeoServer GUI configuration</a></li>
-            <li>Next: <a href="web-api.html" title="next chapter">Web-API Documentation</a></li>
+            <li>Next: <a href="web-api-overview.html" title="next chapter">Web API: Overview</a></li>
           </ul>
         </div>
         <div class="section">

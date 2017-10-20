@@ -98,5 +98,3 @@ process could be started on one node and the request to monitor for completion c
 In a clustered environment, the async operation and monitoring requests must be directed to the same node.  This can be
 done by either directly talking to a node or (better) having the load balancer direct the requests to the same node.
 
-TODO: provide a (partial/full) list of async operations
-

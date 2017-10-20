@@ -1,4 +1,34 @@
-#GeoGig 1.1.1 Release Notes
+# GeoGig 1.2.0 Release Notes
+
+October 20, 2017.
+## The GeoGig team is pleased to announce the release of GeoGig 1.2.0!
+This release has three major changes:
+
+- Support for GeoServer 2.12 (WebAPI Refresh)
+- Improved performance for Replication - Clone/Fetch/Pull/Push
+- Numerous usability improvements to support the GeoGig-QGIS plugin
+
+## Support for GeoServer 2.12 (web API Refresh)
+
+One of the big changes in GeoServer 2.12 was to replace Restlet with Spring MVC. This necessitated GeoGig to also replace Restlet with Spring MVC. We made the new web API exactly equivalent to the old web API, so all the requests and responses are exactly the same - web client applications should not need any changes. We also made some improvements to the API documentation - see http://geogig.org/docs/interaction/web-api.html.
+
+GeoServer 2.12 offers lots of new features and improvements: http://blog.geoserver.org/2017/10/17/geoserver-2-12-0-released/
+
+NOTE:
+For GeoServer 2.12 and newer, you must use GeoGig version 1.2.0 or newer (scroll down to the Downloads section).
+For GeoServer 2.11 and older, you must use GeoGig version 1.1.1.
+
+The GeoGig [releases page](https://github.com/locationtech/geogig/releases) contains the GeoServer plugin bundles with the appropriate versions of GeoGig.
+
+## Improved performance for Replication - Clone/Fetch/Pull
+
+The last few releases focused on performance related to rendering/querying data inside GeoGig. For this release, we have concentrated on improving how changes are shared among people (replication) in support of collaborative editing workflows.. This means that Clone/Fetch/Pull/Push operations are noticeably faster - sometime several orders of magnitude faster!
+Numerous usability improvements to support the GeoGig-QGIS plugin
+
+This release supports the upcoming GeoGig-QGIS plugin, which gives a powerful and user-friendly GUI front end to GeoGig. We've made some improvements - bug fixes and performance increases - to make this plugin as useable as possible. The GeoGig-QGIS plugin will be released on Boundless Connect (https://connect.boundlessgeo.com/) early 2018.
+
+
+# GeoGig 1.1.1 Release Notes
 
 July 10, 2017.
 
@@ -6,7 +36,7 @@ This release sits on top of 1.1.0, adding even more performance and robustness i
 
 Download bundles are available [here](https://github.com/locationtech/geogig/releases/tag/v1.1.1)
 
-##Performance
+## Performance
 
 We’ve, again, improved communication between Geoserver/GeoGig and PostgreSQL - and that means it’s 
 FAST and requires 25% less network bandwidth.  This means lower infrastructure requirements
@@ -19,7 +49,7 @@ and introduced the first round of improvements for cloning from an HTTP remote t
 
 There are still some rough edges specially when synchronizing a large number of commits that we'll be working on for the 1.2 series.
 
-##Caching
+## Caching
 
 GeoGig 1.1.1 has a simplified and improved cache, offering;
 
@@ -32,17 +62,17 @@ Please see the [Shared cache](http://geogig.org/docs/start/runtime.html#shared-i
 configure it on the [GeoServer GUI](http://geogig.org/docs/interaction/geoserver_ui.html#geogig-runtime-settings).
 
 
-##Clustering
+## Clustering
 
 The GeoGig team have extensively tested the GeoGig GeoServer plugin in a clustered environment and we're more than glad with the results.
 Please see the [upgrade guide](http://geogig.org/upgrade/Upgrade_1.1_to_1.1.1.html).
 
 
-##Bug Fixes
+## Bug Fixes
 
 We performed more testing this release and found (and fixed) several minor problems. We also addressed a few issues reported on the mailing list.
 
-* Fix Rocksdb backend's durability issues. A rocksdb backed repository was corrupted if edited through the WEB-API once the server was shut down.
+* Fix Rocksdb backend's durability issues. A rocksdb backed repository was corrupted if edited through the web API once the server was shut down.
 * Avoid stack trace when trying to unalias a CLI command that doesn't exist.
 * Avoid failure to return the pg config db if the repository does not exist.
 * Fix error when cloning on Windows
@@ -97,7 +127,7 @@ For example, you might want to include the attributes needed by the Styled Layer
 filter out Features for rendering on a WMS; or include the time/elevation attributes to speed up
 queries on time series in GeoServer. 
 
-* Spatial indexing command set: the geogig command line and its WEB API include a full set of
+* Spatial indexing command set: the geogig command line and its web API include a full set of
 commands to manage the indexes. Run `geogig index --help` or browse the online documentation at
 http://geogig.org/docs for more information.
 

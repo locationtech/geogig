@@ -82,7 +82,7 @@
     <compress-lzf.version>1.0.3</compress-lzf.version>
     <cucumber-java.version>1.2.4</cucumber-java.version>
     <gson.version>2.4</gson.version>
-    <gt.version>18.0</gt.version>
+    <gt.version>19-SNAPSHOT</gt.version>
     <guava.version>18.0</guava.version>
     <guice.version>4.0</guice.version>
     <jcommander.version>1.48</jcommander.version>
@@ -105,7 +105,7 @@
     <war.plugin.version>2.4</war.plugin.version>
     <jetty.plugin.version>7.1.6.v20100715</jetty.plugin.version>
     <dependency.plugin.version>2.2</dependency.plugin.version>
-    <surefire.plugin.version>2.17</surefire.plugin.version>
+    <surefire.plugin.version>2.20.1</surefire.plugin.version>
     <assembly.plugin.version>2.2-beta-5</assembly.plugin.version>
 
     <test.maxHeapSize>512M</test.maxHeapSize>
@@ -495,10 +495,15 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>1.9</source>
+          <target>1.9</target>
+          <release>9</release>
           <debug>true</debug>
           <encoding>UTF-8</encoding>
+          <compilerArgs>
+            <arg>--add-modules</arg>
+            <arg>java.xml.bind</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
       <plugin>

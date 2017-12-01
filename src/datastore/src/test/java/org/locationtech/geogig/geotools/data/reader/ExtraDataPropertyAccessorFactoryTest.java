@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.factory.FactoryRegistry;
 import org.geotools.factory.Hints;
 import org.geotools.filter.expression.PropertyAccessor;
 import org.geotools.filter.expression.PropertyAccessorFactory;
@@ -98,7 +97,7 @@ public class ExtraDataPropertyAccessorFactoryTest {
     @Test
     public void testLowLevelSPI() {
         Iterator<PropertyAccessorFactory> factories;
-        factories = FactoryRegistry.lookupProviders(PropertyAccessorFactory.class);
+        factories = ServiceLoader.load(PropertyAccessorFactory.class).iterator();
         while (factories.hasNext()) {
             PropertyAccessorFactory factory = factories.next();
             if (factory instanceof ExtraDataPropertyAccessorFactory) {

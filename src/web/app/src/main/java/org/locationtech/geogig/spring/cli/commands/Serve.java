@@ -24,10 +24,10 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.rest.repository.MultiRepositoryProvider;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.locationtech.geogig.spring.main.JettyServer;
-import org.locationtech.geogig.spring.provider.MultiRepositoryProvider;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

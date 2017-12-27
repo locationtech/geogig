@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.spring.provider;
+package org.locationtech.geogig.rest.repository;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -29,8 +29,6 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.rest.repository.InitRequestUtil;
-import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

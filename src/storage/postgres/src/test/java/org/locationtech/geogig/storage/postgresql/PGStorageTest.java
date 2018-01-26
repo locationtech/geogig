@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.postgresql;
 import static java.lang.String.format;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -204,6 +205,20 @@ public class PGStorageTest {
             }
         } finally {
             PGStorage.closeDataSource(source);
+        }
+    }
+
+    @Test
+    public void testGetVersionFromQueryResult() {
+        // ensure PG reported versions don't break
+        // versions can be {major}.{minor} or {major}.{minor}.{patch}
+        try {
+            assertNotNull(PGStorage.getVersionFromQueryResult("9.4.0"));
+            assertNotNull(PGStorage.getVersionFromQueryResult("10.1"));
+        } catch (Exception ex) {
+            // test failed
+            ex.printStackTrace();
+            fail("Version string not handled");
         }
     }
 

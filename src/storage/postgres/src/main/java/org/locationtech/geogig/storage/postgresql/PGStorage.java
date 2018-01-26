@@ -156,16 +156,25 @@ public class PGStorage {
                 Preconditions.checkState(rs.next(),
                         "Query 'SHOW server_version' did not produce a result");
                 final String v = rs.getString(1);
-                List<Integer> versions = Lists.transform(Splitter.on('.').splitToList(v),
-                        (s) -> Integer.parseInt(s));
-                Preconditions.checkState(versions.size() == 3,
-                        "Expected version format x.y.z, got " + v);
-                int major = versions.get(0).intValue();
-                int minor = versions.get(1).intValue();
-                int patch = versions.get(2).intValue();
-                return new Version(major, minor, patch);
+                return getVersionFromQueryResult(v);
             }
         }
+    }
+
+    static Version getVersionFromQueryResult(final String versionQueryResult) {
+        final List<Integer> versions = Lists.transform(Splitter.on('.').splitToList(versionQueryResult),
+            (s) -> Integer.parseInt(s));
+        // version string can be either
+        // {major}.{minor}.{patch}
+        // or (since PostgreSQL 10)
+        // {major}.{minor}
+        Preconditions.checkState(versions.size() == 3 || versions.size() == 2,
+            "Expected version format x.y.z or x.y, got " + versionQueryResult);
+        int major = versions.get(0).intValue();
+        int minor = versions.get(1).intValue();
+        // patch may not be present. If not, just use 0
+        int patch = (versions.size() == 3) ? versions.get(2).intValue() : 0;
+        return new Version(major, minor, patch);
     }
 
     /**

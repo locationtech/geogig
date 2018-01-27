@@ -87,7 +87,7 @@ import com.google.common.collect.Lists;
 public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     private static final Logger LOGGER = Logging.getLogger(GeoGigDataStore.class);
-    
+
     private final Repository repository;
 
     private final Context _liveContext;
@@ -97,6 +97,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     /** When the configured head is not a branch, we disallow transactions */
     private boolean allowTransactions = true;
+
+    private boolean closeOnDispose = true;
 
     /**
      * Indicates if layers from this datastore should automatically index time/elevation dimension
@@ -113,10 +115,29 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         this._liveContext = repository.context();
     }
 
+    public GeoGigDataStore(Context context) {
+        super();
+        Preconditions.checkNotNull(context);
+
+        this.repository = context.repository();
+        Preconditions.checkNotNull(repository);
+        this._liveContext = context;
+    }
+
     @Override
     public void dispose() {
         super.dispose();
-        repository.close();
+        if (closeOnDispose) {
+            repository.close();
+        }
+    }
+
+    public void setCloseOnDispose(boolean close) {
+        this.closeOnDispose = close;
+    }
+
+    public boolean isCloseOnDispose() {
+        return this.closeOnDispose;
     }
 
     /**
@@ -133,7 +154,14 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      *         the repository
      */
     public void setHead(@Nullable final String refspec) throws IllegalArgumentException {
-        if (refspec == null) {
+        if (Ref.WORK_HEAD.equals(refspec)) {
+            String checkedOutBranch = getCheckedOutBranch();
+            if (null == checkedOutBranch) {// "Repository is in a dettached state"
+                allowTransactions = false;
+            } else {
+                allowTransactions = true;
+            }
+        } else if (refspec == null) {
             allowTransactions = true; // when no branch name is set we assume we should make
             // transactions against the current HEAD
         } else {
@@ -422,14 +450,12 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      * @return An Optional containing the ObjectId of the IndexInfo created/updated, or Absent if no
      *         index was created or updated.
      */
-    public Optional<ObjectId> createOrUpdateIndex(String layerName,
-            String... extraAttributes) {
-        
+    public Optional<ObjectId> createOrUpdateIndex(String layerName, String... extraAttributes) {
+
         String head = getOrFigureOutHead();
         return createOrUpdateIndex(this.repository, head, layerName, extraAttributes);
     }
-    
-    
+
     public static Optional<ObjectId> createOrUpdateIndex(Repository repository,
             @Nullable String branchOrHead, String featureTreePath, String... extraAttributes) {
 
@@ -452,8 +478,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         if (indexAttributes.isEmpty()) {
             // no extra attributes specified
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(
-                        String.format("No attributes provided for indexing, layer: %s", featureTreePath));
+                LOGGER.fine(String.format("No attributes provided for indexing, layer: %s",
+                        featureTreePath));
             }
         }
         // we have work to do
@@ -481,7 +507,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
                         String.join(", ", indexAttributes)));
             }
             UpdateIndexOp command = context.command(UpdateIndexOp.class);
-            
+
             final String treeRefSpec = branchOrHead + ":" + indexInfo.getTreeName();
 
             // set ADD to true as we don't want to clobber existing attributes in the extra data

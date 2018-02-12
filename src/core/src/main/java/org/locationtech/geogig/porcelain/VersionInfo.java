@@ -53,17 +53,19 @@ public class VersionInfo {
             // should only occur if running from class files and not a JAR
             this.projectVersion = "UNDETERMINED";
         }
-        this.branch = properties.get("git.branch").toString();
-        this.commitId = properties.get("git.commit.id").toString();
-        this.commitIdAbbrev = properties.get("git.commit.id.abbrev").toString();
-        this.buildUserName = properties.get("git.build.user.name").toString();
-        this.buildUserEmail = properties.get("git.build.user.email").toString();
-        this.buildTime = properties.get("git.build.time").toString();
-        this.commitUserName = properties.get("git.commit.user.name").toString();
-        this.commitUserEmail = properties.get("git.commit.user.email").toString();
-        this.commitMessageShort = properties.get("git.commit.message.short").toString();
-        this.commitMessageFull = properties.get("git.commit.message.full").toString();
-        this.commitTime = properties.get("git.commit.time").toString();
+        //@formatter:off
+        this.branch = properties.getProperty("git.branch", "<unknown branch>");
+        this.commitId = properties.getProperty("git.commit.id", "<unknown commit id>");
+        this.commitIdAbbrev = properties.getProperty("git.commit.id.abbrev", "<unknown commit id>");
+        this.buildUserName = properties.getProperty("git.build.user.name", "<unknown build user>");
+        this.buildUserEmail = properties.getProperty("git.build.user.email", "<unknown build user email>");
+        this.buildTime = properties.getProperty("git.build.time", "<unknown build time>");
+        this.commitUserName = properties.getProperty("git.commit.user.name", "<unknown committer>");
+        this.commitUserEmail = properties.getProperty("git.commit.user.email", "<unknown committer email>");
+        this.commitMessageShort = properties.getProperty("git.commit.message.short", "<unknown commit message>");
+        this.commitMessageFull = properties.getProperty("git.commit.message.full", "<unknown commit message>");
+        this.commitTime = properties.getProperty("git.commit.time", "<unknown commit time>");
+        //@formatter:on
     }
 
     /**

@@ -547,7 +547,7 @@
           <skipPoms>false</skipPoms>
           <verbose>false</verbose>
           <generateGitPropertiesFile>true</generateGitPropertiesFile>
-          <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+          <generateGitPropertiesFilename>src/main/resources/git.geogig.properties</generateGitPropertiesFilename>
         </configuration>
       </plugin>
     </plugins>

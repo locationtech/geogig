@@ -28,19 +28,24 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.spring.config.GeoGigWebAPISpringConfig;
 import org.locationtech.geogig.spring.main.JettyServer;
 import org.locationtech.geogig.spring.provider.MultiRepositoryProvider;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.test.TestPlatform;
+import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -67,6 +72,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
     private JettyServer server = null;
 
+    protected WebApplicationContext wac;
+
     /**
      * Set up the context for a scenario.
      */
@@ -80,6 +87,16 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         GlobalContextBuilder.builder(new FunctionalRepoContextBuilder(platform));
 
         setVariable("@systemTempPath", rootFolder.getCanonicalPath().replace("\\", "/"));
+        setupSpringContext();
+    }
+
+    private void setupSpringContext() {
+        GenericWebApplicationContext context = new GenericWebApplicationContext();
+        new AnnotatedBeanDefinitionReader(context).register(GeoGigWebAPISpringConfig.class);
+        MockServletContext msc = new MockServletContext("");
+        context.setServletContext(msc);
+        context.refresh();
+        wac = context;
     }
 
     /**

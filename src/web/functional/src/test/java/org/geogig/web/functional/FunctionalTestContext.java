@@ -39,14 +39,9 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
-import org.locationtech.geogig.spring.config.GeoGigWebAPISpringConfig;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestData;
-import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
 import org.springframework.http.HttpMethod;
-import org.springframework.mock.web.MockServletContext;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.w3c.dom.Document;
 
 import com.google.common.base.Optional;
@@ -68,15 +63,12 @@ public abstract class FunctionalTestContext extends ExternalResource {
 
     private Map<String, String> variables = new HashMap<>();
 
-    protected WebApplicationContext wac;
-
     @Override
     public synchronized void before() throws Exception {
         if (tempFolder == null) {
             this.tempFolder = new TemporaryFolder();
             this.tempFolder.create();
         }
-        setupSpringContext();
         setUp();
 
         RevFeatureType rft = RevFeatureTypeBuilder.build(TestData.pointsType);
@@ -89,14 +81,6 @@ public abstract class FunctionalTestContext extends ExternalResource {
         setVariable("@PolysTypeID", rft.getId().toString());
     }
 
-    protected void setupSpringContext() {
-        GenericWebApplicationContext context = new GenericWebApplicationContext();
-        new AnnotatedBeanDefinitionReader(context).register(GeoGigWebAPISpringConfig.class);
-        MockServletContext msc = new MockServletContext("");
-        context.setServletContext(msc);
-        context.refresh();
-        wac = context;
-    }
     /**
      * Set up the context for a scenario.
      */

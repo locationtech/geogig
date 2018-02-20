@@ -29,7 +29,7 @@ public class ObjectIdTest extends TestCase {
 
     @Test
     public void testEquals() {
-        ObjectId nullId = new ObjectId();
+        ObjectId nullId = ObjectId.valueOf("0000000000000000000000000000000000000000");
         ObjectId id1 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
         ObjectId id2 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
         assertNotSame(id1, id2);
@@ -41,8 +41,10 @@ public class ObjectIdTest extends TestCase {
 
     @Test
     public void testToStringAndValueOf() {
-        ObjectId id1 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
+        final String hexString = "abc123000000000000001234567890abcdef0000";
+        ObjectId id1 = ObjectId.valueOf(hexString);
         String stringRep = id1.toString();
+        assertEquals(hexString, stringRep);
         ObjectId valueOf = ObjectId.valueOf(stringRep);
         assertEquals(id1, valueOf);
 
@@ -58,13 +60,35 @@ public class ObjectIdTest extends TestCase {
 
     @Test
     public void testByeN() {
-        ObjectId oid = new ObjectId(new byte[] { 00, 01, 02, 03, (byte) 0xff, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0 });
-        assertEquals(0, oid.byteN(0));
-        assertEquals(1, oid.byteN(1));
-        assertEquals(2, oid.byteN(2));
-        assertEquals(3, oid.byteN(3));
-        assertEquals(255, oid.byteN(4));
+        //@formatter:off
+        byte[] raw = new byte[] { 
+                (byte) 0xab, 
+                01, 
+                02, 
+                03, 
+                (byte) 0xff, 
+                4, 
+                8, 
+                16, 
+                32, 
+                64, 
+                (byte) 128, 
+                -1, 
+                -2,
+                -4, 
+                -8, 
+                -16, 
+                -32, 
+                -64, 
+                -128, 
+                0 };
+        //@formatter:on
+        ObjectId oid = ObjectId.create(raw);
+        for (int i = 0; i < raw.length; i++) {
+            int expected = raw[i] & 0xFF;
+            int actual = oid.byteN(i);
+            assertEquals("At index " + i, expected, actual);
+        }
 
         try {
             oid.byteN(-1);
@@ -119,12 +143,12 @@ public class ObjectIdTest extends TestCase {
     }
 
     @Test
-    public void testCreateNoClone() {
+    public void testCreate() {
         byte[] rawBytes = new byte[] { (byte) 0xab, 01, 02, 03, (byte) 0xff, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0 };
-        ObjectId id = ObjectId.createNoClone(rawBytes);
-        rawBytes[1] = 5;
-        assertEquals(5, id.byteN(1));
+        ObjectId id1 = ObjectId.create(rawBytes);
+        ObjectId id2 = ObjectId.create(rawBytes);
+        assertEquals(id1, id2);
     }
 
     @Test

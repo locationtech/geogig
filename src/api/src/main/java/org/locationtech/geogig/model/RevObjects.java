@@ -82,4 +82,16 @@ public class RevObjects {
                 comparator);
     }
 
+    public static int h1(ObjectId id) {
+        return id.h1;
+    }
+
+    public static long h2(ObjectId id) {
+        return id.h2;
+    }
+
+    public static long h3(ObjectId id) {
+        return id.h3;
+    }
+
 }

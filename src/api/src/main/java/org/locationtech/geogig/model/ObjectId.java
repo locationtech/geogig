@@ -68,9 +68,9 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         NULL = new ObjectId(new byte[20]);
     }
 
-    private final int h1;
+    final int h1;
 
-    private final long h2, h3;
+    final long h2, h3;
 
     /**
      * Constructs a new object id with the given byte code.

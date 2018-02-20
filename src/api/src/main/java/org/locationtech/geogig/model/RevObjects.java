@@ -51,9 +51,9 @@ public class RevObjects {
         Preconditions.checkArgument(numBytes > 0 && numBytes <= ObjectId.NUM_BYTES);
 
         StringBuilder sb = target == null ? new StringBuilder(2 * numBytes) : target;
-        byte b;
+        int b;
         for (int i = 0; i < numBytes; i++) {
-            b = (byte) id.byteN(i);
+            b = id.byteN(i);
             sb.append(HEX_DIGITS[(b >> 4) & 0xf]).append(HEX_DIGITS[b & 0xf]);
         }
         return sb;

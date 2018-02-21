@@ -118,7 +118,7 @@ public class HashObjectFunnels {
         HashObjectFunnels.tree(hasher, trees, features, buckets);
 
         final byte[] rawKey = hasher.hash().asBytes();
-        final ObjectId id = ObjectId.createNoClone(rawKey);
+        final ObjectId id = ObjectId.create(rawKey);
 
         return id;
     }

@@ -234,9 +234,9 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                         @Nullable
                         byte[] ancestorb = rs.getBytes(2);
                         ObjectId ancestor = ancestorb == null ? ObjectId.NULL
-                                : ObjectId.createNoClone(ancestorb);
-                        ObjectId ours = ObjectId.createNoClone(rs.getBytes(3));
-                        ObjectId theirs = ObjectId.createNoClone(rs.getBytes(4));
+                                : ObjectId.create(ancestorb);
+                        ObjectId ours = ObjectId.create(rs.getBytes(3));
+                        ObjectId theirs = ObjectId.create(rs.getBytes(4));
                         conflict = new Conflict(path, ancestor, ours, theirs);
                     }
                 }
@@ -303,10 +303,10 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                         if (ancestorb == null) {
                             ancestor = ObjectId.NULL;
                         } else {
-                            ancestor = ObjectId.createNoClone(ancestorb);
+                            ancestor = ObjectId.create(ancestorb);
                         }
-                        ObjectId ours = ObjectId.createNoClone(rs.getBytes(3));
-                        ObjectId theirs = ObjectId.createNoClone(rs.getBytes(4));
+                        ObjectId ours = ObjectId.create(rs.getBytes(3));
+                        ObjectId theirs = ObjectId.create(rs.getBytes(4));
                         conflicts.add(new Conflict(path, ancestor, ours, theirs));
                     }
                 }
@@ -356,9 +356,9 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                         @Nullable
                         byte[] ancestorb = rs.getBytes(2);
                         ObjectId ancestor = ancestorb == null ? ObjectId.NULL
-                                : ObjectId.createNoClone(ancestorb);
-                        ObjectId ours = ObjectId.createNoClone(rs.getBytes(3));
-                        ObjectId theirs = ObjectId.createNoClone(rs.getBytes(4));
+                                : ObjectId.create(ancestorb);
+                        ObjectId ours = ObjectId.create(rs.getBytes(3));
+                        ObjectId theirs = ObjectId.create(rs.getBytes(4));
                         batch.add(new Conflict(path, ancestor, ours, theirs));
                     }
                 }

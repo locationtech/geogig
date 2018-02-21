@@ -212,14 +212,12 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
 
         @Override
         public void write(DataOutputStream out, ObjectId value) throws IOException {
-            out.write(value.getRawValue());
+            value.writeTo(out);
         }
 
         @Override
         public ObjectId read(DataInputStream in) throws IOException {
-            byte[] raw = new byte[ObjectId.NUM_BYTES];
-            in.readFully(raw);
-            return ObjectId.createNoClone(raw);
+            return ObjectId.readFrom(in);
         }
     };
 

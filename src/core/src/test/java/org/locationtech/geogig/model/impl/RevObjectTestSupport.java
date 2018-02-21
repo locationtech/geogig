@@ -141,7 +141,7 @@ public class RevObjectTestSupport {
         if (randomIds) {
             byte[] raw = new byte[ObjectId.NUM_BYTES];
             RND.nextBytes(raw);
-            oid = ObjectId.createNoClone(raw);
+            oid = ObjectId.create(raw);
         } else {// predictable id
             oid = RevObjectTestSupport.hashString(name);
         }
@@ -178,7 +178,7 @@ public class RevObjectTestSupport {
     public static ObjectId hashString(final String strToHash) {
         Preconditions.checkNotNull(strToHash);
         HashCode hashCode = ObjectId.HASH_FUNCTION.hashString(strToHash, Charset.forName("UTF-8"));
-        return ObjectId.createNoClone(hashCode.asBytes());
+        return ObjectId.create(hashCode.asBytes());
     }
 
     public static Set<Node> getTreeNodes(RevTree tree, ObjectStore source) {

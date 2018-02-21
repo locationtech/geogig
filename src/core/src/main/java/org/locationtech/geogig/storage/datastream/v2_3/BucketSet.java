@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Map;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
@@ -64,7 +63,7 @@ class BucketSet {
                     out.writeDouble(bounds.getMaxY());
                 }
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         });
     }
@@ -95,14 +94,12 @@ class BucketSet {
         DataInput in = data.asDataInput(off);
         try {
             int index;
-            byte[] oidbuff = new byte[ObjectId.NUM_BYTES];
             ObjectId id;
             double minx, maxx, miny, maxy;
             Envelope bounds;
             for (int i = 0; i < size; i++) {
                 index = in.readUnsignedByte();
-                in.readFully(oidbuff);
-                id = new ObjectId(oidbuff);
+                id = ObjectId.readFrom(in);
                 minx = in.readDouble();
                 if (Double.isNaN(minx)) {
                     bounds = null;

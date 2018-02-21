@@ -116,12 +116,13 @@ class DataBuffer {
     }
 
     public ObjectId getObjectId(final int offset) {
-        byte[] buff = new byte[ObjectId.NUM_BYTES];
         // duplicate() instead of mark()/reset() to preserve thread safety
         ByteBuffer raw = this.raw.duplicate();
         raw.position(offset);
-        raw.get(buff);
-        return ObjectId.createNoClone(buff);
+        int h1 = raw.getInt();
+        long h2 = raw.getLong();
+        long h3 = raw.getLong();
+        return ObjectId.create(h1, h2, h3);
     }
 
     public void get(byte[] buff, final int offset) {

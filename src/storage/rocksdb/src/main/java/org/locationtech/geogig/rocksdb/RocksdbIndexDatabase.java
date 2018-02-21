@@ -259,7 +259,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         }
 
         if (indexTreeBytes != null) {
-            return Optional.of(ObjectId.createNoClone(indexTreeBytes));
+            return Optional.of(ObjectId.create(indexTreeBytes));
         }
         return Optional.absent();
     }

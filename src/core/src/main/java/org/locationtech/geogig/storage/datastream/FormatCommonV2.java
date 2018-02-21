@@ -104,9 +104,7 @@ public class FormatCommonV2 {
     }
 
     public final ObjectId readObjectId(DataInput in) throws IOException {
-        byte[] bytes = new byte[ObjectId.NUM_BYTES];
-        in.readFully(bytes);
-        return ObjectId.createNoClone(bytes);
+        return ObjectId.readFrom(in);
     }
 
     /**
@@ -148,18 +146,18 @@ public class FormatCommonV2 {
     }
 
     public void writeTag(RevTag tag, DataOutput out) throws IOException {
-        out.write(tag.getCommitId().getRawValue());
+        tag.getCommitId().writeTo(out);
         out.writeUTF(tag.getName());
         out.writeUTF(tag.getMessage());
         writePerson(tag.getTagger(), out);
     }
 
     public void writeCommit(RevCommit commit, DataOutput data) throws IOException {
-        data.write(commit.getTreeId().getRawValue());
+        commit.getTreeId().writeTo(data);
         final int nParents = commit.getParentIds().size();
         writeUnsignedVarInt(nParents, data);
         for (ObjectId pId : commit.getParentIds()) {
-            data.write(pId.getRawValue());
+            pId.writeTo(data);
         }
 
         writePerson(commit.getAuthor(), data);
@@ -428,7 +426,7 @@ public class FormatCommonV2 {
 
         writeUnsignedVarInt(index, data);
 
-        data.write(bucket.getObjectId().getRawValue());
+        bucket.getObjectId().writeTo(data);
         envBuff.setToNull();
         bucket.expand(envBuff);
         if (envBuff.isNull()) {
@@ -530,9 +528,9 @@ public class FormatCommonV2 {
 
         data.writeByte(typeAndMasks);
         data.writeUTF(node.getName());
-        data.write(node.getObjectId().getRawValue());
+        node.getObjectId().writeTo(data);
         if (metadataMask == METADATA_PRESENT_MASK) {
-            data.write(node.getMetadataId().or(ObjectId.NULL).getRawValue());
+            node.getMetadataId().or(ObjectId.NULL).writeTo(data);
         }
         if (BOUNDS_BOX2D_MASK == boundsMask) {
             writeBoundingBox(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(), data);
@@ -602,7 +600,7 @@ public class FormatCommonV2 {
 
     public void writeNodeRef(NodeRef nodeRef, DataOutput data) throws IOException {
         writeNode(nodeRef.getNode(), data);
-        data.write(nodeRef.getMetadataId().getRawValue());
+        nodeRef.getMetadataId().writeTo(data);
         data.writeUTF(nodeRef.getParentPath());
     }
 

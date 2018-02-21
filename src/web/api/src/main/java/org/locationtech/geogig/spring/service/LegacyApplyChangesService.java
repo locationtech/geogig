@@ -114,7 +114,7 @@ public class LegacyApplyChangesService extends AbstractRepositoryService {
                 break;
             }
         }
-        ObjectId id = ObjectId.createNoClone(rawBytes);
+        ObjectId id = ObjectId.create(rawBytes);
         return id;
     }
 }

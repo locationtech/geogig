@@ -122,7 +122,7 @@ public class BatchObjectsControllerTest extends AbstractControllerTest {
             // read the OID bytes from the stream
             bais.read(rawId);
             // parse the OID into an object
-            ObjectId oid = ObjectId.createNoClone(rawId);
+            ObjectId oid = ObjectId.create(rawId);
             // now read the RevObject from the stream
             serialFac.read(oid, bais);
             // increment the number of RevObjects read

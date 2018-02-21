@@ -536,7 +536,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         private static final byte HAS_THEIRS = 0b00000100;
 
         void write(DataOutput out, ObjectId value) throws IOException {
-            out.write(value.getRawValue());
+            value.writeTo(out);
         }
 
         public byte[] write(Conflict c) throws IOException {
@@ -546,9 +546,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         }
 
         ObjectId readId(DataInput in) throws IOException {
-            byte[] raw = new byte[ObjectId.NUM_BYTES];
-            in.readFully(raw);
-            return ObjectId.createNoClone(raw);
+            return ObjectId.readFrom(in);
         }
 
         public void write(DataOutput out, Conflict value) throws IOException {

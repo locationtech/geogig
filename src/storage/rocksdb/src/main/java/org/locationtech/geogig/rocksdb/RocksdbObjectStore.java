@@ -350,7 +350,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                             return matches;
                         }
                     }
-                    ObjectId id = ObjectId.createNoClone(key);
+                    ObjectId id = ObjectId.create(key);
                     matches.add(id);
                     it.next();
                 }

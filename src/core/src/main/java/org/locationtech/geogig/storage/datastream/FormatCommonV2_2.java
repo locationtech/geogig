@@ -38,7 +38,7 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
 
         writeUnsignedVarInt(index, data);
 
-        data.write(bucket.getObjectId().getRawValue());
+        bucket.getObjectId().writeTo(data);
         envBuff.setToNull();
         bucket.expand(envBuff);
         writeBounds(envBuff,data);
@@ -116,9 +116,9 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
 
         data.writeByte(typeAndMasks);
         data.writeUTF(node.getName());
-        data.write(node.getObjectId().getRawValue());
+        node.getObjectId().writeTo(data);
         if (metadataMask == METADATA_PRESENT_MASK) {
-            data.write(node.getMetadataId().or(ObjectId.NULL).getRawValue());
+            node.getMetadataId().or(ObjectId.NULL).writeTo(data);
         }
         writeBounds(env,data);
 

@@ -272,7 +272,7 @@ public class TaskControllerTest extends AbstractControllerTest {
                 .andReturn();
 
         ObjectId fromResponse = ObjectId
-                .createNoClone(result.getResponse().getContentAsByteArray());
+                .create(result.getResponse().getContentAsByteArray());
         assertEquals(fakeObjectId, fromResponse);
 
     }

@@ -134,24 +134,19 @@ class RevTreeFormat {
         StringTable stringTable = StringTable.unique();
         Header.encode(out, tree);
 
-        ImmutableList<Node> trees = tree.trees();
-        ImmutableList<Node> features = tree.features();
-        ImmutableSortedMap<Integer, Bucket> buckets = tree.buckets();
-
-        offsetOfTreesNodeset = trees.isEmpty() ? 0 : buff.size();
-        if (!trees.isEmpty()) {
-            NodeSet.encode(out, trees, stringTable);
+        offsetOfTreesNodeset = tree.treesSize() == 0 ? 0 : buff.size();
+        if (tree.treesSize() > 0) {
+            NodeSet.encode(out, tree.trees(), stringTable);
         }
 
-        offsetOfFeaturesNodeset = features.isEmpty() ? 0 : buff.size();
-        if (!features.isEmpty()) {
-            NodeSet.encode(out, features, stringTable);
+        offsetOfFeaturesNodeset = tree.featuresSize() == 0 ? 0 : buff.size();
+        if (tree.featuresSize() > 0) {
+            NodeSet.encode(out, tree.features(), stringTable);
         }
 
-        offsetOfBuckets = buckets.isEmpty() ? 0 : buff.size();
-        if (!buckets.isEmpty()) {
-            BucketSet.encode(out, buckets, stringTable);
-        }
+        offsetOfBuckets = tree.bucketsSize() == 0 ? 0 : buff.size();
+        BucketSet.encode(out, tree, stringTable);
+
         offsetOfStringTable = buff.size();
         stringTable.encode(out);
         offsetOfTail = buff.size();

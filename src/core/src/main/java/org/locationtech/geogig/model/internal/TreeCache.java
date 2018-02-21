@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,7 +27,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Iterables;
 
 class TreeCache {
 
@@ -59,8 +60,10 @@ class TreeCache {
         if (internalId == null) {
             tree = store.getTree(treeId);
             getTreeId(tree);
-            if (!tree.buckets().isEmpty()) {
-                preload(Iterables.transform(tree.buckets().values(), (b) -> b.getObjectId()));
+            if (tree.bucketsSize() > 0) {
+                List<ObjectId> bucketIds = new ArrayList<>(tree.bucketsSize());
+                tree.forEachBucket((i, b) -> bucketIds.add(b.getObjectId()));
+                preload(bucketIds);
             }
         } else {
             tree = resolve(internalId.intValue());

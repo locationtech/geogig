@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -194,6 +195,10 @@ public interface RevTree extends RevObject {
         return trees().size();
     }
 
+    public default Node getTree(int index) {
+        return trees().get(index);
+    }
+
     /**
      * Performs the given action for each element of the {@link #trees} collection respecting its
      * iteration order
@@ -231,6 +236,10 @@ public interface RevTree extends RevObject {
      */
     public default int featuresSize() {
         return features().size();
+    }
+
+    public default Node getFeature(int index) {
+        return features().get(index);
     }
 
     /**
@@ -273,5 +282,9 @@ public interface RevTree extends RevObject {
      */
     public default void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
         buckets().forEach(consumer);
+    }
+
+    public default Optional<Bucket> getBucket(int bucketIndex) {
+        return Optional.ofNullable(buckets().get(Integer.valueOf(bucketIndex)));
     }
 }

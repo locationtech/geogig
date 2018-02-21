@@ -72,6 +72,7 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSortedMap;
@@ -216,23 +217,23 @@ public class FormatCommonV2 {
 
         Envelope envBuff = new Envelope();
 
-        final int nFeatures = tree.features().size();
+        final int nFeatures = tree.featuresSize();
         writeUnsignedVarInt(nFeatures, data);
-        for (Node feature : tree.features()) {
-            writeNode(feature, data, envBuff);
-        }
-        final int nTrees = tree.trees().size();
-        writeUnsignedVarInt(nTrees, data);
-        for (Node subTree : tree.trees()) {
-            writeNode(subTree, data, envBuff);
-        }
+        tree.forEachFeature((n) -> writeNodeQuiet(n, data, envBuff));
 
-        ImmutableSortedMap<Integer, Bucket> buckets = tree.buckets();
-        final int nBuckets = buckets.size();
+        final int nTrees = tree.treesSize();
+        writeUnsignedVarInt(nTrees, data);
+        tree.forEachTree((n) -> writeNodeQuiet(n, data, envBuff));
+
+        final int nBuckets = tree.bucketsSize();
         writeUnsignedVarInt(nBuckets, data);
-        for (Map.Entry<Integer, Bucket> bucket : buckets.entrySet()) {
-            writeBucket(bucket.getKey(), bucket.getValue(), data, envBuff);
-        }
+        tree.forEachBucket((index, bucket) -> {
+            try {
+                writeBucket(index.intValue(), bucket, data, envBuff);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+        });
     }
 
     public RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
@@ -485,6 +486,14 @@ public class FormatCommonV2 {
     static final int BOUNDS_READ_MASK = 0b011000;
 
     static final int TYPE_READ_MASK = 0b000111;
+
+    private void writeNodeQuiet(Node node, DataOutput data, Envelope env) {
+        try {
+            writeNode(node, data, env);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
 
     public void writeNode(Node node, DataOutput data, Envelope env) throws IOException {
         // Encode the node type and the bounds and metadata presence masks in one single byte:

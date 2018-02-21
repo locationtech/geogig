@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -28,7 +27,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -39,12 +37,8 @@ import org.locationtech.geogig.model.internal.DAG.STATE;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 
 /**
@@ -380,7 +374,7 @@ public abstract class ClusteringStrategy {
 
             root.setTotalChildCount(original.size() + original.numTrees());
 
-            final boolean originalIsLeaf = original.buckets().isEmpty();
+            final boolean originalIsLeaf = 0 == original.bucketsSize();
 
             if (originalIsLeaf) {
                 final Map<NodeId, DAGNode> origNodes = lazyNodes(original);
@@ -391,22 +385,19 @@ public abstract class ClusteringStrategy {
                 }
 
             } else {
-                final ImmutableSortedMap<Integer, Bucket> buckets = original.buckets();
-
                 if (root.getState() == STATE.INITIALIZED) {
                     // make DAG a bucket tree
                     checkState(root.numChildren() == 0);
 
                     // initialize buckets
-                    preload(buckets.values());
-                    for (Entry<Integer, Bucket> e : buckets.entrySet()) {
-                        Integer bucketIndex = e.getKey();
+                    preloadBuckets(original);
+                    original.forEachBucket((bucketIndex, bucket) -> {
                         TreeId dagBucketId = root.getId().newChild(bucketIndex.intValue());
-                        ObjectId bucketId = e.getValue().getObjectId();
+                        ObjectId bucketId = bucket.getObjectId();
                         // make sure the DAG exists and is initialized
                         DAG dag = getOrCreateDAG(dagBucketId, bucketId);
                         root.addBucket(dagBucketId);
-                    }
+                    });
                 }
             }
             root.setMirrored();
@@ -414,9 +405,12 @@ public abstract class ClusteringStrategy {
 
     }
 
-    private void preload(ImmutableCollection<Bucket> values) {
-        this.storageProvider.getTreeCache()
-                .preload(Iterables.transform(values, (b) -> b.getObjectId()));
+    private void preloadBuckets(RevTree tree) {
+        if (tree.bucketsSize() > 0) {
+            List<ObjectId> ids = new ArrayList<>(tree.bucketsSize());
+            tree.forEachBucket((i, b) -> ids.add(b.getObjectId()));
+            this.storageProvider.getTreeCache().preload(ids);
+        }
     }
 
     protected RevTree getOriginalTree(@Nullable ObjectId originalId) {
@@ -472,19 +466,20 @@ public abstract class ClusteringStrategy {
 
         Map<NodeId, DAGNode> dagNodes = new HashMap<>();
 
-        List<Node> treeNodes = tree.trees();
-        for (int i = 0; i < treeNodes.size(); i++) {
-            NodeId nodeId = computeId(treeNodes.get(i));
+        final int treesSize = tree.treesSize();
+        for (int i = 0; i < treesSize; i++) {
+            NodeId nodeId = computeId(tree.getTree(i));
             DAGNode dagNode = DAGNode.treeNode(cacheTreeId, i);
             dagNodes.put(nodeId, dagNode);
         }
 
-        ImmutableList<Node> featureNodes = tree.features();
-        for (int i = 0; i < featureNodes.size(); i++) {
-            NodeId nodeId = computeId(featureNodes.get(i));
+        final int featuresSize = tree.featuresSize();
+        for (int i = 0; i < featuresSize; i++) {
+            NodeId nodeId = computeId(tree.getFeature(i));
             DAGNode dagNode = DAGNode.featureNode(cacheTreeId, i);
             dagNodes.put(nodeId, dagNode);
         }
+
         return dagNodes;
     }
 

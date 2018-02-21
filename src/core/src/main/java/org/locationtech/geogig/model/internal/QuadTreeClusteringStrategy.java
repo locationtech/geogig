@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSortedMap;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -222,12 +221,11 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
             } else {
                 normalizedSizeLimit = normalizedSizeLimit();
                 // it may be a quad wit sub-quads instead of an unpromotables tree
-                ImmutableSortedMap<Integer, Bucket> buckets = originalTree.buckets();
-                boolean isValidQuad = !buckets.isEmpty();
+                boolean isValidQuad = originalTree.bucketsSize() > 0;
                 for (Quadrant q : Quadrant.VALUES) {
-                    Bucket treeBucket = buckets.get(Integer.valueOf(q.getBucketNumber()));
-                    if (treeBucket != null) {
-                        Envelope bucketBounds = treeBucket.bounds().orNull();
+                    java.util.Optional<Bucket> treeBucket = originalTree.getBucket(q.getBucketNumber());
+                    if (treeBucket.isPresent()) {
+                        Envelope bucketBounds = treeBucket.get().bounds().orNull();
                         Quadrant bucketQuad = computeQuadrant(bucketBounds, childDepthIndex);
                         if (bucketQuad == null) {
                             isValidQuad = false;

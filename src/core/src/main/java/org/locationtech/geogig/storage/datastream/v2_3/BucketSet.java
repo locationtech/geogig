@@ -15,10 +15,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Map;
-import java.util.SortedMap;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
@@ -37,35 +37,36 @@ class BucketSet {
 
     private static final int REC_SIZE = 1 + ObjectId.NUM_BYTES + 4 * 8;
 
-    public static void encode(DataOutput out, SortedMap<Integer, Bucket> buckets,
-            StringTable stringTable) throws IOException {
+    public static void encode(DataOutput out, RevTree tree, StringTable stringTable)
+            throws IOException {
 
-        final int size = buckets.size();
+        final int size = tree.bucketsSize();
         out.writeInt(size);
         if (0 == size) {
             return;
         }
 
-        checkArgument(128 >= buckets.lastKey().intValue(), "bucket index can't exceed 127");
+        tree.forEachBucket((bucketIndex, bucket) -> {
+            checkArgument(128 >= bucketIndex.intValue(), "bucket index can't exceed 127");
 
-        for (Map.Entry<Integer, Bucket> e : buckets.entrySet()) {
-            Integer bucketIndex = e.getKey();
-            Bucket bucket = e.getValue();
             ObjectId objectId = bucket.getObjectId();
+            try {
+                out.writeByte(bucketIndex.intValue());
+                objectId.writeTo(out);
 
-            out.writeByte(bucketIndex.intValue());
-            objectId.writeTo(out);
-
-            Envelope bounds = bucket.bounds().orNull();
-            if (bounds == null || bounds.isNull()) {
-                out.writeDouble(Double.NaN);
-            } else {
-                out.writeDouble(bounds.getMinX());
-                out.writeDouble(bounds.getMaxX());
-                out.writeDouble(bounds.getMinY());
-                out.writeDouble(bounds.getMaxY());
+                Envelope bounds = bucket.bounds().orNull();
+                if (bounds == null || bounds.isNull()) {
+                    out.writeDouble(Double.NaN);
+                } else {
+                    out.writeDouble(bounds.getMinX());
+                    out.writeDouble(bounds.getMaxX());
+                    out.writeDouble(bounds.getMinY());
+                    out.writeDouble(bounds.getMaxY());
+                }
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
-        }
+        });
     }
 
     public static BucketSet decode(DataBuffer data, final int offset) {

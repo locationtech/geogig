@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -19,9 +17,6 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2_2;
 import org.locationtech.geogig.storage.datastream.Varint;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 abstract class DAGNode {
 
@@ -126,18 +121,10 @@ abstract class DAGNode {
         @Override
         public final Node resolve(TreeCache cache) {
             RevTree tree = cache.resolve(leafRevTreeId);
-            ImmutableList<Node> collection = collection(tree);
-            Node node;
-            try {
-                node = collection.get(nodeIndex);
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
-                throw e;
-            }
-            return node;
+            return resolve(tree);
         }
 
-        protected abstract ImmutableList<Node> collection(RevTree tree);
+        protected abstract Node resolve(RevTree tree);
 
         @Override
         public boolean isNull() {
@@ -167,10 +154,8 @@ abstract class DAGNode {
         }
 
         @Override
-        protected ImmutableList<Node> collection(RevTree tree) {
-            Preconditions.checkState(!tree.trees().isEmpty());
-            ImmutableList<Node> trees = tree.trees();
-            return trees;
+        protected Node resolve(RevTree tree) {
+            return tree.getTree(this.nodeIndex);
         }
 
     }
@@ -182,10 +167,8 @@ abstract class DAGNode {
         }
 
         @Override
-        protected ImmutableList<Node> collection(RevTree tree) {
-            checkState(!tree.features().isEmpty());
-            ImmutableList<Node> features = tree.features();
-            return features;
+        protected Node resolve(RevTree tree) {
+            return tree.getFeature(this.nodeIndex);
         }
     }
 

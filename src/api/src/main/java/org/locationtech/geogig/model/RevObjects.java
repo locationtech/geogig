@@ -70,14 +70,14 @@ public class RevObjects {
      */
     public static Iterator<Node> children(RevTree tree, Comparator<Node> comparator) {
         checkNotNull(comparator);
+        if (tree.treesSize() == 0) {
+            return tree.features().iterator();
+        }
+        if (tree.featuresSize() == 0) {
+            return tree.trees().iterator();
+        }
         ImmutableList<Node> trees = tree.trees();
         ImmutableList<Node> features = tree.features();
-        if (trees.isEmpty()) {
-            return features.iterator();
-        }
-        if (features.isEmpty()) {
-            return trees.iterator();
-        }
         return Iterators.mergeSorted(ImmutableList.of(trees.iterator(), features.iterator()),
                 comparator);
     }

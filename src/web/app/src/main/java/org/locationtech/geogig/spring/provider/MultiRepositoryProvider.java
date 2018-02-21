@@ -127,7 +127,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
             final RemovalCause cause = notification.getCause();
             final String repositoryName = notification.getKey();
             final Repository repo = notification.getValue();
-            LOG.info("Disposing repository {}. Cause: " + cause(cause));
+            LOG.info("Disposing repository {}. Cause: {}", repositoryName, cause(cause));
             try {
                 if (repo != null && repo.isOpen()) {
                     repo.close();

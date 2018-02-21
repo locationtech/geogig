@@ -12,8 +12,12 @@ package org.locationtech.geogig.model.impl;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedMap;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -43,20 +47,50 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
             this.trees = trees;
         }
 
-        @Override
-        public ImmutableList<Node> features() {
+        public @Override ImmutableList<Node> features() {
             return features == null ? ImmutableList.of() : ImmutableList.copyOf(features);
         }
 
-        @Override
-        public ImmutableList<Node> trees() {
+        public @Override ImmutableList<Node> trees() {
             return trees == null ? ImmutableList.of() : ImmutableList.copyOf(trees);
         }
 
-        @Override
-        public int numTrees() {
+        public @Override int numTrees() {
             return trees == null ? 0 : trees.length;
         }
+
+        public @Override int treesSize() {
+            return numTrees();// being a leaf tree, numTrees and treesSize are the same
+        }
+
+        public @Override Node getTree(int index) {
+            return trees[index];
+        }
+
+        public @Override void forEachTree(Consumer<Node> consumer) {
+            if (trees != null) {
+                for (int i = 0; i < trees.length; i++) {
+                    consumer.accept(trees[i]);
+                }
+            }
+        }
+
+        public @Override int featuresSize() {
+            return features == null ? 0 : features.length;
+        }
+
+        public @Override Node getFeature(int index) {
+            return features[index];
+        }
+
+        public @Override void forEachFeature(Consumer<Node> consumer) {
+            if (features != null) {
+                for (int i = 0; i < features.length; i++) {
+                    consumer.accept(features[i]);
+                }
+            }
+        }
+
     }
 
     static final class NodeTree extends RevTreeImpl {
@@ -90,8 +124,7 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
             }
         }
 
-        @Override
-        public ImmutableSortedMap<Integer, Bucket> buckets() {
+        public @Override ImmutableSortedMap<Integer, Bucket> buckets() {
             Builder<Integer, Bucket> builder = ImmutableSortedMap.naturalOrder();
             for (IndexedBucket ib : this.ibuckets) {
                 builder.put(Integer.valueOf(ib.index), ib.bucket);
@@ -99,9 +132,34 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
             return builder.build();
         }
 
-        @Override
-        public int numTrees() {
+        public @Override int numTrees() {
             return childTreeCount;
+        }
+
+        public @Override int bucketsSize() {
+            return ibuckets.length;
+        }
+
+        public @Override void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
+            for (int i = 0; i < ibuckets.length; i++) {
+                IndexedBucket indexedBucket = ibuckets[i];
+                consumer.accept(Integer.valueOf(indexedBucket.index), indexedBucket.bucket);
+            }
+        }
+
+        public @Override Optional<Bucket> getBucket(int bucketIndex) {
+            int index = Arrays.binarySearch(ibuckets, new IndexedBucket(bucketIndex, null),
+                    (b1, b2) -> Integer.compare(b1.index, b2.index));
+
+            return index < 0 ? Optional.empty() : Optional.of(ibuckets[index].bucket);
+            //
+            // for (int i = 0; i < ibuckets.length; i++) {
+            // IndexedBucket indexedBucket = ibuckets[i];
+            // if (bucketIndex == indexedBucket.index) {
+            // return Optional.of(indexedBucket.bucket);
+            // }
+            // }
+            // return Optional.empty();
         }
     }
 

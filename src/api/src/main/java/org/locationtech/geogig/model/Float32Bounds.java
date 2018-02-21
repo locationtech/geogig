@@ -14,19 +14,16 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
-
 /**
- * This represents a bounds - much like a JTS Envelope.
- * However, to save space, this uses Float32 numbers instead of Float64.
- * The original Envelope will be contained by the Float32Bounds.
+ * This represents a bounds - much like a JTS Envelope. However, to save space, this uses Float32
+ * numbers instead of Float64. The original Envelope will be contained by the Float32Bounds.
  *
- * NOTE:
- *     * this will usually (not always) larger than the original envelope
- *     * This bounds will always contain (or be equal to) the original envelope
- *     * for every Float32 number, there is an exact Float64 representation
+ * NOTE: * this will usually (not always) larger than the original envelope * This bounds will
+ * always contain (or be equal to) the original envelope * for every Float32 number, there is an
+ * exact Float64 representation
  */
 class Float32Bounds {
-    
+
     /**
      * The "null object" to represent an empty node
      * 
@@ -34,16 +31,18 @@ class Float32Bounds {
      */
     private static final Float32Bounds EMPTY = new Float32Bounds(new Envelope());
 
-    //defaults - xmin > xmax (no area)
+    // defaults - xmin > xmax (no area)
     float xmin = Float.MIN_VALUE;
-    float xmax = 0;
-    float ymin = Float.MIN_VALUE;
-    float ymax = 0;
 
+    float xmax = 0;
+
+    float ymin = Float.MIN_VALUE;
+
+    float ymax = 0;
 
     private Float32Bounds(Envelope doublePrecisionEnv) {
         if ((doublePrecisionEnv == null) || (doublePrecisionEnv.isNull())) {
-            return; //done!
+            return; // done!
         }
         set(doublePrecisionEnv);
     }
@@ -68,8 +67,8 @@ class Float32Bounds {
             return;
         }
 
-        //convert to float32, but ensure that the new bounds contain the old bounds
-        //NOTE: every float32 can be exactly expressed as a double
+        // convert to float32, but ensure that the new bounds contain the old bounds
+        // NOTE: every float32 can be exactly expressed as a double
 
         xmin = (float) doublePrecisionEnv.getMinX();
         if (((double) xmin) > doublePrecisionEnv.getMinX()) {
@@ -92,7 +91,6 @@ class Float32Bounds {
         }
     }
 
-
     public Envelope asEnvelope() {
         if (isNull())
             return new Envelope();
@@ -112,7 +110,7 @@ class Float32Bounds {
                 env.getMaxY() < ymin);
     }
 
-    //To be careful, the resulting envelope is aligned with the float32 envelope!
+    // To be careful, the resulting envelope is aligned with the float32 envelope!
     public void expand(Envelope env) {
         if (isNull())
             return;
@@ -126,7 +124,6 @@ class Float32Bounds {
     public boolean isNull() {
         return xmin > xmax;
     }
-
 
     @Override
     public String toString() {
@@ -151,10 +148,8 @@ class Float32Bounds {
         if (other.isNull() != this.isNull())
             return false;
 
-        return other.xmin == this.xmin &&
-                other.ymin == this.ymin &&
-                other.xmax == this.xmax &&
-                other.ymax == this.ymax;
+        return other.xmin == this.xmin && other.ymin == this.ymin && other.xmax == this.xmax
+                && other.ymax == this.ymax;
 
     }
 
@@ -162,7 +157,8 @@ class Float32Bounds {
     public int hashCode() {
         if (isNull())
             return 1;
-        return Float.floatToRawIntBits(xmin) ^ Float.floatToRawIntBits(ymin) ^ Float.floatToRawIntBits(xmax) ^ Float.floatToRawIntBits(ymax);
+        return Float.floatToRawIntBits(xmin) ^ Float.floatToRawIntBits(ymin)
+                ^ Float.floatToRawIntBits(xmax) ^ Float.floatToRawIntBits(ymax);
     }
 
     /**
@@ -173,5 +169,8 @@ class Float32Bounds {
     public static Float32Bounds valueOf(@Nullable Envelope bounds) {
         return bounds == null || bounds.isNull() ? EMPTY : new Float32Bounds(bounds);
     }
-}
 
+    static Float32Bounds valueOf(float x1, float x2, float y1, float y2) {
+        return new Float32Bounds(x1, x2, y1, y2);
+    }
+}

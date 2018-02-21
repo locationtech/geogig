@@ -108,7 +108,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
     private static abstract class BaseNode extends Node {
 
-        /**
+        /*
          * The name of the element
          */
         private final String name;
@@ -128,7 +128,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
         private final ExtraData extraData;
 
-        private final Float32Bounds bounds;
+        private final float bounds_x1, bounds_x2, bounds_y1, bounds_y2;
 
         private BaseNode(final String name, final ObjectId oid, final ObjectId metadataId,
                 @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
@@ -141,7 +141,12 @@ public abstract class Node implements Bounded, Comparable<Node> {
             this.objectId_h3 = RevObjects.h3(oid);
             this.metadataId = metadataId.isNull() ? null : metadataId;
             this.extraData = ExtraData.of(extraData);
-            this.bounds = Float32Bounds.valueOf(bounds);
+
+            Float32Bounds bbox = Float32Bounds.valueOf(bounds);
+            bounds_x1 = bbox.xmin;
+            bounds_x2 = bbox.xmax;
+            bounds_y1 = bbox.ymin;
+            bounds_y2 = bbox.ymax;
         }
 
         @Override
@@ -166,17 +171,30 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
         @Override
         public boolean intersects(Envelope env) {
-            return bounds.intersects(env);
+            if (isBoundsNull() || env.isNull()) {
+                return false;
+            }
+            return boundsInternal().intersects(env);
         }
 
         @Override
         public void expand(Envelope env) {
-            bounds.expand(env);
+            if (!isBoundsNull()) {
+                boundsInternal().expand(env);
+            }
         }
 
         @Override
         public Optional<Envelope> bounds() {
-            return fromNullable(bounds.isNull() ? null : bounds.asEnvelope());
+            return fromNullable(boundsInternal().isNull() ? null : boundsInternal().asEnvelope());
+        }
+
+        private Float32Bounds boundsInternal() {
+            return Float32Bounds.valueOf(bounds_x1, bounds_x2, bounds_y1, bounds_y2);
+        }
+
+        private final boolean isBoundsNull() {
+            return bounds_x1 > bounds_x2;
         }
 
         @Override

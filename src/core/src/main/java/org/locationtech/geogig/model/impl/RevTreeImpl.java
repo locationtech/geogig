@@ -11,6 +11,10 @@ package org.locationtech.geogig.model.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedMap;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
@@ -19,6 +23,7 @@ import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedMap.Builder;
 
 /**
  *
@@ -27,50 +32,71 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
     static final class LeafTree extends RevTreeImpl {
 
-        private final ImmutableList<Node> features;
+        private final Node[] features;
 
-        private final ImmutableList<Node> trees;
+        private final Node[] trees;
 
-        public LeafTree(final ObjectId id, final long size,
-                final @Nullable ImmutableList<Node> features, @Nullable ImmutableList<Node> trees) {
+        public LeafTree(final ObjectId id, final long size, final @Nullable Node[] features,
+                @Nullable Node[] trees) {
             super(id, size);
-            this.features = features == null ? ImmutableList.of() : features;
-            this.trees = trees == null ? ImmutableList.of() : trees;
+            this.features = features;
+            this.trees = trees;
         }
 
         @Override
         public ImmutableList<Node> features() {
-            return features;
+            return features == null ? ImmutableList.of() : ImmutableList.copyOf(features);
         }
 
         @Override
         public ImmutableList<Node> trees() {
-            return trees;
+            return trees == null ? ImmutableList.of() : ImmutableList.copyOf(trees);
         }
 
         @Override
         public int numTrees() {
-            return trees != null ? trees.size() : 0;
+            return trees == null ? 0 : trees.length;
         }
     }
 
     static final class NodeTree extends RevTreeImpl {
 
-        private final ImmutableSortedMap<Integer, Bucket> buckets;
+        // private final ImmutableSortedMap<Integer, Bucket> buckets;
 
         private final int childTreeCount;
 
+        private final IndexedBucket[] ibuckets;
+
         public NodeTree(final ObjectId id, final long size, final int childTreeCount,
-                final ImmutableSortedMap<Integer, Bucket> innerTrees) {
+                final SortedMap<Integer, Bucket> innerTrees) {
             super(id, size);
             checkNotNull(innerTrees);
             this.childTreeCount = childTreeCount;
-            this.buckets = innerTrees;
+            // this.buckets = innerTrees;
+            // this.buckets = null;
+            ArrayList<IndexedBucket> ibucketl = new ArrayList<>(innerTrees.size());
+            innerTrees.forEach((i, b) -> ibucketl.add(new IndexedBucket(i, b)));
+            this.ibuckets = ibucketl.toArray(new IndexedBucket[ibucketl.size()]);
+        }
+
+        private static class IndexedBucket {
+            final int index;
+
+            final Bucket bucket;
+
+            IndexedBucket(int index, Bucket b) {
+                this.index = index;
+                this.bucket = b;
+            }
         }
 
         @Override
         public ImmutableSortedMap<Integer, Bucket> buckets() {
-            return buckets;
+            Builder<Integer, Bucket> builder = ImmutableSortedMap.naturalOrder();
+            for (IndexedBucket ib : this.ibuckets) {
+                builder.put(Integer.valueOf(ib.index), ib.bucket);
+            }
+            return builder.build();
         }
 
         @Override
@@ -107,13 +133,15 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
     }
 
     public static RevTree create(final ObjectId id, final long size, final int childTreeCount,
-            @Nullable ImmutableList<Node> trees, @Nullable ImmutableList<Node> features,
-            @Nullable ImmutableSortedMap<Integer, Bucket> buckets) {
+            @Nullable List<Node> trees, @Nullable List<Node> features,
+            @Nullable SortedMap<Integer, Bucket> buckets) {
 
         checkNotNull(id);
 
         if (buckets == null || buckets.isEmpty()) {
-            return new LeafTree(id, size, features, trees);
+            Node[] f = features == null ? null : features.toArray(new Node[features.size()]);
+            Node[] t = trees == null ? null : trees.toArray(new Node[trees.size()]);
+            return new LeafTree(id, size, f, t);
         }
 
         if ((features == null || features.isEmpty()) && (trees == null || trees.isEmpty())) {

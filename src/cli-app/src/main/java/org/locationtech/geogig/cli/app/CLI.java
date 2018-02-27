@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.cli.CLIContextBuilder;
@@ -92,13 +94,63 @@ public class CLI {
         cli.setPlatform(platform);
 
         addShutdownHook(cli);
-        int exitCode = cli.execute(cliArgs);
 
+        int exitCode;
+        if (cliArgs.length == 1 && "-".equals(cliArgs[0])) {
+            exitCode = runFromStdIn(cli, stdin);
+        } else {
+            exitCode = cli.execute(cliArgs);
+        }
         if (exitCode != 0 || cli.isExitOnFinish()) {
             cli.close();
         }
 
         return cli.isExitOnFinish() ? exitCode : Integer.MIN_VALUE;
+    }
+
+    @SuppressWarnings("resource")
+    private int runFromStdIn(GeogigCLI cli, InputStream stdin) {
+        final String QUOTE = "\"";
+        boolean quoted = false;
+        try (Scanner lines = new Scanner(stdin)) {
+            while (lines.hasNextLine()) {
+                String nextLine = lines.nextLine();
+                Scanner line = new Scanner(nextLine);
+                List<String> tokens = new ArrayList<>();
+                String token = null;
+                while (line.hasNext()) {
+                    String curr = line.next();
+                    boolean startQuote = !quoted && curr.startsWith(QUOTE);
+                    if (startQuote) {
+                        quoted = true;
+                        curr = curr.substring(1);
+                    }
+                    boolean endQuote = quoted && curr.endsWith(QUOTE);
+                    if (endQuote) {
+                        curr = curr.substring(0, curr.length() - 1);
+                        quoted = false;
+                    }
+
+                    token = token == null ? curr : (token + " " + curr);
+                    if (!quoted) {
+                        tokens.add(token);
+                        token = null;
+                    }
+                }
+
+                if (tokens.isEmpty()) {
+                    continue;
+                } else if (tokens.size() == 1 && "exit".equals(tokens.get(0))) {
+                    break;
+                }
+                String[] args = tokens.toArray(new String[tokens.size()]);
+                int retCode = cli.execute(args);
+                if (0 != retCode) {
+                    return retCode;
+                }
+            }
+        }
+        return 0;
     }
 
     /**

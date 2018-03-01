@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
 /**
@@ -86,6 +87,9 @@ public class PushManager {
             throw new RuntimeException("Tried to end a connection that didn't exist.");
         }
 
+        if(Strings.isNullOrEmpty(refspec)) {
+            return;
+        }
         // Do not use the geogig instance after this, but the tx one!
         GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
         try {

@@ -380,7 +380,11 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     protected RevCommit commit(String message) {
-        RevCommit commit = geogig.command(CommitOp.class).setMessage(message).call();
+        return commit(repo.context(), message);
+    }
+
+    protected RevCommit commit(Context context, String message) {
+        RevCommit commit = context.command(CommitOp.class).setMessage(message).call();
         return commit;
     }
 
@@ -575,7 +579,11 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     protected CheckoutResult checkout(String branchName) {
-        return repo.command(CheckoutOp.class).setSource(branchName).call();
+        return checkout(repo.context(), branchName);
+    }
+
+    protected CheckoutResult checkout(Context context, String branchName) {
+        return context.command(CheckoutOp.class).setSource(branchName).call();
     }
 
     protected Ref branch(String branchName) {

@@ -9,10 +9,12 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.hooks.Hookable;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.porcelain.CheckoutOp;
@@ -23,6 +25,7 @@ import org.locationtech.geogig.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +33,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Finishes a {@link GeogigTransaction} by merging all refs that have been changed.
@@ -136,7 +138,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
             currentBranch = "";
         }
 
-        ImmutableSet<Ref> changedRefs = getChangedRefs();
+        List<ChangedRef> changedRefs = getChangedRefs();
         // Lock the repository
         try {
             refDatabase().lock();
@@ -146,53 +148,65 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
 
         try {
             // Update refs
-            for (Ref ref : changedRefs) {
-                if (!ref.getName().startsWith(Ref.REFS_PREFIX)) {
+            for (ChangedRef change : changedRefs) {
+                final String refName = change.name;
+                if (!refName.startsWith(Ref.REFS_PREFIX)) {
                     continue;
                 }
-                Ref updatedRef = ref;
+                final boolean isDelete = change.newValue == null;
+                final boolean isNew = change.orignalValue == null;
 
-                Optional<Ref> repoRef = command(RefParse.class).setName(ref.getName()).call();
-                if (repoRef.isPresent() && repositoryChanged(repoRef.get())) {
+                final ObjectId oldCommit = isNew ? null : ObjectId.valueOf(change.orignalValue);
+                final ObjectId newCommit = isDelete ? null : ObjectId.valueOf(change.newValue);
+
+                final Optional<Ref> currentRef = command(RefParse.class).setName(refName).call();
+                final Ref updatedRef;
+
+                if (currentRef.isPresent() && repositoryChanged(currentRef.get())) {
                     if (rebase) {
                         // Try to rebase
-                        transaction.command(CheckoutOp.class).setSource(ref.getName())
-                                .setForce(true).call();
+                        transaction.command(CheckoutOp.class).setSource(refName).setForce(true)
+                                .call();
                         try {
                             transaction.command(RebaseOp.class)
-                                    .setUpstream(Suppliers.ofInstance(repoRef.get().getObjectId()))
+                                    .setUpstream(
+                                            Suppliers.ofInstance(currentRef.get().getObjectId()))
                                     .call();
                         } catch (RebaseConflictsException e) {
                             Throwables.propagate(e);
                         }
-                        updatedRef = transaction.command(RefParse.class).setName(ref.getName())
-                                .call().get();
+                        updatedRef = transaction.command(RefParse.class).setName(refName).call()
+                                .get();
                     } else {
                         // sync transactions have to use merge to prevent divergent history
-                        transaction.command(CheckoutOp.class).setSource(ref.getName())
-                                .setForce(true).call();
+                        transaction.command(CheckoutOp.class).setSource(refName).setForce(true)
+                                .call();
                         try {
                             transaction.command(MergeOp.class)
                                     .setAuthor(authorName.orNull(), authorEmail.orNull())
-                                    .addCommit(repoRef.get().getObjectId()).call();
+                                    .addCommit(currentRef.get().getObjectId()).call();
                         } catch (NothingToCommitException e) {
                             // The repo commit is already in our history, this is a fast
                             // forward.
                         }
-                        updatedRef = transaction.command(RefParse.class).setName(ref.getName())
-                                .call().get();
+                        updatedRef = transaction.command(RefParse.class).setName(refName).call()
+                                .get();
                     }
+                } else {
+                    updatedRef = isDelete ? null : new Ref(refName, newCommit);
                 }
 
-                LOGGER.debug(String.format("commit %s %s -> %s", ref.getName(), ref.getObjectId(),
-                        updatedRef.getObjectId()));
+                LOGGER.debug(String.format("commit %s %s -> %s", refName, oldCommit, newCommit));
 
-                command(UpdateRef.class).setName(ref.getName())
-                        .setNewValue(updatedRef.getObjectId()).call();
+                command(UpdateRef.class)//
+                        .setName(refName)//
+                        .setNewValue(updatedRef == null ? null : updatedRef.getObjectId())//
+                        .setDelete(isDelete)//
+                        .call();
 
-                if (currentBranch.equals(ref.getName())) {
+                if (currentBranch.equals(refName)) {
                     // Update HEAD, WORK_HEAD and STAGE_HEAD
-                    command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(ref.getName()).call();
+                    command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(refName).call();
                     command(UpdateRef.class).setName(Ref.WORK_HEAD)
                             .setNewValue(updatedRef.getObjectId()).call();
                     command(UpdateRef.class).setName(Ref.STAGE_HEAD)
@@ -208,9 +222,8 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
         }
     }
 
-    private ImmutableSet<Ref> getChangedRefs() {
-        ImmutableSet<Ref> changedRefs = transaction.getChangedRefs();
-        return changedRefs;
+    private List<ChangedRef> getChangedRefs() {
+        return transaction.changedRefs();
     }
 
     private boolean repositoryChanged(Ref ref) {

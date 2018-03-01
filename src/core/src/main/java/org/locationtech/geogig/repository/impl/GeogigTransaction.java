@@ -10,6 +10,7 @@
 package org.locationtech.geogig.repository.impl;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,6 +36,7 @@ import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.locationtech.geogig.storage.impl.TransactionBlobStoreImpl;
 import org.locationtech.geogig.storage.impl.TransactionRefDatabase;
+import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.locationtech.geogig.storage.impl.TransactionStagingArea;
 
 import com.google.common.base.Optional;
@@ -122,7 +124,7 @@ public class GeogigTransaction implements Context {
     public StagingArea index() {
         return stagingArea();
     }
-    
+
     @Override
     public StagingArea stagingArea() {
         return transactionIndex;
@@ -212,11 +214,15 @@ public class GeogigTransaction implements Context {
         return context.pluginDefaults();
     }
 
+    public List<ChangedRef> changedRefs() {
+        return transactionRefDatabase.changedRefs();
+    }
+
     /**
      * The set of refs that have either changed since, or didn't exist at, the time the transaction
      * was created.
      */
-    public ImmutableSet<Ref> getChangedRefs() {
+    public @Deprecated ImmutableSet<Ref> getChangedRefs() {
         Set<String> changedRefNames = transactionRefDatabase.getChangedRefs();
         Set<Ref> changedRefs = new HashSet<Ref>();
         for (String name : changedRefNames) {

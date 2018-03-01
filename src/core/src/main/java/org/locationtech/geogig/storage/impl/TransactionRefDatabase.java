@@ -13,12 +13,16 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
 import static org.locationtech.geogig.model.Ref.append;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
@@ -30,6 +34,7 @@ import org.locationtech.geogig.storage.RefDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapDifference;
@@ -44,9 +49,9 @@ import com.google.common.collect.Maps;
  * namespace.
  * <p>
  * This is so that every command created through the {@link GeogigTransaction transaction} used as a
- * {@link Context}, as well as the transaction specific {@link StagingAreaImpl} and {@link WorkingTree} , are
- * given this instance of {@code RefDatabase} and can do its work without ever noticing its
- * "running inside a transaction". For the command nothing changes.
+ * {@link Context}, as well as the transaction specific {@link StagingAreaImpl} and
+ * {@link WorkingTree} , are given this instance of {@code RefDatabase} and can do its work without
+ * ever noticing its "running inside a transaction". For the command nothing changes.
  * <p>
  * {@link TransactionRefDatabase#create() create()} shall be called before this decorator gets used
  * in order for the transaction refs namespace to be created and all original references copied in
@@ -108,8 +113,10 @@ public class TransactionRefDatabase implements RefDatabase {
             String origValue = readRef(refName);
             if (origValue != null) {
                 String origInternal = toOrigInternal(refName);
+                String changedInternal = toChangedInternal(refName);
                 LOGGER.debug("copy {} as {}", refName, origInternal);
                 insertRef(origInternal, origValue);
+                insertRef(changedInternal, origValue);
             }
         }
     }
@@ -125,10 +132,15 @@ public class TransactionRefDatabase implements RefDatabase {
     }
 
     private void copyAll(Map<String, String> origRefs) {
-        Map<String, String> thisTxRefs = toOrigInternal(origRefs);
+        for (Entry<String, String> entry : origRefs.entrySet()) {
 
-        for (Entry<String, String> entry : thisTxRefs.entrySet()) {
-            insertRef(entry.getKey(), entry.getValue());
+            String origName = entry.getKey();
+            String origValue = entry.getValue();
+
+            String origInternal = toOrigInternal(origName);
+            String changedInternal = toChangedInternal(origName);
+            insertRef(origInternal, origValue);
+            insertRef(changedInternal, origValue);
         }
     }
 
@@ -160,12 +172,8 @@ public class TransactionRefDatabase implements RefDatabase {
             internalName = append(txNamespace, name);
             value = refDb.getRef(internalName);
         } else {
-            internalName = toInternal(name);
+            internalName = toChangedInternal(name);
             value = refDb.getRef(internalName);
-            if (value == null) {
-                internalName = toOrigInternal(name);
-                value = refDb.getRef(internalName);
-            }
         }
         return value;
     }
@@ -178,19 +186,15 @@ public class TransactionRefDatabase implements RefDatabase {
             internalName = append(txNamespace, name);
             value = refDb.getSymRef(internalName);
         } else {
-            internalName = toInternal(name);
+            internalName = toChangedInternal(name);
             value = refDb.getSymRef(internalName);
-            if (value == null) {
-                internalName = toOrigInternal(name);
-                value = refDb.getSymRef(internalName);
-            }
         }
         return value;
     }
 
     @Override
     public void putRef(final String refName, final String refValue) {
-        String internalName = toInternal(refName);
+        String internalName = toChangedInternal(refName);
         LOGGER.debug("update {} as {}", refName, internalName);
         refDb.putRef(internalName, refValue);
     }
@@ -199,14 +203,16 @@ public class TransactionRefDatabase implements RefDatabase {
     public void putSymRef(final String name, final String val) {
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, val);
-        String internalName = toInternal(name);
+        String internalName = toChangedInternal(name);
         LOGGER.debug("update {} as {}", name, internalName);
         refDb.putSymRef(internalName, val);
     }
 
     @Override
     public String remove(final String refName) {
-        return refDb.remove(toInternal(refName));
+        String internal = toChangedInternal(refName);
+        String removedValue = refDb.remove(internal);
+        return removedValue;
     }
 
     @Override
@@ -216,24 +222,75 @@ public class TransactionRefDatabase implements RefDatabase {
 
     @Override
     public Map<String, String> getAll(final String prefix) {
-        Map<String, String> originals = refDb.getAll(append(this.txOrigNamespace, prefix));
         Map<String, String> changed = refDb.getAll(append(this.txChangedNamespace, prefix));
+        return toExternal(changed);
+    }
 
-        Map<String, String> externalOriginals = toExternal(originals);
-        Map<String, String> externalChanged = toExternal(changed);
+    public static class ChangedRef {
+        public final String name;
 
-        Map<String, String> composite = Maps.newHashMap(externalOriginals);
-        // Overwrite originals
-        composite.putAll(externalChanged);
-        return composite;
+        public final @Nullable String orignalValue;
 
+        public final @Nullable String newValue;
+
+        ChangedRef(String name, String oldv, String newv) {
+            this.name = name;
+            this.orignalValue = oldv;
+            this.newValue = newv;
+        }
+
+        static ChangedRef of(String name, String oldv, String newv) {
+            Preconditions.checkNotNull(name);
+            Preconditions.checkArgument(oldv != null || newv != null);
+            Preconditions.checkArgument(!Objects.equals(oldv, newv));
+            return new ChangedRef(name, oldv, newv);
+        }
+    }
+
+    public List<ChangedRef> changedRefs() {
+        MapDifference<String, String> difference;
+        {
+            Map<String, String> externalOriginals;
+            Map<String, String> externalChanged;
+            Map<String, String> originals = refDb.getAll(this.txOrigNamespace);
+            Map<String, String> changed = refDb.getAll(this.txChangedNamespace);
+
+            externalOriginals = toExternal(originals);
+            externalChanged = toExternal(changed);
+            difference = Maps.difference(externalOriginals, externalChanged);
+        }
+
+        List<ChangedRef> changes = new ArrayList<>();
+        // include all new refs
+        difference.entriesOnlyOnRight().forEach((k, v) -> changes.add(ChangedRef.of(k, null, v)));
+
+        // include all changed refs, with the new values
+        for (Map.Entry<String, ValueDifference<String>> e : difference.entriesDiffering()
+                .entrySet()) {
+            String name = e.getKey();
+            ValueDifference<String> valueDifference = e.getValue();
+            String oldValue = valueDifference.leftValue();
+            String newValue = valueDifference.rightValue();
+            changes.add(ChangedRef.of(name, oldValue, newValue));
+        }
+        // deleted refs
+        difference.entriesOnlyOnLeft().forEach((k, v) -> changes.add(ChangedRef.of(k, v, null)));
+        return changes;
+    }
+
+    private @Nullable Ref toRef(String name, @Nullable String value) {
+        if (null == value) {
+            return null;
+        }
+        final boolean sym = value.contains("/");
+        return null;
     }
 
     /**
      * The names of the refs that either have changed from their original value or didn't exist at
      * the time this method is called
      */
-    public ImmutableSet<String> getChangedRefs() {
+    public @Deprecated ImmutableSet<String> getChangedRefs() {
         Map<String, String> externalOriginals;
         Map<String, String> externalChanged;
         {
@@ -263,7 +320,7 @@ public class TransactionRefDatabase implements RefDatabase {
 
     @Override
     public Map<String, String> removeAll(String namespace) {
-        final String txMappedNamespace = toInternal(namespace);
+        final String txMappedNamespace = toChangedInternal(namespace);
         Map<String, String> removed = refDb.removeAll(txMappedNamespace);
         Map<String, String> external = toExternal(removed);
         return external;
@@ -284,7 +341,7 @@ public class TransactionRefDatabase implements RefDatabase {
         return ImmutableMap.copyOf(transformed);
     }
 
-    private String toInternal(String name) {
+    private String toChangedInternal(String name) {
         return append(txChangedNamespace, name);
     }
 
@@ -300,22 +357,6 @@ public class TransactionRefDatabase implements RefDatabase {
     private String toOrigInternal(String name) {
         String origName = append(txOrigNamespace, name);
         return origName;
-    }
-
-    private Map<String, String> toOrigInternal(final Map<String, String> orig) {
-
-        Map<String, String> transformed = Maps.newHashMap();
-        for (Entry<String, String> entry : orig.entrySet()) {
-
-            String origName = entry.getKey();
-            String origValue = entry.getValue();
-
-            String transformedName = toOrigInternal(origName);
-            String transformedValue = origValue;
-            LOGGER.debug("copy {} as {}", origName, transformedName);
-            transformed.put(transformedName, transformedValue);
-        }
-        return ImmutableMap.copyOf(transformed);
     }
 
     private String toExternalValue(String origValue) {

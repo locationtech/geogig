@@ -32,10 +32,19 @@ import com.vividsolutions.jts.geom.Point;
 
 public class EPSGBoundsCalcTest extends RepositoryTestCase {
 
+    private static final double TOLERANCE = 0.000000002;
+
     @Override
     protected void setUpInternal() throws Exception {
         injector.configDatabase().put("user.name", "mthompson");
         injector.configDatabase().put("user.email", "mthompson@boundlessgeo.com");
+    }
+
+    private void assertEnvelopesEqual(Envelope expected, Envelope actual) {
+        assertEquals("MinX values not equal", expected.getMinX(), actual.getMinX(), TOLERANCE);
+        assertEquals("MaxX values not equal", expected.getMaxX(), actual.getMaxX(), TOLERANCE);
+        assertEquals("MinY values not equal", expected.getMinY(), actual.getMinY(), TOLERANCE);
+        assertEquals("MaxY values not equal", expected.getMaxY(), actual.getMaxY(), TOLERANCE);
     }
 
     @Test
@@ -53,7 +62,7 @@ public class EPSGBoundsCalcTest extends RepositoryTestCase {
         Envelope bounds;
         for (int i=0; i<testArray.length; i++) {
             bounds = new EPSGBoundsCalc().getCRSBounds(testArray[i]);
-            assertEquals(testEnvelopes[i], bounds);
+            assertEnvelopesEqual(testEnvelopes[i], bounds);
         }
     }
 
@@ -127,8 +136,8 @@ public class EPSGBoundsCalcTest extends RepositoryTestCase {
             ft = featureType.get();
 
         //double check the actual bounds
-        Envelope bounds = new EPSGBoundsCalc().getCRSBounds(ft);
-        Envelope actual = new Envelope(205723.76927073707, 794276.2307292629, 3128220.0383561817, 9329005.182379141);
-        assertEquals(actual,bounds);
+        Envelope actual = new EPSGBoundsCalc().getCRSBounds(ft);
+        Envelope expected = new Envelope(205723.76927073707, 794276.2307292629, 3128220.0383561817, 9329005.182379141);
+        assertEnvelopesEqual(expected, actual);
     }
 }

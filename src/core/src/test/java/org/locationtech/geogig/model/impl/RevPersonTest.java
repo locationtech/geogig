@@ -15,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevPerson;
-import org.locationtech.geogig.model.impl.RevPersonBuilder;
 
 public class RevPersonTest {
 

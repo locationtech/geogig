@@ -10,8 +10,15 @@
 package org.locationtech.geogig.storage.datastream;
 
 
-import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Envelope;
+import static org.locationtech.geogig.storage.datastream.Varint.readSignedVarInt;
+import static org.locationtech.geogig.storage.datastream.Varint.writeSignedVarInt;
+import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVarInt;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Map;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
@@ -19,14 +26,8 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Map;
-
-import static org.locationtech.geogig.storage.datastream.Varint.readSignedVarInt;
-import static org.locationtech.geogig.storage.datastream.Varint.writeSignedVarInt;
-import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVarInt;
+import com.google.common.base.Preconditions;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class FormatCommonV2_2  extends FormatCommonV2_1 {
 

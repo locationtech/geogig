@@ -9,12 +9,13 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import com.google.common.base.Predicate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
 import org.geotools.renderer.ScreenMap;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.operation.TransformException;
+
+import com.google.common.base.Predicate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
 
 
 /**

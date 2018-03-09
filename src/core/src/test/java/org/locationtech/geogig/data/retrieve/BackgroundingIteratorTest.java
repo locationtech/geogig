@@ -9,15 +9,15 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.junit.Test;
-import org.locationtech.geogig.data.retrieve.BackgroundingIterator;
-
-import static org.mockito.Mockito.*;
 
 import com.vividsolutions.jts.util.Assert;
 

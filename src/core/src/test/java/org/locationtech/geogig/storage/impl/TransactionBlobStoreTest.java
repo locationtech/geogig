@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;

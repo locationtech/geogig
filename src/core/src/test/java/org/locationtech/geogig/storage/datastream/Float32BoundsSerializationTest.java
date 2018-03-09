@@ -10,10 +10,11 @@
 package org.locationtech.geogig.storage.datastream;
 
 
-import com.vividsolutions.jts.geom.Envelope;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class Float32BoundsSerializationTest {
 

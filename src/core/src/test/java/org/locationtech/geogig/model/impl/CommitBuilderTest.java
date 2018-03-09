@@ -14,7 +14,6 @@ import java.util.List;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 
 import com.google.common.collect.ImmutableList;
 

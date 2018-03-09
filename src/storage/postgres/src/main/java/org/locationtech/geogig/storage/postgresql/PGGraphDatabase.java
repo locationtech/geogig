@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.closeDataSource;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
@@ -43,7 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -116,7 +114,7 @@ public class PGGraphDatabase implements GraphDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return exists(node, cx);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -153,7 +151,7 @@ public class PGGraphDatabase implements GraphDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return put(cx, commitId, parentIds);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -336,7 +334,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -364,7 +362,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return mapped;
@@ -395,7 +393,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 next.clear();
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return depth;
@@ -434,7 +432,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -457,7 +455,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -489,7 +487,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -497,7 +495,7 @@ public class PGGraphDatabase implements GraphDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return outgoing(node, cx);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -544,7 +542,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return incoming;
     }

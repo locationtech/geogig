@@ -68,7 +68,6 @@ import org.opengis.util.InternationalString;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -491,8 +490,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
                             parsed.getId());
                 }
                 return parsed;
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
 

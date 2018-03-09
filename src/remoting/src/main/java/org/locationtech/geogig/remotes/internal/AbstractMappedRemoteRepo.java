@@ -38,7 +38,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -138,20 +137,15 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         Preconditions.checkState(!fetchLimit.isPresent(), "A sparse clone cannot be shallow.");
         FetchCommitGatherer gatherer = new FetchCommitGatherer(getRemoteWrapper(), local);
 
-        try {
-            gatherer.traverse(ref.getObjectId());
-            Stack<ObjectId> needed = gatherer.commits;
-            while (!needed.empty()) {
-                ObjectId commitId = needed.pop();
-                // If the last commit is empty, add it anyways to preserve parentage of new commits.
-                boolean allowEmpty = needed.isEmpty();
-                fetchSparseCommit(local, commitId, allowEmpty);
-            }
-
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        } finally {
+        gatherer.traverse(ref.getObjectId());
+        Stack<ObjectId> needed = gatherer.commits;
+        while (!needed.empty()) {
+            ObjectId commitId = needed.pop();
+            // If the last commit is empty, add it anyways to preserve parentage of new commits.
+            boolean allowEmpty = needed.isEmpty();
+            fetchSparseCommit(local, commitId, allowEmpty);
         }
+
     }
 
     /**
@@ -284,29 +278,23 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
         PushCommitGatherer gatherer = new PushCommitGatherer(local);
 
-        try {
-            gatherer.traverse(ref.getObjectId());
-            Stack<ObjectId> needed = gatherer.commits;
+        gatherer.traverse(ref.getObjectId());
+        Stack<ObjectId> needed = gatherer.commits;
 
-            while (!needed.isEmpty()) {
-                ObjectId commitToPush = needed.pop();
+        while (!needed.isEmpty()) {
+            ObjectId commitToPush = needed.pop();
 
-                pushSparseCommit(local, commitToPush);
-            }
-
-            ObjectId newCommitId = local.graphDatabase().getMapping(ref.getObjectId());
-
-            ObjectId originalRemoteRefValue = ObjectId.NULL;
-            if (remoteRef.isPresent()) {
-                originalRemoteRefValue = remoteRef.get().getObjectId();
-            }
-
-            endPush(refspec, newCommitId, originalRemoteRefValue.toString());
-
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        } finally {
+            pushSparseCommit(local, commitToPush);
         }
+
+        ObjectId newCommitId = local.graphDatabase().getMapping(ref.getObjectId());
+
+        ObjectId originalRemoteRefValue = ObjectId.NULL;
+        if (remoteRef.isPresent()) {
+            originalRemoteRefValue = remoteRef.get().getObjectId();
+        }
+
+        endPush(refspec, newCommitId, originalRemoteRefValue.toString());
     }
 
     /**

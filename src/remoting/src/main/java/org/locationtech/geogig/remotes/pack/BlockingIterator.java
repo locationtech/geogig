@@ -2,7 +2,6 @@ package org.locationtech.geogig.remotes.pack;
 
 import java.util.concurrent.BlockingQueue;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 
 class BlockingIterator<T> extends AbstractIterator<T> {

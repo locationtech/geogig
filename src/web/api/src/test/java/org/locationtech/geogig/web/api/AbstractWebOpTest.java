@@ -26,8 +26,6 @@ import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.spring.dto.LegacyResponse;
 import org.springframework.http.MediaType;
 
-import com.google.common.base.Throwables;
-
 public abstract class AbstractWebOpTest {
     @Rule
     public TestContext testContext = new TestContext();
@@ -108,16 +106,14 @@ public abstract class AbstractWebOpTest {
 
     public JsonObject getJSONResponse() {
         JsonObject response = null;
-        try {
-            LegacyResponse commandResponse = testContext.getCommandResponse();
-            StringWriter writer = new StringWriter();
-            commandResponse.encode(writer, MediaType.APPLICATION_JSON, "/geogig");
 
-            String content = writer.toString();
-            response = Json.createReader(new StringReader(content)).readObject();
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
+        LegacyResponse commandResponse = testContext.getCommandResponse();
+        StringWriter writer = new StringWriter();
+        commandResponse.encode(writer, MediaType.APPLICATION_JSON, "/geogig");
+
+        String content = writer.toString();
+        response = Json.createReader(new StringReader(content)).readObject();
+
         return response;
     }
 

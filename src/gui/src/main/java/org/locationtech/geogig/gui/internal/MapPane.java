@@ -43,7 +43,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.FilterFactory;
 
 import com.beust.jcommander.internal.Lists;
-import com.google.common.base.Throwables;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPolygon;

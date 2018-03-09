@@ -15,8 +15,6 @@ import java.io.Writer;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 
-import com.google.common.base.Throwables;
-
 /**
  *
  */
@@ -41,7 +39,7 @@ public class MergeFeatureResponse extends LegacyRepoResponse {
                 try {
                     out.write(oid.toString());
                 } catch (IOException ioe) {
-                    Throwables.propagate(ioe);
+                    throw new RuntimeException(ioe);
                 }
             }
         }

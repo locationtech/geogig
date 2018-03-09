@@ -30,9 +30,9 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.BoundingBox;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -43,8 +43,8 @@ public class DiffBoundsTest extends RepositoryTestCase {
     static {
         try {
             DEFAULT_CRS = CRS.decode("EPSG:4326", true);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        } catch (FactoryException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -238,7 +238,7 @@ public class DiffBoundsTest extends RepositoryTestCase {
                 String typeSpec = "pp:Point:srid=3857";
                 this.featureType = DataUtilities.createType(typeName, typeSpec);
             } catch (SchemaException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             this.fcount = featureCount;
         }

@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage.postgresql;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 
@@ -41,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
@@ -166,7 +164,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -208,7 +206,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -265,7 +263,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return hasConflicts;
     }
@@ -314,7 +312,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return conflicts;
     }
@@ -447,7 +445,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return count;
     }
@@ -481,7 +479,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -517,7 +515,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -542,7 +540,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -582,7 +580,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 throw e;
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return matches;

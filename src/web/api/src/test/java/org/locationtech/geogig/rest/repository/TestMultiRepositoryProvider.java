@@ -72,11 +72,14 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
     public Repository createGeogig(final String repositoryName,
             final Map<String, String> parameters) {
         TestRepository repository = new TestRepository();
+
         try {
             repository.before();
         } catch (Throwable e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         }
+
         repository.setRepoName(repositoryName);
         GeoGIG geogig = repository.getGeogig(false);
         repositories.put(repositoryName, repository);

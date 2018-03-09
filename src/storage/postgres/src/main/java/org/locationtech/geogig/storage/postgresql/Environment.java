@@ -21,7 +21,6 @@ import org.locationtech.geogig.repository.Hints;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * <p>
@@ -181,7 +180,7 @@ public class Environment {
             try {
                 repoURI = new URI(sb.toString());
             } catch (URISyntaxException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return repoURI;
         }

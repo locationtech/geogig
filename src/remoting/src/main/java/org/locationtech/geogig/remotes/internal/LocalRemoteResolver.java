@@ -19,7 +19,6 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * {@link RemoteResolver} for "local" repositories (that is, the ones that can be opened by a
@@ -33,25 +32,21 @@ public class LocalRemoteResolver implements RemoteResolver {
 
     public @Override Optional<IRemoteRepo> resolve(Remote remote, Hints remoteHints) {
 
-        try {
-            final String fetchURL = remote.getFetchURL();
-            final URI fetchURI = URI.create(fetchURL);
-            final String scheme = fetchURI.getScheme();
-            Preconditions.checkNotNull(scheme, "Fetch URI doesn't declare scheme: %s", fetchURL);
-            if (RepositoryResolver.resolverAvailableForURIScheme(scheme)) {
-                IRemoteRepo remoteRepo = null;
+        final String fetchURL = remote.getFetchURL();
+        final URI fetchURI = URI.create(fetchURL);
+        final String scheme = fetchURI.getScheme();
+        Preconditions.checkNotNull(scheme, "Fetch URI doesn't declare scheme: %s", fetchURL);
+        if (RepositoryResolver.resolverAvailableForURIScheme(scheme)) {
+            IRemoteRepo remoteRepo = null;
 
-                if (remote.getMapped()) {
-                    remoteRepo = new LocalMappedRemoteRepo(remote, fetchURI);
-                } else {
-                    remoteRepo = new LocalRemoteRepo(remote, fetchURI);
-                }
-                return Optional.of(remoteRepo);
+            if (remote.getMapped()) {
+                remoteRepo = new LocalMappedRemoteRepo(remote, fetchURI);
+            } else {
+                remoteRepo = new LocalRemoteRepo(remote, fetchURI);
             }
-        } catch (Exception e) {
-            // Invalid fetch URL
-            Throwables.propagate(e);
+            return Optional.of(remoteRepo);
         }
+
         return Optional.absent();
     }
 }

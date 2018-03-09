@@ -32,8 +32,6 @@ import org.junit.Test;
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 
-import com.google.common.base.Throwables;
-
 public class PGStorageTest {
 
     @Rule

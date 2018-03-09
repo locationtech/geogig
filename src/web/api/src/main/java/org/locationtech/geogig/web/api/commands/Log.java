@@ -357,7 +357,8 @@ public class Log extends AbstractWebAPICommand {
                         try {
                             writeCSV(context.getRepository(), writer, log);
                         } catch (Exception e) {
-                            Throwables.propagate(e);
+                            Throwables.propagateIfPossible(e, RuntimeException.class);
+                            throw new RuntimeException(e);
                         }
 
                     }

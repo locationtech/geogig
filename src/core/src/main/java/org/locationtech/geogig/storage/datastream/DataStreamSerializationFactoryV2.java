@@ -32,7 +32,6 @@ import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 
 /**

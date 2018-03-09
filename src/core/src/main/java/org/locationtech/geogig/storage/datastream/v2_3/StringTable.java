@@ -19,7 +19,6 @@ import java.util.NoSuchElementException;
 import org.locationtech.geogig.storage.datastream.Varint;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 abstract class StringTable {

@@ -12,7 +12,6 @@ package org.locationtech.geogig.storage.postgresql;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 
 import java.sql.Connection;
@@ -162,14 +161,14 @@ public class PGStorage {
     }
 
     static Version getVersionFromQueryResult(final String versionQueryResult) {
-        final List<Integer> versions = Lists.transform(Splitter.on('.').splitToList(versionQueryResult),
-            (s) -> Integer.parseInt(s));
+        final List<Integer> versions = Lists.transform(
+                Splitter.on('.').splitToList(versionQueryResult), (s) -> Integer.parseInt(s));
         // version string can be either
         // {major}.{minor}.{patch}
         // or (since PostgreSQL 10)
         // {major}.{minor}
         Preconditions.checkState(versions.size() == 3 || versions.size() == 2,
-            "Expected version format x.y.z or x.y, got " + versionQueryResult);
+                "Expected version format x.y.z or x.y, got " + versionQueryResult);
         int major = versions.get(0).intValue();
         int minor = versions.get(1).intValue();
         // patch may not be present. If not, just use 0
@@ -205,7 +204,7 @@ public class PGStorage {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         } finally {
             PGStorage.closeDataSource(dataSource);
         }
@@ -267,7 +266,7 @@ public class PGStorage {
             checkState(pk == configdb.resolveRepositoryPK(argRepoName)
                     .or(Environment.REPOSITORY_ID_UNSET));
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         } finally {
             PGStorage.closeDataSource(dataSource);
         }
@@ -287,7 +286,7 @@ public class PGStorage {
                     tableExists = tables.next();
                 }
             } catch (SQLException e) {
-                throw propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return tableExists;
@@ -349,7 +348,7 @@ public class PGStorage {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         } finally {
             PGStorage.closeDataSource(dataSource);
         }

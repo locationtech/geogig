@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 
 class PGBlobStore implements TransactionBlobStore {
@@ -98,7 +96,7 @@ class PGBlobStore implements TransactionBlobStore {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return Optional.fromNullable(bytes);
@@ -148,7 +146,7 @@ class PGBlobStore implements TransactionBlobStore {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -189,7 +187,7 @@ class PGBlobStore implements TransactionBlobStore {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -215,7 +213,7 @@ class PGBlobStore implements TransactionBlobStore {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

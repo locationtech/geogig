@@ -17,7 +17,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * Creates a new {@link GeogigTransaction} and copies all of the repository refs for that
@@ -44,7 +43,7 @@ public class TransactionBegin extends AbstractGeoGigOp<GeogigTransaction> {
         try {
             refDatabase().lock();
         } catch (TimeoutException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         try {
             // Copy original refs

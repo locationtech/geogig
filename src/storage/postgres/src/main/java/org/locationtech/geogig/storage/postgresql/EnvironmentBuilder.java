@@ -29,7 +29,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 
 public class EnvironmentBuilder {
 
@@ -62,7 +61,7 @@ public class EnvironmentBuilder {
             try {
                 shortKeys.put(p.get(0), URLDecoder.decode(p.get(1), StandardCharsets.UTF_8.name()));
             } catch (UnsupportedEncodingException uee) {
-                Throwables.propagate(uee);
+                throw new RuntimeException(uee);
             }
         }
         return shortKeys;

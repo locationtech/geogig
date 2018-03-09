@@ -18,8 +18,6 @@ import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.base.Throwables;
-
 public class GeopkgAuditImport extends AbstractGeoGigOp<GeopkgImportResult> {
 
     private String commitMessage;
@@ -83,7 +81,7 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<GeopkgImportResult> {
             }
 
         } catch (MergeConflictsException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to import: " + e.getMessage(), e);
         } finally {

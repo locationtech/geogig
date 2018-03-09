@@ -61,9 +61,11 @@ public class SingleRepositoryProvider implements RepositoryProvider {
         repo.close();
         try {
             GeoGIG.delete(repoUri.get());
-            this.repo = null;
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
+        }finally {
+            this.repo = null;
         }
     }
 

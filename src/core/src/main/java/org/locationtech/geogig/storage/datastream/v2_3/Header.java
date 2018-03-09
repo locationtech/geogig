@@ -20,7 +20,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.datastream.Varint;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * {@code

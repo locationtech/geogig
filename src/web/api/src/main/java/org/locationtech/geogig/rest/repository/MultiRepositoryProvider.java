@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -217,9 +218,11 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         ggig.close();
         try {
             GeoGIG.delete(repoUri.get());
-            this.repositories.invalidate(repoName);
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
+        }finally {
+            this.repositories.invalidate(repoName);
         }
     }
 
@@ -255,10 +258,9 @@ public class MultiRepositoryProvider implements RepositoryProvider {
                 }
                 // now build the repo with the Hints
                 return Optional.fromNullable(repository);
-            } catch (Exception ex) {
-                Throwables.propagate(ex);
+            } catch (IOException | URISyntaxException | RepositoryConnectionException ex) {
+                throw new RuntimeException(ex);
             }
-            return Optional.absent();
         }
     }
 

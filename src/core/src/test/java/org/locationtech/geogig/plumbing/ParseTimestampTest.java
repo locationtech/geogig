@@ -30,7 +30,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
 
-import com.google.common.base.Throwables;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 

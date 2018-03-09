@@ -13,8 +13,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.CommandFactory;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Throwables;
-
 /**
  * 
  *

@@ -10,7 +10,9 @@
 package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -23,8 +25,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.WorkingTree;
-
-import com.google.common.base.Throwables;
 
 /**
  * Imports layers from a GeoPackage file to the repository.
@@ -71,8 +71,8 @@ public class GeopkgDataStoreImportOp extends DataStoreImportOp<RevCommit> {
             } finally {
                 geopkg.close();
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
         } finally {
             dataStore.dispose();
             dataStoreSupplier.cleanupResources();

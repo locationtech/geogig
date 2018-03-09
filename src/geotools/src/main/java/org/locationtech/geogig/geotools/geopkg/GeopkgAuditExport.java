@@ -19,8 +19,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Throwables;
-
 public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
 
     private File databaseFile;

@@ -20,8 +20,6 @@ import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 import org.locationtech.geogig.storage.datastream.ValueSerializer;
 
-import com.google.common.base.Throwables;
-
 public class IndexInfoSerializer {
 
     private static final ValueSerializer valueEncoder = DataStreamValueSerializerV2.INSTANCE;
@@ -33,7 +31,7 @@ public class IndexInfoSerializer {
             valueEncoder.encode(FieldType.STRING, index.getIndexType().toString(), out);
             valueEncoder.encode(FieldType.MAP, index.getMetadata(), out);
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -48,7 +46,7 @@ public class IndexInfoSerializer {
             indexType = IndexType.valueOf(valueEncoder.readString(in));
             metadata = valueEncoder.readMap(in);
         } catch (IOException ioe) {
-            throw Throwables.propagate(ioe);
+            throw new RuntimeException(ioe);
         }
         return new IndexInfo(treeName, attributeName, indexType, metadata);
     }

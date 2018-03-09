@@ -34,7 +34,6 @@ import org.locationtech.geogig.web.api.StreamingWriter;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 
 /**

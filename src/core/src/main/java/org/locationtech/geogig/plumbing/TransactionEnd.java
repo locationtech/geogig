@@ -21,7 +21,6 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
-import org.locationtech.geogig.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
@@ -32,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
 
 /**
  * Finishes a {@link GeogigTransaction} by merging all refs that have been changed.
@@ -143,7 +141,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
         try {
             refDatabase().lock();
         } catch (TimeoutException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         try {
@@ -167,14 +165,10 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
                         // Try to rebase
                         transaction.command(CheckoutOp.class).setSource(refName).setForce(true)
                                 .call();
-                        try {
-                            transaction.command(RebaseOp.class)
-                                    .setUpstream(
-                                            Suppliers.ofInstance(currentRef.get().getObjectId()))
-                                    .call();
-                        } catch (RebaseConflictsException e) {
-                            Throwables.propagate(e);
-                        }
+                        transaction.command(RebaseOp.class)
+                                .setUpstream(Suppliers.ofInstance(currentRef.get().getObjectId()))
+                                .call();
+
                         updatedRef = transaction.command(RefParse.class).setName(refName).call()
                                 .get();
                     } else {

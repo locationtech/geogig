@@ -192,7 +192,8 @@ public class DAGTreeBuilder {
             ForkJoinPool forkJoinPool = FORK_JOIN_POOL;
             tree = forkJoinPool.invoke(task);
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         }
         if (state.isCancelled()) {
             return null;
@@ -243,7 +244,8 @@ public class DAGTreeBuilder {
                 }
             } catch (RuntimeException | InterruptedException | ExecutionException e) {
                 state.abort();// let any other running task abort asap
-                throw Throwables.propagate(e);
+                Throwables.propagateIfPossible(e, RuntimeException.class);
+                throw new RuntimeException(e);
             }
             if (!state.isCancelled()) {
                 state.addNewTree(result);

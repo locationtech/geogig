@@ -48,6 +48,8 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -73,6 +75,8 @@ import com.vividsolutions.jts.geom.Envelope;
 @NonNullByDefault
 public class PreOrderDiffWalk {
 
+    private static final Logger log = LoggerFactory.getLogger(PreOrderDiffWalk.class);
+    
     public static final CanonicalNodeOrder ORDER = CanonicalNodeOrder.INSTANCE;
 
     // this is the same as the defaultForkJoinWorkerThreadFactory but gives the threads a
@@ -367,9 +371,9 @@ public class PreOrderDiffWalk {
             if (!(leftSource.isOpen() && rightSource.isOpen())) {
                 // someone closed the repo, we're ok.
             } else {
-                System.err.println("Exception caught executing task: ");
-                e.printStackTrace();
-                Throwables.propagate(e);
+                log.error("Exception caught executing task", e);
+                Throwables.propagateIfPossible(e, RuntimeException.class);
+                throw new RuntimeException(e);
             }
         } finally {
             finished.set(true);

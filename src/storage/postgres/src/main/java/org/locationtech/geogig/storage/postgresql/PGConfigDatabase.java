@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage.postgresql;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.rollbackAndRethrow;
@@ -39,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -259,7 +257,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -281,7 +279,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                 return all;
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -305,7 +303,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                 return all;
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -332,7 +330,7 @@ public class PGConfigDatabase implements ConfigDatabase {
             }
             return all;
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -376,7 +374,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -384,7 +382,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         try (Connection cx = PGStorage.newConnection(connect(config))) {
             doRemove(entry, cx, repositoryPK);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -421,7 +419,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

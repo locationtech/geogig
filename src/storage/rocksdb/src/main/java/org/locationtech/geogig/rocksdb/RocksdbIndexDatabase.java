@@ -36,7 +36,6 @@ import org.rocksdb.RocksIterator;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
@@ -207,7 +206,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
                     }
                 }
             } catch (RocksDBException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return false;
@@ -231,7 +230,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
                     dbRef.db().delete(indexMappingsColumn, key);
                 }
             } catch (RocksDBException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

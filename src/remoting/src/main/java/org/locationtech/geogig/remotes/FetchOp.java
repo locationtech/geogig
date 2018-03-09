@@ -38,7 +38,6 @@ import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -349,9 +348,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                     updateLocalRef(remoteHead.get(), remote, localRemoteRefs);
                 }
             }
-        } catch (Exception ce) {
-            throw Throwables.propagate(ce);
         }
+
         return needUpdate;
     }
 

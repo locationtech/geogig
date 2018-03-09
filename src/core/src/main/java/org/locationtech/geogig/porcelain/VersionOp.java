@@ -16,8 +16,6 @@ import java.util.Properties;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Throwables;
-
 /**
  * Retrieves GeoGig version information.
  * 
@@ -41,7 +39,7 @@ public class VersionOp extends AbstractGeoGigOp<VersionInfo> {
                 info = new VersionInfo(properties);
             }
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return info;
 

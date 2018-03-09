@@ -16,8 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.MediaType;
 
-import com.google.common.base.Throwables;
-
 public class RESTUtils {
 
     public static String getStringAttribute(final HttpServletRequest request, final String key) {

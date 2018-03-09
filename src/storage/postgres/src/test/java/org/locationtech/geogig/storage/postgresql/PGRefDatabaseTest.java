@@ -27,8 +27,6 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.test.integration.repository.RefDatabaseTest;
 
-import com.google.common.base.Throwables;
-
 public class PGRefDatabaseTest extends RefDatabaseTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();

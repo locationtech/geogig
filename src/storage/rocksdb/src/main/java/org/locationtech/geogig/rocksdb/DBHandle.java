@@ -20,7 +20,6 @@ import org.rocksdb.RocksDBException;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 class DBHandle {
 

@@ -33,7 +33,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 
-import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
 
 /**

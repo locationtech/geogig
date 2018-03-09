@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.rollbackAndRethrow;
@@ -45,7 +44,6 @@ import org.locationtech.geogig.storage.datastream.ValueSerializer;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
@@ -92,10 +90,10 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                         cx.commit();
                     } catch (SQLException e) {
                         cx.rollback();
-                        Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                 } catch (SQLException e) {
-                    throw propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -188,7 +186,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return index;
     }
@@ -240,7 +238,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return index;
     }
@@ -276,7 +274,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 }
             }
         } catch (SQLException | IOException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return Optional.fromNullable(index);
@@ -313,7 +311,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 }
             }
         } catch (SQLException | IOException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return indexes;
@@ -349,7 +347,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 }
             }
         } catch (SQLException | IOException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return indexes;
@@ -376,7 +374,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         if (deletedRows > 0) {
             clearIndex(index);
@@ -406,7 +404,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -449,7 +447,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -480,7 +478,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return Optional.fromNullable(indexedTreeId);

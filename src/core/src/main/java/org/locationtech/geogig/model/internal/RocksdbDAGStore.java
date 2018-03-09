@@ -30,7 +30,6 @@ import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -46,6 +45,7 @@ class RocksdbDAGStore {
     private ColumnFamilyHandle column;
 
     private BloomFilter bloomFilter;
+
     private ColumnFamilyOptions colFamilyOptions;
 
     public RocksdbDAGStore(RocksDB db) {
@@ -113,11 +113,7 @@ class RocksdbDAGStore {
     }
 
     public List<DAG> getTrees(final Set<TreeId> ids) throws NoSuchElementException {
-        try {
-            return getInternal(ids);
-        } catch (Exception e) {
-            throw Throwables.propagate(Throwables.getRootCause(e));
-        }
+        return getInternal(ids);
     }
 
     private List<DAG> getInternal(final Set<TreeId> ids) throws NoSuchElementException {

@@ -21,7 +21,6 @@ import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;

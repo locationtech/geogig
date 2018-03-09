@@ -20,11 +20,11 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * A facade to GeoGig operations.
@@ -96,13 +96,9 @@ public class GeoGIG {
      */
     public Repository getOrCreateRepository() {
         if (repository == null) {
-            try {
-                repository = command(InitOp.class).call();
-                checkState(repository != null,
-                        "Repository shouldn't be null as we checked it didn't exist before calling init");
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
+            repository = command(InitOp.class).call();
+            checkState(repository != null,
+                    "Repository shouldn't be null as we checked it didn't exist before calling init");
         }
         return repository;
     }
@@ -118,13 +114,13 @@ public class GeoGIG {
 
         final Optional<URI> repoLocation = command(ResolveGeogigURI.class).call();
         if (repoLocation.isPresent()) {
-            try {
-                if (RepositoryResolver.lookup(repoLocation.get()).repoExists(repoLocation.get())) {
-                    repository = context.repository();
+            if (RepositoryResolver.lookup(repoLocation.get()).repoExists(repoLocation.get())) {
+                repository = context.repository();
+                try {
                     repository.open();
+                } catch (RepositoryConnectionException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
             }
         }
         return repository;

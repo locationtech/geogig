@@ -14,15 +14,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.geotools.referencing.crs.DefaultGeographicCRS.WGS84;
 
 import org.geotools.data.DataUtilities;
+import org.geotools.feature.SchemaException;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.google.common.base.Throwables;
 
 public class RevFeatureTypeBuilder {
 
@@ -66,8 +66,8 @@ public class RevFeatureTypeBuilder {
                 String[] includeAllAttributes = null;
                 featureType = DataUtilities.createSubType((SimpleFeatureType) featureType,
                         includeAllAttributes, epsg4326);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+            } catch (FactoryException | SchemaException e) {
+                throw new RuntimeException(e);
             }
         }
         return featureType;

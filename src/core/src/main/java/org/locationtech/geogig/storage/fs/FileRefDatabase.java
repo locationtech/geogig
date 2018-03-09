@@ -34,7 +34,6 @@ import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
@@ -212,25 +211,21 @@ public class FileRefDatabase extends AbstractRefDatabase {
     private File toFile(String refPath) {
         String[] path = refPath.split("/");
 
-        try {
-            File file = this.envHome;
-            for (String subpath : path) {
-                file = new File(file, subpath);
-            }
-            return file;
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        File file = this.envHome;
+        for (String subpath : path) {
+            file = new File(file, subpath);
         }
+        return file;
     }
 
     private String readRef(final File refFile) {
+        // make sure no other thread changes the ref as we read it
         try {
-            // make sure no other thread changes the ref as we read it
             synchronized (refFile.getCanonicalPath().intern()) {
                 return Files.readFirstLine(refFile, CHARSET);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -259,8 +254,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

@@ -182,7 +182,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         }
     }
 
@@ -206,7 +207,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         }
     }
 
@@ -236,7 +238,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             }
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         }
     }
 
@@ -255,7 +258,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         }
     }
 

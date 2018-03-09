@@ -23,7 +23,6 @@ import org.locationtech.geogig.repository.Platform;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 
 /**

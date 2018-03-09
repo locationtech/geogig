@@ -21,8 +21,6 @@ import org.locationtech.geogig.rocksdb.RocksdbObjectStore;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.performance.RevTreeBuilderPerformanceTest;
 
-import com.google.common.base.Throwables;
-
 public class RevTreeBuilderRocksObjectsPerformanceTest extends RevTreeBuilderPerformanceTest {
 
     @Rule

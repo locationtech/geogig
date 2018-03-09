@@ -39,7 +39,6 @@ import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Resources;
@@ -102,7 +101,7 @@ public class FileRepositoryResolver extends RepositoryResolver {
                 }
             });
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         for (Path dir : subdirs) {
@@ -141,28 +140,30 @@ public class FileRepositoryResolver extends RepositoryResolver {
     @Override
     public String getName(URI repoURI) {
         String repoName = null;
-        try {
-            // if the repo exists, get the name from it
-            if (repoExists(repoURI)) {
-                // it exists, load it and fetch the name
-                Hints hints = Hints.readOnly().uri(repoURI);
-                Context context = GlobalContextBuilder.builder().build(hints);
-                ConfigDatabase configDatabase = context.configDatabase();
-                repoName = configDatabase.get("repo.name").orNull();
-            }
-            if (repoName == null) {
-                // the repo doesn't exist or name is not configured, derive the name from the
-                // location
-                File file = toFile(repoURI);
-                file = file.getCanonicalFile();
-                if (file.getName().equals(".geogig")) {
-                    file = file.getParentFile();
-                }
-                repoName = file.getName();
-            }
-        } catch (IOException e) {
-            Throwables.propagate(e);
+
+        // if the repo exists, get the name from it
+        if (repoExists(repoURI)) {
+            // it exists, load it and fetch the name
+            Hints hints = Hints.readOnly().uri(repoURI);
+            Context context = GlobalContextBuilder.builder().build(hints);
+            ConfigDatabase configDatabase = context.configDatabase();
+            repoName = configDatabase.get("repo.name").orNull();
         }
+        if (repoName == null) {
+            // the repo doesn't exist or name is not configured, derive the name from the
+            // location
+            File file = toFile(repoURI);
+            try {
+                file = file.getCanonicalFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            if (file.getName().equals(".geogig")) {
+                file = file.getParentFile();
+            }
+            repoName = file.getName();
+        }
+
         return repoName;
     }
 

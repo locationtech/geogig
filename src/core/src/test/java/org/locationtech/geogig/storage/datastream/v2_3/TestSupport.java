@@ -31,7 +31,6 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;

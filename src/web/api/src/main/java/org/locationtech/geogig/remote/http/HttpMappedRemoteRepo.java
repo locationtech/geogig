@@ -48,7 +48,6 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
@@ -184,10 +183,8 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                 is.close();
             }
 
-        } catch (Exception e) {
-
-            Throwables.propagate(e);
-
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }

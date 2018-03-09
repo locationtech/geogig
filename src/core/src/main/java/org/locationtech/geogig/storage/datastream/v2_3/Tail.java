@@ -17,8 +17,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.google.common.base.Throwables;
-
 /**
  * <pre>
  * {@code

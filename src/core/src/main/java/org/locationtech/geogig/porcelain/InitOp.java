@@ -192,11 +192,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         }
 
         if (!repoExisted) {
-            try {
-                createDefaultRefs();
-            } catch (IllegalStateException e) {
-                Throwables.propagate(e);
-            }
+            createDefaultRefs();
         }
         return repository;
     }

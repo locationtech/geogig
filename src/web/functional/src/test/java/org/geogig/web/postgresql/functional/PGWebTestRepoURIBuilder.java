@@ -72,7 +72,8 @@ public final class PGWebTestRepoURIBuilder extends TestRepoURIBuilder {
             delete(cx, tables.repositories());
             cx.close();
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         } finally {
             PGStorageTestUtil.closeDataSource(dataSource);
         }
@@ -101,7 +102,7 @@ public final class PGWebTestRepoURIBuilder extends TestRepoURIBuilder {
         try {
             repoUri = new URI(repoURI);
         } catch (URISyntaxException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return repoUri;
     }
@@ -114,7 +115,7 @@ public final class PGWebTestRepoURIBuilder extends TestRepoURIBuilder {
         try {
             rootUri = new URI(rootURI);
         } catch (URISyntaxException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return rootUri;
     }

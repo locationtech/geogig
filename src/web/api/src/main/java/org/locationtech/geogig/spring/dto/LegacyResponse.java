@@ -49,7 +49,8 @@ public abstract class LegacyResponse {
             encodeInternal(streamWriter, format, baseUrl);
             streamWriter.writeEndDocument();
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         }
     }
 

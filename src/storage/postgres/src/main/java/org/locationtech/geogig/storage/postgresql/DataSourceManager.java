@@ -76,7 +76,8 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.K
             } catch (Throwable e) {
                 driverMajorVersion = 0;
                 driverVersion = "Unknown";
-                throw Throwables.propagate(e);
+                Throwables.propagateIfPossible(e, RuntimeException.class);
+                throw new RuntimeException(e);
             } finally {
                 driverVersionVerified = true;
             }
@@ -192,7 +193,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.K
             LOG.debug("Connected to " + jdbcUrl + " as " + connInfo.user);
         } catch (SQLException e) {
             LOG.error("Unable to connect to " + jdbcUrl + " as " + connInfo.user, e);
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return ds;
     }

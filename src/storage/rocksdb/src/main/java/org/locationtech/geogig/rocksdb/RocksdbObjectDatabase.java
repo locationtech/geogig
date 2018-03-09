@@ -33,7 +33,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 import com.google.inject.Inject;

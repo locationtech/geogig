@@ -12,7 +12,6 @@ package org.locationtech.geogig.rocksdb;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
 
 import java.io.Closeable;
 import java.io.DataInput;
@@ -193,8 +192,8 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
             if (bs != null) {
                 c = new ConflictSerializer().read(bs);
             }
-        } catch (Exception e) {
-            throw propagate(e);
+        } catch (RocksDBException | IOException e) {
+            throw new RuntimeException(e);
         }
         return c;
     }
@@ -301,8 +300,8 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
                     writeOptions.setSync(true);
                     dbRef.db().write(writeOptions, batch);
                 }
-            } catch (Exception e) {
-                propagate(e);
+            } catch (RocksDBException | IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -316,7 +315,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         try (RocksDBReference dbRef = dbRefOpt.get()) {
             dbRef.db().delete(key(path));
         } catch (RocksDBException e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -335,7 +334,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
             }
             dbRef.db().write(writeOptions, batch);
         } catch (RocksDBException e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -355,7 +354,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
                 }
             }
         } catch (RocksDBException e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
         return found;
     }
@@ -393,7 +392,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
             }
             dbRef.db().write(opts, batch);
         } catch (RocksDBException e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
 
     }
@@ -436,8 +435,8 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
                             this.currentBatch = Iterators
                                     .singletonIterator(serializer.read(treeConflict));
                         }
-                    } catch (Exception e) {
-                        propagate(e);
+                    } catch (RocksDBException | IOException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }
@@ -496,7 +495,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
                     }
                 }
             } catch (IOException e) {
-                throw propagate(e);
+                throw new RuntimeException(e);
             }
 
             return conflicts.isEmpty() ? null : conflicts.iterator();

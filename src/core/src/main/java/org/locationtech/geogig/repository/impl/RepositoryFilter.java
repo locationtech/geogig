@@ -25,7 +25,6 @@ import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -115,7 +114,7 @@ public class RepositoryFilter {
                 repositoryFilters.put(featurePath, newFilter);
                 filterDescriptions.add(new FilterDescription(featurePath, filterType, filterText));
             } catch (CQLException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

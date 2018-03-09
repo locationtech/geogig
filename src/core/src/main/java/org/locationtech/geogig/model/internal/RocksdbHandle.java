@@ -20,8 +20,6 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Throwables;
-
 class RocksdbHandle {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbHandle.class);

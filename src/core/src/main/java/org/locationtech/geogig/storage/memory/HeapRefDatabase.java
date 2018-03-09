@@ -25,7 +25,6 @@ import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 

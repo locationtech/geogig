@@ -27,7 +27,6 @@ import org.locationtech.geogig.ql.porcelain.QLSelect;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 

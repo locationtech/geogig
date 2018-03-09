@@ -19,7 +19,6 @@ import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.impl.INIBlob;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 
 /**
  * Provides a means of loading a RepositoryFilter from a blob store.
@@ -64,8 +63,8 @@ public class IniRepositoryFilter extends RepositoryFilter {
                     parseFilter(split[0], pairs);
                 }
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

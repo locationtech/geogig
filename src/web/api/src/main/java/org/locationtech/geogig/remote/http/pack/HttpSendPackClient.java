@@ -13,8 +13,6 @@ import org.locationtech.geogig.remotes.pack.PackRequest;
 import org.locationtech.geogig.remotes.pack.SendPackOp;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.base.Throwables;
-
 /**
  * HTTP proxy for a {@link SendPackOp} on the remote repository's {@code <repoURL>/sendpack}
  * endpoint

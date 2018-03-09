@@ -12,7 +12,6 @@ package org.locationtech.geogig.storage.postgresql;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
@@ -254,7 +253,7 @@ public class PGObjectStore implements ObjectStore {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -289,7 +288,7 @@ public class PGObjectStore implements ObjectStore {
                 return matchList;
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -537,8 +536,7 @@ public class PGObjectStore implements ObjectStore {
                 try {
                     return objs.get();
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                    throw propagate(e);
+                    throw new RuntimeException(e);
                 }
             };
 
@@ -647,8 +645,7 @@ public class PGObjectStore implements ObjectStore {
                 try {
                     return objs.get();
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                    throw propagate(e);
+                    throw new RuntimeException(e);
                 }
             };
 
@@ -714,7 +711,7 @@ public class PGObjectStore implements ObjectStore {
                 return inserted;
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -805,7 +802,7 @@ public class PGObjectStore implements ObjectStore {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         if (bytes == null) {
@@ -829,7 +826,8 @@ public class PGObjectStore implements ObjectStore {
                 List<T> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
             } catch (Exception e) {
-                propagate(e);
+                Throwables.propagateIfPossible(e, RuntimeException.class);
+                throw new RuntimeException(e);
             }
         }
         Future<List<T>> future = resources.executor().submit(getAllOp);
@@ -848,7 +846,8 @@ public class PGObjectStore implements ObjectStore {
                 List<ObjectInfo<T>> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
             } catch (Exception e) {
-                propagate(e);
+                Throwables.propagateIfPossible(e, RuntimeException.class);
+                throw new RuntimeException(e);
             }
         }
         Future<List<ObjectInfo<T>>> future = resources.executor().submit(getAllOp);
@@ -1069,7 +1068,7 @@ public class PGObjectStore implements ObjectStore {
                 sharedCache.invalidate(id);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -1160,7 +1159,8 @@ public class PGObjectStore implements ObjectStore {
                 }
             } catch (Exception ex) {
                 abortFlag.set(ex);
-                throw Throwables.propagate(ex);
+                Throwables.propagateIfPossible(ex, RuntimeException.class);
+                throw new RuntimeException(ex);
             }
             return null;
         }
@@ -1300,7 +1300,8 @@ public class PGObjectStore implements ObjectStore {
                     } catch (ExecutionException e) {
                         throw new RuntimeException(e);
                     }
-                    throw Throwables.propagate(error);
+                    Throwables.propagateIfPossible(error, RuntimeException.class);
+                    throw new RuntimeException(error);
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -1376,7 +1377,7 @@ public class PGObjectStore implements ObjectStore {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException connectEx) {
-            throw propagate(connectEx);
+            throw new RuntimeException(connectEx);
         }
     }
 

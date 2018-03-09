@@ -46,7 +46,6 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 import org.locationtech.geogig.storage.datastream.ValueSerializer;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 

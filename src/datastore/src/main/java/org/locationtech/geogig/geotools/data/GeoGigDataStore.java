@@ -360,7 +360,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
             throw new IOException(alreadyExists.getMessage(), alreadyExists);
         } catch (Exception e) {
             abort = true;
-            throw Throwables.propagate(e);
+            Throwables.propagateIfPossible(e, RuntimeException.class);
+            throw new RuntimeException(e);
         } finally {
             if (abort) {
                 tx.abort();

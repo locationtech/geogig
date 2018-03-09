@@ -19,7 +19,6 @@ import org.locationtech.geogig.repository.Platform;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * Resolves the location of the {@code .geogig} repository directory relative to the

@@ -342,8 +342,8 @@ public class PGStorage {
             } catch (SQLException | RuntimeException e) {
                 e.printStackTrace();
                 cx.rollback();
-                Throwables.propagateIfInstanceOf(e, SQLException.class);
-                throw new RuntimeException(e);
+                Throwables.throwIfInstanceOf(e, SQLException.class);
+                throw e;
             } finally {
                 cx.setAutoCommit(true);
             }

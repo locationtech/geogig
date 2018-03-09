@@ -137,7 +137,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                     if (transactional) {
                         transaction.rollback();
                     }
-                    Throwables.propagateIfInstanceOf(e, GeoToolsOpException.class);
+                    Throwables.throwIfInstanceOf(e, GeoToolsOpException.class);
                     throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_ADD);
                 } finally {
                     transaction.close();

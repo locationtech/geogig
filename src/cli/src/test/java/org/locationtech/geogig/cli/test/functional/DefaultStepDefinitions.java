@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -406,7 +405,7 @@ public class DefaultStepDefinitions {
                 + "msg = params.get(\"message\");\n" + "if (msg.length() < 5){\n"
                 + "\tthrow new exception(\"Commit messages must have at least 5 letters\");\n"
                 + "}\n" + "params.put(\"message\", msg.toLowerCase());";
-        Files.write(script, hook, Charset.forName("UTF-8"));
+        Files.asCharSink(hook, Charsets.UTF_8).write(script);
     }
 
     @Given("^I clone a remote repository$")

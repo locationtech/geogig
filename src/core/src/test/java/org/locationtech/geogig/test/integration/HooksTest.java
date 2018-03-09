@@ -48,7 +48,7 @@ public class HooksTest extends RepositoryTestCase {
                 "hooks");
         File commitPreHookFile = new File(hooksFolder, "pre_commit.js");
 
-        Files.write(wrongHookCode, commitPreHookFile, Charsets.UTF_8);
+        Files.asCharSink(commitPreHookFile, Charsets.UTF_8).write(wrongHookCode);
 
         insertAndAdd(points1);
         try {
@@ -72,7 +72,7 @@ public class HooksTest extends RepositoryTestCase {
                 "hooks");
         File commitPreHookFile = new File(hooksFolder, "pre_commit.js");
 
-        Files.write(commitPreHookCode, commitPreHookFile, Charsets.UTF_8);
+        Files.asCharSink(commitPreHookFile, Charsets.UTF_8).write(commitPreHookCode);
 
         insertAndAdd(points1);
         try {
@@ -109,7 +109,7 @@ public class HooksTest extends RepositoryTestCase {
             commitPreHookCode = "#!/bin/sh\nexit 1";
         }
         commitPreHookFile = new File(hooksFolder, "pre_commit.bat");
-        Files.write(commitPreHookCode, commitPreHookFile, Charsets.UTF_8);
+        Files.asCharSink(commitPreHookFile, Charsets.UTF_8).write(commitPreHookCode);
         commitPreHookFile.setExecutable(true);
 
         insertAndAdd(points1);
@@ -127,7 +127,7 @@ public class HooksTest extends RepositoryTestCase {
             commitPreHookCode = "#!/bin/sh\nexit 0";
         }
         commitPreHookFile = new File(hooksFolder, "pre_commit.bat");
-        Files.write(commitPreHookCode, commitPreHookFile, Charsets.UTF_8);
+        Files.asCharSink(commitPreHookFile, Charsets.UTF_8).write(commitPreHookCode);
         commitPreHookFile.setExecutable(true);
 
         geogig.command(CommitOp.class).setMessage("Message").call();
@@ -142,7 +142,7 @@ public class HooksTest extends RepositoryTestCase {
                 "hooks");
         File commitPostHookFile = new File(hooksFolder, "post_commit.js");
 
-        Files.write(postHookCode, commitPostHookFile, Charsets.UTF_8);
+        Files.asCharSink(commitPostHookFile, Charsets.UTF_8).write(postHookCode);
 
         insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("A message").call();

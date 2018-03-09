@@ -30,6 +30,7 @@ import com.google.common.primitives.UnsignedBytes;
  * 
  * @since 1.0
  */
+@SuppressWarnings("deprecation")
 public final class ObjectId implements Comparable<ObjectId>, Serializable {
 
     private static final long serialVersionUID = -2445723120477753654L;

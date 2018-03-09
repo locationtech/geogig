@@ -372,7 +372,7 @@ public class PreOrderDiffWalk {
                 // someone closed the repo, we're ok.
             } else {
                 log.error("Exception caught executing task", e);
-                Throwables.propagateIfPossible(e, RuntimeException.class);
+                Throwables.throwIfUnchecked(e);
                 throw new RuntimeException(e);
             }
         } finally {

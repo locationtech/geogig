@@ -219,7 +219,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         try {
             GeoGIG.delete(repoUri.get());
         } catch (Exception e) {
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }finally {
             this.repositories.invalidate(repoName);

@@ -129,7 +129,7 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
             indexTree = builder.build(() -> progress.isCanceled());
         } catch (Exception e) {
             log.error("Error building index", e);
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
         revTreeTime.stop();

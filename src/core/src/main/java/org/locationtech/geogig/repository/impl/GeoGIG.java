@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.net.URI;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -107,7 +108,7 @@ public class GeoGIG {
      * @return the configured repository or {@code null} if no repository is found on the current
      *         directory
      */
-    public synchronized Repository getRepository() {
+    public synchronized @Nullable Repository getRepository() {
         if (repository != null) {
             return repository;
         }

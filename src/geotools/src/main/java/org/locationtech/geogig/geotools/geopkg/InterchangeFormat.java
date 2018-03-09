@@ -72,6 +72,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
+import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
@@ -340,6 +341,7 @@ public class InterchangeFormat {
         } catch (MergeConflictsException e) {
             throw new GeopkgMergeConflictsException(e, importResult);
         } catch (Exception e) {
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         } finally {
             geopackage.close();

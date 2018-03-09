@@ -72,7 +72,7 @@ public final class PGWebTestRepoURIBuilder extends TestRepoURIBuilder {
             delete(cx, tables.repositories());
             cx.close();
         } catch (Exception e) {
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         } finally {
             PGStorageTestUtil.closeDataSource(dataSource);

@@ -133,7 +133,7 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
                 requireHeader(in, "commit");
                 return readCommit(id, in);
             } catch (IOException e) {
-                Throwables.propagateIfPossible(e, RuntimeException.class);
+                Throwables.throwIfUnchecked(e);
                 throw new RuntimeException(e);
             }
         }

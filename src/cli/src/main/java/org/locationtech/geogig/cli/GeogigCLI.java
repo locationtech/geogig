@@ -265,7 +265,9 @@ public class GeogigCLI {
         Context inj = newGeogigInjector(hints);
 
         GeoGIG geogig = new GeoGIG(inj);
-        Preconditions.checkNotNull(geogig.getRepository());
+        // try opening, if present, may return null Repository but the GeoGIG instance is still
+        // valid (may being used to init a repo);
+        geogig.getRepository();
 
         return geogig;
     }
@@ -819,7 +821,7 @@ public class GeogigCLI {
                         super.complete();
                         super.dispose();
                     } catch (Exception e) {
-                        Throwables.propagateIfPossible(e, RuntimeException.class);
+                        Throwables.throwIfUnchecked(e);
                         throw new RuntimeException(e);
                     }
                 }

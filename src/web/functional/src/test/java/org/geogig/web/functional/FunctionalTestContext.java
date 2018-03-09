@@ -91,7 +91,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
         try {
             tearDown();
         } catch (Exception e) {
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         } finally {
             if (tempFolder != null) {

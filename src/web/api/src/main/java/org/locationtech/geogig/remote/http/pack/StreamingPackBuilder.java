@@ -62,7 +62,7 @@ public class StreamingPackBuilder extends AbstractPackBuilder {
             } catch (IOException ex) {
                 log.warn("Error closing stream, but pack build already failed", ex);
             }
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
         progress.complete();

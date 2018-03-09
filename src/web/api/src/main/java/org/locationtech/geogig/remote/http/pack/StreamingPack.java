@@ -100,7 +100,7 @@ public class StreamingPack implements Pack {
                 next = packedObjects.readObject(in);
             } catch (Exception e) {
                 close();
-                Throwables.propagateIfPossible(e, RuntimeException.class);
+                Throwables.throwIfUnchecked(e);
                 throw new RuntimeException(e);
             }
             if (next == null) {

@@ -222,7 +222,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
         // make sure no other thread changes the ref as we read it
         try {
             synchronized (refFile.getCanonicalPath().intern()) {
-                return Files.readFirstLine(refFile, CHARSET);
+                return Files.asCharSource(refFile, CHARSET).readFirstLine();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -236,7 +236,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
             // "rollback"
             indexDatabase.updateIndexInfo(treeName, oldIndexInfo.getAttributeName(),
                     oldIndexInfo.getIndexType(), oldIndexInfo.getMetadata());
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
 

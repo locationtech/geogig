@@ -53,7 +53,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
             this.nodeStore = new RocksdbNodeStore(dagDb.db);
         } catch (Exception e) {
             RocksdbHandle.delete(dagDbDir.toFile());
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
     }

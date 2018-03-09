@@ -118,7 +118,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
             // } catch (Exception e1) {
             // e1.printStackTrace();
             // }
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
         {

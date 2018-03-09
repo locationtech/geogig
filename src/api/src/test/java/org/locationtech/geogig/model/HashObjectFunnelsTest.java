@@ -48,6 +48,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
+@SuppressWarnings("deprecation")
 public class HashObjectFunnelsTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();

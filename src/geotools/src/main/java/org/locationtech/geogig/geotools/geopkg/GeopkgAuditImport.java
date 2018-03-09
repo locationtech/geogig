@@ -81,7 +81,7 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<GeopkgImportResult> {
             }
 
         } catch (MergeConflictsException e) {
-            throw new RuntimeException(e);
+            throw e;
         } catch (Exception e) {
             throw new IllegalStateException("Unable to import: " + e.getMessage(), e);
         } finally {

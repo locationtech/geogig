@@ -76,7 +76,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.K
             } catch (Throwable e) {
                 driverMajorVersion = 0;
                 driverVersion = "Unknown";
-                Throwables.propagateIfPossible(e, RuntimeException.class);
+                Throwables.throwIfUnchecked(e);
                 throw new RuntimeException(e);
             } finally {
                 driverVersionVerified = true;

@@ -76,7 +76,7 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
         try {
             repository.before();
         } catch (Throwable e) {
-            Throwables.propagateIfPossible(e, RuntimeException.class);
+            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
 

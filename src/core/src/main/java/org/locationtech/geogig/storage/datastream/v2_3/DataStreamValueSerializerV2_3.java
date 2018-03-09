@@ -172,7 +172,7 @@ class DataStreamValueSerializerV2_3 extends DataStreamValueSerializerV2 {
                 map.put(key, valueSupplier);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return Maps.transformValues(map, (s) -> s.get());
     }
@@ -205,7 +205,7 @@ class DataStreamValueSerializerV2_3 extends DataStreamValueSerializerV2 {
                 Object val = decode(fieldType, in);
                 return val;
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

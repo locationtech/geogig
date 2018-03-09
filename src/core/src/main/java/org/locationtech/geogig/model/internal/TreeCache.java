@@ -73,7 +73,7 @@ class TreeCache {
         try {
             tree = cache.get(Integer.valueOf(leafRevTreeId));
         } catch (ExecutionException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         Preconditions.checkNotNull(tree);
         return tree;

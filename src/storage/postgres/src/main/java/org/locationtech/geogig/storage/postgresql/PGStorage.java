@@ -105,7 +105,7 @@ public class PGStorage {
         if (e instanceof SQLException) {
             throw (SQLException) e;
         }
-        throw Throwables.propagate(e);
+        throw new RuntimeException(e);
     }
 
     public static boolean repoExists(final Environment config) throws IllegalArgumentException {
@@ -135,7 +135,7 @@ public class PGStorage {
                 return repoPK.isPresent();
             }
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -144,7 +144,7 @@ public class PGStorage {
         try (Connection cx = newConnection(ds)) {
             return getServerVersion(cx);
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             closeDataSource(ds);
         }
@@ -344,7 +344,7 @@ public class PGStorage {
                 e.printStackTrace();
                 cx.rollback();
                 Throwables.propagateIfInstanceOf(e, SQLException.class);
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             } finally {
                 cx.setAutoCommit(true);
             }
@@ -680,7 +680,7 @@ public class PGStorage {
                     return false;
                 }
             } catch (SQLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         final TableNames tables = env.getTables();
@@ -704,7 +704,7 @@ public class PGStorage {
                 cx.setAutoCommit(true);
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             PGStorage.closeDataSource(ds);
         }

@@ -57,7 +57,7 @@ public class HttpSendPackClient extends SendPackOp {
             throw new IllegalStateException("Server returned " + respCode);
         } catch (Exception e) {
             remote.closeSafely(connection);
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

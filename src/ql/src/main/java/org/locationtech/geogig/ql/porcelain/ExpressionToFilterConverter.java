@@ -93,7 +93,7 @@ class ExpressionToFilterConverter implements ExpressionVisitor {
             try {
                 filter = ECQL.toFilter(cql.toString());
             } catch (CQLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return filter;

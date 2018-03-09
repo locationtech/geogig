@@ -67,7 +67,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         try {
             this.repositories = buildCache();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -115,7 +115,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
             return repositories.get(repositoryName);
         } catch (ExecutionException e) {
             LOG.warn("Unable to load repository {}", repositoryName, e);
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -195,7 +195,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
                     try {
                         repository.open();
                     } catch (RepositoryConnectionException e) {
-                        throw Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                     break;
                 }

@@ -103,7 +103,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         try (RocksDBReference dbRef = db()) {
             bytes = dbRef.db().get(key(namespace, path));
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return Optional.fromNullable(bytes);
     }
@@ -119,7 +119,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         try (RocksDBReference dbRef = db()) {
             dbRef.db().put(key(namespace, path), blob);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
     }
@@ -129,7 +129,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         try {
             putBlob(path, ByteStreams.toByteArray(blob));
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -138,7 +138,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         try (RocksDBReference dbRef = db()) {
             dbRef.db().remove(key(namespace, path));
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

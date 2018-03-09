@@ -182,7 +182,7 @@ public class PGConfigDatabase implements ConfigDatabase {
             try {
                 pk = resolveRepositoryPK(repositoryName);
             } catch (SQLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             if (!pk.isPresent()) {
                 throw new ConfigException(ConfigException.StatusCode.INVALID_LOCATION);
@@ -348,7 +348,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                     throw new IllegalArgumentException(msg);
                 }
             } catch (SQLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         final String sql = format(

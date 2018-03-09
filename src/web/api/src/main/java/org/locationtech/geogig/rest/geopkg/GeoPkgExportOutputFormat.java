@@ -91,7 +91,7 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
                         gpkg.close();
                     }
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
             return targetFile;

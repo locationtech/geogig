@@ -47,7 +47,7 @@ public class ResolveGeogigDir extends AbstractGeoGigOp<Optional<URL>> {
         try {
             return Optional.fromNullable(lookupGeogigDirectory(directory));
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -76,7 +76,7 @@ public class ResolveGeogigDir extends AbstractGeoGigOp<Optional<URL>> {
                     return Optional.of(new File(url.get().toURI()));
                 }
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return Optional.absent();

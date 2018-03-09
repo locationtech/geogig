@@ -90,7 +90,7 @@ public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder
             out.writeByte(OBJECT_STREAM_END.ordinal());
         } catch (IOException e) {
             e.printStackTrace();
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

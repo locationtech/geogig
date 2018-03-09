@@ -77,7 +77,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
         try {
             delete();
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             if (!externalDataSource) {
                 dataSourceProvider.after();

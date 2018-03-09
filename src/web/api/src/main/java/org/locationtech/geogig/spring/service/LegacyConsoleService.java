@@ -99,7 +99,7 @@ public class LegacyConsoleService extends AbstractRepositoryService {
             }
             return new ConsoleRunCommandResponse(queryId, result, error);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             // delete temp file
             try {

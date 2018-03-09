@@ -64,7 +64,7 @@ class RocksdbDAGStore {
                     colFamilyOptions);
             column = db.createColumnFamily(columnDescriptor);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         writeOptions = new WriteOptions();
         writeOptions.setDisableWAL(true);
@@ -93,7 +93,7 @@ class RocksdbDAGStore {
                 putInternal(key, dag);
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return dag;
     }
@@ -107,7 +107,7 @@ class RocksdbDAGStore {
                 dag = decode(id, value);
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return dag;
     }
@@ -137,7 +137,7 @@ class RocksdbDAGStore {
                 DAG dag = decode(id, val);
                 res.add(dag);
             } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         });
         Preconditions.checkState(res.size() == ids.size());
@@ -152,7 +152,7 @@ class RocksdbDAGStore {
             try {
                 db.put(column, writeOptions, toKey(id), encode(dag));
             } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         });
     }
@@ -162,7 +162,7 @@ class RocksdbDAGStore {
         try {
             db.put(column, writeOptions, key, value);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -175,7 +175,7 @@ class RocksdbDAGStore {
         try {
             dag = DAG.deserialize(id, ByteStreams.newDataInput(value));
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return dag;
     }
@@ -185,7 +185,7 @@ class RocksdbDAGStore {
         try {
             DAG.serialize(bucketDAG, out);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return out.toByteArray();
     }

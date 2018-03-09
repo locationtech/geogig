@@ -492,7 +492,7 @@ public class FeatureReaderBuilder {
                 String[] properties = atts.toArray(new String[requiredProperties.size()]);
                 resultSchema = DataUtilities.createSubType(fullSchema, properties);
             } catch (SchemaException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

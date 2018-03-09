@@ -116,7 +116,7 @@ class BucketSet {
                 builder.put(Integer.valueOf(index), bucket);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return builder.build();
     }

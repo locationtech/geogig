@@ -99,7 +99,7 @@ class RocksdbHandle {
         try {
             db = RocksDB.open(options, path);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         RocksdbHandle dbHandle = new RocksdbHandle(targetDir, options, db);

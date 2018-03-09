@@ -239,7 +239,7 @@ public class PGStorageTest {
                 return rs.next();
             }
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

@@ -280,7 +280,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         try {
             lastResponseText = getLastResponse().getResponse().getContentAsString();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return lastResponseText;
     }
@@ -309,7 +309,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
                 lastResponseDocument = builder.parse(new ByteArrayInputStream(text.getBytes()));
             } catch (IOException | SAXException | ParserConfigurationException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return lastResponseDocument;

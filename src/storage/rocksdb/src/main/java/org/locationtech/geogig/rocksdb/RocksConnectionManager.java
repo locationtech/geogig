@@ -77,7 +77,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
                     (ba) -> new String(ba, Charsets.UTF_8));
         } catch (RocksDBException e) {
             dbOptions.close();
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         // at least the "default" column family shall exists if the db was already created
@@ -166,7 +166,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
             }
             return dbHandle;
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
     }

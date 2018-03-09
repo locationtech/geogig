@@ -121,7 +121,7 @@ class Logging {
             try {
                 return configFile.toURI().toURL();
             } catch (MalformedURLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         ByteSource from;

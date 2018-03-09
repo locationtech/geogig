@@ -51,7 +51,7 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
         try {
             return Optional.fromNullable(lookupGeogigDirectory(directory));
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

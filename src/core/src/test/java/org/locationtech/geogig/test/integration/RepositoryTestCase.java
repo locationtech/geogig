@@ -349,7 +349,7 @@ public abstract class RepositoryTestCase extends Assert {
         try {
             return new WKTReader2().read(wkt);
         } catch (ParseException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

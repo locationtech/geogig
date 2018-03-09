@@ -164,7 +164,7 @@ public class NodeSetTest {
         try {
             geom = new WKTReader().read(String.format("LINESTRING(0 0, %d %d)", i, i));
         } catch (ParseException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         map.put("mapProp",
                 ImmutableMap.of("k1", "v1-" + i, //

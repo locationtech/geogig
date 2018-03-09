@@ -55,7 +55,7 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
             try {
                 configdb.close();
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             configdb = null;
         }

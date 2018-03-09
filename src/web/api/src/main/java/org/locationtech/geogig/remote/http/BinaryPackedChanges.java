@@ -274,7 +274,7 @@ public final class BinaryPackedChanges {
             try {
                 return readNext();
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

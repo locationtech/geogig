@@ -213,7 +213,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
         try {
             lock();
         } catch (TimeoutException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         try {
             all.forEach((name, value) -> {

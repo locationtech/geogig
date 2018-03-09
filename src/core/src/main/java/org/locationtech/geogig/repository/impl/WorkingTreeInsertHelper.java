@@ -220,7 +220,7 @@ class WorkingTreeInsertHelper {
         try {
             executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         db.putAll(result.values().iterator());
         return result;

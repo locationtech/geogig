@@ -38,7 +38,7 @@ public class ReadMergeCommitMessageOp extends AbstractGeoGigOp<String> {
             List<String> lines = CharStreams.readLines(new InputStreamReader(in, Charsets.UTF_8));
             return Joiner.on("\n").join(lines);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

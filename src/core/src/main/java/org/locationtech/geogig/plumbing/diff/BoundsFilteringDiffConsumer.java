@@ -137,7 +137,7 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
         try {
             transformedFilter = boundsFilter.transform(nativeCrs, true);
         } catch (TransformException | FactoryException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return transformedFilter;
     }

@@ -142,7 +142,7 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
         try {
             source = dataStore.getFeatureSource(treePath);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         final Query query = parseFilter(select, new Query());
@@ -167,7 +167,7 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
         try {
             features = source.getFeatures(query);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         if (!isSelectInto(select)) {
@@ -193,7 +193,7 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
 
                 features = new ReTypingFeatureCollection(features, targetSchema);
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 
@@ -208,7 +208,7 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
             if (targetSchemaCreated) {
                 repository().workingTree().delete(targetTableName);
             }
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         DiffObjectCount count = command(DiffCount.class).setOldVersion(oldRefSpec)
@@ -227,7 +227,7 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
         try {
             bounds = source.getBounds(query);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         SimpleFeatureBuilder b = new SimpleFeatureBuilder(BOUNDS_TYPE);
@@ -256,7 +256,7 @@ public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
         try {
             count = source.getCount(query);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         SimpleFeatureBuilder b = new SimpleFeatureBuilder(COUNT_TYPE);

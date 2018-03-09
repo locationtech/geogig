@@ -111,7 +111,7 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
                 Closeables.close(blobs, true);
                 Closeables.close(graph, true);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

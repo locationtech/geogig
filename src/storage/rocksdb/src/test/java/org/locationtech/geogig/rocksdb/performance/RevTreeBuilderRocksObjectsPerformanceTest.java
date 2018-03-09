@@ -37,7 +37,7 @@ public class RevTreeBuilderRocksObjectsPerformanceTest extends RevTreeBuilderPer
         try {
             hints.set(Hints.REPOSITORY_URL, tmp.getRoot().toURI().toURL());
         } catch (MalformedURLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return new RocksdbObjectStore(platform, hints);
     }

@@ -75,7 +75,7 @@ class Header {
             final int trees = Varint.readUnsignedVarInt(in);
             return new Header(size, trees);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

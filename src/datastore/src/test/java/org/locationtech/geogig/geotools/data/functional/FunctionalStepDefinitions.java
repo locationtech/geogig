@@ -106,7 +106,7 @@ public class FunctionalStepDefinitions {
             POINT_WITH_TIME_TYPE = DataUtilities.createType(POINT_WITH_TIME_TYPE_NAME,
                     pointsWithTimeTypeSpec);
         } catch (SchemaException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -701,7 +701,7 @@ public class FunctionalStepDefinitions {
                     tx.close();
                 }
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return featureList;
         }
@@ -729,7 +729,7 @@ public class FunctionalStepDefinitions {
                     featureList.addAll(doRead());
                 }
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return featureList;
         }

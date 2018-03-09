@@ -88,7 +88,7 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
                 CharSequence line = printFunctor.apply(b);
                 console.println(line);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

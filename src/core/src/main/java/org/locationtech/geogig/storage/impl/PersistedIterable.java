@@ -173,7 +173,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
             }
             out.flush();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -200,7 +200,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
                 Files.createFile(serializedFile);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -235,7 +235,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
                     StreamIterator<T> streamIt = new StreamIterator<T>(serializer, dataIn);
                     iterator = Iterators.concat(iterator, streamIt);
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -244,7 +244,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
                 iterator = Iterators.concat(iterator, buffered.iterator());
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             lock.readLock().unlock();
         }
@@ -271,7 +271,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
             } catch (EOFException eof) {
                 return endOfData();
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

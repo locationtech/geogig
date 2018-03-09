@@ -308,7 +308,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                         finished = diffProducer.isFinished();
                         empty = entries.isEmpty();
                     } catch (InterruptedException e) {
-                        throw Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                 }
                 return null;
@@ -481,7 +481,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 try {
                     entries.put(new DiffEntry(left, right));
                 } catch (InterruptedException e) {
-                    // throw Throwables.propagate(e);
+                    // throw new RuntimeException(e);
                 }
             }
             return true;
@@ -508,7 +508,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                     try {
                         entries.put(new DiffEntry(left, right));
                     } catch (InterruptedException e) {
-                        // throw Throwables.propagate(e);
+                        // throw new RuntimeException(e);
                         // die gracefully
                         return false;
                     }

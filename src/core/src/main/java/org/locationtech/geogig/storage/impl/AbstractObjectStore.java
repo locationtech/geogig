@@ -169,7 +169,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
         try {
             object = serializer().read(id, raw);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             Closeables.closeQuietly(raw);
         }
@@ -261,7 +261,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
         try {
             serializer().write(object, target);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

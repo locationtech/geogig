@@ -103,7 +103,7 @@ public class FileBlobStore implements TransactionBlobStore {
             try {
                 bytes = Files.toByteArray(f);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return Optional.fromNullable(bytes);
@@ -117,7 +117,7 @@ public class FileBlobStore implements TransactionBlobStore {
             try {
                 in = new FileInputStream(f);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return Optional.fromNullable(in);
@@ -130,7 +130,7 @@ public class FileBlobStore implements TransactionBlobStore {
         try {
             Files.write(blob, f);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -141,7 +141,7 @@ public class FileBlobStore implements TransactionBlobStore {
         try (OutputStream to = new FileOutputStream(f)) {
             ByteStreams.copy(blob, to);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -177,7 +177,7 @@ public class FileBlobStore implements TransactionBlobStore {
 
                 });
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

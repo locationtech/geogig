@@ -67,7 +67,7 @@ public abstract class AbstractCommand implements CLICommand {
         try {
             runInternal(cli);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

@@ -124,7 +124,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
                 format.requireHeader(in, header);
                 return readBody(id, in);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

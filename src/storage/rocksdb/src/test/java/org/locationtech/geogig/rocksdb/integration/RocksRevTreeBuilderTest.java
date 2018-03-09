@@ -33,7 +33,7 @@ public class RocksRevTreeBuilderTest extends CanonicalTreeBuilderTest {
         try {
             workingDirectory = tmp.newFolder(".geogig");
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         Platform platform = new TestPlatform(workingDirectory);
         return new RocksdbObjectStore(platform, null);

@@ -119,7 +119,7 @@ class RevTreeFormat {
             encode(tree, buff);
             return buff.toByteArray();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

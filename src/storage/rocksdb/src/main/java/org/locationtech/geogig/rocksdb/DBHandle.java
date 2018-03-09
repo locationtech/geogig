@@ -127,7 +127,7 @@ class DBHandle {
         try (RocksDBReference dbRef = getReference()) {
             dbRef.db().put(metadata, k, v);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -141,7 +141,7 @@ class DBHandle {
                     value = new String(val, Charsets.UTF_8);
                 }
             } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return Optional.fromNullable(value);

@@ -97,7 +97,7 @@ public class Tag extends AbstractCommand implements CLICommand {
             try {
                 cli.getConsole().println(tag.getName());
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

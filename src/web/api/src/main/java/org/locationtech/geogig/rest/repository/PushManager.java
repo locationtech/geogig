@@ -124,7 +124,7 @@ public class PushManager {
             tx.commit();
         } catch (Exception e) {
             tx.abort();
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

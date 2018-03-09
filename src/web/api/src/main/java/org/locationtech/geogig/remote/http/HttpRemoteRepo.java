@@ -189,7 +189,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
             }
 
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             closeSafely(connection);
         }
@@ -367,7 +367,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                     }
                 };
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     };
@@ -409,7 +409,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         try {
             resourceURL = new URL(repositoryURL.toString() + "/repo/batchobjects");
         } catch (MalformedURLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         final HttpURLConnection connection;
@@ -429,7 +429,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
             writer.flush();
             out.flush();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         final HttpUtils.ReportingInputStream in = HttpUtils.getResponseStream(connection);

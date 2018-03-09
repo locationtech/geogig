@@ -29,7 +29,7 @@ public class RESTUtils {
         try {
             return URLDecoder.decode(value.toString(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

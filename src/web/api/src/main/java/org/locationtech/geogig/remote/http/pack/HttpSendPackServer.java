@@ -32,7 +32,7 @@ public class HttpSendPackServer extends SendPackOp implements CommandFactory {
         try {
             packRequest = new PackRequestIO().read(reqStream);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         super.setRequest(packRequest);
         return this;

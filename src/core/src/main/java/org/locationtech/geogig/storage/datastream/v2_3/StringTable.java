@@ -67,7 +67,7 @@ abstract class StringTable {
                 out.write(bytes);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -87,7 +87,7 @@ abstract class StringTable {
                 arr.add(s);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return StringTable.of(arr);
     }

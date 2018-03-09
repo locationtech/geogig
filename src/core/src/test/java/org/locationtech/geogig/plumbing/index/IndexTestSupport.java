@@ -158,7 +158,7 @@ public class IndexTestSupport {
             try {
                 featureType = DataUtilities.createType("worldpoints", typeSpec);
             } catch (SchemaException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         RevTree tree = createWorldPointsTree(repository);

@@ -50,7 +50,7 @@ public class QLTestHelper {
         try {
             cli.getConsole().println("Query: " + query);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         cli.execute("ql", query);
         SimpleFeatureCollection result = geogig.command(QLSelect.class).setStatement(query).call();

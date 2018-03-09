@@ -1298,12 +1298,12 @@ public class PGObjectStore implements ObjectStore {
                             r.get();
                         }
                     } catch (ExecutionException e) {
-                        throw Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                     throw Throwables.propagate(error);
                 }
             } catch (InterruptedException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

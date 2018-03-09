@@ -75,7 +75,7 @@ public class DataStoreConcurrencyTest {
         try {
             pointType = DataUtilities.createType("point", pointsTypeSpec);
         } catch (SchemaException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -298,7 +298,7 @@ public class DataStoreConcurrencyTest {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return insertCount;
         }
@@ -330,7 +330,7 @@ public class DataStoreConcurrencyTest {
                 READ_COUNT_LIST.add(readCount);
             } catch (Exception e) {
                 e.printStackTrace();
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return readCount;
         }

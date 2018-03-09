@@ -214,7 +214,7 @@ class PackImpl implements Pack {
                 queue.put(id);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

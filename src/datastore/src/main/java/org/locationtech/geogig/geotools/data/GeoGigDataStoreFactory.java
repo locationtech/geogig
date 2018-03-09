@@ -51,7 +51,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             try {
                 return new URI(repository);
             } catch (URISyntaxException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

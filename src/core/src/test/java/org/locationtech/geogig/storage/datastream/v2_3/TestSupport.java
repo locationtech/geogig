@@ -127,7 +127,7 @@ public class TestSupport {
             map.put("geom", new WKTReader().read(
                     String.format("LINESTRING(%d %d, 0 0, 1 1, 2 2, 3 3, 4 4, 5 5, 6 6)", i, i)));
         } catch (ParseException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return map;
     }
@@ -136,7 +136,7 @@ public class TestSupport {
         try {
             return new WKTReader().read(wkt);
         } catch (ParseException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

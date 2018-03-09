@@ -86,7 +86,7 @@ public class MapPane {
                 bounds = featureSource.getBounds();
             } catch (Exception e) {
                 e.printStackTrace();
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             System.err.printf("%s bounds: %s\n", name, bounds);
             Style style = createStyle2(featureSource);

@@ -244,7 +244,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return Optional.fromNullable(conflict);
     }
@@ -410,7 +410,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
             try {
                 batch = db.getBatch(namespace, treePath, offset, pageSize);
             } catch (SQLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             this.offset += pageSize;
             this.currentPageSize = batch.size();
@@ -614,7 +614,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

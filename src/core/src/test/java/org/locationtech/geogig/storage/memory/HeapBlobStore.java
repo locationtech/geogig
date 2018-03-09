@@ -86,7 +86,7 @@ public class HeapBlobStore implements TransactionBlobStore {
         try {
             bytes = ByteStreams.toByteArray(blob);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         putBlob(namespace, path, bytes);
     }

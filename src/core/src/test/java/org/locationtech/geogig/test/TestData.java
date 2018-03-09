@@ -123,7 +123,7 @@ public class TestData {
             linesType = DataUtilities.createType("http://geogig.org", "Lines", linesTypeSpec);
             polysType = DataUtilities.createType("http://geogig.org", "Polygons", polyTypeSpec);
         } catch (SchemaException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         point1 = feature(pointsType, "Point.1", "StringProp1_1", 1000, "POINT(0 0)");

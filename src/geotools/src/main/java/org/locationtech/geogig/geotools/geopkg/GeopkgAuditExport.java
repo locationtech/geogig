@@ -58,7 +58,7 @@ public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
         try {
             interchange.export(sourcePathspec, targetTableName);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         return null;

@@ -170,7 +170,7 @@ public class PGGraphDatabase implements GraphDatabase {
             }
             return updated;
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

@@ -235,7 +235,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             try {
                 value = valueParser.readGeometry(in, gf);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return Optional.of(value);
         }
@@ -262,7 +262,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             try {
                 value = valueParser.decode(type, in);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return value;
         }

@@ -410,7 +410,7 @@ public class FormatCommonV1 {
             bucket.expand(envBuff);
             writeBoundingBox(envBuff, data);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -432,7 +432,7 @@ public class FormatCommonV1 {
             Map<String, Object> extraData = node.getExtraData();
             DataStreamValueSerializerV1.INSTANCE.writeMap(extraData, data);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

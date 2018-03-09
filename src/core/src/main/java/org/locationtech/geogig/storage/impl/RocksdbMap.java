@@ -108,7 +108,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
                 }
                 wo.sync();
             } catch (IOException | RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             putBuffer.clear();
         }

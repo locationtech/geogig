@@ -59,7 +59,7 @@ public class ExpressionToFilterConverterTest {
         try {
             return ECQL.toFilter(cql);
         } catch (CQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

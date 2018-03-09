@@ -46,7 +46,7 @@ public class ParseTimestampTest extends Assert {
         try {
             REFERENCE_DATE = format.parse("1972-10-10 10:10:10");
         } catch (ParseException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

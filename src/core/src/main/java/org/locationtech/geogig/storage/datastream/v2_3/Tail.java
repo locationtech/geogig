@@ -70,7 +70,7 @@ class Tail {
             writeUnsignedVarInt(offsetOfStringTable, out);
             out.writeInt(offsetOfTail);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -86,7 +86,7 @@ class Tail {
             return new Tail(offsetOfTreesNodeset, offsetOfFeaturesNodeset, offsetOfBuckets,
                     offsetOfStringTable, offsetOfTail);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

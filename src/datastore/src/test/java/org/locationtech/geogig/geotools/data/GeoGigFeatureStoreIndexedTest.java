@@ -339,7 +339,7 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
         try {
             type = DataUtilities.createType(typeName, typeSpec);
         } catch (SchemaException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         RevTree tree = IndexTestSupport.createWorldPointsTree(repository);
         WorkingTree workingTree = repository.workingTree();

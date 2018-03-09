@@ -534,7 +534,7 @@ class HttpUtils {
             boolean gzip = "gzip".equalsIgnoreCase(contentEncoding);
             reportingStream = HttpUtils.newReportingInputStream(in, gzip);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return reportingStream;
     }
@@ -565,7 +565,7 @@ class HttpUtils {
                 try {
                     gzipIn = new GZIPInputStream(compressed);
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
                 uncompressed = new CountingInputStream(gzipIn);
                 super.in = uncompressed;
@@ -609,7 +609,7 @@ class HttpUtils {
                 try {
                     gzipOut = new GZIPOutputStream(compressed);
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
                 uncompressed = new CountingOutputStream(gzipOut);
                 super.out = uncompressed;

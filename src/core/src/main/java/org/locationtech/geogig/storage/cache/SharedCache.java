@@ -367,7 +367,7 @@ interface SharedCache {
             try {
                 encoder.write(obj, out);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             byte[] byteArray = out.toByteArray();
             return byteArray;
@@ -377,7 +377,7 @@ interface SharedCache {
             try {
                 return encoder.read(key.id(), val, 0, val.length);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

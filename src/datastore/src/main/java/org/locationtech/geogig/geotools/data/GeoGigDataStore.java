@@ -319,6 +319,10 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return rootRef;
     }
 
+    public GeogigFeatureStore getFeatureStore(String typeName) throws IOException {
+        return (GeogigFeatureStore) getFeatureSource(typeName);
+    }
+
     @Override
     protected GeogigFeatureStore createFeatureSource(ContentEntry entry) throws IOException {
         return new GeogigFeatureStore(entry);

@@ -11,6 +11,7 @@ package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -64,13 +65,17 @@ import com.google.common.hash.Hashing;
  *
  */
 @SuppressWarnings("unchecked")
-class GeogigFeatureStore extends ContentFeatureStore {
+public class GeogigFeatureStore extends ContentFeatureStore {
 
     /**
      * geogig feature source to delegate to, we do this b/c we can't inherit from both
      * ContentFeatureStore and {@link GeogigFeatureSource} at the same time
      */
     final GeogigFeatureSource delegate;
+
+    // default geotools behaviour, we might want to avoid creating large lists of feature ids if
+    // unnecessary
+    private boolean returnFidsOnInsert = true;
 
     /**
      * @param entry
@@ -86,7 +91,11 @@ class GeogigFeatureStore extends ContentFeatureStore {
                 GeogigFeatureStore.this.setTransaction(transaction);
             }
         };
-        super.hints = (Set<Hints.Key>) (Set<?>)delegate.getSupportedHints();
+        super.hints = (Set<Hints.Key>) (Set<?>) delegate.getSupportedHints();
+    }
+
+    public void setReturnFidsOnInsert(boolean createFidList) {
+        this.returnFidsOnInsert = createFidList;
     }
 
     /** We handle events internally */
@@ -251,7 +260,8 @@ class GeogigFeatureStore extends ContentFeatureStore {
         final String treePath = typeRef.path();
         final ObjectId featureTypeId = typeRef.getMetadataId();
 
-        List<FeatureId> insertedFids = new ArrayList<>();
+        List<FeatureId> insertedFids = returnFidsOnInsert ? new ArrayList<>()
+                : Collections.emptyList();
 
         try (FeatureIterator<SimpleFeature> featureIterator = featureCollection.features()) {
             Iterator<SimpleFeature> features;
@@ -270,8 +280,9 @@ class GeogigFeatureStore extends ContentFeatureStore {
                 String fid = f.getID();
                 String path = NodeRef.appendChild(treePath, fid);
                 String version = feature.getId().toString();
-                insertedFids.add(new FeatureIdVersionedImpl(fid, version));
-
+                if (returnFidsOnInsert) {
+                    insertedFids.add(new FeatureIdVersionedImpl(fid, version));
+                }
                 return FeatureInfo.insert(feature, featureTypeId, path);
             });
 

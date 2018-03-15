@@ -27,7 +27,6 @@ import org.locationtech.geogig.ql.porcelain.QLSelect;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -50,7 +49,7 @@ public class QLTestHelper {
         try {
             cli.getConsole().println("Query: " + query);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         cli.execute("ql", query);
         SimpleFeatureCollection result = geogig.command(QLSelect.class).setStatement(query).call();

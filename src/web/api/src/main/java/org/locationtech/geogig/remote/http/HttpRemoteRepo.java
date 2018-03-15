@@ -60,7 +60,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
@@ -150,10 +149,8 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                 is.close();
             }
 
-        } catch (Exception e) {
-
-            Throwables.propagate(e);
-
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             closeSafely(connection);
         }
@@ -189,7 +186,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
             }
 
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             closeSafely(connection);
         }
@@ -202,20 +199,16 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
 
         CommitTraverser traverser = getFetchTraverser(local, fetchLimit);
 
-        try {
-            progress.setDescription("Fetching objects from " + ref.getName());
-            traverser.traverse(ref.getObjectId());
-            List<ObjectId> want = new LinkedList<ObjectId>();
-            want.addAll(traverser.commits);
-            Collections.reverse(want);
-            Set<ObjectId> have = new HashSet<ObjectId>();
-            have.addAll(traverser.have);
-            while (!want.isEmpty()) {
-                progress.setProgress(0);
-                fetchMoreData(local, want, have, progress);
-            }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        progress.setDescription("Fetching objects from " + ref.getName());
+        traverser.traverse(ref.getObjectId());
+        List<ObjectId> want = new LinkedList<ObjectId>();
+        want.addAll(traverser.commits);
+        Collections.reverse(want);
+        Set<ObjectId> have = new HashSet<ObjectId>();
+        have.addAll(traverser.have);
+        while (!want.isEmpty()) {
+            progress.setProgress(0);
+            fetchMoreData(local, want, have, progress);
         }
     }
 
@@ -299,7 +292,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                                 + " Compressed size: %,d bytes. Uncompressed size: %,d bytes.",
                         writtenObjectsCount, sw, compressedSize, uncompressedSize));
             } catch (IOException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }
@@ -367,7 +360,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                     }
                 };
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     };
@@ -409,7 +402,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         try {
             resourceURL = new URL(repositoryURL.toString() + "/repo/batchobjects");
         } catch (MalformedURLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         final HttpURLConnection connection;
@@ -429,7 +422,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
             writer.flush();
             out.flush();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         final HttpUtils.ReportingInputStream in = HttpUtils.getResponseStream(connection);

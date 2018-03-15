@@ -22,7 +22,6 @@ import org.locationtech.geogig.cli.porcelain.ColorArg;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Throwables;
 
 /**
  * A template command.
@@ -67,7 +66,7 @@ public abstract class AbstractCommand implements CLICommand {
         try {
             runInternal(cli);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

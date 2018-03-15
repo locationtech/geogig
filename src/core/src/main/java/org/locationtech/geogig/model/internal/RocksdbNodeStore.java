@@ -29,7 +29,6 @@ import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 
@@ -62,7 +61,7 @@ class RocksdbNodeStore {
                     colFamilyOptions);
             column = db.createColumnFamily(columnDescriptor);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         this.writeOptions = new WriteOptions();
@@ -91,7 +90,7 @@ class RocksdbNodeStore {
                 throw new NoSuchElementException("Node " + nodeId + " not found");
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return decode(value);
     }
@@ -114,7 +113,7 @@ class RocksdbNodeStore {
                 DAGNode node = decode(val);
                 res.put(id, node);
             } catch (IllegalArgumentException | RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         });
         return res;
@@ -126,7 +125,7 @@ class RocksdbNodeStore {
         try {
             db.put(column, writeOptions, key, value);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -141,7 +140,7 @@ class RocksdbNodeStore {
             try {
                 db.put(column, writeOptions, key, value);
             } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         });
     }
@@ -161,7 +160,7 @@ class RocksdbNodeStore {
             DAGNode.encode(node, out);
             out.flush();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return outstream.toByteArray();
     }
@@ -171,7 +170,7 @@ class RocksdbNodeStore {
         try {
             node = DAGNode.decode(ByteStreams.newDataInput(nodeData));
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return node;
     }

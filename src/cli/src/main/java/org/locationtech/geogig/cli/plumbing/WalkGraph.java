@@ -33,7 +33,6 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Function;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 /**
@@ -88,7 +87,7 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
                 CharSequence line = printFunctor.apply(b);
                 console.println(line);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

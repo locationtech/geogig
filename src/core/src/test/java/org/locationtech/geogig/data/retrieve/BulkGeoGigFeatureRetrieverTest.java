@@ -9,13 +9,14 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -23,13 +24,12 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.util.Assert;
-
-import static org.mockito.Mockito.*;
-import org.locationtech.geogig.repository.FeatureInfo;
 
 public class BulkGeoGigFeatureRetrieverTest {
 

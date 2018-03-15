@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -121,7 +120,7 @@ class Logging {
             try {
                 return configFile.toURI().toURL();
             } catch (MalformedURLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         ByteSource from;

@@ -1,7 +1,6 @@
 package org.locationtech.geogig.remote.http.pack;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
 import static org.locationtech.geogig.remote.http.pack.StreamingPackIO.Event.OBJECT_STREAM_END;
 import static org.locationtech.geogig.remote.http.pack.StreamingPackIO.Event.OBJECT_STREAM_START;
 import static org.locationtech.geogig.remote.http.pack.StreamingPackIO.Event.REF_END;
@@ -24,8 +23,6 @@ import org.locationtech.geogig.remotes.pack.RefRequest;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.BulkOpListener;
 
-import com.google.common.base.Throwables;
-
 public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder, PackProcessor {
 
     private DataOutputStream out;
@@ -43,7 +40,7 @@ public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder
         try {
             packIO.writeHeader(out);
         } catch (IOException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -53,7 +50,7 @@ public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder
             out.writeByte(REF_START.ordinal());
             new RefRequestIO().write(out, req);
         } catch (IOException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -62,7 +59,7 @@ public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder
         try {
             packIO.writeId(commit.getId(), out);
         } catch (IOException e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -72,7 +69,7 @@ public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder
             packIO.writeId(ObjectId.NULL, out);
             out.writeByte(REF_END.ordinal());
         } catch (IOException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -89,8 +86,7 @@ public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder
             }
             out.writeByte(OBJECT_STREAM_END.ordinal());
         } catch (IOException e) {
-            e.printStackTrace();
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

@@ -17,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.After;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
@@ -36,7 +35,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 
 public class TaskControllerTest extends AbstractControllerTest {
@@ -341,7 +339,7 @@ public class TaskControllerTest extends AbstractControllerTest {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
-                    Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
             return returnValue;

@@ -19,7 +19,6 @@ import org.locationtech.geogig.repository.Platform;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * Resolves the location of the {@code .geogig} repository directory relative to the
@@ -47,7 +46,7 @@ public class ResolveGeogigDir extends AbstractGeoGigOp<Optional<URL>> {
         try {
             return Optional.fromNullable(lookupGeogigDirectory(directory));
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -76,7 +75,7 @@ public class ResolveGeogigDir extends AbstractGeoGigOp<Optional<URL>> {
                     return Optional.of(new File(url.get().toURI()));
                 }
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return Optional.absent();

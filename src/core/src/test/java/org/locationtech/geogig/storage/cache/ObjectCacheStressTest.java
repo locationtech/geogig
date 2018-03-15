@@ -34,11 +34,11 @@ import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFa
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class ObjectCacheStressTest {
@@ -265,8 +265,8 @@ public class ObjectCacheStressTest {
             try {
                 fakeGeom = new WKTReader().read(
                         "MULTIPOLYGON (((-121.3647138 38.049474, -121.3646902 38.049614, -121.3646159 38.0496058, -121.3646188 38.049587, -121.3645936 38.049586, -121.3645924 38.0496222, -121.3645056 38.0496178, -121.3645321 38.0494567, -121.3647138 38.049474)))");
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
             }
         }
 

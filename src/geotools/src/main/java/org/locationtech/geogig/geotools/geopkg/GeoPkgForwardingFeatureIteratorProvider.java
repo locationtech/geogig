@@ -19,8 +19,6 @@ import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvid
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.google.common.base.Throwables;
-
 /**
  * Provides a forwarding feature iterator to update all incoming features to use the feature ids
  * specified in the fid mapping table, if a mapping table exists in the geopackage.
@@ -46,9 +44,8 @@ public class GeoPkgForwardingFeatureIteratorProvider extends ForwardingFeatureIt
             Map<String, String> fidMappings = metadata.getFidMappings(featureType.getTypeName());
             return new GeoPkgFidReplacer(iterator, fidMappings, featureType);
         } catch (SQLException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     /**

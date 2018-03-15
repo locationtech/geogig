@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 
 /**
  * Provides a safety net for remote pushes. This class keeps track of the IP addresses of remotes
@@ -124,7 +123,7 @@ public class PushManager {
             tx.commit();
         } catch (Exception e) {
             tx.abort();
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

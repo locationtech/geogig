@@ -265,11 +265,10 @@ public class GeogigCLI {
         Context inj = newGeogigInjector(hints);
 
         GeoGIG geogig = new GeoGIG(inj);
-        try {
-            geogig.getRepository();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        // try opening, if present, may return null Repository but the GeoGIG instance is still
+        // valid (may being used to init a repo);
+        geogig.getRepository();
+
         return geogig;
     }
 
@@ -565,7 +564,7 @@ public class GeogigCLI {
             console.println(out.toString());
             console.flush();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -633,7 +632,7 @@ public class GeogigCLI {
             try {
                 consoleReader.println(msg);
             } catch (IOException e1) {
-                throw Throwables.propagate(e1);
+                throw new RuntimeException(e1);
             }
         }
 
@@ -644,7 +643,7 @@ public class GeogigCLI {
                         .resolveConfigDatabase(platform.pwd().toURI(), context, true)) {
                     unaliased = global.getGlobal(configParam);
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
             if (!unaliased.isPresent()) {
@@ -729,7 +728,7 @@ public class GeogigCLI {
             }
             console.flush();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -763,7 +762,7 @@ public class GeogigCLI {
             }
             console.flush();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -806,7 +805,7 @@ public class GeogigCLI {
                         console.println(s);
                         console.flush();
                     } catch (IOException e) {
-                        Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                 }
 
@@ -822,7 +821,8 @@ public class GeogigCLI {
                         super.complete();
                         super.dispose();
                     } catch (Exception e) {
-                        Throwables.propagate(e);
+                        Throwables.throwIfUnchecked(e);
+                        throw new RuntimeException(e);
                     }
                 }
 
@@ -855,7 +855,7 @@ public class GeogigCLI {
                         console.redrawLine();
                         console.flush();
                     } catch (IOException e) {
-                        Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                 }
             };

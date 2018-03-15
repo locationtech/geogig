@@ -23,9 +23,9 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.porcelain.CleanOp;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

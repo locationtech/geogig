@@ -26,7 +26,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
 
 import com.google.common.annotations.Beta;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.io.ByteStreams;
@@ -119,7 +118,7 @@ class RevTreeFormat {
             encode(tree, buff);
             return buff.toByteArray();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

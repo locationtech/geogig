@@ -30,7 +30,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
 
-import com.google.common.base.Throwables;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
@@ -46,7 +45,7 @@ public class ParseTimestampTest extends Assert {
         try {
             REFERENCE_DATE = format.parse("1972-10-10 10:10:10");
         } catch (ParseException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

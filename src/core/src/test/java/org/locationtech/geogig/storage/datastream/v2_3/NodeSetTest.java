@@ -27,7 +27,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
@@ -164,7 +163,7 @@ public class NodeSetTest {
         try {
             geom = new WKTReader().read(String.format("LINESTRING(0 0, %d %d)", i, i));
         } catch (ParseException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         map.put("mapProp",
                 ImmutableMap.of("k1", "v1-" + i, //

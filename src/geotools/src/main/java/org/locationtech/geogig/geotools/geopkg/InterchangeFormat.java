@@ -121,7 +121,7 @@ public class InterchangeFormat {
                     metadata.createFidMappingTable(targetTableName, fidMappings);
                 }
             } catch (SQLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         } finally {
             geopackage.close();
@@ -178,7 +178,7 @@ public class InterchangeFormat {
             try {
                 createAuditLog(geopackage, featureTreePath, featureEntry, commitId);
             } catch (SQLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
 
         } finally {
@@ -253,7 +253,7 @@ public class InterchangeFormat {
         try {
             geopackage = new GeoPackage(geopackageDbFile);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         final DataSource dataSource = geopackage.getDataSource();
 
@@ -341,7 +341,8 @@ public class InterchangeFormat {
         } catch (MergeConflictsException e) {
             throw new GeopkgMergeConflictsException(e, importResult);
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         } finally {
             geopackage.close();
         }
@@ -507,7 +508,7 @@ public class InterchangeFormat {
                         return change;
                     }
                 } catch (SQLException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
                 return endOfData();
             }
@@ -570,7 +571,7 @@ public class InterchangeFormat {
                 SimpleFeature feature = builder.buildFeature("fakeId");
                 return RevFeatureBuilder.build(feature);
             } catch (SQLException | IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

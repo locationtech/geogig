@@ -34,7 +34,6 @@ import org.locationtech.geogig.web.api.StreamingWriter;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -91,7 +90,7 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
                         gpkg.close();
                     }
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
             return targetFile;

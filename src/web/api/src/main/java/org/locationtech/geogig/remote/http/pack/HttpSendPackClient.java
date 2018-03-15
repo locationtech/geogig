@@ -13,8 +13,6 @@ import org.locationtech.geogig.remotes.pack.PackRequest;
 import org.locationtech.geogig.remotes.pack.SendPackOp;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.base.Throwables;
-
 /**
  * HTTP proxy for a {@link SendPackOp} on the remote repository's {@code <repoURL>/sendpack}
  * endpoint
@@ -57,7 +55,7 @@ public class HttpSendPackClient extends SendPackOp {
             throw new IllegalStateException("Server returned " + respCode);
         } catch (Exception e) {
             remote.closeSafely(connection);
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

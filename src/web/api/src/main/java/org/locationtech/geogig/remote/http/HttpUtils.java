@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -39,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.io.Closeables;
@@ -99,7 +99,7 @@ class HttpUtils {
             InputStream es = ((HttpURLConnection) connection).getErrorStream();
             consumeAndCloseStream(es);
         } catch (IOException ex) {
-            throw Throwables.propagate(ex);
+            throw new RuntimeException(ex);
         } finally {
             connection.disconnect();
         }
@@ -172,8 +172,8 @@ class HttpUtils {
             } finally {
                 consumeAndCloseStream(is);
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             consumeErrStreamAndCloseConnection(connection);
         }
@@ -212,8 +212,8 @@ class HttpUtils {
                 consumeAndCloseStream(is);
             }
 
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             consumeErrStreamAndCloseConnection(connection);
         }
@@ -275,8 +275,8 @@ class HttpUtils {
                 reader.close();
                 inputStream.close();
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException | XMLStreamException | FactoryConfigurationError e) {
+            throw new RuntimeException(e);
         } finally {
             consumeErrStreamAndCloseConnection(connection);
         }
@@ -317,8 +317,8 @@ class HttpUtils {
             } finally {
                 consumeAndCloseStream(is);
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             consumeErrStreamAndCloseConnection(connection);
         }
@@ -354,8 +354,8 @@ class HttpUtils {
             } finally {
                 consumeAndCloseStream(is);
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             consumeErrStreamAndCloseConnection(connection);
         }
@@ -411,8 +411,8 @@ class HttpUtils {
                 reader.close();
                 inputStream.close();
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException | XMLStreamException | FactoryConfigurationError e) {
+            throw new RuntimeException(e);
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }
@@ -448,8 +448,8 @@ class HttpUtils {
             } finally {
                 consumeAndCloseStream(is);
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             consumeErrStreamAndCloseConnection(connection);
         }
@@ -471,8 +471,8 @@ class HttpUtils {
             InputStream stream = HttpUtils.getResponseStream(connection);
             HttpUtils.consumeAndCloseStream(stream);
 
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }
@@ -518,7 +518,7 @@ class HttpUtils {
             HttpUtils.consumeAndCloseStream(stream);
 
         } catch (Exception e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }
@@ -534,7 +534,7 @@ class HttpUtils {
             boolean gzip = "gzip".equalsIgnoreCase(contentEncoding);
             reportingStream = HttpUtils.newReportingInputStream(in, gzip);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return reportingStream;
     }
@@ -565,7 +565,7 @@ class HttpUtils {
                 try {
                     gzipIn = new GZIPInputStream(compressed);
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
                 uncompressed = new CountingInputStream(gzipIn);
                 super.in = uncompressed;
@@ -609,7 +609,7 @@ class HttpUtils {
                 try {
                     gzipOut = new GZIPOutputStream(compressed);
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
                 uncompressed = new CountingOutputStream(gzipOut);
                 super.out = uncompressed;

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.hooks;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -24,12 +25,11 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
@@ -205,8 +205,9 @@ public class GeoGigAPI {
                 paramsMap.put(key, value);
             }
             return paramsMap;
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
+                | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 

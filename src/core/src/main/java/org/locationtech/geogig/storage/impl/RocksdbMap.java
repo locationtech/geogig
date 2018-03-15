@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.storage.impl;
 
-import static com.google.common.base.Throwables.propagate;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -33,7 +31,6 @@ import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 
 /**
@@ -54,7 +51,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
         try {
             this.db = RocksDB.open(dbDir.getAbsolutePath());
         } catch (RocksDBException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -108,7 +105,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
                 }
                 wo.sync();
             } catch (IOException | RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             putBuffer.clear();
         }
@@ -153,9 +150,8 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
             byte[] valueBytes = db.get(keyBytes.toByteArray());
             return valueBytes != null;
         } catch (IOException | RocksDBException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
-        return false;
     }
 
     @Override
@@ -179,10 +175,8 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
             V value = (V) obj.readObject();
             return value;
         } catch (IOException | RocksDBException | ClassNotFoundException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
-
-        return null;
     }
 
     @Override
@@ -206,7 +200,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
             keyOut.flush();
             db.remove(keyBytes.toByteArray());
         } catch (IOException | RocksDBException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return value;
     }
@@ -235,7 +229,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
                 db.write(opts, batch);
             }
         } catch (RocksDBException e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -287,9 +281,8 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
                         
                     };
                 } catch (IOException | ClassNotFoundException e) {
-                    Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
-                return null;
             }
 
             @Override

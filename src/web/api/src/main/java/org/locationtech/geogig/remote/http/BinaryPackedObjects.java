@@ -236,9 +236,9 @@ public final class BinaryPackedObjects {
                 } catch (EOFException eof) {
                     return endOfData();
                 } catch (IOException e) {
-                    Throwables.propagate(e);
+                    Throwables.throwIfUnchecked(e);
+                    throw new RuntimeException(e);
                 }
-                throw new IllegalStateException("stream should have been fully consumed");
             }
         };
     }

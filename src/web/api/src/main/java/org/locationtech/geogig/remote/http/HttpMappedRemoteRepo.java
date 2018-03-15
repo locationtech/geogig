@@ -48,7 +48,6 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
@@ -145,7 +144,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
             }
 
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }
@@ -184,10 +183,8 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                 is.close();
             }
 
-        } catch (Exception e) {
-
-            Throwables.propagate(e);
-
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }
@@ -236,7 +233,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
         try {
             resourceURL = new URL(repositoryURL.toString() + "/repo/filteredchanges");
         } catch (MalformedURLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         final Gson gson = new Gson();
@@ -252,14 +249,14 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
             gson.toJson(message, writer);
             writer.flush();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         final InputStream in;
         try {
             in = connection.getInputStream();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         BinaryPackedChanges unpacker = new BinaryPackedChanges(local);
@@ -360,7 +357,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                 try {
                     resourceURL = new URL(repositoryURL.toString() + "/repo/applychanges");
                 } catch (MalformedURLException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
 
                 final HttpURLConnection connection;
@@ -384,7 +381,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     BinaryPackedChanges changes = new BinaryPackedChanges(from);
                     changes.write(out, diffIter);
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
 
                 final InputStream in;
@@ -400,7 +397,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     }
 
                 } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
 

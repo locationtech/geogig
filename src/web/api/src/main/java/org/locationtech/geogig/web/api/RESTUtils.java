@@ -16,8 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.MediaType;
 
-import com.google.common.base.Throwables;
-
 public class RESTUtils {
 
     public static String getStringAttribute(final HttpServletRequest request, final String key) {
@@ -29,7 +27,7 @@ public class RESTUtils {
         try {
             return URLDecoder.decode(value.toString(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

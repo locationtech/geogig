@@ -1,6 +1,7 @@
 package org.locationtech.geogig.porcelain.index;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Objects;
 
 import org.locationtech.geogig.model.ObjectId;

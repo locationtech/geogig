@@ -20,7 +20,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.datastream.Varint;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * {@code
@@ -75,7 +74,7 @@ class Header {
             final int trees = Varint.readUnsignedVarInt(in);
             return new Header(size, trees);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

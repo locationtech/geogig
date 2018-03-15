@@ -30,6 +30,8 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
@@ -41,6 +43,8 @@ import com.vividsolutions.jts.geom.Envelope;
  * Builds an index tree for the given canonical tree.
  */
 public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
+
+    private static final Logger log = LoggerFactory.getLogger(BuildIndexOp.class);
 
     private IndexInfo index;
 
@@ -124,8 +128,9 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
         try {
             indexTree = builder.build(() -> progress.isCanceled());
         } catch (Exception e) {
-            e.printStackTrace();
-            throw Throwables.propagate(Throwables.getRootCause(e));
+            log.error("Error building index", e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
         revTreeTime.stop();
 

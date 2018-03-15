@@ -30,8 +30,8 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.porcelain.DiffOp;
@@ -137,7 +137,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                     if (transactional) {
                         transaction.rollback();
                     }
-                    Throwables.propagateIfInstanceOf(e, GeoToolsOpException.class);
+                    Throwables.throwIfInstanceOf(e, GeoToolsOpException.class);
                     throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_ADD);
                 } finally {
                     transaction.close();

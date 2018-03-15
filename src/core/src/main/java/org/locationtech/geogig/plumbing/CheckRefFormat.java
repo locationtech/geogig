@@ -15,7 +15,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * Validates the format of a ref.
@@ -112,7 +111,7 @@ public class CheckRefFormat extends AbstractGeoGigOp<Boolean> {
 
         } catch (IllegalArgumentException e) {
             if (throwsException) {
-                Throwables.propagate(e);
+                throw e;
             } else {
                 return false;
             }

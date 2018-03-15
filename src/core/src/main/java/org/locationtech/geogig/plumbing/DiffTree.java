@@ -48,7 +48,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -308,7 +307,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                         finished = diffProducer.isFinished();
                         empty = entries.isEmpty();
                     } catch (InterruptedException e) {
-                        throw Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                 }
                 return null;
@@ -481,7 +480,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 try {
                     entries.put(new DiffEntry(left, right));
                 } catch (InterruptedException e) {
-                    // throw Throwables.propagate(e);
+                    // throw new RuntimeException(e);
                 }
             }
             return true;
@@ -508,7 +507,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                     try {
                         entries.put(new DiffEntry(left, right));
                     } catch (InterruptedException e) {
-                        // throw Throwables.propagate(e);
+                        // throw new RuntimeException(e);
                         // die gracefully
                         return false;
                     }

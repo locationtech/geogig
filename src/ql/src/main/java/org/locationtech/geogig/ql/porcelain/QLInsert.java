@@ -95,7 +95,7 @@ public class QLInsert extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
         try {
             store = (SimpleFeatureStore) dataStore.getFeatureSource(treePath);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         SimpleFeatureCollection sourceData = resolveSourceData(insert, store.getSchema());
@@ -120,7 +120,7 @@ public class QLInsert extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
             // }
             Throwable rootCause = Throwables.getRootCause(e);
             Throwables.propagateIfInstanceOf(rootCause, IllegalArgumentException.class);
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             // try {
             // gttx.close();

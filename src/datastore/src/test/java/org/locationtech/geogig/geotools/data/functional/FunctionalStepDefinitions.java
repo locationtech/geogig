@@ -62,8 +62,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -72,6 +70,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
@@ -106,7 +105,7 @@ public class FunctionalStepDefinitions {
             POINT_WITH_TIME_TYPE = DataUtilities.createType(POINT_WITH_TIME_TYPE_NAME,
                     pointsWithTimeTypeSpec);
         } catch (SchemaException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -701,7 +700,7 @@ public class FunctionalStepDefinitions {
                     tx.close();
                 }
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return featureList;
         }
@@ -729,7 +728,7 @@ public class FunctionalStepDefinitions {
                     featureList.addAll(doRead());
                 }
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             return featureList;
         }

@@ -182,7 +182,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -206,7 +207,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -236,7 +238,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             }
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -255,7 +258,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -280,7 +284,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         try {
             lastResponseText = getLastResponse().getResponse().getContentAsString();
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return lastResponseText;
     }
@@ -309,7 +313,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
                 lastResponseDocument = builder.parse(new ByteArrayInputStream(text.getBytes()));
             } catch (IOException | SAXException | ParserConfigurationException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return lastResponseDocument;

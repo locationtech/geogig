@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.io.CharSource;
 import com.google.common.io.FileBackedOutputStream;
 import com.google.gson.JsonElement;
@@ -99,7 +98,7 @@ public class LegacyConsoleService extends AbstractRepositoryService {
             }
             return new ConsoleRunCommandResponse(queryId, result, error);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             // delete temp file
             try {

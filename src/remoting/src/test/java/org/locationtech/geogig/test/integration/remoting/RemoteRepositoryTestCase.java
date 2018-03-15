@@ -90,7 +90,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
@@ -226,7 +225,7 @@ public abstract class RemoteRepositoryTestCase {
             try {
                 remoteRepo.open();
             } catch (RepositoryConnectionException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             doNothing().when(remoteRepo).close();
             this.remoteOverride.put(remote.getName(), remoteRepo);
@@ -472,7 +471,7 @@ public abstract class RemoteRepositoryTestCase {
         try {
             return new WKTReader2().read(wkt);
         } catch (ParseException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

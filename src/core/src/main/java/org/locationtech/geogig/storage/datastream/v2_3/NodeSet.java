@@ -33,7 +33,6 @@ import org.locationtech.geogig.storage.datastream.Varints;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -333,7 +332,7 @@ class NodeSet {
             x = Varints.readSignedIntArray(in);
             y = Varints.readSignedIntArray(in);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         int[][] coords = new int[][] { x, y };
         return new FloatPackedCoordinateSequence(coords);
@@ -383,7 +382,7 @@ class NodeSet {
                 header.extraDataSize = readUnsignedVarInt(in);
                 return header;
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 
@@ -450,7 +449,7 @@ class NodeSet {
         try {
             extraData = ExtraData.decode(this, nodeExtraDataRelOffset);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return extraData;
     }
@@ -466,7 +465,7 @@ class NodeSet {
                 builder.add(node);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return builder.build();
     }

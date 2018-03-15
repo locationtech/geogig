@@ -187,16 +187,12 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         } catch (ConfigException e) {
             throw e;
         } catch (Exception e) {
-            Throwables.propagateIfInstanceOf(e, IllegalStateException.class);
+            Throwables.throwIfInstanceOf(e, IllegalStateException.class);
             throw new IllegalStateException("Can't access repository at '" + repoURI + "'", e);
         }
 
         if (!repoExisted) {
-            try {
-                createDefaultRefs();
-            } catch (IllegalStateException e) {
-                Throwables.propagate(e);
-            }
+            createDefaultRefs();
         }
         return repository;
     }

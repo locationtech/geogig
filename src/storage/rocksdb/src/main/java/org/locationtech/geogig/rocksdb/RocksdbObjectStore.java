@@ -63,7 +63,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
@@ -180,7 +179,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 dbRef.db().put(key, rawData);
             }
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return !exists;
     }
@@ -206,7 +205,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             return dbRef.db().get(key);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -228,7 +227,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             try {
                 size = dbRef.db().get(key, NO_DATA);
             } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return size != RocksDB.NOT_FOUND;
@@ -242,7 +241,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             dbRef.db().remove(key);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -294,7 +293,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                         }
                     }
                 } catch (Exception e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
                 return endOfData();
             }
@@ -330,7 +329,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 try {
                     dbRef.db().write(writeOps, batch);
                 } catch (RocksDBException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -400,7 +399,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         try {
             serializer().write(o, out);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return new EncodedObject(o.getId(), o.getType(), out.toByteArray());
     }
@@ -459,7 +458,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             // need to notify listener once the objects are actually on the db
             insertedIds.forEach((id) -> listener.inserted(id, null));
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return insertedIds.size();
     }
@@ -548,7 +547,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                         }
                     }
                 } catch (Exception e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
                 return null;
             }

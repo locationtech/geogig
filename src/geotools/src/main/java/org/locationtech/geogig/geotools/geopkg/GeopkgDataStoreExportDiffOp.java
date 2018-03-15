@@ -10,6 +10,8 @@
 package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +34,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * Exports changes between two commits to a geopackage file. The features that were changed between
@@ -104,8 +105,8 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
             format.createFIDMappingTable(fidMappings, targetTableName);
             // create change log
             format.createChangeLog(targetTableName, changedNodes);
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

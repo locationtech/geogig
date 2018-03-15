@@ -44,7 +44,6 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -136,8 +135,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         CoordinateReferenceSystem defaultCrs;
         try {
             defaultCrs = CRS.decode("EPSG:4326", true);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        } catch (FactoryException e) {
+            throw new RuntimeException(e);
         }
         return defaultCrs;
     }
@@ -293,7 +292,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
                             JTS.transform(env, targetEnvelope, transform, densifyPoints);
                             env.init(targetEnvelope);
                         } catch (TransformException e) {
-                            throw Throwables.propagate(e);
+                            throw new RuntimeException(e);
                         }
                     }
 
@@ -320,7 +319,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
                     boolean lenient = true;
                     transform = CRS.findMathTransform(sourceCrs, targetCrs, lenient);
                 } catch (FactoryException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
                 this.transformsByMetadataId.putIfAbsent(mdid, transform);
             }

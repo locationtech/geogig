@@ -2,7 +2,6 @@ package org.locationtech.geogig.remotes.pack;
 
 import java.util.concurrent.BlockingQueue;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 
 class BlockingIterator<T> extends AbstractIterator<T> {
@@ -23,7 +22,7 @@ class BlockingIterator<T> extends AbstractIterator<T> {
             object = queue.take();
         } catch (InterruptedException e) {
             e.printStackTrace();
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         if (terminalToken.equals(object)) {
             return endOfData();

@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.net.URI;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -20,11 +21,11 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * A facade to GeoGig operations.
@@ -96,13 +97,9 @@ public class GeoGIG {
      */
     public Repository getOrCreateRepository() {
         if (repository == null) {
-            try {
-                repository = command(InitOp.class).call();
-                checkState(repository != null,
-                        "Repository shouldn't be null as we checked it didn't exist before calling init");
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
+            repository = command(InitOp.class).call();
+            checkState(repository != null,
+                    "Repository shouldn't be null as we checked it didn't exist before calling init");
         }
         return repository;
     }
@@ -111,20 +108,20 @@ public class GeoGIG {
      * @return the configured repository or {@code null} if no repository is found on the current
      *         directory
      */
-    public synchronized Repository getRepository() {
+    public synchronized @Nullable Repository getRepository() {
         if (repository != null) {
             return repository;
         }
 
         final Optional<URI> repoLocation = command(ResolveGeogigURI.class).call();
         if (repoLocation.isPresent()) {
-            try {
-                if (RepositoryResolver.lookup(repoLocation.get()).repoExists(repoLocation.get())) {
-                    repository = context.repository();
+            if (RepositoryResolver.lookup(repoLocation.get()).repoExists(repoLocation.get())) {
+                repository = context.repository();
+                try {
                     repository.open();
+                } catch (RepositoryConnectionException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
             }
         }
         return repository;

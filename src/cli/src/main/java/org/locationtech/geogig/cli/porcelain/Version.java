@@ -22,7 +22,6 @@ import org.locationtech.geogig.porcelain.VersionOp;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Throwables;
 
 /**
  * This command displays the GeoGig version information.
@@ -68,7 +67,7 @@ public class Version implements CLICommand {
             printVersionProperty("Git Commit Author Email", info.getCommitUserEmail());
             printVersionProperty("Git Commit Message", info.getCommitMessageFull());
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

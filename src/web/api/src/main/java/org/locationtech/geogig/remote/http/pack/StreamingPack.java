@@ -1,7 +1,5 @@
 package org.locationtech.geogig.remote.http.pack;
 
-import static com.google.common.base.Throwables.propagate;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +19,7 @@ import org.locationtech.geogig.remotes.pack.RefRequest;
 import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 
@@ -101,7 +100,8 @@ public class StreamingPack implements Pack {
                 next = packedObjects.readObject(in);
             } catch (Exception e) {
                 close();
-                throw propagate(e);
+                Throwables.throwIfUnchecked(e);
+                throw new RuntimeException(e);
             }
             if (next == null) {
                 close();

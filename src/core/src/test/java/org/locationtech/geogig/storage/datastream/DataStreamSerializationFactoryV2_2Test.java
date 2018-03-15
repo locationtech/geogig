@@ -9,7 +9,10 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
-import com.vividsolutions.jts.geom.Envelope;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Iterator;
+
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.RevObjects;
@@ -17,9 +20,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
-import java.util.Iterator;
-
-import static org.junit.Assert.assertEquals;
+import com.vividsolutions.jts.geom.Envelope;
 
 
 public class DataStreamSerializationFactoryV2_2Test  extends ObjectSerializationFactoryTest {

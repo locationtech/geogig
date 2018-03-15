@@ -20,8 +20,6 @@ import org.locationtech.geogig.rocksdb.RocksdbObjectStore;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestPlatform;
 
-import com.google.common.base.Throwables;
-
 public class RocksRevTreeBuilderTest extends CanonicalTreeBuilderTest {
 
     @Rule
@@ -33,7 +31,7 @@ public class RocksRevTreeBuilderTest extends CanonicalTreeBuilderTest {
         try {
             workingDirectory = tmp.newFolder(".geogig");
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         Platform platform = new TestPlatform(workingDirectory);
         return new RocksdbObjectStore(platform, null);

@@ -19,7 +19,6 @@ import java.util.NoSuchElementException;
 import org.locationtech.geogig.storage.datastream.Varint;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 abstract class StringTable {
@@ -67,7 +66,7 @@ abstract class StringTable {
                 out.write(bytes);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -87,7 +86,7 @@ abstract class StringTable {
                 arr.add(s);
             }
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return StringTable.of(arr);
     }

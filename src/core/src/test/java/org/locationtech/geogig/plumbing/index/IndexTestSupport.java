@@ -40,7 +40,6 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -158,7 +157,7 @@ public class IndexTestSupport {
             try {
                 featureType = DataUtilities.createType("worldpoints", typeSpec);
             } catch (SchemaException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         RevTree tree = createWorldPointsTree(repository);

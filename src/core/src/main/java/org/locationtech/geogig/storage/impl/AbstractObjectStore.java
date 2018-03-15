@@ -33,7 +33,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 
-import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
 
 /**
@@ -169,7 +168,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
         try {
             object = serializer().read(id, raw);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             Closeables.closeQuietly(raw);
         }
@@ -261,7 +260,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
         try {
             serializer().write(object, target);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

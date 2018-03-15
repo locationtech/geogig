@@ -30,7 +30,6 @@ import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -46,6 +45,7 @@ class RocksdbDAGStore {
     private ColumnFamilyHandle column;
 
     private BloomFilter bloomFilter;
+
     private ColumnFamilyOptions colFamilyOptions;
 
     public RocksdbDAGStore(RocksDB db) {
@@ -64,7 +64,7 @@ class RocksdbDAGStore {
                     colFamilyOptions);
             column = db.createColumnFamily(columnDescriptor);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         writeOptions = new WriteOptions();
         writeOptions.setDisableWAL(true);
@@ -93,7 +93,7 @@ class RocksdbDAGStore {
                 putInternal(key, dag);
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return dag;
     }
@@ -107,17 +107,13 @@ class RocksdbDAGStore {
                 dag = decode(id, value);
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return dag;
     }
 
     public List<DAG> getTrees(final Set<TreeId> ids) throws NoSuchElementException {
-        try {
-            return getInternal(ids);
-        } catch (Exception e) {
-            throw Throwables.propagate(Throwables.getRootCause(e));
-        }
+        return getInternal(ids);
     }
 
     private List<DAG> getInternal(final Set<TreeId> ids) throws NoSuchElementException {
@@ -137,7 +133,7 @@ class RocksdbDAGStore {
                 DAG dag = decode(id, val);
                 res.add(dag);
             } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         });
         Preconditions.checkState(res.size() == ids.size());
@@ -152,7 +148,7 @@ class RocksdbDAGStore {
             try {
                 db.put(column, writeOptions, toKey(id), encode(dag));
             } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         });
     }
@@ -162,7 +158,7 @@ class RocksdbDAGStore {
         try {
             db.put(column, writeOptions, key, value);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -175,7 +171,7 @@ class RocksdbDAGStore {
         try {
             dag = DAG.deserialize(id, ByteStreams.newDataInput(value));
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return dag;
     }
@@ -185,7 +181,7 @@ class RocksdbDAGStore {
         try {
             DAG.serialize(bucketDAG, out);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return out.toByteArray();
     }

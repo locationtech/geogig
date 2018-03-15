@@ -21,8 +21,6 @@ import org.locationtech.geogig.rocksdb.RocksdbObjectStore;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.performance.RevTreeBuilderPerformanceTest;
 
-import com.google.common.base.Throwables;
-
 public class RevTreeBuilderRocksObjectsPerformanceTest extends RevTreeBuilderPerformanceTest {
 
     @Rule
@@ -37,7 +35,7 @@ public class RevTreeBuilderRocksObjectsPerformanceTest extends RevTreeBuilderPer
         try {
             hints.set(Hints.REPOSITORY_URL, tmp.getRoot().toURI().toURL());
         } catch (MalformedURLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return new RocksdbObjectStore(platform, hints);
     }

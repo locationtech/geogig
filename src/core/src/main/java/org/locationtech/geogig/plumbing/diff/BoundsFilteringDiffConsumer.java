@@ -28,8 +28,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
-import com.google.common.base.Throwables;
-
 /**
  * A {@link Consumer} decorator that filters {@link Node nodes} by a bounding box intersection check
  * before delegating.
@@ -137,7 +135,7 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
         try {
             transformedFilter = boundsFilter.transform(nativeCrs, true);
         } catch (TransformException | FactoryException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return transformedFilter;
     }

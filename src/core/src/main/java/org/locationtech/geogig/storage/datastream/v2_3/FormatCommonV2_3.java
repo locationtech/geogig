@@ -19,7 +19,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
-import org.locationtech.geogig.storage.datastream.FormatCommonV2_1;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2_2;
 
 /**

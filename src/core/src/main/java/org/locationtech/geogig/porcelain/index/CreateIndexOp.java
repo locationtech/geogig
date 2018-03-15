@@ -94,7 +94,8 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
         } catch (Exception e) {
             // rollback
             rollback();
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
 
         if (getProgressListener().isCanceled()) {

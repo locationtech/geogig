@@ -43,7 +43,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.FilterFactory;
 
 import com.beust.jcommander.internal.Lists;
-import com.google.common.base.Throwables;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -86,7 +85,7 @@ public class MapPane {
                 bounds = featureSource.getBounds();
             } catch (Exception e) {
                 e.printStackTrace();
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             System.err.printf("%s bounds: %s\n", name, bounds);
             Style style = createStyle2(featureSource);

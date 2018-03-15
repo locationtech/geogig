@@ -19,7 +19,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -73,7 +72,7 @@ class TreeCache {
         try {
             tree = cache.get(Integer.valueOf(leafRevTreeId));
         } catch (ExecutionException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         Preconditions.checkNotNull(tree);
         return tree;

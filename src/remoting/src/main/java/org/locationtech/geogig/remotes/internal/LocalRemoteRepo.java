@@ -56,7 +56,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -147,19 +146,15 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
 
         CommitTraverser traverser = getFetchTraverser(local, fetchLimit);
 
-        try {
-            progress.setDescription("Fetching objects from " + ref.getName());
-            progress.setProgress(0);
-            traverser.traverse(ref.getObjectId());
-            List<ObjectId> toSend = new LinkedList<ObjectId>(traverser.commits);
-            Collections.reverse(toSend);// send oldest commits first
-            for (ObjectId newHeadId : toSend) {
-                walkHead(newHeadId, remoteRepository, local, progress);
-            }
-
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        progress.setDescription("Fetching objects from " + ref.getName());
+        progress.setProgress(0);
+        traverser.traverse(ref.getObjectId());
+        List<ObjectId> toSend = new LinkedList<ObjectId>(traverser.commits);
+        Collections.reverse(toSend);// send oldest commits first
+        for (ObjectId newHeadId : toSend) {
+            walkHead(newHeadId, remoteRepository, local, progress);
         }
+
     }
 
     @Override

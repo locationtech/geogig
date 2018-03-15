@@ -56,7 +56,8 @@ public abstract class CommandResponse extends LegacyResponse {
         try {
             write(out);
         } catch (Exception e) {
-            Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
     }
 

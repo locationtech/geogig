@@ -56,7 +56,6 @@ import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.vividsolutions.jts.geom.Envelope;
@@ -410,7 +409,7 @@ public class FormatCommonV1 {
             bucket.expand(envBuff);
             writeBoundingBox(envBuff, data);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -432,7 +431,7 @@ public class FormatCommonV1 {
             Map<String, Object> extraData = node.getExtraData();
             DataStreamValueSerializerV1.INSTANCE.writeMap(extraData, data);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

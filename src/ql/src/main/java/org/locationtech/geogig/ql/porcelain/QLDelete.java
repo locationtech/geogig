@@ -73,7 +73,7 @@ public class QLDelete extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
         try {
             store = (SimpleFeatureStore) dataStore.getFeatureSource(treePath);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         Filter filter = parseFilter(delete);
@@ -89,7 +89,7 @@ public class QLDelete extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
             // } catch (IOException re) {
             // re.printStackTrace();
             // }
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             // try {
             // gttx.close();

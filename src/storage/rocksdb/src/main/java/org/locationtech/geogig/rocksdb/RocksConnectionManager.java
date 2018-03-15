@@ -26,13 +26,11 @@ import org.rocksdb.CompressionType;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.TableFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -78,7 +76,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
                     (ba) -> new String(ba, Charsets.UTF_8));
         } catch (RocksDBException e) {
             dbOptions.close();
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         // at least the "default" column family shall exists if the db was already created
@@ -167,7 +165,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
             }
             return dbHandle;
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
     }

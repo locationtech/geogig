@@ -75,7 +75,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
@@ -492,7 +491,7 @@ public class FeatureReaderBuilder {
                 String[] properties = atts.toArray(new String[requiredProperties.size()]);
                 resultSchema = DataUtilities.createSubType(fullSchema, properties);
             } catch (SchemaException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import org.geotools.renderer.ScreenMap;
+import org.opengis.feature.simple.SimpleFeature;
+
 import com.google.common.base.Function;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import org.geotools.feature.simple.SimpleFeatureImpl;
-import org.geotools.renderer.ScreenMap;
-import org.opengis.feature.simple.SimpleFeature;
 
 
 /**

@@ -10,15 +10,14 @@
 package org.locationtech.geogig.test;
 
 
+import static org.junit.Assert.assertNotEquals;
+
+import java.io.IOException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.repository.Platform;
-
-import java.io.File;
-import java.io.IOException;
-
-import static org.junit.Assert.assertNotEquals;
 
 public class TestPlatformTest {
 

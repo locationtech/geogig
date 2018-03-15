@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
-import org.locationtech.geogig.storage.impl.PersistedIterable;
 
 import com.google.common.collect.Lists;
 

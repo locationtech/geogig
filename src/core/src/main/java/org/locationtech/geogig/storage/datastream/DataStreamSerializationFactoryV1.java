@@ -133,11 +133,9 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
                 requireHeader(in, "commit");
                 return readCommit(id, in);
             } catch (IOException e) {
-                Throwables.propagate(e);
+                Throwables.throwIfUnchecked(e);
+                throw new RuntimeException(e);
             }
-            throw new IllegalStateException(
-                    "Unexpected state: neither succeeded nor threw exception while trying to read commit "
-                            + id);
         }
 
         @Override
@@ -171,10 +169,8 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
                 requireHeader(in, "feature");
                 return readFeature(id, in);
             } catch (IOException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
-            throw new IllegalStateException(
-                    "Didn't expect to reach end of FeatureReader.read(); We should have returned or thrown an error before this point.");
         }
 
         @Override
@@ -292,8 +288,8 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
             try {
                 FormatCommonV1.requireHeader(data, "tag");
                 return FormatCommonV1.readTag(id, data);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -317,11 +313,8 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
                 requireHeader(in, "tree");
                 return readTree(id, in);
             } catch (IOException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
-            throw new IllegalStateException(
-                    "Unexpected state: neither succeeded nor threw exception while trying to read commit "
-                            + id);
         }
 
         @Override

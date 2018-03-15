@@ -2,7 +2,6 @@ package org.locationtech.geogig.remote.http.pack;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
 import static org.locationtech.geogig.remote.http.pack.StreamingPackIO.Event.REF_END;
 import static org.locationtech.geogig.remote.http.pack.StreamingPackIO.Event.REF_START;
 
@@ -18,9 +17,15 @@ import org.locationtech.geogig.remotes.pack.AbstractPackBuilder;
 import org.locationtech.geogig.remotes.pack.Pack;
 import org.locationtech.geogig.remotes.pack.RefRequest;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Throwables;
 
 public class StreamingPackBuilder extends AbstractPackBuilder {
 
+    private static final Logger log = LoggerFactory.getLogger(StreamingPackBuilder.class);
+    
     private StreamingPackIO packIO = new StreamingPackIO();
 
     private DataInputStream in;
@@ -51,12 +56,14 @@ public class StreamingPackBuilder extends AbstractPackBuilder {
             packIO.readHeader(in);
             missingCommits = readRefsCommits();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error building pack", e);
             try {
                 in.close();
             } catch (IOException ex) {
+                log.warn("Error closing stream, but pack build already failed", ex);
             }
-            throw propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
         progress.complete();
         progress.setProgressIndicator(oldIndicator);

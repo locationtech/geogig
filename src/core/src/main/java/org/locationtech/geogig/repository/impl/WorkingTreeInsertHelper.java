@@ -37,7 +37,6 @@ import org.opengis.geometry.BoundingBox;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
@@ -220,7 +219,7 @@ class WorkingTreeInsertHelper {
         try {
             executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         db.putAll(result.values().iterator());
         return result;

@@ -55,7 +55,6 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.io.ParseException;
@@ -123,7 +122,7 @@ public class TestData {
             linesType = DataUtilities.createType("http://geogig.org", "Lines", linesTypeSpec);
             polysType = DataUtilities.createType("http://geogig.org", "Polygons", polyTypeSpec);
         } catch (SchemaException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         point1 = feature(pointsType, "Point.1", "StringProp1_1", 1000, "POINT(0 0)");
@@ -346,7 +345,7 @@ public class TestData {
                     try {
                         value = new WKTReader2().read((String) value);
                     } catch (ParseException e) {
-                        Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                 }
             }

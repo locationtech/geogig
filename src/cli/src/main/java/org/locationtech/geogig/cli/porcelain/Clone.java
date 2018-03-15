@@ -27,7 +27,6 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.remotes.CloneOp;
-import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;

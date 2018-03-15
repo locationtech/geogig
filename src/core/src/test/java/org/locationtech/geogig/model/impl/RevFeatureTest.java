@@ -16,7 +16,6 @@ import java.util.List;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;

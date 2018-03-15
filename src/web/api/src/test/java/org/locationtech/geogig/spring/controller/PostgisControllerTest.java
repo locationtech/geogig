@@ -21,7 +21,6 @@ import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.After;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.cli.TestHelper;
 import org.locationtech.geogig.model.NodeRef;

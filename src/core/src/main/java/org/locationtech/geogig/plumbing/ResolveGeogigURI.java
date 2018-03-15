@@ -23,7 +23,6 @@ import org.locationtech.geogig.repository.Platform;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 
 /**
@@ -51,7 +50,7 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
         try {
             return Optional.fromNullable(lookupGeogigDirectory(directory));
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

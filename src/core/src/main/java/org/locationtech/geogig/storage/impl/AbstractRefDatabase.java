@@ -16,8 +16,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.locationtech.geogig.storage.RefDatabase;
 
-import com.google.common.base.Throwables;
-
 /**
  * Provides a base implementation for different representations of the {@link RefDatabase}.
  * 
@@ -39,7 +37,7 @@ public abstract class AbstractRefDatabase implements RefDatabase {
                 throw new TimeoutException("The attempt to lock the database timed out.");
             }
         } catch (InterruptedException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

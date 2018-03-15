@@ -36,7 +36,6 @@ import org.rocksdb.RocksIterator;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
@@ -115,7 +114,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             dbRef.db().put(indexMetadataColumn, key, value);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return index;
     }
@@ -142,7 +141,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
                 return Optional.of(readIndex(indexBytes));
             }
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return Optional.absent();
     }
@@ -207,7 +206,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
                     }
                 }
             } catch (RocksDBException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return false;
@@ -231,7 +230,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
                     dbRef.db().delete(indexMappingsColumn, key);
                 }
             } catch (RocksDBException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }
@@ -243,7 +242,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
             dbRef.db().put(indexMappingsColumn, indexTreeLookupId,
                     indexedTree.getRawValue());
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -255,7 +254,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             indexTreeBytes = dbRef.db().get(indexMappingsColumn, indexTreeLookupId);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         if (indexTreeBytes != null) {

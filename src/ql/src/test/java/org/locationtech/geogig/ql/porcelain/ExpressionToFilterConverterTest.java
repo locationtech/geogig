@@ -19,8 +19,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.opengis.filter.Filter;
 
-import com.google.common.base.Throwables;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -59,7 +57,7 @@ public class ExpressionToFilterConverterTest {
         try {
             return ECQL.toFilter(cql);
         } catch (CQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

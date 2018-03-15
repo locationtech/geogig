@@ -32,7 +32,6 @@ import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 
 /**
@@ -124,7 +123,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
                 format.requireHeader(in, header);
                 return readBody(id, in);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

@@ -58,8 +58,10 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -191,18 +193,19 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         try {
             targetStore.setTransaction(transaction);
             try {
-                 targetStore.addFeatures(asFeatureCollection);
-//                ArrayList al = new ArrayList();
-//                while (filtered.hasNext())
-//                    al.add(filtered.next());
-             //   FeatureReader<SimpleFeatureType, SimpleFeature> reader = new IteratorBackedFeatureReader(null,filtered );
-             //   targetStore.setFeatures(reader);
+                targetStore.addFeatures(asFeatureCollection);
+                // ArrayList al = new ArrayList();
+                // while (filtered.hasNext())
+                // al.add(filtered.next());
+                // FeatureReader<SimpleFeatureType, SimpleFeature> reader = new
+                // IteratorBackedFeatureReader(null,filtered );
+                // targetStore.setFeatures(reader);
                 transaction.commit();
             } catch (final Exception e) {
                 if (transactional) {
                     transaction.rollback();
                 }
-                Throwables.propagateIfInstanceOf(e, GeoToolsOpException.class);
+                Throwables.throwIfInstanceOf(e, GeoToolsOpException.class);
                 throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_ADD);
             } finally {
                 transaction.close();
@@ -216,7 +219,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         return targetStore;
 
     }
-     
+
     private static Iterator<SimpleFeature> getFeatures(final RevTree typeTree,
             final ObjectDatabase database, final ObjectId defaultMetadataId,
             final @Nullable ReferencedEnvelope bboxFilter,
@@ -235,20 +238,22 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             nodes = iterator;
         }
         BulkFeatureRetriever gf = new BulkFeatureRetriever(database);
-        Iterator<SimpleFeature> feats =  gf.getGeoToolsFeatures(nodes);
-        
-        Iterator<SimpleFeature> result=   Iterators.transform(feats, new Function<SimpleFeature, SimpleFeature>() {
+        Iterator<SimpleFeature> feats = gf.getGeoToolsFeatures(nodes);
 
-            private AtomicInteger count = new AtomicInteger();
+        Iterator<SimpleFeature> result = Iterators.transform(feats,
+                new Function<SimpleFeature, SimpleFeature>() {
 
-            @Override
-            public SimpleFeature apply(SimpleFeature input) {
-                progressListener.setProgress((count.incrementAndGet() * 100.f) / typeTree.size());
-                return input;
-            }
-        });
+                    private AtomicInteger count = new AtomicInteger();
+
+                    @Override
+                    public SimpleFeature apply(SimpleFeature input) {
+                        progressListener
+                                .setProgress((count.incrementAndGet() * 100.f) / typeTree.size());
+                        return input;
+                    }
+                });
         return result;
- }
+    }
 
     private Iterator<SimpleFeature> adaptToArguments(final Iterator<SimpleFeature> plainFeatures,
             final ObjectId defaultMetadataId) {
@@ -554,8 +559,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 CoordinateReferenceSystem sourceCRS = bbox.getCoordinateReferenceSystem();
                 MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
                 transformed = JTS.transform(bbox, null, transform, 10);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+            } catch (FactoryException | TransformException e) {
+                throw new RuntimeException(e);
             }
             return transformed;
         }

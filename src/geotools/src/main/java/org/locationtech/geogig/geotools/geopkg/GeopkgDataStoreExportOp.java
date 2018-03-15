@@ -26,7 +26,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 
 /**
  * Exports layers from a repository snapshot to a GeoPackage file.
@@ -76,7 +75,7 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
         try {
             format.createFIDMappingTable(fidMappings, targetTableName);
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         if (enableInterchangeFormat) {

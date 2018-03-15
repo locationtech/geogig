@@ -23,8 +23,8 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

@@ -47,7 +47,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -339,7 +338,7 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
         try {
             type = DataUtilities.createType(typeName, typeSpec);
         } catch (SchemaException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         RevTree tree = IndexTestSupport.createWorldPointsTree(repository);
         WorkingTree workingTree = repository.workingTree();

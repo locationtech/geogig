@@ -13,8 +13,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.CommandFactory;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Throwables;
-
 /**
  * 
  *
@@ -32,7 +30,7 @@ public class HttpSendPackServer extends SendPackOp implements CommandFactory {
         try {
             packRequest = new PackRequestIO().read(reqStream);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         super.setRequest(packRequest);
         return this;

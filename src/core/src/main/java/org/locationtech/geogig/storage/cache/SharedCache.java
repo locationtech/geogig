@@ -34,7 +34,6 @@ import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFa
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
@@ -367,7 +366,7 @@ interface SharedCache {
             try {
                 encoder.write(obj, out);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             byte[] byteArray = out.toByteArray();
             return byteArray;
@@ -377,7 +376,7 @@ interface SharedCache {
             try {
                 return encoder.read(key.id(), val, 0, val.length);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

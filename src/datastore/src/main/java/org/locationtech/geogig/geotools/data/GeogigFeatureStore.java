@@ -288,7 +288,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
 
             workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
-            Throwables.propagateIfInstanceOf(e, IOException.class);
+            Throwables.throwIfInstanceOf(e, IOException.class);
             throw new IOException(e);
         }
         return insertedFids;

@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 
 public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
@@ -51,7 +50,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             try {
                 return new URI(repository);
             } catch (URISyntaxException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }

@@ -20,8 +20,6 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Throwables;
-
 class RocksdbHandle {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbHandle.class);
@@ -99,7 +97,7 @@ class RocksdbHandle {
         try {
             db = RocksDB.open(options, path);
         } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         RocksdbHandle dbHandle = new RocksdbHandle(targetDir, options, db);

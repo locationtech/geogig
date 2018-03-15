@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.remote.http;
 
+import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URI;
@@ -19,7 +20,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 
 /**
  * {@link RemoteResolver} implementation that works against the HTTP web API
@@ -55,9 +55,8 @@ public class HttpRemoteResolver implements RemoteResolver {
                 }
 
             }
-        } catch (Exception e) {
-            // Invalid fetch URL
-            Throwables.propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         return Optional.fromNullable(remoteRepo);
     }

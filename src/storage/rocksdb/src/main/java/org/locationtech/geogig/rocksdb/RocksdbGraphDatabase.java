@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import static com.google.common.base.Throwables.propagate;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -47,7 +45,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -122,7 +119,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
             int size = dbRef.db().get(key, NODATA);
             return size != RocksDB.NOT_FOUND;
         } catch (RocksDBException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -154,8 +151,8 @@ public class RocksdbGraphDatabase implements GraphDatabase {
             boolean updated = put(dbRef, commitId, parentIds, batch);
             dbRef.db().write(wo, batch);
             return updated;
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -181,8 +178,8 @@ public class RocksdbGraphDatabase implements GraphDatabase {
                 count++;
             }
             dbRef.db().write(wo, batch);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("Inserted %,d graph mappings in %s", count, sw.stop()));
@@ -231,7 +228,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         try {
             putNodeInternal(mapped, node);
         } catch (Exception e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -278,8 +275,8 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         node.properties.put(propertyName, propertyValue);
         try {
             putNodeInternal(commitId, node);
-        } catch (Exception e) {
-            throw propagate(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -303,7 +300,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
                     dbRef.db().write(wo, batch);
                 }
             } catch (RocksDBException e) {
-                throw propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }
@@ -330,7 +327,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
                 data = batch.getFromBatchAndDB(db, ro, key);
             }
         } catch (RocksDBException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         if (null == data) {
             if (failIfNotFound) {
@@ -350,7 +347,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             dbRef.db().put(key, data);
         } catch (RocksDBException e) {
-            propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -434,7 +431,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
                 NodeData nodeData = new NodeData(id, mappedTo, outgoing, incoming, properties);
                 return nodeData;
             } catch (IOException e) {
-                throw propagate(e);
+                throw new RuntimeException(e);
             }
         }
 
@@ -448,7 +445,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
                 PROPS.objectToEntry(node.properties, output);
                 return output.toByteArray();
             } catch (IOException e) {
-                throw propagate(e);
+                throw new RuntimeException(e);
             }
         }
 

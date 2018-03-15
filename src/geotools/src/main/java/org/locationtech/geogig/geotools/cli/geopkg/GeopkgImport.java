@@ -29,7 +29,6 @@ import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * Imports one or more tables from a Geopackage database.
@@ -70,7 +69,7 @@ public class GeopkgImport extends DataStoreImport implements CLICommand {
             metadata = new GeopkgGeogigMetadata(connection);
             super.runInternal(cli);
         } catch (SQLException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             metadata.close();
             geopackage.close();

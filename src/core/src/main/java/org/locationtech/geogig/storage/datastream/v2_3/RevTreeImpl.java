@@ -11,6 +11,8 @@ package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.DataOutput;
+
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -24,7 +26,7 @@ class RevTreeImpl implements RevTree {
 
     private final ObjectId id;
 
-    private final DataBuffer data;
+    final DataBuffer data;
 
     public RevTreeImpl(ObjectId id, DataBuffer dataBuffer) {
         checkNotNull(id);
@@ -75,5 +77,4 @@ class RevTreeImpl implements RevTree {
     public ImmutableSortedMap<Integer, Bucket> buckets() {
         return RevTreeFormat.buckets(data);
     }
-
 }

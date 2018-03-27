@@ -10,6 +10,8 @@
 package org.locationtech.geogig.storage.datastream.v2_3;
 
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
@@ -63,6 +65,18 @@ class DataBuffer {
         this.stringTable = () -> stringTable;
         this.tail = null;
         this.header = null;
+    }
+
+    public void writeTo(DataOutput out) throws IOException {
+        final int size = raw.limit();
+        final byte[] array;
+        if (raw.hasArray()) {
+            array = raw.array();
+        } else {
+            array = new byte[size];
+            raw.duplicate().get(array, 0, size);
+        }
+        out.write(array, 0, size);
     }
 
     @VisibleForTesting

@@ -19,6 +19,7 @@ import static org.locationtech.geogig.storage.datastream.v2_3.TestSupport.tree;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
@@ -131,8 +132,9 @@ public class RevTreeFormatPrefTest {
     }
 
     private RevTree encodeDecode(RevTree orig) throws IOException {
-        final byte[] encoded = RevTreeFormat.encode(orig);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        RevTreeFormat.encode(orig, new DataOutputStream(out));
+        byte[] encoded = out.toByteArray();
         Stopwatch s;
 
         {
@@ -165,7 +167,7 @@ public class RevTreeFormatPrefTest {
             s = Stopwatch.createStarted();
             for (int i = 0; i < repeatCount; i++) {
                 out.reset();
-                RevTreeFormat.encode(orig, out);
+                RevTreeFormat.encode(orig, new DataOutputStream(out));
             }
             System.err.printf("V3 encoding: %s\n", s.stop());
             s.reset().start();

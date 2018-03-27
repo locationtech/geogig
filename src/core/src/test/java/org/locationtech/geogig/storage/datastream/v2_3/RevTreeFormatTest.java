@@ -17,6 +17,8 @@ import static org.locationtech.geogig.storage.datastream.v2_3.TestSupport.assert
 import static org.locationtech.geogig.storage.datastream.v2_3.TestSupport.nodes;
 import static org.locationtech.geogig.storage.datastream.v2_3.TestSupport.tree;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,10 +113,15 @@ public class RevTreeFormatTest {
         List<Node> fNodes = nodes(TYPE.FEATURE, 512, false, true, true);
         final RevTree orig = tree(2048, tNodes, fNodes, null);
 
-        final byte[] encoded = RevTreeFormat.encode(orig);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        RevTreeFormat.encode(orig, new DataOutputStream(out));
+        final byte[] encoded = out.toByteArray();
         assertNotNull(encoded);
         RevTree decoded = RevTreeFormat.decode(orig.getId(), encoded);
-        final byte[] encoded2 = RevTreeFormat.encode(decoded);
+
+        out.reset();
+        RevTreeFormat.encode(decoded, new DataOutputStream(out));
+        final byte[] encoded2 = out.toByteArray();
         RevTree decoded2 = RevTreeFormat.decode(decoded.getId(), encoded2);
 
         assertEqualsFully(orig, decoded);
@@ -159,8 +166,10 @@ public class RevTreeFormatTest {
         assertHashing(orig);
     }
 
-    private void assertHashing(final RevTree orig) {
-        final byte[] encoded = RevTreeFormat.encode(orig);
+    private void assertHashing(final RevTree orig) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        RevTreeFormat.encode(orig, new DataOutputStream(out));
+        final byte[] encoded = out.toByteArray();
         assertNotNull(encoded);
         RevTree decoded = RevTreeFormat.decode(null, encoded);
 
@@ -172,7 +181,9 @@ public class RevTreeFormatTest {
     }
 
     private RevTree encodeDecode(RevTree orig) throws IOException {
-        final byte[] encoded = RevTreeFormat.encode(orig);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        RevTreeFormat.encode(orig, new DataOutputStream(out));
+        final byte[] encoded = out.toByteArray();
         assertNotNull(encoded);
         RevTree decoded = RevTreeFormat.decode(orig.getId(), encoded);
         assertEquals(orig, decoded);

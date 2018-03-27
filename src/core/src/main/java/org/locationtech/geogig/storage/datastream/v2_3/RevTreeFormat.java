@@ -113,7 +113,18 @@ class RevTreeFormat {
         return buckets;
     }
 
-    public static byte[] encode(RevTree tree) {
+    public static void encode(RevTree tree, DataOutput out) throws IOException {
+        if (tree instanceof org.locationtech.geogig.storage.datastream.v2_3.RevTreeImpl) {
+            org.locationtech.geogig.storage.datastream.v2_3.RevTreeImpl t = (RevTreeImpl) tree;
+            DataBuffer buff = t.data;
+            buff.writeTo(out);
+        } else {
+            byte[] encoded = encode(tree);
+            out.write(encoded);
+        }
+    }
+
+    private static byte[] encode(RevTree tree) {
         try (ByteArrayOutputStream buff = new ByteArrayOutputStream()) {
             encode(tree, buff);
             return buff.toByteArray();
@@ -122,7 +133,7 @@ class RevTreeFormat {
         }
     }
 
-    public static void encode(final RevTree tree, ByteArrayOutputStream buff) throws IOException {
+    private static void encode(final RevTree tree, ByteArrayOutputStream buff) throws IOException {
         DataOutput out = ByteStreams.newDataOutput(buff);
         final int offsetOfTreesNodeset;
         final int offsetOfFeaturesNodeset;
@@ -162,6 +173,7 @@ class RevTreeFormat {
     }
 
     public static RevTree decode(@Nullable ObjectId id, byte[] data, int offset, int length) {
+
         ByteBuffer buffer = ByteBuffer.wrap(data, offset, length);
         if (offset != 0 || length != 0) {
             buffer = buffer.slice();

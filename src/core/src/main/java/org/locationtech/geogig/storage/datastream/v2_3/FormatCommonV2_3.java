@@ -9,8 +9,10 @@
  */
 package org.locationtech.geogig.storage.datastream.v2_3;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -46,12 +48,23 @@ class FormatCommonV2_3 extends FormatCommonV2_2 {
 
     public static final FormatCommonV2_3 INSTANCE = new FormatCommonV2_3();
 
+    private static final class InternalByteArrayOutputStream extends ByteArrayOutputStream {
+        InternalByteArrayOutputStream() {
+            super(1024);
+        }
+
+        public byte[] intenal() {
+            return super.buf;
+        }
+    }
+
     @Override
     public void writeTree(RevTree tree, DataOutput data) throws IOException {
-        byte[] encoded = RevTreeFormat.encode(tree);
-        final int size = encoded.length;
+        InternalByteArrayOutputStream out = new InternalByteArrayOutputStream();
+        RevTreeFormat.encode(tree, new DataOutputStream(out));
+        int size = out.size();
         data.writeInt(size);
-        data.write(encoded);
+        data.write(out.intenal(), 0, size);
     }
 
     @Override

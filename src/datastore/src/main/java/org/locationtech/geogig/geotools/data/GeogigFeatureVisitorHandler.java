@@ -10,7 +10,10 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -22,22 +25,33 @@ import org.geotools.feature.visitor.MaxVisitor;
 import org.geotools.feature.visitor.MinVisitor;
 import org.geotools.feature.visitor.NearestVisitor;
 import org.geotools.feature.visitor.UniqueVisitor;
+import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
+import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
+import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder.WalkInfo;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.ObjectInfo;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.FeatureVisitor;
+import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.PropertyName;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 
 /**
  * Helper class for {@link GeogigFeatureSource} to handle a {@link FeatureVisitor} if possible
@@ -47,16 +61,6 @@ import com.google.common.cache.CacheBuilder;
  * and {@link NearestVisitor nearest} visitors.
  */
 class GeogigFeatureVisitorHandler {
-
-    /**
-     * A small cache of unique values {@link SoftReference SoftReference<Set<? extends Comparable>}
-     * values, key'ed by a feature type's {@link NodeRef}
-     */
-    private static Cache<NodeRef, NavigableSet<Object>> uniqueValuesCache = CacheBuilder//
-            .newBuilder()//
-            .maximumSize(50)//
-            .softValues()//
-            .build();
 
     private static class Key {
         final NodeRef featureTypeRef;
@@ -71,6 +75,29 @@ class GeogigFeatureVisitorHandler {
         static Key of(NodeRef ref, String prop) {
             return new Key(ref, prop);
         }
+
+        public @Override boolean equals(Object o) {
+            Key k = (Key) o;
+            return featureTypeRef.equals(k.featureTypeRef) && propertyName.equals(k.propertyName);
+        }
+
+        public @Override int hashCode() {
+            return Objects.hash(featureTypeRef, propertyName);
+        }
+    }
+
+    /**
+     * A small cache of unique values {@link SoftReference SoftReference<Set<? extends Comparable>}
+     * values, key'ed by a feature type's {@link NodeRef}
+     */
+    private static Cache<Key, NavigableSet<Object>> uniqueValuesCache = CacheBuilder//
+            .newBuilder()//
+            .maximumSize(50)//
+            .softValues()//
+            .build();
+
+    public @VisibleForTesting static void clearCache() {
+        GeogigFeatureVisitorHandler.uniqueValuesCache.invalidateAll();
     }
 
     public boolean handle(FeatureVisitor visitor, Query query, GeogigFeatureSource source) {
@@ -131,8 +158,9 @@ class GeogigFeatureVisitorHandler {
             GeogigFeatureSource source) {
 
         final NodeRef typeRef = source.getTypeRef();
+        final Key key = Key.of(typeRef, propertyName);
         if (Filter.INCLUDE.equals(filter)) {
-            NavigableSet<Object> cached = uniqueValuesCache.getIfPresent(typeRef);
+            NavigableSet<Object> cached = uniqueValuesCache.getIfPresent(key);
             if (cached != null) {
                 return cached;
             }
@@ -143,7 +171,7 @@ class GeogigFeatureVisitorHandler {
 
         final FeatureReaderBuilder builder;
         builder = FeatureReaderBuilder.builder(context, nativeType, typeRef);
-        DiffTree diff = builder//
+        WalkInfo walkInfo = builder//
                 .targetSchema(source.getSchema())//
                 .filter(filter)//
                 .headRef(source.getRootRef())//
@@ -154,37 +182,77 @@ class GeogigFeatureVisitorHandler {
                                       // matching Query properties
                 .buildTreeWalk();
 
+        DiffTree diff = walkInfo.diffOp;
         diff.setPreserveIterationOrder(false);
 
-        final Set<String> materializedIndexProperties = builder.getMaterializedIndexProperties();
-        final boolean canHandle = materializedIndexProperties.contains(propertyName);
-        if (!canHandle) {
-            return null;
-        }
+        final Set<String> materializedIndexProperties = walkInfo.materializedIndexProperties;
+        final boolean attributeIsMaterialized = materializedIndexProperties.contains(propertyName);
 
         final NavigableSet<Object> uniqueValues = new ConcurrentSkipListSet<>();
+        final Consumer consumer;
 
-        Consumer consumer = new PreOrderDiffWalk.AbstractConsumer() {
-            public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
-                if (right != null) {
-                    Node node = right.getNode();
-                    Object value = IndexInfo.getMaterializedAttribute(propertyName, node);
-                    if (value != null) {
-                        // TODO: support null through a "null object", ConcurrentSkipListSet
-                        // does not allow nulls
-                        uniqueValues.add(value);
+        if (attributeIsMaterialized) {
+            consumer = new MaterializedConsumer(propertyName, uniqueValues);
+            diff.call(consumer);
+        } else {
+            final int attributeIndex = findAttributeIndex(propertyName, nativeType);
+            ObjectStore store = source.getRepository().objectDatabase();
+            try (AutoCloseableIterator<NodeRef> refs = FeatureReaderBuilder
+                    .toFeatureRefs(diff.call(), ChangeType.ADDED)) {
+                try (AutoCloseableIterator<ObjectInfo<RevFeature>> features = new BulkFeatureRetriever(
+                        store).getGeoGIGFeatures(refs)) {
+                    while (features.hasNext()) {
+                        ObjectInfo<RevFeature> obj = features.next();
+                        RevFeature revFeature = obj.object();
+                        Optional<Object> value = revFeature.get(attributeIndex);
+                        if (value.isPresent()) {
+                            uniqueValues.add(value.get());
+                        }
                     }
                 }
-                return true;
             }
-        };
-        diff.call(consumer);
-
+        }
         if (Filter.INCLUDE.equals(filter)) {
-            uniqueValuesCache.put(typeRef, uniqueValues);
+            uniqueValuesCache.put(key, uniqueValues);
         }
 
         return uniqueValues;
+    }
+
+    private int findAttributeIndex(String propertyName, RevFeatureType nativeType) {
+        ArrayList<PropertyDescriptor> descriptors = Lists
+                .newArrayList(nativeType.type().getDescriptors());
+        for (int i = 0; i < descriptors.size(); i++) {
+            if (propertyName.equals(descriptors.get(i).getName().getLocalPart())) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException(
+                String.format("Property %s not found in %s", propertyName, nativeType.type()));
+    }
+
+    private static class MaterializedConsumer extends PreOrderDiffWalk.AbstractConsumer {
+        private final NavigableSet<Object> uniqueValues;
+
+        private final String propertyName;
+
+        public MaterializedConsumer(String propertyName, final NavigableSet<Object> uniqueValues) {
+            this.propertyName = propertyName;
+            this.uniqueValues = uniqueValues;
+        }
+
+        public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            if (right != null) {
+                Node node = right.getNode();
+                Object value = IndexInfo.getMaterializedAttribute(propertyName, node);
+                if (value != null) {
+                    // TODO: support null through a "null object", ConcurrentSkipListSet
+                    // does not allow nulls
+                    uniqueValues.add(value);
+                }
+            }
+            return true;
+        }
     }
 
 }

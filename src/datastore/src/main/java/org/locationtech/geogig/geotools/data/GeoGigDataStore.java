@@ -554,4 +554,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     public boolean getAutoIndexing() {
         return this.autoIndexing;
     }
+    
+    Repository getRepository() {
+        return repository;
+    }
 }

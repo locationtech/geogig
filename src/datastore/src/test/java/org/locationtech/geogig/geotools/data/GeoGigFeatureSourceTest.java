@@ -26,6 +26,12 @@ import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
 import org.geotools.feature.NameImpl;
+import org.geotools.feature.visitor.CalcResult;
+import org.geotools.feature.visitor.FeatureCalc;
+import org.geotools.feature.visitor.MaxVisitor;
+import org.geotools.feature.visitor.MinVisitor;
+import org.geotools.feature.visitor.NearestVisitor;
+import org.geotools.feature.visitor.UniqueVisitor;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -35,10 +41,12 @@ import org.geotools.renderer.ScreenMap;
 import org.junit.Test;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.internal.QuadTreeTestSupport;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
+import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -66,7 +74,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
     private GeoGigDataStore dataStore;
 
-    private SimpleFeatureSource pointsSource;
+    private GeogigFeatureStore pointsSource;
 
     private SimpleFeatureSource linesSource;
 
@@ -81,7 +89,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).setAuthor("yo", "yo@test.com")
                 .setCommitter("me", "me@test.com").setMessage("initial import").call();
 
-        pointsSource = dataStore.getFeatureSource(pointsName);
+        pointsSource = (GeogigFeatureStore) dataStore.getFeatureSource(pointsName);
         linesSource = dataStore.getFeatureSource(linesName);
     }
 
@@ -110,7 +118,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         assertEquals(polys, polySource.getName());
 
         assertEquals(polys, polySource.getSchema().getName());
-       // testGetName(polys, polySource, new Query(polyName));
+        // testGetName(polys, polySource, new Query(polyName));
         testGetName(polys, polySource,
                 new Query(polyName, Filter.INCLUDE, new String[] { "ip", "sp" }));
     }
@@ -547,6 +555,84 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         testRetype(pointsSource, "pp");
         testRetype(pointsSource, "sp");
         testRetype(pointsSource, "pp", "sp");
+    }
+
+    /**
+     * @see GeogigFeatureVisitorHandler
+     */
+    public @Test void handleMinVisitorMaterializedAttribute() {
+        NodeRef typeRef = pointsSource.delegate.getTypeRef();
+        createIndex(typeRef, Collections.singletonList("ip"));
+        testVisitor(new MinVisitor("ip"), Integer.valueOf(1000));
+    }
+
+    public @Test void handleMinVisitorNotIndexed() {
+        testVisitor(new MinVisitor("ip"), Integer.valueOf(1000));
+    }
+
+    /**
+     * @see GeogigFeatureVisitorHandler
+     */
+    public @Test void handleUniqueVisitorMaterializedAttribute() {
+        NodeRef typeRef = pointsSource.delegate.getTypeRef();
+        createIndex(typeRef, Collections.singletonList("ip"));
+        testVisitor(new UniqueVisitor("ip"), Sets.newHashSet(1000, 2000, 3000));
+    }
+
+    public @Test void handleUniqueVisitorNotIndexed() {
+        testVisitor(new UniqueVisitor("ip"), Sets.newHashSet(1000, 2000, 3000));
+    }
+
+    /**
+     * @see GeogigFeatureVisitorHandler
+     */
+    public @Test void handleMaxVisitorMaterializedAttribute() {
+        NodeRef typeRef = pointsSource.delegate.getTypeRef();
+        createIndex(typeRef, Collections.singletonList("ip"));
+        testVisitor(new MaxVisitor("ip"), Integer.valueOf(3000));
+    }
+
+    public @Test void handleMaxVisitorNotIndexed() {
+        testVisitor(new MaxVisitor("ip"), Integer.valueOf(3000));
+    }
+
+    /**
+     * @see GeogigFeatureVisitorHandler
+     */
+    public @Test void handleNearestVisitorMaterializedAttribute() {
+        NodeRef typeRef = pointsSource.delegate.getTypeRef();
+        createIndex(typeRef, Collections.singletonList("ip"));
+        final int valueToMatch = 2050;
+        Integer expectedResult = Integer.valueOf(2000);
+        testVisitor(new NearestVisitor(ff.property("ip"), valueToMatch), expectedResult);
+    }
+
+    public @Test void handleNearestVisitorNotIndexed() {
+        final int valueToMatch = 2050;
+        Integer expectedResult = Integer.valueOf(2000);
+        testVisitor(new NearestVisitor(ff.property("ip"), valueToMatch), expectedResult);
+    }
+
+    private void testVisitor(FeatureCalc visitor, Object expectedResult) {
+        GeogigFeatureVisitorHandler.clearCache();
+        boolean handled = pointsSource.handleVisitor(Query.ALL, visitor);
+        assertTrue(handled);
+        CalcResult res = visitor.getResult();
+        assertEquals(expectedResult, res.getValue());
+        // run again
+        handled = pointsSource.handleVisitor(Query.ALL, visitor);
+        assertTrue(handled);
+        res = visitor.getResult();
+        assertEquals(expectedResult, res.getValue());
+    }
+
+    private Index createIndex(NodeRef typeRef, List<String> extraAttributes) {
+        Index index = repo.command(CreateQuadTree.class)//
+                .setBounds(QuadTreeTestSupport.wgs84Bounds())//
+                .setTypeTreeRef(typeRef)//
+                .setExtraAttributes(extraAttributes)//
+                .call();
+        return index;
     }
 
     private void testRetype(SimpleFeatureSource pointsSource, String... properties)

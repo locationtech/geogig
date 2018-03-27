@@ -40,6 +40,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureVisitor;
@@ -50,6 +51,7 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -289,8 +291,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return retypeRequired;
     }
 
-    protected @Override boolean handleVisitor(Query query, FeatureVisitor visitor)
-            throws IOException {
+    public @VisibleForTesting @Override boolean handleVisitor(Query query, FeatureVisitor visitor) {
         return visitorHandler.handle(visitor, query, this);
     }
 
@@ -438,5 +439,9 @@ class GeogigFeatureSource extends ContentFeatureSource {
         Context commandLocator = getCommandLocator();
         WorkingTree workingTree = commandLocator.workingTree();
         return workingTree;
+    }
+
+    Repository getRepository() {
+        return getDataStore().getRepository();
     }
 }

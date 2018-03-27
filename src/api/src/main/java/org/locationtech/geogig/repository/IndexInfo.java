@@ -119,15 +119,14 @@ public final class IndexInfo {
 
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getMaterializedAttributes(Node n) {
-        Map<String, Object> extraData = n.getExtraData();
-        Object v = extraData.get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+        Object v = n.getExtraData(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
         Preconditions.checkArgument(v == null || v instanceof Map);
         return (Map<String, Object>) v;
     }
 
     public static @Nullable Object getMaterializedAttribute(String attName, Node n) {
-        Map<String, Object> atts = getMaterializedAttributes(n);
-        Object o = atts.get(attName);
+        Map<String, Object> ma = getMaterializedAttributes(n);
+        Object o = ma == null ? null : ma.get(attName);
         return o;
     }
 

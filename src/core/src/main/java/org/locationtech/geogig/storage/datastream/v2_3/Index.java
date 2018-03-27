@@ -53,4 +53,9 @@ class Index<T extends Comparable<T>> {
     public int size() {
         return valueMap.size();
     }
+
+    public int get(T value) {
+        Integer index = valueMap.get(value);
+        return index == null ? -1 : index.intValue();
+    }
 }

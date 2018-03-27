@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -59,6 +60,10 @@ public abstract class Node implements Bounded, Comparable<Node> {
      * @return a non-null, possibly empty <b> copy </b> of this node's extra data map
      */
     public abstract Map<String, Object> getExtraData();
+
+    public @Nullable Object getExtraData(String key) {
+        return getExtraData().get(key);
+    }
 
     /**
      * Provides for natural ordering of {@code Node}, based on {@link #getName() name}
@@ -202,6 +207,9 @@ public abstract class Node implements Bounded, Comparable<Node> {
             return extraData.asMap();
         }
 
+        public @Override @Nullable Object getExtraData(String key) {
+            return extraData.get(key);
+        }
     }
 
     public Node update(final ObjectId newId) {
@@ -293,6 +301,29 @@ public abstract class Node implements Bounded, Comparable<Node> {
             this.kvp = kvp;
         }
 
+        public @Nullable Object get(String key) {
+            for (int i = 0; i < kvp.length; i += 2) {
+                if (Objects.equals(kvp[i], key)) {
+                    return safeCopy(kvp[i + 1]);
+                }
+            }
+            return null;
+        }
+
+        public Map<String, Object> asMap() {
+            final int size = kvp.length;
+            if (0 == size) {
+                return ImmutableMap.of();
+            }
+            Map<String, Object> map = new HashMap<>(size);
+            for (int i = 0; i < size; i += 2) {
+                String k = (String) kvp[i];
+                Object v = safeCopy(kvp[i + 1]);
+                map.put(k, v);
+            }
+            return map;
+        }
+
         static ExtraData of(@Nullable Map<String, Object> map) {
             if (null == map || map.isEmpty()) {
                 return EMPTY;
@@ -306,20 +337,6 @@ public abstract class Node implements Bounded, Comparable<Node> {
                 i += 2;
             }
             return new ExtraData(kvp);
-        }
-
-        public Map<String, Object> asMap() {
-            final int size = kvp.length / 2;
-            if (0 == size) {
-                return ImmutableMap.of();
-            }
-            Map<String, Object> map = new HashMap<>(size);
-            for (int i = 0, j = 0; i < size; i++, j += 2) {
-                String k = (String) kvp[j];
-                Object v = safeCopy(kvp[j + 1]);
-                map.put(k, v);
-            }
-            return map;
         }
 
         private static Object safeCopy(Object v) {

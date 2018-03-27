@@ -53,6 +53,7 @@ import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.identity.FeatureId;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -212,8 +213,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         return delegate.getReaderInternal(query);
     }
 
-    @Override
-    protected boolean handleVisitor(Query query, FeatureVisitor visitor) throws IOException {
+    public @Override @VisibleForTesting boolean handleVisitor(Query query, FeatureVisitor visitor) {
         return delegate.handleVisitor(query, visitor);
     }
 

@@ -49,6 +49,8 @@ abstract class StringTable {
      */
     public abstract String get(int index) throws NoSuchElementException;
 
+    public abstract int get(String value);
+    
     /**
      * @return number of entries in the string table
      */
@@ -118,6 +120,11 @@ abstract class StringTable {
         public int size() {
             return unique.size();
         }
+
+        @Override
+        public int get(String value) {
+            return unique.get(value);
+        }
     }
 
     static final class Immutable extends StringTable {
@@ -144,6 +151,11 @@ abstract class StringTable {
         @Override
         public int size() {
             return table.size();
+        }
+
+        @Override
+        public int get(String value) {
+            return table.indexOf(value);
         }
     }
 }

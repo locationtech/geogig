@@ -25,6 +25,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -207,7 +208,8 @@ class NodeSet {
 
             flags.metadataPresent(nodeIndex, metadataId.isPresent());
             mdIdIndex = metadataId.isPresent()
-                    ? objectIdIndex(metadataId.get(), uniqueIds, objectIds) : -1;
+                    ? objectIdIndex(metadataId.get(), uniqueIds, objectIds)
+                    : -1;
 
             bounds.setToNull();
             node.expand(bounds);
@@ -269,7 +271,8 @@ class NodeSet {
         int oidSectionSize = objectIds.size();
         writeUnsignedVarInt(oidSectionSize, header);
         // bounds
-        FloatPackedCoordinateSequence boundsSeq = new FloatPackedCoordinateSequence(2, boundsCoords);
+        FloatPackedCoordinateSequence boundsSeq = new FloatPackedCoordinateSequence(2,
+                boundsCoords);
         InternalDataOutput boundsStream = stream(boundsSeq.size() * 4);
         int[][] allOrdinates = boundsSeq.toSerializedForm();
         int[] xordinates = allOrdinates[0];
@@ -452,6 +455,17 @@ class NodeSet {
             throw new RuntimeException(e);
         }
         return extraData;
+    }
+
+    public @Nullable Object getExtraData(final int nodeExtraDataRelOffset, final String key) {
+        if (nodeExtraDataRelOffset < 0) {
+            return null;
+        }
+        try {
+            return ExtraData.get(this, nodeExtraDataRelOffset, key);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ImmutableList<Node> build() {

@@ -123,7 +123,7 @@ public class FeatureReaderBuilder {
      * {@link ContentDataStore#setNamespaceURI(String) namespace} or the
      * {@link ContentFeatureSource} has been given a "definition query" on its constructor.
      */
-    private SimpleFeatureType fullSchema;
+    private SimpleFeatureType targetSchema;
 
     private @Nullable String oldHeadRef;
 
@@ -238,27 +238,44 @@ public class FeatureReaderBuilder {
         return this;
     }
 
-    public FeatureReader<SimpleFeatureType, SimpleFeature> build() {
-        fullSchema = resolveFullSchema();
+    public static class WalkInfo {
+        public SimpleFeatureType fullSchema;
 
         // query filter in native CRS
-        final Filter nativeFilter = resolveNativeFilter();
-        final Filter preFilter;
-        final Filter postFilter;
+        public Filter nativeFilter;
 
-        // properties needed by the output schema and the in-process filter, null means all
-        // properties, empty list means no-properties needed
-        final @Nullable Set<String> requiredProperties = resolveRequiredProperties(nativeFilter);
+        public Filter preFilter;
+
+        public Filter postFilter;
+
+        @Nullable
+        Set<String> requiredProperties;
+
         // properties present in the RevTree nodes' extra data
-        final Set<String> materializedIndexProperties;
+        public Set<String> materializedIndexProperties;
 
         // whether the RevTree nodes contain all required properties (hence no need to fetch
         // RevFeatures from the database)
-        final boolean indexContainsAllRequiredProperties;
+        public boolean indexContainsAllRequiredProperties;
+
         // whether the filter is fully supported by the NodeRef filtering (hence no need for
         // pos-processing filtering). This is the case if the filter is a simple BBOX, Id, or
         // INCLUDE, or all the required properties are present in the index Nodes
-        final boolean filterIsFullySupportedByIndex;
+        public boolean filterIsFullySupportedByIndex;
+
+        public DiffTree diffOp;
+    }
+
+    public WalkInfo buildTreeWalk() {
+        WalkInfo info = new WalkInfo();
+        info.fullSchema = resolveFullSchema();
+
+        // query filter in native CRS
+        info.nativeFilter = resolveNativeFilter();
+
+        // properties needed by the output schema and the in-process filter, null means all
+        // properties, empty list means no-properties needed
+        info.requiredProperties = resolveRequiredProperties(info.nativeFilter);
 
         final ObjectId featureTypeId = typeRef.getMetadataId();
 
@@ -283,9 +300,11 @@ public class FeatureReaderBuilder {
             final Optional<NodeRef> newCanonicalTree = resolveCanonicalTree(headRef,
                     nativeTypeName);
             final ObjectId oldCanonicalTreeId = oldCanonicalTree.isPresent()
-                    ? oldCanonicalTree.get().getObjectId() : RevTree.EMPTY_TREE_ID;
+                    ? oldCanonicalTree.get().getObjectId()
+                    : RevTree.EMPTY_TREE_ID;
             final ObjectId newCanonicalTreeId = newCanonicalTree.isPresent()
-                    ? newCanonicalTree.get().getObjectId() : RevTree.EMPTY_TREE_ID;
+                    ? newCanonicalTree.get().getObjectId()
+                    : RevTree.EMPTY_TREE_ID;
 
             // featureTypeId = newCanonicalTree.isPresent() ? newCanonicalTree.get().getMetadataId()
             // : oldCanonicalTree.get().getMetadataId();
@@ -295,7 +314,7 @@ public class FeatureReaderBuilder {
             // if native filter is a simple "fid filter" then force ignoring the index for a faster
             // look-up (looking up for a fid in the canonical tree is much faster)
             final boolean ignoreIndex = geometryAttribute == null || this.ignoreIndex
-                    || nativeFilter instanceof Id;
+                    || info.nativeFilter instanceof Id;
             if (ignoreIndex) {
                 indexes = NO_INDEX;
             } else {
@@ -316,33 +335,36 @@ public class FeatureReaderBuilder {
                 newFeatureTypeTree = newCanonicalTreeId;
             }
 
-            materializedIndexProperties = resolveMaterializedProperties(headIndex);
+            info.materializedIndexProperties = resolveMaterializedProperties(headIndex);
 
             PrePostFilterSplitter filterSplitter;
             filterSplitter = new PrePostFilterSplitter()
-                    .extraAttributes(materializedIndexProperties).filter(nativeFilter).build();
-            preFilter = filterSplitter.getPreFilter();
-            postFilter = filterSplitter.getPostFilter();
+                    .extraAttributes(info.materializedIndexProperties).filter(info.nativeFilter)
+                    .build();
+            info.preFilter = filterSplitter.getPreFilter();
+            info.postFilter = filterSplitter.getPostFilter();
 
-            indexContainsAllRequiredProperties = materializedIndexProperties
-                    .containsAll(requiredProperties);
+            info.indexContainsAllRequiredProperties = info.materializedIndexProperties
+                    .containsAll(info.requiredProperties);
 
-            filterIsFullySupportedByIndex = Filter.INCLUDE.equals(postFilter);
+            info.filterIsFullySupportedByIndex = Filter.INCLUDE.equals(info.postFilter);
 
             treeSource = headIndex.isPresent() ? repo.indexDatabase() : repo.objectDatabase();
         }
 
         // perform the diff op with the supported Bucket/NodeRef filtering that'll provide the
         // NodeRef iterator to back the FeatureReader with
-        DiffTree diffOp = repo.command(DiffTree.class);
+        info.diffOp = repo.command(DiffTree.class);
         // TODO: for some reason setting the default metadata id is making several tests fail,
         // though it's not really needed here because we have the FeatureType already. Nonetheless
         // this is strange and needs to be revisited.
-        diffOp.setDefaultMetadataId(featureTypeId) //
+        info.diffOp.setDefaultMetadataId(featureTypeId) //
                 .setPreserveIterationOrder(shallPreserveIterationOrder())//
-                .setPathFilter(createFidFilter(nativeFilter)) //
-                .setCustomFilter(createIndexPreFilter(preFilter, filterIsFullySupportedByIndex)) //
-                .setBoundsFilter(createBoundsFilter(nativeFilter, newFeatureTypeTree, treeSource)) //
+                .setPathFilter(createFidFilter(info.nativeFilter)) //
+                .setCustomFilter(
+                        createIndexPreFilter(info.preFilter, info.filterIsFullySupportedByIndex)) //
+                .setBoundsFilter(createBoundsFilter(info.fullSchema, info.nativeFilter,
+                        newFeatureTypeTree, treeSource)) //
                 .setChangeTypeFilter(resolveChangeType()) //
                 .setOldTree(oldFeatureTypeTree) //
                 .setNewTree(newFeatureTypeTree) //
@@ -350,13 +372,18 @@ public class FeatureReaderBuilder {
                 .setRightSource(treeSource) //
                 .recordStats();
 
-        AutoCloseableIterator<DiffEntry> diffs;
-        diffs = diffOp.call();
+        return info;
+    }
+
+    public FeatureReader<SimpleFeatureType, SimpleFeature> build() {
+        final WalkInfo walkInfo = buildTreeWalk();
+
+        AutoCloseableIterator<DiffEntry> diffs = walkInfo.diffOp.call();
 
         AutoCloseableIterator<NodeRef> featureRefs = toFeatureRefs(diffs, changeType);
 
         // post-processing
-        if (filterIsFullySupportedByIndex) {
+        if (walkInfo.filterIsFullySupportedByIndex) {
             featureRefs = applyOffsetAndLimit(featureRefs);
         }
 
@@ -368,17 +395,19 @@ public class FeatureReaderBuilder {
         // filter
         final SimpleFeatureType resultSchema;
 
-        if (indexContainsAllRequiredProperties) {
-            resultSchema = resolveMinimalNativeSchema(requiredProperties);
-            CoordinateReferenceSystem nativeCrs = fullSchema.getCoordinateReferenceSystem();
+        if (walkInfo.indexContainsAllRequiredProperties) {
+            resultSchema = resolveMinimalNativeSchema(walkInfo.fullSchema,
+                    walkInfo.requiredProperties);
+            CoordinateReferenceSystem nativeCrs = walkInfo.fullSchema
+                    .getCoordinateReferenceSystem();
             features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
                     geometryFactory, nativeCrs);
         } else {
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(revFeatureSource);
             Name typeNameOverride;
-            if (simpleNames(nativeSchema).equals(simpleNames(fullSchema))) {
-                resultSchema = fullSchema;
-                typeNameOverride = fullSchema.getName();
+            if (simpleNames(nativeSchema).equals(simpleNames(walkInfo.fullSchema))) {
+                resultSchema = walkInfo.fullSchema;
+                typeNameOverride = walkInfo.fullSchema.getName();
             } else {
                 resultSchema = nativeSchema;
                 typeNameOverride = null;
@@ -388,8 +417,8 @@ public class FeatureReaderBuilder {
                     geometryFactory);
         }
 
-        if (!filterIsFullySupportedByIndex) {
-            features = applyPostFilter(postFilter, features);
+        if (!walkInfo.filterIsFullySupportedByIndex) {
+            features = applyPostFilter(walkInfo.postFilter, features);
             features = applyOffsetAndLimit(features);
         }
 
@@ -404,16 +433,17 @@ public class FeatureReaderBuilder {
 
         // we only want a sub-set of the attributes provided - we need to re-type
         // the features (either from the index or the full-feature)
-        final boolean retypeRequired = isRetypeRequired(resultSchema);
+        final boolean retypeRequired = isRetypeRequired(walkInfo.fullSchema, resultSchema);
         if (retypeRequired) {
             List<String> outputSchemaProperties;
             if (this.outputSchemaPropertyNames == Query.ALL_NAMES) {
-                outputSchemaProperties = simpleNames(fullSchema);
+                outputSchemaProperties = simpleNames(walkInfo.fullSchema);
             } else {
                 outputSchemaProperties = Lists.newArrayList(this.outputSchemaPropertyNames);
             }
             SimpleFeatureType outputSchema;
-            outputSchema = SimpleFeatureTypeBuilder.retype(fullSchema, outputSchemaProperties);
+            outputSchema = SimpleFeatureTypeBuilder.retype(walkInfo.fullSchema,
+                    outputSchemaProperties);
 
             boolean cloneValues = false;
             featureReader = new ReTypeFeatureReader(featureReader, outputSchema, cloneValues);
@@ -423,7 +453,7 @@ public class FeatureReaderBuilder {
     }
 
     private SimpleFeatureType resolveFullSchema() {
-        SimpleFeatureType targetSchema = fullSchema;
+        SimpleFeatureType targetSchema = this.targetSchema;
         if (targetSchema == null) {
             targetSchema = (SimpleFeatureType) nativeType.type();
         }
@@ -431,7 +461,7 @@ public class FeatureReaderBuilder {
     }
 
     public FeatureReaderBuilder targetSchema(@Nullable SimpleFeatureType targetSchema) {
-        this.fullSchema = targetSchema;
+        this.targetSchema = targetSchema;
         return this;
     }
 
@@ -440,7 +470,8 @@ public class FeatureReaderBuilder {
         return this;
     }
 
-    private boolean isRetypeRequired(final SimpleFeatureType resultSchema) {
+    private boolean isRetypeRequired(final SimpleFeatureType fullSchema,
+            SimpleFeatureType resultSchema) {
         if (!retypeIfNeeded) {
             return false;
         }
@@ -474,7 +505,9 @@ public class FeatureReaderBuilder {
         return features;
     }
 
-    private SimpleFeatureType resolveMinimalNativeSchema(Set<String> requiredProperties) {
+    private SimpleFeatureType resolveMinimalNativeSchema(SimpleFeatureType fullSchema,
+            Set<String> requiredProperties) {
+
         SimpleFeatureType resultSchema;
 
         if (requiredProperties.equals(nativeSchemaAttributeNames)) {
@@ -615,7 +648,7 @@ public class FeatureReaderBuilder {
         return Sets.newHashSet(filterAttributes);
     }
 
-    private AutoCloseableIterator<NodeRef> toFeatureRefs(
+    public static AutoCloseableIterator<NodeRef> toFeatureRefs(
             final AutoCloseableIterator<DiffEntry> diffs, final ChangeType changeType) {
 
         return AutoCloseableIterator.transform(diffs, (e) -> {
@@ -662,8 +695,8 @@ public class FeatureReaderBuilder {
         }
     }
 
-    private @Nullable ReferencedEnvelope createBoundsFilter(Filter filterInNativeCrs,
-            ObjectId featureTypeTreeId, ObjectStore treeSource) {
+    private @Nullable ReferencedEnvelope createBoundsFilter(SimpleFeatureType fullSchema,
+            Filter filterInNativeCrs, ObjectId featureTypeTreeId, ObjectStore treeSource) {
         if (RevTree.EMPTY_TREE_ID.equals(featureTypeTreeId)) {
             return null;
         }

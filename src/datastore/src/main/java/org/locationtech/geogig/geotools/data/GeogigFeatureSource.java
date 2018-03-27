@@ -40,6 +40,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureVisitor;
@@ -50,6 +51,7 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -63,6 +65,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
     private GeoGigDataStore.ChangeType changeType;
 
     private String oldRoot;
+
+    private final GeogigFeatureVisitorHandler visitorHandler = new GeogigFeatureVisitorHandler();
 
     /**
      * <b>Precondition</b>: {@code entry.getDataStore() instanceof GeoGigDataStore}
@@ -123,11 +127,6 @@ class GeogigFeatureSource extends ContentFeatureSource {
     @Override
     protected boolean canTransact() {
         return true;
-    }
-
-    @Override
-    protected boolean handleVisitor(Query query, FeatureVisitor visitor) throws IOException {
-        return false;
     }
 
     @Override
@@ -292,6 +291,10 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return retypeRequired;
     }
 
+    public @VisibleForTesting @Override boolean handleVisitor(Query query, FeatureVisitor visitor) {
+        return visitorHandler.handle(visitor, query, this);
+    }
+
     /**
      * @return a FeatureReader that can fully satisfy the Query's filter and who'se output schema
      *         contains the subset of properties requested by the query's
@@ -349,11 +352,11 @@ class GeogigFeatureSource extends ContentFeatureSource {
         this.oldRoot = oldRoot;
     }
 
-    private String oldRoot() {
+    String oldRoot() {
         return oldRoot == null ? ObjectId.NULL.toString() : oldRoot;
     }
 
-    private GeoGigDataStore.ChangeType changeType() {
+    GeoGigDataStore.ChangeType changeType() {
         return changeType == null ? ChangeType.ADDED : changeType;
     }
 
@@ -423,7 +426,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return ref.get();
     }
 
-    private String getRootRef() {
+    String getRootRef() {
         GeoGigDataStore dataStore = getDataStore();
         Transaction transaction = getTransaction();
         return dataStore.getRootRef(transaction);
@@ -436,5 +439,9 @@ class GeogigFeatureSource extends ContentFeatureSource {
         Context commandLocator = getCommandLocator();
         WorkingTree workingTree = commandLocator.workingTree();
         return workingTree;
+    }
+
+    Repository getRepository() {
+        return getDataStore().getRepository();
     }
 }

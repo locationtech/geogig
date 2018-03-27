@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +99,41 @@ public class NodeSetTest {
         encodedDecode(treeNodes(1024), TYPE.TREE);
     }
 
+    @Test
+    public void testLazyNodeGetExtaData() throws IOException {
+        final Map<String, Object> expected = extraData(0);
+
+        final Node originalNode = Node.create("feature-0", RevObjectTestSupport.hashString("1"),
+                ObjectId.NULL, TYPE.FEATURE, null, expected);
+
+        NodeSet nodeset = encodedDecode(Collections.singletonList(originalNode), TYPE.FEATURE);
+
+        Node lazyNode = nodeset.build().get(0);
+        Map<String, Object> extraData = lazyNode.getExtraData();
+        assertEquals(expected, extraData);
+    }
+
+    @Test
+    public void testLazyNodeGetExtaDataValue() throws IOException {
+        final Map<String, Object> expected = extraData(0);
+
+        final Node originalNode = Node.create("feature-0", RevObjectTestSupport.hashString("1"),
+                ObjectId.NULL, TYPE.FEATURE, null, expected);
+
+        assertEquals(expected.size(), originalNode.getExtraData().size());
+        assertEquals(expected, originalNode.getExtraData());
+        
+        NodeSet nodeset = encodedDecode(Collections.singletonList(originalNode), TYPE.FEATURE);
+
+        Node lazyNode = nodeset.build().get(0);
+        for (Map.Entry<String, Object> e : expected.entrySet()) {
+            String key = e.getKey();
+            Object value = e.getValue();
+            Object lazyVal = lazyNode.getExtraData(key);
+            assertEquals("key=" + key, value, lazyVal);
+        }
+    }
+
     private NodeSet encodedDecode(List<Node> nodes, TYPE type) throws IOException {
         final int offset = buff.size();
         NodeSet.encode(out, nodes, stringTable);
@@ -165,11 +201,10 @@ public class NodeSetTest {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        map.put("mapProp",
-                ImmutableMap.of("k1", "v1-" + i, //
-                        "k2", "v2-" + i, //
-                        "k3", Long.valueOf(i), //
-                        "nested-geom", geom));
+        map.put("mapProp", ImmutableMap.of("k1", "v1-" + i, //
+                "k2", "v2-" + i, //
+                "k3", Long.valueOf(i), //
+                "nested-geom", geom));
 
         map.put("geom", geom);
         return map;

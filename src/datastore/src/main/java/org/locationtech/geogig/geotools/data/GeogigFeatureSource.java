@@ -64,6 +64,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
     private String oldRoot;
 
+    private final GeogigFeatureVisitorHandler visitorHandler = new GeogigFeatureVisitorHandler();
+
     /**
      * <b>Precondition</b>: {@code entry.getDataStore() instanceof GeoGigDataStore}
      * 
@@ -123,11 +125,6 @@ class GeogigFeatureSource extends ContentFeatureSource {
     @Override
     protected boolean canTransact() {
         return true;
-    }
-
-    @Override
-    protected boolean handleVisitor(Query query, FeatureVisitor visitor) throws IOException {
-        return false;
     }
 
     @Override
@@ -292,6 +289,11 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return retypeRequired;
     }
 
+    protected @Override boolean handleVisitor(Query query, FeatureVisitor visitor)
+            throws IOException {
+        return visitorHandler.handle(visitor, query, this);
+    }
+
     /**
      * @return a FeatureReader that can fully satisfy the Query's filter and who'se output schema
      *         contains the subset of properties requested by the query's
@@ -349,11 +351,11 @@ class GeogigFeatureSource extends ContentFeatureSource {
         this.oldRoot = oldRoot;
     }
 
-    private String oldRoot() {
+    String oldRoot() {
         return oldRoot == null ? ObjectId.NULL.toString() : oldRoot;
     }
 
-    private GeoGigDataStore.ChangeType changeType() {
+    GeoGigDataStore.ChangeType changeType() {
         return changeType == null ? ChangeType.ADDED : changeType;
     }
 
@@ -423,7 +425,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return ref.get();
     }
 
-    private String getRootRef() {
+    String getRootRef() {
         GeoGigDataStore dataStore = getDataStore();
         Transaction transaction = getTransaction();
         return dataStore.getRootRef(transaction);

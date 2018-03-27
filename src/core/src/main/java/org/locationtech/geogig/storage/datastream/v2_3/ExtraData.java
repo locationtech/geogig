@@ -30,6 +30,29 @@ class ExtraData {
         writer.writeMap(extraData, inline);
     }
 
+    public static @Nullable Object get(final NodeSet nodeset, final int nodeExtraDataRelativeOffset,
+            final String key) throws IOException {
+
+        final DataBuffer dataBuffer = nodeset.data;
+        final Supplier<StringTable> stringTable = dataBuffer.getStringTable();
+        if (-1 == stringTable.get().get(key)) {
+            return null;
+        }
+        final DataInput nodeExtraData;
+        {
+            final int inlineExtraDataOffset = nodeset.header.extraDataOffset();
+            final int nodeInlineExtraDataAbsoluteOffset = inlineExtraDataOffset
+                    + nodeExtraDataRelativeOffset;
+
+            nodeExtraData = dataBuffer.asDataInput(nodeInlineExtraDataAbsoluteOffset);
+        }
+
+        DataStreamValueSerializerV2_3 reader = DataStreamValueSerializerV2_3.create(stringTable);
+
+        Object value = reader.findInMap(nodeExtraData, key);
+        return value;
+    }
+
     /**
      * @param nodeset
      * @param nodeExtraDataRelativeOffset offset of the inline extra data for the node, relative to

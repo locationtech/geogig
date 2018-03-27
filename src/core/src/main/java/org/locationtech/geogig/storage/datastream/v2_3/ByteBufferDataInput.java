@@ -52,7 +52,7 @@ class ByteBufferDataInput implements DataInput {
             throw new EOFException();
         }
         int skip = Math.min(remaining, n);
-        buff.limit(buff.position() + skip);
+        buff.position(buff.position() + skip);
         return skip;
     }
 

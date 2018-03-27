@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -95,5 +96,9 @@ class LazyNode extends Node {
     @Override
     public Map<String, Object> getExtraData() {
         return set.getExtraData(extraDataRelOffset);
+    }
+
+    public @Override @Nullable Object getExtraData(String key) {
+        return set.getExtraData(extraDataRelOffset, key);
     }
 }

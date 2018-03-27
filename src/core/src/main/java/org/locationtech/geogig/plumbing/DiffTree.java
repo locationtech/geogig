@@ -211,6 +211,23 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         return call();
     }
 
+    public void call(PreOrderDiffWalk.Consumer consumer){
+        checkArgument(oldRefSpec != null || oldTreeId != null, "old version not specified");
+        checkArgument(newRefSpec != null || oldTreeId != null, "new version not specified");
+        final ObjectStore leftSource;
+        final ObjectStore rightSource;
+
+        leftSource = this.leftSource == null ? objectDatabase() : this.leftSource;
+        rightSource = this.rightSource == null ? objectDatabase() : this.rightSource;
+
+        final RevTree oldTree = resolveTree(oldRefSpec, this.oldTreeId, leftSource);
+        final RevTree newTree = resolveTree(newRefSpec, this.newTreeId, rightSource);
+
+        final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
+                rightSource, preserveIterationOrder);
+        visitor.setDefaultMetadataId(this.metadataId);
+        visitor.walk(consumer);
+    }
     /**
      * Finds differences between the two specified trees.
      * 

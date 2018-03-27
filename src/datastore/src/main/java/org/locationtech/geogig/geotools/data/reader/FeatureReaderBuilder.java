@@ -238,6 +238,128 @@ public class FeatureReaderBuilder {
         return this;
     }
 
+    private Set<String> materializedIndexProperties;
+
+    public DiffTree buildTreeWalk() {
+        fullSchema = resolveFullSchema();
+
+        // query filter in native CRS
+        final Filter nativeFilter = resolveNativeFilter();
+        final Filter preFilter;
+        final Filter postFilter;
+
+        // properties needed by the output schema and the in-process filter, null means all
+        // properties, empty list means no-properties needed
+        final @Nullable Set<String> requiredProperties = resolveRequiredProperties(nativeFilter);
+        // properties present in the RevTree nodes' extra data
+        final Set<String> materializedIndexProperties;
+
+        // whether the RevTree nodes contain all required properties (hence no need to fetch
+        // RevFeatures from the database)
+        final boolean indexContainsAllRequiredProperties;
+        // whether the filter is fully supported by the NodeRef filtering (hence no need for
+        // pos-processing filtering). This is the case if the filter is a simple BBOX, Id, or
+        // INCLUDE, or all the required properties are present in the index Nodes
+        final boolean filterIsFullySupportedByIndex;
+
+        final ObjectId featureTypeId = typeRef.getMetadataId();
+
+        // the RevTree id at the left side of the diff
+        final ObjectId oldFeatureTypeTree;
+        // the RevTree id at the right side of the diff
+        final ObjectId newFeatureTypeTree;
+        // where to get RevTree instances from (either the object or the index database)
+        final ObjectStore treeSource;
+        {
+            final String nativeTypeName = nativeSchema.getTypeName();
+
+            // TODO: resolve based on filter, in case the feature type has more than one geometry
+            // attribute
+            final @Nullable GeometryDescriptor geometryAttribute = nativeSchema
+                    .getGeometryDescriptor();
+            final Optional<Index> oldHeadIndex;
+            final Optional<Index> headIndex;
+
+            final Optional<NodeRef> oldCanonicalTree = resolveCanonicalTree(oldHeadRef,
+                    nativeTypeName);
+            final Optional<NodeRef> newCanonicalTree = resolveCanonicalTree(headRef,
+                    nativeTypeName);
+            final ObjectId oldCanonicalTreeId = oldCanonicalTree.isPresent()
+                    ? oldCanonicalTree.get().getObjectId() : RevTree.EMPTY_TREE_ID;
+            final ObjectId newCanonicalTreeId = newCanonicalTree.isPresent()
+                    ? newCanonicalTree.get().getObjectId() : RevTree.EMPTY_TREE_ID;
+
+            // featureTypeId = newCanonicalTree.isPresent() ? newCanonicalTree.get().getMetadataId()
+            // : oldCanonicalTree.get().getMetadataId();
+
+            Optional<Index> indexes[];
+
+            // if native filter is a simple "fid filter" then force ignoring the index for a faster
+            // look-up (looking up for a fid in the canonical tree is much faster)
+            final boolean ignoreIndex = geometryAttribute == null || this.ignoreIndex
+                    || nativeFilter instanceof Id;
+            if (ignoreIndex) {
+                indexes = NO_INDEX;
+            } else {
+                indexes = resolveIndex(oldCanonicalTreeId, newCanonicalTreeId, nativeTypeName,
+                        geometryAttribute.getLocalName());
+            }
+            oldHeadIndex = indexes[0];
+            headIndex = indexes[1];
+            // neither is present or both have the same indexinfo
+            checkState(!(oldHeadIndex.isPresent() || headIndex.isPresent()) || //
+                    headIndex.get().info().equals(oldHeadIndex.get().info()));
+
+            if (oldHeadIndex.isPresent()) {
+                oldFeatureTypeTree = oldHeadIndex.get().indexTreeId();
+                newFeatureTypeTree = headIndex.get().indexTreeId();
+            } else {
+                oldFeatureTypeTree = oldCanonicalTreeId;
+                newFeatureTypeTree = newCanonicalTreeId;
+            }
+
+            materializedIndexProperties = resolveMaterializedProperties(headIndex);
+
+            PrePostFilterSplitter filterSplitter;
+            filterSplitter = new PrePostFilterSplitter()
+                    .extraAttributes(materializedIndexProperties).filter(nativeFilter).build();
+            preFilter = filterSplitter.getPreFilter();
+            postFilter = filterSplitter.getPostFilter();
+
+            indexContainsAllRequiredProperties = materializedIndexProperties
+                    .containsAll(requiredProperties);
+
+            filterIsFullySupportedByIndex = Filter.INCLUDE.equals(postFilter);
+
+            treeSource = headIndex.isPresent() ? repo.indexDatabase() : repo.objectDatabase();
+        }
+
+        // perform the diff op with the supported Bucket/NodeRef filtering that'll provide the
+        // NodeRef iterator to back the FeatureReader with
+        DiffTree diffOp = repo.command(DiffTree.class);
+        // TODO: for some reason setting the default metadata id is making several tests fail,
+        // though it's not really needed here because we have the FeatureType already. Nonetheless
+        // this is strange and needs to be revisited.
+        diffOp.setDefaultMetadataId(featureTypeId) //
+                .setPreserveIterationOrder(shallPreserveIterationOrder())//
+                .setPathFilter(createFidFilter(nativeFilter)) //
+                .setCustomFilter(createIndexPreFilter(preFilter, filterIsFullySupportedByIndex)) //
+                .setBoundsFilter(createBoundsFilter(nativeFilter, newFeatureTypeTree, treeSource)) //
+                .setChangeTypeFilter(resolveChangeType()) //
+                .setOldTree(oldFeatureTypeTree) //
+                .setNewTree(newFeatureTypeTree) //
+                .setLeftSource(treeSource) //
+                .setRightSource(treeSource) //
+                .recordStats();
+
+        this.materializedIndexProperties = materializedIndexProperties;
+        return diffOp;
+    }
+
+    public Set<String> getMaterializedIndexProperties() {
+        return materializedIndexProperties;
+    }
+
     public FeatureReader<SimpleFeatureType, SimpleFeature> build() {
         fullSchema = resolveFullSchema();
 

@@ -255,7 +255,7 @@ public final class BinaryPackedObjects {
             if (offset == len)
                 break;
         }
-        ObjectId id = ObjectId.createNoClone(rawBytes);
+        ObjectId id = ObjectId.create(rawBytes);
         return id;
     }
 

@@ -53,18 +53,24 @@ public abstract class Bucket implements Bounded {
     }
 
     private static class BucketImpl extends Bucket {
-        private final ObjectId bucketTree;
+        private final int bucketTree_h1;
+
+        private final long bucketTree_h2;
+
+        private final long bucketTree_h3;
 
         private final Float32Bounds bounds;
 
         private BucketImpl(ObjectId id, Float32Bounds bounds) {
-            this.bucketTree = id;
+            this.bucketTree_h1 = RevObjects.h1(id);
+            this.bucketTree_h2 = RevObjects.h2(id);
+            this.bucketTree_h3 = RevObjects.h3(id);
             this.bounds = bounds;
         }
 
         @Override
         public ObjectId getObjectId() {
-            return bucketTree;
+            return ObjectId.create(bucketTree_h1, bucketTree_h2, bucketTree_h3);
         }
 
         @Override

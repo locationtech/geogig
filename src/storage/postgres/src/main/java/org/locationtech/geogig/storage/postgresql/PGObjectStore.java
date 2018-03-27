@@ -59,6 +59,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
@@ -265,7 +266,7 @@ public class PGObjectStore implements ObjectStore {
         checkState(isOpen(), "db is closed");
         config.checkRepositoryExists();
 
-        final int hash1 = PGId.intHash(ObjectId.toRaw(partialId));
+        final int hash1 = RevObjects.h1(partialId);
         final String sql = format(
                 "SELECT ((id).h2), ((id).h3) FROM %s WHERE ((id).h1) = ? LIMIT 1000",
                 objectsTable());

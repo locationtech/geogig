@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import java.util.List;
 import java.util.SortedMap;
 import java.util.function.BooleanSupplier;
 
@@ -92,8 +93,8 @@ public interface RevTreeBuilder {
     public @Nullable RevTree build(BooleanSupplier abortFlag);
 
     static RevTree build(final long size, final int childTreeCount,
-            @Nullable ImmutableList<Node> trees, @Nullable ImmutableList<Node> features,
-            @Nullable ImmutableSortedMap<Integer, Bucket> buckets) {
+            @Nullable List<Node> trees, @Nullable List<Node> features,
+            @Nullable SortedMap<Integer, Bucket> buckets) {
 
         ObjectId id = HashObject.hashTree(trees, features, buckets);
         return RevTreeImpl.create(id, size, childTreeCount, trees, features, buckets);

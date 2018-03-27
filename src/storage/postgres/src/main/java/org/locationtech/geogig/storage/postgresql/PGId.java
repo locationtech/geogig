@@ -14,9 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.locationtech.geogig.model.ObjectId;
-
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
+import org.locationtech.geogig.model.RevObjects;
 
 /**
  * Converts {@link ObjectId}s to and from its stored representation.
@@ -25,75 +23,40 @@ import com.google.common.io.ByteStreams;
  */
 final class PGId {
 
-    private final byte[] id;
+    private final int h1;
 
-    public PGId(byte[] oid) {
-        this.id = oid;
-    }
+    private final long h2;
 
-    public static int intHash(ObjectId id) {
-        final int hash1 = ((id.byteN(0) << 24) //
-                | (id.byteN(1) << 16) //
-                | (id.byteN(2) << 8) //
-                | (id.byteN(3)));
-        return hash1;
-    }
+    private final long h3;
 
-    public static int intHash(byte[] id) {
-        final int hash1 = ((((int) id[0]) << 24) //
-                | (((int) id[1] & 0xFF) << 16) //
-                | (((int) id[2] & 0xFF) << 8) //
-                | (((int) id[3] & 0xFF)));
-        return hash1;
+    public PGId(final int h1, final long h2, final long h3) {
+        this.h1 = h1;
+        this.h2 = h2;
+        this.h3 = h3;
     }
 
     public int hash1() {
-        return PGId.intHash(this.id);
+        return h1;
     }
 
     public long hash2() {
-        final long hash2 = ((((long) id[4]) << 56) //
-                | (((long) id[5] & 0xFF) << 48)//
-                | (((long) id[6] & 0xFF) << 40) //
-                | (((long) id[7] & 0xFF) << 32) //
-                | (((long) id[8] & 0xFF) << 24) //
-                | (((long) id[9] & 0xFF) << 16) //
-                | (((long) id[10] & 0xFF) << 8)//
-                | (((long) id[11] & 0xFF)));
-        return hash2;
+        return h2;
     }
 
     public long hash3() {
-        final long hash3 = ((((long) id[12]) << 56) //
-                | (((long) id[13] & 0xFF) << 48)//
-                | (((long) id[14] & 0xFF) << 40) //
-                | (((long) id[15] & 0xFF) << 32) //
-                | (((long) id[16] & 0xFF) << 24) //
-                | (((long) id[17] & 0xFF) << 16) //
-                | (((long) id[18] & 0xFF) << 8)//
-                | (((long) id[19] & 0xFF)));
-        return hash3;
+        return h3;
     }
 
     public ObjectId toObjectId() {
-        return ObjectId.createNoClone(id);
+        return ObjectId.create(h1, h2, h3);
     }
 
     public static PGId valueOf(ObjectId oid) {
-        return valueOf(oid.getRawValue());
-    }
-
-    public static PGId valueOf(byte[] oid) {
-        return new PGId(oid);
+        return valueOf(RevObjects.h1(oid), RevObjects.h2(oid), RevObjects.h3(oid));
     }
 
     public static PGId valueOf(final int h1, final long h2, final long h3) {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeInt(h1);
-        out.writeLong(h2);
-        out.writeLong(h3);
-        byte[] raw = out.toByteArray();
-        return new PGId(raw);
+        return new PGId(h1, h2, h3);
     }
 
     @Override

@@ -25,7 +25,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FeatureBuilder;
-import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -346,20 +345,17 @@ public class ResponseWriter {
         writeElement("id", tree.getId().toString());
         writeElement("size", Long.toString(tree.size()));
         writeElement("numtrees", Integer.toString(tree.numTrees()));
+
         out.writeStartArray("subtree");
-        for (Node ref : tree.trees()) {
-            writeNode(ref, "subtree");
-        }
+        tree.forEachTree((t) -> writeNode(t, "subtree"));
         out.writeEndArray();
+
         out.writeStartArray("feature");
-        for (Node ref : tree.features()) {
-            writeNode(ref, "feature");
-        }
+        tree.forEachFeature((f) -> writeNode(f, "feature"));
         out.writeEndArray();
+
         out.writeStartArray("bucket");
-        for (Entry<Integer, Bucket> entry : tree.buckets().entrySet()) {
-            Integer bucketIndex = entry.getKey();
-            Bucket bucket = entry.getValue();
+        tree.forEachBucket((bucketIndex, bucket) -> {
             out.writeStartArrayElement("bucket");
             writeElement("bucketindex", bucketIndex.toString());
             writeElement("bucketid", bucket.getObjectId().toString());
@@ -373,7 +369,7 @@ public class ResponseWriter {
             writeElement("maxy", Double.toString(env.getMaxY()));
             out.writeEndElement();
             out.writeEndArrayElement();
-        }
+        });
         out.writeEndArray();
         out.writeEndElement();
     }

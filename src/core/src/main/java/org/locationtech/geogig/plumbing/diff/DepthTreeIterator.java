@@ -222,7 +222,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         private Iterator<Node> children;
 
         public Children(RevTree tree) {
-            if (!tree.buckets().isEmpty()) {
+            if (tree.bucketsSize() > 0) {
                 this.children = new Buckets(tree);
             } else {
                 this.children = Iterators.filter(
@@ -244,9 +244,9 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         private Iterator<Node> features;
 
         public Features(RevTree tree) {
-            if (!tree.features().isEmpty()) {
+            if (tree.featuresSize() > 0) {
                 this.features = Iterators.filter(tree.features().iterator(), boundsFilter);
-            } else if (!tree.buckets().isEmpty()) {
+            } else if (tree.bucketsSize() > 0) {
                 this.features = new FeatureBuckets(tree);
             } else {
                 this.features = Collections.emptyIterator();
@@ -269,9 +269,9 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         public Trees(RevTree tree) {
             if (tree.numTrees() == 0) {
                 this.trees = Collections.emptyIterator();
-            } else if (!tree.trees().isEmpty()) {
+            } else if (tree.treesSize() > 0) {
                 this.trees = Iterators.filter(tree.trees().iterator(), boundsFilter);
-            } else if (!tree.buckets().isEmpty()) {
+            } else if (tree.bucketsSize() > 0) {
                 this.trees = new TreeBuckets(tree);
             } else {
                 this.trees = Collections.emptyIterator();
@@ -297,7 +297,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         private Iterator<Node> bucketEntries;
 
         public Buckets(RevTree tree) {
-            Preconditions.checkArgument(!tree.buckets().isEmpty());
+            Preconditions.checkArgument(tree.bucketsSize() > 0);
             buckets = Iterators.filter(tree.buckets().values().iterator(), boundsFilter);
             bucketEntries = Collections.emptyIterator();
             // may it be a mixed tree (having both direct children and buckets)
@@ -323,7 +323,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
          */
         protected Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
             RevTree bucketTree = source.getTree(bucketId);
-            if (!bucketTree.buckets().isEmpty()) {
+            if (bucketTree.bucketsSize() > 0) {
                 return new Buckets(bucketTree);
             }
             return new Children(bucketTree);
@@ -345,10 +345,10 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             if (bucketTree.numTrees() == 0) {
                 return Collections.emptyIterator();
             }
-            if (!bucketTree.trees().isEmpty()) {
+            if (bucketTree.treesSize() > 0) {
                 return new Trees(bucketTree);
             }
-            if (!bucketTree.buckets().isEmpty()) {
+            if (bucketTree.bucketsSize() > 0) {
                 return new TreeBuckets(bucketTree);
             }
             return Collections.emptyIterator();
@@ -367,10 +367,10 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         @Override
         protected Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
             RevTree bucketTree = source.getTree(bucketId);
-            if (!bucketTree.buckets().isEmpty()) {
+            if (bucketTree.bucketsSize() > 0) {
                 return new FeatureBuckets(bucketTree);
             }
-            if (!bucketTree.features().isEmpty()) {
+            if (bucketTree.featuresSize() > 0) {
                 return new Features(bucketTree);
             }
             return Collections.emptyIterator();

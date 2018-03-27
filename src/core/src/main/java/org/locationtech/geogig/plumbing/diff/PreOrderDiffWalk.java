@@ -15,19 +15,22 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Sets.newTreeSet;
-import static com.google.common.collect.Sets.union;
+import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
@@ -56,7 +59,6 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.ListMultimap;
@@ -437,43 +439,54 @@ public class PreOrderDiffWalk {
         }
 
         List<WalkAction> bucketBucket(RevTree left, RevTree right) {
-            checkArgument(!left.buckets().isEmpty());
-            checkArgument(!right.buckets().isEmpty());
+            checkArgument(left.bucketsSize() > 0);
+            checkArgument(right.bucketsSize() > 0);
             if (info.consumer.isCancelled()) {
                 return Collections.emptyList();
             }
-            final ImmutableSortedMap<Integer, Bucket> lb = left.buckets();
-            final ImmutableSortedMap<Integer, Bucket> rb = right.buckets();
+            // final ImmutableSortedMap<Integer, Bucket> lb = left.buckets();
+            // final ImmutableSortedMap<Integer, Bucket> rb = right.buckets();
             final TreeSet<BucketIndex> childBucketIndexes;
-            {
-                Iterable<BucketIndex> indexes = Iterables.transform(//
-                        union(lb.keySet(), rb.keySet()), //
-                        (i) -> this.bucketIndex.append(i, left, right));
-                childBucketIndexes = newTreeSet(indexes);
-            }
             final Map<ObjectId, RevTree> trees;
-            try {
-                trees = loadTrees(lb, rb);
-            } catch (RuntimeException e) {
-                info.consumer.abortTraversal();
-                return Collections.emptyList();
+            {
+                TreeMap<Integer, BucketIndex> indices = new TreeMap<>();
+                Set<ObjectId> lbucketIds = new HashSet<>();
+                Set<ObjectId> rbucketIds = new HashSet<>();
+
+                left.forEachBucket((i, b) -> {
+                    lbucketIds.add(b.getObjectId());
+                    indices.computeIfAbsent(i,
+                            (index) -> this.bucketIndex.append(index, left, right));
+                });
+                right.forEachBucket((i, b) -> {
+                    rbucketIds.add(b.getObjectId());
+                    indices.computeIfAbsent(i,
+                            (index) -> this.bucketIndex.append(index, left, right));
+                });
+                childBucketIndexes = newTreeSet(indices.values());
+
+                try {
+                    trees = loadTrees(lbucketIds, rbucketIds);
+                } catch (RuntimeException e) {
+                    info.consumer.abortTraversal();
+                    return Collections.emptyList();
+                }
             }
 
-            @Nullable
-            Bucket lbucket, rbucket;
+            Optional<Bucket> lbucket;
+            Optional<Bucket> rbucket;
             RevTree ltree, rtree;
 
             final List<WalkAction> tasks = new ArrayList<>();
 
             for (BucketIndex index : childBucketIndexes) {
-                lbucket = lb.get(index.lastIndex());
-                rbucket = rb.get(index.lastIndex());
-                Preconditions.checkState(lbucket != null || rbucket != null);
+                lbucket = left.getBucket(index.lastIndex().intValue());
+                rbucket = right.getBucket(index.lastIndex().intValue());
+                Preconditions.checkState(lbucket.isPresent() || rbucket.isPresent());
 
-                if (!Objects.equal(lbucket, rbucket)) {
-
-                    ltree = lbucket == null ? RevTree.EMPTY : trees.get(lbucket.getObjectId());
-                    rtree = rbucket == null ? RevTree.EMPTY : trees.get(rbucket.getObjectId());
+                if (!lbucket.equals(rbucket)) {
+                    ltree = lbucket.isPresent() ? trees.get(lbucket.get().getObjectId()) : EMPTY;
+                    rtree = rbucket.isPresent() ? trees.get(rbucket.get().getObjectId()) : EMPTY;
                     checkNotNull(ltree, "tree of %s not found ", lbucket);
                     checkNotNull(rtree, "tree of %s not found ", rbucket);
 
@@ -490,13 +503,10 @@ public class PreOrderDiffWalk {
             return tasks;
         }
 
-        private Map<ObjectId, RevTree> loadTrees(final ImmutableSortedMap<Integer, Bucket> lb,
-                final ImmutableSortedMap<Integer, Bucket> rb) {
+        private Map<ObjectId, RevTree> loadTrees(final Set<ObjectId> lbucketIds,
+                final Set<ObjectId> rbucketIds) {
+
             final Map<ObjectId, RevTree> trees;
-            final Set<ObjectId> lbucketIds = Sets
-                    .newHashSet(transform(lb.values(), (b) -> b.getObjectId()));
-            final Set<ObjectId> rbucketIds = Sets
-                    .newHashSet(transform(rb.values(), (b) -> b.getObjectId()));
 
             // get all buckets at once, to leverage ObjectStore optimizations
             if (info.left.source == info.right.source) {
@@ -507,13 +517,13 @@ public class PreOrderDiffWalk {
             } else {
                 trees = new HashMap<>();
                 trees.putAll(uniqueIndex(
-                        info.left.source.getAll(transform(lb.values(), (b) -> b.getObjectId()),
-                                NOOP_LISTENER, RevTree.class),
+                        info.left.source.getAll(lbucketIds, NOOP_LISTENER, RevTree.class),
                         (t) -> t.getId()));
 
+                // avoid re-fetching objects at both sides
+                Set<ObjectId> missingAtRight = Sets.difference(rbucketIds, lbucketIds);
                 trees.putAll(uniqueIndex(
-                        info.right.source.getAll(transform(rb.values(), (b) -> b.getObjectId()),
-                                NOOP_LISTENER, RevTree.class),
+                        info.right.source.getAll(missingAtRight, NOOP_LISTENER, RevTree.class),
                         (t) -> t.getId()));
 
             }
@@ -533,7 +543,7 @@ public class PreOrderDiffWalk {
          * @precondition {@code !right.buckets().isEmpty()}
          */
         protected List<WalkAction> leafBucket(Iterator<Node> leftc, RevTree left, RevTree right) {
-            checkArgument(!right.buckets().isEmpty());
+            checkArgument(right.bucketsSize() > 0);
 
             final SortedMap<Integer, Bucket> rightBuckets = right.buckets();
 
@@ -587,7 +597,7 @@ public class PreOrderDiffWalk {
          */
         protected List<WalkAction> bucketLeaf(RevTree left, RevTree rightLeaf,
                 Iterator<Node> rightc) {
-            checkArgument(!left.buckets().isEmpty());
+            checkArgument(left.bucketsSize() > 0);
 
             final SortedMap<Integer, Bucket> leftBuckets = left.buckets();
 
@@ -776,8 +786,8 @@ public class PreOrderDiffWalk {
             // 2- left and right are bucket trees
             // 3- left is leaf and right is bucketed
             // 4- left is bucketed and right is leaf
-            final boolean leftIsLeaf = left.buckets().isEmpty();
-            final boolean rightIsLeaf = right.buckets().isEmpty();
+            final boolean leftIsLeaf = left.bucketsSize() == 0;
+            final boolean rightIsLeaf = right.bucketsSize() == 0;
             Iterator<Node> leftc = leftIsLeaf
                     ? RevObjects.children(left, CanonicalNodeOrder.INSTANCE)
                     : null;
@@ -912,14 +922,14 @@ public class PreOrderDiffWalk {
          *        trees at the specified bucket index
          */
         TraverseBucketBucket(WalkInfo info, RevTree leftTree, RevTree rightTree,
-                @Nullable Bucket leftBucket, @Nullable Bucket rightBucket,
+                Optional<Bucket> leftBucket, Optional<Bucket> rightBucket,
                 final BucketIndex bucketIndex) {
             super(info, leftTree, rightTree, bucketIndex);
-            checkArgument(leftBucket != null || rightBucket != null);
-            checkArgument(!Objects.equal(leftBucket, rightBucket));
+            checkArgument(leftBucket.isPresent() || rightBucket.isPresent());
+            checkArgument(!leftBucket.equals(rightBucket));
 
-            this.leftBucket = leftBucket;
-            this.rightBucket = rightBucket;
+            this.leftBucket = leftBucket.orElse(null);
+            this.rightBucket = rightBucket.orElse(null);
         }
 
         /**
@@ -1004,7 +1014,7 @@ public class PreOrderDiffWalk {
             final BucketIndex index = super.bucketIndex;
             if (consumer.bucket(leftParent, rightParent, index, leftBucket, null)) {
                 if (rightNodes.hasNext()) {
-                    if (leftTree.buckets().isEmpty()) {
+                    if (leftTree.bucketsSize() == 0) {
                         Iterator<Node> children;
                         children = RevObjects.children(leftTree, CanonicalNodeOrder.INSTANCE);
                         TraverseLeafLeaf task = leafLeaf(children, rightNodes);
@@ -1066,7 +1076,7 @@ public class PreOrderDiffWalk {
             final BucketIndex index = super.bucketIndex;
             if (consumer.bucket(leftParent, rightParent, index, null, rightBucket)) {
                 if (leftNodes.hasNext()) {
-                    if (rightTree.buckets().isEmpty()) {
+                    if (rightTree.bucketsSize() == 0) {
                         Iterator<Node> children;
                         children = RevObjects.children(rightTree, CanonicalNodeOrder.INSTANCE);
                         TraverseLeafLeaf task = leafLeaf(leftNodes, children);

@@ -32,6 +32,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.Or;
 import org.opengis.filter.PropertyIsNil;
 import org.opengis.filter.PropertyIsNotEqualTo;
 import org.opengis.filter.expression.Literal;
@@ -322,10 +323,21 @@ public class PrePostFilterSplitterTest {
 
     @Test
     public void bboxFilter() throws Exception {
-        BBOX filter;
-        filter = ff.bbox("nontmaterialized", 0, 0, 180, 90, "EPSG:4326");
-        // BBOX filters are already optimized and always return INCLUDE
-        assertFilter(filter, INCLUDE, INCLUDE);
+        BBOX filter = ff.bbox("nontmaterialized", 0, 0, 180, 90, "EPSG:4326");
+        BBOX expected = ff.bbox(ff.property("@bounds"), filter.getBounds());
+        assertFilter(filter, expected, INCLUDE);
+    }
+
+    @Test
+    public void bboxOredFilter() throws Exception {
+        BBOX bbox1 = ff.bbox("nonmaterialized", 0, 0, 180, 90, "EPSG:4326");
+        BBOX bbox2 = ff.bbox("nonmaterialized", -180, -90, 0, 0, "EPSG:4326");
+        Filter filter = ff.or(bbox1, bbox2);
+
+        Or expected = ff.or(//
+                ff.bbox(ff.property("@bounds"), bbox1.getBounds()), //
+                ff.bbox(ff.property("@bounds"), bbox2.getBounds()));
+        assertFilter(filter, expected, INCLUDE);
     }
 
     private Literal geomLiteral(String wkt) throws Exception {
@@ -578,9 +590,10 @@ public class PrePostFilterSplitterTest {
         filter = simplify("date > 1630-01-13T00:00:00.000Z and date < 1630-01-13T00:00:00.000Z and "
                 + "bbox(materialized_geom, 1, 1, 2, 2)");
         // BBOX is optimized by another code path and decomposed as INCLUDE
-        pre = simplify("date > 1630-01-13T00:00:00.000Z and date < 1630-01-13T00:00:00.000Z");
+        filter = simplify("date > 1630-01-13T00:00:00.000Z and date < 1630-01-13T00:00:00.000Z and "
+                + "bbox(\"@bounds\", 1, 1, 2, 2)");
         post = INCLUDE;
-        assertFilter(filter, pre, post);
+        assertFilter(filter, filter, post);
 
         filter = simplify(
                 "(date > 1630-01-13T00:00:00.000Z and date < 1630-01-13T00:00:00.000Z) and "

@@ -145,6 +145,8 @@ public class FeatureReaderBuilder {
 
     private GeometryFactory geometryFactory = DEFAULT_GEOMETRY_FACTORY;
 
+    private @Nullable Double simplificationDistance;
+
     private NodeRef typeRef;
 
     private boolean ignoreIndex;
@@ -220,6 +222,11 @@ public class FeatureReaderBuilder {
 
     public FeatureReaderBuilder geometryFactory(@Nullable GeometryFactory geometryFactory) {
         this.geometryFactory = geometryFactory == null ? DEFAULT_GEOMETRY_FACTORY : geometryFactory;
+        return this;
+    }
+
+    public FeatureReaderBuilder simplificationDistance(@Nullable Double simplifDistance) {
+        this.simplificationDistance = simplifDistance;
         return this;
     }
 
@@ -363,8 +370,9 @@ public class FeatureReaderBuilder {
                 .setPathFilter(createFidFilter(info.nativeFilter)) //
                 .setCustomFilter(
                         createIndexPreFilter(info.preFilter, info.filterIsFullySupportedByIndex)) //
-                .setBoundsFilter(createBoundsFilter(info.fullSchema, info.nativeFilter,
-                        newFeatureTypeTree, treeSource)) //
+                // no need to set a bounds filter, the preFilter takes care of it
+                // .setBoundsFilter(createBoundsFilter(info.fullSchema, info.nativeFilter,
+                // newFeatureTypeTree, treeSource)) //
                 .setChangeTypeFilter(resolveChangeType()) //
                 .setOldTree(oldFeatureTypeTree) //
                 .setNewTree(newFeatureTypeTree) //
@@ -780,7 +788,6 @@ public class FeatureReaderBuilder {
         // requested order, otherwise a higher level decorator will still perform the sort
         // in-process so there's no point in forcing the iteration order here
         // preserveIterationOrder |= sortBy != null && sortBy.length > 0;
-        return preserveIterationOrder;
+        return true;// preserveIterationOrder;
     }
-
 }

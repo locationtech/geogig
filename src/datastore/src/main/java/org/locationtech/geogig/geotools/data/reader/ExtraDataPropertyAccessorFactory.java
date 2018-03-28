@@ -14,7 +14,6 @@ import org.geotools.data.Query;
 import org.geotools.factory.Hints;
 import org.geotools.filter.expression.PropertyAccessor;
 import org.geotools.filter.expression.PropertyAccessorFactory;
-import org.geotools.geometry.jts.JTS;
 import org.geotools.util.Converters;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Node;
@@ -23,10 +22,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.filter.expression.PropertyName;
-
-import com.google.common.base.Optional;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * A GeoTools {@link PropertyAccessorFactory} that knows how to extract feature property values out
@@ -45,8 +40,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class ExtraDataPropertyAccessorFactory implements PropertyAccessorFactory {
 
     static final ExtraDataPropertyAccesor EXTRA_DATA = new ExtraDataPropertyAccesor();
-
-    private static final GeometryFactory BOUNDS_GEOM_FAC = new GeometryFactory();
 
     @Override
     public PropertyAccessor createPropertyAccessor(Class<?> type, String xpath, Class<?> target,
@@ -69,10 +62,7 @@ public class ExtraDataPropertyAccessorFactory implements PropertyAccessorFactory
             Object value = null;
 
             if ("@bounds".equals(xpath)) {
-                Optional<Envelope> envelope = b.bounds();
-                if (envelope.isPresent()) {
-                    value = JTS.toGeometry(envelope.get(), BOUNDS_GEOM_FAC);
-                }
+                value = b.bounds().orNull();
             } else {
                 final Node node;
                 if (b instanceof NodeRef) {

@@ -101,7 +101,7 @@ import com.vividsolutions.jts.geom.Polygon;
  * determine which parts of the given {@link #filter} can be evaluated during the {@link DiffTree}
  * traversal directly from the {@link Node node's} extra attributes.
  * <p>
- * In most cases, a filter is wither supported or unsupported for pre-filtering. Filters that
+ * In most cases, a filter is wether supported or unsupported for pre-filtering. Filters that
  * reference a property that's materialized is pre-filtering supported, and the post-filter is the
  * {@link Filter#INCLUDE INCLUDE} filter. Conversely, filters that reference a propery that's not
  * provided in the node's extra data can't be pre-filtered and hence are decomposed as
@@ -352,8 +352,9 @@ final class PrePostFilterSplitter {
 
         @Override
         public Filter[] visit(BBOX filter, Object extraData) {
-            // bbox filters are optimized already
-            return tuple(INCLUDE, INCLUDE);
+            Expression metaProperty = toBoundsExpression(filter.getExpression1(), false);
+            BBOX bbox = ff.bbox(metaProperty, filter.getBounds());
+            return tuple(bbox, INCLUDE);
         }
 
         private Expression toBoundsExpression(Expression expression,

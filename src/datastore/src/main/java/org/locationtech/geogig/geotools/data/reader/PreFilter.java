@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.filter.expression.PropertyAccessorFactory;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
@@ -20,7 +21,6 @@ import org.opengis.filter.spatial.BinarySpatialOperator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 
 /**
  * Adapts a GeoTools {@link Filter} to a {@link Predicate} to be applied over a {@link Bounded}
@@ -36,6 +36,10 @@ import com.google.common.base.Predicates;
  */
 final class PreFilter implements Predicate<Bounded> {
 
+    public static final PreFilter INCLUDE = new PreFilter(Filter.INCLUDE);
+
+    public static final PreFilter EXCLUDE = new PreFilter(Filter.EXCLUDE);
+
     @VisibleForTesting
     final Filter filter;
 
@@ -43,8 +47,13 @@ final class PreFilter implements Predicate<Bounded> {
         this.filter = filter;
     }
 
-    @Override
-    public boolean apply(Bounded bounded) {
+    public @Override boolean apply(@Nullable Bounded bounded) {
+        if (Filter.INCLUDE == filter) {
+            return true;
+        }
+        if (Filter.EXCLUDE == filter) {
+            return false;
+        }
         if (bounded == null) {
             return false;
         }
@@ -64,13 +73,8 @@ final class PreFilter implements Predicate<Bounded> {
         return String.format("PreFilter(%s)", filter);
     }
 
-    public static Predicate<Bounded> forFilter(Filter filter) {
-        if (Filter.INCLUDE.equals(filter)) {
-            return Predicates.alwaysTrue();
-        }
-        if (Filter.EXCLUDE.equals(filter)) {
-            return Predicates.alwaysFalse();
-        }
-        return new PreFilter(filter);
+    public static PreFilter forFilter(Filter filter) {
+        return Filter.INCLUDE.equals(filter) ? PreFilter.INCLUDE
+                : Filter.EXCLUDE.equals(filter) ? PreFilter.EXCLUDE : new PreFilter(filter);
     }
 }

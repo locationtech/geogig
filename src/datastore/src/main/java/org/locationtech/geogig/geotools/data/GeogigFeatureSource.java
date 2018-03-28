@@ -91,6 +91,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         if (!ignorescreenmap)
             hints.add(Hints.SCREENMAP);
         hints.add(Hints.JTS_GEOMETRY_FACTORY);
+        // hints.add(Hints.GEOMETRY_SIMPLIFICATION);
     }
 
     @Override
@@ -100,7 +101,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
     @Override
     protected boolean canSort() {
-        return true;
+        return false;
     }
 
     /**
@@ -313,6 +314,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final @Nullable Integer offset = query.getStartIndex();
         final @Nullable Integer limit = query.isMaxFeaturesUnlimited() ? null
                 : query.getMaxFeatures();
+        // final @Nullable Double simplifDistance = (Double)
+        // hints.get(Hints.GEOMETRY_SIMPLIFICATION);
         final @Nullable ScreenMap screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
         final @Nullable String[] propertyNames = query.getPropertyNames();
         final @Nullable SortBy[] sortBy = query.getSortBy();
@@ -332,6 +335,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .oldHeadRef(oldRoot())//
                 .changeType(changeType())//
                 .geometryFactory(geometryFactory)//
+                // .simplificationDistance(simplifDistance)//
                 .offset(offset)//
                 .limit(limit)//
                 .propertyNames(propertyNames)//

@@ -10,7 +10,7 @@ Building/installing the GeoServer GeoGig extension
 
 You can download the latest stable version of the GeoGig GeoServer plugin from the `GeoGig <http://www.geogig.org/>`_ home page. There is a version of the plugin available for all supported versions of GeoServer.
 
-In order to build it from sources, a GeoGig module is currently included in the 2.8.x and newer branches of GeoServer's community extensions. To build it, clone the GeoServer GitHub repository.
+In order to build it from sources, a GeoGig module is currently included in the 2.8.x and newer branches of GeoServer's community extensions. To build it, you will need to have Maven 3 and a Java JDK (version 8). First, clone the GeoServer GitHub repository.
 
 ::
 
@@ -38,7 +38,7 @@ Build the Community Modules:
 
 ::
 
-    mvn clean install -DskipTests assembly:attached -f community/release/pom.xml -P communityRelease
+    mvn clean install -DskipTests assembly:attached -f community/pom.xml -P communityRelease
 
 This will build all of the GeoServer Community modules, including the plugin for GeoGig. Once the assembly completes, you should have a plugin bundle here:
 ::

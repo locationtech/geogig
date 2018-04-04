@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Exploring a repository &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Exploring a repository &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Branches" href="branches.html" />
       <link rel="prev" title="Configuring a GeoGig repository" href="config.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Exploring a repository</li>
 </ul>
@@ -98,38 +98,38 @@
         
   <div class="section" id="exploring-a-repository">
 <span id="repo-exploring"></span><h1>Exploring a repository<a class="headerlink" href="#exploring-a-repository" title="Permalink to this headline">¶</a></h1>
-<p>The entire contents of a GeoGig repository are stored in the <code class="docutils literal"><span class="pre">.geogig</span></code> directory.</p>
-<p>Unlike a version control system like Git, the content of the current working tree cannot be explored directly as a normal folder containing files, so they are stored instead in a database which holds the complete structure of the repository. This means that any files stored in the same directory that contains the <code class="docutils literal"><span class="pre">.geogig</span></code> directory will be ignored by GeoGig.</p>
+<p>The entire contents of a GeoGig repository are stored in the <code class="docutils literal notranslate"><span class="pre">.geogig</span></code> directory.</p>
+<p>Unlike a version control system like Git, the content of the current working tree cannot be explored directly as a normal folder containing files, so they are stored instead in a database which holds the complete structure of the repository. This means that any files stored in the same directory that contains the <code class="docutils literal notranslate"><span class="pre">.geogig</span></code> directory will be ignored by GeoGig.</p>
 <p>Therefore, exploring a GeoGig repository must be done using GeoGig commands. The main commands used for this task are:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">ls</span></code>: lists the content of a tree</li>
-<li><code class="docutils literal"><span class="pre">show</span></code>: prints a formatted version of an element of the repository</li>
+<li><code class="docutils literal notranslate"><span class="pre">ls</span></code>: lists the content of a tree</li>
+<li><code class="docutils literal notranslate"><span class="pre">show</span></code>: prints a formatted version of an element of the repository</li>
 </ul>
 <div class="section" id="listing-trees">
 <h2>Listing trees<a class="headerlink" href="#listing-trees" title="Permalink to this headline">¶</a></h2>
-<p>The basic <code class="docutils literal"><span class="pre">ls</span></code> command takes the following form:</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig ls [ref]:[path]</span>
+<p>The basic <code class="docutils literal notranslate"><span class="pre">ls</span></code> command takes the following form:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig ls [ref]:[path]</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">[ref]:[path]</span></code> parameter defines the path to be listed. If it contains no <code class="docutils literal"><span class="pre">ref</span></code> part, it will list the given path in the current working tree. To list the same path in a different reference, a full reference can be provided. For instance, to list the content of <code class="docutils literal"><span class="pre">parks</span></code> in the current HEAD, the following line should be used.</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig ls HEAD:parks</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">[ref]:[path]</span></code> parameter defines the path to be listed. If it contains no <code class="docutils literal notranslate"><span class="pre">ref</span></code> part, it will list the given path in the current working tree. To list the same path in a different reference, a full reference can be provided. For instance, to list the content of <code class="docutils literal notranslate"><span class="pre">parks</span></code> in the current HEAD, the following line should be used.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig ls HEAD:parks</span>
 </pre></div>
 </div>
-<p>The provided reference and path should resolve to a tree. Since features do not contains other elements, their content cannot be listed with the <code class="docutils literal"><span class="pre">ls</span></code> command, but instead must be examined with the <code class="docutils literal"><span class="pre">show</span></code> command.</p>
-<p>An object ID can be used directly, instead of a <code class="docutils literal"><span class="pre">[ref]:[path]</span></code>, to list the contents of the tree corresponding to that commit.</p>
-<p>The options available for the <code class="docutils literal"><span class="pre">ls</span></code> command control how the list of elements under the given path are printed.</p>
+<p>The provided reference and path should resolve to a tree. Since features do not contains other elements, their content cannot be listed with the <code class="docutils literal notranslate"><span class="pre">ls</span></code> command, but instead must be examined with the <code class="docutils literal notranslate"><span class="pre">show</span></code> command.</p>
+<p>An object ID can be used directly, instead of a <code class="docutils literal notranslate"><span class="pre">[ref]:[path]</span></code>, to list the contents of the tree corresponding to that commit.</p>
+<p>The options available for the <code class="docutils literal notranslate"><span class="pre">ls</span></code> command control how the list of elements under the given path are printed.</p>
 <ul class="simple">
-<li>The <code class="docutils literal"><span class="pre">-v</span></code> option will display a <strong>verbose</strong> list of, not just the name of the objects, but also the object’s ID and the ID of the corresponding feature type.</li>
-<li>The <code class="docutils literal"><span class="pre">-r</span></code> option will list the contents of subtrees <strong>recursively</strong>. The names of these subtrees are not shown in the listing, but you can tell GeoGig to display them by using the <code class="docutils literal"><span class="pre">-t</span></code> option along with the <code class="docutils literal"><span class="pre">-d</span></code> option.</li>
-<li>The <code class="docutils literal"><span class="pre">-a</span></code> option will show IDs in their <strong>abbreviated</strong> form. Use a number to determine how many digits of the ID to display (<code class="docutils literal"><span class="pre">-a</span> <span class="pre">7</span></code> for seven digit IDs).</li>
+<li>The <code class="docutils literal notranslate"><span class="pre">-v</span></code> option will display a <strong>verbose</strong> list of, not just the name of the objects, but also the object’s ID and the ID of the corresponding feature type.</li>
+<li>The <code class="docutils literal notranslate"><span class="pre">-r</span></code> option will list the contents of subtrees <strong>recursively</strong>. The names of these subtrees are not shown in the listing, but you can tell GeoGig to display them by using the <code class="docutils literal notranslate"><span class="pre">-t</span></code> option along with the <code class="docutils literal notranslate"><span class="pre">-d</span></code> option.</li>
+<li>The <code class="docutils literal notranslate"><span class="pre">-a</span></code> option will show IDs in their <strong>abbreviated</strong> form. Use a number to determine how many digits of the ID to display (<code class="docutils literal notranslate"><span class="pre">-a</span> <span class="pre">7</span></code> for seven digit IDs).</li>
 </ul>
-<p>Here are some examples of the <code class="docutils literal"><span class="pre">ls</span></code> command:</p>
+<p>Here are some examples of the <code class="docutils literal notranslate"><span class="pre">ls</span></code> command:</p>
 <div class="section" id="recursive-list">
 <h3>Recursive list<a class="headerlink" href="#recursive-list" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig ls -r -t</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig ls -r -t</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">Root tree/</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Root tree/</span>
 <span class="go">    parks/</span>
 <span class="go">        2</span>
 <span class="go">        3</span>
@@ -140,10 +140,10 @@
 </div>
 <div class="section" id="verbose-list">
 <h3>Verbose list<a class="headerlink" href="#verbose-list" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig ls -v parks</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig ls -v parks</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">parks/</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">parks/</span>
 <span class="go">    2 49852c03b8dd3c93fcbda7137abda9ad53a9311a bfd1d4bb75e0a4419243ef0ba9d6e9793d31cdab</span>
 <span class="go">    3 49852c03b8dd3c93fcbda7137abda9ad53a9311a 84150cc07326358ac70777d4141a8cfdd8038323</span>
 <span class="go">    4 49852c03b8dd3c93fcbda7137abda9ad53a9311a 5347d1b1b5d828f83e4065e227dcb848b4371637</span>
@@ -153,10 +153,10 @@
 </div>
 <div class="section" id="verbose-and-recursive-list">
 <h3>Verbose and recursive list<a class="headerlink" href="#verbose-and-recursive-list" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig ls -v -r -t</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig ls -v -r -t</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">Root tree/</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Root tree/</span>
 <span class="go">   parks/ 49852c03b8dd3c93fcbda7137abda9ad53a9311a 224f0086bc4e9b116e7b60dbc414e1cc8d829839</span>
 <span class="go">       2 49852c03b8dd3c93fcbda7137abda9ad53a9311a bfd1d4bb75e0a4419243ef0ba9d6e9793d31cdab</span>
 <span class="go">       3 49852c03b8dd3c93fcbda7137abda9ad53a9311a 84150cc07326358ac70777d4141a8cfdd8038323</span>
@@ -167,10 +167,10 @@
 </div>
 <div class="section" id="verbose-and-recursive-list-with-seven-digit-ids">
 <h3>Verbose and recursive list with seven-digit IDs<a class="headerlink" href="#verbose-and-recursive-list-with-seven-digit-ids" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig ls -v -r -t -a 7</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig ls -v -r -t -a 7</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">Root tree/</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Root tree/</span>
 <span class="go">   parks/ 49852c0 224f008</span>
 <span class="go">       2 49852c0 bfd1d4b</span>
 <span class="go">       3 49852c0 84150cc</span>
@@ -182,15 +182,15 @@
 </div>
 <div class="section" id="showing-features">
 <h2>Showing features<a class="headerlink" href="#showing-features" title="Permalink to this headline">¶</a></h2>
-<p>Describing an element in a GeoGig repository is done using the <code class="docutils literal"><span class="pre">show</span></code> command. It can be used to describe any type of object, unlike <code class="docutils literal"><span class="pre">ls</span></code> which needs to resolve to a tree.</p>
-<p>The <code class="docutils literal"><span class="pre">show</span></code> command prints a formatted description of a given element. This description is a human-readable version of the element.</p>
+<p>Describing an element in a GeoGig repository is done using the <code class="docutils literal notranslate"><span class="pre">show</span></code> command. It can be used to describe any type of object, unlike <code class="docutils literal notranslate"><span class="pre">ls</span></code> which needs to resolve to a tree.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">show</span></code> command prints a formatted description of a given element. This description is a human-readable version of the element.</p>
 <p>The command takes, as input, a string that defines the object to describe. All supported notations are allowed for both commands, as they are described in <a class="reference internal" href="../data/referencing.html#referencing"><span class="std std-ref">Referencing a GeoGig element</span></a>.</p>
-<p>Below, you can find the output of the <code class="docutils literal"><span class="pre">show</span></code> command for certain types of objects.</p>
-<p>An exmplae of the <code class="docutils literal"><span class="pre">show</span></code> command with a tree:</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig show parks</span>
+<p>Below, you can find the output of the <code class="docutils literal notranslate"><span class="pre">show</span></code> command for certain types of objects.</p>
+<p>An exmplae of the <code class="docutils literal notranslate"><span class="pre">show</span></code> command with a tree:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig show parks</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">TREE ID:  0bbed3603377adfbd3b32afce4d36c2c2e59d9d4</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">TREE ID:  0bbed3603377adfbd3b32afce4d36c2c2e59d9d4</span>
 <span class="go">SIZE:  50</span>
 <span class="go">NUMBER OF SUBTREES:  0</span>
 <span class="go">DEFAULT FEATURE TYPE ID:  6350a6955b124119850f5a6906f70dc02ebb31c9</span>
@@ -208,11 +208,11 @@
 <span class="go">usage: &lt;STRING&gt;</span>
 </pre></div>
 </div>
-<p>When specifying a single feature, the <code class="docutils literal"><span class="pre">show</span></code> command prints the values of all attributes and their corresponding names taken from the associated feature type.</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig show HEAD:parks/1</span>
+<p>When specifying a single feature, the <code class="docutils literal notranslate"><span class="pre">show</span></code> command prints the values of all attributes and their corresponding names taken from the associated feature type.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig show HEAD:parks/1</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">ID:  ff51bfc2a36d02a3a51d72eef3e7f44de9c4e231</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ID:  ff51bfc2a36d02a3a51d72eef3e7f44de9c4e231</span>
 
 <span class="go">ATTRIBUTES</span>
 <span class="go">----------</span>
@@ -227,11 +227,11 @@
 <span class="go">usage: Public</span>
 </pre></div>
 </div>
-<p>The following example shows the output of the <code class="docutils literal"><span class="pre">show</span></code> command when used on a commit reference:</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig show 509a481257c5791f50f5a35087e432247f9dc8b7</span>
+<p>The following example shows the output of the <code class="docutils literal notranslate"><span class="pre">show</span></code> command when used on a commit reference:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig show 509a481257c5791f50f5a35087e432247f9dc8b7</span>
 </pre></div>
 </div>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">Commit:        509a481257c5791f50f5a35087e432247f9dc8b7</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Commit:        509a481257c5791f50f5a35087e432247f9dc8b7</span>
 <span class="go">Author:        Author &lt;author@example.com&gt;</span>
 <span class="go">Committer:     Author &lt;author@example.com&gt;</span>
 <span class="go">Author date:   (3 hours ago) Mon Jan 21 13:58:55 CET 2013</span>
@@ -239,8 +239,8 @@
 <span class="go">Subject:       Updated geometry</span>
 </pre></div>
 </div>
-<p>You can also use a reference like <code class="docutils literal"><span class="pre">HEAD</span></code> to show the current state of the repository:</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig show HEAD</span>
+<p>You can also use a reference like <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> to show the current state of the repository:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig show HEAD</span>
 </pre></div>
 </div>
 </div>

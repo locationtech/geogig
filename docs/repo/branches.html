@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Branches &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Branches &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Merging branches" href="merging.html" />
       <link rel="prev" title="Exploring a repository" href="exploring.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Branches</li>
 </ul>
@@ -111,30 +111,30 @@
 <p>For instance, imagine that you have a rather large dataset and you want to add new attributes to its features. If you are using a linear workflow, over the course of the work updated features may coexist with the original unedited ones, which might cause problems for users of the repository.</p>
 <p>Creating a branch and performing your edits there solves this problem. Branching allows you to have a new context in which to work, without worry of causing interference.</p>
 <p>The work on the new branch is completely independent of the current contents of any other branch. Once you have finished your work, you can pass your changes to the main branch.</p>
-<p>Each branch has a name that is given to it when it is created. The main branch that is created when initializing the repository is called <code class="docutils literal"><span class="pre">master</span></code>.</p>
-<p>You can start working and creating new commits, and they will be added on top of the current branch, instead of on top of <code class="docutils literal"><span class="pre">master</span></code>.</p>
+<p>Each branch has a name that is given to it when it is created. The main branch that is created when initializing the repository is called <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+<p>You can start working and creating new commits, and they will be added on top of the current branch, instead of on top of <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
 <div class="section" id="creating-a-new-branch">
 <h2>Creating a new branch<a class="headerlink" href="#creating-a-new-branch" title="Permalink to this headline">¶</a></h2>
 <p>To create a new branch use the following command:</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig branch newbranch</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig branch newbranch</span>
 </pre></div>
 </div>
-<p>Where <code class="docutils literal"><span class="pre">newbranch</span></code> is the name of the new branch.</p>
+<p>Where <code class="docutils literal notranslate"><span class="pre">newbranch</span></code> is the name of the new branch.</p>
 <p>The above command creates a new branch, but does not change to be working on that branch. To change to that branch you have to subsequently perform a <strong>checkout</strong>. Use the following command to move into a branch.</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig checkout newbranch</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig checkout newbranch</span>
 </pre></div>
 </div>
-<p>To create a new branch and move to that branch in one command, use the <code class="docutils literal"><span class="pre">-c</span></code> option:</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig branch -c newbranch</span>
+<p>To create a new branch and move to that branch in one command, use the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig branch -c newbranch</span>
 </pre></div>
 </div>
 <p>When performing a branch checkout, GeoGig puts the data from the tip of that branch (the most recent commit) in the working tree. For this reason, the working tree has to be clean (no unstaged changes) before doing a checkout.</p>
 </div>
 <div class="section" id="branch-references">
 <h2>Branch references<a class="headerlink" href="#branch-references" title="Permalink to this headline">¶</a></h2>
-<p>When a branch is created, a reference is created with the name of the branch. That reference will always point to the latest commit made on that branch. When the branch is checked out, GeoGig changes the <code class="docutils literal"><span class="pre">HEAD</span></code> reference to point at the reference denoting the branch you have checked out. So if <code class="docutils literal"><span class="pre">HEAD</span></code> was linked to the <code class="docutils literal"><span class="pre">master</span></code> branch and its corresponding reference, but after a checkout of a different branch <code class="docutils literal"><span class="pre">HEAD</span></code> changes automatically.</p>
-<p>The name of the branch is, itself, a valid reference. For this reason, you can use it to reference an object under that branch. For instance, to see a description of a feature named <code class="docutils literal"><span class="pre">1</span></code> in a tree called <code class="docutils literal"><span class="pre">parks</span></code> in the <code class="docutils literal"><span class="pre">edits</span></code> branch, you can use the following command.</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig show edits:parks/1</span>
+<p>When a branch is created, a reference is created with the name of the branch. That reference will always point to the latest commit made on that branch. When the branch is checked out, GeoGig changes the <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> reference to point at the reference denoting the branch you have checked out. So if <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> was linked to the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch and its corresponding reference, but after a checkout of a different branch <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> changes automatically.</p>
+<p>The name of the branch is, itself, a valid reference. For this reason, you can use it to reference an object under that branch. For instance, to see a description of a feature named <code class="docutils literal notranslate"><span class="pre">1</span></code> in a tree called <code class="docutils literal notranslate"><span class="pre">parks</span></code> in the <code class="docutils literal notranslate"><span class="pre">edits</span></code> branch, you can use the following command.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig show edits:parks/1</span>
 </pre></div>
 </div>
 </div>

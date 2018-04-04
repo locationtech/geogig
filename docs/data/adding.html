@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Staging data &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Staging data &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Checking out a previous version" href="checkout.html" />
       <link rel="prev" title="Data and commits" href="index.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Staging data</li>
 </ul>
@@ -99,9 +99,9 @@
   <div class="section" id="staging-data">
 <span id="id1"></span><h1>Staging data<a class="headerlink" href="#staging-data" title="Permalink to this headline">¶</a></h1>
 <p>Data imported into GeoGig is not ready yet to be added to the repository database. It first has to be put into the staging area and from there it can be committed to the repository database.</p>
-<p>Staging data is done using the <code class="docutils literal"><span class="pre">add</span></code> command. Adding a given feature is telling GeoGig that you want that feature to be versioned.</p>
-<p>To add all unstaged features in the working tree, just use the <code class="docutils literal"><span class="pre">add</span></code> command without additional options</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig add
+<p>Staging data is done using the <code class="docutils literal notranslate"><span class="pre">add</span></code> command. Adding a given feature is telling GeoGig that you want that feature to be versioned.</p>
+<p>To add all unstaged features in the working tree, just use the <code class="docutils literal notranslate"><span class="pre">add</span></code> command without additional options</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig add
 Counting unstaged features...3
 Staging changes...
 100%
@@ -111,20 +111,20 @@ Staging changes...
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><code class="docutils literal"><span class="pre">geogig</span> <span class="pre">add</span></code> is equivalent to <code class="docutils literal"><span class="pre">git</span> <span class="pre">add</span> <span class="pre">.</span></code> (notice the dot)</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">add</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span> <span class="pre">.</span></code> (notice the dot)</p>
 </div>
 <p>That will cause all new features to be added to the staging area, and also all those ones that were already in the staging area, but were modified in the index  (that is, the versions in the working index and staging area are not the same). Since this is the first data we work with, all features are new, and we have no modified ones in this case.</p>
-<p>If you just want to stage modified features but not add the new ones, you can use the <code class="docutils literal"><span class="pre">--update</span></code> option.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig add --update
+<p>If you just want to stage modified features but not add the new ones, you can use the <code class="docutils literal notranslate"><span class="pre">--update</span></code> option.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig add --update
 </pre></div>
 </div>
 <p>In the above case of our just-created repository, that would have no effect, since there are no modified features.</p>
 <p>For a more fine grained selection of which objects to stage, you can directly specify the names of objects to add</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig add parks/1 roads/3
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig add parks/1 roads/3
 </pre></div>
 </div>
-<p>After staging, you can run the <code class="docutils literal"><span class="pre">status</span></code> command to check that the 3 features that we imported in the working tree are now also in the staging area, ready to be committed to the repository database.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># On branch master</span>
+<p>After staging, you can run the <code class="docutils literal notranslate"><span class="pre">status</span></code> command to check that the 3 features that we imported in the working tree are now also in the staging area, ready to be committed to the repository database.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># On branch master</span>
 <span class="c1"># Changes to be committed:</span>
 <span class="c1">#   (use &quot;geogig reset HEAD &lt;path/to/fid&gt;...&quot; to unstage)</span>
 <span class="c1">#</span>
@@ -134,7 +134,7 @@ Staging changes...
 <span class="c1"># 3 total.</span>
 </pre></div>
 </div>
-<p>Changes after importing were “not staged for commit”, while now they are “to be committed”. The <code class="docutils literal"><span class="pre">status</span></code> command will show both unstaged and uncommitted changes if they both exist at the same time in the repository. Since we have staged all changes (by using the <code class="docutils literal"><span class="pre">add</span></code> command without options), there are no unstaged files now.</p>
+<p>Changes after importing were “not staged for commit”, while now they are “to be committed”. The <code class="docutils literal notranslate"><span class="pre">status</span></code> command will show both unstaged and uncommitted changes if they both exist at the same time in the repository. Since we have staged all changes (by using the <code class="docutils literal notranslate"><span class="pre">add</span></code> command without options), there are no unstaged files now.</p>
 </div>
 
 

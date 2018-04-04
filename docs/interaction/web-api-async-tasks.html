@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web API: Asynchronous tasks &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Web API: Asynchronous tasks &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web API: Issues" href="web-api-issues.html" />
       <link rel="prev" title="Web API: Serving and Managing Repositories" href="web-api-repository-management.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web API: Asynchronous tasks</li>
 </ul>
@@ -101,24 +101,24 @@
 <p>Some web API commands can run for a long time depending on how much data they’re dealing with, and hence,
 are executed asynchronously, meaning that, once invoked, they start the job in a background thread and return immediately.</p>
 <p>The response contains a unique identifier for the asynchronous task and information on the task’s running status.
-This task identifier can then be used to poll the status of the task by querying the <code class="docutils literal"><span class="pre">/tasks/&lt;task</span> <span class="pre">id&gt;</span></code> API endpoint.</p>
-<p>If no task is given, e.g. by querying the <code class="docutils literal"><span class="pre">/tasks</span></code> endpoint, a list of all available tasks will be returned.</p>
-<p>A running task can be canceled with the <code class="docutils literal"><span class="pre">cancel=true</span></code> argument. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>http://localhost:8182/tasks/3?cancel=true
+This task identifier can then be used to poll the status of the task by querying the <code class="docutils literal notranslate"><span class="pre">/tasks/&lt;task</span> <span class="pre">id&gt;</span></code> API endpoint.</p>
+<p>If no task is given, e.g. by querying the <code class="docutils literal notranslate"><span class="pre">/tasks</span></code> endpoint, a list of all available tasks will be returned.</p>
+<p>A running task can be canceled with the <code class="docutils literal notranslate"><span class="pre">cancel=true</span></code> argument. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://localhost:8182/tasks/3?cancel=true
 </pre></div>
 </div>
 <p>This request will ask the operation to cancel and return immediately. Note, however, that it may take some time for the cancellation request to complete, as the running task may be blocking on I/O or in a temporarily non-cancelable state. Polling the task repeatedly with the
-<code class="docutils literal"><span class="pre">cancel=true</span></code> parameter is not a problem, though.</p>
+<code class="docutils literal notranslate"><span class="pre">cancel=true</span></code> parameter is not a problem, though.</p>
 <p>Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes in order to allow their status to be queried.
-Finished tasks can be explicitly pruned with the <code class="docutils literal"><span class="pre">prune=true</span></code> parameter. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>http://localhost:8182/tasks/3?prune=true
+Finished tasks can be explicitly pruned with the <code class="docutils literal notranslate"><span class="pre">prune=true</span></code> parameter. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://localhost:8182/tasks/3?prune=true
 </pre></div>
 </div>
 <p>Prune has no effect on unfinished tasks.</p>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>When the command is invoked, it returns a result such as the following XML-formatted response.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="mi">5</span><span class="o">&lt;/</span><span class="nb">id</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">status</span><span class="o">&gt;</span><span class="n">RUNNING</span><span class="o">&lt;/</span><span class="n">status</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span><span class="p">{</span><span class="n">command</span> <span class="n">description</span><span class="p">}</span><span class="o">&lt;/</span><span class="n">description</span><span class="o">&gt;</span>
@@ -131,7 +131,7 @@ Finished tasks can be explicitly pruned with the <code class="docutils literal">
 </pre></div>
 </div>
 <p>Or the JSON format:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;task&quot;</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;task&quot;</span><span class="p">:</span>
    <span class="p">{</span>
       <span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
       <span class="s2">&quot;status&quot;</span><span class="p">:</span><span class="s2">&quot;RUNNING&quot;</span><span class="p">,</span>
@@ -146,13 +146,13 @@ Finished tasks can be explicitly pruned with the <code class="docutils literal">
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Note, the <code class="docutils literal"><span class="pre">atom:link</span></code> in the XML response and the <code class="docutils literal"><span class="pre">href</span></code> property in the JSON response, represent the status polling URL for the specific task ID.</p>
-<p>The <code class="docutils literal"><span class="pre">status</span></code> attribute will have one of the following values: <code class="docutils literal"><span class="pre">WAITING</span></code>, <code class="docutils literal"><span class="pre">RUNNING</span></code>, <code class="docutils literal"><span class="pre">FINISHED</span></code>, <code class="docutils literal"><span class="pre">FAILED</span></code>, <code class="docutils literal"><span class="pre">CANCELLED</span></code>.</p>
-<p><code class="docutils literal"><span class="pre">WAITING</span></code> means that there are other tasks being run in the thread pool and this one has been scheduled to be run as soon
+<p>Note, the <code class="docutils literal notranslate"><span class="pre">atom:link</span></code> in the XML response and the <code class="docutils literal notranslate"><span class="pre">href</span></code> property in the JSON response, represent the status polling URL for the specific task ID.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> attribute will have one of the following values: <code class="docutils literal notranslate"><span class="pre">WAITING</span></code>, <code class="docutils literal notranslate"><span class="pre">RUNNING</span></code>, <code class="docutils literal notranslate"><span class="pre">FINISHED</span></code>, <code class="docutils literal notranslate"><span class="pre">FAILED</span></code>, <code class="docutils literal notranslate"><span class="pre">CANCELLED</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">WAITING</span></code> means that there are other tasks being run in the thread pool and this one has been scheduled to be run as soon
 as a spot frees up in the thread pool. The others are self-explanatory.</p>
 <p>The content of the task query response varies slightly depending on the task status.</p>
 <p>Running tasks may or may not contain a progress indicator. It will depend on the type of task and how far along the task is at the point the response is generated.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="mi">4</span><span class="o">&lt;/</span><span class="nb">id</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">status</span><span class="o">&gt;</span><span class="n">RUNNING</span><span class="o">&lt;/</span><span class="n">status</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span> <span class="n">Importing</span> <span class="n">geopackage</span><span class="o">...&lt;/</span><span class="n">description</span><span class="o">&gt;</span>
@@ -165,7 +165,7 @@ as a spot frees up in the thread pool. The others are self-explanatory.</p>
 </pre></div>
 </div>
 <p>Successfully finished tasks may contain a result summary which is specific to the command executed. The following is an example of the result for a successful OSM import operation.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">task</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="mi">5</span><span class="o">&lt;/</span><span class="nb">id</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">status</span><span class="o">&gt;</span><span class="n">FINISHED</span><span class="o">&lt;/</span><span class="n">status</span><span class="o">&gt;</span>
    <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span><span class="n">Importing</span> <span class="n">geopackage</span><span class="o">....&lt;/</span><span class="n">description</span><span class="o">&gt;</span>
@@ -184,7 +184,7 @@ as a spot frees up in the thread pool. The others are self-explanatory.</p>
 </pre></div>
 </div>
 <p>And failed tasks contain an exception report.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>&lt;task&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;task&gt;
    &lt;id&gt;7&lt;/id&gt;
    &lt;status&gt;FAILED&lt;/status&gt;
    &lt;description&gt;Importing geopackage...&lt;/description&gt;

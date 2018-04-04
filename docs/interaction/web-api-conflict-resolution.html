@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web API: Conflict Resolution &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Web API: Conflict Resolution &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web API: Serving and Managing Repositories" href="web-api-repository-management.html" />
       <link rel="prev" title="Web API: PostGIS Import" href="web-api-postgis.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web API: Conflict Resolution</li>
 </ul>
@@ -98,10 +98,10 @@
         
   <div class="section" id="web-api-conflict-resolution">
 <span id="conflict-resolution"></span><h1>Web API: Conflict Resolution<a class="headerlink" href="#web-api-conflict-resolution" title="Permalink to this headline">¶</a></h1>
-<p>Some commands may trigger conflicts that must be resolved before continuing.  If you are using a command that can trigger merge conflicts, you should check the response for <code class="docutils literal"><span class="pre">response/Merge/conflicts</span></code>.  The only exception to this is <a class="reference internal" href="web-api-commands.html#command-reportmergescenario"><span class="std std-ref">ReportMergeScenario</span></a>, in which each Feature element should be checked for conflicts.  Once merge conflicts have been reported, the transaction that was used will be in a conflicted state until they are resolved.  There are a couple options for resolving conflicts:</p>
+<p>Some commands may trigger conflicts that must be resolved before continuing.  If you are using a command that can trigger merge conflicts, you should check the response for <code class="docutils literal notranslate"><span class="pre">response/Merge/conflicts</span></code>.  The only exception to this is <a class="reference internal" href="web-api-commands.html#command-reportmergescenario"><span class="std std-ref">ReportMergeScenario</span></a>, in which each Feature element should be checked for conflicts.  Once merge conflicts have been reported, the transaction that was used will be in a conflicted state until they are resolved.  There are a couple options for resolving conflicts:</p>
 <ol class="arabic simple">
 <li><strong>MergeFeature and ResolveConflict:</strong>  If you would like to resolve a conflict on an attribute-by-attribute basis, the best way to do so would be to use the <a class="reference internal" href="web-api-commands.html#command-mergefeature"><span class="std std-ref">MergeFeature</span></a> endpoint.  This allows for the creation of a new feature that combines the desired attributes of two sides of a conflicting feature.  The result of that endpoint is a GeoGig object ID that can be passed to the <a class="reference internal" href="web-api-commands.html#command-resolveconflict"><span class="std std-ref">ResolveConflict (-T)</span></a> endpoint.</li>
-<li><strong>Checkout and Add:</strong>  If you would like to simply select the whole version of a feature on <code class="docutils literal"><span class="pre">ours</span></code> or <code class="docutils literal"><span class="pre">theirs</span></code> side of a conflict, you can use the <a class="reference internal" href="web-api-commands.html#command-checkout"><span class="std std-ref">Checkout (-T)</span></a> endpoint while specifying the path of the feature.  This will put the desired feature into the working tree where you can then use the <a class="reference internal" href="web-api-commands.html#command-add"><span class="std std-ref">Add (-T)</span></a> endpoint while specifying the path of the feature to add it to the staging area and resolve the conflict.</li>
+<li><strong>Checkout and Add:</strong>  If you would like to simply select the whole version of a feature on <code class="docutils literal notranslate"><span class="pre">ours</span></code> or <code class="docutils literal notranslate"><span class="pre">theirs</span></code> side of a conflict, you can use the <a class="reference internal" href="web-api-commands.html#command-checkout"><span class="std std-ref">Checkout (-T)</span></a> endpoint while specifying the path of the feature.  This will put the desired feature into the working tree where you can then use the <a class="reference internal" href="web-api-commands.html#command-add"><span class="std std-ref">Add (-T)</span></a> endpoint while specifying the path of the feature to add it to the staging area and resolve the conflict.</li>
 </ol>
 <p>Once all conflicts have been resolved (you can use the <a class="reference internal" href="web-api-commands.html#command-status"><span class="std std-ref">Status</span></a> endpoint to verify), a new commit must be made to complete the original merge operation.  This is done through the <a class="reference internal" href="web-api-commands.html#command-commit"><span class="std std-ref">Commit (-T)</span></a> endpoint where you can optionally specify a message that describes how you solved the conflict.  After the commit is made, you may resume working on your data.</p>
 </div>

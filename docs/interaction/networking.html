@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig Networking &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>GeoGig Networking &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="GeoServer GUI configuration" href="geoserver_ui.html" />
       <link rel="prev" title="Other ways to interact with GeoGig" href="index.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>GeoGig Networking</li>
 </ul>
@@ -98,15 +98,15 @@
         
   <div class="section" id="geogig-networking">
 <span id="networking"></span><h1>GeoGig Networking<a class="headerlink" href="#geogig-networking" title="Permalink to this headline">¶</a></h1>
-<p>In order for GeoGig clients to interact with a repository remotely (clone, push, pull, etc) it must be exposed over the network as a service. This can be accomplished in two different ways: through the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code> command or using the GeoServer plugin.</p>
-<p>The <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code> console command starts up an embedded HTTP server and can be used to expose either a single repository or several repositories from a single file system directory, as explained in the <a class="reference internal" href="web-api-repository-management.html#web-repository-management"><span class="std std-ref">Web API: Serving and Managing Repositories</span></a> section.</p>
-<p>Once started, the embedded server exposes the available repositories at the <code class="docutils literal"><span class="pre">http://localhost:8182/repos</span></code> URL and the GeoServer plugin at the <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos</span></code> URL.</p>
-<p>For example, cloning a repository named <code class="docutils literal"><span class="pre">NaturalEarth</span></code> can be executing either
-<code class="docutils literal"><span class="pre">geogig</span> <span class="pre">clone</span> <span class="pre">http://localhost:8182/repos/NaturalEarth</span> <span class="pre">NaturalEarthClone</span></code>
+<p>In order for GeoGig clients to interact with a repository remotely (clone, push, pull, etc) it must be exposed over the network as a service. This can be accomplished in two different ways: through the <code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">serve</span></code> command or using the GeoServer plugin.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">serve</span></code> console command starts up an embedded HTTP server and can be used to expose either a single repository or several repositories from a single file system directory, as explained in the <a class="reference internal" href="web-api-repository-management.html#web-repository-management"><span class="std std-ref">Web API: Serving and Managing Repositories</span></a> section.</p>
+<p>Once started, the embedded server exposes the available repositories at the <code class="docutils literal notranslate"><span class="pre">http://localhost:8182/repos</span></code> URL and the GeoServer plugin at the <code class="docutils literal notranslate"><span class="pre">http://localhost:8080/geoserver/geogig/repos</span></code> URL.</p>
+<p>For example, cloning a repository named <code class="docutils literal notranslate"><span class="pre">NaturalEarth</span></code> can be executing either
+<code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">clone</span> <span class="pre">http://localhost:8182/repos/NaturalEarth</span> <span class="pre">NaturalEarthClone</span></code>
 or
-<code class="docutils literal"><span class="pre">geogig</span> <span class="pre">clone</span> <span class="pre">http://localhost:8080/geoserver/geogig/repos/NaturalEarth</span> <span class="pre">NaturalEarthClone</span></code>
-respectively, in order to clone the remote repository to a local folder called <code class="docutils literal"><span class="pre">NaturalEarthClone</span></code></p>
-<p>Cloning will automatically set up the remote repository URL as a remote called <code class="docutils literal"><span class="pre">origin</span></code>. Changes made to the local clone can be pushed to the remote by executing <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">push</span> <span class="pre">origin</span></code>. Changes made in the remote can be pulled to the local clone by executing <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">fetch</span> <span class="pre">origin</span></code>. See the <a class="reference internal" href="../repo/remotes.html#repo-remotes"><span class="std std-ref">Interacting with remote repositories</span></a> section for more information on how to interact with remote repositories.</p>
+<code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">clone</span> <span class="pre">http://localhost:8080/geoserver/geogig/repos/NaturalEarth</span> <span class="pre">NaturalEarthClone</span></code>
+respectively, in order to clone the remote repository to a local folder called <code class="docutils literal notranslate"><span class="pre">NaturalEarthClone</span></code></p>
+<p>Cloning will automatically set up the remote repository URL as a remote called <code class="docutils literal notranslate"><span class="pre">origin</span></code>. Changes made to the local clone can be pushed to the remote by executing <code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">push</span> <span class="pre">origin</span></code>. Changes made in the remote can be pulled to the local clone by executing <code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">fetch</span> <span class="pre">origin</span></code>. See the <a class="reference internal" href="../repo/remotes.html#repo-remotes"><span class="std std-ref">Interacting with remote repositories</span></a> section for more information on how to interact with remote repositories.</p>
 </div>
 
 

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web API: PostGIS Import &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Web API: PostGIS Import &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web API: Conflict Resolution" href="web-api-conflict-resolution.html" />
       <link rel="prev" title="Web API: GeoPackage Import and Export" href="web-api-geopackage.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web API: PostGIS Import</li>
 </ul>
@@ -101,7 +101,7 @@
 <div class="section" id="postgis-import-t">
 <h2>PostGIS Import (-T)<a class="headerlink" href="#postgis-import-t" title="Permalink to this headline">¶</a></h2>
 <p>The PostGIS import command allows for importing a data set from a PostGIS database into the working tree of a GeoGig repository.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/postgis/import?fidAttrib=&lt;attributeName&gt;[&amp;table=&lt;tableName&gt;][&amp;all=&lt;true|false&gt;][&amp;add=&lt;true|false&gt;][&amp;forceFeatureType=&lt;true|false&gt;][&amp;alter=&lt;true|false&gt;][&amp;dest=&lt;destinationTable&gt;][&amp;host=&lt;dbHost&gt;][&amp;port=&lt;dbPort&gt;][&amp;schema=&lt;dbSchema&gt;][&amp;database=&lt;dbName&gt;][&amp;user=&lt;dbUser&gt;][&amp;password=&lt;dbPassword&gt;]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/postgis/import?fidAttrib=&lt;attributeName&gt;[&amp;table=&lt;tableName&gt;][&amp;all=&lt;true|false&gt;][&amp;add=&lt;true|false&gt;][&amp;forceFeatureType=&lt;true|false&gt;][&amp;alter=&lt;true|false&gt;][&amp;dest=&lt;destinationTable&gt;][&amp;host=&lt;dbHost&gt;][&amp;port=&lt;dbPort&gt;][&amp;schema=&lt;dbSchema&gt;][&amp;database=&lt;dbName&gt;][&amp;user=&lt;dbUser&gt;][&amp;password=&lt;dbPassword&gt;]
 </pre></div>
 </div>
 <div class="section" id="parameters">
@@ -109,34 +109,34 @@
 <p><strong>fidAttrib:</strong>
 Mandatory.  The column to use as the feature id.  The values in this column should be unique.</p>
 <p><strong>table:</strong>
-Optional.  The PostGIS table to import.  If specified, <code class="docutils literal"><span class="pre">all</span></code> must be set to <code class="docutils literal"><span class="pre">false</span></code>.  If not specified, <code class="docutils literal"><span class="pre">all</span></code> must be set to <code class="docutils literal"><span class="pre">true</span></code>.</p>
+Optional.  The PostGIS table to import.  If specified, <code class="docutils literal notranslate"><span class="pre">all</span></code> must be set to <code class="docutils literal notranslate"><span class="pre">false</span></code>.  If not specified, <code class="docutils literal notranslate"><span class="pre">all</span></code> must be set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
 <p><strong>all:</strong>
-Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, import all tables from the PostGIS database.</p>
+Optional.  If specified as <code class="docutils literal notranslate"><span class="pre">true</span></code>, import all tables from the PostGIS database.</p>
 <p><strong>add:</strong>
-Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, only features that did not previously exist in the destination table will be imported.</p>
+Optional.  If specified as <code class="docutils literal notranslate"><span class="pre">true</span></code>, only features that did not previously exist in the destination table will be imported.</p>
 <p><strong>forceFeatureType:</strong>
-Optional.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, features will be added as they are, with their original feature type.</p>
+Optional.  If specified as <code class="docutils literal notranslate"><span class="pre">true</span></code>, features will be added as they are, with their original feature type.</p>
 <p><strong>alter:</strong>
-Optional.  Only valid when importing a single table.  If specified as <code class="docutils literal"><span class="pre">true</span></code>, it does not overwrite, and modifies the existing features to have the same feature type as the imported table.</p>
+Optional.  Only valid when importing a single table.  If specified as <code class="docutils literal notranslate"><span class="pre">true</span></code>, it does not overwrite, and modifies the existing features to have the same feature type as the imported table.</p>
 <p><strong>dest:</strong>
 Optional.  The name of the table to import to.  If not specified, the name of the PostGIS table will be used.</p>
 <p><strong>host:</strong>
-Optional.  The hostname of the PostGIS database.  If not specified, <code class="docutils literal"><span class="pre">localhost</span></code> will be used.</p>
+Optional.  The hostname of the PostGIS database.  If not specified, <code class="docutils literal notranslate"><span class="pre">localhost</span></code> will be used.</p>
 <p><strong>port:</strong>
-Optional.  The port of the PostGIS database.  If not specified, <code class="docutils literal"><span class="pre">5432</span></code> will be used.</p>
+Optional.  The port of the PostGIS database.  If not specified, <code class="docutils literal notranslate"><span class="pre">5432</span></code> will be used.</p>
 <p><strong>schema:</strong>
-Optional.  The schema of the PostGIS database.  If not specified, <code class="docutils literal"><span class="pre">public</span></code> will be used.</p>
+Optional.  The schema of the PostGIS database.  If not specified, <code class="docutils literal notranslate"><span class="pre">public</span></code> will be used.</p>
 <p><strong>database:</strong>
-Optional.  The name of the PostGIS database.  If not specified, <code class="docutils literal"><span class="pre">database</span></code> will be used.</p>
+Optional.  The name of the PostGIS database.  If not specified, <code class="docutils literal notranslate"><span class="pre">database</span></code> will be used.</p>
 <p><strong>user:</strong>
-Optional.  The name of the user to connect to the PostGIS database with.  If not specified, <code class="docutils literal"><span class="pre">postgres</span></code> will be used.</p>
+Optional.  The name of the user to connect to the PostGIS database with.  If not specified, <code class="docutils literal notranslate"><span class="pre">postgres</span></code> will be used.</p>
 <p><strong>password:</strong>
 Optional.  The password to connect to the PostGIS database with.  If not specified, no password will be used.</p>
 </div>
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <p><strong>Import a table from a PostGIS database</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/postgis/import?fidAttrib=fid&amp;table=postgis_multipoly&amp;database=postgis&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/postgis/import?fidAttrib=fid&amp;table=postgis_multipoly&amp;database=postgis&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot;?&gt;

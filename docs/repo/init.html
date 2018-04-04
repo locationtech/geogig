@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Initializing a repository &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Initializing a repository &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Configuring a GeoGig repository" href="config.html" />
       <link rel="prev" title="Storage Back-ends" href="storage.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Initializing a repository</li>
 </ul>
@@ -104,19 +104,19 @@
 </div>
 <p>The first step, when starting out versioning data, is to initialize a new GeoGig repository. A repository keeps your data and all the different versions of it, so you can go revert to any given version at any time.</p>
 <p>GeoGig is a command-line application, and it is run from the console typing commands in the form of:</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig &lt;command&gt; &lt;options&gt;</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig &lt;command&gt; &lt;options&gt;</span>
 </pre></div>
 </div>
-<p>To create a new repository, the <code class="docutils literal"><span class="pre">init</span></code> command is used.</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig init</span>
+<p>To create a new repository, the <code class="docutils literal notranslate"><span class="pre">init</span></code> command is used.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig init</span>
 </pre></div>
 </div>
-<p>This command will create a new directory called <code class="docutils literal"><span class="pre">.geogig</span></code> in the current directory, which will contain all your data, both the current version and the entire history of all older versions. Other than that, GeoGig will put nothing else in that directory.</p>
+<p>This command will create a new directory called <code class="docutils literal notranslate"><span class="pre">.geogig</span></code> in the current directory, which will contain all your data, both the current version and the entire history of all older versions. Other than that, GeoGig will put nothing else in that directory.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">In GeoGig, the working tree is not the folder where the <code class="docutils literal"><span class="pre">.geogig</span></code> subfolder is located. The working tree itself is located within the <code class="docutils literal"><span class="pre">.geogig</span></code> folder. This is a difference from <code class="docutils literal"><span class="pre">git</span></code>, where the working tree is the directory where the <code class="docutils literal"><span class="pre">.git</span></code> directory is located.</p>
+<p class="last">In GeoGig, the working tree is not the folder where the <code class="docutils literal notranslate"><span class="pre">.geogig</span></code> subfolder is located. The working tree itself is located within the <code class="docutils literal notranslate"><span class="pre">.geogig</span></code> folder. This is a difference from <code class="docutils literal notranslate"><span class="pre">git</span></code>, where the working tree is the directory where the <code class="docutils literal notranslate"><span class="pre">.git</span></code> directory is located.</p>
 </div>
-<p>All GeoGig commands have to be run from within a valid GeoGig repository. The only exception to this rule is the <code class="docutils literal"><span class="pre">init</span></code> command itself. In case you have several repositories on your system, the operations you execute will affect just the repository in the current working directory from where the commands are invoked.</p>
+<p>All GeoGig commands have to be run from within a valid GeoGig repository. The only exception to this rule is the <code class="docutils literal notranslate"><span class="pre">init</span></code> command itself. In case you have several repositories on your system, the operations you execute will affect just the repository in the current working directory from where the commands are invoked.</p>
 <p>The GeoGig repository created is empty. Even if the folder where the repository has been created previously contained some files, those are not considered part of the repository, and will be ignored, unless files in the directory are later imported into the working tree.</p>
 </div>
 

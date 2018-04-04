@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Working with OSM data in GeoGig &mdash; GeoGig 1.2.0 Workshop</title>
+  <title>Working with OSM data in GeoGig &mdash; GeoGig 1.2-SNAPSHOT Workshop</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,7 +17,7 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2-SNAPSHOT',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
@@ -25,7 +25,7 @@
   <link rel="shortcut icon" href="_static/favicon.ico"/>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.2.0 Workshop" href="index.html" />
+      <link rel="top" title="GeoGig 1.2-SNAPSHOT Workshop" href="index.html" />
 </head>
 <body class="osm_workshop">
     <div id="blacktop"></div>
@@ -78,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.2.0 Workshop</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.2-SNAPSHOT Workshop</a> &raquo;</li>
   <li>Working with OSM data in GeoGig</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -105,17 +105,17 @@
 <h2>Setting up the OSM base.<a class="headerlink" href="#setting-up-the-osm-base" title="Permalink to this headline">¶</a></h2>
 <p>The first thing to do is to import OSM data into a GeoGig repository, so we can later work with it.</p>
 <p>Create a folder for your repository, open a terminal in it and create the repo typing</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig init
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig init
 </pre></div>
 </div>
 <p>The easiest way of adding data to your repository is using a file in one of the OSM formats, whether an XML file or a compressed pbf file. Both of them are supported by GeoGig. This will not give you the full history of the repository, but just a single snapshot corresponding to a given time. This is what most users need to perform OSM work.</p>
 <p>In the workshop dataset you will find a file named andorra.pbf with an extract of the OSM planet. Import it using the following command</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig osm import andorra.pbf
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig osm import andorra.pbf
 </pre></div>
 </div>
 <p>The aove command assumes that the file to import is in the repository folder. Adjust the path accordingly if you have it somewhere else.</p>
 <p>You will see something like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Importing</span> <span class="n">into</span> <span class="n">GeoGig</span> <span class="n">repo</span><span class="o">...</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Importing</span> <span class="n">into</span> <span class="n">GeoGig</span> <span class="n">repo</span><span class="o">...</span>
 <span class="mf">87.120</span>
 <span class="mf">87.484</span> <span class="n">entities</span> <span class="n">processed</span> <span class="ow">in</span> <span class="mi">7</span><span class="p">,</span><span class="mi">498</span> <span class="n">s</span>
 
@@ -129,14 +129,14 @@
 </pre></div>
 </div>
 <p>Two new trees should have been created with your trees and nodes, and you can check that by running:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig ls
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig ls
 Root tree/
 node/
 way/
 </pre></div>
 </div>
 <p>The imported features are in the working tree. To create a new snapshot in the repository, you have to add and commit it.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig add
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig add
 Counting unstaged elements...87377
 Staging changes...
 100%
@@ -153,7 +153,7 @@ Committed, counting objects...87375 features added, 0 changed, 0 deleted.
 <div class="section" id="mapping-the-osm-data-in-a-repository">
 <h2>Mapping the OSM data in a repository<a class="headerlink" href="#mapping-the-osm-data-in-a-repository" title="Permalink to this headline">¶</a></h2>
 <p>You can describe an entity to see how they are stored in the repository. For instance, let’s describe a way.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig show way/24664831
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig show way/24664831
 
 ID:  7430790dde70a7f70c5ab7fc1f992d6a24afe8ab
 FEATURE TYPE ID:  6deead5b94e28c813525d3371b26948bbf13c9ef
@@ -170,9 +170,9 @@ nodes: 268092812;268091938;268091940;268091942;268091944;268091946;268091948;268
 way: LINESTRING (1.4914396 42.565715000000004, 1.4914782000000002 42.565614200000006, 1.4916327 42.5654625, 1.4919503 42.565228600000005, 1.4922250000000001 42.564982, 1.4924653 42.5647608, 1.4926455 42.5645838, 1.4929857000000002 42.5644574, 1.4931016000000001 42.564402400000006, 1.493273 42.564354900000005, 1.4936003 42.564430300000005, 1.493854 42.5643614, 1.4941412 42.5642499, 1.4942882000000002 42.5641138, 1.494936 42.563841700000005, 1.4951742000000001 42.5636925)
 </pre></div>
 </div>
-<p>As you can see, all tags are stored together under a single attribute named <code class="docutils literal"><span class="pre">tags</span></code>. The structure of the attributes associated to an OSM way is fixed and always the same. You can, however, map your OSM data, creating a new tree in the repository with a different set of attributes derived from the tags. Mapping can also be used to filter the data, so only certain ways or nodes are stored in the new tree.</p>
-<p>In the workshop dataset you will find a mapping file named <code class="docutils literal"><span class="pre">mapping.json</span></code>. Open it with a text editor. It should look like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;rules&quot;</span><span class="p">:[</span>
+<p>As you can see, all tags are stored together under a single attribute named <code class="docutils literal notranslate"><span class="pre">tags</span></code>. The structure of the attributes associated to an OSM way is fixed and always the same. You can, however, map your OSM data, creating a new tree in the repository with a different set of attributes derived from the tags. Mapping can also be used to filter the data, so only certain ways or nodes are stored in the new tree.</p>
+<p>In the workshop dataset you will find a mapping file named <code class="docutils literal notranslate"><span class="pre">mapping.json</span></code>. Open it with a text editor. It should look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;rules&quot;</span><span class="p">:[</span>
   <span class="p">{</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;aerialways&quot;</span><span class="p">,</span>
     <span class="s2">&quot;filter&quot;</span><span class="p">:{</span>
@@ -188,19 +188,19 @@ way: LINESTRING (1.4914396 42.565715000000004, 1.4914782000000002 42.56561420000
 </pre></div>
 </div>
 <p>You can apply it to the repository by running</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="n">osm</span> <span class="nb">map</span> <span class="n">mapping</span><span class="o">.</span><span class="n">json</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="n">osm</span> <span class="nb">map</span> <span class="n">mapping</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 <p>Once applied, your tree should look like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig ls
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig ls
 Root tree/
     node/
     aerialways/
     way/
 </pre></div>
 </div>
-<p>Describing a single feature in the <code class="docutils literal"><span class="pre">aerialways</span></code> tree will show you the structure of the associated attributes, as defined in the mapping file.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig show aerialways/52163704
+<p>Describing a single feature in the <code class="docutils literal notranslate"><span class="pre">aerialways</span></code> tree will show you the structure of the associated attributes, as defined in the mapping file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig show aerialways/52163704
 
 ID:  4fe2996182dfcad8e440546f2a61d12291123e31
 FEATURE TYPE ID:  0270c5fd961871135664733378fc6267881f53de
@@ -218,37 +218,37 @@ nodes: 664559723;664559794
 </div>
 <div class="section" id="editing-the-osm-data">
 <h2>Editing the OSM data<a class="headerlink" href="#editing-the-osm-data" title="Permalink to this headline">¶</a></h2>
-<p>Editing is done outside the repository, so layer have to exported to a suitale format. Run the following command to export the <code class="docutils literal"><span class="pre">aerialways</span></code> folder to a shapefile</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ shp export aerialways aerialways.shp
+<p>Editing is done outside the repository, so layer have to exported to a suitale format. Run the following command to export the <code class="docutils literal notranslate"><span class="pre">aerialways</span></code> folder to a shapefile</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ shp export aerialways aerialways.shp
 Exporting aerialways...
 100%
 aerialways exported successfully to aerialways.shp
 </pre></div>
 </div>
 <p>You can now open the resulting shapefile in a software such as QGIS and edit it.</p>
-<p>In the attributes table you will see that some features do not have a value in the <code class="docutils literal"><span class="pre">name</span></code> field. This is because the name tag was not found when mapping them. Locate the feature with the id 143323580 and enter a name in the name field. Save the changes to the shapefile.</p>
+<p>In the attributes table you will see that some features do not have a value in the <code class="docutils literal notranslate"><span class="pre">name</span></code> field. This is because the name tag was not found when mapping them. Locate the feature with the id 143323580 and enter a name in the name field. Save the changes to the shapefile.</p>
 <p>Importing the shapefile back into the GeoGig repository will update it with the changes that you have done. To reimport it, use the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp import aerialways.shp
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig shp import aerialways.shp
 </pre></div>
 </div>
 <p>The changes can be inspected by using the diff command</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig diff HEAD WORK_HEAD
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig diff HEAD WORK_HEAD
 </pre></div>
 </div>
 <p>To get more detail about the change in the feture that we have modified use the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig diff HEAD WORK_HEAD --path aerialways/143323580
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig diff HEAD WORK_HEAD --path aerialways/143323580
 </pre></div>
 </div>
-<p>OSM operations work on the canonical representations of OSM features in the repo, which are always stored in the <code class="docutils literal"><span class="pre">ways</span></code> and <code class="docutils literal"><span class="pre">nodes</span></code> trees. Our changes are only stored in the <code class="docutils literal"><span class="pre">aerialways</span></code> tree, so we have to bring them to the canonical trees. This is done by unmapping the <code class="docutils literal"><span class="pre">aerialways</span></code> tree. To unmap it, we can use the following command</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig osm unmap
+<p>OSM operations work on the canonical representations of OSM features in the repo, which are always stored in the <code class="docutils literal notranslate"><span class="pre">ways</span></code> and <code class="docutils literal notranslate"><span class="pre">nodes</span></code> trees. Our changes are only stored in the <code class="docutils literal notranslate"><span class="pre">aerialways</span></code> tree, so we have to bring them to the canonical trees. This is done by unmapping the <code class="docutils literal notranslate"><span class="pre">aerialways</span></code> tree. To unmap it, we can use the following command</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig osm unmap
 </pre></div>
 </div>
-<p>Now changes have also been applied to the <code class="docutils literal"><span class="pre">ways</span></code> tree, as it can be seen by running the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig diff HEAD WORK_HEAD --path ways
+<p>Now changes have also been applied to the <code class="docutils literal notranslate"><span class="pre">ways</span></code> tree, as it can be seen by running the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig diff HEAD WORK_HEAD --path ways
 </pre></div>
 </div>
 <p>To create a new snapshot in the repository history, add and commit the above changes.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig add
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig add
 $ geogig commit -m &quot;Added missing airway name&quot;
 </pre></div>
 </div>
@@ -256,13 +256,13 @@ $ geogig commit -m &quot;Added missing airway name&quot;
 <div class="section" id="contributing-changes-back-to-the-osm-planet">
 <h2>Contributing changes back to the OSM planet<a class="headerlink" href="#contributing-changes-back-to-the-osm-planet" title="Permalink to this headline">¶</a></h2>
 <p>GeoGig can generate a file with the differences between two snapshots in a format suitable for being contributed to the OSM planet. In our case, we can export the change that we have just introduced and later apply in in the OSM planet. This is done using the following command.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig osm create-changeset HEAD~1 HEAD
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig osm create-changeset HEAD~1 HEAD
 </pre></div>
 </div>
-<p>However, the resulting changeset will not have valid changeset ID assigned, since those IDs are managed by the OSM API. As a result of that, you will not be able to apply that chageset on the OSM planet. Changesets generated by the <code class="docutils literal"><span class="pre">create-changeset</span></code> command will be valid IDs only if they represent a change that is already part of the OSM planet, but not a change that has been manually added in the GeoGig repository.</p>
-<p>To fix that, you first have to create an ID using the OSM API, sending a PUT request to <code class="docutils literal"><span class="pre">http://api.openstreetmap.org/api/0.6/changeset/create</span></code>. You can use curl on a terminal to do that. Check <a href="#id1"><span class="problematic" id="id2">``</span></a><a class="reference external" href="http://wiki.openstreetmap.org/wiki/API_v0">http://wiki.openstreetmap.org/wiki/API_v0</a>.6```for more information about this usage of the OSM API.</p>
-<p>The PUT request will return the ID of the changeset, and you can provided it to the <code class="docutils literal"><span class="pre">create-changeset</span></code> GeoGig command, as follows.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig geogig osm create-changeset HEAD~1 HEAD --id &lt;your_changeset_id&gt;
+<p>However, the resulting changeset will not have valid changeset ID assigned, since those IDs are managed by the OSM API. As a result of that, you will not be able to apply that chageset on the OSM planet. Changesets generated by the <code class="docutils literal notranslate"><span class="pre">create-changeset</span></code> command will be valid IDs only if they represent a change that is already part of the OSM planet, but not a change that has been manually added in the GeoGig repository.</p>
+<p>To fix that, you first have to create an ID using the OSM API, sending a PUT request to <code class="docutils literal notranslate"><span class="pre">http://api.openstreetmap.org/api/0.6/changeset/create</span></code>. You can use curl on a terminal to do that. Check <a href="#id1"><span class="problematic" id="id2">``</span></a><a class="reference external" href="http://wiki.openstreetmap.org/wiki/API_v0">http://wiki.openstreetmap.org/wiki/API_v0</a>.6```for more information about this usage of the OSM API.</p>
+<p>The PUT request will return the ID of the changeset, and you can provided it to the <code class="docutils literal notranslate"><span class="pre">create-changeset</span></code> GeoGig command, as follows.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig geogig osm create-changeset HEAD~1 HEAD --id &lt;your_changeset_id&gt;
 </pre></div>
 </div>
 <p>The resulting diff file can now be pushed to the OSM planet. GeoGig, however, does not implement that functionality, so you should curl or some other similar tool to do it.</p>

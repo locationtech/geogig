@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web API: Issues &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Web API: Issues &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="License" href="../license/index.html" />
       <link rel="prev" title="Web API: Asynchronous tasks" href="web-api-async-tasks.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web API: Issues</li>
 </ul>
@@ -101,8 +101,8 @@
 <ul class="simple">
 <li>The main concern with the web API currently is that it doesn’t have any kind of authentication on it, which means that anyone with the url can potentially compromise the integrity of the repo using various endpoints.</li>
 <li>There is also some inconsistencies in parameter names across different endpoints.  Parameters that refer to the same thing are named differently in some endpoints.  Some endpoints also use camel case while others are all lowercase.</li>
-<li>Most endpoints use the <code class="docutils literal"><span class="pre">GET</span></code> request method for every operation when other methods would be more appropriate.</li>
-<li>Most endpoints return a <code class="docutils literal"><span class="pre">200</span></code> status code when other status codes would be more appropriate.</li>
+<li>Most endpoints use the <code class="docutils literal notranslate"><span class="pre">GET</span></code> request method for every operation when other methods would be more appropriate.</li>
+<li>Most endpoints return a <code class="docutils literal notranslate"><span class="pre">200</span></code> status code when other status codes would be more appropriate.</li>
 </ul>
 </div>
 

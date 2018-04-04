@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web API: Indexing Commands &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Web API: Indexing Commands &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web API: GeoPackage Import and Export" href="web-api-geopackage.html" />
       <link rel="prev" title="Web API: Commands" href="web-api-commands.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web API: Indexing Commands</li>
 </ul>
@@ -102,19 +102,19 @@
 <div class="section" id="index-create">
 <h2>Index create<a class="headerlink" href="#index-create" title="Permalink to this headline">¶</a></h2>
 <p>Creates a new index on a specified feature tree using a geometry attribute in that tree.  Extra attributes may also be specified in order to improve query performance when the data is filtered on those attributes.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>PUT /repos/&lt;repo&gt;/index/create[.xml|.json]?treeRefSpec=&lt;treeRefSpec&gt;[&amp;geometryAttributeName=&lt;attributeName&gt;][[&amp;extraAttributes=&lt;attributeName&gt;]+][&amp;indexHistory=&lt;true|false&gt;][&amp;bounds=&lt;minx,miny,maxx,maxy&gt;]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>PUT /repos/&lt;repo&gt;/index/create[.xml|.json]?treeRefSpec=&lt;treeRefSpec&gt;[&amp;geometryAttributeName=&lt;attributeName&gt;][[&amp;extraAttributes=&lt;attributeName&gt;]+][&amp;indexHistory=&lt;true|false&gt;][&amp;bounds=&lt;minx,miny,maxx,maxy&gt;]
 </pre></div>
 </div>
 <div class="section" id="parameters">
 <h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
 <p><strong>treeRefSpec:</strong>
-Mandatory. Defines the ref spec that resolves to the feature tree that should be indexed (e.g. <code class="docutils literal"><span class="pre">HEAD:Points</span></code>, <code class="docutils literal"><span class="pre">Points</span></code>, etc).  If no commit is defined, <code class="docutils literal"><span class="pre">HEAD</span></code> will be used.</p>
+Mandatory. Defines the ref spec that resolves to the feature tree that should be indexed (e.g. <code class="docutils literal notranslate"><span class="pre">HEAD:Points</span></code>, <code class="docutils literal notranslate"><span class="pre">Points</span></code>, etc).  If no commit is defined, <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> will be used.</p>
 <p><strong>geometryAttributeName:</strong>
 Optional. Defaults to the primary geometry attribute on the feature type.  The name of the attribute that should be used for indexing.</p>
 <p><strong>extraAttributes:</strong>
 Optional. An extra attribute that should be stored in the index to improve performance when filtering on those attributes.  This can be defined multiple times if there should be multiple extra attributes.</p>
 <p><strong>indexHistory:</strong>
-Optional. Boolean indicating whether or not index trees should be built for every commit in the history of the repository.  By default only the feature tree in commit indicated by the <code class="docutils literal"><span class="pre">treeRefSpec</span></code> will be indexed.</p>
+Optional. Boolean indicating whether or not index trees should be built for every commit in the history of the repository.  By default only the feature tree in commit indicated by the <code class="docutils literal notranslate"><span class="pre">treeRefSpec</span></code> will be indexed.</p>
 <p><strong>bounds:</strong>
 Optional.  String indicating the max bounds of the spatial index.  If not specified, the bounds will be set to the extent of the coordinate reference system of the geometry attribute.</p>
 </div>
@@ -122,7 +122,7 @@ Optional.  String indicating the max bounds of the spatial index.  If not specif
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="create-an-index-on-points">
 <h4>Create an index on Points<a class="headerlink" href="#create-an-index-on-points" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X PUT -v &quot;http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X PUT -v &quot;http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -141,7 +141,7 @@ Optional.  String indicating the max bounds of the spatial index.  If not specif
 </div>
 <div class="section" id="create-an-index-with-extra-attributes">
 <h4>Create an index with extra attributes<a class="headerlink" href="#create-an-index-with-extra-attributes" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X PUT -v &quot;http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&amp;extraAttributes=ip&amp;extraAttributes=sp&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X PUT -v &quot;http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&amp;extraAttributes=ip&amp;extraAttributes=sp&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -162,7 +162,7 @@ Optional.  String indicating the max bounds of the spatial index.  If not specif
 </div>
 <div class="section" id="create-an-index-with-custom-bounds">
 <h4>Create an index with custom bounds<a class="headerlink" href="#create-an-index-with-custom-bounds" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X PUT -v &quot;http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&amp;bounds=-60,-45,60,45&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X PUT -v &quot;http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&amp;bounds=-60,-45,60,45&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -184,23 +184,23 @@ Optional.  String indicating the max bounds of the spatial index.  If not specif
 <div class="section" id="index-update">
 <h2>Index update<a class="headerlink" href="#index-update" title="Permalink to this headline">¶</a></h2>
 <p>Updates an index to contain a different set of extra attributes.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>POST /repos/&lt;repo&gt;/index/update[.xml|.json]?treeRefSpec=&lt;treeRefSpec&gt;[&amp;geometryAttributeName=&lt;attributeName&gt;][[&amp;extraAttributes=&lt;attributeName&gt;]+][&amp;indexHistory=&lt;true|false&gt;][&amp;add|overwrite=&lt;true|false&gt;]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /repos/&lt;repo&gt;/index/update[.xml|.json]?treeRefSpec=&lt;treeRefSpec&gt;[&amp;geometryAttributeName=&lt;attributeName&gt;][[&amp;extraAttributes=&lt;attributeName&gt;]+][&amp;indexHistory=&lt;true|false&gt;][&amp;add|overwrite=&lt;true|false&gt;]
 </pre></div>
 </div>
 <div class="section" id="id2">
 <h3>Parameters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p><strong>treeRefSpec:</strong>
-Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. <code class="docutils literal"><span class="pre">HEAD:Points</span></code>, <code class="docutils literal"><span class="pre">Points</span></code>, etc).  If no commit is defined, <code class="docutils literal"><span class="pre">HEAD</span></code> will be used.</p>
+Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. <code class="docutils literal notranslate"><span class="pre">HEAD:Points</span></code>, <code class="docutils literal notranslate"><span class="pre">Points</span></code>, etc).  If no commit is defined, <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> will be used.</p>
 <p><strong>geometryAttributeName:</strong>
 Optional. The name of the attribute that is used on the existing index. Defaults to the primary geometry attribute on the feature type.</p>
 <p><strong>extraAttributes:</strong>
 Optional. An extra attribute that should be stored in the index to improve performance when filtering on those attributes.  This can be defined multiple times if there should be multiple extra attributes.</p>
 <p><strong>indexHistory:</strong>
-Optional. Boolean indicating whether or not index trees should be rebuilt for every commit in the history of the repository.  By default only the feature tree in the commit indicated by the <code class="docutils literal"><span class="pre">treeRefSpec</span></code> will be re-indexed.</p>
+Optional. Boolean indicating whether or not index trees should be rebuilt for every commit in the history of the repository.  By default only the feature tree in the commit indicated by the <code class="docutils literal notranslate"><span class="pre">treeRefSpec</span></code> will be re-indexed.</p>
 <p><strong>add:</strong>
-Optional. If extra attributes already exist on the index, you must specify either <code class="docutils literal"><span class="pre">add</span></code> or <code class="docutils literal"><span class="pre">overwrite</span></code> to inform the operation how to handle combining the new attributes with the old.  If <code class="docutils literal"><span class="pre">add</span></code> is specified, any new attributes that do not already exist on the index will be added.</p>
+Optional. If extra attributes already exist on the index, you must specify either <code class="docutils literal notranslate"><span class="pre">add</span></code> or <code class="docutils literal notranslate"><span class="pre">overwrite</span></code> to inform the operation how to handle combining the new attributes with the old.  If <code class="docutils literal notranslate"><span class="pre">add</span></code> is specified, any new attributes that do not already exist on the index will be added.</p>
 <p><strong>overwrite:</strong>
-Optional: See <code class="docutils literal"><span class="pre">add</span></code>.  If <code class="docutils literal"><span class="pre">overwrite</span></code> is specified, the extra attributes in the index will be replaced with those specified in the parameters.  If no extra attributes are supplied, all extra attributes will be removed from the index.</p>
+Optional: See <code class="docutils literal notranslate"><span class="pre">add</span></code>.  If <code class="docutils literal notranslate"><span class="pre">overwrite</span></code> is specified, the extra attributes in the index will be replaced with those specified in the parameters.  If no extra attributes are supplied, all extra attributes will be removed from the index.</p>
 <p><strong>bounds:</strong>
 Optional.  String indicating the new maximum bounds of the spatial index.</p>
 </div>
@@ -208,8 +208,8 @@ Optional.  String indicating the new maximum bounds of the spatial index.</p>
 <h3>Examples<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="update-the-points-index-to-have-an-extra-attribute">
 <h4>Update the Points index to have an extra attribute<a class="headerlink" href="#update-the-points-index-to-have-an-extra-attribute" title="Permalink to this headline">¶</a></h4>
-<p>If the index does not contain any extra attributes, you do not need to specify <code class="docutils literal"><span class="pre">add</span></code> or <code class="docutils literal"><span class="pre">overwrite</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;extraAttributes=ip&quot; | xmllint --format -
+<p>If the index does not contain any extra attributes, you do not need to specify <code class="docutils literal notranslate"><span class="pre">add</span></code> or <code class="docutils literal notranslate"><span class="pre">overwrite</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;extraAttributes=ip&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -229,8 +229,8 @@ Optional.  String indicating the new maximum bounds of the spatial index.</p>
 </div>
 <div class="section" id="update-the-points-index-to-add-an-extra-attribute">
 <h4>Update the Points index to add an extra attribute<a class="headerlink" href="#update-the-points-index-to-add-an-extra-attribute" title="Permalink to this headline">¶</a></h4>
-<p>In this case Points already has an extra attribute of <code class="docutils literal"><span class="pre">sp</span></code>.  If we want to add <code class="docutils literal"><span class="pre">ip</span></code> we need to specify the <code class="docutils literal"><span class="pre">add</span></code> parameter to indicate that we don’t want to remove the existing extra attribute.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;extraAttributes=ip&amp;add=true&quot; | xmllint --format -
+<p>In this case Points already has an extra attribute of <code class="docutils literal notranslate"><span class="pre">sp</span></code>.  If we want to add <code class="docutils literal notranslate"><span class="pre">ip</span></code> we need to specify the <code class="docutils literal notranslate"><span class="pre">add</span></code> parameter to indicate that we don’t want to remove the existing extra attribute.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;extraAttributes=ip&amp;add=true&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -251,8 +251,8 @@ Optional.  String indicating the new maximum bounds of the spatial index.</p>
 </div>
 <div class="section" id="update-the-points-index-to-remove-extra-attributes">
 <h4>Update the Points index to remove extra attributes<a class="headerlink" href="#update-the-points-index-to-remove-extra-attributes" title="Permalink to this headline">¶</a></h4>
-<p>In this case Points already has an extra attribute of <code class="docutils literal"><span class="pre">sp</span></code>.  If we want to remove all extra attributes, we can specify the <code class="docutils literal"><span class="pre">overwrite</span></code> parameter and not supply any extra attributes.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;overwrite=true&quot; | xmllint --format -
+<p>In this case Points already has an extra attribute of <code class="docutils literal notranslate"><span class="pre">sp</span></code>.  If we want to remove all extra attributes, we can specify the <code class="docutils literal notranslate"><span class="pre">overwrite</span></code> parameter and not supply any extra attributes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;overwrite=true&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -271,7 +271,7 @@ Optional.  String indicating the new maximum bounds of the spatial index.</p>
 </div>
 <div class="section" id="update-the-max-bounds-of-the-points-index">
 <h4>Update the max bounds of the Points index<a class="headerlink" href="#update-the-max-bounds-of-the-points-index" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;bounds=-60,-45,60,45&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&amp;bounds=-60,-45,60,45&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -292,14 +292,14 @@ Optional.  String indicating the new maximum bounds of the spatial index.</p>
 </div>
 <div class="section" id="index-rebuild">
 <h2>Index rebuild<a class="headerlink" href="#index-rebuild" title="Permalink to this headline">¶</a></h2>
-<p>Rebuilds the index trees for the full history of a feature type.  This is generally only used when an index has been created or updated without the <code class="docutils literal"><span class="pre">indexHistory</span></code> paramater.  This command provides a way to do that operation if the need arises after the index has been created.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>POST /repos/&lt;repo&gt;/index/rebuild[.xml|.json]?treeRefSpec=&lt;treeRefSpec&gt;[&amp;geometryAttributeName=&lt;attributeName&gt;]
+<p>Rebuilds the index trees for the full history of a feature type.  This is generally only used when an index has been created or updated without the <code class="docutils literal notranslate"><span class="pre">indexHistory</span></code> paramater.  This command provides a way to do that operation if the need arises after the index has been created.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /repos/&lt;repo&gt;/index/rebuild[.xml|.json]?treeRefSpec=&lt;treeRefSpec&gt;[&amp;geometryAttributeName=&lt;attributeName&gt;]
 </pre></div>
 </div>
 <div class="section" id="id4">
 <h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <p><strong>treeRefSpec:</strong>
-Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. <code class="docutils literal"><span class="pre">HEAD:Points</span></code>, <code class="docutils literal"><span class="pre">Points</span></code>, etc).  If no commit is defined, <code class="docutils literal"><span class="pre">HEAD</span></code> will be used.</p>
+Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. <code class="docutils literal notranslate"><span class="pre">HEAD:Points</span></code>, <code class="docutils literal notranslate"><span class="pre">Points</span></code>, etc).  If no commit is defined, <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> will be used.</p>
 <p><strong>geometryAttributeName:</strong>
 Optional. The name of the attribute that is used on the existing index. Defaults to the primary geometry attribute on the feature type.</p>
 </div>
@@ -307,7 +307,7 @@ Optional. The name of the attribute that is used on the existing index. Defaults
 <h3>Examples<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="rebuild-the-index-trees-of-an-index">
 <h4>Rebuild the index trees of an index<a class="headerlink" href="#rebuild-the-index-trees-of-an-index" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/rebuild?treeRefSpec=Points&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X POST -v &quot;http://localhost:8182/repos/repo1/index/rebuild?treeRefSpec=Points&quot; | xmllint --format -
     &lt; HTTP/1.1 201 Created
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -323,13 +323,13 @@ Optional. The name of the attribute that is used on the existing index. Defaults
 <div class="section" id="index-drop">
 <h2>Index drop<a class="headerlink" href="#index-drop" title="Permalink to this headline">¶</a></h2>
 <p>Removes an index from the repository.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>DELETE /repos/&lt;repo&gt;/index/drop[.xml|.json]?treeRefSpec=&lt;treeRefSpec&gt;[&amp;geometryAttributeName=&lt;attributeName&gt;]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>DELETE /repos/&lt;repo&gt;/index/drop[.xml|.json]?treeRefSpec=&lt;treeRefSpec&gt;[&amp;geometryAttributeName=&lt;attributeName&gt;]
 </pre></div>
 </div>
 <div class="section" id="id6">
 <h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <p><strong>treeRefSpec:</strong>
-Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. <code class="docutils literal"><span class="pre">HEAD:Points</span></code>, <code class="docutils literal"><span class="pre">Points</span></code>, etc).  If no commit is defined, <code class="docutils literal"><span class="pre">HEAD</span></code> will be used.</p>
+Mandatory. Defines the ref spec that resolves to the feature tree that is already indexed (e.g. <code class="docutils literal notranslate"><span class="pre">HEAD:Points</span></code>, <code class="docutils literal notranslate"><span class="pre">Points</span></code>, etc).  If no commit is defined, <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> will be used.</p>
 <p><strong>geometryAttributeName:</strong>
 Optional. Defaults to the primary geometry attribute on the feature type.  The name of the attribute that is used on the existing index.</p>
 </div>
@@ -337,7 +337,7 @@ Optional. Defaults to the primary geometry attribute on the feature type.  The n
 <h3>Examples<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="drop-an-index">
 <h4>Drop an index:<a class="headerlink" href="#drop-an-index" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -X DELETE -v &quot;http://localhost:8182/repos/repo1/index/drop?treeRefSpec=Points&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -X DELETE -v &quot;http://localhost:8182/repos/repo1/index/drop?treeRefSpec=Points&quot; | xmllint --format -
     &lt; HTTP/1.1 200 OK
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -358,7 +358,7 @@ Optional. Defaults to the primary geometry attribute on the feature type.  The n
 <div class="section" id="index-list">
 <h2>Index list<a class="headerlink" href="#index-list" title="Permalink to this headline">¶</a></h2>
 <p>Lists the indexes that have been built for a repository.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/index/list[.xml|.json][?treeName=&lt;treeName&gt;]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/index/list[.xml|.json][?treeName=&lt;treeName&gt;]
 </pre></div>
 </div>
 <div class="section" id="id8">
@@ -370,7 +370,7 @@ Optional. Defines the tree name of a feature tree in the repository.  Only index
 <h3>Examples<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="list-all-indexes-in-the-repository">
 <h4>List all indexes in the repository<a class="headerlink" href="#list-all-indexes-in-the-repository" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -v &quot;http://localhost:8182/repos/repo1/index/list&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -v &quot;http://localhost:8182/repos/repo1/index/list&quot; | xmllint --format -
     &lt; HTTP/1.1 200 OK
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -394,7 +394,7 @@ Optional. Defines the tree name of a feature tree in the repository.  Only index
 </div>
 <div class="section" id="list-all-indexes-on-the-points-layer">
 <h4>List all indexes on the Points layer<a class="headerlink" href="#list-all-indexes-on-the-points-layer" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ curl -v &quot;http://localhost:8182/repos/repo1/index/list?treeName=Points&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ curl -v &quot;http://localhost:8182/repos/repo1/index/list?treeName=Points&quot; | xmllint --format -
     &lt; HTTP/1.1 200 OK
     &lt; Content-Type: application/xml
     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;

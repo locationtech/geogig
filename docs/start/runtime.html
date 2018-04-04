@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Runtime configuration &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Runtime configuration &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Starting out with GeoGig" href="index.html" />
       <link rel="next" title="GeoGig tutorial" href="tutorial.html" />
       <link rel="prev" title="Installation" href="installation.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Starting out with GeoGig</a> &raquo;</li>
   <li>Runtime configuration</li>
 </ul>
@@ -103,28 +103,28 @@
 <span id="caching"></span><h2>Shared internal cache<a class="headerlink" href="#shared-internal-cache" title="Permalink to this headline">¶</a></h2>
 <p>GeoGig uses a local, in-memory cache for revision objects (features, commits, trees, etc) in order to alleviate the load to the backend storage and speed up some operations.</p>
 <p>This cache is shared among all the repositories being used by a single JVM, using an LRU (Least Recently Used) eviction policy.</p>
-<p>By default, this cache will use up to 25% of the maximum available heap memory on the Java Virtual Machine where it’s running. So, for example, if your JVM is ran with the <code class="docutils literal"><span class="pre">-Xmx4G</span></code> argument to set a maximum heap size of 4 giga-bytes, GeoGig’s cache will consume up to one giga-byte of memory.</p>
-<p>This default cache size can be changed through the <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> environment variable or Java system property, with the later taking precedence over the former, and can later be changed at runtime by connecting to the JVM with a JMX client or through GeoServer’s User Interface as shown bellow.</p>
-<p>The <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> runtime argument value can be expressed in terms of a percentage of the JVM’s maximum heap memory, or as an absolute value.
+<p>By default, this cache will use up to 25% of the maximum available heap memory on the Java Virtual Machine where it’s running. So, for example, if your JVM is ran with the <code class="docutils literal notranslate"><span class="pre">-Xmx4G</span></code> argument to set a maximum heap size of 4 giga-bytes, GeoGig’s cache will consume up to one giga-byte of memory.</p>
+<p>This default cache size can be changed through the <code class="docutils literal notranslate"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> environment variable or Java system property, with the later taking precedence over the former, and can later be changed at runtime by connecting to the JVM with a JMX client or through GeoServer’s User Interface as shown bellow.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> runtime argument value can be expressed in terms of a percentage of the JVM’s maximum heap memory, or as an absolute value.
 through the following format:</p>
 <ul class="simple">
-<li>A value of <code class="docutils literal"><span class="pre">0</span></code> completely disables the cache;</li>
-<li>A floating point value between <code class="docutils literal"><span class="pre">0.0</span></code> and <code class="docutils literal"><span class="pre">0.9</span></code>, indicates the maximum cache size as a ratio of the maximum heap size. For example, <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE=0.5</span></code> to use up to 50% of the JVM heap.</li>
-<li>An integer value, indicates an absolute maximum cache size in bytes. For example <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE=100000</span></code> sets the cache to one hundred thousand bytes</li>
-<li>A floating point value followed by a unit identifier <code class="docutils literal"><span class="pre">K</span></code>, <code class="docutils literal"><span class="pre">M</span></code>, or <code class="docutils literal"><span class="pre">G</span></code>, sets the cache size to an amount in Kilobytes, Megabytes, or Gigabytes, respectively. For example, <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE=1.5G</span></code> sets the cache to <code class="docutils literal"><span class="pre">1.5</span></code> giga bytes.</li>
+<li>A value of <code class="docutils literal notranslate"><span class="pre">0</span></code> completely disables the cache;</li>
+<li>A floating point value between <code class="docutils literal notranslate"><span class="pre">0.0</span></code> and <code class="docutils literal notranslate"><span class="pre">0.9</span></code>, indicates the maximum cache size as a ratio of the maximum heap size. For example, <code class="docutils literal notranslate"><span class="pre">GEOGIG_CACHE_MAX_SIZE=0.5</span></code> to use up to 50% of the JVM heap.</li>
+<li>An integer value, indicates an absolute maximum cache size in bytes. For example <code class="docutils literal notranslate"><span class="pre">GEOGIG_CACHE_MAX_SIZE=100000</span></code> sets the cache to one hundred thousand bytes</li>
+<li>A floating point value followed by a unit identifier <code class="docutils literal notranslate"><span class="pre">K</span></code>, <code class="docutils literal notranslate"><span class="pre">M</span></code>, or <code class="docutils literal notranslate"><span class="pre">G</span></code>, sets the cache size to an amount in Kilobytes, Megabytes, or Gigabytes, respectively. For example, <code class="docutils literal notranslate"><span class="pre">GEOGIG_CACHE_MAX_SIZE=1.5G</span></code> sets the cache to <code class="docutils literal notranslate"><span class="pre">1.5</span></code> giga bytes.</li>
 </ul>
-<p>In either case, the maximum cache size cannot be higher than 90% of the JVM’s maximum heap size. If so, the maximum cache size will be reverted to its default, following the precedence rule: if it was given through a System property, will revert to the value of the <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> environment variable. If the environment variable is not present or holds an invalid value, reverts to the internal default of 25% of the maximum heap size.</p>
-<p>How to pass the <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> argument as either an environment variable or system property depends on your running platform and the environment GeoGig is running on.</p>
-<p>An environment variable can be set in GNU/Linux and MaxOS through the <code class="docutils literal"><span class="pre">export</span> <span class="pre">GEOGIG_CACHE_MAX_SIZE=&lt;value&gt;</span></code> shell command.
-The Java system property is given by the <code class="docutils literal"><span class="pre">-DGEOGIG_CACHE_MAX_SIZE=&lt;value&gt;</span></code> argument to the JVM. For the command line application it can be given as part of the <code class="docutils literal"><span class="pre">JAVA_OPTS</span></code> environment variable, like in <code class="docutils literal"><span class="pre">export</span> <span class="pre">JAVA_OPTS=&quot;-DGEOGIG_CACHE_MAX_SIZE=0.5</span></code>.</p>
+<p>In either case, the maximum cache size cannot be higher than 90% of the JVM’s maximum heap size. If so, the maximum cache size will be reverted to its default, following the precedence rule: if it was given through a System property, will revert to the value of the <code class="docutils literal notranslate"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> environment variable. If the environment variable is not present or holds an invalid value, reverts to the internal default of 25% of the maximum heap size.</p>
+<p>How to pass the <code class="docutils literal notranslate"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> argument as either an environment variable or system property depends on your running platform and the environment GeoGig is running on.</p>
+<p>An environment variable can be set in GNU/Linux and MaxOS through the <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">GEOGIG_CACHE_MAX_SIZE=&lt;value&gt;</span></code> shell command.
+The Java system property is given by the <code class="docutils literal notranslate"><span class="pre">-DGEOGIG_CACHE_MAX_SIZE=&lt;value&gt;</span></code> argument to the JVM. For the command line application it can be given as part of the <code class="docutils literal notranslate"><span class="pre">JAVA_OPTS</span></code> environment variable, like in <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">JAVA_OPTS=&quot;-DGEOGIG_CACHE_MAX_SIZE=0.5</span></code>.</p>
 <div class="section" id="runtime-cache-statistics-and-configuration">
 <h3>Runtime cache statistics and configuration<a class="headerlink" href="#runtime-cache-statistics-and-configuration" title="Permalink to this headline">¶</a></h3>
 <p>The GeoGig revision objects cache holds a number of statistics such as current cache size, memory usage, number of cache hits and misses; and it’s maximum size can be changed at runtime through a JMX client such the <cite>Java Monitoring &amp; Management Console</cite> or through the GeoServer’s plug-in user interface.</p>
-<p>The JMX bean is configured under the <code class="docutils literal"><span class="pre">org.geogig:type=shared-cache</span></code> object name. For a running JVM with geogig, you can connect to it using the standard <code class="docutils literal"><span class="pre">jconsole</span></code> application, connect to the JVM process of interest, select the <cite>MBeans</cite> tab, and browse to the shared cache as shown bellow:</p>
+<p>The JMX bean is configured under the <code class="docutils literal notranslate"><span class="pre">org.geogig:type=shared-cache</span></code> object name. For a running JVM with geogig, you can connect to it using the standard <code class="docutils literal notranslate"><span class="pre">jconsole</span></code> application, connect to the JVM process of interest, select the <cite>MBeans</cite> tab, and browse to the shared cache as shown bellow:</p>
 <div class="figure">
 <img alt="../_images/geogig_cache_jconsole.png" src="../_images/geogig_cache_jconsole.png" />
 </div>
-<p>On the <code class="docutils literal"><span class="pre">org.geogig/shared-cache/attributes</span></code> dialog, you’ll see a number of cache properties, of which the <code class="docutils literal"><span class="pre">MaximumSizeMB</span></code> and <code class="docutils literal"><span class="pre">MaximumSizePercent</span></code> are editable and allows you to change the cache’s maximum size value in MB or as a heap percentage, respectively.</p>
+<p>On the <code class="docutils literal notranslate"><span class="pre">org.geogig/shared-cache/attributes</span></code> dialog, you’ll see a number of cache properties, of which the <code class="docutils literal notranslate"><span class="pre">MaximumSizeMB</span></code> and <code class="docutils literal notranslate"><span class="pre">MaximumSizePercent</span></code> are editable and allows you to change the cache’s maximum size value in MB or as a heap percentage, respectively.</p>
 <p>These options are also available through GeoServer’s <a class="reference internal" href="../interaction/geoserver_ui.html#geosever-settings"><span class="std std-ref">GeoGig Runtime Settings</span></a> configuration section.</p>
 </div>
 </div>

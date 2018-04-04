@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>geogig-diff documentation &mdash; GeoGig 1.2.0 Man Pages</title>
+  <title>geogig-diff documentation &mdash; GeoGig 1.2 Man Pages</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.2.0 Man Pages" href="index.html" />
+      <link rel="top" title="GeoGig 1.2 Man Pages" href="index.html" />
 </head>
 <body class="diff">
     <div id="blacktop"></div>
@@ -77,7 +77,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.2.0 Man Pages</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.2 Man Pages</a> &raquo;</li>
   <li>geogig-diff documentation</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -100,8 +100,8 @@
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Shows changes between two commits, a commit and the working tree or a commit and the index.</p>
 <p>If no commits are specified, it will compare the working tree and index. If only a single commit is passed, it will compare the working tree and the specified commit.</p>
-<p>Comparison can be restricted to a given path, by using <code class="docutils literal"><span class="pre">--path</span> <span class="pre">&lt;path&gt;</span></code>.</p>
-<p>By default, a full detailed report of changes is shown. By using the <code class="docutils literal"><span class="pre">--nogeom</span></code> and <code class="docutils literal"><span class="pre">--summary</span></code> switches, a less detailed output can be obtained.</p>
+<p>Comparison can be restricted to a given path, by using <code class="docutils literal notranslate"><span class="pre">--path</span> <span class="pre">&lt;path&gt;</span></code>.</p>
+<p>By default, a full detailed report of changes is shown. By using the <code class="docutils literal notranslate"><span class="pre">--nogeom</span></code> and <code class="docutils literal notranslate"><span class="pre">--summary</span></code> switches, a less detailed output can be obtained.</p>
 </div>
 <div class="section" id="options">
 <h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
@@ -126,7 +126,7 @@
 <td>Print the spatial bounds of the changes between the two trees being compared instead of the actual diff. At least otherwise specified through the –crs parameter, the output is in EPSG:4326 lon/lat coordinate reference system. The output is four lines specifying the changed bounds at the left side of the comparison, at the right side, the merged bounds, and the output CRS. For example:</td></tr>
 </tbody>
 </table>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">left</span><span class="p">:</span>  <span class="o">-</span><span class="mf">127.203597</span><span class="p">,</span><span class="mf">58.217228</span><span class="p">,</span><span class="o">-</span><span class="mf">126.687105</span><span class="p">,</span><span class="mf">58.293822</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">left</span><span class="p">:</span>  <span class="o">-</span><span class="mf">127.203597</span><span class="p">,</span><span class="mf">58.217228</span><span class="p">,</span><span class="o">-</span><span class="mf">126.687105</span><span class="p">,</span><span class="mf">58.293822</span>
 <span class="n">right</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">empty</span><span class="o">&gt;</span>
 <span class="n">both</span><span class="p">:</span>  <span class="o">-</span><span class="mf">127.203597</span><span class="p">,</span><span class="mf">58.217228</span><span class="p">,</span><span class="o">-</span><span class="mf">126.687105</span><span class="p">,</span><span class="mf">58.293822</span>
 <span class="n">CRS</span><span class="p">:</span>   <span class="n">EPSG</span><span class="p">:</span><span class="mi">4326</span>

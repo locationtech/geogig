@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web API: Transactions &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Web API: Transactions &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web API: Commands" href="web-api-commands.html" />
       <link rel="prev" title="Web API: Overview" href="web-api-overview.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web API: Transactions</li>
 </ul>
@@ -98,11 +98,11 @@
         
   <div class="section" id="web-api-transactions">
 <h1>Web API: Transactions<a class="headerlink" href="#web-api-transactions" title="Permalink to this headline">¶</a></h1>
-<p>Many web API commands have transaction support to allow multiple users to change the state of the repository without compromising stability.  This works by beginning a transaction, which will generate a unique transaction ID.  This ID can then be passed to many web API commands so that all work done by that command will affect only that transaction.  After you are done with everything on the transaction you can then end that transaction to merge those changes into the base repository. Some commands require a transaction to preserve the stability of the repository. Those that require it will have <code class="docutils literal"><span class="pre">(-T)</span></code> next to the name of the command in this doc. To perform a command on a transaction, simply supply the transaction ID via the <code class="docutils literal"><span class="pre">transactionId</span></code> parameter.</p>
+<p>Many web API commands have transaction support to allow multiple users to change the state of the repository without compromising stability.  This works by beginning a transaction, which will generate a unique transaction ID.  This ID can then be passed to many web API commands so that all work done by that command will affect only that transaction.  After you are done with everything on the transaction you can then end that transaction to merge those changes into the base repository. Some commands require a transaction to preserve the stability of the repository. Those that require it will have <code class="docutils literal notranslate"><span class="pre">(-T)</span></code> next to the name of the command in this doc. To perform a command on a transaction, simply supply the transaction ID via the <code class="docutils literal notranslate"><span class="pre">transactionId</span></code> parameter.</p>
 <div class="section" id="begintransaction">
 <h2>BeginTransaction<a class="headerlink" href="#begintransaction" title="Permalink to this headline">¶</a></h2>
 <p>Begins a new transaction, generating a new transaction ID.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span><span class="o">&gt;/</span><span class="n">beginTransaction</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">repo</span><span class="o">&gt;/</span><span class="n">beginTransaction</span>
 </pre></div>
 </div>
 <div class="section" id="parameters">
@@ -112,7 +112,7 @@
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <p><strong>Begin a new transaction</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/beginTransaction&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/beginTransaction&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -129,7 +129,7 @@
 <div class="section" id="endtransaction-t">
 <h2>EndTransaction (-T)<a class="headerlink" href="#endtransaction-t" title="Permalink to this headline">¶</a></h2>
 <p>Ends the transaction that belongs to the ID provided in the request.   This operation may return merge conflicts that must be resolved before the merge can be completed (See <a class="reference internal" href="web-api-conflict-resolution.html#conflict-resolution"><span class="std std-ref">Web API: Conflict Resolution</span></a>).</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/endTransaction?transactionId=&lt;transactionId&gt;[&amp;cancel=&lt;true|false&gt;]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /repos/&lt;repo&gt;/endTransaction?transactionId=&lt;transactionId&gt;[&amp;cancel=&lt;true|false&gt;]
 </pre></div>
 </div>
 <div class="section" id="id1">
@@ -140,7 +140,7 @@ Optional.  If true, the changes made on the transaction will be discarded.  If n
 <div class="section" id="id2">
 <h3>Examples<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p><strong>End a transaction</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/endTransaction?transactionId=e6062d14-5b31-46b5-8e83-9d02fdc45504&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/endTransaction?transactionId=e6062d14-5b31-46b5-8e83-9d02fdc45504&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -153,7 +153,7 @@ Optional.  If true, the changes made on the transaction will be discarded.  If n
 </pre></div>
 </div>
 <p><strong>End a transaction with conflicts</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/endTransaction?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/endTransaction?transactionId=4c3af4a5-e537-40eb-b624-02d62e1d9580&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot;?&gt;
@@ -181,7 +181,7 @@ Optional.  If true, the changes made on the transaction will be discarded.  If n
 <p class="last">If there were conflicting changes on the base repository when ending a transaction, this endpoint will return those conflicts.  They must be resolved before attempting to end the transaction again.</p>
 </div>
 <p><strong>Cancel a transaction</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/endTransaction?transactionId=e6062d14-5b31-46b5-8e83-9d02fdc45504&amp;cancel=true&quot; | xmllint --format -
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -v &quot;http://localhost:8182/repos/repo1/endTransaction?transactionId=e6062d14-5b31-46b5-8e83-9d02fdc45504&amp;cancel=true&quot; | xmllint --format -
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;

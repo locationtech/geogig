@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Installation &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Installation &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Starting out with GeoGig" href="index.html" />
       <link rel="next" title="Runtime configuration" href="runtime.html" />
       <link rel="prev" title="Introduction" href="introduction.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Starting out with GeoGig</a> &raquo;</li>
   <li>Installation</li>
 </ul>
@@ -109,46 +109,46 @@
 <ol class="arabic">
 <li><p class="first">After the JDK is installed, navigate to the project’s releases page <a class="reference external" href="https://github.com/locationtech/geogig/releases/">https://github.com/locationtech/geogig/releases/</a> and download the latest release. For example, <cite>geogig-1.1.0.zip</cite>.</p>
 </li>
-<li><p class="first">Extract this archive to your preferred program directory. (For example, <code class="file docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\GeoGig</span></code> or <code class="file docutils literal"><span class="pre">/opt/geogig</span></code>.)</p>
+<li><p class="first">Extract this archive to your preferred program directory. (For example, <code class="file docutils literal notranslate"><span class="pre">C:\Program</span> <span class="pre">Files\GeoGig</span></code> or <code class="file docutils literal notranslate"><span class="pre">/opt/geogig</span></code>.)</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The same packages can be used on Windows, OS X, and Linux.</p>
 </div>
 </li>
-<li id="pathsetup"><p class="first">Add the <cite>bin</cite> directory to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.</p>
+<li id="pathsetup"><p class="first">Add the <cite>bin</cite> directory to your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment variable.</p>
 <ul>
 <li><p class="first">OS X</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Open <code class="docutils literal"><span class="pre">Terminal</span></code> from the Utilities folder in the Applications directory.</li>
+<li>Open <code class="docutils literal notranslate"><span class="pre">Terminal</span></code> from the Utilities folder in the Applications directory.</li>
 <li>Open the bash profile with nano.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> nano ~/.bash_profile
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> nano ~/.bash_profile
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
 <li>Specify the java home directory inside the profile by adding the following line to the end of the file.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">export JAVA_HOME=$(/usr/libexec/java_home)</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export JAVA_HOME=$(/usr/libexec/java_home)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
-<li>Add the bin directory from your GeoGig install location to the <code class="docutils literal"><span class="pre">PATH</span></code> by adding the following line at the end of the file.  In this case, GeoGig was extracted to <code class="file docutils literal"><span class="pre">/opt/geogig</span></code>.</li>
+<li>Add the bin directory from your GeoGig install location to the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> by adding the following line at the end of the file.  In this case, GeoGig was extracted to <code class="file docutils literal notranslate"><span class="pre">/opt/geogig</span></code>.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">export PATH=$PATH:/opt/geogig/bin</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export PATH=$PATH:/opt/geogig/bin</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
 <li>Save the bash profile with Ctrl+O, and exit using Ctrl+X.</li>
 <li>Reload the profile.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> <span class="nb">source</span> ~/.bash_profile
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> <span class="nb">source</span> ~/.bash_profile
 </pre></div>
 </div>
 <ol class="arabic simple" start="7">
 <li>Verify GeoGig functionality.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> geogig --help
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> geogig --help
 <span class="go">usage: geogig [--repo &lt;URI&gt;] &lt;command&gt; [&lt;args&gt;]</span>
 
 <span class="go">The most commonly used geogig commands are:</span>
@@ -160,23 +160,23 @@
 <li><p class="first">Windows</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Open up <code class="docutils literal"><span class="pre">System</span></code> from the Windows control panel and click on <code class="docutils literal"><span class="pre">Advanced</span> <span class="pre">system</span> <span class="pre">settings</span></code>.  Depending on how your control panel is displayed, this may be under the <code class="docutils literal"><span class="pre">System</span> <span class="pre">and</span> <span class="pre">Security</span></code> section.</li>
-<li>Click on <code class="docutils literal"><span class="pre">Environment</span> <span class="pre">Variables</span></code>.</li>
-<li>Look through the <code class="docutils literal"><span class="pre">System</span> <span class="pre">Variables</span></code> section and find the <code class="docutils literal"><span class="pre">PATH</span></code> (or <code class="docutils literal"><span class="pre">Path</span></code>) variable and click <code class="docutils literal"><span class="pre">Edit...</span></code>.  If it does not exist, click <code class="docutils literal"><span class="pre">New...</span></code></li>
-<li>Add the bin directory from your GeoGig install location by adding the following path to the end of the existing value, separated by a semicolon.  In this case, GeoGig was extracted to <code class="file docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\GeoGig</span></code>.</li>
+<li>Open up <code class="docutils literal notranslate"><span class="pre">System</span></code> from the Windows control panel and click on <code class="docutils literal notranslate"><span class="pre">Advanced</span> <span class="pre">system</span> <span class="pre">settings</span></code>.  Depending on how your control panel is displayed, this may be under the <code class="docutils literal notranslate"><span class="pre">System</span> <span class="pre">and</span> <span class="pre">Security</span></code> section.</li>
+<li>Click on <code class="docutils literal notranslate"><span class="pre">Environment</span> <span class="pre">Variables</span></code>.</li>
+<li>Look through the <code class="docutils literal notranslate"><span class="pre">System</span> <span class="pre">Variables</span></code> section and find the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> (or <code class="docutils literal notranslate"><span class="pre">Path</span></code>) variable and click <code class="docutils literal notranslate"><span class="pre">Edit...</span></code>.  If it does not exist, click <code class="docutils literal notranslate"><span class="pre">New...</span></code></li>
+<li>Add the bin directory from your GeoGig install location by adding the following path to the end of the existing value, separated by a semicolon.  In this case, GeoGig was extracted to <code class="file docutils literal notranslate"><span class="pre">C:\Program</span> <span class="pre">Files\GeoGig</span></code>.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">C:\Program Files\GeoGig\bin</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">C:\Program Files\GeoGig\bin</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">In newer versions of windows, the <code class="docutils literal"><span class="pre">Path</span></code> variable will be displayed as a list.  In this case, simply add a new entry for the above path.</p>
+<p class="last">In newer versions of windows, the <code class="docutils literal notranslate"><span class="pre">Path</span></code> variable will be displayed as a list.  In this case, simply add a new entry for the above path.</p>
 </div>
 <ol class="arabic simple" start="5">
-<li>Click <code class="docutils literal"><span class="pre">OK</span></code> through each window to save the changes.</li>
+<li>Click <code class="docutils literal notranslate"><span class="pre">OK</span></code> through each window to save the changes.</li>
 <li>Verify GeoGig functionality in a new Command Prompt window.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">&gt;</span> geogig --help
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;</span> geogig --help
 <span class="go">usage: geogig [--repo &lt;URI&gt;] &lt;command&gt; [&lt;args&gt;]</span>
 
 <span class="go">The most commonly used geogig commands are:</span>
@@ -188,23 +188,23 @@
 </ul>
 </li>
 </ol>
-<p>When finished, you should be able to run the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">--help</span></code> and see the command usage.</p>
+<p>When finished, you should be able to run the <code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">--help</span></code> and see the command usage.</p>
 </div>
 <div class="section" id="geoserver-plug-in">
 <h2>GeoServer plug-in<a class="headerlink" href="#geoserver-plug-in" title="Permalink to this headline">¶</a></h2>
 <p>A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as a datastore. It enables a GeoGig repository to be exposed as a remote for cloning, pushing, and pulling, as well as to publish its data via OGC services.</p>
 <p>The GeoServer GeoGig plug-in binaries are pre-compiled and ready to be downloaded for the most recent versions of GeoServer.
 Refer to the project’s releases page <a class="reference external" href="https://github.com/locationtech/geogig/releases/">https://github.com/locationtech/geogig/releases/</a> and download the latest release. For example, <a class="reference external" href="https://github.com/locationtech/geogig/releases/download/v1.1.0/geoserver-2.11-SNAPSHOT-geogig-plugin.zip">GeoServer 2.11.x plugin</a>.</p>
-<p>Once downloaded, unzip the contensts of the <code class="docutils literal"><span class="pre">geoserver-&lt;version&gt;-geogig-plugin.zip</span></code> file inside GeoServer’s <code class="docutils literal"><span class="pre">WEB-INF/lib</span></code> directory and restart GeoServer.</p>
+<p>Once downloaded, unzip the contensts of the <code class="docutils literal notranslate"><span class="pre">geoserver-&lt;version&gt;-geogig-plugin.zip</span></code> file inside GeoServer’s <code class="docutils literal notranslate"><span class="pre">WEB-INF/lib</span></code> directory and restart GeoServer.</p>
 <p>For information on how to configure GeoGig on GeoServer, refer to the <a class="reference internal" href="../interaction/geoserver_ui.html#geoserver-ui"><span class="std std-ref">GeoServer GUI configuration</span></a> and <a class="reference internal" href="../interaction/geoserver_web-api.html#geoserver-web-api"><span class="std std-ref">GeoServer REST configuration integration</span></a> sections.</p>
 <div class="section" id="postgresql-jdbc-driver-version">
 <h3>PostgreSQL JDBC Driver version<a class="headerlink" href="#postgresql-jdbc-driver-version" title="Permalink to this headline">¶</a></h3>
 <p>GeoServer versions lower than 2.12 come with an older version of the PostgreSQL JDBC driver than the one required by GeoGig.
-GeoGig requires version <code class="docutils literal"><span class="pre">42.1.1</span></code> (included in the geogig plugin zip file as <code class="docutils literal"><span class="pre">postgresql-42.1.1.jar</span></code>), while GeoServer comes
-with version <code class="docutils literal"><span class="pre">9.4.1211</span></code>.</p>
+GeoGig requires version <code class="docutils literal notranslate"><span class="pre">42.1.1</span></code> (included in the geogig plugin zip file as <code class="docutils literal notranslate"><span class="pre">postgresql-42.1.1.jar</span></code>), while GeoServer comes
+with version <code class="docutils literal notranslate"><span class="pre">9.4.1211</span></code>.</p>
 <p>GeoGig needs the above mentioned version or higher in order to be able to transferring data to and from the postgres database in pure binary form.</p>
-<p>Given the way servlet containers (such as Apache Tomcat or Jetty) work, if the two jar files end up being in GeoSevrer’s <code class="docutils literal"><span class="pre">WEB-INF/lib</span></code> folder,
-one or the other may be loaded first, in a non deterministic way. Hence <strong>you’ll need to remove the older jar file</strong> from GeoSevrer’s <code class="docutils literal"><span class="pre">WEB-INF/lib</span></code> folder
+<p>Given the way servlet containers (such as Apache Tomcat or Jetty) work, if the two jar files end up being in GeoSevrer’s <code class="docutils literal notranslate"><span class="pre">WEB-INF/lib</span></code> folder,
+one or the other may be loaded first, in a non deterministic way. Hence <strong>you’ll need to remove the older jar file</strong> from GeoSevrer’s <code class="docutils literal notranslate"><span class="pre">WEB-INF/lib</span></code> folder
 before restarting GeoServer and after installing the GeoGig plugin as described above.</p>
 <p>Note GeoGig will verify the correct driver version is in use and won’t work if the old driver is still installed and loaded.</p>
 </div>
@@ -216,17 +216,17 @@ before restarting GeoServer and after installing the GeoGig plugin as described 
 <div class="section" id="running-on-windows">
 <h2>Running on Windows<a class="headerlink" href="#running-on-windows" title="Permalink to this headline">¶</a></h2>
 <p>GeoGig for Windows is only available for Windows 64-bit versions.</p>
-<p>GeoGig uses <a class="reference external" href="http://rocksdb.org/">RocksDB</a> as the default storage backend and for some temporary storage needs.  On Windows machines, the libraries for RocksDB require the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=48145">Visual C++ Redistributable for Visual Studio 2015</a>.  If you experience an <code class="docutils literal"><span class="pre">UnsatisfiedLinkError</span></code> exception when running GeoGig, make sure you have the above dependency installed on your system.</p>
-<p>Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing <a class="reference external" href="http://adoxa.altervista.org/ansicon/">ANSICON</a> and setting the <code class="docutils literal"><span class="pre">ansi.enabled</span></code> config parameter to <code class="docutils literal"><span class="pre">true</span></code>. See the config section <a class="reference internal" href="../repo/config.html#repo-config"><span class="std std-ref">Configuring a GeoGig repository</span></a>.</p>
+<p>GeoGig uses <a class="reference external" href="http://rocksdb.org/">RocksDB</a> as the default storage backend and for some temporary storage needs.  On Windows machines, the libraries for RocksDB require the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=48145">Visual C++ Redistributable for Visual Studio 2015</a>.  If you experience an <code class="docutils literal notranslate"><span class="pre">UnsatisfiedLinkError</span></code> exception when running GeoGig, make sure you have the above dependency installed on your system.</p>
+<p>Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing <a class="reference external" href="http://adoxa.altervista.org/ansicon/">ANSICON</a> and setting the <code class="docutils literal notranslate"><span class="pre">ansi.enabled</span></code> config parameter to <code class="docutils literal notranslate"><span class="pre">true</span></code>. See the config section <a class="reference internal" href="../repo/config.html#repo-config"><span class="std std-ref">Configuring a GeoGig repository</span></a>.</p>
 <div class="section" id="installing-ansicon">
 <h3>Installing ANSICON<a class="headerlink" href="#installing-ansicon" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
 <li>Download the <a class="reference external" href="http://adoxa.altervista.org/ansicon/">ANSICON</a>  zip.</li>
-<li>Unzip the file to it’s own location, such as <code class="docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\Ansicon\</span></code></li>
-<li>Add the ANSICON location to the Windows PATH, found under <code class="docutils literal"><span class="pre">System</span> <span class="pre">-&gt;</span> <span class="pre">Advanced</span> <span class="pre">System</span> <span class="pre">Properties</span> <span class="pre">-&gt;</span> <span class="pre">Environment</span> <span class="pre">Variables</span></code></li>
-<li>Open a <code class="docutils literal"><span class="pre">cmd</span></code> or <code class="docutils literal"><span class="pre">powershell</span></code> terminal and type <code class="docutils literal"><span class="pre">ansicon</span></code> to confirm the PATH variable is set correctly. If the PATH is correct  information about the Windows version will be printed in the console. This command will enable ANSICON for this terminal session only.</li>
+<li>Unzip the file to it’s own location, such as <code class="docutils literal notranslate"><span class="pre">C:\Program</span> <span class="pre">Files\Ansicon\</span></code></li>
+<li>Add the ANSICON location to the Windows PATH, found under <code class="docutils literal notranslate"><span class="pre">System</span> <span class="pre">-&gt;</span> <span class="pre">Advanced</span> <span class="pre">System</span> <span class="pre">Properties</span> <span class="pre">-&gt;</span> <span class="pre">Environment</span> <span class="pre">Variables</span></code></li>
+<li>Open a <code class="docutils literal notranslate"><span class="pre">cmd</span></code> or <code class="docutils literal notranslate"><span class="pre">powershell</span></code> terminal and type <code class="docutils literal notranslate"><span class="pre">ansicon</span></code> to confirm the PATH variable is set correctly. If the PATH is correct  information about the Windows version will be printed in the console. This command will enable ANSICON for this terminal session only.</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">ansicon</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ansicon</span>
 <span class="go">Microsoft Windows [Version 6.3.9600]</span>
 <span class="go">(c) 2013 Microsoft Corporation. All rights reserved.</span>
 </pre></div>
@@ -234,7 +234,7 @@ before restarting GeoServer and after installing the GeoGig plugin as described 
 <ol class="arabic simple">
 <li>To make ANSICON load automatically with new terminals type:</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">ansicon -i</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ansicon -i</span>
 </pre></div>
 </div>
 <ol class="arabic simple">
@@ -246,11 +246,11 @@ before restarting GeoServer and after installing the GeoGig plugin as described 
 <ol class="arabic simple">
 <li>To remove ANSICON from the terminal defaults type:</li>
 </ol>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">ansicon -u</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ansicon -u</span>
 </pre></div>
 </div>
 <ol class="arabic simple">
-<li>Remove ANSICON from the windows <code class="docutils literal"><span class="pre">PATH</span></code></li>
+<li>Remove ANSICON from the windows <code class="docutils literal notranslate"><span class="pre">PATH</span></code></li>
 <li>Delete the ANSICON folder from the location it was installed.</li>
 </ol>
 </div>

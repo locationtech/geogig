@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web API: Overview &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Web API: Overview &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="Web API: Transactions" href="web-api-transactions.html" />
       <link rel="prev" title="GeoServer REST configuration integration" href="geoserver_web-api.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web API: Overview</li>
 </ul>
@@ -99,11 +99,11 @@
   <div class="section" id="web-api-overview">
 <h1>Web API: Overview<a class="headerlink" href="#web-api-overview" title="Permalink to this headline">¶</a></h1>
 <p>This will walk you through GeoGig’s web API and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands.</p>
-<p>If you don’t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web API up and running after you have built the latest GeoGig, <code class="docutils literal"><span class="pre">cd</span></code> into your repository and run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code>. This will set up a jetty server for your repository and give you access to the web API. Now you just need to open up a web browser and go to <code class="docutils literal"><span class="pre">localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> to make sure the server starts up. After you have gotten the web server up and running, you can test any of the commands listed here.</p>
+<p>If you don’t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web API up and running after you have built the latest GeoGig, <code class="docutils literal notranslate"><span class="pre">cd</span></code> into your repository and run <code class="docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">serve</span></code>. This will set up a jetty server for your repository and give you access to the web API. Now you just need to open up a web browser and go to <code class="docutils literal notranslate"><span class="pre">localhost:8182/repos/&lt;repo</span> <span class="pre">name&gt;/log</span></code> to make sure the server starts up. After you have gotten the web server up and running, you can test any of the commands listed here.</p>
 <p>Some commands have parameters that are required for that command to work.  These parameters will be described as “Mandatory”.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">All web API command response are formatted for xml by default, however you can get a JSON response by adding <code class="docutils literal"><span class="pre">output_format=JSON</span></code> to the URL parameters.</p>
+<p class="last">All web API command response are formatted for xml by default, however you can get a JSON response by adding <code class="docutils literal notranslate"><span class="pre">output_format=JSON</span></code> to the URL parameters.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -115,19 +115,19 @@
 <ul class="simple">
 <li><strong>URL Encoded</strong></li>
 </ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config?name=user.name&amp;value=John%20Doe&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config?name=user.name&amp;value=John%20Doe&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><strong>JSON</strong></li>
 </ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/json&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{&quot;name&quot;:&quot;user.name&quot;,&quot;value&quot;:&quot;John Doe&quot;}&#39;</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/json&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{&quot;name&quot;:&quot;user.name&quot;,&quot;value&quot;:&quot;John Doe&quot;}&#39;</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><strong>XML</strong></li>
 </ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/xml&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s2">&quot;&lt;params&gt;&lt;name&gt;user.name&lt;/name&gt;&lt;value&gt;John Doe&lt;/value&gt;&lt;/params&gt;&quot;</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/xml&quot;</span> <span class="o">-</span><span class="n">d</span> <span class="s2">&quot;&lt;params&gt;&lt;name&gt;user.name&lt;/name&gt;&lt;value&gt;John Doe&lt;/value&gt;&lt;/params&gt;&quot;</span> <span class="s2">&quot;http://localhost:8182/repos/&lt;repo name&gt;/config&quot;</span>
 </pre></div>
 </div>
 </div>

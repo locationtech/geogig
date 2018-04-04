@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Partial cloning &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Partial cloning &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Command aliases" href="commandaliases.html" />
       <link rel="prev" title="Hooks" href="hooks.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Partial cloning</li>
 </ul>
@@ -110,13 +110,13 @@
 <div class="section" id="shallow-cloning">
 <h2>Shallow cloning<a class="headerlink" href="#shallow-cloning" title="Permalink to this headline">¶</a></h2>
 <p>A shallow clone is a repository created by limiting the depth of the history that is cloned from an original repository. The depth of the cloned repository, which is selected when the cloning operation is performed, is defined as the number of total commits that the linear history of the repository will contain.</p>
-<p>A shallow clone is created using the <code class="docutils literal"><span class="pre">--depth</span></code> option when calling the <code class="docutils literal"><span class="pre">clone</span></code> command, followed by the number of commits that you want to retrieve from the remote repository.</p>
+<p>A shallow clone is created using the <code class="docutils literal notranslate"><span class="pre">--depth</span></code> option when calling the <code class="docutils literal notranslate"><span class="pre">clone</span></code> command, followed by the number of commits that you want to retrieve from the remote repository.</p>
 <p>Below you can see the history of a repository with some commits and branches.</p>
 <div class="figure">
 <img alt="../_images/shallow_origin.png" src="../_images/shallow_origin.png" />
 </div>
 <p>The following command will create a shallow clone with a depth of 3 commits.</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig clone path/to/repo --depth 3</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig clone path/to/repo --depth 3</span>
 </pre></div>
 </div>
 <p>If cloning the repository with the history graph shown above, the history of the cloned repository will be like the one shown in the next figure.</p>
@@ -124,15 +124,15 @@
 <img alt="../_images/shallow_clone.png" src="../_images/shallow_clone.png" />
 </div>
 <p>The depth of the cloning is taken into account when fetching the commits and corresponding data for each branch. Starting from the tip of the branch, all commits at a distance of less than the specified depth are fetched.</p>
-<p>If your repository has branches other than <code class="docutils literal"><span class="pre">master</span></code>, that can cause some special situations in the cloned repository. For instance, if branches are longer that the specified depth, they will become orphaned branches in the cloned repo, since the depth is not enough to reach the point in the history where the branch was created.</p>
+<p>If your repository has branches other than <code class="docutils literal notranslate"><span class="pre">master</span></code>, that can cause some special situations in the cloned repository. For instance, if branches are longer that the specified depth, they will become orphaned branches in the cloned repo, since the depth is not enough to reach the point in the history where the branch was created.</p>
 <p>Here you can see an example of this case, obtained by cloning the original repository, but this time with a depth of 2 commits instead of 3.</p>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="go">geogig clone path/to/repo --depth 2</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">geogig clone path/to/repo --depth 2</span>
 </pre></div>
 </div>
 <div class="figure">
 <img alt="../_images/shallow_orphan_branch.png" src="../_images/shallow_orphan_branch.png" />
 </div>
-<p>The <code class="docutils literal"><span class="pre">branch1</span></code> and <code class="docutils literal"><span class="pre">master</span></code> branches are disconnected from each other now, since the history doesn’t go back to the point where they diverged. Operations such as <code class="docutils literal"><span class="pre">merge</span></code> and <code class="docutils literal"><span class="pre">rebase</span></code> cannot be performed in this cloned repository for the <code class="docutils literal"><span class="pre">branch1</span></code> branch, since there is no common ancestor between <code class="docutils literal"><span class="pre">master</span></code> and <code class="docutils literal"><span class="pre">branch1</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">branch1</span></code> and <code class="docutils literal notranslate"><span class="pre">master</span></code> branches are disconnected from each other now, since the history doesn’t go back to the point where they diverged. Operations such as <code class="docutils literal notranslate"><span class="pre">merge</span></code> and <code class="docutils literal notranslate"><span class="pre">rebase</span></code> cannot be performed in this cloned repository for the <code class="docutils literal notranslate"><span class="pre">branch1</span></code> branch, since there is no common ancestor between <code class="docutils literal notranslate"><span class="pre">master</span></code> and <code class="docutils literal notranslate"><span class="pre">branch1</span></code>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Technically, a shallow clone is itself orphaned, since there is a part that is missing and there is no connection between the origin of the repository and the oldest commit in the shallow clone.</p>
@@ -142,9 +142,9 @@
 <div class="figure">
 <img alt="../_images/shallow_deeper_with_branches.png" src="../_images/shallow_deeper_with_branches.png" />
 </div>
-<p>A shallow clone of depth 3 of a repository with the above history would actually create a full regular clone of the repo. To get a depth of 3 for the <code class="docutils literal"><span class="pre">branch1</span></code> branch, the clone has to go as deep as the very first commit.</p>
-<p>If you run the <code class="docutils literal"><span class="pre">log</span></code> command on the master branch of that repository, you will get something like this.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$geogig log --oneline master
+<p>A shallow clone of depth 3 of a repository with the above history would actually create a full regular clone of the repo. To get a depth of 3 for the <code class="docutils literal notranslate"><span class="pre">branch1</span></code> branch, the clone has to go as deep as the very first commit.</p>
+<p>If you run the <code class="docutils literal notranslate"><span class="pre">log</span></code> command on the master branch of that repository, you will get something like this.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$geogig log --oneline master
 72134b41bd1d21be8d5e0feb3f9e2bf2f803f2fa Added Roads5
 bb0c0b6e18f88e1871cacf98489d9df10418a22d Added Roads4
 720b29a382486b573b6529acbb8d80bb7c6ab378 Added Roads3
@@ -152,40 +152,40 @@ bb0c0b6e18f88e1871cacf98489d9df10418a22d Added Roads4
 58dc80ae8c2656e4affba30ccbb89d526743c3d8 Added Roads1
 </pre></div>
 </div>
-<p>Although the depth of the clone is just 3, you can, however, see more that 3 commits. That is because the two last commits are not actually part of the shallow clone of the <code class="docutils literal"><span class="pre">master</span></code> branch, but part of the cloned <code class="docutils literal"><span class="pre">branch1</span></code> branch.</p>
+<p>Although the depth of the clone is just 3, you can, however, see more that 3 commits. That is because the two last commits are not actually part of the shallow clone of the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch, but part of the cloned <code class="docutils literal notranslate"><span class="pre">branch1</span></code> branch.</p>
 <div class="section" id="working-with-a-shallow-clone">
 <h3>Working with a shallow clone<a class="headerlink" href="#working-with-a-shallow-clone" title="Permalink to this headline">¶</a></h3>
-<p>On a shallow clone, operations such as <code class="docutils literal"><span class="pre">pull</span></code> and <code class="docutils literal"><span class="pre">push</span></code> can be performed as usual, since they all work on the tip of the branches (the most recent commits). A shallow clone always contains those commits, and ignores the older ones beyond the specified depth, so it should have no problems when pushing and pulling to the full remote repository from which it has been cloned, or to any other clone, whether regular or shallow.</p>
+<p>On a shallow clone, operations such as <code class="docutils literal notranslate"><span class="pre">pull</span></code> and <code class="docutils literal notranslate"><span class="pre">push</span></code> can be performed as usual, since they all work on the tip of the branches (the most recent commits). A shallow clone always contains those commits, and ignores the older ones beyond the specified depth, so it should have no problems when pushing and pulling to the full remote repository from which it has been cloned, or to any other clone, whether regular or shallow.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">A <em>git</em> shallow clone is more limited than a GeoGig shallow clone, since operations such as fetch or push cannot be performed on a <em>git</em> shallow clone.</p>
 </div>
 <p>Operations that work not on the tip of the history, but at its bottom (the older commits), also behave similar to the case of a regular repository. The situation, however, is different in that, in the case of a shallow clone, bottom commits do not have their parents stored in the repository database, since those parents are beyond the depth specified when creating the shallow clone. GeoGig handles this situation by simulating that the first commit of the shallow clone is the very first commit, having no parent.</p>
-<p>You can see this by running the log command with the <code class="docutils literal"><span class="pre">--changed</span></code> option. When run, for instance, on the shallow clone of depth 3 introduced in the first example, you would get something like this.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$log --changed
+<p>You can see this by running the log command with the <code class="docutils literal notranslate"><span class="pre">--changed</span></code> option. When run, for instance, on the shallow clone of depth 3 introduced in the first example, you would get something like this.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$log --changed
 
 XXXXX
 </pre></div>
 </div>
 <p>The differences reported by the command for the first commit of the shallow clone are not the actual changes introduced by that commit, but the differences between the snapshot represented by that commit and the empty repository before any commit was made.</p>
-<p>If you run the <code class="docutils literal"><span class="pre">log</span></code> command using a path, to see which commits have affected that path, the bottom-most commit will appear as responsible of having added it in the first time, in case the corresponding feature was introduced by a commit older than the specified depth limit.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$log --online Roads1
+<p>If you run the <code class="docutils literal notranslate"><span class="pre">log</span></code> command using a path, to see which commits have affected that path, the bottom-most commit will appear as responsible of having added it in the first time, in case the corresponding feature was introduced by a commit older than the specified depth limit.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$log --online Roads1
 a76c6550cd45d84df09088f6efdd6747c3755643 Added Roads3
 </pre></div>
 </div>
 <p>Looking at the corresponding history figure above you can see that the specified path was, however, not affected by that commit in the original repo. The very first commit, with the <em>Added Roads1</em> message, was the one that added the specified path. Since that commit is beyond the reach of the shallow clone it is included as part of the changes introduced by the first commit of that shallow clone, assuming that, for that repository, there was nothing stored before that commit.</p>
-<p>Note that GeoGig cannot modify the commit messages to actually reflect the situation in this part of the repository history and the messages do not actually reflect the changes that are reported by the <code class="docutils literal"><span class="pre">log</span></code> command.</p>
+<p>Note that GeoGig cannot modify the commit messages to actually reflect the situation in this part of the repository history and the messages do not actually reflect the changes that are reported by the <code class="docutils literal notranslate"><span class="pre">log</span></code> command.</p>
 </div>
 <div class="section" id="extending-the-depth-of-a-shallow-clone">
 <h3>Extending the depth of a shallow clone<a class="headerlink" href="#extending-the-depth-of-a-shallow-clone" title="Permalink to this headline">¶</a></h3>
-<p>If, any time you want to turn your shallow clone into a regular clone that contains all the history from the original repository, you can do it by calling the <code class="docutils literal"><span class="pre">fetch</span></code> command with the <code class="docutils literal"><span class="pre">--full-depth</span></code> switch.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$geogig fetch origin --full-depth
+<p>If, any time you want to turn your shallow clone into a regular clone that contains all the history from the original repository, you can do it by calling the <code class="docutils literal notranslate"><span class="pre">fetch</span></code> command with the <code class="docutils literal notranslate"><span class="pre">--full-depth</span></code> switch.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$geogig fetch origin --full-depth
 </pre></div>
 </div>
 <p>This will get not only the new commits that might exist in the remote repository, but also the full history.</p>
-<p>To extend the shallow clone up to a certain number of commits, but not to its full history, a given depth can be specified using the <code class="docutils literal"><span class="pre">--depth</span></code> parameter.</p>
+<p>To extend the shallow clone up to a certain number of commits, but not to its full history, a given depth can be specified using the <code class="docutils literal notranslate"><span class="pre">--depth</span></code> parameter.</p>
 <p>For example, if the shallow clone has a depth of 2, the following call will turn it into a repository with a depth of 3.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig fetch --depth 3
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig fetch --depth 3
 </pre></div>
 </div>
 </div>
@@ -220,8 +220,8 @@ a76c6550cd45d84df09088f6efdd6747c3755643 Added Roads3
 <div class="figure">
 <img alt="../_images/sparse_clone_and_commit.png" src="../_images/sparse_clone_and_commit.png" />
 </div>
-<p>If you run the <code class="docutils literal"><span class="pre">cat</span></code> command to describe the commit that you have added, it will output something like this.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$geogig cat HEAD
+<p>If you run the <code class="docutils literal notranslate"><span class="pre">cat</span></code> command to describe the commit that you have added, it will output something like this.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$geogig cat HEAD
 id aa4f6bd33d45d84df09088f6efdd6747c3755643
 COMMIT
 tree    058c752144ed2b6e58b0e648af0a9dc821d88487
@@ -231,8 +231,8 @@ committer    volaya    volaya@boundlessgeo.com    1366618413840    7200000
 message    Modified feature
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">parent</span></code> property links a commit to the one (or several ones if it is a merge commit) that it derives from. This is what allows a GeoGig repository to communicate with other repositories and push and pull commits and data, knowing when is it possible to push and when a cloned repository is outdated and its changes cannot be pushed without risking losing data.</p>
-<p>If we had done a regular cloning, the new commit would have a parent that actually exist in the original repository, and which is in fact its HEAD. GeoGig would recognize that situation when pushing changes, and it would add just that last commit, ignoring the previous ones, since they are already in the original repository. In our case, however, the parent of the new commit (<code class="docutils literal"><span class="pre">00f6bd73f</span></code>) does not exist in the original repository.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">parent</span></code> property links a commit to the one (or several ones if it is a merge commit) that it derives from. This is what allows a GeoGig repository to communicate with other repositories and push and pull commits and data, knowing when is it possible to push and when a cloned repository is outdated and its changes cannot be pushed without risking losing data.</p>
+<p>If we had done a regular cloning, the new commit would have a parent that actually exist in the original repository, and which is in fact its HEAD. GeoGig would recognize that situation when pushing changes, and it would add just that last commit, ignoring the previous ones, since they are already in the original repository. In our case, however, the parent of the new commit (<code class="docutils literal notranslate"><span class="pre">00f6bd73f</span></code>) does not exist in the original repository.</p>
 <p>In the case of a shallow clone, as we have already seen, there are also some missing commits, but the situation is different, since they are missing in the local cloned repository, not in the original one. All the commits that are found in the shallow cloned repository are also found in the original repository, and have the same Id’s in both repositories. In other words, the commits are exactly the same. In the case of a sparse clone, however, that is not true, and all commits have different Id’s than the original commits upon which they have been created.</p>
 <p>If we go down the history of the spare cloned repository, we cannot find any commit that is also found in the original repository, which makes it impossible to apply our changes, or, at least, to apply them cleanly.</p>
 <p>The case is similar to what was explained in the <a class="reference internal" href="history.html#repo-history"><span class="std std-ref">Modifying history</span></a> section, when the problems caused by rewriting the history of a repository were discussed. Basically, when a sparse clone is created, it implies a full rewriting of the history of the cloned original repository.</p>
@@ -267,12 +267,12 @@ message    Modified feature
 <div class="section" id="creating-a-sparse-clone">
 <h3>Creating a sparse clone<a class="headerlink" href="#creating-a-sparse-clone" title="Permalink to this headline">¶</a></h3>
 <p>As it was mentioned, a sparse clone is defined by a filter. In the most usual case, the filter is a spatial filter.</p>
-<p>To create a sparse clone, the <code class="docutils literal"><span class="pre">clone</span></code> command is used with the <code class="docutils literal"><span class="pre">--filter</span></code> option followed by the path to the file that contains the filter, as in the next example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$geogig clone ../geogig-repo --filter myfilter.xml
+<p>To create a sparse clone, the <code class="docutils literal notranslate"><span class="pre">clone</span></code> command is used with the <code class="docutils literal notranslate"><span class="pre">--filter</span></code> option followed by the path to the file that contains the filter, as in the next example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$geogig clone ../geogig-repo --filter myfilter.xml
 </pre></div>
 </div>
 <p>The filter file is an Ini file which contains filters to be applied to all features, or to specific feature types. Here you can see an example of the content of one of such files.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">default</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">default</span><span class="p">]</span>
 <span class="nb">type</span> <span class="o">=</span> <span class="n">CQL</span>
 <span class="nb">filter</span> <span class="o">=</span> <span class="n">BBOX</span><span class="p">(</span><span class="n">way</span><span class="p">,</span><span class="o">-</span><span class="mi">10002860</span><span class="p">,</span><span class="mi">1438301</span><span class="p">,</span><span class="o">-</span><span class="mi">9235433</span><span class="p">,</span><span class="mi">1786854</span><span class="p">,</span><span class="s1">&#39;EPSG:900913&#39;</span><span class="p">)</span>
 <span class="p">[</span><span class="n">roads</span><span class="p">]</span>
@@ -280,8 +280,8 @@ message    Modified feature
 <span class="nb">filter</span> <span class="o">=</span> <span class="n">BBOX</span><span class="p">(</span><span class="n">way</span><span class="p">,</span><span class="o">-</span><span class="mi">9532345</span><span class="p">,</span><span class="mi">1223411</span><span class="p">,</span><span class="o">-</span><span class="mi">9325678</span><span class="p">,</span><span class="mi">1632340</span><span class="p">,</span><span class="s1">&#39;EPSG:900913&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>There are two filters in this file. Both filters are CQL (Common Query Language) filters. The first one will be applied to all features, while the second one will only be applied to features with the <code class="docutils literal"><span class="pre">roads</span></code> feature type.</p>
-<p>Notice that filtering is done based on attributes, in this case a geometry attribute named <code class="docutils literal"><span class="pre">way</span></code>. In case you need more information, remember that you can run the <code class="docutils literal"><span class="pre">show</span></code> command passing a tree path as parameter, and you will get a description of the feature type of that tree, which includes information about its attributes.</p>
+<p>There are two filters in this file. Both filters are CQL (Common Query Language) filters. The first one will be applied to all features, while the second one will only be applied to features with the <code class="docutils literal notranslate"><span class="pre">roads</span></code> feature type.</p>
+<p>Notice that filtering is done based on attributes, in this case a geometry attribute named <code class="docutils literal notranslate"><span class="pre">way</span></code>. In case you need more information, remember that you can run the <code class="docutils literal notranslate"><span class="pre">show</span></code> command passing a tree path as parameter, and you will get a description of the feature type of that tree, which includes information about its attributes.</p>
 <p>You can find more information about the CQL syntax in the <a class="reference external" href="http://docs.geoserver.org/latest/en/user/tutorials/cql/cql_tutorial.html">this page</a> at the GeoServer website.</p>
 <p>To know more about Ini files, check the corresponding <a class="reference external" href="http://en.wikipedia.org/wiki/INI_file">Wikipedia entry</a>.</p>
 </div>
@@ -291,7 +291,7 @@ message    Modified feature
 <p>Here is a list of the main limitations of a sparse clone:</p>
 <ul class="simple">
 <li>A sparse clone cannot synchronize with another sparse clone. The mapping that is kept by the local GeoGig repository maps local commits to remote commits, but commits in a different sparse clone will have different Id’s (even if the filter used to create it is the same), so they will act as isolated clones, since there is no information they than can use to <em>understand</em> each other and synchronize their histories.</li>
-<li>A sparse can can only track one branch from a remote repository. The name of the branch has to specified when creating the sparse clone, using the <code class="docutils literal"><span class="pre">branch</span></code> switch. If not specified, the <code class="docutils literal"><span class="pre">master</span></code> branch from the remote repository will be fetched.</li>
+<li>A sparse can can only track one branch from a remote repository. The name of the branch has to specified when creating the sparse clone, using the <code class="docutils literal notranslate"><span class="pre">branch</span></code> switch. If not specified, the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch from the remote repository will be fetched.</li>
 </ul>
 </div>
 </div>
@@ -317,12 +317,12 @@ message    Modified feature
 </div>
 <div class="section" id="combining-shallow-and-sparse-clones">
 <h2>Combining shallow and sparse clones<a class="headerlink" href="#combining-shallow-and-sparse-clones" title="Permalink to this headline">¶</a></h2>
-<p>Although both shallow and sparse clones are created using the <code class="docutils literal"><span class="pre">clone</span></code> command, it is not possible to create a clone that is both shallow and sparse at the same time. That is, a command like the following one will cause GeoGig to show an error message:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$geogig clone /path/to/repo --depth 3 --filter path/to/filter
+<p>Although both shallow and sparse clones are created using the <code class="docutils literal notranslate"><span class="pre">clone</span></code> command, it is not possible to create a clone that is both shallow and sparse at the same time. That is, a command like the following one will cause GeoGig to show an error message:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$geogig clone /path/to/repo --depth 3 --filter path/to/filter
 </pre></div>
 </div>
 <p>You can have a sparse clone, and then create a shallow clone based on it, as it was discussed in the previous section, but a single clone that applies a filter and has only a fraction of the whole history is not possible.</p>
-<p>The reason for this is that a shallow clone can be extended to get a deeper history, for instance using the <code class="docutils literal"><span class="pre">--full-depth</span></code> switch. In the case of a regular shallow clone, that means just inserting the missing commits at the beginning of the history, leaving the current ones in the shallow clone untouched, since their content and Id’s are identical to those in the original repository.</p>
+<p>The reason for this is that a shallow clone can be extended to get a deeper history, for instance using the <code class="docutils literal notranslate"><span class="pre">--full-depth</span></code> switch. In the case of a regular shallow clone, that means just inserting the missing commits at the beginning of the history, leaving the current ones in the shallow clone untouched, since their content and Id’s are identical to those in the original repository.</p>
 <p>In the case of a shallow clone that is also sparse, a full new history would be needed, since inserting those missing commits would mean changing all their children. this is like that because computing all the sparse commits with the extended history would yield different commit Id’s, so it would not be possible to preserve the previous commits. Extending the shallow clone in this case would actually be equivalent to re-cloning it, discarding all the previous content of the repository.</p>
 <p>To preserve the ability of a shallow clone to be extended, it is not allowed to create a shallow clone that is also sparse.</p>
 </div>

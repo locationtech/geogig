@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Import data &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Import data &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Creating and applying patches" href="patches.html" />
       <link rel="prev" title="Exploring your history" href="history.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Import data</li>
 </ul>
@@ -105,51 +105,51 @@
 </div>
 <p>Importing data into the working tree of a GeoGig repository is done using GeoGig commands which read a given data source and add all or part of its content to the repository. Data can also be exported from the repository into common formats that can be then used in other applications such as a desktop GIS. This built-in import/export process provides the necessary workflow for a GeoGig repository and makes it independent of the tools used to actually edit the data.</p>
 <p>Currently, data can be imported/exported from/to GeoJSON, shapefiles, PostGIS, Oracle Spatial and Geopackage databases. Depending on the type of data source, a different command should be used. For the supported data sources, the general syntax is as follows.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig &lt;shp|geojson|geopkg|sl|oracle&gt; &lt;import|export&gt; &lt;specific_parameters&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig &lt;shp|geojson|geopkg|sl|oracle&gt; &lt;import|export&gt; &lt;specific_parameters&gt;
 </pre></div>
 </div>
 <p>In the case     of importing data, the following syntax is used.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig &lt;shp|geojson|pg|sl|oracle&gt; import &lt;source&gt;[-d &lt;destination_path&gt;] [--no-overwrite] &lt;specific_parameters&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig &lt;shp|geojson|pg|sl|oracle&gt; import &lt;source&gt;[-d &lt;destination_path&gt;] [--no-overwrite] &lt;specific_parameters&gt;
 </pre></div>
 </div>
-<p>Data can be imported into a given path defined using the <code class="docutils literal"><span class="pre">-d</span></code> option. If it is not used, the destination path will be defined automatically based on the data source. For instance, in the case of using a shapefile, the destination path is defined using the name of the shapefile.</p>
-<p>The <code class="docutils literal"><span class="pre">source</span></code> argument is the filepath of the file to import, in the case of shapefiles. When importing from a PostGIS database, use the name of the table.</p>
-<p>The following command line will import all the features in a shapefile named <code class="docutils literal"><span class="pre">parks.shp</span></code> into the <code class="docutils literal"><span class="pre">parks</span></code> tree in the working tree of the GeoGig repository.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp import /home/shapefiles/parks.shp
+<p>Data can be imported into a given path defined using the <code class="docutils literal notranslate"><span class="pre">-d</span></code> option. If it is not used, the destination path will be defined automatically based on the data source. For instance, in the case of using a shapefile, the destination path is defined using the name of the shapefile.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> argument is the filepath of the file to import, in the case of shapefiles. When importing from a PostGIS database, use the name of the table.</p>
+<p>The following command line will import all the features in a shapefile named <code class="docutils literal notranslate"><span class="pre">parks.shp</span></code> into the <code class="docutils literal notranslate"><span class="pre">parks</span></code> tree in the working tree of the GeoGig repository.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig shp import /home/shapefiles/parks.shp
 </pre></div>
 </div>
 <p>To import into a tree named “myparks”, the following command would be used.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig shp import /home/shapefiles/parks.shp -d myparks
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig shp import /home/shapefiles/parks.shp -d myparks
 </pre></div>
 </div>
-<p>A tree in the GeoGig working tree is the equivalent of a folder in the filesystem. However, if you move into the <code class="docutils literal"><span class="pre">.geogig</span></code> folder where the working tree (and the rest of the GeoGig repository data) is stored, you will not see the folders that you might have created by importing data. The structure of the repository is not visible in the filesystem. The only way to explore it is to use additional GeoGig commands that are covered in this documentation.</p>
+<p>A tree in the GeoGig working tree is the equivalent of a folder in the filesystem. However, if you move into the <code class="docutils literal notranslate"><span class="pre">.geogig</span></code> folder where the working tree (and the rest of the GeoGig repository data) is stored, you will not see the folders that you might have created by importing data. The structure of the repository is not visible in the filesystem. The only way to explore it is to use additional GeoGig commands that are covered in this documentation.</p>
 <p>When importing from a database, additional parameters can be supplied to configure the database connection. In the case of importing from a PostGIS database, the following options are available.</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">--host</span></code>: Machine name or IP address to connect to. Default: localhost</li>
-<li><code class="docutils literal"><span class="pre">--port</span></code>: Port number to connect to.  Default: 5432</li>
-<li><code class="docutils literal"><span class="pre">--schema</span></code>: The database schema to access.  Default: public</li>
-<li><code class="docutils literal"><span class="pre">--database</span></code>: The database to connect to.  Default: database</li>
-<li><code class="docutils literal"><span class="pre">--user</span></code>: User name.  Default: postgres</li>
-<li><code class="docutils literal"><span class="pre">--password</span></code>: Password.  Default: &lt;no password&gt;</li>
+<li><code class="docutils literal notranslate"><span class="pre">--host</span></code>: Machine name or IP address to connect to. Default: localhost</li>
+<li><code class="docutils literal notranslate"><span class="pre">--port</span></code>: Port number to connect to.  Default: 5432</li>
+<li><code class="docutils literal notranslate"><span class="pre">--schema</span></code>: The database schema to access.  Default: public</li>
+<li><code class="docutils literal notranslate"><span class="pre">--database</span></code>: The database to connect to.  Default: database</li>
+<li><code class="docutils literal notranslate"><span class="pre">--user</span></code>: User name.  Default: postgres</li>
+<li><code class="docutils literal notranslate"><span class="pre">--password</span></code>: Password.  Default: &lt;no password&gt;</li>
 </ul>
 <p>If using a Geopackage database, only the following parameters are used.</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">--database</span></code>: The database to connect to.  Default: database.sqlite</li>
-<li><code class="docutils literal"><span class="pre">--user</span></code>: User name.  Default: user</li>
+<li><code class="docutils literal notranslate"><span class="pre">--database</span></code>: The database to connect to.  Default: database.sqlite</li>
+<li><code class="docutils literal notranslate"><span class="pre">--user</span></code>: User name.  Default: user</li>
 </ul>
-<p>When importing from a database, all tables can be imported with a single command. To do so, do not specify the name of a table as the data source, use the <code class="docutils literal"><span class="pre">--all</span></code> option instead, as in the following example.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig pg import --all
+<p>When importing from a database, all tables can be imported with a single command. To do so, do not specify the name of a table as the data source, use the <code class="docutils literal notranslate"><span class="pre">--all</span></code> option instead, as in the following example.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig pg import --all
 </pre></div>
 </div>
-<p>If a destination path is supplied and the <code class="docutils literal"><span class="pre">--all</span></code> option used, all tables will be imported into the same path.</p>
-<p>A listing of all available tables for a given database connection can be obtained using the <code class="docutils literal"><span class="pre">list</span></code> command.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig pg list
+<p>If a destination path is supplied and the <code class="docutils literal notranslate"><span class="pre">--all</span></code> option used, all tables will be imported into the same path.</p>
+<p>A listing of all available tables for a given database connection can be obtained using the <code class="docutils literal notranslate"><span class="pre">list</span></code> command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig pg list
 </pre></div>
 </div>
 <p>Since our repository had just been initialized, it was completely empty, and there is no way that the data we have imported can conflict with data that already existed in the repository. However, importing new data (or a different version of that same data) later can cause conflicts and it might require a different approach than the use of the plain import command as we have done now. We will deal with these cases elsewhere in the documentation. For general use, it is enough to know that our repository contains some spatial data in its working tree.</p>
 <p>Once the data is imported in the working tree, GeoGig can use it. The original file or database from which you imported the data remains something that GeoGig cannot manage, so it is of no use to GeoGig. There is no link between your repository and the original file or database, so you can remove that original item from your system and it would have no effect at all on GeoGig, which will work exclusively with the copy of the data that is now in the repository working tree.</p>
-<p>To see that the data is actually in the working tree, you can use the <code class="docutils literal"><span class="pre">status</span></code> command. This command gives you information about the data that you have in the working tree and the index, comparing between them and also with the repository database. This way, you can see which data has been modified but not added to the repository and which data has been added but has not yet been versioned.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig status
+<p>To see that the data is actually in the working tree, you can use the <code class="docutils literal notranslate"><span class="pre">status</span></code> command. This command gives you information about the data that you have in the working tree and the index, comparing between them and also with the repository database. This way, you can see which data has been modified but not added to the repository and which data has been added but has not yet been versioned.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig status
 # On branch master
 # Changes not staged for commit:
 #   (use &quot;geogig add &lt;path/to/fid&gt;...&quot; to update what will be committed

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoServer GUI configuration &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>GeoServer GUI configuration &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="GeoServer REST configuration integration" href="geoserver_web-api.html" />
       <link rel="prev" title="GeoGig Networking" href="networking.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>GeoServer GUI configuration</li>
 </ul>
@@ -102,32 +102,32 @@
 <div class="section" id="building-installing-the-geoserver-geogig-extension">
 <h2>Building/installing the GeoServer GeoGig extension<a class="headerlink" href="#building-installing-the-geoserver-geogig-extension" title="Permalink to this headline">¶</a></h2>
 <p>You can download the latest stable version of the GeoGig GeoServer plugin from the <a class="reference external" href="http://www.geogig.org/">GeoGig</a> home page. There is a version of the plugin available for all supported versions of GeoServer.</p>
-<p>In order to build it from sources, a GeoGig module is currently included in the 2.8.x and newer branches of GeoServer’s community extensions. To build it, clone the GeoServer GitHub repository.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">geoserver</span><span class="o">/</span><span class="n">geoserver</span><span class="o">.</span><span class="n">git</span>
+<p>In order to build it from sources, a GeoGig module is currently included in the 2.8.x and newer branches of GeoServer’s community extensions. To build it, you will need to have Maven 3 and a Java JDK (version 8). First, clone the GeoServer GitHub repository.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">geoserver</span><span class="o">/</span><span class="n">geoserver</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
-<p>Change into the <code class="docutils literal"><span class="pre">geoserver</span></code> directory:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">geoserver</span>
+<p>Change into the <code class="docutils literal notranslate"><span class="pre">geoserver</span></code> directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">geoserver</span>
 </pre></div>
 </div>
 <p>Checkout the desired version branch branch (GeoServer 2.12.x for example):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="mf">2.12</span><span class="o">.</span><span class="n">x</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="mf">2.12</span><span class="o">.</span><span class="n">x</span>
 </pre></div>
 </div>
-<p>Change into the <code class="docutils literal"><span class="pre">src</span></code> directory:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">src</span>
+<p>Change into the <code class="docutils literal notranslate"><span class="pre">src</span></code> directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">src</span>
 </pre></div>
 </div>
 <p>Build the Community Modules:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span> <span class="o">-</span><span class="n">DskipTests</span> <span class="n">assembly</span><span class="p">:</span><span class="n">attached</span> <span class="o">-</span><span class="n">f</span> <span class="n">community</span><span class="o">/</span><span class="n">release</span><span class="o">/</span><span class="n">pom</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">P</span> <span class="n">communityRelease</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span> <span class="o">-</span><span class="n">DskipTests</span> <span class="n">assembly</span><span class="p">:</span><span class="n">attached</span> <span class="o">-</span><span class="n">f</span> <span class="n">community</span><span class="o">/</span><span class="n">pom</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">P</span> <span class="n">communityRelease</span>
 </pre></div>
 </div>
 <p>This will build all of the GeoServer Community modules, including the plugin for GeoGig. Once the assembly completes, you should have a plugin bundle here:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geoserver</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">community</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">release</span><span class="o">/</span><span class="n">geoserver</span><span class="o">-</span><span class="mf">2.12</span><span class="o">-</span><span class="n">SNAPSHOT</span><span class="o">-</span><span class="n">geogig</span><span class="o">-</span><span class="n">plugin</span><span class="o">.</span><span class="n">zip</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geoserver</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">community</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">release</span><span class="o">/</span><span class="n">geoserver</span><span class="o">-</span><span class="mf">2.12</span><span class="o">-</span><span class="n">SNAPSHOT</span><span class="o">-</span><span class="n">geogig</span><span class="o">-</span><span class="n">plugin</span><span class="o">.</span><span class="n">zip</span>
 </pre></div>
 </div>
-<p>To install the GeoGig extension, unzip the above bundle into the GeoServer <code class="docutils literal"><span class="pre">WEB-INF/lib</span></code> folder of your GeoServer install and <strong>restart</strong> GeoServer.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">unzip</span> <span class="n">geoserver</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">community</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">release</span><span class="o">/</span><span class="n">geoserver</span><span class="o">-</span><span class="mf">2.12</span><span class="o">-</span><span class="n">SNAPSHOT</span><span class="o">-</span><span class="n">geogig</span><span class="o">-</span><span class="n">plugin</span><span class="o">.</span><span class="n">zip</span> <span class="o">-</span><span class="n">d</span> <span class="o">&lt;</span><span class="n">GeoServer</span> <span class="n">install</span> <span class="nb">dir</span><span class="o">&gt;/</span><span class="n">webapps</span><span class="o">/</span><span class="n">geoserver</span><span class="o">/</span><span class="n">WEB</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span>
+<p>To install the GeoGig extension, unzip the above bundle into the GeoServer <code class="docutils literal notranslate"><span class="pre">WEB-INF/lib</span></code> folder of your GeoServer install and <strong>restart</strong> GeoServer.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unzip</span> <span class="n">geoserver</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">community</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">release</span><span class="o">/</span><span class="n">geoserver</span><span class="o">-</span><span class="mf">2.12</span><span class="o">-</span><span class="n">SNAPSHOT</span><span class="o">-</span><span class="n">geogig</span><span class="o">-</span><span class="n">plugin</span><span class="o">.</span><span class="n">zip</span> <span class="o">-</span><span class="n">d</span> <span class="o">&lt;</span><span class="n">GeoServer</span> <span class="n">install</span> <span class="nb">dir</span><span class="o">&gt;/</span><span class="n">webapps</span><span class="o">/</span><span class="n">geoserver</span><span class="o">/</span><span class="n">WEB</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span>
 
 <span class="o">&lt;</span><span class="n">restart</span> <span class="n">GeoServer</span><span class="o">&gt;</span>
 </pre></div>
@@ -161,7 +161,7 @@
 </div>
 <div class="section" id="advanced-options-automatic-indexing">
 <span id="automatic-indexing-geoserver-ui"></span><h3>Advanced Options: Automatic Indexing<a class="headerlink" href="#advanced-options-automatic-indexing" title="Permalink to this headline">¶</a></h3>
-<p>When configuring a GeoGig datastore, you can also chose to have the plugin automatically create a spatial index in the underlying repository to improve GeoGig performance. Simply check the <code class="docutils literal"><span class="pre">Automatically</span> <span class="pre">index</span> <span class="pre">Time</span> <span class="pre">and</span> <span class="pre">Elevation</span> <span class="pre">dimensions</span></code> checkbox and save:</p>
+<p>When configuring a GeoGig datastore, you can also chose to have the plugin automatically create a spatial index in the underlying repository to improve GeoGig performance. Simply check the <code class="docutils literal notranslate"><span class="pre">Automatically</span> <span class="pre">index</span> <span class="pre">Time</span> <span class="pre">and</span> <span class="pre">Elevation</span> <span class="pre">dimensions</span></code> checkbox and save:</p>
 <div class="figure">
 <img alt="../_images/configure-geogig-auto-indexing.png" src="../_images/configure-geogig-auto-indexing.png" />
 </div>
@@ -250,26 +250,26 @@ involve those attributes (example: a GetCapabilities request that is going to re
 <p>Enter the key and value for the entry and press <cite>Save</cite>.</p>
 <p>See the <a class="reference internal" href="../repo/storage.html#postgres-performance-tuning"><span class="std std-ref">Postgres Performance Tuning</span></a> section of the manual for some examples of configuration keys for PostgreSQL-backed repositories.</p>
 <p>Press <cite>Save</cite> again on the repository configuration page to save the changes to the repository.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Note</span><span class="p">:</span> <span class="n">Some</span> <span class="n">configuration</span> <span class="n">settings</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">take</span> <span class="n">effect</span> <span class="n">until</span> <span class="n">the</span> <span class="n">repository</span> <span class="ow">is</span> <span class="n">re</span><span class="o">-</span><span class="n">opened</span><span class="o">.</span>  <span class="n">In</span> <span class="n">this</span> <span class="n">case</span><span class="p">,</span> <span class="n">you</span> <span class="n">may</span> <span class="n">need</span> <span class="n">to</span> <span class="n">restart</span> <span class="n">GeoServer</span><span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Note</span><span class="p">:</span> <span class="n">Some</span> <span class="n">configuration</span> <span class="n">settings</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">take</span> <span class="n">effect</span> <span class="n">until</span> <span class="n">the</span> <span class="n">repository</span> <span class="ow">is</span> <span class="n">re</span><span class="o">-</span><span class="n">opened</span><span class="o">.</span>  <span class="n">In</span> <span class="n">this</span> <span class="n">case</span><span class="p">,</span> <span class="n">you</span> <span class="n">may</span> <span class="n">need</span> <span class="n">to</span> <span class="n">restart</span> <span class="n">GeoServer</span><span class="o">.</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="cloning-pushing-and-pulling">
 <h2>Cloning, Pushing, and Pulling<a class="headerlink" href="#cloning-pushing-and-pulling" title="Permalink to this headline">¶</a></h2>
 <p>Once GeoServer is configured with a GeoGig repository, you can address it over the network at a URL path of the form:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">host</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;/</span><span class="n">geoserver</span><span class="o">/</span><span class="n">geogig</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">geogig</span> <span class="n">name</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">host</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;/</span><span class="n">geoserver</span><span class="o">/</span><span class="n">geogig</span><span class="o">/</span><span class="n">repos</span><span class="o">/&lt;</span><span class="n">geogig</span> <span class="n">name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>A sample url as configured in the screenshots above:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span><span class="n">geoserver</span><span class="o">/</span><span class="n">geogig</span><span class="o">/</span><span class="n">repos</span><span class="o">/</span><span class="n">geogig_dir_repo</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span><span class="n">geoserver</span><span class="o">/</span><span class="n">geogig</span><span class="o">/</span><span class="n">repos</span><span class="o">/</span><span class="n">geogig_dir_repo</span>
 </pre></div>
 </div>
 <p>It is then possible to clone this repository:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig clone http://localhost:8080/geoserver/geogig/repos/geogig_dir_repo geogig_dir_repo
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig clone http://localhost:8080/geoserver/geogig/repos/geogig_dir_repo geogig_dir_repo
 </pre></div>
 </div>
 <p>Your clone will be configured with the GeoServer repository as a remote. This configuration is stored in .geogig/config in your clone:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">remote</span>\<span class="n">origin</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">remote</span>\<span class="n">origin</span><span class="p">]</span>
 <span class="n">url</span> <span class="o">=</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">9090</span><span class="o">/</span><span class="n">geoserver</span><span class="o">/</span><span class="n">geogig</span><span class="o">/</span><span class="n">repos</span><span class="o">/</span><span class="n">geogig_dir_repo</span>
 <span class="n">fetch</span> <span class="o">=</span> <span class="o">+</span><span class="n">refs</span><span class="o">/</span><span class="n">heads</span><span class="o">/*</span><span class="p">:</span><span class="n">refs</span><span class="o">/</span><span class="n">remotes</span><span class="o">/</span><span class="n">origin</span><span class="o">/*</span>
 
@@ -279,7 +279,7 @@ involve those attributes (example: a GetCapabilities request that is going to re
 </pre></div>
 </div>
 <p>It is now possible to push and pull from this remote repository. You can verify this works by testing with the freshly cloned repository.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig push origin
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig push origin
 Nothing to push.
 
 $ geogig pull origin
@@ -296,11 +296,11 @@ Already up to date.
 </div>
 <p>On the <cite>Shared Cache</cite> section of the <cite>GeoGig Settings</cite> configuration page, you can configure and monitor the status of GeoGig’s shared revision objects cache.
 For more information on what the cache is and how it works, refer to the <a class="reference internal" href="../start/runtime.html#caching"><span class="std std-ref">Shared internal cache</span></a> section.</p>
-<p>Use the <code class="docutils literal"><span class="pre">Maximum</span> <span class="pre">cache</span> <span class="pre">size</span></code> text entry to set a new value for the cache size in megabytes, and press the <cite>Apply</cite> button to make it effective.</p>
-<p>Use the <code class="docutils literal"><span class="pre">Reset</span> <span class="pre">to</span> <span class="pre">defaults</span></code> button to re-establish the maximum cache size to its default value, as given by the <code class="docutils literal"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> environment variable or system property, if provided, or the internal default of 25% of the maximum heap size othwerwise.</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Maximum</span> <span class="pre">cache</span> <span class="pre">size</span></code> text entry to set a new value for the cache size in megabytes, and press the <cite>Apply</cite> button to make it effective.</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Reset</span> <span class="pre">to</span> <span class="pre">defaults</span></code> button to re-establish the maximum cache size to its default value, as given by the <code class="docutils literal notranslate"><span class="pre">GEOGIG_CACHE_MAX_SIZE</span></code> environment variable or system property, if provided, or the internal default of 25% of the maximum heap size othwerwise.</p>
 <p>Note these two operations are applied immediately and are destructive in the sense that the current cache will be discarded and a new one will be created, with the effect that the cache statistics shown in the table bellow them will be lost and reset.</p>
-<p>Use the <code class="docutils literal"><span class="pre">Refresh</span></code> button bellow the cache attributes and statistics table to obtain fresh, real time information about the status of the cache.</p>
-<p>Use the <code class="docutils literal"><span class="pre">Clear</span> <span class="pre">cache</span></code> button to prune all the objects currently in the cache, making the memory used immediately available to the Java Garbage Collector. This operation is non destructive, meaning the cache statistics will remain valid and further cache queries and inserts made by GeoGig will affect them.</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Refresh</span></code> button bellow the cache attributes and statistics table to obtain fresh, real time information about the status of the cache.</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Clear</span> <span class="pre">cache</span></code> button to prune all the objects currently in the cache, making the memory used immediately available to the Java Garbage Collector. This operation is non destructive, meaning the cache statistics will remain valid and further cache queries and inserts made by GeoGig will affect them.</p>
 </div>
 <div class="section" id="current-limitations">
 <span id="id1"></span><h2>Current limitations<a class="headerlink" href="#current-limitations" title="Permalink to this headline">¶</a></h2>

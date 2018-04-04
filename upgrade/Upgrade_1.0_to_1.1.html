@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Upgrading to GeoGig 1.1 &mdash; GeoGig 1.2.0 Upgrading</title>
+  <title>Upgrading to GeoGig 1.1 &mdash; GeoGig 1.2-SNAPSHOT Upgrading</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,7 +17,7 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2-SNAPSHOT',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
@@ -25,7 +25,7 @@
   <link rel="shortcut icon" href="_static/favicon.ico"/>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.2.0 Upgrading" href="index.html" />
+      <link rel="top" title="GeoGig 1.2-SNAPSHOT Upgrading" href="index.html" />
       <link rel="next" title="Upgrading to GeoGig 1.1.1" href="Upgrade_1.1_to_1.1.1.html" />
       <link rel="prev" title="Upgrading Existing GeoGig Repositories" href="index.html" />
 </head>
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.2.0 Upgrading</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.2-SNAPSHOT Upgrading</a> &raquo;</li>
   <li>Upgrading to GeoGig 1.1</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -118,7 +118,7 @@ Here is a simple process to do this;</p>
 <li><p class="first">Create a new PostgreSQL database</p>
 </li>
 <li><p class="first">Use GeoGig 1.1 to <cite>clone</cite> the 1.0 repository into the new database</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="n">clone</span> <span class="s2">&quot;postgresql://..old..repo..&quot;</span> <span class="s2">&quot;postgresql://...new repo...&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="n">clone</span> <span class="s2">&quot;postgresql://..old..repo..&quot;</span> <span class="s2">&quot;postgresql://...new repo...&quot;</span>
 </pre></div>
 </div>
 </li>
@@ -141,21 +141,21 @@ Here is a simple process to do this;</p>
 <div class="section" id="creating-the-quadtree-index">
 <h3>Creating the QuadTree Index<a class="headerlink" href="#creating-the-quadtree-index" title="Permalink to this headline">¶</a></h3>
 <p>The following command will create a spatial index;</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">index</span> <span class="n">create</span> <span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">geometry</span> <span class="n">column</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">tree</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">index</span> <span class="n">create</span> <span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">geometry</span> <span class="n">column</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">tree</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>For help finding the names of the columns, branches, and layers see the FAQ section, below.</p>
-<p>More help is available <a class="reference external" href="http://geogig.org">here</a> or by typing <code class="code docutils literal"><span class="pre">geogig</span> <span class="pre">index</span> <span class="pre">--help</span></code>.</p>
+<p>More help is available <a class="reference external" href="http://geogig.org">here</a> or by typing <code class="code docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">index</span> <span class="pre">--help</span></code>.</p>
 </div>
 <div class="section" id="adding-creating-extra-attributes">
 <h3>Adding/Creating Extra Attributes<a class="headerlink" href="#adding-creating-extra-attributes" title="Permalink to this headline">¶</a></h3>
 <p>Adding “extra attributes” to the index makes querying-by-attribute much faster.
 If you have time series data (like StoryScape), you should include the dataset’s time attribute(s) to the index.
 If you have SLD or other queries that do selections based on an attribute (i.e. road type), you should include those attribute(s) to the index.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">index</span> <span class="n">create</span> <span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">geometry</span> <span class="n">column</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">tree</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">e</span> <span class="o">&lt;</span><span class="n">attribute1</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">attribute2</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">index</span> <span class="n">create</span> <span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">geometry</span> <span class="n">column</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">tree</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">e</span> <span class="o">&lt;</span><span class="n">attribute1</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">attribute2</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>More help is available <a class="reference external" href="http://geogig.org">here</a> or by typing <code class="code docutils literal"><span class="pre">geogig</span> <span class="pre">index</span> <span class="pre">--help</span></code>.</p>
+<p>More help is available <a class="reference external" href="http://geogig.org">here</a> or by typing <code class="code docutils literal notranslate"><span class="pre">geogig</span> <span class="pre">index</span> <span class="pre">--help</span></code>.</p>
 </div>
 <div class="section" id="geoserver-auto-indexing-advanced-operation">
 <h3>Geoserver: Auto-Indexing (Advanced Operation)<a class="headerlink" href="#geoserver-auto-indexing-advanced-operation" title="Permalink to this headline">¶</a></h3>
@@ -180,7 +180,7 @@ Each database (which typically has multiple repositories) needs to have a cache 
 <div class="section" id="process-to-set-postgresql-cache-sizes">
 <h3>Process to Set PostgreSQL Cache Sizes<a class="headerlink" href="#process-to-set-postgresql-cache-sizes" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
-<li><p class="first">Determine the amount of memory to allocate to Geoserver (this will typically be the majority of the real memory of the system) and allocate it to Geoserver with an <code class="code docutils literal"><span class="pre">-Xmx</span></code> java JVM option.</p>
+<li><p class="first">Determine the amount of memory to allocate to Geoserver (this will typically be the majority of the real memory of the system) and allocate it to Geoserver with an <code class="code docutils literal notranslate"><span class="pre">-Xmx</span></code> java JVM option.</p>
 </li>
 <li><p class="first">Determine the amount of memory to allocate to GeoGig and Geoserver.
 Typically, allocating approximately 2-4GB to geoserver is sufficient (depending on your use case).</p>
@@ -188,12 +188,12 @@ Typically, allocating approximately 2-4GB to geoserver is sufficient (depending 
 <li><p class="first">Determine how much of the remaining memory will be allocated to each of your PG databases (do this on a database-by-database manner, NOT a repo-by-repo manner).
 Databases that are larger or more heavily used should be allocated more memory.</p>
 </li>
-<li><p class="first">Use Geoserver to set the cache size (<code class="code docutils literal"><span class="pre">postgres.bytecache.maxSize</span></code>) for each of the database.</p>
+<li><p class="first">Use Geoserver to set the cache size (<code class="code docutils literal notranslate"><span class="pre">postgres.bytecache.maxSize</span></code>) for each of the database.</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>In Geoserver, on the left hand column click on [GeoGig] [GeoGig Repositories]</li>
 <li>Find a repository in each of the databases and click on it.  A database can contain multiple repositories, but the cache size is set on a database-by-database manner.</li>
-<li>Press the [Add new global config] and add a config value for <code class="code docutils literal"><span class="pre">postgres.bytecache.maxSize</span></code> with the number of cache bytes to allocate to that database.</li>
+<li>Press the [Add new global config] and add a config value for <code class="code docutils literal notranslate"><span class="pre">postgres.bytecache.maxSize</span></code> with the number of cache bytes to allocate to that database.</li>
 </ol>
 <p><a class="reference internal" href="_images/cacheConfig.png"><img alt="cacheConfig_png" src="_images/cacheConfig.png" style="width: 4.8484in; height: 1.8417in;" /></a></p>
 </div></blockquote>
@@ -210,7 +210,7 @@ Databases that are larger or more heavily used should be allocated more memory.<
 DB2 is larger and more heavily used than the other two database.</p>
 <ol class="arabic">
 <li><p class="first">We decide to allocate 62GB to Geoserver, giving 2GB of memory to other processes on the system.
-We set <code class="code docutils literal"><span class="pre">-Xmx62GB</span></code> and verify (see Geoserver documentation).</p>
+We set <code class="code docutils literal notranslate"><span class="pre">-Xmx62GB</span></code> and verify (see Geoserver documentation).</p>
 </li>
 <li><p class="first">We decide to allocate 3GB to Geoserver, leaving 59GB to GeoGig’s Cache.</p>
 </li>
@@ -241,12 +241,12 @@ However, certain WFS queries (like a bounding box query for a feature whose boun
 <div class="section" id="postgresql-hash-index-problem-in-geogig-1-0">
 <h3>PostgreSQL Hash-index problem in GeoGig 1.0<a class="headerlink" href="#postgresql-hash-index-problem-in-geogig-1-0" title="Permalink to this headline">¶</a></h3>
 <p>Repositories created pre-GeoGig 1.0 (i.e. 1.0-pre3 and before) are using PostgreSQL hash indexes.
-These are not optimal - using GeoGig 1.1 to <code class="code docutils literal"><span class="pre">clone</span></code> these repositories (as outlined, above) will use btree indexes instead.</p>
+These are not optimal - using GeoGig 1.1 to <code class="code docutils literal notranslate"><span class="pre">clone</span></code> these repositories (as outlined, above) will use btree indexes instead.</p>
 </div>
 <div class="section" id="http-clone">
 <h3>HTTP-Clone<a class="headerlink" href="#http-clone" title="Permalink to this headline">¶</a></h3>
-<p>There are some problems with <code class="code docutils literal"><span class="pre">clone</span></code> when the source/destination repositories are via HTTP (i.e. against Geoserver or the
-<code class="code docutils literal"><span class="pre">serve</span></code> CLI). Use <code class="code docutils literal"><span class="pre">clone</span></code> <strong>directly</strong> against the underlying databases instead of the HTTP location.</p>
+<p>There are some problems with <code class="code docutils literal notranslate"><span class="pre">clone</span></code> when the source/destination repositories are via HTTP (i.e. against Geoserver or the
+<code class="code docutils literal notranslate"><span class="pre">serve</span></code> CLI). Use <code class="code docutils literal notranslate"><span class="pre">clone</span></code> <strong>directly</strong> against the underlying databases instead of the HTTP location.</p>
 </div>
 </div>
 <div class="section" id="geoserver-configuration">
@@ -254,7 +254,7 @@ These are not optimal - using GeoGig 1.1 to <code class="code docutils literal">
 <div class="section" id="time-dimensioned-data">
 <h3>Time-dimensioned data<a class="headerlink" href="#time-dimensioned-data" title="Permalink to this headline">¶</a></h3>
 <p>Time Dimensioned datasets (in any datastore, including GeoGig) should have the internal Geoserver GetCapabilities cache disabled, or the Time dimension information in the capabilities document could be out-of-date.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DCAPABILITIES_CACHE_CONTROL_ENABLED</span><span class="o">=</span><span class="n">false</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DCAPABILITIES_CACHE_CONTROL_ENABLED</span><span class="o">=</span><span class="n">false</span>
 </pre></div>
 </div>
 </div>
@@ -293,27 +293,27 @@ This improves performance.</p>
 <div class="section" id="how-to-find-all-the-repos-in-a-database">
 <h3>How to find all the repos in a database?<a class="headerlink" href="#how-to-find-all-the-repos-in-a-database" title="Permalink to this headline">¶</a></h3>
 <p>Connect to the PostgreSQL database and execute;</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SELECT</span> <span class="o">*</span> <span class="n">FROM</span> <span class="n">geogig_repository_name</span><span class="p">;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SELECT</span> <span class="o">*</span> <span class="n">FROM</span> <span class="n">geogig_repository_name</span><span class="p">;</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="_images/repoNameSQL.png"><img alt="repoNameSQL_png" src="_images/repoNameSQL.png" style="width: 4.6402in; height: 1.1008in;" /></a></p>
 </div>
 <div class="section" id="how-to-find-all-the-layers-that-i-might-need-to-build-an-index-on">
 <h3>How to find all the layers that I might need to build an index on?<a class="headerlink" href="#how-to-find-all-the-layers-that-i-might-need-to-build-an-index-on" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">ls</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">ls</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="how-do-i-find-the-name-of-the-geometry-and-other-columns">
 <h3>How do I find the name of the Geometry (and other columns)?<a class="headerlink" href="#how-do-i-find-the-name-of-the-geometry-and-other-columns" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">show</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">show</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">layer</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="_images/geomName.png"><img alt="geomName_png" src="_images/geomName.png" style="width: 6.5in; height: 3.1252in;" /></a></p>
 </div>
 <div class="section" id="how-do-i-find-the-branches-in-my-repository">
 <h3>How do I find the Branches in my repository?<a class="headerlink" href="#how-do-i-find-the-branches-in-my-repository" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">branch</span> <span class="o">-</span><span class="n">a</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geogig</span> <span class="o">--</span><span class="n">repo</span> <span class="s2">&quot;postgresql://...&quot;</span> <span class="n">branch</span> <span class="o">-</span><span class="n">a</span>
 </pre></div>
 </div>
 </div>

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Committing changes &mdash; GeoGig 1.2.0 User Manual</title>
+  <title>Committing changes &mdash; GeoGig 1.2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,14 +17,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
       <link rel="index" title="Index" href="../genindex.html" />
       <link rel="search" title="Search" href="../search.html" />
-      <link rel="top" title="GeoGig 1.2.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.2 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Showing differences" href="diffs.html" />
       <link rel="prev" title="Checking out a previous version" href="checkout.html" />
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.2.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Committing changes</li>
 </ul>
@@ -99,20 +99,20 @@
   <div class="section" id="committing-changes">
 <span id="committing"></span><h1>Committing changes<a class="headerlink" href="#committing-changes" title="Permalink to this headline">¶</a></h1>
 <p>Once the data is in the staging area, it has to be committed to be finally stored in the database of the GeoGig repository and to create a persistent version of that data.</p>
-<p>Committing data from the staging area to the database is done using the <code class="docutils literal"><span class="pre">commit</span></code> command, as shown below</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig commit -m &quot;First commit&quot;
+<p>Committing data from the staging area to the database is done using the <code class="docutils literal notranslate"><span class="pre">commit</span></code> command, as shown below</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig commit -m &quot;First commit&quot;
 100%
 [5852e6949ba71039fded67e7f4980af4f8773869] First commit
 Committed, counting objects...3 features added, 0 changed, 0 deleted.
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">-m</span></code> option tells geogig that the string following it is to be used as the commit message. All commits must have a message that describe which kind of modifications you are committing, so as to describe the difference that will exist between the new version you are creating and the latest one.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">-m</span></code> option tells geogig that the string following it is to be used as the commit message. All commits must have a message that describe which kind of modifications you are committing, so as to describe the difference that will exist between the new version you are creating and the latest one.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The <code class="docutils literal"><span class="pre">-m</span></code> option is mandatory. If not provided, GeoGig will not show the default editor, as Git does, but complain and tell you to provide a message instead.</p>
+<p class="last">The <code class="docutils literal notranslate"><span class="pre">-m</span></code> option is mandatory. If not provided, GeoGig will not show the default editor, as Git does, but complain and tell you to provide a message instead.</p>
 </div>
-<p>The list of all commits made so far can be obtained by using the <code class="docutils literal"><span class="pre">log</span></code> command.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ geogig log
+<p>The list of all commits made so far can be obtained by using the <code class="docutils literal notranslate"><span class="pre">log</span></code> command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ geogig log
 Commit:  5852e6949ba71039fded67e7f4980af4f8773869
 Author:  volaya &lt;volaya@boundlessgeo.com&gt;
 Date:    (1 day ago) 2013-02-25 15:31:24 +0100
@@ -122,8 +122,8 @@ Subject: First commit
 <p>At this time, there is just one single commit, but as you create new ones, the log will get populated. Basically, the history of your repository is made of commits, each of them representing a set of changes and a new version.</p>
 <p>Each commit also holds a reference to its parent commits, so that allows to keep track of the changes and define the whole history and the order in which the changes were performed. Also, it allows to find out the differences between the given commits and the stages that might exist between them.</p>
 <p>Right now, each commit has just one parent commit, which is the latest one that was made before it, but we will see how it is possible for a commit to have multiple parents. In the case above, since it is our first commit, it has a null parent. All other commits from this point will have a previous commit as parent.</p>
-<p>If, after having committed your changes, you run the <code class="docutils literal"><span class="pre">status</span></code> command again, now you will see that you have no changes waiting to be committed and no unstaged objects. All three areas (working tree, staging area and repository database) have no differences between them.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$gegoit status
+<p>If, after having committed your changes, you run the <code class="docutils literal notranslate"><span class="pre">status</span></code> command again, now you will see that you have no changes waiting to be committed and no unstaged objects. All three areas (working tree, staging area and repository database) have no differences between them.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$gegoit status
 # On branch master
 nothing to commit (working directory clean)
 </pre></div>

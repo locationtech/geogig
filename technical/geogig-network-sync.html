@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig Network Synchronization &mdash; GeoGig 1.2.0 Technical Manual</title>
+  <title>GeoGig Network Synchronization &mdash; GeoGig 1.2 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -17,7 +17,7 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0',
+        VERSION:     '1.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
@@ -25,7 +25,7 @@
   <link rel="shortcut icon" href="_static/favicon.ico"/>
       <link rel="index" title="Index" href="genindex.html" />
       <link rel="search" title="Search" href="search.html" />
-      <link rel="top" title="GeoGig 1.2.0 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.2 Technical Manual" href="index.html" />
       <link rel="next" title="Plumbing commands" href="plumbing_commands.html" />
       <link rel="prev" title="Binary encoding of GeoGig objects" href="geogig-binary.html" />
 </head>
@@ -80,7 +80,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.2.0 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.2 Technical Manual</a> &raquo;</li>
   <li>GeoGig Network Synchronization</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -107,12 +107,12 @@ In fact, GeoGig synchronization consists of two different types of operation - a
 <h2>Manifest<a class="headerlink" href="#manifest" title="Permalink to this headline">¶</a></h2>
 <p>The server provides a “manifest” document advertising its named refs and their current commit ids.
 Synchronization operations generally begin with the client requesting a manifest from the server in order to assess the differences between their histories.</p>
-<p>The manifest resource responds to GET requests at <code class="docutils literal"><span class="pre">repo/manifest</span></code> relative to the GeoGig server and contains a line-oriented textual description of the refs.
+<p>The manifest resource responds to GET requests at <code class="docutils literal notranslate"><span class="pre">repo/manifest</span></code> relative to the GeoGig server and contains a line-oriented textual description of the refs.
 Each ref includes its name and commit id (the commit id in hexadecimal notation); a prefix including the symbolic name for the ref may also be included.
 The first line should represent the HEAD symbolic ref.</p>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-none"><div class="highlight"><pre><span></span>GET /geogig/repo/manifest
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>GET /geogig/repo/manifest
 
 HEAD /refs/branches/master 00000000000000000000
 /refs/branches/master 00000000000000000000
@@ -129,25 +129,25 @@ What happens in that case?</p>
 <h2>Existence Check<a class="headerlink" href="#existence-check" title="Permalink to this headline">¶</a></h2>
 <p>The server provides an existence check service to support history negotiation - this walks history backwards (from newer to older commits) and gives information about the lineage of commits that might not be present on the client.
 When a client determines that it has content to send to a server or that a server has content that should be fetched, history negotiation helps to narrow down exactly the range of commits that must be transfered.</p>
-<p>The existence-check resource responds to POST requests at <code class="docutils literal"><span class="pre">repo/exists</span></code>.
+<p>The existence-check resource responds to POST requests at <code class="docutils literal notranslate"><span class="pre">repo/exists</span></code>.
 The request body should be a JSON document containing two fields:</p>
 <blockquote>
 <div><ul class="simple">
 <li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">have</span></code> a list of object ids representing commits already present on the client.</dt>
+<dt><code class="docutils literal notranslate"><span class="pre">have</span></code> a list of object ids representing commits already present on the client.</dt>
 <dd>When walking history, the server should consider any commits from the “have” list as stopping points - as these commits are already on the client it already understands their history.</dd>
 </dl>
 </li>
-<li><code class="docutils literal"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</li>
+<li><code class="docutils literal notranslate"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</li>
 </ul>
 </div></blockquote>
-<p>The server responds with a JSON document enumerating the history of the commits in the want list, or an error if the <code class="docutils literal"><span class="pre">want</span></code> list requests commits that the server does not have.
-The history is represented as an <a class="reference external" href="http://en.wikipedia.org/wiki/Adjacency_list">adjacency list</a> with the commit id in a field named <code class="docutils literal"><span class="pre">id</span></code> and an array containing its parents in a field named <code class="docutils literal"><span class="pre">parents</span></code>.
+<p>The server responds with a JSON document enumerating the history of the commits in the want list, or an error if the <code class="docutils literal notranslate"><span class="pre">want</span></code> list requests commits that the server does not have.
+The history is represented as an <a class="reference external" href="http://en.wikipedia.org/wiki/Adjacency_list">adjacency list</a> with the commit id in a field named <code class="docutils literal notranslate"><span class="pre">id</span></code> and an array containing its parents in a field named <code class="docutils literal notranslate"><span class="pre">parents</span></code>.
 The server must include information about the commits listed in the want list, but it is up to the server to determine how many further commits to include.</p>
 <div class="section" id="id1">
 <h3>Example<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>In the following example, the “want” list conveniently contains only a single commit - which happens to be a direct descendant of the one commit in the “have” list.</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>POST /geogig/repo/exists
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>POST /geogig/repo/exists
 {
   &quot;want&quot; : [ &quot;abcdefabcdefabcdef12&quot; ],
   &quot;have&quot; : [ &quot;123456567890345678ab&quot; ]
@@ -171,16 +171,16 @@ The server must include information about the commits listed in the want list, b
 This walks history forward (opposite the existence check resource!) to transfer multiple objects.
 By walking history in commit order, we increase robustness - an interrupted session still has high probability of leaving the client with valid commits “connected” to the rest of its history.
 A well-implemented client should then be able to resume a transfer without needing to re-fetch the already-sent objects.</p>
-<p>The bulk objects service accepts POST requests at <code class="docutils literal"><span class="pre">repo/objects</span></code>.
+<p>The bulk objects service accepts POST requests at <code class="docutils literal notranslate"><span class="pre">repo/objects</span></code>.
 The request body should be a JSON document containing two fields:</p>
 <blockquote>
 <div><ul class="simple">
 <li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">have</span></code> a list of object ids representing commits already present on the client.</dt>
+<dt><code class="docutils literal notranslate"><span class="pre">have</span></code> a list of object ids representing commits already present on the client.</dt>
 <dd>When walking history, the server should consider any commits from the “have” list as stopping points - as these commits are already on the client it already understands their history.</dd>
 </dl>
 </li>
-<li><code class="docutils literal"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</li>
+<li><code class="docutils literal notranslate"><span class="pre">want</span></code> a list of object ids representing commits whose lineage the client is trying to determine (generally these should be commits that the client does not already have!)</li>
 </ul>
 </div></blockquote>
 <p>Note that this is the same format as accepted by the existence check service.</p>
@@ -193,7 +193,7 @@ Specifically, a 20-byte sha1 id is sent, followed by a “raw” binary blob, fo
 </div>
 <div class="section" id="id2">
 <h3>Example<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-none"><div class="highlight"><pre><span></span>POST /geogig/repo/objects
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>POST /geogig/repo/objects
 {
   &quot;want&quot;: [&quot;abcdefabcdefabcdef12&quot;],
   &quot;have&quot;: [&quot;123456567890345678ab&quot;]
@@ -208,7 +208,7 @@ Specifically, a 20-byte sha1 id is sent, followed by a “raw” binary blob, fo
 <h2>Bulk Send<a class="headerlink" href="#bulk-send" title="Permalink to this headline">¶</a></h2>
 <p>The server provides a bulk send service for uploading many objects in a single request.
 As with bulk object retrieval, clients should traverse in commit order.</p>
-<p>The bulk send service accepts POST requests at <code class="docutils literal"><span class="pre">repo/send-objects</span></code>.
+<p>The bulk send service accepts POST requests at <code class="docutils literal notranslate"><span class="pre">repo/send-objects</span></code>.
 The request body should consist of one or more 20-byte ids, each followed by a binary-encoded history object.
 Note this is the same format as produced by the bulk objects resource.</p>
 <p>The server responds by sending a 201 Accepted status code, or an HTTP error code as appropriate.</p>
@@ -216,16 +216,16 @@ Note this is the same format as produced by the bulk objects resource.</p>
 <div class="section" id="reference-update">
 <h2>Reference Update<a class="headerlink" href="#reference-update" title="Permalink to this headline">¶</a></h2>
 <p>The server provides a reference update service for modifying the references on the server - adding new named references, removing them, or updating existing ones to change which commits they name.</p>
-<p>The reference update service accepts POST requests at <code class="docutils literal"><span class="pre">repo/update-refs</span></code>. (NOT YET IMPLEMENTED.)
+<p>The reference update service accepts POST requests at <code class="docutils literal notranslate"><span class="pre">repo/update-refs</span></code>. (NOT YET IMPLEMENTED.)
 The request body should be a JSON document containing one field:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">updates</span></code> a list of JSON objects with <code class="docutils literal"><span class="pre">ref</span></code>, <code class="docutils literal"><span class="pre">to</span></code>, and <code class="docutils literal"><span class="pre">from</span></code> fields identifying the ref name, new value, and old value of all refs to be updated.
+<li><code class="docutils literal notranslate"><span class="pre">updates</span></code> a list of JSON objects with <code class="docutils literal notranslate"><span class="pre">ref</span></code>, <code class="docutils literal notranslate"><span class="pre">to</span></code>, and <code class="docutils literal notranslate"><span class="pre">from</span></code> fields identifying the ref name, new value, and old value of all refs to be updated.
 If the ‘to’ field contains the special value “00000000000000000000” then the ref should be deleted.
 If the ref does not already exist, the client should use the special value “00000000000000000000” for the ‘from’ field.</li>
 </ul>
 </div></blockquote>
-<p>The server responds with a document with a similar <code class="docutils literal"><span class="pre">updates</span></code> field containing the updates that were executed.  Updates may be rejected for any reasons the server deems appropriate, but MUST be rejected in the following situations:</p>
+<p>The server responds with a document with a similar <code class="docutils literal notranslate"><span class="pre">updates</span></code> field containing the updates that were executed.  Updates may be rejected for any reasons the server deems appropriate, but MUST be rejected in the following situations:</p>
 <blockquote>
 <div><ul class="simple">
 <li>if the “from” value of an update object does not correspond to the current value of the ref at the time of update.</li>

@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.geotools.util.Range;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.spring.dto.LegacyResponse;

@@ -20,6 +20,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevPerson;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.plumbing.ParseTimestamp;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 

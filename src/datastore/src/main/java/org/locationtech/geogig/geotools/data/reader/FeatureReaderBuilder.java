@@ -40,6 +40,7 @@ import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.Bounded;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -50,7 +51,6 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -692,7 +692,7 @@ public class FeatureReaderBuilder {
         return spatialFilterVisitor.hasSpatialFilter();
     }
 
-    private org.locationtech.geogig.repository.DiffEntry.ChangeType resolveChangeType() {
+    private org.locationtech.geogig.model.DiffEntry.ChangeType resolveChangeType() {
         switch (changeType) {
         case ADDED:
             return DiffEntry.ChangeType.ADDED;

@@ -12,6 +12,7 @@ package org.locationtech.geogig.porcelain;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportCommitConflictsOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;

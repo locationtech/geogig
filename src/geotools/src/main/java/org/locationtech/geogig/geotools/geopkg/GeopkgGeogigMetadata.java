@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.storage.impl.RocksdbMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

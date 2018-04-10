@@ -15,6 +15,7 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.WriteTree;
 import org.locationtech.geogig.porcelain.DiffOp;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;

@@ -18,13 +18,13 @@ import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.RevertOp;
 import org.locationtech.geogig.remote.http.BinaryPackedChanges;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;

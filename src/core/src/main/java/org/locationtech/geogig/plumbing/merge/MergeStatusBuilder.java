@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.plumbing.ResolveBranchId;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;

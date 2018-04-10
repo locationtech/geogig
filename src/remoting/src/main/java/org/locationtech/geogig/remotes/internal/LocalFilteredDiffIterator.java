@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.locationtech.geogig.storage.AutoCloseableIterator;

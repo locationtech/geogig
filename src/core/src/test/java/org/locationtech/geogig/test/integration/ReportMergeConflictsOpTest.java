@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.geotools.data.DataUtilities;
 import org.junit.Test;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.merge.CheckMergeScenarioOp;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;

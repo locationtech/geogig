@@ -14,12 +14,12 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashSet;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.remote.http.BinaryPackedChanges;
 import org.locationtech.geogig.remotes.internal.FilteredDiffIterator;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;

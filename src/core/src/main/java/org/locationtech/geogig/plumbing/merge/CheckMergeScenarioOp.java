@@ -12,13 +12,13 @@ package org.locationtech.geogig.plumbing.merge;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Optional;

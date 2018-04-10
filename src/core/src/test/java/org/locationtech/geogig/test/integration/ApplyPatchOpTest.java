@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.ApplyPatchOp;
 import org.locationtech.geogig.porcelain.CannotApplyPatchException;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.PropertyDescriptor;

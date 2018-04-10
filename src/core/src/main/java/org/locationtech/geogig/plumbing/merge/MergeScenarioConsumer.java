@@ -11,8 +11,8 @@ package org.locationtech.geogig.plumbing.merge;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureInfo;
 
 /**

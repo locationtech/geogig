@@ -13,8 +13,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 /**

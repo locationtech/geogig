@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -46,7 +47,6 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.ProgressListener;

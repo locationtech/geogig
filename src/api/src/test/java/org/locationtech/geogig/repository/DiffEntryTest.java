@@ -19,11 +19,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 
 import com.vividsolutions.jts.geom.Envelope;
 

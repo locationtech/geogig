@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -28,7 +29,6 @@ import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.porcelain.BlameException.StatusCode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.PropertyDescriptor;
 

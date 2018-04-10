@@ -13,11 +13,13 @@ import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
@@ -55,7 +57,7 @@ public class BulkFeatureRetriever {
         AutoCloseableIterator<ObjectInfo<RevFeature>> objects;
 
         AutoCloseableIterator<NodeRef> closeableRefs = AutoCloseableIterator.fromIterator(refs);
-        objects = odb.getObjects(refs, BulkOpListener.NOOP_LISTENER, RevFeature.class);
+        objects = odb.getObjects(closeableRefs, BulkOpListener.NOOP_LISTENER, RevFeature.class);
 
         return new AutoCloseableIterator<ObjectInfo<RevFeature>>() {
 
@@ -72,6 +74,30 @@ public class BulkFeatureRetriever {
 
             @Override
             public ObjectInfo<RevFeature> next() {
+                return objects.next();
+            }
+        };
+    }
+
+    public AutoCloseableIterator<DiffObjectInfo<RevFeature>> getDiffFeatures(
+            Iterator<DiffEntry> refs) {
+        AutoCloseableIterator<DiffObjectInfo<RevFeature>> objects;
+
+        final AutoCloseableIterator<DiffEntry> closeableRefs = AutoCloseableIterator
+                .fromIterator(refs);
+        objects = odb.getObjects(refs, RevFeature.class);
+
+        return new AutoCloseableIterator<DiffObjectInfo<RevFeature>>() {
+            public @Override void close() {
+                objects.close();
+                closeableRefs.close();
+            }
+
+            public @Override boolean hasNext() {
+                return objects.hasNext();
+            }
+
+            public @Override DiffObjectInfo<RevFeature> next() {
                 return objects.next();
             }
         };

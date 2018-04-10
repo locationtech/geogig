@@ -27,37 +27,60 @@ import static org.locationtech.geogig.model.impl.RevObjectTestSupport.hashString
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.geotools.data.DataUtilities;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
+import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * Base class to check an {@link ObjectStore}'s implementation conformance to the interface contract
@@ -548,5 +571,146 @@ public abstract class ObjectStoreConformanceTest {
             assertEquals(0, listener.found());
             assertEquals(totalFeatures, listener.notFound());
         }
+    }
+
+    public @Test void testGetDiffObjects() throws Exception {
+        SimpleFeatureType featureType = DataUtilities.createType("points",
+                "sp:String,ip:Integer,pp:Point:srid=4326");
+        final RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
+        final int leftTreeSize = 1000;
+        final List<SimpleFeature> features = createFeatures(featureType, leftTreeSize);
+        final List<RevFeature> revFeatures = features.stream()
+                .map((f) -> RevFeatureBuilder.build(f)).collect(Collectors.toList());
+
+        db.put(revFeatureType);
+        db.putAll(revFeatures.iterator());
+
+        List<SimpleFeature> rightFeatures = new ArrayList<>(features);
+        List<SimpleFeature> added;
+        List<SimpleFeature> removed;
+        List<SimpleFeature> changedAttribute;
+        List<SimpleFeature> changedGeometry;
+        {
+            added = new ArrayList<>();
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            for (int i = leftTreeSize; i < leftTreeSize + 100; i++) {
+                added.add(poiFeature(builder, i));
+            }
+            removed = new ArrayList<>(rightFeatures.subList(200, 300));
+            rightFeatures.removeAll(removed);
+            rightFeatures.addAll(added);
+            changedAttribute = new ArrayList<>(rightFeatures.subList(100, 200));
+            for (SimpleFeature f : changedAttribute) {
+                f.setAttribute("sp", f.getAttribute("sp") + "_changed");
+            }
+            changedGeometry = new ArrayList<>(rightFeatures.subList(400, 500));
+            GeometryFactory gf = new GeometryFactory();
+            for (SimpleFeature f : changedGeometry) {
+                Point geom = (Point) f.getAttribute("pp");
+                geom = gf.createPoint(new Coordinate(-geom.getX(), -geom.getY()));
+                f.setAttribute("pp", geom);
+            }
+        }
+        final List<RevFeature> rightRevFeatures = rightFeatures.stream()
+                .map((f) -> RevFeatureBuilder.build(f)).collect(Collectors.toList());
+        db.putAll(rightRevFeatures.iterator());
+
+        List<DiffEntry> entries = createDiffEntries(revFeatures, rightRevFeatures);
+        List<DiffObjectInfo<RevFeature>> objectDiffs;
+        {
+            AutoCloseableIterator<DiffObjectInfo<RevFeature>> iterator;
+            iterator = db.getObjects(entries.iterator(), RevFeature.class);
+            assertNotNull(iterator);
+            try {
+                objectDiffs = Lists.newArrayList(iterator);
+            } finally {
+                iterator.close();
+            }
+        }
+        assertEquals(entries.size(), objectDiffs.size());
+
+        Set<DiffEntry> expected = new HashSet<>(entries);
+        Set<DiffEntry> actual = objectDiffs.stream().map((d) -> d.entry())
+                .collect(Collectors.toSet());
+        assertEquals(expected, actual);
+        assertDiffObjects(objectDiffs);
+    }
+
+    private void assertDiffObjects(List<DiffObjectInfo<RevFeature>> objects) {
+        for (DiffObjectInfo<RevFeature> o : objects) {
+            DiffEntry entry = o.entry();
+            switch (entry.changeType()) {
+            case ADDED:
+                assertFalse(o.oldValue().isPresent());
+                assertTrue(o.newValue().isPresent());
+                assertEquals(entry.newObjectId(), o.newValue().get().getId());
+                break;
+            case MODIFIED:
+                assertTrue(o.oldValue().isPresent());
+                assertTrue(o.newValue().isPresent());
+                assertEquals(entry.oldObjectId(), o.oldValue().get().getId());
+                assertEquals(entry.newObjectId(), o.newValue().get().getId());
+                break;
+            case REMOVED:
+                assertTrue(o.oldValue().isPresent());
+                assertFalse(o.newValue().isPresent());
+                assertEquals(entry.oldObjectId(), o.oldValue().get().getId());
+                break;
+            default:
+                throw new IllegalStateException();
+            }
+        }
+    }
+
+    private List<DiffEntry> createDiffEntries(List<RevFeature> left, List<RevFeature> right) {
+        final java.util.function.Function<RevFeature, String> fid = (f) -> String
+                .valueOf(f.get(1).get());// ip
+        Map<String, RevFeature> lEntries = left.stream().collect(Collectors.toMap(fid, f -> f));
+        Map<String, RevFeature> rEntries = right.stream().collect(Collectors.toMap(fid, f -> f));
+
+        MapDifference<String, RevFeature> difference = Maps.difference(lEntries, rEntries);
+
+        List<DiffEntry> entries = new ArrayList<>();
+
+        difference.entriesOnlyOnLeft().forEach((k, v) -> entries.add(entry(k, v, null)));
+        difference.entriesOnlyOnRight().forEach((k, v) -> entries.add(entry(k, null, v)));
+        difference.entriesDiffering()
+                .forEach((k, v) -> entries.add(entry(k, v.leftValue(), v.rightValue())));
+
+        return entries;
+    }
+
+    private DiffEntry entry(String name, RevFeature l, RevFeature r) {
+        //@formatter:off
+        Node lnode = l == null? null: Node.create(name, l.getId(), ObjectId.NULL, TYPE.FEATURE, SpatialOps.boundsOf(l));
+        Node rnode = r == null? null: Node.create(name, r.getId(), ObjectId.NULL, TYPE.FEATURE, SpatialOps.boundsOf(r));
+        //@formatter:on
+        NodeRef oldObject = lnode == null ? null : NodeRef.create(NodeRef.ROOT, lnode);
+        NodeRef newObject = rnode == null ? null : NodeRef.create(NodeRef.ROOT, rnode);
+        return new DiffEntry(oldObject, newObject);
+    }
+
+    private List<SimpleFeature> createFeatures(SimpleFeatureType featureType, int count) {
+
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+        List<SimpleFeature> list = IntStream.range(0, count).mapToObj((i) -> poiFeature(builder, i))
+                .collect(Collectors.toList());
+
+        return list;
+    }
+
+    private SimpleFeature poiFeature(SimpleFeatureBuilder builder, int i) {
+        builder.reset();
+        builder.set("sp", "string_" + i);
+        builder.set("ip", i);
+        try {
+            builder.set("pp",
+                    new WKTReader().read(String.format("POINT(%f %f)", i / 100d, i / 100d)));
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        SimpleFeature f = builder.buildFeature(String.valueOf(i));
+        return f;
     }
 }

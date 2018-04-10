@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -254,5 +255,11 @@ public interface ObjectStore extends Closeable {
     @Beta
     public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> nodes, BulkOpListener listener, Class<T> type);
+
+    @Beta
+    public default <T extends RevObject> AutoCloseableIterator<DiffObjectInfo<T>> getObjects(
+            Iterator<DiffEntry> diffEntries, Class<T> type) {
+        throw new UnsupportedOperationException();
+    }
 
 }

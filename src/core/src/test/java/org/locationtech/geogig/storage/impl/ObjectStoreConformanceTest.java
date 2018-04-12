@@ -619,7 +619,7 @@ public abstract class ObjectStoreConformanceTest {
         List<DiffObjectInfo<RevFeature>> objectDiffs;
         {
             AutoCloseableIterator<DiffObjectInfo<RevFeature>> iterator;
-            iterator = db.getObjects(entries.iterator(), RevFeature.class);
+            iterator = db.getDiffObjects(entries.iterator(), RevFeature.class);
             assertNotNull(iterator);
             try {
                 objectDiffs = Lists.newArrayList(iterator);

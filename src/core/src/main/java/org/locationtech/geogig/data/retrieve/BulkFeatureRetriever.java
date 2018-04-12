@@ -10,8 +10,11 @@
 package org.locationtech.geogig.data.retrieve;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.geotools.feature.NameImpl;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
@@ -23,7 +26,14 @@ import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.AttributeType;
+import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.FeatureTypeFactory;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Function;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -79,30 +89,6 @@ public class BulkFeatureRetriever {
         };
     }
 
-    public AutoCloseableIterator<DiffObjectInfo<RevFeature>> getDiffFeatures(
-            Iterator<DiffEntry> refs) {
-        AutoCloseableIterator<DiffObjectInfo<RevFeature>> objects;
-
-        final AutoCloseableIterator<DiffEntry> closeableRefs = AutoCloseableIterator
-                .fromIterator(refs);
-        objects = odb.getObjects(refs, RevFeature.class);
-
-        return new AutoCloseableIterator<DiffObjectInfo<RevFeature>>() {
-            public @Override void close() {
-                objects.close();
-                closeableRefs.close();
-            }
-
-            public @Override boolean hasNext() {
-                return objects.hasNext();
-            }
-
-            public @Override DiffObjectInfo<RevFeature> next() {
-                return objects.next();
-            }
-        };
-    }
-
     /**
      * Given a bunch of NodeRefs, create SimpleFeatures from the results. The result might be mixed
      * FeatureTypes
@@ -152,4 +138,125 @@ public class BulkFeatureRetriever {
 
         return result;
     }
+
+    public AutoCloseableIterator<DiffObjectInfo<RevFeature>> getDiffFeatures(
+            Iterator<DiffEntry> refs) {
+        AutoCloseableIterator<DiffObjectInfo<RevFeature>> objects;
+
+        final AutoCloseableIterator<DiffEntry> closeableRefs = AutoCloseableIterator
+                .fromIterator(refs);
+        objects = odb.getDiffObjects(refs, RevFeature.class);
+
+        return new AutoCloseableIterator<DiffObjectInfo<RevFeature>>() {
+            public @Override void close() {
+                objects.close();
+                closeableRefs.close();
+            }
+
+            public @Override boolean hasNext() {
+                return objects.hasNext();
+            }
+
+            public @Override DiffObjectInfo<RevFeature> next() {
+                return objects.next();
+            }
+        };
+    }
+
+    public AutoCloseableIterator<SimpleFeature> getGeoToolsDiffFeatures(
+            AutoCloseableIterator<DiffEntry> refs, RevFeatureType nativeType, Name typeName,
+            boolean flattenSchema, @Nullable GeometryFactory geometryFactory) {
+
+        SimpleFeatureType diffType;
+        if (flattenSchema) {
+            diffType = buildFlattenedDiffFeatureType(typeName,
+                    (SimpleFeatureType) nativeType.type());
+        } else {
+            diffType = buildDiffFeatureType(typeName, (SimpleFeatureType) nativeType.type());
+        }
+        return getGeoToolsDiffFeatures(refs, nativeType, diffType, geometryFactory);
+    }
+
+    public AutoCloseableIterator<SimpleFeature> getGeoToolsDiffFeatures(
+            AutoCloseableIterator<DiffEntry> refs, RevFeatureType nativeType,
+            SimpleFeatureType diffType, @Nullable GeometryFactory geometryFactory) {
+
+        boolean flattenedType = !isDiffFeatureType(diffType);
+        Function<DiffObjectInfo<RevFeature>, SimpleFeature> builder;
+        if (flattenedType) {
+            builder = new DiffFeatureFlattenedBuilder(diffType, geometryFactory);
+        } else {
+
+            // builder for the "old" and "new" versions of each feature
+            FeatureBuilder featureBuilder = new FeatureBuilder(nativeType, null);
+
+            builder = new DiffFeatureBuilder(diffType, featureBuilder, geometryFactory);
+        }
+        AutoCloseableIterator<DiffObjectInfo<RevFeature>> fis = getDiffFeatures(refs);
+
+        AutoCloseableIterator<SimpleFeature> result = AutoCloseableIterator.transform(fis, builder);
+
+        return result;
+    }
+
+    private boolean isDiffFeatureType(SimpleFeatureType type) {
+        return isFeatureDescriptor(type.getDescriptor("old"))
+                && isFeatureDescriptor(type.getDescriptor("new"));
+    }
+
+    private boolean isFeatureDescriptor(AttributeDescriptor descriptor) {
+        if (descriptor == null) {
+            return false;
+        }
+        AttributeType type = descriptor.getType();
+        boolean isFeature = type instanceof FeatureType;
+        return isFeature;
+    }
+
+    public static SimpleFeatureType buildFlattenedDiffFeatureType(Name typeName,
+            SimpleFeatureType nativeFeatureType) {
+
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setName(typeName);
+
+        List<AttributeDescriptor> atts = nativeFeatureType.getAttributeDescriptors();
+        for (AttributeDescriptor att : atts) {
+            String name = att.getLocalName();
+            Class<?> binding = att.getType().getBinding();
+            if (att instanceof GeometryDescriptor) {
+                CoordinateReferenceSystem crs = ((GeometryDescriptor) att)
+                        .getCoordinateReferenceSystem();
+                builder.add("old_" + name, binding, crs);
+                builder.add("new_" + name, binding, crs);
+            } else {
+                builder.add("old_" + name, binding);
+                builder.add("new_" + name, binding);
+            }
+        }
+
+        SimpleFeatureType diffFeatureType = builder.buildFeatureType();
+        return diffFeatureType;
+
+    }
+
+    public static SimpleFeatureType buildDiffFeatureType(Name typeName,
+            SimpleFeatureType nativeFeatureType) {
+
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        FeatureTypeFactory typeFactory = builder.getFeatureTypeFactory();
+
+        AttributeDescriptor oldValDescriptor;
+        AttributeDescriptor newValDescriptor;
+        oldValDescriptor = typeFactory.createAttributeDescriptor(nativeFeatureType,
+                new NameImpl("old"), 1, 1, true, null);
+        newValDescriptor = typeFactory.createAttributeDescriptor(nativeFeatureType,
+                new NameImpl("new"), 1, 1, true, null);
+
+        builder.add(oldValDescriptor);
+        builder.add(newValDescriptor);
+        builder.setName(typeName);
+        SimpleFeatureType diffFeatureType = builder.buildFeatureType();
+        return diffFeatureType;
+    }
+
 }

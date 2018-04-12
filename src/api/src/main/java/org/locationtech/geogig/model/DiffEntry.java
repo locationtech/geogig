@@ -203,6 +203,14 @@ public class DiffEntry {
         return newObject == null ? oldObject.path() : newObject.path();
     }
 
+    public String parentPath() {
+        return (newObject == null ? oldObject : newObject).getParentPath();
+    }
+
+    public String name() {
+        return newObject == null ? oldObject.name() : newObject.name();
+    }
+
     /**
      * @return the name of the new object
      */

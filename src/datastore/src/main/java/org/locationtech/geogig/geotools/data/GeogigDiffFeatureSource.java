@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016 Boundless and others.
+/* Copyright (c) 2018 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -32,7 +32,12 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.renderer.ScreenMap;
+import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
+import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
+import org.locationtech.geogig.geotools.data.reader.FeatureReaderAdapter;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
+import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder.WalkInfo;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -41,44 +46,90 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureVisitor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
-import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  *
  */
-class GeogigFeatureSource extends ContentFeatureSource {
+public class GeogigDiffFeatureSource extends ContentFeatureSource {
 
-    private final GeogigFeatureVisitorHandler visitorHandler = new GeogigFeatureVisitorHandler();
+    private static final Logger log = LoggerFactory.getLogger(GeogigDiffFeatureSource.class);
+
+    private GeoGigDataStore.ChangeType changeType;
+
+    private String oldRoot;
+
+    private boolean flattenSchema;
 
     /**
      * <b>Precondition</b>: {@code entry.getDataStore() instanceof GeoGigDataStore}
      * 
      * @param entry
      */
-    public GeogigFeatureSource(ContentEntry entry) {
+    public GeogigDiffFeatureSource(ContentEntry entry, String oldRoot) {
         super(entry, Query.ALL);
+        this.oldRoot = oldRoot;
         checkArgument(entry.getDataStore() instanceof GeoGigDataStore);
+    }
+
+    public void setFlattenSchema(boolean schemaFlattening) {
+        getEntry().getState(getTransaction()).setFeatureType(null);
+        this.flattenSchema = schemaFlattening;
+    }
+
+    public void setChangeType(GeoGigDataStore.ChangeType changeType) {
+        this.changeType = changeType;
+    }
+
+    public void setOldRoot(@Nullable String oldRoot) {
+        this.oldRoot = oldRoot;
+    }
+
+    String oldRoot() {
+        return oldRoot == null ? ObjectId.NULL.toString() : oldRoot;
+    }
+
+    GeoGigDataStore.ChangeType changeType() {
+        return changeType == null ? ChangeType.ALL : changeType;
+    }
+
+    protected @Override SimpleFeatureType buildFeatureType() throws IOException {
+
+        RevFeatureType nativeType = getNativeType();
+        SimpleFeatureType featureType = (SimpleFeatureType) nativeType.type();
+
+        final Name assignedName = getEntry().getName();
+
+        final SimpleFeatureType diffFeatureType;
+        if (flattenSchema) {
+            diffFeatureType = BulkFeatureRetriever.buildFlattenedDiffFeatureType(assignedName,
+                    featureType);
+        } else {
+            diffFeatureType = BulkFeatureRetriever.buildDiffFeatureType(assignedName, featureType);
+        }
+        return diffFeatureType;
     }
 
     /**
      * Adds the {@link Hints#FEATURE_DETACHED} hint to the supported hints so the renderer doesn't
      * clone the geometries
      */
-    @Override
-    protected void addHints(Set<Hints.Key> hints) {
+    protected @Override void addHints(Set<Hints.Key> hints) {
         hints.add(Hints.FEATURE_DETACHED);
         // if the user turned off the screenmap, then don't advertise it (the renderer will do its
         // own)
@@ -89,49 +140,41 @@ class GeogigFeatureSource extends ContentFeatureSource {
         // hints.add(Hints.GEOMETRY_SIMPLIFICATION);
     }
 
-    @Override
-    protected boolean canFilter() {
+    protected @Override boolean canFilter() {
         return true;
     }
 
-    @Override
-    protected boolean canSort() {
+    protected @Override boolean canSort() {
         return false;
     }
 
     /**
      * @return {@code true}
      */
-    @Override
-    protected boolean canRetype() {
+    protected @Override boolean canRetype() {
         return true;
     }
 
-    @Override
-    protected boolean canLimit() {
+    protected @Override boolean canLimit() {
         return true;
     }
 
-    @Override
-    protected boolean canOffset() {
+    protected @Override boolean canOffset() {
         return true;
     }
 
     /**
-     * @return {@code true}
+     * @return {@code false}
      */
-    @Override
-    protected boolean canTransact() {
-        return true;
+    protected @Override boolean canTransact() {
+        return false;
     }
 
-    @Override
-    public GeoGigDataStore getDataStore() {
+    public @Override GeoGigDataStore getDataStore() {
         return (GeoGigDataStore) super.getDataStore();
     }
 
-    @Override
-    public ContentState getState() {
+    public @Override ContentState getState() {
         return super.getState();
     }
 
@@ -139,8 +182,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
      * Overrides {@link ContentFeatureSource#getName()} to restore back the original meaning of
      * {@link FeatureSource#getName()}
      */
-    @Override
-    public Name getName() {
+    public @Override Name getName() {
         return getEntry().getName();
     }
 
@@ -153,8 +195,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
      * key/value pair is there an attempt to use the provided id will be made, and the operation
      * will fail if the key cannot be parsed into a valid storage identifier.
      */
-    @Override
-    protected QueryCapabilities buildQueryCapabilities() {
+    protected @Override QueryCapabilities buildQueryCapabilities() {
         return new QueryCapabilities() {
             /**
              * @return {@code true}
@@ -177,12 +218,12 @@ class GeogigFeatureSource extends ContentFeatureSource {
         };
     }
 
-    @Override
-    protected ReferencedEnvelope getBoundsInternal(Query query) throws IOException {
+    protected @Override ReferencedEnvelope getBoundsInternal(Query query) throws IOException {
         final Filter filter = (Filter) query.getFilter().accept(new SimplifyingFilterVisitor(),
                 null);
         final CoordinateReferenceSystem crs = getSchema().getCoordinateReferenceSystem();
-        if (Filter.INCLUDE.equals(filter)) {
+        if (Filter.INCLUDE.equals(filter) && oldRoot == null
+                && ChangeType.ADDED.equals(changeType())) {
             NodeRef typeRef = getTypeRef();
             ReferencedEnvelope bounds = new ReferencedEnvelope(crs);
             typeRef.getNode().expand(bounds);
@@ -206,8 +247,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return bounds;
     }
 
-    @Override
-    protected int getCountInternal(Query query) throws IOException {
+    protected @Override int getCountInternal(Query query) throws IOException {
         final Filter filter = (Filter) query.getFilter().accept(new SimplifyingFilterVisitor(),
                 null);
         if (Filter.EXCLUDE.equals(filter)) {
@@ -219,7 +259,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 : query.getMaxFeatures();
 
         int size;
-        if (Filter.INCLUDE.equals(filter)) {
+        if (Filter.INCLUDE.equals(filter) && oldRoot == null
+                && ChangeType.ADDED.equals(changeType())) {
             RevTree tree = getTypeTree();
             size = (int) tree.size();
             if (offset != null) {
@@ -246,9 +287,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return count;
     }
 
-    @Override
-    protected FeatureReader<SimpleFeatureType, SimpleFeature> getReaderInternal(final Query query)
-            throws IOException {
+    protected @Override FeatureReader<SimpleFeatureType, SimpleFeature> getReaderInternal(
+            final Query query) throws IOException {
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
         featureReader = getNativeReader(query, true);
@@ -267,7 +307,6 @@ class GeogigFeatureSource extends ContentFeatureSource {
             boolean cloneValues = false;
             featureReader = new ReTypeFeatureReader(featureReader, outputSchema, cloneValues);
         }
-
         return featureReader;
 
     }
@@ -283,10 +322,6 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
         boolean retypeRequired = !Arrays.asList(queryProps).equals(resultNames);
         return retypeRequired;
-    }
-
-    public @VisibleForTesting @Override boolean handleVisitor(Query query, FeatureVisitor visitor) {
-        return visitorHandler.handle(visitor, query, this);
     }
 
     /**
@@ -311,8 +346,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         // hints.get(Hints.GEOMETRY_SIMPLIFICATION);
         final @Nullable ScreenMap screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
         final @Nullable String[] propertyNames = query.getPropertyNames();
-        final @Nullable SortBy[] sortBy = query.getSortBy();
-        // final Name assignedName = getEntry().getName();
+        final Name assignedName = getEntry().getName();
 
         final Filter filter = query.getFilter();
 
@@ -321,42 +355,61 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
         FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, nativeType, typeRef);
 
-        FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = builder//
+        final WalkInfo diffWalk = builder//
                 .targetSchema(getSchema())//
                 .filter(filter)//
                 .headRef(getRootRef())//
-                // .oldHeadRef(oldRoot())//
-                // .changeType(changeType())//
+                .oldHeadRef(oldRoot())//
+                .ignoreIndex()//
+                .changeType(changeType())//
                 .geometryFactory(geometryFactory)//
                 // .simplificationDistance(simplifDistance)//
                 .offset(offset)//
                 .limit(limit)//
-                .propertyNames(propertyNames)//
+                // .propertyNames(propertyNames)//
                 .screenMap(screenMap)//
-                .sortBy(sortBy)//
-                .retypeIfNeeded(retypeIfNeeded)//
-                .build();
+                // .sortBy(sortBy)//
+                // .retypeIfNeeded(retypeIfNeeded)//
+                .retypeIfNeeded(false)//
+                .buildTreeWalk();
 
-        return featureReader;
+        final SimpleFeatureType diffType = getSchema();
 
-    }
-
-    @Override
-    protected SimpleFeatureType buildFeatureType() throws IOException {
-
-        RevFeatureType nativeType = getNativeType();
-        SimpleFeatureType featureType = (SimpleFeatureType) nativeType.type();
-
-        final Name name = featureType.getName();
-        final Name assignedName = getEntry().getName();
-
-        if (assignedName.getNamespaceURI() != null && !assignedName.equals(name)) {
-            SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-            builder.init(featureType);
-            builder.setName(assignedName);
-            featureType = builder.buildFeatureType();
+        if (diffWalk.screenMapFilter != null) {
+            diffWalk.screenMapFilter.collectStats();
         }
-        return featureType;
+
+        AutoCloseableIterator<DiffEntry> entries = diffWalk.diffOp.call();
+        try {
+            ObjectStore store = getCommandLocator().objectDatabase();
+            BulkFeatureRetriever retriever = new BulkFeatureRetriever(store);
+
+            AutoCloseableIterator<SimpleFeature> diffFeatures;
+            diffFeatures = retriever.getGeoToolsDiffFeatures(entries, nativeType, diffType,
+                    geometryFactory);
+
+            if (screenMap != null) {
+                DiffFeatureScreenMapPredicate screenMapPredicate;
+                screenMapPredicate = new DiffFeatureScreenMapPredicate(screenMap, diffType);
+                diffFeatures = AutoCloseableIterator.filter(diffFeatures, screenMapPredicate);
+            }
+
+            if (diffWalk.screenMapFilter != null) {
+                diffFeatures = AutoCloseableIterator.fromIterator(diffFeatures, (orig) -> {
+                    orig.close();
+                    log.info("Pre filter stats: {}", diffWalk.screenMapFilter.stats());
+                    System.err.printf("Pre filter stats: %s\n", diffWalk.screenMapFilter.stats());
+                });
+            }
+
+            FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
+            featureReader = FeatureReaderAdapter.of(diffType, diffFeatures);
+            return featureReader;
+        } catch (Exception e) {
+            entries.close();
+            Throwables.throwIfUnchecked(e);
+            throw new IOException(e);
+        }
     }
 
     Context getCommandLocator() {

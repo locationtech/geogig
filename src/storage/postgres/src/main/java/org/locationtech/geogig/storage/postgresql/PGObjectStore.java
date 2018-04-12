@@ -48,7 +48,6 @@ import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -62,7 +61,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.cache.CacheManager;
@@ -418,18 +416,6 @@ public class PGObjectStore implements ObjectStore {
         return stream;
     }
 
-    public @Override <T extends RevObject> AutoCloseableIterator<DiffObjectInfo<T>> getObjects(
-            Iterator<DiffEntry> diffEntries, Class<T> type) {
-        checkNotNull(diffEntries, "diffEntries is null");
-        checkNotNull(type, "type is null");
-        checkState(isOpen(), "Database is closed");
-
-        AutoCloseableIterator<DiffObjectInfo<T>> stream = new PGObjectStoreDiffObjectIterator<T>(
-                diffEntries, type, this);
-
-        return stream;
-    }
-
     @Override
     public boolean put(final RevObject object) {
         checkNotNull(object, "argument object is null");
@@ -594,26 +580,6 @@ public class PGObjectStore implements ObjectStore {
             }
         }
         Future<List<ObjectInfo<T>>> future = resources.executor().submit(getAllOp);
-        return future;
-    }
-
-    <T extends RevObject> Future<List<DiffObjectInfo<T>>> getObjects(
-            final Collection<DiffEntry> diffEntries, final Class<T> type) {
-        checkState(isOpen(), "Database is closed");
-
-        GetDiffObjectOp<T> getAllOp = new GetDiffObjectOp<T>(diffEntries, this, type);
-        // Avoid deadlocking by running the task synchronously if we are already in one of the
-        // threads on the executor.
-        if (Thread.currentThread().getThreadGroup().equals(resources.threadGroup)) {
-            try {
-                List<DiffObjectInfo<T>> objects = getAllOp.call();
-                return Futures.immediateFuture(objects);
-            } catch (Exception e) {
-                Throwables.throwIfUnchecked(e);
-                throw new RuntimeException(e);
-            }
-        }
-        Future<List<DiffObjectInfo<T>>> future = resources.executor().submit(getAllOp);
         return future;
     }
 

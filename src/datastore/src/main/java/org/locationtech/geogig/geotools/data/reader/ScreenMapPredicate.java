@@ -9,9 +9,12 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.renderer.ScreenMap;
@@ -29,16 +32,25 @@ import com.vividsolutions.jts.geom.Envelope;
  * geotools {@link ScreenMap}
  *
  */
-class ScreenMapPredicate implements Predicate<Bounded> {
+public class ScreenMapPredicate implements Predicate<Bounded> {
 
-    static final class Stats {
-        private AtomicLong skippedTrees = new AtomicLong(), skippedBuckets = new AtomicLong(),
+    public static class Stats {
+        void add(final Bounded b, final boolean skip) {
+        }
+
+        public @Override String toString() {
+            return "No Stats";
+        }
+    }
+
+    static final class StatsCollector extends Stats {
+        public final AtomicLong skippedTrees = new AtomicLong(), skippedBuckets = new AtomicLong(),
                 skippedFeatures = new AtomicLong();
 
-        private AtomicLong acceptedTrees = new AtomicLong(), acceptedBuckets = new AtomicLong(),
-                acceptedFeatures = new AtomicLong();
+        public final AtomicLong acceptedTrees = new AtomicLong(),
+                acceptedBuckets = new AtomicLong(), acceptedFeatures = new AtomicLong();
 
-        void add(final Bounded b, final boolean skip) {
+        protected @Override void add(final Bounded b, final boolean skip) {
             NodeRef n = b instanceof NodeRef ? (NodeRef) b : null;
             Bucket bucket = b instanceof Bucket ? (Bucket) b : null;
             if (skip) {
@@ -64,43 +76,59 @@ class ScreenMapPredicate implements Predicate<Bounded> {
             }
         }
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return String.format(
                     "skipped/accepted: Features(%,d/%,d) Buckets(%,d/%,d) Trees(%,d/%,d)",
-                    skippedFeatures, acceptedFeatures, skippedBuckets, acceptedBuckets,
-                    skippedTrees, acceptedTrees);
+                    skippedFeatures.longValue(), acceptedFeatures.longValue(),
+                    skippedBuckets.longValue(), acceptedBuckets.longValue(),
+                    skippedTrees.longValue(), acceptedTrees.longValue());
         }
     }
 
-    private ScreenMap screenMap;
+    private Lock lock = new ReentrantLock();
 
-    private boolean collectStats = false;
+    private Supplier<Envelope> envelope = Envelope::new;
+
+    private ScreenMap screenMap;
 
     private ScreenMapPredicate.Stats stats = new Stats();
 
-    public ScreenMapPredicate(ScreenMap screenMap, boolean collectStats) {
-        this.screenMap = screenMap;
-        this.collectStats = collectStats;
-    }
+    private boolean filterTrees = false;
 
     public ScreenMapPredicate(ScreenMap screenMap) {
-        this(screenMap, false);
+        this.screenMap = screenMap;
+    }
+
+    public ScreenMapPredicate collectStats() {
+        this.stats = new StatsCollector();
+        return this;
+    }
+
+    public ScreenMapPredicate filterTrees() {
+        this.filterTrees = true;
+        return this;
+    }
+
+    public ScreenMapPredicate optimizeForSingleThreadedCalls() {
+        this.lock = new NoOpLock();
+        final Envelope reuse = new Envelope();
+        this.envelope = () -> {
+            reuse.init();
+            return reuse;
+        };
+        return this;
     }
 
     public ScreenMapPredicate.Stats stats() {
         return stats;
     }
 
-    private Lock lock = new ReentrantLock();
-
     @Override
     public boolean apply(@Nullable Bounded b) {
         if (b == null) {
             return false;
         }
-        Envelope envelope = new Envelope();
-
+        Envelope envelope = this.envelope.get();
         b.expand(envelope);
         if (envelope.isNull()) {
             return true;
@@ -112,8 +140,9 @@ class ScreenMapPredicate implements Predicate<Bounded> {
             // these aren't thread safe
             lock.lock();
             try {
-                if (b instanceof NodeRef && ((NodeRef) b).getType() == TYPE.FEATURE) {
-                        skip = screenMap.checkAndSet(envelope);
+                if (filterTrees
+                        || b instanceof NodeRef && ((NodeRef) b).getType() == TYPE.FEATURE) {
+                    skip = screenMap.checkAndSet(envelope);
                 } else {
                     skip = screenMap.get(envelope);
                 }
@@ -124,8 +153,19 @@ class ScreenMapPredicate implements Predicate<Bounded> {
                 lock.unlock();
             }
         }
-        if (collectStats)
-            stats.add(b, skip);
+
+        stats.add(b, skip);
         return !skip;
+    }
+
+    private static class NoOpLock implements Lock {
+        //@formatter:off
+        public @Override void lock() {}
+        public @Override void lockInterruptibly() {}
+        public @Override boolean tryLock() {return true;}
+        public @Override boolean tryLock(long time, TimeUnit unit) {return true;}
+        public @Override void unlock() {}
+        public @Override Condition newCondition() {throw new UnsupportedOperationException();}
+        //@formatter:on
     }
 }

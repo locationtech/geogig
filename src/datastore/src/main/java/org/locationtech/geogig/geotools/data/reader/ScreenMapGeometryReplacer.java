@@ -29,7 +29,7 @@ import com.vividsolutions.jts.geom.Point;
  *       as the ScreenMapPredicate or FeatureScreenMapPredicate.  However, the features
  *       handed to this class will have already go through the filtering.
  */
- class ScreenMapGeometryReplacer implements Function<SimpleFeature, SimpleFeature> {
+ public class ScreenMapGeometryReplacer implements Function<SimpleFeature, SimpleFeature> {
 
     ScreenMap screenMap;
 

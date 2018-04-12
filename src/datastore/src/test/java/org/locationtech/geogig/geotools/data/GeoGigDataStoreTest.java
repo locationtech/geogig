@@ -10,7 +10,6 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.NameImpl;
 import org.geotools.geometry.jts.GeometryBuilder;
 import org.junit.Test;
-import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -389,30 +387,6 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         assertTrue(line.equals((Geometry) f.getAttribute("pp")));
     }
 
-    @Test
-    public void testGetDiffFeatureSource() throws Exception {
-        insertAndAdd(points1);
-        insertAndAdd(lines1, lines2);
-        final ObjectId c1 = commit();
-        insertAndAdd(points2);
-        final ObjectId c2 = commit();
-        deleteAndAdd(points2);
-        final ObjectId c3 = commit();
-        insertAndAdd(points1_modified);
-        final ObjectId c4 = commit();
-
-        testDiffFeatures(ObjectId.NULL, c1, 1/* added */, 0/* removed */, 0/* modified */);
-        testDiffFeatures(c1, c2, 1, 0, 0);
-        testDiffFeatures(c2, c1, 0, 1, 0);
-        testDiffFeatures(ObjectId.NULL, c2, 2, 0, 0);
-
-        testDiffFeatures(c3, c4, 0, 0, 1);
-        testDiffFeatures(c4, c3, 0, 0, 1);
-
-        testDiffFeatures(c2, c4, 0, 1, 1);
-        testDiffFeatures(c4, c2, 1, 0, 1);
-    }
-
     public @Test void testFindTypeRef() throws Exception {
         Name typeName = new NameImpl(pointsName);
         final Transaction autoCommit = Transaction.AUTO_COMMIT;
@@ -449,57 +423,6 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         tx.close();
 
         assertEquals(txRef, dataStore.findTypeRef(typeName, autoCommit));
-    }
-
-    private void testDiffFeatures(ObjectId oldRoot, ObjectId newRoot, int expectedAdded,
-            int expectedRemoved, int expectedChanged) throws IOException {
-
-        dataStore.setHead(newRoot.toString());
-        List<String> fids;
-        SimpleFeatureCollection features;
-
-        ChangeType changeType = ChangeType.ADDED;
-        features = dataStore.getDiffFeatureSource(pointsName, oldRoot.toString(), changeType)
-                .getFeatures();
-        fids = toIdList(features);
-        assertEquals(changeType + fids.toString(), expectedAdded, fids.size());
-        assertEquals(changeType + fids.toString(), expectedAdded, features.size());
-
-        changeType = ChangeType.REMOVED;
-        features = dataStore.getDiffFeatureSource(pointsName, oldRoot.toString(), changeType)
-                .getFeatures();
-        fids = toIdList(features);
-        assertEquals(changeType + fids.toString(), expectedRemoved, fids.size());
-        assertEquals(changeType + fids.toString(), expectedRemoved, features.size());
-
-        changeType = ChangeType.CHANGED_NEW;
-        features = dataStore.getDiffFeatureSource(pointsName, oldRoot.toString(), changeType)
-                .getFeatures();
-        fids = toIdList(features);
-        assertEquals(changeType + fids.toString(), expectedChanged, fids.size());
-        assertEquals(changeType + fids.toString(), expectedChanged, features.size());
-
-        changeType = ChangeType.CHANGED_OLD;
-        features = dataStore.getDiffFeatureSource(pointsName, oldRoot.toString(), changeType)
-                .getFeatures();
-        fids = toIdList(features);
-        assertEquals(changeType + fids.toString(), expectedChanged, fids.size());
-        assertEquals(changeType + fids.toString(), expectedChanged, features.size());
-    }
-
-    private List<String> toIdList(SimpleFeatureCollection features) {
-        List<SimpleFeature> list = toList(features);
-        return Lists.transform(list, (f) -> f.getID());
-    }
-
-    private List<SimpleFeature> toList(SimpleFeatureCollection features) {
-        List<SimpleFeature> list = new ArrayList<>();
-        try (SimpleFeatureIterator it = features.features()) {
-            while (it.hasNext()) {
-                list.add(it.next());
-            }
-        }
-        return list;
     }
 
     private Optional<IndexInfo> createOrUpdateIndexAndVerify(String layerName,

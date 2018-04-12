@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.data;
 
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
@@ -175,8 +174,6 @@ class GeogigFeatureVisitorHandler {
                 .targetSchema(source.getSchema())//
                 .filter(filter)//
                 .headRef(source.getRootRef())//
-                .oldHeadRef(source.oldRoot())//
-                .changeType(source.changeType())//
                 .propertyNames(propertyName)//
                 .retypeIfNeeded(false)// don't force retyping, we don't need to return the schema
                                       // matching Query properties

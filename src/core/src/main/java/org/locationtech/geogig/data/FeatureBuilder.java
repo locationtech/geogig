@@ -51,7 +51,7 @@ public class FeatureBuilder {
     }
 
     /**
-     * @param type the native type of the features buing built
+     * @param type the native type of the features being built
      * @param typeNameOverride if provided, the resulting feature type for the features will be
      *        renamed as this
      */

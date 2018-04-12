@@ -23,6 +23,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.internal.ObjectStoreDiffObjectIterator;
 
 import com.google.common.annotations.Beta;
 
@@ -257,9 +258,9 @@ public interface ObjectStore extends Closeable {
             Iterator<NodeRef> nodes, BulkOpListener listener, Class<T> type);
 
     @Beta
-    public default <T extends RevObject> AutoCloseableIterator<DiffObjectInfo<T>> getObjects(
+    public default <T extends RevObject> AutoCloseableIterator<DiffObjectInfo<T>> getDiffObjects(
             Iterator<DiffEntry> diffEntries, Class<T> type) {
-        throw new UnsupportedOperationException();
+        return new ObjectStoreDiffObjectIterator<T>(diffEntries, type, this);
     }
 
 }

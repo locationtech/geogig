@@ -50,6 +50,12 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * NodeRefs. It ignores the FeatureType Metadata and uses the supplied schema to construct features.
  */
 public class BulkFeatureRetriever {
+    static final String FLATTENED_ATTNAME_PREFIX_NEW = "new_";
+
+    static final String FLATTENED_ATTNAME_PREFIX_OLD = "old_";
+
+    public static final String DIFF_FEATURE_CHANGETYPE_ATTNAME = "geogig.changeType";
+
     ObjectStore odb;
 
     public BulkFeatureRetriever(ObjectStore odb) {
@@ -184,7 +190,7 @@ public class BulkFeatureRetriever {
         boolean flattenedType = !isDiffFeatureType(diffType);
         Function<DiffObjectInfo<RevFeature>, SimpleFeature> builder;
         if (flattenedType) {
-            builder = new DiffFeatureFlattenedBuilder(diffType, geometryFactory);
+            builder = new DiffFeatureFlattenedBuilder(diffType, nativeType, geometryFactory);
         } else {
 
             // builder for the "old" and "new" versions of each feature
@@ -218,7 +224,7 @@ public class BulkFeatureRetriever {
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName(typeName);
-
+        builder.add(DIFF_FEATURE_CHANGETYPE_ATTNAME, Integer.class);
         List<AttributeDescriptor> atts = nativeFeatureType.getAttributeDescriptors();
         for (AttributeDescriptor att : atts) {
             String name = att.getLocalName();
@@ -226,11 +232,11 @@ public class BulkFeatureRetriever {
             if (att instanceof GeometryDescriptor) {
                 CoordinateReferenceSystem crs = ((GeometryDescriptor) att)
                         .getCoordinateReferenceSystem();
-                builder.add("old_" + name, binding, crs);
-                builder.add("new_" + name, binding, crs);
+                builder.add(FLATTENED_ATTNAME_PREFIX_OLD + name, binding, crs);
+                builder.add(FLATTENED_ATTNAME_PREFIX_NEW + name, binding, crs);
             } else {
-                builder.add("old_" + name, binding);
-                builder.add("new_" + name, binding);
+                builder.add(FLATTENED_ATTNAME_PREFIX_OLD + name, binding);
+                builder.add(FLATTENED_ATTNAME_PREFIX_NEW + name, binding);
             }
         }
 
@@ -244,6 +250,7 @@ public class BulkFeatureRetriever {
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         FeatureTypeFactory typeFactory = builder.getFeatureTypeFactory();
+        builder.add(DIFF_FEATURE_CHANGETYPE_ATTNAME, Integer.class);
 
         AttributeDescriptor oldValDescriptor;
         AttributeDescriptor newValDescriptor;

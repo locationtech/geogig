@@ -12,9 +12,9 @@ package org.locationtech.geogig.data.retrieve;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.storage.DiffObjectInfo;
-import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -53,6 +53,11 @@ class DiffFeatureBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleF
 
         SimpleFeature diffFeature;
         diffFeatureBuilder.reset();
+
+        final ChangeType changeType = info.entry().changeType();
+        diffFeatureBuilder.set(BulkFeatureRetriever.DIFF_FEATURE_CHANGETYPE_ATTNAME,
+                Integer.valueOf(changeType.value()));
+
         diffFeatureBuilder.set("old", oldValue);
         diffFeatureBuilder.set("new", newValue);
         diffFeature = diffFeatureBuilder.buildFeature(id);

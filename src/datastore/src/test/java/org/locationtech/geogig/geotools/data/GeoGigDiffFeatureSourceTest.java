@@ -175,16 +175,19 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
         assertEquals(diffSchema, diffFeature.getType());
         switch (entry.changeType()) {
         case ADDED:
+            assertEquals(0, diffFeature.getAttribute("geogig.changeType"));
             assertNull(diffFeature.getAttribute("old"));
             assertDiffFeature(entry.getNewObject(), diffFeature, "new", valueType);
             break;
         case MODIFIED:
+            assertEquals(1, diffFeature.getAttribute("geogig.changeType"));
             assertNotNull(diffFeature.getAttribute("old"));
             assertNotNull(diffFeature.getAttribute("new"));
             assertDiffFeature(entry.getOldObject(), diffFeature, "old", valueType);
             assertDiffFeature(entry.getNewObject(), diffFeature, "new", valueType);
             break;
         case REMOVED:
+            assertEquals(2, diffFeature.getAttribute("geogig.changeType"));
             assertNull(diffFeature.getAttribute("new"));
             assertDiffFeature(entry.getOldObject(), diffFeature, "old", valueType);
             break;
@@ -232,9 +235,13 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
     private void assertDiffSchema(SimpleFeatureType diffSchema, SimpleFeatureType valueType) {
         assertNotNull(diffSchema);
         assertEquals(valueType.getTypeName(), diffSchema.getTypeName());
-        assertEquals(2, diffSchema.getAttributeCount());
-        AttributeDescriptor oldValueDescriptor = diffSchema.getDescriptor(0);
-        AttributeDescriptor newValueDescriptor = diffSchema.getDescriptor(1);
+        assertEquals(3, diffSchema.getAttributeCount());
+        AttributeDescriptor changeType = diffSchema.getDescriptor(0);
+        assertEquals("geogig.changeType", changeType.getLocalName());
+        assertEquals(Integer.class, changeType.getType().getBinding());
+
+        AttributeDescriptor oldValueDescriptor = diffSchema.getDescriptor(1);
+        AttributeDescriptor newValueDescriptor = diffSchema.getDescriptor(2);
         assertEquals("old", oldValueDescriptor.getLocalName());
         assertEquals("new", newValueDescriptor.getLocalName());
         assertValueDescriptor(oldValueDescriptor, valueType);

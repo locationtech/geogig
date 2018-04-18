@@ -9,12 +9,16 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.DiffObjectInfo;
-import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -29,28 +33,50 @@ class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>
 
     private GeometryFactory geometryFactory;
 
-    public DiffFeatureFlattenedBuilder(SimpleFeatureType diffType,
+    private RevFeatureType nativeType;
+
+    private List<String> nativeAttNames;
+
+    private List<String> flattenedAttNames;
+
+    public DiffFeatureFlattenedBuilder(SimpleFeatureType diffType, RevFeatureType nativeType,
             GeometryFactory geometryFactory) {
         this.diffType = diffType;
+        this.nativeType = nativeType;
         this.geometryFactory = geometryFactory;
         this.diffFeatureBuilder = new SimpleFeatureBuilder(diffType);
+
+        nativeAttNames = nativeType.type().getDescriptors().stream()
+                .map(d -> d.getName().getLocalPart()).collect(Collectors.toList());
+        flattenedAttNames = new ArrayList<>(nativeAttNames.size() * 2);
+        for (String att : nativeAttNames) {
+            flattenedAttNames.add(BulkFeatureRetriever.FLATTENED_ATTNAME_PREFIX_OLD + att);
+            flattenedAttNames.add(BulkFeatureRetriever.FLATTENED_ATTNAME_PREFIX_NEW + att);
+        }
     }
 
     public @Override SimpleFeature apply(DiffObjectInfo<RevFeature> info) {
+
         DiffEntry entry = info.entry();
 
         final String id = entry.name();
 
         RevFeature oldFeature = info.oldValue().orElse(null);
         RevFeature newFeature = info.newValue().orElse(null);
+        final ChangeType changeType = info.entry().changeType();
+        diffFeatureBuilder.set(BulkFeatureRetriever.DIFF_FEATURE_CHANGETYPE_ATTNAME,
+                Integer.valueOf(changeType.value()));
 
-        for (int i = 0, j = 0; i < diffType.getAttributeCount() / 2; i++, j += 2) {
+        List<String> nativeTypeNames = this.nativeAttNames;
+        for (int i = 0; i < nativeTypeNames.size(); i++) {
+            String attNameFlattenedOld = flattenedAttNames.get(2 * i);
+            String attNameFlattenedNew = flattenedAttNames.get(2 * i + 1);
+
             Object o = oldFeature == null ? null : oldFeature.get(i).orNull();
             Object n = newFeature == null ? null : newFeature.get(i).orNull();
-            diffFeatureBuilder.set(j, o);
-            diffFeatureBuilder.set(j + 1, n);
+            diffFeatureBuilder.set(attNameFlattenedOld, o);
+            diffFeatureBuilder.set(attNameFlattenedNew, n);
         }
-
         return diffFeatureBuilder.buildFeature(id);
     }
 }

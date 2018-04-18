@@ -18,11 +18,11 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.plumbing.diff.PatchSerializer;
 import org.locationtech.geogig.porcelain.CreatePatchOp;
 import org.locationtech.geogig.porcelain.DiffOp;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 

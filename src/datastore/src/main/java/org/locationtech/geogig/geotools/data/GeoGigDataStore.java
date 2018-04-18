@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.Transaction;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.ContentDataStore;
 import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentState;
@@ -30,7 +29,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevParse;
@@ -386,7 +384,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     }
 
     public static enum ChangeType {
-        ADDED, REMOVED, CHANGED_NEW, CHANGED_OLD;
+        ALL, ADDED, REMOVED, CHANGED, CHANGED_NEW, CHANGED_OLD;
     }
 
     /**
@@ -416,26 +414,27 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      *         diffs between the given {@code oldRoot} and the datastore's
      *         {@link #getOrFigureOutHead() HEAD}.
      */
-    public SimpleFeatureSource getDiffFeatureSource(final String typeName, final String oldRoot,
+    public GeogigDiffFeatureSource getDiffFeatureSource(final String typeName, final String oldRoot)
+            throws IOException {
+        return getDiffFeatureSource(typeName, oldRoot, ChangeType.ALL);
+    }
+
+    public GeogigDiffFeatureSource getDiffFeatureSource(final String typeName, final String oldRoot,
             final ChangeType changeType) throws IOException {
         Preconditions.checkNotNull(typeName, "typeName");
         Preconditions.checkNotNull(oldRoot, "oldRoot");
         Preconditions.checkNotNull(changeType, "changeType");
 
         final Name name = name(typeName);
-        final ContentEntry entry = ensureEntry(name);
+        ensureEntry(name);// make sure the featuretype exists
 
-        GeogigFeatureSource featureSource = new GeogigFeatureSource(entry);
-        featureSource.setTransaction(Transaction.AUTO_COMMIT);
-        featureSource.setChangeType(changeType);
-        if (ObjectId.NULL.toString().equals(oldRoot)
-                || RevTree.EMPTY_TREE_ID.toString().equals(oldRoot)) {
-            featureSource.setOldRoot(null);
-        } else {
-            featureSource.setOldRoot(oldRoot);
-        }
+        // can't reuse the content entry as it has the native schema cached, and the diff feature
+        // source creates its own FeatureType with "old" and "new" SimpleFeature attributes
+        final ContentEntry entry = new ContentEntry(this, name);
 
-        return featureSource;
+        GeogigDiffFeatureSource source = new GeogigDiffFeatureSource(entry, oldRoot);
+        source.setChangeType(changeType);
+        return source;
     }
 
     /**
@@ -554,7 +553,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     public boolean getAutoIndexing() {
         return this.autoIndexing;
     }
-    
+
     Repository getRepository() {
         return repository;
     }

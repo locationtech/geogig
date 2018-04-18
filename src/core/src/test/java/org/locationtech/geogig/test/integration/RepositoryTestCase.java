@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.SchemaException;
@@ -491,7 +492,7 @@ public abstract class RepositoryTestCase extends Assert {
      * @return
      * @throws Exception
      */
-    public boolean deleteAndAdd(GeogigTransaction transaction, Feature f) throws Exception {
+    public boolean deleteAndAdd(@Nullable GeogigTransaction transaction, Feature f) throws Exception {
         boolean existed = delete(transaction, f);
         if (existed) {
             if (transaction != null) {
@@ -508,7 +509,7 @@ public abstract class RepositoryTestCase extends Assert {
         return delete(null, f);
     }
 
-    public boolean delete(GeogigTransaction transaction, Feature f) throws Exception {
+    public boolean delete(@Nullable GeogigTransaction transaction, Feature f) throws Exception {
         final WorkingTree workTree = (transaction != null ? transaction.workingTree()
                 : repo.workingTree());
         Name name = f.getType().getName();

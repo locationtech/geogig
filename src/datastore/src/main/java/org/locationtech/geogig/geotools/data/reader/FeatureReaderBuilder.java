@@ -40,6 +40,7 @@ import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.Bounded;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -50,7 +51,6 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -70,7 +70,6 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -271,6 +270,9 @@ public class FeatureReaderBuilder {
         public boolean filterIsFullySupportedByIndex;
 
         public DiffTree diffOp;
+
+        public ScreenMapPredicate screenMapFilter;
+
     }
 
     public WalkInfo buildTreeWalk() {
@@ -365,11 +367,12 @@ public class FeatureReaderBuilder {
         // TODO: for some reason setting the default metadata id is making several tests fail,
         // though it's not really needed here because we have the FeatureType already. Nonetheless
         // this is strange and needs to be revisited.
+        final boolean preserveIterationOrder = shallPreserveIterationOrder();
+        Predicate<Bounded> indexPreFilter = createIndexPreFilter(info);
         info.diffOp.setDefaultMetadataId(featureTypeId) //
-                .setPreserveIterationOrder(shallPreserveIterationOrder())//
+                .setPreserveIterationOrder(preserveIterationOrder)//
                 .setPathFilter(createFidFilter(info.nativeFilter)) //
-                .setCustomFilter(
-                        createIndexPreFilter(info.preFilter, info.filterIsFullySupportedByIndex)) //
+                .setCustomFilter(indexPreFilter) //
                 // no need to set a bounds filter, the preFilter takes care of it
                 // .setBoundsFilter(createBoundsFilter(info.fullSchema, info.nativeFilter,
                 // newFeatureTypeTree, treeSource)) //
@@ -692,12 +695,17 @@ public class FeatureReaderBuilder {
         return spatialFilterVisitor.hasSpatialFilter();
     }
 
-    private org.locationtech.geogig.repository.DiffEntry.ChangeType resolveChangeType() {
+    private @Nullable org.locationtech.geogig.model.DiffEntry.ChangeType resolveChangeType() {
         switch (changeType) {
+        case ALL:
+            return null;
         case ADDED:
             return DiffEntry.ChangeType.ADDED;
         case REMOVED:
             return DiffEntry.ChangeType.REMOVED;
+        case CHANGED:
+        case CHANGED_NEW:
+        case CHANGED_OLD:
         default:
             return DiffEntry.ChangeType.MODIFIED;
         }
@@ -737,24 +745,54 @@ public class FeatureReaderBuilder {
     }
 
     /**
-     *
-     * @param filter
-     * @param indexFullySupportsQuery -- if fully supported, use the screenmap
-     * @return
+     * @param walkInfo: create pre filter for {@code preFilter}, if {@code indexFullySupportsQuery}
+     *        use the screenmap
      */
-    @VisibleForTesting
-    Predicate<Bounded> createIndexPreFilter(final Filter preFilter,
-            final boolean indexFullySupportsQuery) {
+    private Predicate<Bounded> createIndexPreFilter(WalkInfo walkInfo) {
+        final Filter preFilter = walkInfo.preFilter;
+        final boolean indexFullySupportsQuery = walkInfo.filterIsFullySupportedByIndex;
+        final boolean preserveIterationOrder = shallPreserveIterationOrder();
 
         Predicate<Bounded> predicate = PreFilter.forFilter(preFilter);
         final boolean ignore = Boolean.getBoolean("geogig.ignorescreenmap");
         // if the index is not fully supported, do not apply the screenmap filter at this stage
         // otherwise we will remove too many features
         if (screenMap != null && !ignore && indexFullySupportsQuery) {
-            Predicate<Bounded> screenMapFilter = new ScreenMapPredicate(screenMap);
+            ScreenMapPredicate screenMapFilter = new ScreenMapPredicate(screenMap);
+            walkInfo.screenMapFilter = screenMapFilter;
+            final boolean filterBuckets = canFilterBuckets(preFilter);
+            if (filterBuckets) {
+                screenMapFilter.filterTrees();
+            }
+            if (preserveIterationOrder) {
+                screenMapFilter.optimizeForSingleThreadedCalls();
+            }
             predicate = Predicates.and(predicate, screenMapFilter);
         }
         return predicate;
+    }
+
+    /**
+     * Determines if the screenmap filter predicate can filter both bucket nodes and feature nodes
+     * or just feature nodes.
+     * <p>
+     * Bucket nodes are safe to filter out only of the feature {@code preFilter} is not filtering on
+     * a non geometry attribute.
+     * 
+     * @return {@code true} if its safe to filter out whole subtrees based on their bounds
+     */
+    private boolean canFilterBuckets(Filter preFilter) {
+        String[] filterProperties = DataUtilities.attributeNames(preFilter);
+        for (String attName : filterProperties) {
+            if (PrePostFilterSplitter.BOUNDS_META_PROPERTY.equals(attName)) {
+                continue;
+            }
+            AttributeDescriptor descriptor = this.nativeSchema.getDescriptor(attName);
+            if (!(descriptor instanceof GeometryDescriptor)) {
+                return false;
+            }
+        }
+        return true;// safe to pre filter buckets by bounds
     }
 
     private List<String> createFidFilter(Filter filter) {

@@ -13,10 +13,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.web.api.commands.ReportMergeScenario;
 

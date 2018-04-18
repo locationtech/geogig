@@ -7,16 +7,11 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.repository;
+package org.locationtech.geogig.model;
 
 import java.util.Comparator;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.CanonicalNodeOrder;
-import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
-import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Objects;
@@ -206,6 +201,14 @@ public class DiffEntry {
      */
     public String path() {
         return newObject == null ? oldObject.path() : newObject.path();
+    }
+
+    public String parentPath() {
+        return (newObject == null ? oldObject : newObject).getParentPath();
+    }
+
+    public String name() {
+        return newObject == null ? oldObject.name() : newObject.name();
     }
 
     /**

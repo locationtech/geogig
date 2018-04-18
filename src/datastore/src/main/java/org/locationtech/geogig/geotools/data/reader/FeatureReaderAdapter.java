@@ -22,7 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Adapts a closeable iterator of features as a {@link FeatureReader}
  */
-class FeatureReaderAdapter<T extends FeatureType, F extends Feature>
+public class FeatureReaderAdapter<T extends FeatureType, F extends Feature>
         implements FeatureReader<T, F> {
 
     private final T schema;
@@ -33,6 +33,11 @@ class FeatureReaderAdapter<T extends FeatureType, F extends Feature>
     public FeatureReaderAdapter(T schema, AutoCloseableIterator<? extends F> iterator) {
         this.schema = schema;
         this.iterator = iterator;
+    }
+
+    public static <T extends FeatureType, F extends Feature> FeatureReader<T, F> of(T schema,
+            AutoCloseableIterator<? extends F> iterator) {
+        return new FeatureReaderAdapter<T, F>(schema, iterator);
     }
 
     @Override

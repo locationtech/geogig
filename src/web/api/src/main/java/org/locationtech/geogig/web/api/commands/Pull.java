@@ -10,6 +10,7 @@
 package org.locationtech.geogig.web.api.commands;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.remotes.PullOp;
 import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;

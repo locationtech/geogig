@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.porcelain.CleanOp;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.collect.Lists;

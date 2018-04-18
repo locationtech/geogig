@@ -1,3 +1,12 @@
+/* Copyright (c) 2017 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan - initial implementation
+ */
 package org.locationtech.geogig.storage;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -32,7 +41,7 @@ public class ObjectInfo<T extends RevObject> {
     public static <T extends RevObject> ObjectInfo<T> of(NodeRef ref, T obj) {
         checkNotNull(ref, "ref");
         checkNotNull(obj, "obj");
-        
+
         return new ObjectInfo<T>(ref, obj);
     }
 }

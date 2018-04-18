@@ -32,7 +32,6 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.renderer.ScreenMap;
-import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -61,10 +60,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  *
  */
 class GeogigFeatureSource extends ContentFeatureSource {
-
-    private GeoGigDataStore.ChangeType changeType;
-
-    private String oldRoot;
 
     private final GeogigFeatureVisitorHandler visitorHandler = new GeogigFeatureVisitorHandler();
 
@@ -187,8 +182,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final Filter filter = (Filter) query.getFilter().accept(new SimplifyingFilterVisitor(),
                 null);
         final CoordinateReferenceSystem crs = getSchema().getCoordinateReferenceSystem();
-        if (Filter.INCLUDE.equals(filter) && oldRoot == null
-                && ChangeType.ADDED.equals(changeType())) {
+        if (Filter.INCLUDE.equals(filter)) {
             NodeRef typeRef = getTypeRef();
             ReferencedEnvelope bounds = new ReferencedEnvelope(crs);
             typeRef.getNode().expand(bounds);
@@ -225,8 +219,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 : query.getMaxFeatures();
 
         int size;
-        if (Filter.INCLUDE.equals(filter) && oldRoot == null
-                && ChangeType.ADDED.equals(changeType())) {
+        if (Filter.INCLUDE.equals(filter)) {
             RevTree tree = getTypeTree();
             size = (int) tree.size();
             if (offset != null) {
@@ -319,7 +312,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final @Nullable ScreenMap screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
         final @Nullable String[] propertyNames = query.getPropertyNames();
         final @Nullable SortBy[] sortBy = query.getSortBy();
-        final Name assignedName = getEntry().getName();
+        // final Name assignedName = getEntry().getName();
 
         final Filter filter = query.getFilter();
 
@@ -332,8 +325,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .targetSchema(getSchema())//
                 .filter(filter)//
                 .headRef(getRootRef())//
-                .oldHeadRef(oldRoot())//
-                .changeType(changeType())//
+                // .oldHeadRef(oldRoot())//
+                // .changeType(changeType())//
                 .geometryFactory(geometryFactory)//
                 // .simplificationDistance(simplifDistance)//
                 .offset(offset)//
@@ -346,22 +339,6 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
         return featureReader;
 
-    }
-
-    public void setChangeType(GeoGigDataStore.ChangeType changeType) {
-        this.changeType = changeType;
-    }
-
-    public void setOldRoot(@Nullable String oldRoot) {
-        this.oldRoot = oldRoot;
-    }
-
-    String oldRoot() {
-        return oldRoot == null ? ObjectId.NULL.toString() : oldRoot;
-    }
-
-    GeoGigDataStore.ChangeType changeType() {
-        return changeType == null ? ChangeType.ADDED : changeType;
     }
 
     @Override

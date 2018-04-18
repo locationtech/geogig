@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;

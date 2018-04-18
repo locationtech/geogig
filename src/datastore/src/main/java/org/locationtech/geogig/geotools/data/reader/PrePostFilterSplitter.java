@@ -121,6 +121,8 @@ final class PrePostFilterSplitter {
 
     private static final Logger LOG = LoggerFactory.getLogger(PrePostFilterSplitter.class);
 
+    public static final String BOUNDS_META_PROPERTY = "@bounds";
+
     private static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
     private Set<String> extraAttributes = Collections.emptySet();
@@ -197,7 +199,6 @@ final class PrePostFilterSplitter {
      * bounds intersects pre filter, and the actual overlaps filter for post filtering)
      */
     private class PrePostFilterBuilder implements FilterVisitor, ExpressionVisitor {
-
         public Filter[] visit(Filter filter) {
             Filter[] prePostFilters = (Filter[]) filter.accept(this, null);
             Filter pre = prePostFilters[0];
@@ -360,7 +361,7 @@ final class PrePostFilterSplitter {
         private Expression toBoundsExpression(Expression expression,
                 boolean convertToBoundsPolygon) {
             if (expression instanceof PropertyName) {
-                return ff.property("@bounds");
+                return ff.property(BOUNDS_META_PROPERTY);
             }
             if (expression instanceof Literal) {
                 Geometry geometry = expression.evaluate(null, Geometry.class);

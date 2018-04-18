@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -22,6 +23,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.internal.ObjectStoreDiffObjectIterator;
 
 import com.google.common.annotations.Beta;
 
@@ -254,5 +256,11 @@ public interface ObjectStore extends Closeable {
     @Beta
     public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> nodes, BulkOpListener listener, Class<T> type);
+
+    @Beta
+    public default <T extends RevObject> AutoCloseableIterator<DiffObjectInfo<T>> getDiffObjects(
+            Iterator<DiffEntry> diffEntries, Class<T> type) {
+        return new ObjectStoreDiffObjectIterator<T>(diffEntries, type, this);
+    }
 
 }

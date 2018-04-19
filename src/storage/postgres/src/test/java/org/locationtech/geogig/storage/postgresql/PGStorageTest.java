@@ -213,6 +213,7 @@ public class PGStorageTest {
         try {
             assertNotNull(PGStorage.getVersionFromQueryResult("9.4.0"));
             assertNotNull(PGStorage.getVersionFromQueryResult("10.1"));
+            assertNotNull(PGStorage.getVersionFromQueryResult("10.3 (Debian 10.3-1.pgdg90+1)"));
         } catch (Exception ex) {
             // test failed
             ex.printStackTrace();

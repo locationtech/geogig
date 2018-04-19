@@ -161,8 +161,17 @@ public class PGStorage {
     }
 
     static Version getVersionFromQueryResult(final String versionQueryResult) {
+        // version string may not be a simple x.y.x value. Let's just take it from the front and stop at the first
+        // non-digit, non-decimal-point character
+        final String regex = "[^0-9.]";
+        // replace first non-digit, non-decimal point with XXX
+        String marked = versionQueryResult.replaceFirst(regex, "XXX");
+        if (marked.contains("XXX")) {
+            // no throw away everything starting with XXX
+            marked = marked.substring(0, marked.indexOf("XXX"));
+        }
         final List<Integer> versions = Lists.transform(
-                Splitter.on('.').splitToList(versionQueryResult), (s) -> Integer.parseInt(s));
+                Splitter.on('.').splitToList(marked), (s) -> Integer.parseInt(s));
         // version string can be either
         // {major}.{minor}.{patch}
         // or (since PostgreSQL 10)

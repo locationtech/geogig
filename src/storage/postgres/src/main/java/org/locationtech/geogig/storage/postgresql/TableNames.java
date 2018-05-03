@@ -71,10 +71,21 @@ public class TableNames {
         return name("index_object");
     }
 
-    public String features(final int hash) {
+    private int featuresTablePartitionCount = 16;
+
+    void setFeaturesPartitions(int featuresTablePartitionCount) {
+        Preconditions.checkArgument(
+                featuresTablePartitionCount >= 0 && featuresTablePartitionCount <= 256);
+        this.featuresTablePartitionCount = featuresTablePartitionCount;
+    }
+
+    public @Deprecated String features(final int hash) {
+        if (0 == featuresTablePartitionCount) {
+            return features();
+        }
         final int min = Integer.MIN_VALUE;
         final long max = (long) Integer.MAX_VALUE + 1;
-        final int numTables = 16;
+        final int numTables = featuresTablePartitionCount;
         final int step = (int) (((long) max - (long) min) / numTables);
 
         int index = 0;

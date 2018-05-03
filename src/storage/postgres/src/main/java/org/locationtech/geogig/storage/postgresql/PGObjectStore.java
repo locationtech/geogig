@@ -473,7 +473,7 @@ public class PGObjectStore implements ObjectStore {
                 tableName = tables.commits();
                 break;
             case FEATURE:
-                tableName = pgid != null ? tables.features(pgid.hash1()) : tables.features();
+                tableName = tables.features();
                 break;
             case FEATURETYPE:
                 tableName = tables.featureTypes();
@@ -847,7 +847,7 @@ public class PGObjectStore implements ObjectStore {
         case COMMIT:
             return tables.commits();
         case FEATURE:
-            return tables.features(hash);
+            return tables.features();
         case FEATURETYPE:
             return tables.featureTypes();
         case TAG:

@@ -232,8 +232,8 @@ public class PGStorageTest {
     private boolean tableExists(DataSource dataSource, final String tableName) {
         try (Connection cx = dataSource.getConnection()) {
             DatabaseMetaData md = cx.getMetaData();
-            final String schema = PGStorage.schema(tableName);
-            final String table = PGStorage.stripSchema(tableName);
+            final String schema = PGStorageTableManager.schema(tableName);
+            final String table = PGStorageTableManager.stripSchema(tableName);
             try (ResultSet rs = md.getTables(null, schema, table, null)) {
                 return rs.next();
             }

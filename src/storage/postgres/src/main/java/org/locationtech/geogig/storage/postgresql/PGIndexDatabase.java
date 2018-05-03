@@ -83,18 +83,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         repositoryId = config.getRepositoryId();
         if (this.dataSource != null) {
             if (!PGStorage.tableExists(dataSource, config.getTables().index())) {
-                try (Connection cx = PGStorage.newConnection(dataSource)) {
-                    try {
-                        cx.setAutoCommit(false);
-                        PGStorage.createIndexTables(cx, config.getTables());
-                        cx.commit();
-                    } catch (SQLException e) {
-                        cx.rollback();
-                        throw new RuntimeException(e);
-                    }
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                PGStorage.createTables(config);
             }
         }
     }

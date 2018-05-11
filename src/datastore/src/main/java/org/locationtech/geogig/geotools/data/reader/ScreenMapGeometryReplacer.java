@@ -9,6 +9,16 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.renderer.ScreenMap;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -32,15 +42,21 @@ import com.vividsolutions.jts.geom.Point;
  public class ScreenMapGeometryReplacer implements Function<SimpleFeature, SimpleFeature> {
 
     ScreenMap screenMap;
+    boolean   replaceWithPixel = true;
 
     public ScreenMapGeometryReplacer(ScreenMap screenMap) {
         this.screenMap = screenMap;
     }
 
+    public ScreenMapGeometryReplacer(ScreenMap screenMap, boolean replaceWithPixel) {
+                this.screenMap = screenMap;
+                this.replaceWithPixel = replaceWithPixel;
+    }
+
     /**
      * if the features is fully inside a pixel (screenMap.canSimplify()), then
      * we replace it's geometry with a one that takes up the entire pixels
-     * (screenMap.getSimplifiedShape()).
+     * (screenMap.getSimplifiedShape()) OR with the feature's boundingbox.
      * <p>
      * TODO: allow to specify the geometry attribute.
      *
@@ -58,12 +74,67 @@ import com.vividsolutions.jts.geom.Point;
         if (!screenMap.canSimplify(e)) {
             return feature;
         } else {
-            Geometry newGeom = screenMap.getSimplifiedShape(
-                    e.getMinX(), e.getMinY(),
-                    e.getMaxX(), e.getMaxY(),
-                    g.getFactory(), g.getClass());
-            feature.setDefaultGeometry(newGeom);
+            if (replaceWithPixel) {
+                    Geometry newGeom = screenMap
+                            .getSimplifiedShape(e.getMinX(), e.getMinY(), e.getMaxX(), e.getMaxY(),
+                                    g.getFactory(), g.getClass());
+                    feature.setDefaultGeometry(newGeom);
+            }
+            else {
+                    Geometry newGeom = getSimplifiedShapeBBOX(e.getMinX(), e.getMinY(),
+                            e.getMaxX(), e.getMaxY(),g.getFactory(), g.getClass());
+                    feature.setDefaultGeometry(newGeom);
+            }
         }
         return feature;
     }
+
+        public Geometry getSimplifiedShapeBBOX(double x0, double y0, double x1, double y1,
+                GeometryFactory geometryFactory, Class geometryType) {
+                CoordinateSequenceFactory csf = geometryFactory.getCoordinateSequenceFactory();
+                CoordinateSequence cs;
+                if (!Point.class.isAssignableFrom(geometryType) && !MultiPoint.class
+                        .isAssignableFrom(geometryType)) {
+                        if (!LineString.class.isAssignableFrom(geometryType)
+                                && !MultiLineString.class.isAssignableFrom(geometryType)) {
+                                cs = JTS.createCS(csf, 5, 2);
+                                cs.setOrdinate(0, 0, x0);
+                                cs.setOrdinate(0, 1, y0);
+                                cs.setOrdinate(1, 0, x0);
+                                cs.setOrdinate(1, 1, y1);
+                                cs.setOrdinate(2, 0, x1);
+                                cs.setOrdinate(2, 1, y1);
+                                cs.setOrdinate(3, 0, x1);
+                                cs.setOrdinate(3, 1, y0);
+                                cs.setOrdinate(4, 0, x0);
+                                cs.setOrdinate(4, 1, y0);
+                                LinearRing ring = geometryFactory.createLinearRing(cs);
+                                return (Geometry) (MultiPolygon.class
+                                        .isAssignableFrom(geometryType) ?
+                                        geometryFactory.createMultiPolygon(new Polygon[] {
+                                                geometryFactory.createPolygon(ring,
+                                                        (LinearRing[]) null) }) :
+                                        geometryFactory.createPolygon(ring, (LinearRing[]) null));
+                        } else {
+                                cs = JTS.createCS(csf, 2, 2);
+                                cs.setOrdinate(0, 0, x0);
+                                cs.setOrdinate(0, 1, y0);
+                                cs.setOrdinate(1, 0, x1);
+                                cs.setOrdinate(1, 1, y1);
+                                return (Geometry) (MultiLineString.class
+                                        .isAssignableFrom(geometryType) ?
+                                        geometryFactory.createMultiLineString(new LineString[] {
+                                                geometryFactory.createLineString(cs) }) :
+                                        geometryFactory.createLineString(cs));
+                        }
+                } else {
+                        cs = JTS.createCS(csf, 1, 2);
+                        cs.setOrdinate(0, 0, (x1 - x0) / 2.0);
+                        cs.setOrdinate(0, 1, (y1 - y0) / 2.0);
+                        return (Geometry) (Point.class.isAssignableFrom(geometryType) ?
+                                geometryFactory.createPoint(cs) :
+                                geometryFactory.createMultiPoint(
+                                        new Point[] { geometryFactory.createPoint(cs) }));
+                }
+        }
 }

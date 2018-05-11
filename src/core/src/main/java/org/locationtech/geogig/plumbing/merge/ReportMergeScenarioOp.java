@@ -187,7 +187,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
             if (ours == null) {
                 // Only "their" branch modified the path
                 consumer.unconflicted(theirs);
-                report.addUnconflicted();
+                report.addUnconflicted(theirs);
             } else if (theirs == null) {
                 // Only "our" branch modified the path
                 // nothing else to do
@@ -265,7 +265,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     // the branch, which means that it exists in the merge into tree and there
                     // is no need to report the to merge change as merged.
                     consumer.unconflicted(theirsDiff);
-                    report.addUnconflicted();
+                    report.addUnconflicted(theirsDiff);
                 } else {
                     ObjectId featureTypeId = oursDiff.getNewObject().getMetadataId();
                     FeatureInfo merged = FeatureInfo.insert(mergedFeature, featureTypeId, path);

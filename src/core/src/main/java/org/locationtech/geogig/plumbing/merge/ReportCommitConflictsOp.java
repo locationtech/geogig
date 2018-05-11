@@ -118,14 +118,14 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                         }
                     } else {
                         consumer.unconflicted(diff);
-                        report.addUnconflicted();
+                        report.addUnconflicted(diff);
                     }
                     break;
                 case REMOVED:
                     if (obj.isPresent()) {
                         if (obj.get().getId().equals(diff.oldObjectId())) {
                             consumer.unconflicted(diff);
-                            report.addUnconflicted();
+                            report.addUnconflicted(diff);
                         } else {
                             consumer.conflicted(new Conflict(path, diff.oldObjectId(),
                                     ObjectId.NULL, obj.get().getId()));
@@ -141,7 +141,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                         // one
                         if (!diff.isChange()) {
                             consumer.unconflicted(diff);
-                            report.addUnconflicted();
+                            report.addUnconflicted(diff);
                         }
                     } else {
                         String refSpec = Ref.HEAD + ":" + path;
@@ -152,7 +152,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                             // the missing file.
                             // We add it and consider it unconflicted
                             consumer.unconflicted(diff);
-                            report.addUnconflicted();
+                            report.addUnconflicted(diff);
                             break;
                         }
                         RevFeature feature = (RevFeature) obj.get();
@@ -208,7 +208,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                         }
                         if (ok) {
                             consumer.unconflicted(diff);
-                            report.addUnconflicted();
+                            report.addUnconflicted(diff);
                         } else {
                             consumer.conflicted(new Conflict(path, diff.oldObjectId(),
                                     diff.newObjectId(), obj.get().getId()));

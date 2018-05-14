@@ -27,21 +27,22 @@ public class SimplifyingGeometryReplacer implements Function<SimpleFeature, Simp
                 Geometry g = (Geometry) input.getDefaultGeometry();
                 Geometry newGeometry;
 
-                if ((g != null) || (g instanceof Point) || (g instanceof MultiPoint) || (!g
-                        .isEmpty())) {
+                if ((g == null) || (g.isEmpty()))
+                        return input;
 
+                if (g.getDimension() == 2) {// polygon
                         if (g instanceof MultiPolygon) {
                                 newGeometry = simplify((MultiPolygon) g);
-                        } else if (g instanceof Polygon) {
-                                newGeometry = simplify((Polygon) g);
                         } else {
-                                DouglasPeuckerSimplifier tss = new DouglasPeuckerSimplifier(g);
-                                tss.setDistanceTolerance(distance);
-                                tss.setEnsureValid(false);
-                                newGeometry = tss.getResultGeometry();
+                                newGeometry = simplify((Polygon) g);
                         }
-                        input.setDefaultGeometry(newGeometry);
+                } else { // point or line -- just use the normal JTS D-P
+                        DouglasPeuckerSimplifier tss = new DouglasPeuckerSimplifier(g);
+                        tss.setDistanceTolerance(distance);
+                        tss.setEnsureValid(false);
+                        newGeometry = tss.getResultGeometry();
                 }
+                input.setDefaultGeometry(newGeometry);
                 return input;
         }
 

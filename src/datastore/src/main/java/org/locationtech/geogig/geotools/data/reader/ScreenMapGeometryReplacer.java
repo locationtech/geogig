@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -81,60 +82,65 @@ import com.vividsolutions.jts.geom.Point;
                     feature.setDefaultGeometry(newGeom);
             }
             else {
-                    Geometry newGeom = getSimplifiedShapeBBOX(e.getMinX(), e.getMinY(),
-                            e.getMaxX(), e.getMaxY(),g.getFactory(), g.getClass());
+                    Geometry newGeom = getSimplifiedShapeBBOX(e,g.getFactory(),g);
                     feature.setDefaultGeometry(newGeom);
             }
         }
         return feature;
     }
 
-        public Geometry getSimplifiedShapeBBOX(double x0, double y0, double x1, double y1,
-                GeometryFactory geometryFactory, Class geometryType) {
-                CoordinateSequenceFactory csf = geometryFactory.getCoordinateSequenceFactory();
-                CoordinateSequence cs;
-                if (!Point.class.isAssignableFrom(geometryType) && !MultiPoint.class
-                        .isAssignableFrom(geometryType)) {
-                        if (!LineString.class.isAssignableFrom(geometryType)
-                                && !MultiLineString.class.isAssignableFrom(geometryType)) {
-                                cs = JTS.createCS(csf, 5, 2);
-                                cs.setOrdinate(0, 0, x0);
-                                cs.setOrdinate(0, 1, y0);
-                                cs.setOrdinate(1, 0, x0);
-                                cs.setOrdinate(1, 1, y1);
-                                cs.setOrdinate(2, 0, x1);
-                                cs.setOrdinate(2, 1, y1);
-                                cs.setOrdinate(3, 0, x1);
-                                cs.setOrdinate(3, 1, y0);
-                                cs.setOrdinate(4, 0, x0);
-                                cs.setOrdinate(4, 1, y0);
-                                LinearRing ring = geometryFactory.createLinearRing(cs);
-                                return (Geometry) (MultiPolygon.class
-                                        .isAssignableFrom(geometryType) ?
-                                        geometryFactory.createMultiPolygon(new Polygon[] {
-                                                geometryFactory.createPolygon(ring,
-                                                        (LinearRing[]) null) }) :
-                                        geometryFactory.createPolygon(ring, (LinearRing[]) null));
-                        } else {
-                                cs = JTS.createCS(csf, 2, 2);
-                                cs.setOrdinate(0, 0, x0);
-                                cs.setOrdinate(0, 1, y0);
-                                cs.setOrdinate(1, 0, x1);
-                                cs.setOrdinate(1, 1, y1);
-                                return (Geometry) (MultiLineString.class
-                                        .isAssignableFrom(geometryType) ?
-                                        geometryFactory.createMultiLineString(new LineString[] {
-                                                geometryFactory.createLineString(cs) }) :
-                                        geometryFactory.createLineString(cs));
-                        }
-                } else {
-                        cs = JTS.createCS(csf, 1, 2);
-                        cs.setOrdinate(0, 0, (x1 - x0) / 2.0);
-                        cs.setOrdinate(0, 1, (y1 - y0) / 2.0);
-                        return (Geometry) (Point.class.isAssignableFrom(geometryType) ?
-                                geometryFactory.createPoint(cs) :
-                                geometryFactory.createMultiPoint(
-                                        new Point[] { geometryFactory.createPoint(cs) }));
+        private Polygon createBBoxPolygon(Envelope bbox, GeometryFactory geometryFactory) {
+                Coordinate[] coords = new Coordinate[5];
+                //right handed (clockwise)
+
+                coords[0] = new Coordinate(bbox.getMinX(), bbox.getMinY());
+                coords[1] = new Coordinate(bbox.getMinX(), bbox.getMaxY());
+                coords[2] = new Coordinate(bbox.getMaxX(), bbox.getMaxY());
+                coords[3] = new Coordinate(bbox.getMaxX(), bbox.getMinY());
+                coords[4] = new Coordinate(bbox.getMinX(), bbox.getMinY());
+
+                return geometryFactory.createPolygon(coords);
+        }
+
+        public Point createMidPoint(Envelope bbox, GeometryFactory geometryFactory) {
+            return geometryFactory.createPoint(bbox.centre());
+        }
+
+        public LineString createDiagonalLine(Envelope bbox, GeometryFactory geometryFactory) {
+                Coordinate[] coords = new Coordinate[2];
+
+                coords[0] = new Coordinate(bbox.getMinX(), bbox.getMinY());
+                coords[1] = new Coordinate(bbox.getMaxX(), bbox.getMaxY());
+
+                return geometryFactory.createLineString(coords);
+        }
+
+        // create a shape that is the geometry's "bbox" size
+        public Geometry getSimplifiedShapeBBOX(Envelope e, GeometryFactory geometryFactory,
+                Geometry g) {
+
+                if (e.isNull())
+                        return null; //if there's isn't an envelope, we cannot make one...
+
+                if (g instanceof Polygon) {
+                        return createBBoxPolygon(e, geometryFactory);
+                } else if (g instanceof MultiPolygon) {
+                        Polygon[] result = new Polygon[] { createBBoxPolygon(e, geometryFactory) };
+                        return geometryFactory.createMultiPolygon(result);
+                } else if (g instanceof Point) {
+                        return createMidPoint(e, geometryFactory);
+                } else if (g instanceof MultiPoint) {
+                        Point[] result = new Point[] { createMidPoint(e, geometryFactory) };
+                        return geometryFactory.createMultiPoint(result);
+                } else if (g instanceof LineString) {
+                        return createDiagonalLine(e, geometryFactory);
+                } else if (g instanceof MultiLineString) {
+                        LineString[] ls = new LineString[] {createDiagonalLine(e, geometryFactory)};
+                        return geometryFactory.createMultiLineString(ls);
+                } else if (g instanceof LinearRing) {
+                        Polygon p = createBBoxPolygon(e, geometryFactory);
+                        return p.getExteriorRing();
                 }
+                return null;
         }
 }

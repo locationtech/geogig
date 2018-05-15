@@ -62,6 +62,9 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 class GeogigFeatureSource extends ContentFeatureSource {
 
     private final GeogigFeatureVisitorHandler visitorHandler = new GeogigFeatureVisitorHandler();
+    private static final String SCREENMAP_REPLACE_GEOMETRY_WITH_PX = "Renderer.ScreenMap.replaceGeometryWithPX";
+    private static final Hints.ConfigurationMetadataKey SCREENMAP_REPLACE_GEOMETRY_WITH_PX_KEY =
+                    Hints.ConfigurationMetadataKey.get(SCREENMAP_REPLACE_GEOMETRY_WITH_PX);
 
     /**
      * <b>Precondition</b>: {@code entry.getDataStore() instanceof GeoGigDataStore}
@@ -86,7 +89,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         if (!ignorescreenmap)
             hints.add(Hints.SCREENMAP);
         hints.add(Hints.JTS_GEOMETRY_FACTORY);
-        // hints.add(Hints.GEOMETRY_SIMPLIFICATION);
+        hints.add(Hints.GEOMETRY_SIMPLIFICATION);
+        hints.add(SCREENMAP_REPLACE_GEOMETRY_WITH_PX_KEY);
     }
 
     @Override
@@ -307,8 +311,9 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final @Nullable Integer offset = query.getStartIndex();
         final @Nullable Integer limit = query.isMaxFeaturesUnlimited() ? null
                 : query.getMaxFeatures();
-        // final @Nullable Double simplifDistance = (Double)
-        // hints.get(Hints.GEOMETRY_SIMPLIFICATION);
+        final @Nullable Double simplifyDistance = (Double) hints.get(Hints.GEOMETRY_SIMPLIFICATION);
+        final @Nullable Boolean replaceScreenGeomWithPX = (Boolean) hints.get(SCREENMAP_REPLACE_GEOMETRY_WITH_PX_KEY);
+
         final @Nullable ScreenMap screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
         final @Nullable String[] propertyNames = query.getPropertyNames();
         final @Nullable SortBy[] sortBy = query.getSortBy();
@@ -328,7 +333,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 // .oldHeadRef(oldRoot())//
                 // .changeType(changeType())//
                 .geometryFactory(geometryFactory)//
-                // .simplificationDistance(simplifDistance)//
+                .simplificationDistance(simplifyDistance)//
+                .screenMapReplaceGeometryWithPx(replaceScreenGeomWithPX)//
                 .offset(offset)//
                 .limit(limit)//
                 .propertyNames(propertyNames)//

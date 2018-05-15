@@ -9,6 +9,17 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.renderer.ScreenMap;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -32,15 +43,21 @@ import com.vividsolutions.jts.geom.Point;
  public class ScreenMapGeometryReplacer implements Function<SimpleFeature, SimpleFeature> {
 
     ScreenMap screenMap;
+    boolean   replaceWithPixel = true;
 
     public ScreenMapGeometryReplacer(ScreenMap screenMap) {
         this.screenMap = screenMap;
     }
 
+    public ScreenMapGeometryReplacer(ScreenMap screenMap, boolean replaceWithPixel) {
+                this.screenMap = screenMap;
+                this.replaceWithPixel = replaceWithPixel;
+    }
+
     /**
      * if the features is fully inside a pixel (screenMap.canSimplify()), then
      * we replace it's geometry with a one that takes up the entire pixels
-     * (screenMap.getSimplifiedShape()).
+     * (screenMap.getSimplifiedShape()) OR with the feature's boundingbox.
      * <p>
      * TODO: allow to specify the geometry attribute.
      *
@@ -58,12 +75,72 @@ import com.vividsolutions.jts.geom.Point;
         if (!screenMap.canSimplify(e)) {
             return feature;
         } else {
-            Geometry newGeom = screenMap.getSimplifiedShape(
-                    e.getMinX(), e.getMinY(),
-                    e.getMaxX(), e.getMaxY(),
-                    g.getFactory(), g.getClass());
-            feature.setDefaultGeometry(newGeom);
+            if (replaceWithPixel) {
+                    Geometry newGeom = screenMap
+                            .getSimplifiedShape(e.getMinX(), e.getMinY(), e.getMaxX(), e.getMaxY(),
+                                    g.getFactory(), g.getClass());
+                    feature.setDefaultGeometry(newGeom);
+            }
+            else {
+                    Geometry newGeom = getSimplifiedShapeBBOX(e,g.getFactory(),g);
+                    feature.setDefaultGeometry(newGeom);
+            }
         }
         return feature;
     }
+
+        private Polygon createBBoxPolygon(Envelope bbox, GeometryFactory geometryFactory) {
+                Coordinate[] coords = new Coordinate[5];
+                //right handed (clockwise)
+
+                coords[0] = new Coordinate(bbox.getMinX(), bbox.getMinY());
+                coords[1] = new Coordinate(bbox.getMinX(), bbox.getMaxY());
+                coords[2] = new Coordinate(bbox.getMaxX(), bbox.getMaxY());
+                coords[3] = new Coordinate(bbox.getMaxX(), bbox.getMinY());
+                coords[4] = new Coordinate(bbox.getMinX(), bbox.getMinY());
+
+                return geometryFactory.createPolygon(coords);
+        }
+
+        public Point createMidPoint(Envelope bbox, GeometryFactory geometryFactory) {
+            return geometryFactory.createPoint(bbox.centre());
+        }
+
+        public LineString createDiagonalLine(Envelope bbox, GeometryFactory geometryFactory) {
+                Coordinate[] coords = new Coordinate[2];
+
+                coords[0] = new Coordinate(bbox.getMinX(), bbox.getMinY());
+                coords[1] = new Coordinate(bbox.getMaxX(), bbox.getMaxY());
+
+                return geometryFactory.createLineString(coords);
+        }
+
+        // create a shape that is the geometry's "bbox" size
+        public Geometry getSimplifiedShapeBBOX(Envelope e, GeometryFactory geometryFactory,
+                Geometry g) {
+
+                if (e.isNull())
+                        return null; //if there's isn't an envelope, we cannot make one...
+
+                if (g instanceof Polygon) {
+                        return createBBoxPolygon(e, geometryFactory);
+                } else if (g instanceof MultiPolygon) {
+                        Polygon[] result = new Polygon[] { createBBoxPolygon(e, geometryFactory) };
+                        return geometryFactory.createMultiPolygon(result);
+                } else if (g instanceof Point) {
+                        return createMidPoint(e, geometryFactory);
+                } else if (g instanceof MultiPoint) {
+                        Point[] result = new Point[] { createMidPoint(e, geometryFactory) };
+                        return geometryFactory.createMultiPoint(result);
+                } else if (g instanceof LineString) {
+                        return createDiagonalLine(e, geometryFactory);
+                } else if (g instanceof MultiLineString) {
+                        LineString[] ls = new LineString[] {createDiagonalLine(e, geometryFactory)};
+                        return geometryFactory.createMultiLineString(ls);
+                } else if (g instanceof LinearRing) {
+                        Polygon p = createBBoxPolygon(e, geometryFactory);
+                        return p.getExteriorRing();
+                }
+                return null;
+        }
 }

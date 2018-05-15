@@ -152,6 +152,8 @@ public class FeatureReaderBuilder {
 
     private boolean retypeIfNeeded = true;
 
+    private boolean screenMapReplaceGeometryWithPx = true;
+
     public FeatureReaderBuilder(Context repo, RevFeatureType nativeType, NodeRef typeRef) {
         this.repo = repo;
         this.nativeType = nativeType;
@@ -433,9 +435,14 @@ public class FeatureReaderBuilder {
             features = applyOffsetAndLimit(features);
         }
 
-        if (screenMap != null) {
+        if ( (screenMap != null)  ){
             features = AutoCloseableIterator.transform(features,
-                    new ScreenMapGeometryReplacer(screenMap));
+                    new ScreenMapGeometryReplacer(screenMap,screenMapReplaceGeometryWithPx));
+        }
+
+        if ( (simplificationDistance != null) && (simplificationDistance.doubleValue() >0) ) {
+                features = AutoCloseableIterator.transform(features,
+                        new SimplifyingGeometryReplacer(simplificationDistance.doubleValue(),geometryFactory));
         }
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
@@ -473,6 +480,12 @@ public class FeatureReaderBuilder {
 
     public FeatureReaderBuilder targetSchema(@Nullable SimpleFeatureType targetSchema) {
         this.targetSchema = targetSchema;
+        return this;
+    }
+
+    public FeatureReaderBuilder screenMapReplaceGeometryWithPx(Boolean replace) {
+        if (replace != null)
+            this.screenMapReplaceGeometryWithPx = replace;
         return this;
     }
 

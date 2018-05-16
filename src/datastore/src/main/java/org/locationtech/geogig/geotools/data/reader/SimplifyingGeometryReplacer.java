@@ -5,6 +5,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
@@ -71,6 +72,9 @@ public class SimplifyingGeometryReplacer implements Function<SimpleFeature, Simp
 
                 if (newGeom.isEmpty())
                         return createBBoxPolygon(bbox);
+                // ... sometime the DP simplifier returns linear rings instead of Polygon
+                if (newGeom instanceof LinearRing)
+                        return geometryFactory.createPolygon((LinearRing)newGeom);
                 return (Polygon) newGeom;
         }
 

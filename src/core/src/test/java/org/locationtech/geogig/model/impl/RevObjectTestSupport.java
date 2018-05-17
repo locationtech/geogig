@@ -42,8 +42,10 @@ import com.vividsolutions.jts.geom.Envelope;
 
 public class RevObjectTestSupport {
 
-    public static RevTree createTreesTree(ObjectStore source, int numSubTrees,
-            int featuresPerSubtre, ObjectId metadataId) {
+    public static final RevObjectTestSupport INSTANCE = new RevObjectTestSupport();
+
+    public RevTree createTreesTree(ObjectStore source, int numSubTrees, int featuresPerSubtre,
+            ObjectId metadataId) {
 
         RevTree tree = createTreesTreeBuilder(source, numSubTrees, featuresPerSubtre, metadataId)
                 .build();
@@ -51,7 +53,7 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTreeBuilder createTreesTreeBuilder(ObjectStore source, int numSubTrees,
+    public RevTreeBuilder createTreesTreeBuilder(ObjectStore source, int numSubTrees,
             int featuresPerSubtre, ObjectId metadataId) {
 
         RevTreeBuilder builder = CanonicalTreeBuilder.create(source);
@@ -65,21 +67,20 @@ public class RevObjectTestSupport {
         return builder;
     }
 
-    public static RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source,
-            final String namePrefix, final int numEntries) {
+    public RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source, final String namePrefix,
+            final int numEntries) {
         return createFeaturesTreeBuilder(source, namePrefix, numEntries, 0, false);
     }
 
-    public static RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
+    public RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
             final int numEntries) {
         RevTree tree = createFeaturesTreeBuilder(source, namePrefix, numEntries).build();
         source.put(tree);
         return tree;
     }
 
-    public static RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source,
-            final String namePrefix, final int numEntries, final int startIndex,
-            boolean randomIds) {
+    public RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source, final String namePrefix,
+            final int numEntries, final int startIndex, boolean randomIds) {
 
         RevTreeBuilder tree = CanonicalTreeBuilder.create(source);
         for (int i = startIndex; i < startIndex + numEntries; i++) {
@@ -88,7 +89,7 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
+    public RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
             final int numEntries, final int startIndex, boolean randomIds) {
 
         RevTree tree = createFeaturesTreeBuilder(source, namePrefix, numEntries, startIndex,
@@ -97,7 +98,7 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTreeBuilder createLargeFeaturesTreeBuilder(ObjectDatabase source,
+    public RevTreeBuilder createLargeFeaturesTreeBuilder(ObjectDatabase source,
             final String namePrefix, final int numEntries, final int startIndex,
             boolean randomIds) {
 
@@ -109,7 +110,7 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTree createLargeFeaturesTree(ObjectDatabase source, final String namePrefix,
+    public RevTree createLargeFeaturesTree(ObjectDatabase source, final String namePrefix,
             final int numEntries, final int startIndex, boolean randomIds) {
 
         RevTreeBuilder builder = createLargeFeaturesTreeBuilder(source, namePrefix, numEntries,

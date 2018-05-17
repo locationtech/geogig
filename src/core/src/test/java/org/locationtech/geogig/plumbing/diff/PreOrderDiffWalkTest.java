@@ -13,10 +13,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTreeBuilder;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createLargeFeaturesTree;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTree;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -105,7 +101,7 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testSameRootTree() {
-        RevTree left = createFeaturesTree(leftSource, "f", 10);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", 10);
         RevTree right = left;
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
@@ -116,7 +112,7 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testSameChildTree() {
-        RevTree left = createFeaturesTree(leftSource, "f", 10);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", 10);
         RevTree right = left;
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
@@ -127,8 +123,8 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testCallsRootNode() {
-        RevTree left = createFeaturesTree(leftSource, "f", 1);
-        RevTree right = createFeaturesTree(rightSource, "f", 2);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", 1);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f", 2);
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         visitor.walk(consumer);
@@ -153,8 +149,8 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testLeafLeafTwoAdds() {
         // two leaf trees
-        RevTree left = createFeaturesTree(leftSource, "f", 3);
-        RevTree right = createFeaturesTree(rightSource, "f", 5);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", 3);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f", 5);
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         final NodeRef lroot = nodeFor(left);
@@ -187,8 +183,8 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testLeafLeafTwoRemoves() {
         // two leaf trees
-        RevTree left = createFeaturesTree(leftSource, "f", 5);
-        RevTree right = createFeaturesTree(rightSource, "f", 3);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", 5);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f", 3);
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         final NodeRef lroot = nodeFor(left);
@@ -228,8 +224,10 @@ public class PreOrderDiffWalkTest {
     public void testLeafLeafWithSubStrees() {
         // two leaf trees
         ObjectId metadataId = RevObjectTestSupport.hashString("fake");
-        RevTree left = createTreesTree(leftSource, 2, 100, metadataId);
-        RevTree right = createTreesTree(rightSource, 3, 100, metadataId);
+        RevTree left = RevObjectTestSupport.INSTANCE.createTreesTree(leftSource, 2, 100,
+                metadataId);
+        RevTree right = RevObjectTestSupport.INSTANCE.createTreesTree(rightSource, 3, 100,
+                metadataId);
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         final NodeRef lroot = nodeFor(left);
@@ -266,8 +264,9 @@ public class PreOrderDiffWalkTest {
     public void testSkipAddedTree() {
         // two leaf trees
         ObjectId metadataId = RevObjectTestSupport.hashString("fake");
-        RevTree left = createTreesTree(leftSource, 2, 10, metadataId);
-        RevTree right = createTreesTree(rightSource, 3, 10, metadataId);
+        RevTree left = RevObjectTestSupport.INSTANCE.createTreesTree(leftSource, 2, 10, metadataId);
+        RevTree right = RevObjectTestSupport.INSTANCE.createTreesTree(rightSource, 3, 10,
+                metadataId);
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         final NodeRef lroot = nodeFor(left);
@@ -294,9 +293,10 @@ public class PreOrderDiffWalkTest {
         // two bucket trees of depth 2
         final int size = CanonicalNodeNameOrder.maxBucketsForLevel(0)
                 * CanonicalNodeNameOrder.normalizedSizeLimit(0);
-        RevTree left = createFeaturesTree(leftSource, "f", size);
-        RevTree right = createFeaturesTree(rightSource, "f", size, 0, true);// all features
-                                                                            // changed
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", size);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f", size, 0,
+                true);// all features
+        // changed
         assertDepth(left, leftSource, 2);
         assertDepth(right, rightSource, 2);
 
@@ -332,8 +332,9 @@ public class PreOrderDiffWalkTest {
     public void testSkipRemovedTree() {
         // two leaf trees
         ObjectId metadataId = RevObjectTestSupport.hashString("fake");
-        RevTree left = createTreesTree(leftSource, 3, 10, metadataId);
-        RevTree right = createTreesTree(rightSource, 2, 10, metadataId);
+        RevTree left = RevObjectTestSupport.INSTANCE.createTreesTree(leftSource, 3, 10, metadataId);
+        RevTree right = RevObjectTestSupport.INSTANCE.createTreesTree(rightSource, 2, 10,
+                metadataId);
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         final NodeRef lroot = nodeFor(left);
@@ -365,9 +366,10 @@ public class PreOrderDiffWalkTest {
         final Node nodeChange2 = Node.create("f3", RevObjectTestSupport.hashString("fakefake"),
                 ObjectId.NULL, TYPE.FEATURE, null);
         {
-            left = createFeaturesTree(leftSource, "f", 5);
+            left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", 5);
             // change two nodes
-            RevTreeBuilder builder = createFeaturesTreeBuilder(rightSource, "f", 5);
+            RevTreeBuilder builder = RevObjectTestSupport.INSTANCE
+                    .createFeaturesTreeBuilder(rightSource, "f", 5);
             builder.put(nodeChange1);
             builder.put(nodeChange2);
 
@@ -409,9 +411,9 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketBucketFlat() {
-        RevTree left = createFeaturesTree(leftSource, "f",
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f",
                 CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1);
-        RevTree right = createFeaturesTree(rightSource, "f",
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f",
                 CanonicalNodeNameOrder.normalizedSizeLimit(0) + 2);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
@@ -434,10 +436,10 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketBucketFlatMoreDepth() {
-        RevTree left = createFeaturesTree(leftSource, "f",
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f",
                 CanonicalNodeNameOrder.maxBucketsForLevel(0)
                         * CanonicalNodeNameOrder.normalizedSizeLimit(0));
-        RevTree right = createFeaturesTree(rightSource, "f",
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f",
                 CanonicalNodeNameOrder.maxBucketsForLevel(0)
                         * CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1);
 
@@ -469,8 +471,8 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testBucketLeafSimple() {
         final int leftsize = 1 + CanonicalNodeNameOrder.normalizedSizeLimit(0);
-        RevTree left = createFeaturesTree(leftSource, "f", leftsize);
-        RevTree right = createFeaturesTree(rightSource, "f", 1);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", leftsize);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f", 1);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
@@ -501,8 +503,9 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testLeafBucketSimple() {
         final int rightsize = 1 + CanonicalNodeNameOrder.normalizedSizeLimit(0);
-        RevTree left = createFeaturesTree(leftSource, "f", 1);
-        RevTree right = createFeaturesTree(rightSource, "f", rightsize);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", 1);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f",
+                rightsize);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
@@ -536,7 +539,7 @@ public class PreOrderDiffWalkTest {
         final int rightsize = CanonicalNodeNameOrder.normalizedSizeLimit(0);
         final int overlapCount = 100;
 
-        RevTree left = createFeaturesTree(leftSource, "f", leftsize);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", leftsize);
         assertDepth(left, leftSource, 1);
         testBucketLeafDeeper(left, rightsize, overlapCount);
     }
@@ -546,7 +549,7 @@ public class PreOrderDiffWalkTest {
         final int leftsize = CanonicalNodeNameOrder.maxBucketsForLevel(0)
                 * CanonicalNodeNameOrder.normalizedSizeLimit(0);
 
-        RevTree left = createFeaturesTree(leftSource, "f", leftsize);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", leftsize);
         assertDepth(left, leftSource, 2);
 
         final int rightsize = CanonicalNodeNameOrder.normalizedSizeLimit(0);
@@ -561,7 +564,8 @@ public class PreOrderDiffWalkTest {
                 * CanonicalNodeNameOrder.maxBucketsForLevel(0)
                 * CanonicalNodeNameOrder.normalizedSizeLimit(0);
 
-        RevTree left = createLargeFeaturesTree(leftSource, "f", leftsize, 0, false);
+        RevTree left = RevObjectTestSupport.INSTANCE.createLargeFeaturesTree(leftSource, "f",
+                leftsize, 0, false);
 
         assertDepth(left, leftSource, 3);
 
@@ -583,8 +587,8 @@ public class PreOrderDiffWalkTest {
         final int leftsize = (int) left.size();
         // the right tree feature node names start at "f<leftsize - 100>", so there's a 100 node
         // overlap
-        RevTree right = createLargeFeaturesTree(rightSource, "f", rightsize,
-                leftsize - overlapCount, false);
+        RevTree right = RevObjectTestSupport.INSTANCE.createLargeFeaturesTree(rightSource, "f",
+                rightsize, leftsize - overlapCount, false);
         rightSource.put(right);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
@@ -642,8 +646,8 @@ public class PreOrderDiffWalkTest {
         final int leftsize = (int) left.size();
         // the right tree feature node names start at "f<leftsize - 100>", so there's a 100 node
         // overlap
-        RevTree right = createLargeFeaturesTree(rightSource, "f", rightsize,
-                leftsize - overlapCount, false);
+        RevTree right = RevObjectTestSupport.INSTANCE.createLargeFeaturesTree(rightSource, "f",
+                rightsize, leftsize - overlapCount, false);
         rightSource.put(right);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
@@ -663,7 +667,8 @@ public class PreOrderDiffWalkTest {
         final int rightsize = 2 * CanonicalNodeNameOrder.normalizedSizeLimit(0);
         final int overlapCount = 0;
 
-        RevTree right = createFeaturesTree(rightSource, "f", rightsize);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f",
+                rightsize);
         assertDepth(right, rightSource, 1);
         testLeafBucketDeeper(leftsize, right, overlapCount);
     }
@@ -675,7 +680,8 @@ public class PreOrderDiffWalkTest {
                 * CanonicalNodeNameOrder.normalizedSizeLimit(0);
         final int overlapCount = 100;
 
-        RevTree right = createFeaturesTree(rightSource, "f", rightsize);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f",
+                rightsize);
         assertDepth(right, rightSource, 2);
         testLeafBucketDeeper(leftsize, right, overlapCount);
     }
@@ -690,8 +696,8 @@ public class PreOrderDiffWalkTest {
         final int rightsize = (int) rightRoot.size();
         // the left tree feature node names start at "f<rightsize - 100>", so there's a 100 node
         // overlap
-        RevTree leftRoot = createFeaturesTree(leftSource, "f", leftsize, rightsize - overlapCount,
-                true);
+        RevTree leftRoot = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f",
+                leftsize, rightsize - overlapCount, true);
 
         PreOrderDiffWalk visitor = newVisitor(leftRoot, rightRoot);
 
@@ -750,8 +756,8 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testBucketLeafSeveral() {
         final int leftsize = 1 + CanonicalNodeNameOrder.normalizedSizeLimit(0);
-        RevTree left = createFeaturesTree(leftSource, "f", leftsize);
-        RevTree right = createFeaturesTree(rightSource, "f", 1);
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", leftsize);
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f", 1);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
@@ -784,9 +790,11 @@ public class PreOrderDiffWalkTest {
         final int leftsize = 2 * CanonicalNodeNameOrder.normalizedSizeLimit(0);
         final int rightsize = CanonicalNodeNameOrder.normalizedSizeLimit(0);
 
-        final RevTree left = createFeaturesTree(leftSource, "f", leftsize);
+        final RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f",
+                leftsize);
 
-        final RevTree right = createFeaturesTree(rightSource, "f", rightsize);
+        final RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f",
+                rightsize);
 
         FeatureCountingConsumer counter = new FeatureCountingConsumer();
         PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, leftSource, rightSource);
@@ -807,9 +815,11 @@ public class PreOrderDiffWalkTest {
         final int leftsize = 100;// RevTree.NORMALIZED_SIZE_LIMIT;
         final int rightsize = 10 * CanonicalNodeNameOrder.normalizedSizeLimit(0);
 
-        final RevTree left = createFeaturesTree(leftSource, "f", leftsize);
+        final RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f",
+                leftsize);
 
-        final RevTree right = createFeaturesTree(rightSource, "f", rightsize);
+        final RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTree(rightSource, "f",
+                rightsize);
 
         checkFalseReturnValueOnConsumerFeatureAbortsTraversal(left, right);
     }
@@ -818,7 +828,7 @@ public class PreOrderDiffWalkTest {
     public void checkExpectedNotificationOrder() {
         final int size = 100_000;
 
-        final RevTree left = createFeaturesTree(leftSource, "", size);
+        final RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "", size);
         ArrayList<NodeRef> leftFeatureNodes = Lists.newArrayList(new DepthTreeIterator("",
                 ObjectId.NULL, left, leftSource, Strategy.RECURSIVE_FEATURES_ONLY));
 
@@ -867,7 +877,7 @@ public class PreOrderDiffWalkTest {
         final int size = 30_000;
         final ObjectStore store = this.leftSource;
         // 30k features tree
-        final RevTree left = createFeaturesTree(store, "", size);
+        final RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTree(store, "", size);
         // 30k features tree, same than left except all nodes in it's first bucket at level zero are
         // modified
         final RevTree right;

@@ -19,8 +19,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTree;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.feature;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureForceId;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.hashString;
@@ -328,8 +326,8 @@ public abstract class ObjectStoreConformanceTest {
         final RevFeature f2 = feature(1, "value", new Integer(111));
         final RevFeature f3 = feature(2, (Object) null);
         final RevTree t1 = RevTree.EMPTY;
-        final RevTree t2 = createFeaturesTree(db, "t", 10);
-        final RevTree t3 = createFeaturesTree(db, "t", 100);
+        final RevTree t2 = RevObjectTestSupport.INSTANCE.createFeaturesTree(db, "t", 10);
+        final RevTree t3 = RevObjectTestSupport.INSTANCE.createFeaturesTree(db, "t", 100);
 
         db.putAll(ImmutableList.of(f1, f2, f3, t1, t2, t3).iterator());
 
@@ -519,7 +517,8 @@ public abstract class ObjectStoreConformanceTest {
         final int featuresPerSubtre = 2;
         final int totalFeatures = numSubTrees * featuresPerSubtre;
         final ObjectId metadataId = hashString("fakeid");
-        final RevTree tree = createTreesTree(db, numSubTrees, featuresPerSubtre, metadataId);
+        final RevTree tree = RevObjectTestSupport.INSTANCE.createTreesTree(db, numSubTrees,
+                featuresPerSubtre, metadataId);
         final List<NodeRef> treeNodes;
         final List<NodeRef> featureNodes;
         treeNodes = Lists.newArrayList(

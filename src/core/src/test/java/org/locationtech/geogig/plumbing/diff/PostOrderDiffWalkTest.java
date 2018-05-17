@@ -14,9 +14,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTreeBuilder;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTreeBuilder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -100,7 +97,8 @@ public class PostOrderDiffWalkTest {
 
     @Test
     public void testSameRootTree() {
-        RevTree left = createFeaturesTreeBuilder(leftSource, "f", 10).build();
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTreeBuilder(leftSource, "f", 10)
+                .build();
         RevTree right = left;
         leftSource.put(left);
         rightSource.put(right);
@@ -115,7 +113,8 @@ public class PostOrderDiffWalkTest {
 
     @Test
     public void testSameChildTree() {
-        RevTree left = createFeaturesTreeBuilder(leftSource, "f", 10).build();
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTreeBuilder(leftSource, "f", 10)
+                .build();
         RevTree right = left;
         leftSource.put(left);
         rightSource.put(right);
@@ -129,8 +128,10 @@ public class PostOrderDiffWalkTest {
 
     @Test
     public void testSimple() {
-        RevTree left = createFeaturesTreeBuilder(leftSource, "f", 1).build();
-        RevTree right = createFeaturesTreeBuilder(rightSource, "f", 2).build();
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTreeBuilder(leftSource, "f", 1)
+                .build();
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTreeBuilder(rightSource, "f", 2)
+                .build();
         leftSource.put(left);
         rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
@@ -147,8 +148,10 @@ public class PostOrderDiffWalkTest {
     @Test
     public void testLeafLeafTwoAdds() {
         // two leaf trees
-        RevTree left = createFeaturesTreeBuilder(leftSource, "f", 3).build();
-        RevTree right = createFeaturesTreeBuilder(rightSource, "f", 5).build();
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTreeBuilder(leftSource, "f", 3)
+                .build();
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTreeBuilder(rightSource, "f", 5)
+                .build();
         leftSource.put(left);
         rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
@@ -178,8 +181,10 @@ public class PostOrderDiffWalkTest {
         // two leaf trees
         ObjectId metadataId = RevObjectTestSupport.hashString("fake");
 
-        RevTree left = createTreesTreeBuilder(leftSource, 2, 2, metadataId).build();
-        RevTree right = createTreesTreeBuilder(rightSource, 3, 2, metadataId).build();
+        RevTree left = RevObjectTestSupport.INSTANCE
+                .createTreesTreeBuilder(leftSource, 2, 2, metadataId).build();
+        RevTree right = RevObjectTestSupport.INSTANCE
+                .createTreesTreeBuilder(rightSource, 3, 2, metadataId).build();
         leftSource.put(left);
         rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
@@ -209,9 +214,9 @@ public class PostOrderDiffWalkTest {
 
     @Test
     public void testBucketBucketFlat() {
-        RevTree left = createFeaturesTreeBuilder(leftSource, "f",
+        RevTree left = RevObjectTestSupport.INSTANCE.createFeaturesTreeBuilder(leftSource, "f",
                 CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1).build();
-        RevTree right = createFeaturesTreeBuilder(rightSource, "f",
+        RevTree right = RevObjectTestSupport.INSTANCE.createFeaturesTreeBuilder(rightSource, "f",
                 CanonicalNodeNameOrder.normalizedSizeLimit(0) + 2).build();
         leftSource.put(left);
         rightSource.put(right);
@@ -246,7 +251,7 @@ public class PostOrderDiffWalkTest {
     @Test
     public void testBucketNested() {
         final RevTree origLeft = RevTree.EMPTY;
-        final RevTree origRight = createFeaturesTree(leftSource, "f",
+        final RevTree origRight = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f",
                 CanonicalNodeNameOrder.normalizedSizeLimit(0)
                         * CanonicalNodeNameOrder.maxBucketsForLevel(0));
 
@@ -273,7 +278,8 @@ public class PostOrderDiffWalkTest {
 
             @Override
             public void feature(@Nullable NodeRef left, @Nullable NodeRef right) {
-                // features are not put in the db by the createFeaturesTree() helper function, but
+                // features are not put in the db by the
+                // RevObjectTestSupport.INSTANCE.createFeaturesTree() helper function, but
                 // we're testing the tree is well reported to the consumer anyway
                 // copy(left);
                 // copy(right);

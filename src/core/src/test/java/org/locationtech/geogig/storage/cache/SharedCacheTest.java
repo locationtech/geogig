@@ -52,7 +52,7 @@ public class SharedCacheTest {
         repo2Id = new CacheIdentifier(1000);
         store = new HeapObjectStore();
         store.open();
-        obj = RevObjectTestSupport.createFeaturesTree(store, "f-", 10);
+        obj = RevObjectTestSupport.INSTANCE.createFeaturesTree(store, "f-", 10);
     }
 
     public @After void after() {
@@ -166,7 +166,7 @@ public class SharedCacheTest {
     private List<RevObject> createObjects(int count) {
         List<RevObject> list = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            list.add(RevObjectTestSupport.createFeaturesTree(store, "f", i));
+            list.add(RevObjectTestSupport.INSTANCE.createFeaturesTree(store, "f", i));
         }
         return list;
     }

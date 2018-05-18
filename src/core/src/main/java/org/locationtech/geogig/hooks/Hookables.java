@@ -52,7 +52,8 @@ public class Hookables {
     }
 
     public static ImmutableList<CommandHook> loadClasspathHooks() {
-        ServiceLoader<CommandHook> loader = ServiceLoader.load(CommandHook.class);
+        ServiceLoader<CommandHook> loader = ServiceLoader.load(CommandHook.class,
+                CommandHook.class.getClassLoader());
         ImmutableList<CommandHook> SPIHooks = ImmutableList.copyOf(loader.iterator());
         return SPIHooks;
     }

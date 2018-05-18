@@ -41,7 +41,8 @@ public interface DeduplicationService {
 
     public static Deduplicator create() {
         final Logger LOG = LoggerFactory.getLogger(DeduplicationService.class);
-        ServiceLoader<DeduplicationService> loader = ServiceLoader.load(DeduplicationService.class);
+        ServiceLoader<DeduplicationService> loader = ServiceLoader.load(DeduplicationService.class,
+                DeduplicationService.class.getClassLoader());
         List<DeduplicationService> services = Lists.newArrayList(loader.iterator());
 
         DeduplicationService service;

@@ -61,7 +61,8 @@ public interface RemoteResolver {
             remoteHints = new Hints();
         }
 
-        Iterator<RemoteResolver> resolvers = ServiceLoader.load(RemoteResolver.class).iterator();
+        Iterator<RemoteResolver> resolvers = ServiceLoader
+                .load(RemoteResolver.class, RemoteResolver.class.getClassLoader()).iterator();
 
         while (resolvers.hasNext()) {
             RemoteResolver resolver = resolvers.next();

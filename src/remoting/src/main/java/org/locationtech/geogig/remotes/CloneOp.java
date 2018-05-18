@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
@@ -70,6 +71,7 @@ import com.google.common.collect.Iterables;
  * 
  * @since 1.0
  */
+@CanRunDuringConflict // so the interceptor doesn't try to check for conflicts when cloning
 public class CloneOp extends AbstractGeoGigOp<Repository> {
 
     private static final String DEFAULT_REMOTE_NAME = NodeRef.nodeFromPath(Ref.ORIGIN);

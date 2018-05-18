@@ -66,7 +66,8 @@ public abstract class StorageProvider {
      *         {@link StorageProvider} key.
      */
     public static Iterable<StorageProvider> findProviders() {
-        ServiceLoader<StorageProvider> loader = ServiceLoader.load(StorageProvider.class);
+        ServiceLoader<StorageProvider> loader = ServiceLoader.load(StorageProvider.class,
+                StorageProvider.class.getClassLoader());
         return ImmutableList.copyOf(loader.iterator());
     }
 }

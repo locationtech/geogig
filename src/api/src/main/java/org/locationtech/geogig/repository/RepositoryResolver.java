@@ -16,7 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -24,6 +23,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 public abstract class RepositoryResolver {
 
@@ -63,14 +63,12 @@ public abstract class RepositoryResolver {
 
         Preconditions.checkNotNull(repoURI, "Repository URI is null");
 
-        Iterator<RepositoryResolver> initializers = ServiceLoader.load(RepositoryResolver.class)
-                .iterator();
-
-        while (initializers.hasNext()) {
-            RepositoryResolver initializer = initializers.next();
-            final String resolverClassName = initializer.getClass().getName();
-            if (!DISABLED_RESOLVERS.contains(resolverClassName) && initializer.canHandle(repoURI)) {
-                return initializer;
+        List<RepositoryResolver> resolvers = lookupResolvers();
+        for (RepositoryResolver resolverImpl : resolvers) {
+            final String resolverClassName = resolverImpl.getClass().getName();
+            if (!DISABLED_RESOLVERS.contains(resolverClassName)
+                    && resolverImpl.canHandle(repoURI)) {
+                return resolverImpl;
             }
         }
         throw new IllegalArgumentException(
@@ -90,18 +88,28 @@ public abstract class RepositoryResolver {
     public static boolean resolverAvailableForURIScheme(String scheme) {
         Preconditions.checkNotNull(scheme, "URI scheme is null");
 
-        Iterator<RepositoryResolver> initializers = ServiceLoader.load(RepositoryResolver.class)
-                .iterator();
-
-        while (initializers.hasNext()) {
-            RepositoryResolver initializer = initializers.next();
-            final String resolverClassName = initializer.getClass().getName();
+        List<RepositoryResolver> resolvers = lookupResolvers();
+        for (RepositoryResolver resolverImpl : resolvers) {
+            final String resolverClassName = resolverImpl.getClass().getName();
             if (!DISABLED_RESOLVERS.contains(resolverClassName)
-                    && initializer.canHandleURIScheme(scheme)) {
+                    && resolverImpl.canHandleURIScheme(scheme)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public static List<RepositoryResolver> lookupResolvers() {
+
+        List<RepositoryResolver> resolvers;
+        resolvers = Lists.newArrayList(ServiceLoader.load(RepositoryResolver.class).iterator());
+        if (resolvers.isEmpty()) {
+            ClassLoader classLoader = RepositoryResolver.class.getClassLoader();
+            ServiceLoader<RepositoryResolver> serviceLoader = ServiceLoader
+                    .load(RepositoryResolver.class, classLoader);
+            resolvers = Lists.newArrayList(serviceLoader.iterator());
+        }
+        return resolvers;
     }
 
     public abstract boolean canHandle(URI repoURI);
@@ -228,7 +236,7 @@ public abstract class RepositoryResolver {
      *
      * @param disabledResolvers List of class names of RepositoryResolver implementations that
      *        should be disabled.
-     * <p>
+     *        <p>
      *        Example: "org.locationtech.geogig.repository.impl.FileRepositoryResolver" to disable
      *        the File/Directory resolver for URI scheme "file".
      */

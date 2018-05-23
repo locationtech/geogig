@@ -9,10 +9,6 @@
  */
 package org.locationtech.geogig.model;
 
-import java.io.Serializable;
-
-import com.google.common.collect.Ordering;
-
 /**
  * Implements storage order of {@link Node} based on its name using a {@link CanonicalNodeNameOrder}
  * comparator.
@@ -21,7 +17,7 @@ import com.google.common.collect.Ordering;
  * 
  * @since 1.0
  */
-public final class CanonicalNodeOrder extends Ordering<Node> implements Serializable {
+public final class CanonicalNodeOrder extends NodeOrdering {
 
     private static final long serialVersionUID = -2860468212633430368L;
 
@@ -35,7 +31,7 @@ public final class CanonicalNodeOrder extends Ordering<Node> implements Serializ
     /**
      * @see CanonicalNodeNameOrder#bucket(String, int)
      */
-    public Integer bucket(final Node ref, final int depth) {
+    public int bucket(final Node ref, final int depth) {
         return CanonicalNodeNameOrder.bucket(ref.getName(), depth);
     }
 }

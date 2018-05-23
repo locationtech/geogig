@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
@@ -40,6 +41,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * Base class for strategy objects that define the internal structure of a {@link RevTree}.
@@ -49,7 +51,9 @@ import com.google.common.collect.ListMultimap;
  *          general, the {@link RevTreeBuilder} that's using this object will do so as part of its
  *          own clean up phase before returning from its own {@code build()} method.
  */
-public abstract class ClusteringStrategy {
+public abstract class ClusteringStrategy extends NodeOrdering {
+
+    private static final long serialVersionUID = 1L;
 
     final DAGStorageProvider storageProvider;
 
@@ -71,6 +75,17 @@ public abstract class ClusteringStrategy {
         this.dagCache = new DAGCache(storageProvider);
         this.root = new DAG(ROOT_ID, original.getId());
         mergeRoot(root);
+    }
+
+    public @Override int compare(Node left, Node right) {
+        return getNodeOrdering().compare(computeId(left), computeId(right));
+    }
+
+    public @Override int bucket(Node node, int depth) {
+        NodeId nodeId = computeId(node);
+        TreeId bucketId = computeBucketId(nodeId, depth);
+        int leafBucket = bucketId.leafBucket();
+        return leafBucket;
     }
 
     abstract int normalizedSizeLimit(final int depthIndex);

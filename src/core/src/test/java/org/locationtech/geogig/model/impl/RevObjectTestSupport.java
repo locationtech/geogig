@@ -42,8 +42,36 @@ import com.vividsolutions.jts.geom.Envelope;
 
 public class RevObjectTestSupport {
 
-    public static RevTree createTreesTree(ObjectStore source, int numSubTrees,
-            int featuresPerSubtre, ObjectId metadataId) {
+    public static final RevObjectTestSupport INSTANCE = new RevObjectTestSupport();
+
+    private boolean spatialTrees;
+
+    private Envelope maxBounds;
+
+    /**
+     * Controls whether the {@link RevTree}s created through the {@code #createFeaturesTree} methods
+     * create quad or canonical trees
+     * 
+     * @param spatialTrees
+     */
+    public void setBuildSpatialTrees(boolean spatialTrees) {
+        this.spatialTrees = spatialTrees;
+    }
+
+    /**
+     * Sets the max bounds of the quad trees if {@link #setBuildSpatialTrees
+     * setBuildSpatialTrees(true)} was called, defaults to WGS84 bounds if not set.
+     */
+    public void setQuadTreeMaxBounds(Envelope maxBounds) {
+        this.maxBounds = maxBounds;
+    }
+
+    private Envelope getMaxBounds() {
+        return maxBounds == null ? new Envelope(-180, 180, -90, 90) : maxBounds;
+    }
+
+    public RevTree createTreesTree(ObjectStore source, int numSubTrees, int featuresPerSubtre,
+            ObjectId metadataId) {
 
         RevTree tree = createTreesTreeBuilder(source, numSubTrees, featuresPerSubtre, metadataId)
                 .build();
@@ -51,7 +79,7 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTreeBuilder createTreesTreeBuilder(ObjectStore source, int numSubTrees,
+    public RevTreeBuilder createTreesTreeBuilder(ObjectStore source, int numSubTrees,
             int featuresPerSubtre, ObjectId metadataId) {
 
         RevTreeBuilder builder = CanonicalTreeBuilder.create(source);
@@ -65,30 +93,35 @@ public class RevObjectTestSupport {
         return builder;
     }
 
-    public static RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source,
-            final String namePrefix, final int numEntries) {
+    public RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source, final String namePrefix,
+            final int numEntries) {
         return createFeaturesTreeBuilder(source, namePrefix, numEntries, 0, false);
     }
 
-    public static RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
+    public RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
             final int numEntries) {
         RevTree tree = createFeaturesTreeBuilder(source, namePrefix, numEntries).build();
         source.put(tree);
         return tree;
     }
 
-    public static RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source,
-            final String namePrefix, final int numEntries, final int startIndex,
-            boolean randomIds) {
+    public RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source, final String namePrefix,
+            final int numEntries, final int startIndex, boolean randomIds) {
 
-        RevTreeBuilder tree = CanonicalTreeBuilder.create(source);
-        for (int i = startIndex; i < startIndex + numEntries; i++) {
-            tree.put(featureNode(namePrefix, i, randomIds));
+        RevTreeBuilder builder;
+        if (spatialTrees) {
+            Envelope maxBounds = getMaxBounds();
+            builder = QuadTreeBuilder.create(source, source, RevTree.EMPTY, maxBounds);
+        } else {
+            builder = CanonicalTreeBuilder.create(source);
         }
-        return tree;
+        for (int i = startIndex; i < startIndex + numEntries; i++) {
+            builder.put(featureNode(namePrefix, i, randomIds));
+        }
+        return builder;
     }
 
-    public static RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
+    public RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
             final int numEntries, final int startIndex, boolean randomIds) {
 
         RevTree tree = createFeaturesTreeBuilder(source, namePrefix, numEntries, startIndex,
@@ -97,19 +130,25 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTreeBuilder createLargeFeaturesTreeBuilder(ObjectDatabase source,
+    public RevTreeBuilder createLargeFeaturesTreeBuilder(ObjectDatabase source,
             final String namePrefix, final int numEntries, final int startIndex,
             boolean randomIds) {
 
-        RevTreeBuilder tree = CanonicalTreeBuilder.create(source);
+        RevTreeBuilder builder;
+        if (spatialTrees) {
+            Envelope maxBounds = getMaxBounds();
+            builder = QuadTreeBuilder.create(source, source, RevTree.EMPTY, maxBounds);
+        } else {
+            builder = CanonicalTreeBuilder.create(source);
+        }
 
         for (int i = startIndex; i < startIndex + numEntries; i++) {
-            tree.put(featureNode(namePrefix, i, randomIds));
+            builder.put(featureNode(namePrefix, i, randomIds));
         }
-        return tree;
+        return builder;
     }
 
-    public static RevTree createLargeFeaturesTree(ObjectDatabase source, final String namePrefix,
+    public RevTree createLargeFeaturesTree(ObjectDatabase source, final String namePrefix,
             final int numEntries, final int startIndex, boolean randomIds) {
 
         RevTreeBuilder builder = createLargeFeaturesTreeBuilder(source, namePrefix, numEntries,

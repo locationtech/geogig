@@ -44,6 +44,7 @@ import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -78,8 +79,6 @@ import com.vividsolutions.jts.geom.Envelope;
 public class PreOrderDiffWalk {
 
     private static final Logger log = LoggerFactory.getLogger(PreOrderDiffWalk.class);
-    
-    public static final CanonicalNodeOrder ORDER = CanonicalNodeOrder.INSTANCE;
 
     // this is the same as the defaultForkJoinWorkerThreadFactory but gives the threads a
     // different name (easier to see in debugger)
@@ -109,6 +108,8 @@ public class PreOrderDiffWalk {
         final boolean asyncMode = true;
         SHARED_FORK_JOIN_POOL = new ForkJoinPool(parallelism, threadFactoryShared, null, asyncMode);
     }
+
+    public NodeOrdering ORDER = CanonicalNodeOrder.INSTANCE;
 
     /**
      * Contains the full path to the bucket as an array of integers where the array length
@@ -300,16 +301,20 @@ public class PreOrderDiffWalk {
 
         final SideInfo right;
 
-        WalkInfo(CancellableConsumer consumer, SideInfo left, SideInfo right) {
+        final NodeOrdering nodeOrder;
+
+        WalkInfo(CancellableConsumer consumer, SideInfo left, SideInfo right,
+                NodeOrdering nodeOrder) {
             this.consumer = consumer;
             this.left = left;
             this.right = right;
+            this.nodeOrder = nodeOrder;
         }
 
         public WalkInfo child(NodeRef leftChild, NodeRef rightChild) {
             SideInfo leftInfo = new SideInfo(left.source, leftChild);
             SideInfo rightInfo = new SideInfo(right.source, rightChild);
-            return new WalkInfo(consumer, leftInfo, rightInfo);
+            return new WalkInfo(consumer, leftInfo, rightInfo, nodeOrder);
         }
     }
 
@@ -363,7 +368,7 @@ public class PreOrderDiffWalk {
         SideInfo leftInfo = new SideInfo(leftSource, leftRef);
         SideInfo rightInfo = new SideInfo(rightSource, rightRef);
 
-        WalkInfo walkInfo = new WalkInfo(walkConsumer, leftInfo, rightInfo);
+        WalkInfo walkInfo = new WalkInfo(walkConsumer, leftInfo, rightInfo, ORDER);
 
         TraverseTree task = new TraverseTree(walkInfo);
 
@@ -388,6 +393,11 @@ public class PreOrderDiffWalk {
             return; // no need to clean up
         else
             forkJoinPool.shutdown(); // private pool needs cleaning
+    }
+
+    public void nodeOrder(NodeOrdering nodeOrder) {
+        checkNotNull(nodeOrder);
+        this.ORDER = nodeOrder;
     }
 
     /**
@@ -694,14 +704,14 @@ public class PreOrderDiffWalk {
         }
 
         /**
-         * Split the given nodes into lists keyed by the bucket indes they would belong if they were
+         * Split the given nodes into lists keyed by the bucket index they would belong if they were
          * part of a tree bucket at the given {@code bucketDepth}
          */
         protected final ListMultimap<Integer, Node> splitNodesToBucketsAtDepth(Iterator<Node> nodes,
                 final BucketIndex parentIndex) {
 
-            Function<Node, Integer> keyFunction = (node) -> ORDER.bucket(node,
-                    parentIndex.depthIndex() + 1);
+            Function<Node, Integer> keyFunction = node -> Integer
+                    .valueOf(info.nodeOrder.bucket(node, parentIndex.depthIndex() + 1));
 
             ListMultimap<Integer, Node> nodesByBucket = Multimaps.index(nodes, keyFunction);
 
@@ -788,12 +798,8 @@ public class PreOrderDiffWalk {
             // 4- left is bucketed and right is leaf
             final boolean leftIsLeaf = left.bucketsSize() == 0;
             final boolean rightIsLeaf = right.bucketsSize() == 0;
-            Iterator<Node> leftc = leftIsLeaf
-                    ? RevObjects.children(left, CanonicalNodeOrder.INSTANCE)
-                    : null;
-            Iterator<Node> rightc = rightIsLeaf
-                    ? RevObjects.children(right, CanonicalNodeOrder.INSTANCE)
-                    : null;
+            Iterator<Node> leftc = leftIsLeaf ? RevObjects.children(left, info.nodeOrder) : null;
+            Iterator<Node> rightc = rightIsLeaf ? RevObjects.children(right, info.nodeOrder) : null;
 
             List<WalkAction> tasks = new ArrayList<>();
             if (leftIsLeaf && rightIsLeaf) {// 1-
@@ -852,7 +858,7 @@ public class PreOrderDiffWalk {
             while (li.hasNext() && ri.hasNext() && !info.consumer.isCancelled()) {
                 final Node lpeek = li.peek();
                 final Node rpeek = ri.peek();
-                final int order = ORDER.compare(lpeek, rpeek);
+                final int order = info.nodeOrder.compare(lpeek, rpeek);
                 @Nullable
                 WalkAction action = null;
                 if (order < 0) {
@@ -1016,7 +1022,7 @@ public class PreOrderDiffWalk {
                 if (rightNodes.hasNext()) {
                     if (leftTree.bucketsSize() == 0) {
                         Iterator<Node> children;
-                        children = RevObjects.children(leftTree, CanonicalNodeOrder.INSTANCE);
+                        children = RevObjects.children(leftTree, info.nodeOrder);
                         TraverseLeafLeaf task = leafLeaf(children, rightNodes);
                         task.compute();
                     } else {
@@ -1078,7 +1084,7 @@ public class PreOrderDiffWalk {
                 if (leftNodes.hasNext()) {
                     if (rightTree.bucketsSize() == 0) {
                         Iterator<Node> children;
-                        children = RevObjects.children(rightTree, CanonicalNodeOrder.INSTANCE);
+                        children = RevObjects.children(rightTree, info.nodeOrder);
                         TraverseLeafLeaf task = leafLeaf(leftNodes, children);
                         task.compute();
                     } else {
@@ -1247,9 +1253,19 @@ public class PreOrderDiffWalk {
      */
     public static abstract class ForwardingConsumer implements Consumer {
 
-        protected final Consumer delegate;
+        protected Consumer delegate;
+
+        public ForwardingConsumer() {
+            this.delegate = new AbstractConsumer() {
+            };
+        }
 
         public ForwardingConsumer(final Consumer delegate) {
+            this.delegate = delegate;
+        }
+
+        public void setDelegate(Consumer delegate) {
+            Preconditions.checkNotNull(delegate);
             this.delegate = delegate;
         }
 

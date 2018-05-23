@@ -15,8 +15,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTree;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -48,8 +46,9 @@ public class DAGNodeTest {
         ObjectStore store = new HeapObjectStore();
         store.open();
         cache = mock(TreeCache.class);
-        featuresTree = createFeaturesTree(store, "f", 512);
-        treesTree = createTreesTree(store, 2, 200, RevObjectTestSupport.hashString("test"));
+        featuresTree = RevObjectTestSupport.INSTANCE.createFeaturesTree(store, "f", 512);
+        treesTree = RevObjectTestSupport.INSTANCE.createTreesTree(store, 2, 200,
+                RevObjectTestSupport.hashString("test"));
     }
 
     @Test

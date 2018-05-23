@@ -40,12 +40,15 @@ import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.Bounded;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
@@ -271,6 +274,8 @@ public class FeatureReaderBuilder {
         // INCLUDE, or all the required properties are present in the index Nodes
         public boolean filterIsFullySupportedByIndex;
 
+        public boolean diffUsesIndex;
+
         public DiffTree diffOp;
 
         public ScreenMapPredicate screenMapFilter;
@@ -290,12 +295,17 @@ public class FeatureReaderBuilder {
 
         final ObjectId featureTypeId = typeRef.getMetadataId();
 
+        // perform the diff op with the supported Bucket/NodeRef filtering that'll provide the
+        // NodeRef iterator to back the FeatureReader with
+        info.diffOp = repo.command(DiffTree.class);
+
         // the RevTree id at the left side of the diff
         final ObjectId oldFeatureTypeTree;
         // the RevTree id at the right side of the diff
         final ObjectId newFeatureTypeTree;
         // where to get RevTree instances from (either the object or the index database)
         final ObjectStore treeSource;
+        final NodeOrdering diffNodeOrdering;
         {
             final String nativeTypeName = nativeSchema.getTypeName();
 
@@ -341,9 +351,20 @@ public class FeatureReaderBuilder {
             if (oldHeadIndex.isPresent()) {
                 oldFeatureTypeTree = oldHeadIndex.get().indexTreeId();
                 newFeatureTypeTree = headIndex.get().indexTreeId();
+                treeSource = repo.indexDatabase();
+                IndexInfo indexInfo = oldHeadIndex.get().info();
+                Envelope maxBounds = IndexInfo.getMaxBounds(indexInfo);
+                if (maxBounds == null) {
+                    maxBounds = IndexInfo.getMaxBounds(headIndex.get().info());
+                }
+                Preconditions.checkNotNull(maxBounds);
+                diffNodeOrdering = QuadTreeBuilder.nodeOrdering(maxBounds);
+                info.diffUsesIndex = true;
             } else {
                 oldFeatureTypeTree = oldCanonicalTreeId;
                 newFeatureTypeTree = newCanonicalTreeId;
+                treeSource = repo.objectDatabase();
+                diffNodeOrdering = CanonicalNodeOrder.INSTANCE;
             }
 
             info.materializedIndexProperties = resolveMaterializedProperties(headIndex);
@@ -359,13 +380,7 @@ public class FeatureReaderBuilder {
                     .containsAll(info.requiredProperties);
 
             info.filterIsFullySupportedByIndex = Filter.INCLUDE.equals(info.postFilter);
-
-            treeSource = headIndex.isPresent() ? repo.indexDatabase() : repo.objectDatabase();
         }
-
-        // perform the diff op with the supported Bucket/NodeRef filtering that'll provide the
-        // NodeRef iterator to back the FeatureReader with
-        info.diffOp = repo.command(DiffTree.class);
         // TODO: for some reason setting the default metadata id is making several tests fail,
         // though it's not really needed here because we have the FeatureType already. Nonetheless
         // this is strange and needs to be revisited.
@@ -383,6 +398,7 @@ public class FeatureReaderBuilder {
                 .setNewTree(newFeatureTypeTree) //
                 .setLeftSource(treeSource) //
                 .setRightSource(treeSource) //
+                .setNodeOrdering(diffNodeOrdering)//
                 .recordStats();
 
         return info;
@@ -435,14 +451,14 @@ public class FeatureReaderBuilder {
             features = applyOffsetAndLimit(features);
         }
 
-        if ( (screenMap != null)  ){
+        if ((screenMap != null)) {
             features = AutoCloseableIterator.transform(features,
-                    new ScreenMapGeometryReplacer(screenMap,screenMapReplaceGeometryWithPx));
+                    new ScreenMapGeometryReplacer(screenMap, screenMapReplaceGeometryWithPx));
         }
 
-        if ( (simplificationDistance != null) && (simplificationDistance.doubleValue() >0) ) {
-                features = AutoCloseableIterator.transform(features,
-                        new SimplifyingGeometryReplacer(simplificationDistance.doubleValue(),geometryFactory));
+        if ((simplificationDistance != null) && (simplificationDistance.doubleValue() > 0)) {
+            features = AutoCloseableIterator.transform(features, new SimplifyingGeometryReplacer(
+                    simplificationDistance.doubleValue(), geometryFactory));
         }
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;

@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.datastream.v2_3;
 import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -27,8 +28,8 @@ class ByteBufferDataInput implements DataInput {
     public ByteBufferDataInput(ByteBuffer buff, int offset, int limit) {
         this.buff = buff.duplicate();
         this.buff.order(ByteOrder.BIG_ENDIAN);
-        this.buff.position(offset);
-        this.buff.limit(limit);
+        ((Buffer) this.buff).position(offset);
+        ((Buffer) this.buff).limit(limit);
     }
 
     @Override

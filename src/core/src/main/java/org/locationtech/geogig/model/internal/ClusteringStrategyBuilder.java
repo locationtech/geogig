@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -29,6 +30,10 @@ public abstract class ClusteringStrategyBuilder {
     ClusteringStrategyBuilder(ObjectStore treeStore) {
         checkNotNull(treeStore);
         this.treeStore = treeStore;
+    }
+
+    protected ClusteringStrategyBuilder() {
+        treeStore = null;
     }
 
     public ClusteringStrategyBuilder original(RevTree original) {
@@ -63,6 +68,10 @@ public abstract class ClusteringStrategyBuilder {
         return new QuadTreeClusteringStrategyBuilder(treeStore);
     }
 
+    public static QuadTreeClusteringStrategy quadTreeOrdering(Envelope maxBounds) {
+        return new QuadTreeClusteringStrategyBuilder().maxBounds(maxBounds).build();
+    }
+
     public static class CanonicalClusteringStrategyBuilder extends ClusteringStrategyBuilder {
 
         CanonicalClusteringStrategyBuilder(ObjectStore treeStore) {
@@ -92,12 +101,12 @@ public abstract class ClusteringStrategyBuilder {
          * Absolute max depth, to set a hard limit for when too many nodes fall on the same bucket
          * indefinitely or almost indefinitely.
          * <p>
-         * An overflowed DAG that reaches this depth (i.e. deph index 19) will have all it's nodes moved
-         * to a canonical (i.e. unpromotables) tree at depth index 20.
+         * An overflowed DAG that reaches this depth (i.e. deph index 19) will have all it's nodes
+         * moved to a canonical (i.e. unpromotables) tree at depth index 20.
          * 
-         * NOTE: this constant is the maximum depth at which a WGS84 bounds can be split into quadrants
-         * that fully contains the envelope for a point when converted to a {@code Float32Bounds} by
-         * {@link Node#create}
+         * NOTE: this constant is the maximum depth at which a WGS84 bounds can be split into
+         * quadrants that fully contains the envelope for a point when converted to a
+         * {@code Float32Bounds} by {@link Node#create}
          * 
          * @see #computeQuadrant(Envelope, int)
          */
@@ -105,6 +114,10 @@ public abstract class ClusteringStrategyBuilder {
 
         QuadTreeClusteringStrategyBuilder(ObjectStore treeStore) {
             super(treeStore);
+        }
+
+        QuadTreeClusteringStrategyBuilder() {
+            super();
         }
 
         @Override

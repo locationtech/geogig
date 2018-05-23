@@ -27,10 +27,11 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
+import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.plumbing.diff.BoundsFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
@@ -96,6 +97,10 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     private Stats stats;
 
     private boolean recordStats;
+
+    private NodeOrdering nodeOrdering;
+
+    private ForwardingConsumer wrapper;
 
     static {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
@@ -203,6 +208,11 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         return this;
     }
 
+    public DiffTree setConsumerWrapper(PreOrderDiffWalk.ForwardingConsumer wrapper) {
+        this.wrapper = wrapper;
+        return this;
+    }
+
     /**
      * Implements {@link Supplier#get()} by delegating to {@link #call()}.
      */
@@ -211,7 +221,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         return call();
     }
 
-    public void call(PreOrderDiffWalk.Consumer consumer){
+    public void call(PreOrderDiffWalk.Consumer consumer) {
         checkArgument(oldRefSpec != null || oldTreeId != null, "old version not specified");
         checkArgument(newRefSpec != null || oldTreeId != null, "new version not specified");
         final ObjectStore leftSource;
@@ -228,6 +238,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         visitor.setDefaultMetadataId(this.metadataId);
         visitor.walk(consumer);
     }
+
     /**
      * Finds differences between the two specified trees.
      * 
@@ -254,6 +265,9 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
                 rightSource, preserveIterationOrder);
         visitor.setDefaultMetadataId(this.metadataId);
+        if (this.nodeOrdering != null) {
+            visitor.nodeOrder(nodeOrdering);
+        }
 
         final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(1000_000);
         final DiffEntryProducer diffProducer = new DiffEntryProducer(queue);
@@ -289,6 +303,10 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 }
                 if (recordStats) {
                     consumer = new StatsConsumer(consumer, stats);
+                }
+                if (wrapper != null) {
+                    wrapper.setDelegate(consumer);
+                    consumer = wrapper;
                 }
                 try {
                     LOGGER.trace("walking diff {} / {}", oldRefSpec, newRefSpec);
@@ -586,6 +604,11 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     public DiffTree setLeftSource(ObjectStore leftSource) {
         this.leftSource = leftSource;
+        return this;
+    }
+
+    public DiffTree setNodeOrdering(NodeOrdering diffNodeOrdering) {
+        this.nodeOrdering = diffNodeOrdering;
         return this;
     }
 

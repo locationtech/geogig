@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
 import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
@@ -61,5 +62,9 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
                 .build();
         QuadTreeBuilder builder = new QuadTreeBuilder(target, RevTree.EMPTY, strategy);
         return builder;
+    }
+
+    public static NodeOrdering nodeOrdering(Envelope maxBounds) {
+        return ClusteringStrategyBuilder.quadTreeOrdering(maxBounds);
     }
 }

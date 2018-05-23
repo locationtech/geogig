@@ -68,6 +68,8 @@ import com.vividsolutions.jts.geom.Envelope;
  */
 final class QuadTreeClusteringStrategy extends ClusteringStrategy {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Logger LOG = LoggerFactory.getLogger(QuadTreeClusteringStrategy.class);
 
     private final Envelope maxBounds;
@@ -223,7 +225,8 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
                 // it may be a quad wit sub-quads instead of an unpromotables tree
                 boolean isValidQuad = originalTree.bucketsSize() > 0;
                 for (Quadrant q : Quadrant.VALUES) {
-                    java.util.Optional<Bucket> treeBucket = originalTree.getBucket(q.getBucketNumber());
+                    java.util.Optional<Bucket> treeBucket = originalTree
+                            .getBucket(q.getBucketNumber());
                     if (treeBucket.isPresent()) {
                         Envelope bucketBounds = treeBucket.get().bounds().orNull();
                         Quadrant bucketQuad = computeQuadrant(bucketBounds, childDepthIndex);
@@ -336,8 +339,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
      * node don't fit on a single child quadrant and hence the node shall be kept at the current
      * tree node (hence creating a mixed {@link RevTree} with both direct children and buckets).
      */
-    @Override
-    public int bucket(final NodeId nodeId, final int depthIndex) {
+    public @Override int bucket(final NodeId nodeId, final int depthIndex) {
         final Envelope nodeBounds = nodeId.value();
         final Quadrant quadrantAtDepth = computeQuadrant(nodeBounds, depthIndex);
 
@@ -487,5 +489,4 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
         }
         return bucketsByDepth;
     }
-
 }

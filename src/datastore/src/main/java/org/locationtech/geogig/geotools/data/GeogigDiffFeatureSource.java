@@ -37,6 +37,7 @@ import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderAdapter;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder.WalkInfo;
+import org.locationtech.geogig.geotools.data.reader.SpatialDiffMerger;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -355,12 +356,12 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
 
         FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, nativeType, typeRef);
 
-        final WalkInfo diffWalk = builder//
+        final WalkInfo diffWalkInfo = builder//
                 .targetSchema(getSchema())//
                 .filter(filter)//
                 .headRef(getRootRef())//
                 .oldHeadRef(oldRoot())//
-                .ignoreIndex()//
+                // .ignoreIndex()//
                 .changeType(changeType())//
                 .geometryFactory(geometryFactory)//
                 // .simplificationDistance(simplifDistance)//
@@ -375,11 +376,15 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
 
         final SimpleFeatureType diffType = getSchema();
 
-        if (diffWalk.screenMapFilter != null) {
-            diffWalk.screenMapFilter.collectStats();
+        if (diffWalkInfo.screenMapFilter != null) {
+            diffWalkInfo.screenMapFilter.collectStats();
         }
 
-        AutoCloseableIterator<DiffEntry> entries = diffWalk.diffOp.call();
+        if (diffWalkInfo.diffUsesIndex) {
+            SpatialDiffMerger diffMerger = new SpatialDiffMerger();
+            diffWalkInfo.diffOp.setConsumerWrapper(diffMerger);
+        }
+        AutoCloseableIterator<DiffEntry> entries = diffWalkInfo.diffOp.call();
         try {
             ObjectStore store = getCommandLocator().objectDatabase();
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(store);
@@ -394,11 +399,12 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
                 diffFeatures = AutoCloseableIterator.filter(diffFeatures, screenMapPredicate);
             }
 
-            if (diffWalk.screenMapFilter != null) {
+            if (diffWalkInfo.screenMapFilter != null) {
                 diffFeatures = AutoCloseableIterator.fromIterator(diffFeatures, (orig) -> {
                     orig.close();
-                    log.info("Pre filter stats: {}", diffWalk.screenMapFilter.stats());
-                    System.err.printf("Pre filter stats: %s\n", diffWalk.screenMapFilter.stats());
+                    log.info("Pre filter stats: {}", diffWalkInfo.screenMapFilter.stats());
+                    System.err.printf("Pre filter stats: %s\n",
+                            diffWalkInfo.screenMapFilter.stats());
                 });
             }
 

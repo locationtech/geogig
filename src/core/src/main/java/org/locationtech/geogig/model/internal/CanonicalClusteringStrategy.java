@@ -19,6 +19,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 
 class CanonicalClusteringStrategy extends ClusteringStrategy {
+    private static final long serialVersionUID = 1L;
 
     static final Ordering<NodeId> CANONICAL_ORDER = new Ordering<NodeId>() {
         @Override

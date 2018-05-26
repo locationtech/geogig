@@ -9,7 +9,8 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,6 +21,8 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Decorates the {@link PreOrderDiffWalk} {@link Consumer} when performing a diff between quad trees
@@ -37,6 +40,8 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
  * reporting of feature changes.
  */
 public class SpatialDiffMerger extends PreOrderDiffWalk.ForwardingConsumer {
+
+    private static final Logger log = LoggerFactory.getLogger(SpatialDiffMerger.class);
 
     private long maxHeldFeatures, totalFeatureEvents, totalMerged;
 
@@ -75,23 +80,32 @@ public class SpatialDiffMerger extends PreOrderDiffWalk.ForwardingConsumer {
         super(delegate);
     }
 
-    private Map<String, FeatureEvent> featureEvents = new HashMap<>();
+    private Map<String, FeatureEvent> featureEvents = new LinkedHashMap<>();
 
-    private void flush() {
+    private boolean flush() {
+        final int size = featureEvents.size();
+        if (size == 0) {
+            return true;
+        }
         int adds = 0, removes = 0;
-        for (FeatureEvent fe : featureEvents.values()) {//@formatter:off
+        for (Iterator<FeatureEvent> it = featureEvents.values().iterator(); it.hasNext();) {//@formatter:off
+            FeatureEvent fe = it.next();
+            it.remove();
             NodeRef left = fe.left;
             NodeRef right = fe.right;
             if(left == null) adds++;
             if(right == null) removes++;//@formatter:on
             if (!super.feature(left, right)) {
-                return;
+                return false;
             }
         }
-        System.err.printf(
-                "Flushed %,d of %,d feature events: +%,d -%,d ~%,d, max held features: %,d\n",
-                featureEvents.size(), totalFeatureEvents, adds, removes, totalMerged,
-                maxHeldFeatures);
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format(
+                    "Flushed %,d of %,d feature events: +%,d -%,d ~%,d, max held features: %,d",
+                    size, totalFeatureEvents, adds, removes, totalMerged, maxHeldFeatures));
+        }
+        return true;
     }
 
     private boolean treePassThru;
@@ -145,6 +159,11 @@ public class SpatialDiffMerger extends PreOrderDiffWalk.ForwardingConsumer {
                 ++totalMerged;
                 return super.feature(previous.left, previous.right);
             } // else ignore, they're the same, represent no change
+        }
+        final int flushThreshold = 1_000_000;
+        if (featureEvents.size() == flushThreshold) {
+            treePassThru = true;
+            return flush();
         }
         return true;
     }

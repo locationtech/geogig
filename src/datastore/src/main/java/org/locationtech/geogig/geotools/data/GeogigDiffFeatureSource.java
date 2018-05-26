@@ -355,8 +355,7 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
         final NodeRef typeRef = this.getTypeRef();
 
         FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, nativeType, typeRef);
-
-        final WalkInfo diffWalkInfo = builder//
+        builder//
                 .targetSchema(getSchema())//
                 .filter(filter)//
                 .headRef(getRootRef())//
@@ -371,8 +370,9 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
                 .screenMap(screenMap)//
                 // .sortBy(sortBy)//
                 // .retypeIfNeeded(retypeIfNeeded)//
-                .retypeIfNeeded(false)//
-                .buildTreeWalk();
+                .retypeIfNeeded(false);
+
+        final WalkInfo diffWalkInfo = builder.buildTreeWalk();
 
         final SimpleFeatureType diffType = getSchema();
 
@@ -403,8 +403,6 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
                 diffFeatures = AutoCloseableIterator.fromIterator(diffFeatures, (orig) -> {
                     orig.close();
                     log.info("Pre filter stats: {}", diffWalkInfo.screenMapFilter.stats());
-                    System.err.printf("Pre filter stats: %s\n",
-                            diffWalkInfo.screenMapFilter.stats());
                 });
             }
 

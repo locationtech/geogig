@@ -12,7 +12,6 @@ package org.locationtech.geogig.geotools.data.reader;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -63,7 +62,7 @@ public class SpatialDiffMerger extends PreOrderDiffWalk.ForwardingConsumer {
         //@formatter:on
 
         public boolean merge(FeatureEvent e) {
-            if (Objects.equals(left, e.right) || Objects.equals(right, e.left)) {
+            if ((left != null && left.equals(e.right)) || (right != null && right.equals(e.left))) {
                 return false;
             }
             setLeft(e.left);
@@ -100,8 +99,8 @@ public class SpatialDiffMerger extends PreOrderDiffWalk.ForwardingConsumer {
             }
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug(String.format(
+        if (log.isInfoEnabled()) {
+            log.info(String.format(
                     "Flushed %,d of %,d feature events: +%,d -%,d ~%,d, max held features: %,d",
                     size, totalFeatureEvents, adds, removes, totalMerged, maxHeldFeatures));
         }
@@ -160,7 +159,7 @@ public class SpatialDiffMerger extends PreOrderDiffWalk.ForwardingConsumer {
                 return super.feature(previous.left, previous.right);
             } // else ignore, they're the same, represent no change
         }
-        final int flushThreshold = 1_000_000;
+        final int flushThreshold = 10_000_000;
         if (featureEvents.size() == flushThreshold) {
             treePassThru = true;
             return flush();

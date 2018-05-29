@@ -75,8 +75,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
     }
 
     @Override
-    public DataStoreImportOp<?> createCommand(final Context context,
-            final ParameterSet options) {
+    public DataStoreImportOp<?> createCommand(final Context context, final ParameterSet options) {
         if (Boolean.parseBoolean(options.getFirstValue("interchange", "false"))) {
             return context.command(GeopkgDataStoreAuditImportOp.class)
                     .setDatabaseFile(options.getUploadedFile());
@@ -88,7 +87,9 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
     private static class GpkgDataStoreSupplier implements DataStoreSupplier {
 
         private JDBCDataStore dataStore;
+
         private final ParameterSet options;
+
         private final File uploadedFile;
 
         GpkgDataStoreSupplier(ParameterSet options) {
@@ -116,17 +117,16 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             // fill in DataStore parameters
             params.put(GeoPkgDataStoreFactory.DBTYPE.key, "geopkg");
             params.put(GeoPkgDataStoreFactory.DATABASE.key, uploadedFile.getAbsolutePath());
-            params.put(GeoPkgDataStoreFactory.USER.key,
-                options.getFirstValue("user", "user"));
+            params.put(GeoPkgDataStoreFactory.USER.key, options.getFirstValue("user", "user"));
             try {
                 dataStore = factory.createDataStore(params);
             } catch (IOException ioe) {
-                throw new CommandSpecException("Unable to create GeoPkgDataStore: " + ioe
-                    .getMessage());
+                throw new CommandSpecException(
+                        "Unable to create GeoPkgDataStore: " + ioe.getMessage());
             }
             if (null == dataStore) {
                 throw new CommandSpecException(
-                    "Unable to create GeoPkgDataStore from uploaded file.");
+                        "Unable to create GeoPkgDataStore from uploaded file.");
             }
         }
 
@@ -174,24 +174,25 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
         protected void writeError(StreamingWriter w, Throwable cause) throws StreamWriterException {
             if (cause instanceof GeopkgMergeConflictsException) {
                 Context context = cmd.getContext();
-                GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause;
-                final RevCommit ours = context.repository().getCommit(m.getOurs());
-                final RevCommit theirs = context.repository().getCommit(m.getTheirs());
-                final Optional<ObjectId> ancestor = context.command(FindCommonAncestor.class)
-                        .setLeft(ours).setRight(theirs).call();
-                PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);
-                final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
-                        .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
-                        .call();
-                ResponseWriter out = new ResponseWriter(w, getMediaType());
-                Optional<RevCommit> mergeCommit = Optional.absent();
-                w.writeStartElement("result");
-                out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
-                        theirs.getId(), ancestor.get(), consumer);
-                w.writeStartElement("import");
-                writeImportResult(m.importResult, w, out);
-                w.writeEndElement();
-                w.writeEndElement();
+                try (GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause) {
+                    final RevCommit ours = context.repository().getCommit(m.getOurs());
+                    final RevCommit theirs = context.repository().getCommit(m.getTheirs());
+                    final Optional<ObjectId> ancestor = context.command(FindCommonAncestor.class)
+                            .setLeft(ours).setRight(theirs).call();
+                    PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);
+                    final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
+                            .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
+                            .call();
+                    ResponseWriter out = new ResponseWriter(w, getMediaType());
+                    Optional<RevCommit> mergeCommit = Optional.absent();
+                    w.writeStartElement("result");
+                    out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
+                            theirs.getId(), ancestor.get(), consumer);
+                    w.writeStartElement("import");
+                    writeImportResult(m.importResult, w, out);
+                    w.writeEndElement();
+                    w.writeEndElement();
+                }
             } else {
                 super.writeError(w, cause);
             }

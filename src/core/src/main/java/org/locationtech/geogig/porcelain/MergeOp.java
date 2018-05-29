@@ -272,7 +272,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 String conflictMsg = mergeStatusBuilder.getConflictsMessage();
                 command(SaveMergeCommitMessageOp.class).setMessage(mergeMsg).call();
 
-                throw new MergeConflictsException(conflictMsg, headCommit.getId(), commitId);
+                throw new MergeConflictsException(conflictMsg, headCommit.getId(), commitId,
+                        mergeScenario);
 
             }
         } else {

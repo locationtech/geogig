@@ -24,12 +24,14 @@ public class GeopkgMergeConflictsException extends MergeConflictsException
 
     public GeopkgMergeConflictsException(MergeConflictsException e,
             GeopkgImportResult importResult) {
-        super(e.getMessage(), e.getOurs(), e.getTheirs());
+
+        super(e.getMessage(), e.getOurs(), e.getTheirs(), e.getReport());
+        super.initCause(e);
         this.importResult = importResult;
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         importResult.close();
     }
 }

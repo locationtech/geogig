@@ -9,9 +9,15 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.ToLongFunction;
 
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 /**
@@ -20,25 +26,61 @@ import org.locationtech.geogig.model.RevObject.TYPE;
  */
 public class MergeScenarioReport {
 
-    private final AtomicLong conflicts = new AtomicLong(), unconflictedFeatures = new AtomicLong(),
-            unconflictedTrees = new AtomicLong(), merged = new AtomicLong();
+    public static class TreeReport {
+        private final String path;
 
-    public void addConflict() {
-        conflicts.incrementAndGet();
+        private final AtomicLong conflicts = new AtomicLong(),
+                unconflictedFeatures = new AtomicLong(), unconflictedTrees = new AtomicLong(),
+                merged = new AtomicLong();
 
-    }
+        TreeReport(String treePath) {
+            this.path = treePath;
+        }
 
-    public void addUnconflicted(DiffEntry diff) {
-        TYPE type = (diff.isAdd() ? diff.getNewObject() : diff.getOldObject()).getType();
-        if (TYPE.FEATURE == type) {
-            unconflictedFeatures.incrementAndGet();
-        } else {
-            unconflictedTrees.incrementAndGet();
+        public long getConflicts() {
+            return conflicts.get();
+        }
+
+        public long getMerges() {
+            return merged.get();
+        }
+
+        public long getUnconflictedFeatures() {
+            return unconflictedFeatures.get();
         }
     }
 
-    public void addMerged() {
-        merged.incrementAndGet();
+    private final ConcurrentMap<String, TreeReport> reportsByTree = new ConcurrentHashMap<>();
+
+    private TreeReport parentReport(String path) {
+        String parentPath = NodeRef.parentPath(path);
+        TreeReport treeReport = reportsByTree.computeIfAbsent(parentPath,
+                treePath -> new TreeReport(treePath));
+        return treeReport;
+    }
+
+    public void addConflict(String path) {
+        TreeReport treeReport = parentReport(path);
+        treeReport.conflicts.incrementAndGet();
+    }
+
+    public void addUnconflicted(DiffEntry diff) {
+        TreeReport treeReport = parentReport(diff.path());
+        TYPE type = (diff.isAdd() ? diff.getNewObject() : diff.getOldObject()).getType();
+        if (TYPE.FEATURE == type) {
+            treeReport.unconflictedFeatures.incrementAndGet();
+        } else {
+            treeReport.unconflictedTrees.incrementAndGet();
+        }
+    }
+
+    public void addMerged(String path) {
+        TreeReport treeReport = parentReport(path);
+        treeReport.merged.incrementAndGet();
+    }
+
+    public List<TreeReport> getTreeReports() {
+        return new ArrayList<>(this.reportsByTree.values());
     }
 
     /**
@@ -47,28 +89,32 @@ public class MergeScenarioReport {
      * @return
      */
     public long getConflicts() {
-        return conflicts.get();
+        return sum(r -> r.conflicts.get());
+    }
+
+    private long sum(ToLongFunction<TreeReport> mapper) {
+        return reportsByTree.values().stream().mapToLong(mapper).sum();
     }
 
     /**
      * @return the number of unconflicted features and trees.
      */
     public long getUnconflicted() {
-        return unconflictedFeatures.get() + unconflictedTrees.get();
+        return sum(r -> r.unconflictedFeatures.get() + r.unconflictedTrees.get());
     }
 
     /**
      * @return the number of unconflicted features.
      */
     public long getUnconflictedFeatures() {
-        return unconflictedFeatures.get();
+        return sum(r -> r.unconflictedFeatures.get());
     }
 
     /**
      * @return the number of unconflicted trees.
      */
     public long getUnconflictedTrees() {
-        return unconflictedTrees.get();
+        return sum(r -> r.unconflictedTrees.get());
     }
 
     /**
@@ -77,7 +123,7 @@ public class MergeScenarioReport {
      * @return
      */
     public long getMerged() {
-        return merged.get();
+        return sum(r -> r.merged.get());
     }
 
     @Override

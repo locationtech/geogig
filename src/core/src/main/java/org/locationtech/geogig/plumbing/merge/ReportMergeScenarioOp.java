@@ -224,7 +224,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
 
         if (!oursDiff.changeType().equals(theirsDiff.changeType())) {
             consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-            report.addConflict();
+            report.addConflict(path);
             return;
         }
         switch (theirsDiff.changeType()) {
@@ -236,7 +236,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     checkForFeatureTypeConflict(ancestorVersion, oursDiff, theirsDiff, report);
                 } else {
                     consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-                    report.addConflict();
+                    report.addConflict(path);
                 }
             }
             break;
@@ -257,7 +257,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
 
             if (result.isConflict()) {
                 consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-                report.addConflict();
+                report.addConflict(path);
             } else if (result.isMerge()) {
                 RevFeature mergedFeature = result.mergedFeature();
                 if (mergedFeature.getId().equals(theirsDiff.newObjectId())) {
@@ -270,7 +270,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     ObjectId featureTypeId = oursDiff.getNewObject().getMetadataId();
                     FeatureInfo merged = FeatureInfo.insert(mergedFeature, featureTypeId, path);
                     consumer.merged(merged);
-                    report.addMerged();
+                    report.addMerged(path);
                 }
             }
             // else do nothing, 'ours' has changed in the same way as 'theirs'
@@ -287,11 +287,12 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
         if (featureTypeConflict) {
             // In this case, we store the metadata id, not the element id
             ObjectId ancestorVersionId = ancestorVersion.isPresent()
-                    ? ancestorVersion.get().getMetadataId() : ObjectId.NULL;
+                    ? ancestorVersion.get().getMetadataId()
+                    : ObjectId.NULL;
             ObjectId ours = oursDiff.getNewObject().getMetadataId();
             ObjectId theirs = theirsDiff.getNewObject().getMetadataId();
             consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-            report.addConflict();
+            report.addConflict(path);
         }
     }
 }

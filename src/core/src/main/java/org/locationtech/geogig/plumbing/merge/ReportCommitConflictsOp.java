@@ -121,13 +121,13 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                                 consumer.conflicted(new Conflict(path, ObjectId.NULL,
                                         diff.getNewObject().getMetadataId(),
                                         headVersion.getMetadataId()));
-                                report.addConflict();
+                                report.addConflict(path);
                             }
                         } else {
                             if (!headObj.get().getId().equals(diff.newObjectId())) {
                                 consumer.conflicted(new Conflict(path, ObjectId.NULL,
                                         diff.newObjectId(), headObj.get().getId()));
-                                report.addConflict();
+                                report.addConflict(path);
                             }
                         }
                     } else {
@@ -143,7 +143,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                         } else {
                             consumer.conflicted(new Conflict(path, diff.oldObjectId(),
                                     ObjectId.NULL, headObj.get().getId()));
-                            report.addConflict();
+                            report.addConflict(path);
                         }
                     }
                     break;
@@ -221,7 +221,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                     } else {
                         consumer.conflicted(new Conflict(path, diff.oldObjectId(),
                                 diff.newObjectId(), headObj.get().getId()));
-                        report.addConflict();
+                        report.addConflict(path);
                     }
 
                     break;

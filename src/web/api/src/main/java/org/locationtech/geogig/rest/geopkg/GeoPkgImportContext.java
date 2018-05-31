@@ -174,25 +174,24 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
         protected void writeError(StreamingWriter w, Throwable cause) throws StreamWriterException {
             if (cause instanceof GeopkgMergeConflictsException) {
                 Context context = cmd.getContext();
-                try (GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause) {
-                    final RevCommit ours = context.repository().getCommit(m.getOurs());
-                    final RevCommit theirs = context.repository().getCommit(m.getTheirs());
-                    final Optional<ObjectId> ancestor = context.command(FindCommonAncestor.class)
-                            .setLeft(ours).setRight(theirs).call();
-                    PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);
-                    final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
-                            .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
-                            .call();
-                    ResponseWriter out = new ResponseWriter(w, getMediaType());
-                    Optional<RevCommit> mergeCommit = Optional.absent();
-                    w.writeStartElement("result");
-                    out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
-                            theirs.getId(), ancestor.get(), consumer);
-                    w.writeStartElement("import");
-                    writeImportResult(m.importResult, w, out);
-                    w.writeEndElement();
-                    w.writeEndElement();
-                }
+                GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause;
+                final RevCommit ours = context.repository().getCommit(m.getOurs());
+                final RevCommit theirs = context.repository().getCommit(m.getTheirs());
+                final Optional<ObjectId> ancestor = context.command(FindCommonAncestor.class)
+                        .setLeft(ours).setRight(theirs).call();
+                PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);
+                final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
+                        .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
+                        .call();
+                ResponseWriter out = new ResponseWriter(w, getMediaType());
+                Optional<RevCommit> mergeCommit = Optional.absent();
+                w.writeStartElement("result");
+                out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
+                        theirs.getId(), ancestor.get(), consumer);
+                w.writeStartElement("import");
+                writeImportResult(m.importResult, w, out);
+                w.writeEndElement();
+                w.writeEndElement();
             } else {
                 super.writeError(w, cause);
             }

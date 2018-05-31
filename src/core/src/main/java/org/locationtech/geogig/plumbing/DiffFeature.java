@@ -101,7 +101,7 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
         RevFeatureType newFeatureType = (RevFeatureType) objects.get(newNodeRef.getMetadataId());
         checkArgument(newFeatureType != null, "Invalid reference: %s", newNodeRef);
 
-        return compare(oldFeature, newFeature, oldFeatureType, newFeatureType);
+        return compare(oldNodeRef.path(), oldFeature, newFeature, oldFeatureType, newFeatureType);
 
     }
 
@@ -113,10 +113,11 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
         }
     }
 
-    private FeatureDiff compare(RevFeature oldRevFeature, RevFeature newRevFeature,
-            RevFeatureType oldRevFeatureType, RevFeatureType newRevFeatureType) {
+    public static FeatureDiff compare(String path, RevFeature oldRevFeature,
+            RevFeature newRevFeature, RevFeatureType oldRevFeatureType,
+            RevFeatureType newRevFeatureType) {
 
-        return new FeatureDiff(oldNodeRef.path(), newRevFeature, oldRevFeature, newRevFeatureType,
+        return new FeatureDiff(path, newRevFeature, oldRevFeature, newRevFeatureType,
                 oldRevFeatureType, false);
     }
 

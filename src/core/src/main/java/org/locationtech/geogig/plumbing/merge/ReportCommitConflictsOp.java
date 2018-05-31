@@ -9,9 +9,10 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
@@ -22,10 +23,10 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffFeature;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
-import org.locationtech.geogig.plumbing.ResolveObjectType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
@@ -34,11 +35,12 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.DiffObjectInfo;
+import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -80,25 +82,37 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
         if (commit.getParentIds().size() > 0) {
             parentCommitId = commit.getParentIds().get(0);
         }
-        ObjectId parentTreeId = ObjectId.NULL;
-        Repository repository = repository();
-        if (repository.commitExists(parentCommitId)) {
+
+        final ObjectId parentTreeId;
+        final Repository repository = repository();
+        final ObjectDatabase db = repository.objectDatabase();
+        if (parentCommitId.isNull()) {
+            parentTreeId = ObjectId.NULL;
+        } else {
             parentTreeId = repository.getCommit(parentCommitId).getTreeId();
         }
         // get changes
-        try (AutoCloseableIterator<DiffEntry> diffs = command(DiffTree.class)
-                .setOldTree(parentTreeId).setNewTree(commit.getTreeId()).setReportTrees(true)
-                .call()) {
-            while (diffs.hasNext()) {
-                DiffEntry diff = diffs.next();
-                String path = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
-                Optional<RevObject> obj = command(RevObjectParse.class)
+        DiffTree diffCmd = command(DiffTree.class).setOldTree(parentTreeId)
+                .setNewTree(commit.getTreeId()).setReportTrees(true);
+
+        final RevFeatureTypeCache ftCache = new RevFeatureTypeCache(db);
+        final RevTree workingTree = this.workingTree().getTree();
+        try (AutoCloseableIterator<DiffObjectInfo<RevObject>> diffObjects = db
+                .getDiffObjects(diffCmd.call(), RevObject.class)) {
+
+            while (diffObjects.hasNext()) {
+                final DiffObjectInfo<RevObject> diffEntry = diffObjects.next();
+                final DiffEntry diff = diffEntry.entry();
+                final java.util.Optional<RevObject> oldObject = diffEntry.oldValue();
+                final java.util.Optional<RevObject> newObject = diffEntry.newValue();
+                final String path = diff.path();
+
+                final Optional<RevObject> headObj = command(RevObjectParse.class)
                         .setRefSpec(Ref.HEAD + ":" + path).call();
                 switch (diff.changeType()) {
                 case ADDED:
-                    if (obj.isPresent()) {
-                        TYPE type = command(ResolveObjectType.class)
-                                .setObjectId(diff.getNewObject().getObjectId()).call();
+                    if (headObj.isPresent()) {
+                        TYPE type = newObject.get().getType();
                         if (TYPE.TREE.equals(type)) {
                             NodeRef headVersion = command(FindTreeChild.class).setChildPath(path)
                                     .setParent(repository.getOrCreateHeadTree()).call().get();
@@ -110,9 +124,9 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                                 report.addConflict();
                             }
                         } else {
-                            if (!obj.get().getId().equals(diff.newObjectId())) {
+                            if (!headObj.get().getId().equals(diff.newObjectId())) {
                                 consumer.conflicted(new Conflict(path, ObjectId.NULL,
-                                        diff.newObjectId(), obj.get().getId()));
+                                        diff.newObjectId(), headObj.get().getId()));
                                 report.addConflict();
                             }
                         }
@@ -122,98 +136,92 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                     }
                     break;
                 case REMOVED:
-                    if (obj.isPresent()) {
-                        if (obj.get().getId().equals(diff.oldObjectId())) {
+                    if (headObj.isPresent()) {
+                        if (headObj.get().getId().equals(diff.oldObjectId())) {
                             consumer.unconflicted(diff);
                             report.addUnconflicted(diff);
                         } else {
                             consumer.conflicted(new Conflict(path, diff.oldObjectId(),
-                                    ObjectId.NULL, obj.get().getId()));
+                                    ObjectId.NULL, headObj.get().getId()));
                             report.addConflict();
                         }
                     }
                     break;
                 case MODIFIED:
-                    TYPE type = command(ResolveObjectType.class)
-                            .setObjectId(diff.getNewObject().getObjectId()).call();
-                    if (TYPE.TREE.equals(type)) {
+                    if (TYPE.TREE.equals(newObject.get().getType())) {
                         // TODO:see how to do this. For now, we will pass any change as a conflicted
                         // one
                         if (!diff.isChange()) {
                             consumer.unconflicted(diff);
                             report.addUnconflicted(diff);
                         }
-                    } else {
-                        String refSpec = Ref.HEAD + ":" + path;
-                        obj = command(RevObjectParse.class).setRefSpec(refSpec).call();
-                        if (!obj.isPresent()) {
-                            // git reports this as a conflict but does not mark as conflicted, just
-                            // adds
-                            // the missing file.
-                            // We add it and consider it unconflicted
-                            consumer.unconflicted(diff);
-                            report.addUnconflicted(diff);
+                        break;
+                    }
+                    if (!headObj.isPresent()) {
+                        // git reports this as a conflict but does not mark as conflicted, just
+                        // adds the missing file.
+                        // We add it and consider it unconflicted
+                        consumer.unconflicted(diff);
+                        report.addUnconflicted(diff);
+                        break;
+                    }
+                    final RevFeature oldFeature = (RevFeature) oldObject.get();
+                    final RevFeature newFeature = (RevFeature) newObject.get();
+                    final RevFeature headFeature = db.getFeature(headObj.get().getId());
+
+                    final NodeRef headFeatureRef = new DepthSearch(db).find(workingTree, path)
+                            .get();
+                    final RevFeatureType headFeatureType = ftCache
+                            .get(headFeatureRef.getMetadataId());
+                    ImmutableList<PropertyDescriptor> descriptors = headFeatureType.descriptors();
+
+                    FeatureDiff featureDiff = DiffFeature.compare(path, oldFeature, newFeature,
+                            ftCache.get(diff.oldMetadataId()), ftCache.get(diff.newMetadataId()));
+
+                    Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = featureDiff
+                            .getDiffs().entrySet().iterator();
+
+                    boolean ok = true;
+                    while (iterator.hasNext() && ok) {
+
+                        Entry<PropertyDescriptor, AttributeDiff> entry = iterator.next();
+                        AttributeDiff attrDiff = entry.getValue();
+                        PropertyDescriptor descriptor = entry.getKey();
+                        switch (attrDiff.getType()) {
+                        case ADDED:
+                            if (descriptors.contains(descriptor)) {
+                                ok = false;
+                            }
                             break;
-                        }
-                        RevFeature feature = (RevFeature) obj.get();
-                        DepthSearch depthSearch = new DepthSearch(repository.objectDatabase());
-                        Optional<NodeRef> noderef = depthSearch.find(this.workingTree().getTree(),
-                                path);
-                        RevFeatureType featureType = command(RevObjectParse.class)
-                                .setObjectId(noderef.get().getMetadataId())
-                                .call(RevFeatureType.class).get();
-                        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
-                        FeatureDiff featureDiff = command(DiffFeature.class)
-                                .setOldVersion(Suppliers.ofInstance(diff.getOldObject()))
-                                .setNewVersion(Suppliers.ofInstance(diff.getNewObject())).call();
-                        Set<Entry<PropertyDescriptor, AttributeDiff>> attrDiffs = featureDiff
-                                .getDiffs().entrySet();
-                        RevFeature newFeature = command(RevObjectParse.class)
-                                .setObjectId(diff.newObjectId()).call(RevFeature.class).get();
-                        boolean ok = true;
-                        for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = attrDiffs
-                                .iterator(); iterator.hasNext() && ok;) {
-                            Entry<PropertyDescriptor, AttributeDiff> entry = iterator.next();
-                            AttributeDiff attrDiff = entry.getValue();
-                            PropertyDescriptor descriptor = entry.getKey();
-                            switch (attrDiff.getType()) {
-                            case ADDED:
-                                if (descriptors.contains(descriptor)) {
-                                    ok = false;
-                                }
+                        case REMOVED:
+                        case MODIFIED:
+                            if (!descriptors.contains(descriptor)) {
+                                ok = false;
                                 break;
-                            case REMOVED:
-                            case MODIFIED:
-                                if (!descriptors.contains(descriptor)) {
-                                    ok = false;
-                                    break;
-                                }
-                                for (int i = 0; i < descriptors.size(); i++) {
-                                    if (descriptors.get(i).equals(descriptor)) {
-                                        Optional<Object> value = feature.get(i);
-                                        Optional<Object> newValue = newFeature.get(i);
-                                        if (!newValue.equals(value)) { // if it's going to end up
-                                                                       // setting the same value, it
-                                                                       // is
-                                                                       // compatible, so no need to
-                                                                       // check
-                                            if (!attrDiff.canBeAppliedOn(value.orNull())) {
-                                                ok = false;
-                                            }
-                                            break;
-                                        }
+                            }
+                            for (int i = 0; i < descriptors.size(); i++) {
+                                if (descriptors.get(i).equals(descriptor)) {
+                                    Optional<Object> value = headFeature.get(i);
+                                    Optional<Object> newValue = newFeature.get(i);
+                                    if (!newValue.equals(value)) { // if it's going to end up
+                                                                   // setting the same value, it
+                                                                   // is
+                                                                   // compatible, so no need to
+                                                                   // check
+                                        ok = attrDiff.canBeAppliedOn(value.orNull());
+                                        break;
                                     }
                                 }
                             }
                         }
-                        if (ok) {
-                            consumer.unconflicted(diff);
-                            report.addUnconflicted(diff);
-                        } else {
-                            consumer.conflicted(new Conflict(path, diff.oldObjectId(),
-                                    diff.newObjectId(), obj.get().getId()));
-                            report.addConflict();
-                        }
+                    }
+                    if (ok) {
+                        consumer.unconflicted(diff);
+                        report.addUnconflicted(diff);
+                    } else {
+                        consumer.conflicted(new Conflict(path, diff.oldObjectId(),
+                                diff.newObjectId(), headObj.get().getId()));
+                        report.addConflict();
                     }
 
                     break;
@@ -225,5 +233,24 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
 
         return report;
 
+    }
+
+    private static class RevFeatureTypeCache {
+        private ObjectDatabase db;
+
+        private Map<ObjectId, RevFeatureType> cache = new HashMap<>();
+
+        RevFeatureTypeCache(ObjectDatabase db) {
+            this.db = db;
+        }
+
+        public RevFeatureType get(ObjectId ftId) {
+            RevFeatureType type = cache.get(ftId);
+            if (type == null) {
+                type = db.getFeatureType(ftId);
+                cache.put(ftId, type);
+            }
+            return type;
+        }
     }
 }

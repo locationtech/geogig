@@ -37,17 +37,12 @@ public class MergeScenarioReport {
             this.path = treePath;
         }
 
-        public long getConflicts() {
-            return conflicts.get();
-        }
-
-        public long getMerges() {
-            return merged.get();
-        }
-
-        public long getUnconflictedFeatures() {
-            return unconflictedFeatures.get();
-        }
+        //@formatter:off
+        public String getPath() {return path;}
+        public long getConflicts() {return conflicts.get();}
+        public long getMerges() {return merged.get();}
+        public long getUnconflictedFeatures() {return unconflictedFeatures.get();}
+        //@formatter:on
     }
 
     private final ConcurrentMap<String, TreeReport> reportsByTree = new ConcurrentHashMap<>();

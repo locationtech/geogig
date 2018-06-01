@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing.merge;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
 
@@ -25,12 +26,19 @@ import com.google.common.base.Supplier;
 public class ConflictsQueryOp extends AbstractGeoGigOp<Iterator<Conflict>>
         implements Supplier<Iterator<Conflict>> {
 
+    private String parentPathFilter = null;
+
     @Override
     protected Iterator<Conflict> _call() {
         if (repository().isOpen()) {
-            return conflictsDatabase().getByPrefix(null, null);
+            return conflictsDatabase().getByPrefix(null, parentPathFilter);
         }
         return Collections.emptyIterator();
+    }
+
+    public ConflictsQueryOp setPrefixFilter(@Nullable String parentPath) {
+        this.parentPathFilter = parentPath;
+        return this;
     }
 
     @Override

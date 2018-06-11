@@ -48,8 +48,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
     final PersistedIterable<FeatureInfo> mergedBuffer = new PersistedIterable<>(null,
             new FeatureInfoSerializer(), 10_000, true);
 
-    final PersistedIterable<Conflict> conflictsBuffer = new PersistedIterable<>(null,
-            new ConflictSerializer(), BUFFER_SIZE, true);
+    final PersistedIterable<Conflict> conflictsBuffer = ConflictsUtils.newTemporaryConflictStream();
 
     final PersistedIterable<DiffEntry> unconflictedBuffer = new PersistedIterable<>(null,
             new DiffEntrySerializer(), BUFFER_SIZE, true);
@@ -208,7 +207,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         }
     }
 
-    private static Serializer<ObjectId> OID = new Serializer<ObjectId>() {
+    static Serializer<ObjectId> OID = new Serializer<ObjectId>() {
 
         @Override
         public void write(DataOutputStream out, ObjectId value) throws IOException {
@@ -320,53 +319,6 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             return FormatCommonV2_2.INSTANCE.readNode(in);
         }
 
-    }
-
-    static class ConflictSerializer implements PersistedIterable.Serializer<Conflict> {
-
-        private static final byte HAS_ANCESTOR = 0b00000001;
-
-        private static final byte HAS_OURS = 0b00000010;
-
-        private static final byte HAS_THEIRS = 0b00000100;
-
-        @Override
-        public void write(DataOutputStream out, Conflict value) throws IOException {
-
-            String path = value.getPath();
-            ObjectId ancestor = value.getAncestor();
-            ObjectId ours = value.getOurs();
-            ObjectId theirs = value.getTheirs();
-
-            byte flags = ancestor.isNull() ? 0x00 : HAS_ANCESTOR;
-            flags |= ours.isNull() ? 0x00 : HAS_OURS;
-            flags |= theirs.isNull() ? 0x00 : HAS_THEIRS;
-
-            out.writeByte(flags);
-            out.writeUTF(path);
-            if (!ancestor.isNull()) {
-                OID.write(out, ancestor);
-            }
-            if (!ours.isNull()) {
-                OID.write(out, ours);
-            }
-            if (!theirs.isNull()) {
-                OID.write(out, theirs);
-            }
-        }
-
-        @Override
-        public Conflict read(DataInputStream in) throws IOException {
-            byte flags = in.readByte();
-            boolean hasAncestor = (flags & HAS_ANCESTOR) == HAS_ANCESTOR;
-            boolean hasOurs = (flags & HAS_OURS) == HAS_OURS;
-            boolean hasTheirs = (flags & HAS_THEIRS) == HAS_THEIRS;
-            String path = in.readUTF();
-            ObjectId ancestor = hasAncestor ? OID.read(in) : ObjectId.NULL;
-            ObjectId ours = hasOurs ? OID.read(in) : ObjectId.NULL;
-            ObjectId theirs = hasTheirs ? OID.read(in) : ObjectId.NULL;
-            return new Conflict(path, ancestor, ours, theirs);
-        }
     }
 
     private static class FeatureInfoSerializer implements Serializer<FeatureInfo> {

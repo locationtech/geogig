@@ -39,11 +39,16 @@ import org.locationtech.geogig.plumbing.merge.ConflictsUtils;
 import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -56,6 +61,8 @@ import com.google.common.collect.Lists;
  */
 @CanRunDuringConflict
 public class RevertOp extends AbstractGeoGigOp<Boolean> {
+
+    private static final Logger log = LoggerFactory.getLogger(RevertOp.class);
 
     private static final String REVERT_PREFIX = "revert/";
 
@@ -266,7 +273,13 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
     }
 
     private void applyRevertedChanges(final RevCommit commit,
-            PersistedIterable<Conflict> conflicts) {
+            PersistedIterable<Conflict> conflictsTarget) {
+
+        final ProgressListener progressListener = getProgressListener();
+
+        progressListener.setDescription("Reverting commit " + commit.getId());
+
+        final boolean revertingBranchTip = revertHead.equals(commit.getId());
 
         final Repository repository = repository();
         final ObjectId parentCommitId = commit.getParentIds().isEmpty() ? ObjectId.NULL
@@ -277,48 +290,68 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                         ? repository.getCommit(parentCommitId).getTreeId()
                         : RevTree.EMPTY_TREE_ID;
 
-        // get changes (in reverse)
-        try (AutoCloseableIterator<DiffEntry> reverseDiff = command(DiffTree.class)
-                .setNewTree(parentTreeId).setOldTree(commit.getTreeId()).setReportTrees(false)
-                .call()) {
+        final ObjectId headTreeId = repository.getCommit(revertHead).getTreeId();
+        final RevTree headTree = repository.getTree(headTreeId);
 
-            ObjectId headTreeId = repository.getCommit(revertHead).getTreeId();
-            final RevTree headTree = repository.getTree(headTreeId);
+        // get changes (in reverse)
+        final DiffTree reverseDiffCommand = command(DiffTree.class).setNewTree(parentTreeId)
+                .setOldTree(commit.getTreeId()).setReportTrees(false);
+
+        try (PersistedIterable<DiffEntry> diffs = ConflictsUtils.newTemporaryDiffEntryStream()) {
             DiffEntry diff;
             final FindTreeChild findTreeChild = command(FindTreeChild.class).setParent(headTree);
-            while (reverseDiff.hasNext()) {
-                diff = reverseDiff.next();
-                if (diff.isAdd()) {
-                    // Feature was deleted
-                    Optional<NodeRef> node = findTreeChild.setChildPath(diff.newPath()).call();
-                    // make sure it is still deleted
-                    if (node.isPresent()) {
-                        conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(),
-                                node.get().getObjectId(), diff.newObjectId()));
-                    } else {
-                        stagingArea().stage(getProgressListener(),
-                                Iterators.singletonIterator(diff), 1);
+
+            try (AutoCloseableIterator<DiffEntry> reverseDiff = reverseDiffCommand.call()) {
+                log.info("Creating revert state of commit {}", commit.getId());
+                Stopwatch sw = Stopwatch.createStarted();
+                int count = 0;
+                while (reverseDiff.hasNext()) {
+                    diff = reverseDiff.next();
+                    count++;
+
+                    if (revertingBranchTip) {
+                        diffs.add(diff);
+                        continue;
                     }
-                } else {
-                    // Feature was added or modified
-                    Optional<NodeRef> node = findTreeChild.setChildPath(diff.oldPath()).call();
-                    ObjectId nodeId = node.get().getNode().getObjectId();
-                    // Make sure it wasn't changed
-                    if (node.isPresent() && nodeId.equals(diff.oldObjectId())) {
-                        stagingArea().stage(getProgressListener(),
-                                Iterators.singletonIterator(diff), 1);
-                    } else {
-                        // do not mark as conflict if reverting to the same feature currently in
-                        // HEAD
-                        if (!nodeId.equals(diff.newObjectId())) {
-                            conflicts.add(new Conflict(diff.oldPath(), diff.oldObjectId(),
+
+                    if (diff.isAdd()) {
+                        // Feature was deleted
+                        Optional<NodeRef> node = findTreeChild.setChildPath(diff.newPath()).call();
+                        // make sure it is still deleted
+                        if (node.isPresent()) {
+                            conflictsTarget.add(new Conflict(diff.newPath(), diff.oldObjectId(),
                                     node.get().getObjectId(), diff.newObjectId()));
+                        } else {
+                            diffs.add(diff);
+                        }
+                    } else {
+                        // Feature was added or modified
+                        Optional<NodeRef> node = findTreeChild.setChildPath(diff.oldPath()).call();
+                        ObjectId nodeId = node.get().getNode().getObjectId();
+                        // Make sure it wasn't changed
+                        if (node.isPresent() && nodeId.equals(diff.oldObjectId())) {
+                            diffs.add(diff);
+                        } else {
+                            // do not mark as conflict if reverting to the same feature currently in
+                            // HEAD
+                            if (!nodeId.equals(diff.newObjectId())) {
+                                conflictsTarget.add(new Conflict(diff.oldPath(), diff.oldObjectId(),
+                                        node.get().getObjectId(), diff.newObjectId()));
+                            }
                         }
                     }
-
                 }
-
+                log.info(String.format("Created revert state of %,d features in %s", count,
+                        sw.stop()));
             }
+
+            StagingArea stagingArea = stagingArea();
+            String msg = String.format("Staging %,d changes...", diffs.size());
+            log.info(msg);
+            progressListener.setDescription(msg);
+            Stopwatch sw = Stopwatch.createStarted();
+            stagingArea.stage(progressListener, diffs.iterator(), diffs.size());
+            log.info(String.format("%,d changes staged in %s\n", diffs.size(), sw.stop()));
         }
     }
 

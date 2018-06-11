@@ -16,13 +16,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
-import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.plumbing.ResolveBranchId;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Context;
@@ -31,8 +27,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
-import org.locationtech.geogig.storage.datastream.FormatCommonV2_2;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.geogig.storage.impl.PersistedIterable.Serializer;
 
@@ -40,18 +34,13 @@ import com.google.common.base.Optional;
 
 public class MergeStatusBuilder extends MergeScenarioConsumer {
 
-    /**
-     * Makes for a {@link #conflictsBuffer} of ~14MB
-     */
-    private final static int BUFFER_SIZE = 100_000;
-
-    final PersistedIterable<FeatureInfo> mergedBuffer = new PersistedIterable<>(null,
-            new FeatureInfoSerializer(), 10_000, true);
+    final PersistedIterable<FeatureInfo> mergedBuffer = ConflictsUtils
+            .newTemporaryFeatureInfoStream();
 
     final PersistedIterable<Conflict> conflictsBuffer = ConflictsUtils.newTemporaryConflictStream();
 
-    final PersistedIterable<DiffEntry> unconflictedBuffer = new PersistedIterable<>(null,
-            new DiffEntrySerializer(), BUFFER_SIZE, true);
+    final PersistedIterable<DiffEntry> unconflictedBuffer = ConflictsUtils
+            .newTemporaryDiffEntryStream();
 
     static final int maxReportedConflicts = 25;
 
@@ -219,127 +208,4 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             return ObjectId.readFrom(in);
         }
     };
-
-    static class DiffEntrySerializer implements PersistedIterable.Serializer<DiffEntry> {
-
-        private final PersistedIterable.Serializer<String> STRING = new PersistedIterable.StringSerializer();
-
-        // header value for a null NodeRef
-        private static final byte NULL_NODEREF_MASK = 0x00;
-
-        // header value for a NodeRef with no default metadataId
-        private static final byte PRESENT_NO_DEFAULT_METADATA = 0x01;
-
-        // header value for a NodeRef with default metadataId
-        private static final byte PRESENT_WITH_DEFAULT_METADATA = 0x02;
-
-        @Override
-        public void write(DataOutputStream out, DiffEntry e) throws IOException {
-            @Nullable
-            NodeRef left = e.getOldObject();
-            @Nullable
-            NodeRef right = e.getNewObject();
-            write(out, left);
-            write(out, right);
-        }
-
-        @Override
-        public DiffEntry read(DataInputStream in) throws IOException {
-            NodeRef left = readRef(in);
-            NodeRef right = readRef(in);
-            DiffEntry e = new DiffEntry(left, right);
-            return e;
-        }
-
-        /**
-         * If {@code ref == null}, encodes as the single byte {@link #NULL_NODEREF_MASK}, otherwise:
-         *
-         * <pre>
-         * <code>
-         * 1 byte header: PRESENT_NO_DEFAULT_METADATA | PRESENT_WITH_DEFAULT_METADATA
-         * if header == PRESENT_WITH_DEFAULT_METADATA then
-         *  20 byte default metadata object id
-         * end if
-         * N bytes noderef parent path using  PersistedIterable.StringSerializer
-         * N bytes Node using FormatCommonV2.writeNode
-         * </code>
-         * </pre>
-         * 
-         * @param out
-         * @param ref
-         * @return
-         * @throws IOException
-         */
-        private void write(DataOutputStream out, @Nullable NodeRef ref) throws IOException {
-            if (ref == null) {
-                out.writeByte(NULL_NODEREF_MASK);
-            } else {
-                ObjectId defaultMetadataId = ref.getDefaultMetadataId();
-                if (defaultMetadataId.isNull()) {
-                    out.writeByte(PRESENT_NO_DEFAULT_METADATA);
-                } else {
-                    out.writeByte(PRESENT_WITH_DEFAULT_METADATA);
-                    OID.write(out, defaultMetadataId);
-                }
-                @Nullable
-                String parentPath = ref.getParentPath();
-                STRING.write(out, parentPath);
-                writeNode(out, ref.getNode());
-            }
-        }
-
-        @Nullable
-        private NodeRef readRef(DataInputStream in) throws IOException {
-            final byte mask = in.readByte();
-            ObjectId defaultMetadataId = ObjectId.NULL;
-            switch (mask) {
-            case NULL_NODEREF_MASK:
-                return null;
-            case PRESENT_WITH_DEFAULT_METADATA:
-                defaultMetadataId = OID.read(in);
-                break;
-            case PRESENT_NO_DEFAULT_METADATA:
-                break;
-            default:
-                throw new IllegalStateException("Unknown NodeRef mask header: " + mask);
-            }
-
-            String parentPath = STRING.read(in);
-            Node node = readNode(in);
-
-            NodeRef ref = new NodeRef(node, parentPath, defaultMetadataId);
-            return ref;
-        }
-
-        private void writeNode(DataOutputStream out, Node node) throws IOException {
-            FormatCommonV2_2.INSTANCE.writeNode(node, out);
-        }
-
-        private Node readNode(DataInputStream in) throws IOException {
-            return FormatCommonV2_2.INSTANCE.readNode(in);
-        }
-
-    }
-
-    private static class FeatureInfoSerializer implements Serializer<FeatureInfo> {
-
-        @Override
-        public void write(DataOutputStream out, FeatureInfo value) throws IOException {
-            String path = value.getPath();
-            ObjectId featureTypeId = value.getFeatureTypeId();
-            RevFeature feature = value.getFeature();
-            out.writeUTF(path);
-            OID.write(out, featureTypeId);
-            DataStreamSerializationFactoryV2.INSTANCE.write(feature, out);
-        }
-
-        @Override
-        public FeatureInfo read(DataInputStream in) throws IOException {
-            String path = in.readUTF();
-            ObjectId featureTypeId = OID.read(in);
-            RevFeature feature = (RevFeature) DataStreamSerializationFactoryV2.INSTANCE.read(in);
-            return FeatureInfo.insert(feature, featureTypeId, path);
-        }
-
-    }
 }

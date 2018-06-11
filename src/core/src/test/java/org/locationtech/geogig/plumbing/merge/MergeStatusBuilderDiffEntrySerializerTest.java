@@ -30,19 +30,18 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.plumbing.merge.MergeStatusBuilder.DiffEntrySerializer;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * Unit test suite for {@link MergeStatusBuilder.DiffEntrySerializer}
+ * Unit test suite for {@link ConflictsUtils.DiffEntrySerializer}
  *
  */
 public class MergeStatusBuilderDiffEntrySerializerTest {
 
-    private DiffEntrySerializer serializer;
+    private ConflictsUtils.DiffEntrySerializer serializer;
 
     private ByteArrayOutputStream stream;
 
@@ -50,7 +49,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
 
     @Before
     public void before() {
-        serializer = new DiffEntrySerializer();
+        serializer = new ConflictsUtils.DiffEntrySerializer();
         stream = new ByteArrayOutputStream();
         out = new DataOutputStream(stream);
     }
@@ -80,8 +79,8 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         // null parent path is only allowed for NodeRef.ROOT named nodes
         Node ln = Node.create(NodeRef.ROOT, RevTree.EMPTY_TREE_ID, ObjectId.NULL, TYPE.TREE,
                 new Envelope(0, 0, 0, 0));
-        Node rn = Node.create(NodeRef.ROOT, RevObjectTestSupport.hashString("rnd"), ObjectId.NULL, TYPE.TREE,
-                new Envelope(0, 1, 0, 1));
+        Node rn = Node.create(NodeRef.ROOT, RevObjectTestSupport.hashString("rnd"), ObjectId.NULL,
+                TYPE.TREE, new Envelope(0, 1, 0, 1));
 
         ObjectId metadataId = RevObjectTestSupport.hashString("test");
 
@@ -103,8 +102,8 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         // null parent path is only allowed for NodeRef.ROOT named nodes
         Node ln = Node.create(NodeRef.ROOT, RevTree.EMPTY_TREE_ID, ObjectId.NULL, TYPE.TREE,
                 new Envelope(0, 0, 0, 0));
-        Node rn = Node.create(NodeRef.ROOT, RevObjectTestSupport.hashString("rnd"), ObjectId.NULL, TYPE.TREE,
-                new Envelope(0, 1, 0, 1));
+        Node rn = Node.create(NodeRef.ROOT, RevObjectTestSupport.hashString("rnd"), ObjectId.NULL,
+                TYPE.TREE, new Envelope(0, 1, 0, 1));
 
         ObjectId metadataId = ObjectId.NULL;
 

@@ -37,7 +37,6 @@ import org.locationtech.geogig.repository.Conflict;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 public class RevertOpTest extends RepositoryTestCase {
@@ -75,9 +74,8 @@ public class RevertOpTest extends RepositoryTestCase {
                 .call();
 
         // revert Points.2 add, Points.1 change, and Points.3 delete
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c2.getId()))
-                .addCommit(Suppliers.ofInstance(c3.getId()))
-                .addCommit(Suppliers.ofInstance(c5.getId())).call();
+        geogig.command(RevertOp.class).addCommit(c2.getId()).addCommit(c3.getId())
+                .addCommit(c5.getId()).call();
 
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
 
@@ -137,9 +135,8 @@ public class RevertOpTest extends RepositoryTestCase {
                 .call();
 
         // revert Points.2 add, Points.1 change, and Points.3 delete
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c2.getId()))
-                .addCommit(Suppliers.ofInstance(c3.getId()))
-                .addCommit(Suppliers.ofInstance(c5.getId())).setCreateCommit(false).call();
+        geogig.command(RevertOp.class).addCommit(c2.getId()).addCommit(c3.getId())
+                .addCommit(c5.getId()).setCreateCommit(false).call();
 
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.WORK_HEAD).call();
 
@@ -189,7 +186,7 @@ public class RevertOpTest extends RepositoryTestCase {
 
         insert(points2);
         exception.expect(IllegalStateException.class);
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c1.getId())).call();
+        geogig.command(RevertOp.class).addCommit(c1.getId()).call();
     }
 
     @Test
@@ -199,7 +196,7 @@ public class RevertOpTest extends RepositoryTestCase {
 
         insertAndAdd(points2);
         exception.expect(IllegalStateException.class);
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c1.getId())).call();
+        geogig.command(RevertOp.class).addCommit(c1.getId()).call();
     }
 
     @Test
@@ -207,7 +204,7 @@ public class RevertOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c1.getId())).call();
+        geogig.command(RevertOp.class).addCommit(c1.getId()).call();
 
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
 
@@ -229,7 +226,7 @@ public class RevertOpTest extends RepositoryTestCase {
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue(null).call();
         exception.expect(IllegalStateException.class);
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c1.getId())).call();
+        geogig.command(RevertOp.class).addCommit(c1.getId()).call();
     }
 
     @Test
@@ -239,7 +236,7 @@ public class RevertOpTest extends RepositoryTestCase {
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
                 .setValue(null).call();
         exception.expect(IllegalStateException.class);
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c1.getId())).call();
+        geogig.command(RevertOp.class).addCommit(c1.getId()).call();
     }
 
     @Test
@@ -247,8 +244,7 @@ public class RevertOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
         exception.expect(IllegalArgumentException.class);
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(RevObjectTestSupport.hashString("wrong")))
-                .call();
+        geogig.command(RevertOp.class).addCommit(RevObjectTestSupport.hashString("wrong")).call();
     }
 
     @Test
@@ -256,8 +252,8 @@ public class RevertOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         RevCommit commit = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
         exception.expect(IllegalArgumentException.class);
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(commit.getId()))
-                .setAbort(true).setContinue(true).call();
+        geogig.command(RevertOp.class).addCommit(commit.getId()).setAbort(true).setContinue(true)
+                .call();
     }
 
     @Test
@@ -274,7 +270,7 @@ public class RevertOpTest extends RepositoryTestCase {
         RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP1 + " again")
                 .call();
         try {
-            geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c2.getId())).call();
+            geogig.command(RevertOp.class).addCommit(c2.getId()).call();
             fail();
         } catch (RevertConflictsException e) {
             assertTrue(e.getMessage().contains(idP1));
@@ -296,7 +292,7 @@ public class RevertOpTest extends RepositoryTestCase {
         RevCommit c3 = geogig.command(CommitOp.class)
                 .setMessage("commit for modified " + idP1 + " again").call();
 
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c2.getId())).call();
+        geogig.command(RevertOp.class).addCommit(c2.getId()).call();
 
     }
 
@@ -313,7 +309,7 @@ public class RevertOpTest extends RepositoryTestCase {
         RevCommit c3 = geogig.command(CommitOp.class)
                 .setMessage("commit for modified " + idP1 + " again").call();
         try {
-            geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c2.getId())).call();
+            geogig.command(RevertOp.class).addCommit(c2.getId()).call();
             fail();
         } catch (RevertConflictsException e) {
             assertTrue(e.getMessage().contains(idP1));
@@ -376,7 +372,7 @@ public class RevertOpTest extends RepositoryTestCase {
         RevCommit c3 = geogig.command(CommitOp.class)
                 .setMessage("commit for modified " + idP1 + " again").call();
         try {
-            geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c2.getId())).call();
+            geogig.command(RevertOp.class).addCommit(c2.getId()).call();
             fail();
         } catch (RevertConflictsException e) {
             assertTrue(e.getMessage().contains(idP1));
@@ -420,7 +416,7 @@ public class RevertOpTest extends RepositoryTestCase {
         insertAndAdd(lines1);
         RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(c4.getId())).call();
+        geogig.command(RevertOp.class).addCommit(c4.getId()).call();
 
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
 

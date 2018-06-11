@@ -299,7 +299,7 @@ public class ResetOpTest extends RepositoryTestCase {
                 repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
         exception.expect(UnsupportedOperationException.class);
-        geogig.command(ResetOp.class).setCommit(null).setMode(ResetMode.KEEP).call();
+        geogig.command(ResetOp.class).setCommit((ObjectId) null).setMode(ResetMode.KEEP).call();
 
     }
 

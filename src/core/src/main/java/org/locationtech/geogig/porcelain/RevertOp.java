@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.impl.Blobs.putBlob;
 import static org.locationtech.geogig.storage.impl.Blobs.readLines;
@@ -16,6 +18,7 @@ import static org.locationtech.geogig.storage.impl.Blobs.readLines;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
@@ -33,16 +36,13 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.WriteTree2;
 import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
-import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -78,12 +78,16 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
      * @return {@code this}
      */
     public RevertOp addCommit(final Supplier<ObjectId> commit) {
-        Preconditions.checkNotNull(commit);
+        return addCommit(commit.get());
+    }
+
+    public RevertOp addCommit(final ObjectId commit) {
+        checkNotNull(commit);
 
         if (this.commits == null) {
             this.commits = new ArrayList<ObjectId>();
         }
-        this.commits.add(commit.get());
+        this.commits.add(commit);
         return this;
     }
 
@@ -128,70 +132,57 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
      * 
      * @return always {@code true}
      */
-    @Override
-    protected Boolean _call() {
+    protected @Override Boolean _call() {
 
-        final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions.checkState(currHead.isPresent(), "Repository has no HEAD, can't revert.");
-        Preconditions.checkState(currHead.get() instanceof SymRef,
-                "Can't revert from detached HEAD");
-        final SymRef headRef = (SymRef) currHead.get();
-        Preconditions.checkState(!headRef.getObjectId().equals(ObjectId.NULL),
-                "HEAD has no history.");
-        currentBranch = headRef.getTarget();
-        revertHead = currHead.get().getObjectId();
+        checkArgument(!(continueRevert && abort), "Cannot continue and abort at the same time");
 
-        Preconditions.checkArgument(!(continueRevert && abort),
-                "Cannot continue and abort at the same time");
+        if (abort) {
+            command(RevertAbort.class).setProgressListener(getProgressListener()).call();
+            return true;
+        }
 
-        // count staged and unstaged changes
-        final boolean indexClean = stagingArea().isClean();
-        final boolean workTreeClean = workingTree().isClean();
-        Preconditions.checkState((indexClean && workTreeClean) || abort || continueRevert,
-                "You must have a clean working tree and index to perform a revert.");
-
+        final Ref currHead;
+        {
+            final Optional<Ref> head = command(RefParse.class).setName(Ref.HEAD).call();
+            checkState(head.isPresent(), "Repository has no HEAD, can't revert.");
+            currHead = head.get();
+            checkState(currHead instanceof SymRef, "Can't revert from detached HEAD");
+            checkState(!currHead.getObjectId().isNull(), "HEAD has no history.");
+            currentBranch = currHead.peel().getName();
+            revertHead = currHead.getObjectId();
+        }
         getProgressListener().started();
 
         // Revert can only be run in a conflicted situation if the abort option is used
         final boolean hasConflicts = conflictsDatabase().hasConflicts(null);
-        Preconditions.checkState(!hasConflicts || abort,
-                "Cannot run operation while merge conflicts exist.");
+        checkState(!hasConflicts || abort, "Cannot run operation while merge conflicts exist.");
 
         Optional<Ref> ref = command(RefParse.class).setName(Ref.ORIG_HEAD).call();
-        if (abort) {
-            Preconditions.checkState(ref.isPresent(),
-                    "Cannot abort. You are not in the middle of a revert process.");
-            command(ResetOp.class).setMode(ResetMode.HARD)
-                    .setCommit(Suppliers.ofInstance(ref.get().getObjectId())).call();
-            command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-            return true;
-        } else if (continueRevert) {
-            Preconditions.checkState(ref.isPresent(),
+        if (continueRevert) {
+            checkState(ref.isPresent(),
                     "Cannot continue. You are not in the middle of a revert process.");
             // Commit the manually-merged changes with the info of the commit that caused the
             // conflict
             applyNextCommit(false);
             // Commit files should already be prepared, so we do nothing else
         } else {
-            Preconditions.checkState(!ref.isPresent(),
+            // count staged and unstaged changes
+            checkState(stagingArea().isClean() && workingTree().isClean(),
+                    "You must have a clean working tree and index to perform a revert.");
+
+            checkState(!ref.isPresent(),
                     "You are currently in the middle of a merge or rebase operation <ORIG_HEAD is present>.");
 
             getProgressListener().started();
 
-            command(UpdateRef.class).setName(Ref.ORIG_HEAD)
-                    .setNewValue(currHead.get().getObjectId()).call();
+            command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(currHead.getObjectId())
+                    .call();
 
             // Here we prepare the files with the info about the commits to apply in reverse
-            List<RevCommit> commitsToRevert = Lists.newArrayList();
             Repository repository = repository();
-            for (ObjectId id : commits) {
-                Preconditions.checkArgument(repository.commitExists(id),
-                        "Commit was not found in the repository: " + id.toString());
-                RevCommit commit = repository.getCommit(id);
-                commitsToRevert.add(commit);
-            }
+            List<RevCommit> commitsToRevert = commits.stream().map(c -> repository.getCommit(c))
+                    .collect(Collectors.toList());
             createRevertCommitsInfoFiles(commitsToRevert);
-
         }
 
         boolean ret;
@@ -301,7 +292,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                         conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(),
                                 node.get().getObjectId(), diff.newObjectId()));
                     } else {
-                        stagingArea().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
+                        stagingArea().stage(getProgressListener(),
+                                Iterators.singletonIterator(diff), 1);
                     }
                 } else {
                     // Feature was added or modified
@@ -310,7 +302,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                     ObjectId nodeId = node.get().getNode().getObjectId();
                     // Make sure it wasn't changed
                     if (node.isPresent() && nodeId.equals(diff.oldObjectId())) {
-                        stagingArea().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
+                        stagingArea().stage(getProgressListener(),
+                                Iterators.singletonIterator(diff), 1);
                     } else {
                         // do not mark as conflict if reverting to the same feature currently in
                         // HEAD

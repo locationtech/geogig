@@ -81,11 +81,11 @@ class RocksdbHandle {
                 .setAdviseRandomOnOpen(true)//
                 .setAllowMmapReads(safeToUseMMappedFiles)//
                 .setAllowMmapWrites(safeToUseMMappedFiles)//
-                .setWriteBufferSize(16 * 1024 * 1024)//
-                .setMaxWriteBufferNumber(8)//
-                .setMaxBackgroundCompactions(2)//
-                .setMinWriteBufferNumberToMerge(4)//
-                .setBytesPerSync(0/* 64 * 1024 * 1024 */)//
+                // .setWriteBufferSize(8 * 1024 * 1024)//
+                // .setMaxWriteBufferNumber(8)//
+                // .setMaxBackgroundCompactions(1)//
+                // .setMinWriteBufferNumberToMerge(4)//
+                // .setBytesPerSync(32 * 1024 * 1024)//
                 // ;// no compression due to a limitation on Windows where the compression library
                 // doesn't come
                 // embedded in rocksdb fat jar

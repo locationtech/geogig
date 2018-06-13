@@ -137,13 +137,13 @@ public class RevTreeBuilderPerformanceTest {
         testBuildUnordered(5000_000);
     }
 
-    // @Ignore
+    //@Ignore
     @Test
     public void testBuilUnordered_04_10M() {
         testBuildUnordered(10_000_000);
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testBuilUnordered_05_50M() {
         testBuildUnordered(50_000_000);

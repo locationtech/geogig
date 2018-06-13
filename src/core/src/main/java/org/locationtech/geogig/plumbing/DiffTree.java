@@ -68,11 +68,13 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     private ChangeType changeTypeFilter;
 
-    private String oldRefSpec;
+    private String oldRefSpec, newRefSpec;
 
-    private String newRefSpec;
+    private ObjectId newTreeId, oldTreeId;
 
-    private boolean reportTrees;
+    private RevTree newTree, oldTree;
+
+    private boolean reportTrees = false, reportFeatures = true;
 
     private boolean recursive;
 
@@ -85,10 +87,6 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     private ObjectStore leftSource;
 
     private ObjectStore rightSource;
-
-    private ObjectId newTreeId;
-
-    private ObjectId oldTreeId;
 
     private boolean preserveIterationOrder = false;
 
@@ -126,28 +124,31 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     /**
      * @param oldRefSpec the ref that points to the "old" version
-     * @return {@code this}
      */
     public DiffTree setOldVersion(String oldRefSpec) {
         this.oldRefSpec = oldRefSpec;
+        this.oldTree = null;
+        this.oldTreeId = null;
         return this;
     }
 
     /**
      * @param newRefSpec the ref that points to the "new" version
-     * @return {@code this}
      */
     public DiffTree setNewVersion(String newRefSpec) {
         this.newRefSpec = newRefSpec;
+        this.newTree = null;
+        this.newTreeId = null;
         return this;
     }
 
     /**
      * @param oldTreeId the {@link ObjectId} of the "old" tree
-     * @return {@code this}
      */
     public DiffTree setOldTree(ObjectId oldTreeId) {
         this.oldTreeId = oldTreeId;
+        this.oldTree = null;
+        this.oldRefSpec = null;
         return this;
     }
 
@@ -157,6 +158,22 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
      */
     public DiffTree setNewTree(ObjectId newTreeId) {
         this.newTreeId = newTreeId;
+        this.newTree = null;
+        this.newRefSpec = null;
+        return this;
+    }
+
+    public DiffTree setOldTree(RevTree oldTree) {
+        this.oldTree = oldTree;
+        this.oldTreeId = null;
+        this.oldRefSpec = null;
+        return this;
+    }
+
+    public DiffTree setNewTree(RevTree newTree) {
+        this.newTree = newTree;
+        this.oldTreeId = null;
+        this.oldRefSpec = null;
         return this;
     }
 
@@ -222,16 +239,18 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     }
 
     public void call(PreOrderDiffWalk.Consumer consumer) {
-        checkArgument(oldRefSpec != null || oldTreeId != null, "old version not specified");
-        checkArgument(newRefSpec != null || oldTreeId != null, "new version not specified");
+        checkArgument(oldRefSpec != null || oldTreeId != null || oldTree != null,
+                "old version not specified");
+        checkArgument(newRefSpec != null || oldTreeId != null || newTree != null,
+                "new version not specified");
         final ObjectStore leftSource;
         final ObjectStore rightSource;
 
         leftSource = this.leftSource == null ? objectDatabase() : this.leftSource;
         rightSource = this.rightSource == null ? objectDatabase() : this.rightSource;
 
-        final RevTree oldTree = resolveTree(oldRefSpec, this.oldTreeId, leftSource);
-        final RevTree newTree = resolveTree(newRefSpec, this.newTreeId, rightSource);
+        final RevTree oldTree = resolveTree(oldRefSpec, this.oldTreeId, this.oldTree, leftSource);
+        final RevTree newTree = resolveTree(newRefSpec, this.newTreeId, this.newTree, rightSource);
 
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
                 rightSource, preserveIterationOrder);
@@ -247,16 +266,19 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
      */
     @Override
     protected AutoCloseableIterator<DiffEntry> _call() throws IllegalArgumentException {
-        checkArgument(oldRefSpec != null || oldTreeId != null, "old version not specified");
-        checkArgument(newRefSpec != null || oldTreeId != null, "new version not specified");
+        checkArgument(oldRefSpec != null || oldTreeId != null || oldTree != null,
+                "old version not specified");
+        checkArgument(newRefSpec != null || oldTreeId != null || newTree != null,
+                "new version not specified");
+
         final ObjectStore leftSource;
         final ObjectStore rightSource;
 
         leftSource = this.leftSource == null ? objectDatabase() : this.leftSource;
         rightSource = this.rightSource == null ? objectDatabase() : this.rightSource;
 
-        final RevTree oldTree = resolveTree(oldRefSpec, this.oldTreeId, leftSource);
-        final RevTree newTree = resolveTree(newRefSpec, this.newTreeId, rightSource);
+        final RevTree oldTree = resolveTree(oldRefSpec, this.oldTreeId, this.oldTree, leftSource);
+        final RevTree newTree = resolveTree(newRefSpec, this.newTreeId, this.newTree, rightSource);
 
         if (oldTree.equals(newTree)) {
             return AutoCloseableIterator.emptyIterator();
@@ -265,6 +287,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
                 rightSource, preserveIterationOrder);
         visitor.setDefaultMetadataId(this.metadataId);
+        visitor.reportFeatures(reportFeatures);
         if (this.nodeOrdering != null) {
             visitor.nodeOrder(nodeOrdering);
         }
@@ -384,11 +407,12 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     }
 
     private RevTree resolveTree(@Nullable final String treeIsh, @Nullable final ObjectId treeOid,
-            final ObjectStore source) {
+            @Nullable RevTree tree, final ObjectStore source) {
 
-        RevTree tree = null;
         ResolveTreeish command = null;
-
+        if (tree != null) {
+            return tree;
+        }
         if (treeOid != null) {
             if (ObjectId.NULL.equals(treeOid) || RevTree.EMPTY_TREE_ID.equals(treeOid)) {
                 tree = RevTree.EMPTY;
@@ -578,6 +602,11 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
      */
     public DiffTree setReportTrees(boolean reportTrees) {
         this.reportTrees = reportTrees;
+        return this;
+    }
+
+    public DiffTree setReportFeatures(boolean reportFeatures) {
+        this.reportFeatures = reportFeatures;
         return this;
     }
 

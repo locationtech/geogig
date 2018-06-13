@@ -252,6 +252,10 @@ public class PreOrderDiffWalk {
 
     private AtomicBoolean finished = new AtomicBoolean(false);
 
+    private boolean reportTrees = true;
+
+    private boolean reportFeatures = true;
+
     public PreOrderDiffWalk(RevTree left, RevTree right, ObjectStore leftSource,
             ObjectStore rightSource) {
         this(left, right, leftSource, rightSource, false);
@@ -303,18 +307,21 @@ public class PreOrderDiffWalk {
 
         final NodeOrdering nodeOrder;
 
+        final boolean reportFeatures;
+
         WalkInfo(CancellableConsumer consumer, SideInfo left, SideInfo right,
-                NodeOrdering nodeOrder) {
+                NodeOrdering nodeOrder, boolean reportFeatures) {
             this.consumer = consumer;
             this.left = left;
             this.right = right;
             this.nodeOrder = nodeOrder;
+            this.reportFeatures = reportFeatures;
         }
 
         public WalkInfo child(NodeRef leftChild, NodeRef rightChild) {
             SideInfo leftInfo = new SideInfo(left.source, leftChild);
             SideInfo rightInfo = new SideInfo(right.source, rightChild);
-            return new WalkInfo(consumer, leftInfo, rightInfo, nodeOrder);
+            return new WalkInfo(consumer, leftInfo, rightInfo, nodeOrder, reportFeatures);
         }
     }
 
@@ -368,7 +375,7 @@ public class PreOrderDiffWalk {
         SideInfo leftInfo = new SideInfo(leftSource, leftRef);
         SideInfo rightInfo = new SideInfo(rightSource, rightRef);
 
-        WalkInfo walkInfo = new WalkInfo(walkConsumer, leftInfo, rightInfo, ORDER);
+        WalkInfo walkInfo = new WalkInfo(walkConsumer, leftInfo, rightInfo, ORDER, reportFeatures);
 
         TraverseTree task = new TraverseTree(walkInfo);
 
@@ -386,6 +393,11 @@ public class PreOrderDiffWalk {
             finished.set(true);
             cleanupForkJoinPool();
         }
+    }
+
+    public PreOrderDiffWalk reportFeatures(boolean report) {
+        this.reportFeatures = report;
+        return this;
     }
 
     private void cleanupForkJoinPool() {
@@ -695,7 +707,9 @@ public class PreOrderDiffWalk {
             final TYPE type = left == null ? right.getType() : left.getType();
 
             if (TYPE.FEATURE.equals(type)) {
-                info.consumer.feature(left, right);
+                if (info.reportFeatures) {
+                    info.consumer.feature(left, right);
+                }
                 return null;
             }
 
@@ -759,11 +773,12 @@ public class PreOrderDiffWalk {
                         ? RevTree.EMPTY
                         : info.right.source.getTree(rightNode.getObjectId());
 
-                TraverseTreeContents traverseTreeContents = new TraverseTreeContents(info, left,
-                        right, BucketIndex.root(left, right));
+                if (info.reportFeatures || (left.numTrees() > 0 || right.numTrees() > 0)) {
+                    TraverseTreeContents traverseTreeContents = new TraverseTreeContents(info, left,
+                            right, BucketIndex.root(left, right));
 
-                traverseTreeContents.compute();
-
+                    traverseTreeContents.compute();
+                }
             }
             info.consumer.endTree(leftNode, rightNode);
         }
@@ -964,7 +979,9 @@ public class PreOrderDiffWalk {
             if (info.consumer.isCancelled()) {
                 return;
             }
-
+            if (!info.reportFeatures && super.left.numTrees() == 0 && super.right.numTrees() == 0) {
+                return;
+            }
             final NodeRef leftParent = info.left.parentRef;
             final NodeRef rightParent = info.right.parentRef;
             final BucketIndex index = super.bucketIndex;

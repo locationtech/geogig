@@ -21,8 +21,8 @@ License
 
 GeoGig is proudly open source:
 
-* Source code is distributed under an [Eclipse Distribution License (EDL)](LICENSE.txt>) unless otherwise stated.
-* For details on third-party dependencies review [NOTICE](NOTICE.txt>)
+* Source code is distributed under an [Eclipse Distribution License (EDL)](LICENSE.txt) unless otherwise stated.
+* For details on third-party dependencies review [NOTICE](NOTICE.txt)
 
 Download
 --------

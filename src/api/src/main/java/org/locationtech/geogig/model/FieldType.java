@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.vividsolutions.jts.geom.GeometryFactory;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
@@ -130,13 +131,13 @@ public enum FieldType {
     FLOAT_ARRAY(0x0E, float[].class, (v) -> ((float[]) v).clone()), //
     DOUBLE_ARRAY(0x0F, double[].class, (v) -> ((double[]) v).clone()), //
     STRING_ARRAY(0x10, String[].class, (v) -> ((String[]) v).clone()), //
-    POINT(0x11, Point.class, (v) -> ((Geometry) v).clone()), //
-    LINESTRING(0x12, LineString.class, (v) -> ((Geometry) v).clone()), //
-    POLYGON(0x13, Polygon.class, (v) -> ((Geometry) v).clone()), //
-    MULTIPOINT(0x14, MultiPoint.class, (v) -> ((Geometry) v).clone()), //
-    MULTILINESTRING(0x15, MultiLineString.class, (v) -> ((Geometry) v).clone()), //
-    MULTIPOLYGON(0x16, MultiPolygon.class, (v) -> ((Geometry) v).clone()), //
-    GEOMETRYCOLLECTION(0x17, GeometryCollection.class, (v) -> ((Geometry) v).clone()), //
+    POINT(0x11, Point.class, v -> GeometryCloner.clone( (Geometry) v) ), //
+    LINESTRING(0x12, LineString.class, v -> GeometryCloner.clone( (Geometry) v) ), //
+    POLYGON(0x13, Polygon.class, v ->GeometryCloner.clone( (Geometry) v) ), //
+    MULTIPOINT(0x14, MultiPoint.class, v -> GeometryCloner.clone( (Geometry) v) ), //
+    MULTILINESTRING(0x15, MultiLineString.class, v -> GeometryCloner.clone( (Geometry) v) ), //
+    MULTIPOLYGON(0x16, MultiPolygon.class, v -> GeometryCloner.clone( (Geometry) v) ), //
+    GEOMETRYCOLLECTION(0x17, GeometryCollection.class, v -> GeometryCloner.clone( (Geometry) v) ), //
     /**
      * a geometry object of an unspecified type
      * 
@@ -144,7 +145,7 @@ public enum FieldType {
      *             geometry types
      * 
      */
-    GEOMETRY(0x18, Geometry.class, (v) -> ((Geometry) v).clone()), //
+    GEOMETRY(0x18, Geometry.class, v -> GeometryCloner.clone( (Geometry) v) ), //
     UUID(0x19, java.util.UUID.class), //
     BIG_INTEGER(0x1A, BigInteger.class), //
     BIG_DECIMAL(0x1B, BigDecimal.class), //

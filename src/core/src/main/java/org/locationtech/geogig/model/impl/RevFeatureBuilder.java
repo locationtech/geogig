@@ -134,10 +134,10 @@ public final class RevFeatureBuilder {
     //ensure direction of the input linear ring
     LinearRing normalize(LineString line,GeometryFactory gf, boolean ccw) {
         // no change required
-        if (CGAlgorithms.isCCW(line.getCoordinates()) == ccw)
+        Coordinate[] coords = line.getCoordinates();
+        if (CGAlgorithms.isCCW(coords) == ccw)
             return (LinearRing) line;
 
-        Coordinate[] coords = line.getCoordinateSequence().toCoordinateArray();
         CoordinateArrays.reverse(coords);
         CoordinateSequence cs;
         int dim =  line.getCoordinateSequence().getDimension();

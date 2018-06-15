@@ -113,10 +113,10 @@ public final class RevFeatureBuilder {
     // JTS doesn't properly normalize polygons if they use PackedCoordinateSequences
     Polygon normalizePolygon(Polygon p) {
         GeometryFactory gf_geogig = p.getFactory();
-        LinearRing outer = normalize(p.getExteriorRing(),gf_geogig);
+        LinearRing outer = normalize(p.getExteriorRing(),gf_geogig,false);
         LinearRing[] holes = new LinearRing[p.getNumInteriorRing()];
         for (int t=0;t<p.getNumInteriorRing();t++)
-            holes[t] = normalize(p.getInteriorRingN(t),gf_geogig);
+            holes[t] = normalize(p.getInteriorRingN(t),gf_geogig,true);
 
         return gf_geogig.createPolygon(outer,holes);
     }
@@ -131,9 +131,10 @@ public final class RevFeatureBuilder {
         return gf_geogig.createMultiPolygon(ps);
     }
 
-    LinearRing normalize(LineString line,GeometryFactory gf) {
+    //ensure direction of the input linear ring
+    LinearRing normalize(LineString line,GeometryFactory gf, boolean ccw) {
         // no change required
-        if (!CGAlgorithms.isCCW(line.getCoordinates()))
+        if (CGAlgorithms.isCCW(line.getCoordinates()) == ccw)
             return (LinearRing) line;
 
         Coordinate[] coords = line.getCoordinateSequence().toCoordinateArray();

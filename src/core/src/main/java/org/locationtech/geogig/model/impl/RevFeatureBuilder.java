@@ -15,6 +15,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.vividsolutions.jts.algorithm.CGAlgorithms;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateArrays;
+import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
@@ -42,6 +51,10 @@ import com.vividsolutions.jts.geom.Polygon;
 public final class RevFeatureBuilder {
 
     private ArrayList</* @Nullable */Object> values = new ArrayList<>(5);
+
+    CoordinateSequenceFactory factory1D = new PackedCoordinateSequenceFactory(0,1);
+    CoordinateSequenceFactory factory2D = new PackedCoordinateSequenceFactory(0,2);
+    CoordinateSequenceFactory factory3D = new PackedCoordinateSequenceFactory(0,3);
 
     private RevFeatureBuilder() {
         //
@@ -97,24 +110,69 @@ public final class RevFeatureBuilder {
         return this;
     }
 
-    Geometry normalizeIfNeeded(Geometry value) {
-        if (value instanceof Polygon) {
-            value.normalize();
-        } else if (value instanceof MultiPolygon
-                || GeometryCollection.class.equals(value.getClass())) {// ignore
-                                                                       // multipoint/linestring
-            normalize((GeometryCollection) value);
-        }
+    // JTS doesn't properly normalize polygons if they use PackedCoordinateSequences
+    Polygon normalizePolygon(Polygon p) {
+        GeometryFactory gf_geogig = p.getFactory();
+        LinearRing outer = normalize(p.getExteriorRing(),gf_geogig,false);
+        LinearRing[] holes = new LinearRing[p.getNumInteriorRing()];
+        for (int t=0;t<p.getNumInteriorRing();t++)
+            holes[t] = normalize(p.getInteriorRingN(t),gf_geogig,true);
 
-        return value;
+        return gf_geogig.createPolygon(outer,holes);
     }
 
-    private void normalize(GeometryCollection col) {
-        for (int i = 0; i < col.getNumGeometries(); i++) {
-            Geometry geometryN = col.getGeometryN(i);
-            normalizeIfNeeded(geometryN);
-        }
+    MultiPolygon normalizeMultiPolygon(MultiPolygon mp) {
+        GeometryFactory gf_geogig = mp.getFactory();
 
+        Polygon[] ps = new Polygon[mp.getNumGeometries()];
+        for (int t=0;t<mp.getNumGeometries();t++)
+            ps[t] = normalizePolygon((Polygon)mp.getGeometryN(t));
+
+        return gf_geogig.createMultiPolygon(ps);
+    }
+
+    //ensure direction of the input linear ring
+    LinearRing normalize(LineString line,GeometryFactory gf, boolean ccw) {
+        // no change required
+        Coordinate[] coords = line.getCoordinates();
+        if (CGAlgorithms.isCCW(coords) == ccw)
+            return (LinearRing) line;
+
+        CoordinateArrays.reverse(coords);
+        CoordinateSequence cs;
+        int dim =  line.getCoordinateSequence().getDimension();
+        if (dim ==2)
+            cs = factory2D.create(coords);
+        else if (dim==3)
+            cs = factory3D.create(coords);
+        else
+            cs = factory1D.create(coords);
+        return gf.createLinearRing(cs);
+    }
+
+    //This will normalize the geometry -- it ONLY makes sure the rings are CW
+    // This will create a new CoordinateSequence for the geometry
+    // (and make new polygons/multipolygon/geometrycollections).  These will be
+    // PackedCoordinateSequences of the same dimension as the geometry's coord sequence
+    Geometry normalizeIfNeeded(Geometry value) {
+        if (value instanceof Polygon) {
+           return normalizePolygon((Polygon) value);
+        } else if (value instanceof MultiPolygon) {
+            return normalizeMultiPolygon((MultiPolygon) value);
+        } else if ( GeometryCollection.class.equals(value.getClass())) {
+           return normalize((GeometryCollection) value);
+        }
+        return value; // point,line,multipoint,multiline
+    }
+
+    private GeometryCollection normalize(GeometryCollection col) {
+        GeometryFactory gf_geogig = col.getFactory();
+
+        Geometry[] gs = new Geometry[col.getNumGeometries()];
+        for (int t=0;t<col.getNumGeometries();t++)
+            gs[t] = normalizeIfNeeded(col.getGeometryN(t));
+
+        return gf_geogig.createGeometryCollection(gs);
     }
 
     private Object safeCopy(@Nullable Object value) {

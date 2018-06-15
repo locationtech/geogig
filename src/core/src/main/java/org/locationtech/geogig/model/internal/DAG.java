@@ -25,7 +25,6 @@ import java.util.function.Consumer;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.storage.datastream.Varint;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -296,17 +295,17 @@ class DAG implements Cloneable, Serializable {
 
         treeId.writeTo(out);
         out.writeByte(state.ordinal());
-        Varint.writeUnsignedVarLong(childCount, out);
+        out.writeLong(childCount);
 
-        Varint.writeUnsignedVarInt(children.size(), out);
-        Varint.writeUnsignedVarInt(buckets.size(), out);
+        out.writeInt(children.size());
+        out.writeShort(buckets.size());
 
         for (NodeId nodeid : children) {
             NodeId.write(nodeid, out);
         }
         for (TreeId tid : buckets) {
             byte[] bucketIndicesByDepth = tid.bucketIndicesByDepth;
-            Varint.writeUnsignedVarInt(bucketIndicesByDepth.length, out);
+            out.writeShort(bucketIndicesByDepth.length);
             out.write(bucketIndicesByDepth);
         }
     }
@@ -314,10 +313,10 @@ class DAG implements Cloneable, Serializable {
     public static DAG deserialize(TreeId id, DataInput in) throws IOException {
         final ObjectId treeId = ObjectId.readFrom(in);
         final STATE state = STATE.values()[in.readByte() & 0xFF];
-        final long childCount = Varint.readUnsignedVarLong(in);
+        final long childCount = in.readLong();
 
-        final int childrenSize = Varint.readUnsignedVarInt(in);
-        final int bucketSize = Varint.readUnsignedVarInt(in);
+        final int childrenSize = in.readInt();
+        final int bucketSize = in.readShort();
 
         Set<NodeId> children = ImmutableSet.of();
         Set<TreeId> buckets = ImmutableSet.of();
@@ -332,7 +331,7 @@ class DAG implements Cloneable, Serializable {
         if (bucketSize > 0) {
             buckets = new HashSet<>();
             for (int i = 0; i < bucketSize; i++) {
-                final int len = Varint.readUnsignedVarInt(in);
+                final int len = in.readShort();
                 final byte[] bucketIndicesByDepth = new byte[len];
                 in.readFully(bucketIndicesByDepth);
                 buckets.add(new TreeId(bucketIndicesByDepth));

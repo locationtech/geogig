@@ -11,10 +11,12 @@ package org.locationtech.geogig.model.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -26,10 +28,12 @@ import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -54,7 +58,9 @@ class RocksdbDAGStore {
             // enable bloom filter to speed up RocksDB.get() calls
             BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
             bloomFilter = new BloomFilter();
-            tableFormatConfig.setFilter(bloomFilter);
+            // tableFormatConfig.setFilter(bloomFilter);
+            // tableFormatConfig.setBlockSize(64 * 1024);
+            // tableFormatConfig.setBlockCacheSize(4 * 1024 * 1024);
 
             colFamilyOptions = new ColumnFamilyOptions();
             colFamilyOptions.setTableFormatConfig(tableFormatConfig);
@@ -71,7 +77,7 @@ class RocksdbDAGStore {
         writeOptions.setSync(false);
 
         readOptions = new ReadOptions();
-        readOptions.setFillCache(false).setVerifyChecksums(false);
+        readOptions.setFillCache(true).setVerifyChecksums(false);
     }
 
     public void close() {
@@ -113,44 +119,36 @@ class RocksdbDAGStore {
     }
 
     public List<DAG> getTrees(final Set<TreeId> ids) throws NoSuchElementException {
-        return getInternal(ids);
+        return getInternal2(ids);
     }
 
-    private List<DAG> getInternal(final Set<TreeId> ids) throws NoSuchElementException {
-        List<DAG> res = new ArrayList<>(ids.size());
-        byte[] valueBuff = new byte[16 * 1024];
-        ids.forEach((id) -> {
-            byte[] key = toKey(id);
-            byte[] val = valueBuff;
-            try {
-                int size = db.get(column, readOptions, key, val);
-                if (RocksDB.NOT_FOUND == size) {
-                    throw new NoSuchElementException("TreeId " + id + " not found");
-                }
-                if (size > valueBuff.length) {
-                    val = db.get(column, readOptions, key);
-                }
-                DAG dag = decode(id, val);
-                res.add(dag);
-            } catch (RocksDBException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        Preconditions.checkState(res.size() == ids.size());
+    private List<DAG> getInternal2(final Set<TreeId> ids) throws NoSuchElementException {
+        Map<byte[], byte[]> multiGet;
+        try {
+            multiGet = db.multiGet(readOptions, Collections.nCopies(ids.size(), column),
+                    Lists.transform(new ArrayList<>(ids), id -> toKey(id)));
 
-        return res;
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
+        Preconditions.checkState(multiGet.size() == ids.size());
+
+        return multiGet.entrySet().stream().map(e -> decode(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
     }
 
     public void putAll(Map<TreeId, DAG> dags) {
         Map<TreeId, DAG> changed = Maps.filterValues(dags, (d) -> d.isMutated());
 
-        changed.forEach((id, dag) -> {
-            try {
-                db.put(column, writeOptions, toKey(id), encode(dag));
-            } catch (RocksDBException e) {
-                throw new RuntimeException(e);
+        try (WriteBatch batch = new WriteBatch()) {
+            for (Map.Entry<TreeId, DAG> e : changed.entrySet()) {
+                batch.put(column, toKey(e.getKey()), encode(e.getValue()));
+                // db.put(column, writeOptions, toKey(e.getKey()), encode(e.getValue()));
             }
-        });
+            db.write(writeOptions, batch);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void putInternal(byte[] key, DAG dag) {
@@ -164,6 +162,14 @@ class RocksdbDAGStore {
 
     private byte[] toKey(TreeId treeId) {
         return treeId.bucketIndicesByDepth;
+    }
+
+    private TreeId fromKey(byte[] key) {
+        return new TreeId(key);
+    }
+
+    private DAG decode(byte[] id, byte[] value) {
+        return decode(fromKey(id), value);
     }
 
     private DAG decode(TreeId id, byte[] value) {

@@ -15,7 +15,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 
 //simple class that clones a geometry, and resets the CoordinateSequences  to
 // CoordinateArraySequences
-public class GeometryCloner {
+class GeometryCloner {
 
         static GeometryFactory gf = new GeometryFactory();
 

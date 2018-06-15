@@ -12,6 +12,7 @@ package org.locationtech.geogig.model;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -19,7 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -379,13 +380,13 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @param path non null, possibly empty path
      * @return a list of path steps, or an empty list if the path is empty
      */
-    public static ImmutableList<String> split(final String path) {
+    public static List<String> split(final String path) {
         checkNotNull(path);
-        if (path.isEmpty()) {
-            return ImmutableList.of();
+        if (NodeRef.ROOT.equals(path)) {
+            return new ArrayList<>();
         }
-        final String[] steps = path.split("" + PATH_SEPARATOR);
-        return ImmutableList.copyOf(steps);
+        List<String> split = Splitter.on(PATH_SEPARATOR).splitToList(path);
+        return split;
     }
 
     /**
@@ -442,8 +443,8 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      */
     public static String removeParent(final String parentPath, final String childPath) {
         checkArgument(isChild(parentPath, childPath));
-        ImmutableList<String> parent = split(parentPath);
-        ImmutableList<String> child = split(childPath);
+        List<String> parent = split(parentPath);
+        List<String> child = split(childPath);
         child = child.subList(parent.size(), child.size());
         String strippedChildPath = child.get(0);
         for (int i = 1; i < child.size(); i++) {

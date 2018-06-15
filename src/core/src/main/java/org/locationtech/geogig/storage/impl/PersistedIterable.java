@@ -139,23 +139,33 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
     }
 
     public void addAll(Iterable<T> collection) {
-        for (T t : collection) {
-            add(t);
-        }
-    };
-
-    public void add(@NonNull T value) {
-        checkNotNull(value);
+        checkNotNull(collection);
         lock.writeLock().lock();
         try {
-            this.buffer.add(value);
-            this.size++;
-            if (buffer.size() == bufferSize) {
-                save();
-                buffer.clear();
+            for (T t : collection) {
+                addInternal(t);
             }
         } finally {
             lock.writeLock().unlock();
+        }
+    }
+
+    public void add(@NonNull T value) {
+        lock.writeLock().lock();
+        try {
+            addInternal(value);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private void addInternal(@NonNull T value) {
+        checkNotNull(value);
+        this.buffer.add(value);
+        this.size++;
+        if (buffer.size() == bufferSize) {
+            save();
+            buffer.clear();
         }
     }
 

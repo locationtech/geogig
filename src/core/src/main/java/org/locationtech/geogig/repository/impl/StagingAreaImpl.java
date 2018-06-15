@@ -148,6 +148,11 @@ public class StagingAreaImpl implements StagingArea {
             final long numChanges) {
         int i = 0;
         progress.started();
+        if (numChanges > 0) {
+            progress.setMaxProgress(numChanges);
+        } else {
+            progress.setMaxProgress(-1);
+        }
 
         final RevTree currentIndexHead = getTree();
 

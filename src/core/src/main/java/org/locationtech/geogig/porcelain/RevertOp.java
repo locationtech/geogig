@@ -9,17 +9,24 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.impl.Blobs.putBlob;
 import static org.locationtech.geogig.storage.impl.Blobs.readLines;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.DiffEntry;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -27,24 +34,30 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.DiffTree;
-import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.WriteTree2;
+import org.locationtech.geogig.plumbing.merge.ConflictsUtils;
 import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
-import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.impl.PersistedIterable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 
 /**
  * Given one or more existing commits, revert the changes that the related patches introduce, and
@@ -54,6 +67,8 @@ import com.google.common.collect.Lists;
  */
 @CanRunDuringConflict
 public class RevertOp extends AbstractGeoGigOp<Boolean> {
+
+    private static final Logger log = LoggerFactory.getLogger(RevertOp.class);
 
     private static final String REVERT_PREFIX = "revert/";
 
@@ -78,12 +93,16 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
      * @return {@code this}
      */
     public RevertOp addCommit(final Supplier<ObjectId> commit) {
-        Preconditions.checkNotNull(commit);
+        return addCommit(commit.get());
+    }
+
+    public RevertOp addCommit(final ObjectId commit) {
+        checkNotNull(commit);
 
         if (this.commits == null) {
             this.commits = new ArrayList<ObjectId>();
         }
-        this.commits.add(commit.get());
+        this.commits.add(commit);
         return this;
     }
 
@@ -128,70 +147,57 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
      * 
      * @return always {@code true}
      */
-    @Override
-    protected Boolean _call() {
+    protected @Override Boolean _call() {
 
-        final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions.checkState(currHead.isPresent(), "Repository has no HEAD, can't revert.");
-        Preconditions.checkState(currHead.get() instanceof SymRef,
-                "Can't revert from detached HEAD");
-        final SymRef headRef = (SymRef) currHead.get();
-        Preconditions.checkState(!headRef.getObjectId().equals(ObjectId.NULL),
-                "HEAD has no history.");
-        currentBranch = headRef.getTarget();
-        revertHead = currHead.get().getObjectId();
+        checkArgument(!(continueRevert && abort), "Cannot continue and abort at the same time");
 
-        Preconditions.checkArgument(!(continueRevert && abort),
-                "Cannot continue and abort at the same time");
+        if (abort) {
+            command(RevertAbort.class).setProgressListener(getProgressListener()).call();
+            return true;
+        }
 
-        // count staged and unstaged changes
-        final boolean indexClean = stagingArea().isClean();
-        final boolean workTreeClean = workingTree().isClean();
-        Preconditions.checkState((indexClean && workTreeClean) || abort || continueRevert,
-                "You must have a clean working tree and index to perform a revert.");
-
+        final Ref currHead;
+        {
+            final Optional<Ref> head = command(RefParse.class).setName(Ref.HEAD).call();
+            checkState(head.isPresent(), "Repository has no HEAD, can't revert.");
+            currHead = head.get();
+            checkState(currHead instanceof SymRef, "Can't revert from detached HEAD");
+            checkState(!currHead.getObjectId().isNull(), "HEAD has no history.");
+            currentBranch = currHead.peel().getName();
+            revertHead = currHead.getObjectId();
+        }
         getProgressListener().started();
 
         // Revert can only be run in a conflicted situation if the abort option is used
         final boolean hasConflicts = conflictsDatabase().hasConflicts(null);
-        Preconditions.checkState(!hasConflicts || abort,
-                "Cannot run operation while merge conflicts exist.");
+        checkState(!hasConflicts || abort, "Cannot run operation while merge conflicts exist.");
 
         Optional<Ref> ref = command(RefParse.class).setName(Ref.ORIG_HEAD).call();
-        if (abort) {
-            Preconditions.checkState(ref.isPresent(),
-                    "Cannot abort. You are not in the middle of a revert process.");
-            command(ResetOp.class).setMode(ResetMode.HARD)
-                    .setCommit(Suppliers.ofInstance(ref.get().getObjectId())).call();
-            command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-            return true;
-        } else if (continueRevert) {
-            Preconditions.checkState(ref.isPresent(),
+        if (continueRevert) {
+            checkState(ref.isPresent(),
                     "Cannot continue. You are not in the middle of a revert process.");
             // Commit the manually-merged changes with the info of the commit that caused the
             // conflict
             applyNextCommit(false);
             // Commit files should already be prepared, so we do nothing else
         } else {
-            Preconditions.checkState(!ref.isPresent(),
+            // count staged and unstaged changes
+            checkState(stagingArea().isClean() && workingTree().isClean(),
+                    "You must have a clean working tree and index to perform a revert.");
+
+            checkState(!ref.isPresent(),
                     "You are currently in the middle of a merge or rebase operation <ORIG_HEAD is present>.");
 
             getProgressListener().started();
 
-            command(UpdateRef.class).setName(Ref.ORIG_HEAD)
-                    .setNewValue(currHead.get().getObjectId()).call();
+            command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(currHead.getObjectId())
+                    .call();
 
             // Here we prepare the files with the info about the commits to apply in reverse
-            List<RevCommit> commitsToRevert = Lists.newArrayList();
             Repository repository = repository();
-            for (ObjectId id : commits) {
-                Preconditions.checkArgument(repository.commitExists(id),
-                        "Commit was not found in the repository: " + id.toString());
-                RevCommit commit = repository.getCommit(id);
-                commitsToRevert.add(commit);
-            }
+            List<RevCommit> commitsToRevert = commits.stream().map(c -> repository.getCommit(c))
+                    .collect(Collectors.toList());
             createRevertCommitsInfoFiles(commitsToRevert);
-
         }
 
         boolean ret;
@@ -226,7 +232,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
 
     }
 
-    private boolean applyNextCommit(boolean useCommitChanges) {
+    private boolean applyNextCommit(final boolean useCommitChanges) {
         Repository repository = repository();
         List<String> nextFile = readLines(context().blobStore(), NEXT);
 
@@ -238,29 +244,32 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         }
         String commitId = commitFile.get(0);
         RevCommit commit = repository.getCommit(ObjectId.valueOf(commitId));
-        List<Conflict> conflicts = Lists.newArrayList();
-        if (useCommitChanges) {
-            conflicts = applyRevertedChanges(commit);
-        }
-        if (createCommit && conflicts.isEmpty()) {
-            createCommit(commit);
-        } else {
-            workingTree().updateWorkHead(repository.index().getTree().getId());
-            if (!conflicts.isEmpty()) {
-                // mark conflicted elements
-                command(ConflictsWriteOp.class).setConflicts(conflicts).call();
+        try (PersistedIterable<Conflict> conflicts = ConflictsUtils.newTemporaryConflictStream()) {
+            if (useCommitChanges) {
+                applyRevertedChanges(commit, conflicts);
+            }
+            final long numConflicts = conflicts.size();
+            if (createCommit && 0L == numConflicts) {
+                createCommit(commit);
+            } else {
+                workingTree().updateWorkHead(repository.index().getTree().getId());
+                if (numConflicts > 0L) {
+                    // mark conflicted elements
+                    command(ConflictsWriteOp.class).setConflicts(conflicts).call();
 
-                // created exception message
-                StringBuilder msg = new StringBuilder();
-                msg.append("error: could not apply ");
-                msg.append(commit.getId().toString().substring(0, 8));
-                msg.append(" " + commit.getMessage() + "\n");
+                    // created exception message
+                    StringBuilder msg = new StringBuilder();
+                    msg.append("error: could not apply ");
+                    msg.append(commit.getId().toString().substring(0, 8));
+                    msg.append(" " + commit.getMessage() + "\n");
 
-                for (Conflict conflict : conflicts) {
-                    msg.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
+                    Lists.newArrayList(Iterators.limit(conflicts.iterator(), 50)).forEach(c -> msg
+                            .append("CONFLICT: conflict in ").append(c.getPath()).append("\n"));
+                    if (numConflicts > 50) {
+                        msg.append(String.format("And %,d more...", numConflicts - 50));
+                    }
+                    throw new RevertConflictsException(msg.toString());
                 }
-
-                throw new RevertConflictsException(msg.toString());
             }
         }
         context().blobStore().removeBlob(commitBlobName);
@@ -269,64 +278,182 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         return true;
     }
 
-    private List<Conflict> applyRevertedChanges(RevCommit commit) {
+    private void applyRevertedChanges(final RevCommit commit,
+            PersistedIterable<Conflict> conflictsTarget) {
 
-        ObjectId parentCommitId = ObjectId.NULL;
-        if (commit.getParentIds().size() > 0) {
-            parentCommitId = commit.getParentIds().get(0);
-        }
-        ObjectId parentTreeId = ObjectId.NULL;
-        Repository repository = repository();
-        if (repository.commitExists(parentCommitId)) {
-            parentTreeId = repository.getCommit(parentCommitId).getTreeId();
-        }
+        final ProgressListener progress = getProgressListener();
 
-        ArrayList<Conflict> conflicts = new ArrayList<Conflict>();
+        progress.setDescription("Reverting commit " + commit.getId());
+
+        final Repository repository = repository();
+        final ObjectId parentCommitId = commit.getParentIds().isEmpty() ? ObjectId.NULL
+                : commit.getParentIds().get(0);
+
+        final ObjectId parentTreeId = parentCommitId.isNull() ? RevTree.EMPTY_TREE_ID : //
+                repository.commitExists(parentCommitId)
+                        ? repository.getCommit(parentCommitId).getTreeId()
+                        : RevTree.EMPTY_TREE_ID;
+
         // get changes (in reverse)
-        try (AutoCloseableIterator<DiffEntry> reverseDiff = command(DiffTree.class)
-                .setNewTree(parentTreeId).setOldTree(commit.getTreeId()).setReportTrees(false)
-                .call()) {
+        final DiffTree reverseDiffCommand = command(DiffTree.class)//
+                .setNewTree(parentTreeId)//
+                .setOldTree(commit.getTreeId())//
+                .setReportTrees(false)//
+                .setPreserveIterationOrder(true);
 
-            ObjectId headTreeId = repository.getCommit(revertHead).getTreeId();
-            final RevTree headTree = repository.getTree(headTreeId);
-            DiffEntry diff;
-            while (reverseDiff.hasNext()) {
-                diff = reverseDiff.next();
-                if (diff.isAdd()) {
-                    // Feature was deleted
-                    Optional<NodeRef> node = command(FindTreeChild.class)
-                            .setChildPath(diff.newPath()).setParent(headTree).call();
-                    // make sure it is still deleted
-                    if (node.isPresent()) {
-                        conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(),
-                                node.get().getObjectId(), diff.newObjectId()));
-                    } else {
-                        stagingArea().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
-                    }
-                } else {
-                    // Feature was added or modified
-                    Optional<NodeRef> node = command(FindTreeChild.class)
-                            .setChildPath(diff.oldPath()).setParent(headTree).call();
-                    ObjectId nodeId = node.get().getNode().getObjectId();
-                    // Make sure it wasn't changed
-                    if (node.isPresent() && nodeId.equals(diff.oldObjectId())) {
-                        stagingArea().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
-                    } else {
-                        // do not mark as conflict if reverting to the same feature currently in
-                        // HEAD
-                        if (!nodeId.equals(diff.newObjectId())) {
-                            conflicts.add(new Conflict(diff.oldPath(), diff.oldObjectId(),
-                                    node.get().getObjectId(), diff.newObjectId()));
+        // get changes from current tip up to the commit being reversed
+        final DiffTree branchDiffCommand = command(DiffTree.class)//
+                .setNewTree(revertHead)//
+                .setOldTree(commit.getId())//
+                .setReportTrees(false)//
+                .setPreserveIterationOrder(true);
+
+        progress.setMaxProgress(-1);
+
+        try (PersistedIterable<DiffEntry> diffs = ConflictsUtils.newTemporaryDiffEntryStream()) {
+            final Function<ProgressListener, String> oldProgressIndicator = progress
+                    .progressIndicator();
+            int count = 0;
+            progress.setProgressIndicator(
+                    p -> String.format("Processed %,d features (%,d conflicts)", diffs.size(),
+                            conflictsTarget.size()));
+
+            Stopwatch sw = Stopwatch.createStarted();
+            try (AutoCloseableIterator<DiffEntry> reverseDiff = reverseDiffCommand.call()) { //
+
+                String msg = String.format("Creating revert state of commit %s (%s)",
+                        commit.getId(), commit.getMessage());
+                log.info(msg);
+                System.err.println(msg);
+
+                final Iterator<List<DiffEntry>> partitions = Iterators.partition(reverseDiff,
+                        10_000);
+                while (partitions.hasNext()) {
+
+                    List<DiffEntry> partition = partitions.next();
+                    branchDiffCommand.setPathFilter(Lists.transform(partition, e -> e.path()));
+
+                    try (AutoCloseableIterator<DiffEntry> headToCommitDiff = branchDiffCommand
+                            .call()) {
+
+                        Iterator<DiffTuple> mergeSortDiff = mergeSortDiff(headToCommitDiff,
+                                partition.iterator());
+
+                        while (mergeSortDiff.hasNext()) {
+                            final DiffTuple tuple = mergeSortDiff.next();
+                            @Nullable
+                            DiffEntry left = tuple.left;
+                            final DiffEntry right = tuple.right;
+                            progress.setProgress(++count);
+                            if (null == left) {
+                                diffs.add(right);
+                                continue;
+                            }
+
+                            if (right.isAdd()) {
+                                // Feature was deleted
+                                ObjectId ancestor = right.oldObjectId();
+                                ObjectId ours = left.newObjectId();
+                                ObjectId theirs = right.newObjectId();
+                                conflictsTarget
+                                        .add(new Conflict(right.path(), ancestor, ours, theirs));
+                            } else {
+                                // Feature was added or modified
+                                ObjectId ours = left.newObjectId();
+                                // Make sure it wasn't changed
+                                // do not mark as conflict if reverting to the same feature
+                                // currently in
+                                // HEAD
+                                if (ours.equals(right.oldObjectId())) {
+                                    diffs.add(right);
+                                } else if (!ours.equals(right.newObjectId())) {
+                                    ObjectId ancestor = right.oldObjectId();
+                                    ObjectId theirs = right.newObjectId();
+                                    conflictsTarget.add(
+                                            new Conflict(right.oldPath(), ancestor, ours, theirs));
+                                }
+                            }
                         }
                     }
+                }
+                progress.setProgressIndicator(oldProgressIndicator);
+            }
 
+            String msg = String.format("Created revert state of %,d features in %s", count,
+                    sw.stop());
+            log.info(msg);
+            System.err.println(msg);
+            StagingArea stagingArea = stagingArea();
+
+            msg = String.format("Staging %,d changes...", diffs.size());
+            log.info(msg);
+            System.err.println(msg);
+            progress.setDescription(msg);
+            sw = Stopwatch.createStarted();
+            stagingArea.stage(progress, diffs.iterator(), diffs.size());
+            msg = String.format("%,d changes staged in %s\n", diffs.size(), sw.stop());
+            log.info(msg);
+            System.err.println(msg);
+        }
+    }
+
+    private static class DiffTuple {
+        //@formatter:off
+        final @Nullable DiffEntry left, right;
+        public DiffTuple(DiffEntry left, DiffEntry right) {this.left = left;this.right = right;}
+        static DiffTuple of(DiffEntry left, DiffEntry right) { return new DiffTuple(left, right); }
+        //@formatter:on
+    }
+
+    private static final Comparator<DiffEntry> comparator = (l, r) -> {
+        checkNotNull(l);
+        checkNotNull(r);
+        return CanonicalNodeNameOrder.INSTANCE.compare(l.name(), r.name());
+    };
+
+    private Iterator<DiffTuple> mergeSortDiff(final Iterator<DiffEntry> leftMerge,
+            final Iterator<DiffEntry> rightMerge) {
+
+        return new AbstractIterator<RevertOp.DiffTuple>() {
+
+            final PeekingIterator<DiffEntry> left = Iterators.peekingIterator(leftMerge);
+
+            final PeekingIterator<DiffEntry> right = Iterators.peekingIterator(rightMerge);
+
+            protected @Override DiffTuple computeNext() {
+                DiffEntry peekLeft = left.hasNext() ? left.peek() : null;
+                DiffEntry peekRight = right.hasNext() ? right.peek() : null;
+                if (null == peekLeft && null == peekRight) {
+                    return endOfData();
+                }
+                if (null == peekLeft) { // no more entries at left
+                    return DiffTuple.of(null, right.next());
+                }
+                if (null == peekRight) {// no more entries at right, no need to continue
+                    return endOfData();
+                }
+                // skip all left entries that are lower than right
+                while (peekLeft != null && comparator.compare(peekLeft, peekRight) < 0) {
+                    left.next();// consume peekLeft
+                    peekLeft = left.hasNext() ? left.peek() : null;
+                }
+                if (null == peekLeft) { // no more entries at left
+                    return DiffTuple.of(null, right.next());
                 }
 
+                DiffEntry lde, rde;
+                int c = comparator.compare(peekLeft, peekRight);
+                Preconditions.checkState(c >= 0);
+                if (c == 0) {
+                    lde = left.next();
+                    rde = right.next();
+                } else {
+                    lde = null;
+                    rde = right.next();
+                }
+                return DiffTuple.of(lde, rde);
             }
-        }
-
-        return conflicts;
-
+        };
     }
 
     private void createCommit(RevCommit commit) {

@@ -164,7 +164,7 @@ public class MutableTree implements Cloneable {
     }
 
     public void forceChild(final String parentPath, final Node treeNode) {
-        ImmutableList<String> parentSteps = NodeRef.split(parentPath);
+        List<String> parentSteps = NodeRef.split(parentPath);
         MutableTree parent = this;
         for (String name : parentSteps) {
             MutableTree child = parent.childTrees.get(name);

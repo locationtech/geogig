@@ -10,20 +10,17 @@
 package org.locationtech.geogig.plumbing.diff;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 /**
  * A helper class for {@link PathFilteringDiffConsumer} that evaluates whether path filters apply
@@ -33,27 +30,104 @@ import com.google.common.collect.ImmutableList;
  */
 final class DiffPathFilter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiffPathFilter.class);
-
-    private static final CanonicalNodeNameOrder ORDER = CanonicalNodeNameOrder.INSTANCE;
-
-    private List<String> pathFilters;
+    private PathFilter pathFilter;
 
     public DiffPathFilter(List<String> filters) {
         Preconditions.checkNotNull(filters, "filter list is null");
         Preconditions.checkArgument(!filters.isEmpty(), "Don't use an empty filter list");
-        this.pathFilters = new ArrayList<String>(new HashSet<String>(filters));
-        for (String s : this.pathFilters) {
-            if (Strings.isNullOrEmpty(s)) {
-                throw new IllegalArgumentException(
-                        String.format("Empty or null filters not allowed: %s",
-                                Arrays.toString(this.pathFilters.toArray())));
-            }
+        pathFilter = new PathFilter(NodeRef.ROOT);
+        for (String f : filters) {
+            Preconditions.checkArgument(!Strings.isNullOrEmpty(f));
+            pathFilter.add(NodeRef.split(f));
         }
     }
 
-    public String name(Node left, Node right) {
-        return left == null ? right.getName() : left.getName();
+    private static final class PathFilter {
+        final String name;
+
+        Map<String, PathFilter> children = null;
+
+        PathFilter(String name) {
+            this.name = name;
+        }
+
+        public void add(List<String> path) {
+            Preconditions.checkArgument(!path.isEmpty());
+            if (children == null) {
+                children = new HashMap<>();
+            }
+            String child = path.get(0);
+            PathFilter childFilter = children.computeIfAbsent(child, c -> new PathFilter(c));
+            if (path.size() > 1) {
+                childFilter.add(path.subList(1, path.size()));
+            }
+        }
+
+        public boolean applies(final List<String> path) {
+            final String root = path.get(0);
+            if (name.equals(root)) {
+                if (children == null) {
+                    return true;// all children apply
+                }
+                if (path.size() == 1) {
+                    return true;// reached the end of the argument path
+                }
+                List<String> childrenPath = path.subList(1, path.size());
+                final String child = childrenPath.get(0);
+                PathFilter childFilter = children.get(child);
+                if (childFilter == null) {
+                    return false;
+                }
+                return childFilter.applies(childrenPath);
+            }
+            return false;
+        }
+
+        public PathFilter find(List<String> childPath) {
+            Preconditions.checkState(children != null);
+            Preconditions.checkArgument(!childPath.isEmpty());
+
+            final String root = childPath.get(0);
+            Preconditions.checkArgument(name.equals(root));
+            if (1 == childPath.size()) {
+                return this;
+            }
+            PathFilter childFilter = children.get(childPath.get(1));
+            Preconditions.checkArgument(childFilter != null);
+            return childFilter.find(childPath.subList(1, childPath.size()));
+        }
+
+        public boolean bucketApplies(BucketIndex bucketIndex) {
+            final int[] myIndices = getBucketIndices();
+            final int[] bucketIndices = bucketIndex.getIndexPath();
+            for (int i = 0; i < bucketIndices.length; i++) {
+                int ours = myIndices[i];
+                int theirs = bucketIndices[i];
+                if (ours != theirs) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private int[] bucketIndices;
+
+        private int[] getBucketIndices() {
+            if (bucketIndices == null) {
+                bucketIndices = CanonicalNodeNameOrder.allBuckets(this.name);
+            }
+            return bucketIndices;
+        }
+    }
+
+    public List<String> toPath(String path, @Nullable String node) {
+        ArrayList<String> pathlist = new ArrayList<>();
+        pathlist.add(NodeRef.ROOT);
+        pathlist.addAll(NodeRef.split(path));
+        if (node != null) {
+            pathlist.add(node);
+        }
+        return pathlist;
     }
 
     /**
@@ -73,26 +147,8 @@ final class DiffPathFilter {
      *         filters
      */
     public boolean treeApplies(final String treePath) {
-        String filter;
-        boolean applies = false;
-        for (int i = 0; i < pathFilters.size(); i++) {
-            filter = pathFilters.get(i);
-            if (filter.equals(treePath)) {
-                applies = true;
-            } else {
-                boolean filterIsChildOfTree = NodeRef.isChild(treePath, filter);
-                if (filterIsChildOfTree) {
-                    applies = true;
-                }
-            }
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("Filter: '{}', tree: '{}', applies: {}", filter, treePath, applies);
-            }
-            if (applies) {
-                return true;
-            }
-        }
-        return false;
+        boolean applies = pathFilter.applies(toPath(treePath, null));
+        return applies;
     }
 
     /**
@@ -111,34 +167,16 @@ final class DiffPathFilter {
      * @return
      */
     public boolean bucketApplies(final String treePath, final BucketIndex bucketIndex) {
-        String filter;
-        for (int i = 0; i < pathFilters.size(); i++) {
-            filter = pathFilters.get(i);
-            if (filter.equals(treePath)) {
-                // all buckets apply
-                if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace("Filter: '{}', tree: '{}', bucket idx {}, applies: {}", filter,
-                            treePath, bucketIndex, true);
-                }
+        // if we got here, then tree applies
+        final PathFilter treeFilter = this.pathFilter.find(toPath(treePath, null));
+        if (treeFilter.children == null) {
+            return true;
+        }
+
+        Map<String, PathFilter> childFilters = treeFilter.children;
+        for (PathFilter childFilter : childFilters.values()) {
+            if (childFilter.bucketApplies(bucketIndex)) {
                 return true;
-            }
-            boolean filterIsChildOfTree = NodeRef.isChild(treePath, filter);
-            if (filterIsChildOfTree) {
-                ImmutableList<String> filterSteps = NodeRef.split(filter);
-                ImmutableList<String> treeSteps = NodeRef.split(treePath);
-
-                String childName = filterSteps.get(treeSteps.size());
-                int childBucket = ORDER.bucket(childName, bucketIndex.depthIndex());
-                boolean applies = childBucket == bucketIndex.lastIndex().intValue();
-
-                if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace(
-                            "Filter: '{}', tree: '{}', bucket idx {}, child bucket: {}, child name: '{}', applies: {}",
-                            filter, treePath, bucketIndex, childBucket, childName, applies);
-                }
-                if (applies) {
-                    return true;
-                }
             }
         }
         return false;
@@ -149,24 +187,9 @@ final class DiffPathFilter {
      * @return {@code true} if {@code featurePath} is a child of, or equals to, one of the path
      *         filters.
      */
-    public boolean featureApplies(final String featurePath) {
-        String filter;
-        boolean applies = false;
-        for (int i = 0; i < pathFilters.size(); i++) {
-            filter = pathFilters.get(i);
-            if (filter.equals(featurePath)) {
-                applies = true;
-            } else if (NodeRef.isChild(filter, featurePath)) {
-                applies = true;
-            }
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("Filter: '{}', feature: '{}', applies: {}", filter, featurePath,
-                        applies);
-            }
-            if (applies) {
-                return true;
-            }
-        }
-        return false;
+    public boolean featureApplies(final String parent, final String node) {
+        List<String> path = toPath(parent, node);
+        boolean applies = pathFilter.applies(path);
+        return applies;
     }
 }

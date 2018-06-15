@@ -155,6 +155,10 @@ public class PreOrderDiffWalk {
             this.right = right;
         }
 
+        public int[] getIndexPath() {
+            return this.indexPath.clone();
+        }
+
         /**
          * The tree at the left side of the comparison when calling {@link Consumer#bucket}. It
          * could be the bucket tree itself or the leaf tree if we're comparing a revtree that's

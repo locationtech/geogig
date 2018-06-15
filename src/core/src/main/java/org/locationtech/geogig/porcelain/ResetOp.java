@@ -30,7 +30,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 
 /**
@@ -48,7 +47,7 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
         SOFT, MIXED, HARD, MERGE, KEEP, NONE
     };
 
-    private Supplier<ObjectId> commit;
+    private ObjectId commit;
 
     private ResetMode mode = ResetMode.NONE;
 
@@ -74,6 +73,11 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
      * @return {@code this}
      */
     public ResetOp setCommit(final Supplier<ObjectId> commit) {
+        this.commit = commit.get();
+        return this;
+    }
+
+    public ResetOp setCommit(final ObjectId commit) {
         this.commit = commit;
         return this;
     }
@@ -119,14 +123,13 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
         final String currentBranch = headRef.getTarget();
 
         if (commit == null) {
-            commit = Suppliers.ofInstance(currHead.get().getObjectId());
+            commit = currHead.get().getObjectId();
         }
 
-        Preconditions.checkArgument(!ObjectId.NULL.equals(commit.get()),
-                "Commit could not be resolved.");
+        Preconditions.checkArgument(!ObjectId.NULL.equals(commit), "Commit could not be resolved.");
 
         Repository repository = repository();
-        RevCommit oldCommit = repository.getCommit(commit.get());
+        RevCommit oldCommit = repository.getCommit(commit);
 
         if (patterns.size() > 0) {
             for (String pattern : patterns) {

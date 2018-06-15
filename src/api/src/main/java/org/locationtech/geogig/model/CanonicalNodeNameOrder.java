@@ -191,6 +191,16 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
         return Integer.valueOf(bucket);
     }
 
+    public static int[] allBuckets(final String nodeName) {
+        final long longBits = hashOrder.fnvBits(nodeName);
+        final int maxDepth = 8;
+        int[] indices = new int[maxDepth];
+        for (int i = 0; i < maxDepth; i++) {
+            indices[i] = hashOrder.bucket(longBits, i);
+        }
+        return indices;
+    }
+
     /**
      * Given a feature name's {@link #hashCodeLong(String) long hashcode}, computes the bucket index
      * that corresponds to the node name at the given depth.

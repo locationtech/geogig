@@ -90,20 +90,17 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
     private RevPerson resolveTagger() {
         final String nameKey = "user.name";
         final String emailKey = "user.email";
+        String taggerName = getClientData(nameKey, String.class)
+                .or(() -> command(ConfigGet.class).setName(nameKey).call().orNull());
+        String taggerEmail = getClientData(emailKey, String.class)
+                .or(() -> command(ConfigGet.class).setName(emailKey).call().orNull());
 
-        Optional<String> name = command(ConfigGet.class).setName(nameKey).call();
-        Optional<String> email = command(ConfigGet.class).setName(emailKey).call();
-
-        checkState(name.isPresent(),
+        checkState(taggerName != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
                 nameKey, nameKey);
-
-        checkState(email.isPresent(),
+        checkState(taggerEmail != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",
                 emailKey, emailKey);
-
-        String taggerName = name.get();
-        String taggerEmail = email.get();
 
         Platform platform = platform();
         long taggerTimeStamp = platform.currentTimeMillis();

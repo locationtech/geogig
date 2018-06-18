@@ -16,12 +16,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.geotools.util.Converters;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+
+import com.google.common.base.Optional;
 
 /**
  * Provides a base implementation for internal GeoGig operations.
@@ -90,6 +93,18 @@ public abstract class AbstractGeoGigOp<T> {
             metadata = new HashMap<Serializable, Serializable>();
         }
         return metadata;
+    }
+
+    protected <V> Optional<V> getClientData(Serializable key, Class<V> type) {
+        if (metadata == null) {
+            return Optional.absent();
+        }
+        V res = null;
+        Serializable value = metadata.get(key);
+        if (value != null) {
+            res = Converters.convert(value, type);
+        }
+        return Optional.fromNullable(res);
     }
 
     /**

@@ -458,14 +458,15 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         }
 
         final String key = "user.name";
-        Optional<String> name = command(ConfigGet.class).setName(key).call();
 
-        checkState(name.isPresent(),
+        String name = getClientData(key, String.class)
+                .or(() -> command(ConfigGet.class).setName(key).call().orNull());
+
+        checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
                 key, key);
 
-        return name.get();
-
+        return name;
     }
 
     @Nullable
@@ -475,13 +476,15 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         }
 
         final String key = "user.email";
-        Optional<String> email = command(ConfigGet.class).setName(key).call();
 
-        checkState(email.isPresent(),
+        String email = getClientData(key, String.class)
+                .or(() -> command(ConfigGet.class).setName(key).call().orNull());
+
+        checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",
                 key, key);
 
-        return email.get();
+        return email;
     }
 
     private String resolveAuthor() {

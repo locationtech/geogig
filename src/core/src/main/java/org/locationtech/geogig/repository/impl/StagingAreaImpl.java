@@ -22,13 +22,13 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffCount;
@@ -48,6 +48,7 @@ import org.locationtech.geogig.storage.impl.PersistedIterable;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -202,20 +203,13 @@ public class StagingAreaImpl implements StagingArea {
                     // it is the root tree that's been changed, update head and ignore anything else
                     ObjectId newRoot = diff.newObjectId();
                     updateStageHead(newRoot);
-                    progress.setProgress(100f);
                     progress.complete();
                     return;
                 }
 
                 // RevTreeBuilder parentTree = getParentTree(currentIndexHead, parentPath,
                 // featureTypeTrees, currentFeatureTypeRefs);
-
-                i++;
-                if (numChanges > 0) {
-                    progress.setProgress((float) (i * 100) / numChanges);
-                } else {
-                    progress.setProgress(i);
-                }
+                progress.setProgress(++i);
                 final NodeRef oldObject = diff.getOldObject();
                 final NodeRef newObject = diff.getNewObject();
                 final ChangeType changeType = diff.changeType();
@@ -246,10 +240,15 @@ public class StagingAreaImpl implements StagingArea {
                 final NodeRef currentTreeRef = currentFeatureTypeRefs.get(changedTreePath);
                 checkState(null != currentTreeRef);
                 final RevTreeBuilder changedTreeBuilder = entry.getValue();
+                progress.setMaxProgress(-1);
+                progress.setProgress(0);
                 if (!NodeRef.ROOT.equals(changedTreePath)) {
                     progress.setDescription("Building final tree " + changedTreePath);
                 }
+                Stopwatch st = Stopwatch.createStarted();
                 final RevTree changedTree = changedTreeBuilder.build();
+                progress.setDescription(
+                        String.format("Tree %s staged in %s", changedTreePath, st.stop()));
                 final Envelope newBounds = SpatialOps.boundsOf(changedTree);
                 final NodeRef newTreeRef = currentTreeRef.update(changedTree.getId(), newBounds);
                 updateTree.setChild(newTreeRef);

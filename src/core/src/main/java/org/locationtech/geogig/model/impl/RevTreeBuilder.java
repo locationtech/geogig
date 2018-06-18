@@ -92,6 +92,8 @@ public interface RevTreeBuilder {
      */
     public @Nullable RevTree build(BooleanSupplier abortFlag);
 
+    public void dispose();
+    
     static RevTree build(final long size, final int childTreeCount,
             @Nullable List<Node> trees, @Nullable List<Node> features,
             @Nullable SortedMap<Integer, Bucket> buckets) {

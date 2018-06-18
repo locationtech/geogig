@@ -76,6 +76,12 @@ public abstract class AbstractTreeBuilder implements RevTreeBuilder {
         return build(() -> false);
     }
 
+    public @Override void dispose() {
+        if (!disposed.get()) {
+            build(() -> true);
+        }
+    }
+
     @Override
     public @Nullable RevTree build(BooleanSupplier abortFlag) {
         Preconditions.checkNotNull(abortFlag);

@@ -92,6 +92,10 @@ public class DefaultProgressListener implements ProgressListener {
         this.progress.set(progress);
     }
 
+    public @Override void incrementBy(float amount) {
+        this.progress.addAndGet(amount);
+    }
+
     /**
      * @return the current progress of the task
      */

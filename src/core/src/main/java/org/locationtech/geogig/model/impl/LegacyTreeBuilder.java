@@ -641,6 +641,10 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         return oldid.equals(newid) ? original : tree;
     }
 
+    public void dispose() {
+        //
+    }
+    
     /**
      * Deletes all nodes that represent subtrees
      * 

@@ -11,14 +11,22 @@ package org.locationtech.geogig.repository.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Spliterators.spliterator;
+import static java.util.Spliterators.spliteratorUnknownSize;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
+import static org.locationtech.geogig.storage.impl.PersistedIterable.newStringIterable;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import javax.annotation.concurrent.ThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
@@ -137,168 +145,55 @@ public class StagingAreaImpl implements StagingArea {
         return head.equals(stageHead);
     }
 
-    /**
-     * Stages the changes indicated by the {@link DiffEntry} iterator.
-     * 
-     * @param progress the progress listener for the process
-     * @param unstaged an iterator for the unstaged changes
-     * @param numChanges number of unstaged changes, or negative if unknown
-     */
-    @Override
-    public void stage(final ProgressListener progress, final Iterator<DiffEntry> unstaged,
-            final long numChanges) {
-        int i = 0;
-        progress.started();
-        if (numChanges > 0) {
-            progress.setMaxProgress(numChanges);
-        } else {
-            progress.setMaxProgress(-1);
-        }
+    private static final @ThreadSafe class StageState {
 
-        final RevTree currentIndexHead = getTree();
+        final Context context;
 
-        Map<String, CanonicalTreeBuilder> featureTypeTrees = Maps.newHashMap();
-        Map<String, NodeRef> currentFeatureTypeRefs = Maps.newHashMap();
-        Set<String> removedTrees = Sets.newHashSet();
+        final RevTree currentIndexHead;
 
-        final ConflictsDatabase conflictsDb = conflictsDatabase();
-        final boolean hasConflicts = conflictsDb.hasConflicts(null);
+        final UpdateTree updateTree;
+
+        final ConflictsDatabase conflictsDb;
+
+        final private ProgressListener progress;
 
         // persisted iterable for very large number of matching conflict paths
-        PersistedIterable<String> pathsForConflictCleanup = null;
+        final PersistedIterable<String> conflictsCleanup;
+
         // local buffer to check for matching conflict paths every N diff entries
-        Set<String> pathBuffer = null;
-        if (hasConflicts) {
-            pathsForConflictCleanup = PersistedIterable.newStringIterable(10_000, true);
-            pathBuffer = new HashSet<>();
+        final Set<String> conflictPathBuffer = Sets.newConcurrentHashSet();
+
+        final boolean hasConflicts;
+
+        final Map<String, CanonicalTreeBuilder> featureTypeTrees = Maps.newConcurrentMap();
+
+        final Map<String, NodeRef> currentFeatureTypeRefs = Maps.newConcurrentMap();
+
+        final Set<String> removedTrees = Sets.newConcurrentHashSet();
+
+        StageState(Context context, PersistedIterable<String> conflictsCleanup,
+                RevTree currentIndexHead, ProgressListener progress) {
+            this.context = context;
+            this.conflictsDb = context.conflictsDatabase();
+            this.conflictsCleanup = conflictsCleanup;
+            this.currentIndexHead = currentIndexHead;
+            this.updateTree = context.command(UpdateTree.class).setRoot(currentIndexHead);
+            this.progress = progress;
+            this.hasConflicts = conflictsDb.hasConflicts(null);
         }
-        try {
-            UpdateTree updateTree = context.command(UpdateTree.class).setRoot(currentIndexHead);
 
-            while (unstaged.hasNext()) {
-                final DiffEntry diff = unstaged.next();
-                final String fullPath = diff.path();
-                if (hasConflicts) {
-                    pathBuffer.add(fullPath);
-                    if (pathBuffer.size() == 100_000) {
-                        // Stopwatch s = Stopwatch.createStarted();
-                        Set<String> matches = conflictsDb.findConflicts(null, pathBuffer);
-                        // System.err.printf("queried %,d possible conflicts in %s\n",
-                        // pathBuffer.size(), s.stop());
-                        if (!matches.isEmpty()) {
-                            pathsForConflictCleanup.addAll(matches);
-                        }
-                        pathBuffer.clear();
-                    }
-                }
-                final String parentPath = NodeRef.parentPath(fullPath);
-                /*
-                 * TODO: revisit, ideally the list of diff entries would come with one single entry
-                 * for the whole removed tree instead of that one and every single children of it.
-                 */
-                if (removedTrees.contains(parentPath)) {
-                    continue;
-                }
-                if (null == parentPath) {
-                    // it is the root tree that's been changed, update head and ignore anything else
-                    ObjectId newRoot = diff.newObjectId();
-                    updateStageHead(newRoot);
-                    progress.complete();
-                    return;
-                }
+        public CanonicalTreeBuilder getTreeBuilder(final NodeRef featureRef) {
+            checkArgument(TYPE.FEATURE.equals(featureRef.getType()));
 
-                // RevTreeBuilder parentTree = getParentTree(currentIndexHead, parentPath,
-                // featureTypeTrees, currentFeatureTypeRefs);
-                progress.setProgress(++i);
-                final NodeRef oldObject = diff.getOldObject();
-                final NodeRef newObject = diff.getNewObject();
-                final ChangeType changeType = diff.changeType();
-                switch (changeType) {
-                case REMOVED:
-                    if (TYPE.TREE.equals(oldObject.getType())) {
-                        updateTree.removeChildTree(fullPath);
-                        removedTrees.add(fullPath);
-                    } else {
-                        getTreeBuilder(currentIndexHead, oldObject, featureTypeTrees,
-                                currentFeatureTypeRefs).remove(oldObject.name());
-                    }
-                    break;
-                default:
-                    checkArgument(newObject != null);
-                    if (TYPE.TREE.equals(newObject.getType())) {
-                        updateTree.setChild(newObject);
-                    } else {
-                        getTreeBuilder(currentIndexHead, newObject, featureTypeTrees,
-                                currentFeatureTypeRefs).put(newObject.getNode());
-                    }
-                    break;
-                }
-            }
-
-            for (Map.Entry<String, CanonicalTreeBuilder> entry : featureTypeTrees.entrySet()) {
-                final String changedTreePath = entry.getKey();
-                final NodeRef currentTreeRef = currentFeatureTypeRefs.get(changedTreePath);
-                checkState(null != currentTreeRef);
-                final RevTreeBuilder changedTreeBuilder = entry.getValue();
-                progress.setMaxProgress(-1);
-                progress.setProgress(0);
-                if (!NodeRef.ROOT.equals(changedTreePath)) {
-                    progress.setDescription("Building final tree " + changedTreePath);
-                }
-                Stopwatch st = Stopwatch.createStarted();
-                final RevTree changedTree = changedTreeBuilder.build();
-                progress.setDescription(
-                        String.format("Tree %s staged in %s", changedTreePath, st.stop()));
-                final Envelope newBounds = SpatialOps.boundsOf(changedTree);
-                final NodeRef newTreeRef = currentTreeRef.update(changedTree.getId(), newBounds);
-                updateTree.setChild(newTreeRef);
-            }
-            RevTree newRootTree = updateTree.call();
-            updateStageHead(newRootTree.getId());
-
-            // remove conflicts once the STAGE_HEAD was updated
-            if (hasConflicts) {
-                if (!pathBuffer.isEmpty()) {
-                    // Stopwatch s = Stopwatch.createStarted();
-                    Set<String> matches = conflictsDb.findConflicts(null, pathBuffer);
-                    // System.err.printf("queried %,d possible conflicts in %s\n",
-                    // pathBuffer.size(), s.stop());
-                    if (!matches.isEmpty()) {
-                        pathsForConflictCleanup.addAll(matches);
-                    }
-                    pathBuffer.clear();
-                }
-
-                if (pathsForConflictCleanup.size() > 0L) {
-                    progress.setDescription(String.format("Removing %,d merged conflicts...",
-                            pathsForConflictCleanup.size()));
-                    // Stopwatch sw = Stopwatch.createStarted();
-                    conflictsDb.removeConflicts(null, pathsForConflictCleanup);
-                }
-                // System.err.printf("tried to remove paths in %s\n", sw.stop());
-                long remainingConflicts = conflictsDb.getCountByPrefix(null, null);
-                progress.setDescription(
-                        String.format("Done. %,d unmerged conflicts.", remainingConflicts));
-            } else {
-                progress.setDescription("Done.");
-            }
-        } finally {
-            if (pathsForConflictCleanup != null) {
-                pathsForConflictCleanup.close();
-            }
+            final String typeTreePath = featureRef.getParentPath();
+            CanonicalTreeBuilder typeTreeBuilder;
+            typeTreeBuilder = featureTypeTrees.computeIfAbsent(typeTreePath,
+                    path -> newTreeBuilder(featureRef));
+            return typeTreeBuilder;
         }
-        progress.complete();
-    }
 
-    private CanonicalTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
-            Map<String, CanonicalTreeBuilder> featureTypeTrees,
-            Map<String, NodeRef> currentFeatureTypeRefs) {
-
-        checkArgument(TYPE.FEATURE.equals(featureRef.getType()));
-
-        final String typeTreePath = featureRef.getParentPath();
-        CanonicalTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
-        if (typeTreeBuilder == null) {
+        private CanonicalTreeBuilder newTreeBuilder(final NodeRef featureRef) {
+            final String typeTreePath = featureRef.getParentPath();
             NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
                     .setChildPath(typeTreePath).call().orNull();
 
@@ -312,12 +207,166 @@ public class StagingAreaImpl implements StagingArea {
             } else {
                 currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(),
-                    currentTypeTree);
+            CanonicalTreeBuilder typeTreeBuilder = CanonicalTreeBuilder
+                    .create(context.objectDatabase(), currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
-            featureTypeTrees.put(typeTreePath, typeTreeBuilder);
+            return typeTreeBuilder;
         }
-        return typeTreeBuilder;
+
+        public void updateConflicts(final @Nullable DiffEntry diff, int buffLimit) {
+            if (hasConflicts) {
+                if (diff != null) {
+                    conflictPathBuffer.add(diff.path());
+                }
+                if (conflictPathBuffer.size() >= buffLimit) {
+                    Set<String> lookup = null;
+                    synchronized (conflictPathBuffer) {
+                        if (conflictPathBuffer.size() >= buffLimit) {
+                            lookup = new HashSet<>(conflictPathBuffer);
+                            conflictPathBuffer.clear();
+                        }
+                    }
+                    if (lookup != null) {
+                        Set<String> matches = conflictsDb.findConflicts(null, lookup);
+                        if (!matches.isEmpty()) {
+                            conflictsCleanup.addAll(matches);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Stages the changes indicated by the {@link DiffEntry} iterator.
+     * 
+     * @param progress the progress listener for the process
+     * @param unstaged an iterator for the unstaged changes
+     * @param numChanges number of unstaged changes, or negative if unknown
+     */
+    @Override
+    public void stage(final ProgressListener progress, final Iterator<DiffEntry> unstaged,
+            final long numChanges) {
+
+        progress.started();
+        progress.setMaxProgress(numChanges > 0 ? numChanges : -1);
+
+        final RevTree currentIndexHead = getTree();
+        final ConflictsDatabase conflictsDb = conflictsDatabase();
+
+        try (PersistedIterable<String> conflictsCleanup = newStringIterable(10_000, true)) {
+
+            StageState state = new StageState(context, conflictsCleanup, currentIndexHead,
+                    progress);
+
+            Stream<DiffEntry> stream;
+            {
+                final int characteristics = Spliterator.NONNULL | Spliterator.IMMUTABLE;
+                Spliterator<DiffEntry> spliterator;
+                if (numChanges > 0) {
+                    spliterator = spliterator(unstaged, numChanges, characteristics);
+                } else {
+                    spliterator = spliteratorUnknownSize(unstaged, characteristics);
+                }
+                stream = StreamSupport.stream(spliterator, true);
+            }
+
+            stream.forEach(diff -> stage(state, diff));
+
+            state.updateConflicts(null, 1);
+
+            for (Map.Entry<String, CanonicalTreeBuilder> entry : state.featureTypeTrees
+                    .entrySet()) {
+
+                final String changedTreePath = entry.getKey();
+                final NodeRef currentTreeRef = state.currentFeatureTypeRefs.get(changedTreePath);
+                checkState(null != currentTreeRef);
+                final RevTreeBuilder changedTreeBuilder = entry.getValue();
+                if (state.removedTrees.contains(changedTreePath)) {
+                    changedTreeBuilder.dispose();
+                    continue;
+                }
+
+                progress.setMaxProgress(-1);
+                progress.setProgress(0);
+                if (!NodeRef.ROOT.equals(changedTreePath)) {
+                    progress.setDescription("Building final tree " + changedTreePath);
+                }
+                Stopwatch st = Stopwatch.createStarted();
+                final RevTree changedTree = changedTreeBuilder.build();
+                progress.setDescription(
+                        String.format("Tree %s staged in %s", changedTreePath, st.stop()));
+                final Envelope newBounds = SpatialOps.boundsOf(changedTree);
+                final NodeRef newTreeRef = currentTreeRef.update(changedTree.getId(), newBounds);
+                state.updateTree.setChild(newTreeRef);
+            }
+            RevTree newRootTree = state.updateTree.call();
+            updateStageHead(newRootTree.getId());
+
+            // remove conflicts once the STAGE_HEAD was updated
+            if (state.hasConflicts) {
+                progress.setDescription(
+                        String.format("Removing %,d merged conflicts...", conflictsCleanup.size()));
+                // Stopwatch sw = Stopwatch.createStarted();
+                conflictsDb.removeConflicts(null, conflictsCleanup);
+
+                // System.err.printf("tried to remove paths in %s\n", sw.stop());
+                long remainingConflicts = conflictsDb.getCountByPrefix(null, null);
+                progress.setDescription(
+                        String.format("Done. %,d unmerged conflicts.", remainingConflicts));
+            } else {
+                progress.setDescription("Done.");
+            }
+        }
+        progress.complete();
+    }
+
+    private boolean stage(StageState state, DiffEntry diff) {
+
+        state.updateConflicts(diff, 100_000);
+        final String parentPath = diff.parentPath();
+        /*
+         * TODO: revisit, ideally the list of diff entries would come with one single entry for the
+         * whole removed tree instead of that one and every single children of it.
+         */
+        if (state.removedTrees.contains(parentPath)) {
+            return true;
+        }
+        if (null == parentPath) {
+            // it is the root tree that's been changed, update head and ignore anything else
+            ObjectId newRoot = diff.newObjectId();
+            updateStageHead(newRoot);
+            state.progress.complete();
+            return false;
+        }
+
+        // RevTreeBuilder parentTree = getParentTree(currentIndexHead, parentPath,
+        // featureTypeTrees, currentFeatureTypeRefs);
+        state.progress.incrementBy(1f);
+        final NodeRef oldObject = diff.getOldObject();
+        final NodeRef newObject = diff.getNewObject();
+        final ChangeType changeType = diff.changeType();
+        switch (changeType) {
+        case REMOVED:
+            if (TYPE.TREE.equals(oldObject.getType())) {
+                String fullPath = diff.path();
+                state.removedTrees.add(fullPath);
+                state.updateTree.removeChildTree(fullPath);
+            } else {
+                state.getTreeBuilder(oldObject).remove(oldObject.name());
+            }
+            break;
+        default:
+            checkArgument(newObject != null);
+            if (TYPE.TREE.equals(newObject.getType())) {
+                state.updateTree.setChild(newObject);
+            } else {
+                state.getTreeBuilder(newObject).put(newObject.getNode());
+            }
+            break;
+        }
+        return true;
     }
 
     /**

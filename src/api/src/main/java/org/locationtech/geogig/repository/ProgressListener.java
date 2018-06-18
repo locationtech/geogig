@@ -60,6 +60,8 @@ public interface ProgressListener {
      * 
      */
     void setProgress(float progress);
+    
+    void incrementBy(float amount);
 
     /**
      * Sets the current max progress

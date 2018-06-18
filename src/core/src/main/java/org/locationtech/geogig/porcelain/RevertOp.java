@@ -324,7 +324,6 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                 String msg = String.format("Creating revert state of commit %s (%s)",
                         commit.getId(), commit.getMessage());
                 log.info(msg);
-                System.err.println(msg);
 
                 final Iterator<List<DiffEntry>> partitions = Iterators.partition(reverseDiff,
                         10_000);
@@ -382,18 +381,15 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             String msg = String.format("Created revert state of %,d features in %s", count,
                     sw.stop());
             log.info(msg);
-            System.err.println(msg);
             StagingArea stagingArea = stagingArea();
 
             msg = String.format("Staging %,d changes...", diffs.size());
             log.info(msg);
-            System.err.println(msg);
             progress.setDescription(msg);
             sw = Stopwatch.createStarted();
             stagingArea.stage(progress, diffs.iterator(), diffs.size());
             msg = String.format("%,d changes staged in %s\n", diffs.size(), sw.stop());
             log.info(msg);
-            System.err.println(msg);
         }
     }
 

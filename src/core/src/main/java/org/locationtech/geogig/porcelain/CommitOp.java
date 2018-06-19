@@ -377,8 +377,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final ObjectStore objectDb = objectDatabase();
         objectDb.put(commit);
         final Optional<Ref> branchHead = command(UpdateRef.class).setName(currentBranch)
-            .setNewValue(commit.getId()).setProgressListener(subProgress(1f)).call();
-
+                .setNewValue(commit.getId()).setProgressListener(subProgress(1f)).call();
 
         checkState(commit.getId().equals(branchHead.get().getObjectId()));
 
@@ -460,7 +459,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final String key = "user.name";
 
         String name = getClientData(key, String.class)
-                .or(() -> command(ConfigGet.class).setName(key).call().orNull());
+                .or(command(ConfigGet.class).setName(key).call()).orNull();
 
         checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
@@ -478,7 +477,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final String key = "user.email";
 
         String email = getClientData(key, String.class)
-                .or(() -> command(ConfigGet.class).setName(key).call().orNull());
+                .or(command(ConfigGet.class).setName(key).call()).orNull();
 
         checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",

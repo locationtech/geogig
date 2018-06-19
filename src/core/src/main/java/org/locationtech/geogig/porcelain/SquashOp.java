@@ -152,14 +152,11 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
             for (Ref ref : refs) {
                 // In case a branch has been created but no commit has been made on it and the
                 // starting commit has just one child
-                Preconditions
-                        .checkArgument(
-                                !ref.getObjectId()
-                                        .equals(commitToSquash
-                                                .getId())
-                                        || ref.getObjectId().equals(currHead.get().getObjectId())
-                                        || commitToSquash.getParentIds().size() > 1,
-                                "The commits to squash include a branch starting point. Squashing that type of commit is not supported.");
+                Preconditions.checkArgument(
+                        !ref.getObjectId().equals(commitToSquash.getId())
+                                || ref.getObjectId().equals(currHead.get().getObjectId())
+                                || commitToSquash.getParentIds().size() > 1,
+                        "The commits to squash include a branch starting point. Squashing that type of commit is not supported.");
             }
             ImmutableList<ObjectId> parentIds = commitToSquash.getParentIds();
             for (int i = 1; i < parentIds.size(); i++) {
@@ -289,7 +286,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         final String key = "user.name";
 
         String name = getClientData(key, String.class)
-                .or(() -> command(ConfigGet.class).setName(key).call().orNull());
+                .or(command(ConfigGet.class).setName(key).call()).orNull();
 
         checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
@@ -302,7 +299,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         final String key = "user.email";
 
         String email = getClientData(key, String.class)
-                .or(() -> command(ConfigGet.class).setName(key).call().orNull());
+                .or(command(ConfigGet.class).setName(key).call()).orNull();
 
         checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",

@@ -488,7 +488,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final String key = "user.name";
 
         String name = getClientData(key, String.class)
-                .or(() -> command(ConfigGet.class).setName(key).call().orNull());
+                .or(command(ConfigGet.class).setName(key).call()).orNull();
 
         checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
@@ -501,7 +501,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final String key = "user.email";
 
         String email = getClientData(key, String.class)
-                .or(() -> command(ConfigGet.class).setName(key).call().orNull());
+                .or(command(ConfigGet.class).setName(key).call()).orNull();
 
         checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",

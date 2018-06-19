@@ -91,9 +91,9 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
         final String nameKey = "user.name";
         final String emailKey = "user.email";
         String taggerName = getClientData(nameKey, String.class)
-                .or(() -> command(ConfigGet.class).setName(nameKey).call().orNull());
+                .or(command(ConfigGet.class).setName(nameKey).call()).orNull();
         String taggerEmail = getClientData(emailKey, String.class)
-                .or(() -> command(ConfigGet.class).setName(emailKey).call().orNull());
+                .or(command(ConfigGet.class).setName(emailKey).call()).orNull();
 
         checkState(taggerName != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",

@@ -134,16 +134,9 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         return setRemote(command(RemoteResolve.class).setName(remoteName));
     }
 
-    public String getRemoteName() {
-        if (remote == null) {
-            return null;
-        }
-        String name = null;
-        Optional<Remote> remote = this.remote.get();
-        if (remote.isPresent()) {
-            name = remote.get().getName();
-        }
-        return name;
+    public PullOp setRemote(final Remote remote) {
+        Preconditions.checkNotNull(remote);
+        return setRemote(Suppliers.ofInstance(Optional.of(remote)));
     }
 
     /**

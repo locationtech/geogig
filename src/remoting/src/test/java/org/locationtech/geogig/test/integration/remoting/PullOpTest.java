@@ -39,6 +39,9 @@ import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.PullOp;
+import org.locationtech.geogig.remotes.RemoteRemoveOp;
+import org.locationtech.geogig.remotes.RemoteResolve;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.Feature;
 
@@ -201,6 +204,33 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         assertEquals(expectedMaster, logged);
     }
 
+    /**
+     * Pull from a remote that's not being saved as named remote in the repository
+     */
+    public @Test void testPullMergeNonPersistedRemote() throws Exception {
+        // Add a commit to the remote
+        insertAndAdd(remoteGeogig.geogig, lines3);
+        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        expectedMaster.addFirst(commit);
+
+        Remote removedOrigin = localGeogig.geogig.command(RemoteRemoveOp.class).setName("origin")
+                .call();
+        assertFalse(localGeogig.geogig.command(RemoteResolve.class).setName("origin").call()
+                .isPresent());
+        // Pull the commit
+        PullOp pull = pullOp();
+
+        pull.setRemote(removedOrigin).call();
+
+        Iterator<RevCommit> logs = localGeogig.geogig.command(LogOp.class).call();
+        List<RevCommit> logged = new ArrayList<RevCommit>();
+        for (; logs.hasNext();) {
+            logged.add(logs.next());
+        }
+
+        assertEquals(expectedMaster, logged);
+    }
+
     @Test
     public void testPullRefspecs() throws Exception {
         // Add a commit to the remote
@@ -268,6 +298,52 @@ public class PullOpTest extends RemoteRepositoryTestCase {
 
         // Pull the commit
         PullOp pull = pullOp();
+        pull.addRefSpec("master:newbranch");
+        pull.addRefSpec("Branch1:newbranch2");
+        pull.setRebase(true).call();
+
+        final Optional<Ref> currHead = localGeogig.geogig.command(RefParse.class).setName(Ref.HEAD)
+                .call();
+        assertTrue(currHead.isPresent());
+        assertTrue(currHead.get() instanceof SymRef);
+        final SymRef headRef = (SymRef) currHead.get();
+        final String currentBranch = Ref.localName(headRef.getTarget());
+        assertEquals("newbranch2", currentBranch);
+
+        Iterator<RevCommit> logs = localGeogig.geogig.command(LogOp.class).call();
+        List<RevCommit> logged = new ArrayList<RevCommit>();
+        for (; logs.hasNext();) {
+            logged.add(logs.next());
+        }
+
+        assertEquals(expectedBranch, logged);
+
+        localGeogig.geogig.command(CheckoutOp.class).setSource("newbranch").call();
+        logs = localGeogig.geogig.command(LogOp.class).call();
+        logged = new ArrayList<RevCommit>();
+        for (; logs.hasNext();) {
+            logged.add(logs.next());
+        }
+
+        assertEquals(expectedMaster, logged);
+    }
+
+    @Test
+    public void testPullMultipleRefspecsNonPersistedRemote() throws Exception {
+        // Add a commit to the remote
+        insertAndAdd(remoteGeogig.geogig, lines3);
+        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        expectedMaster.addFirst(commit);
+
+        //remove the remote
+        Remote removedOrigin = localGeogig.geogig.command(RemoteRemoveOp.class).setName("origin")
+                .call();
+        assertFalse(localGeogig.geogig.command(RemoteResolve.class).setName("origin").call()
+                .isPresent());
+
+        // Pull the commit
+        PullOp pull = pullOp();
+        pull.setRemote(removedOrigin);// client supplied remote
         pull.addRefSpec("master:newbranch");
         pull.addRefSpec("Branch1:newbranch2");
         pull.setRebase(true).call();

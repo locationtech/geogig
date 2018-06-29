@@ -29,7 +29,7 @@ Feature: Manifest
       And the response body should contain "refs/heads/master {@ObjectId|repo2|master}"
       And the response body should contain "refs/heads/branch1 {@ObjectId|repo2|branch1}"
       And the response body should contain "refs/heads/branch2 {@ObjectId|repo2|branch2}"
-      And the response body should contain "refs/remotes/origin/HEAD {@ObjectId|repo1|master}"
+      #And the response body should contain "refs/remotes/origin/HEAD {@ObjectId|repo1|master}"
       And the response body should contain "refs/remotes/origin/master {@ObjectId|repo1|master}"
       And the response body should contain "refs/remotes/origin/branch1 {@ObjectId|repo1|branch1}"
       And the response body should contain "refs/remotes/origin/branch2 {@ObjectId|repo1|branch2}"

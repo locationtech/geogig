@@ -11,6 +11,7 @@ package org.locationtech.geogig.remotes;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.repository.Remote;
 
 import com.google.common.base.Optional;
 
@@ -20,18 +21,22 @@ public class PullResult {
 
     private Ref newRef = null;
 
-    private String remoteName = null;
-
     private TransferSummary fetchResult = null;
 
     private Optional<MergeReport> mergeReport = Optional.absent();
 
+    private Remote remote;
+
     public String getRemoteName() {
-        return remoteName;
+        return remote.getName();
     }
 
-    void setRemoteName(String remoteName) {
-        this.remoteName = remoteName;
+    public Remote getRemote() {
+        return remote;
+    }
+
+    void setRemote(Remote remote) {
+        this.remote = remote;
     }
 
     public TransferSummary getFetchResult() {

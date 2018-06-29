@@ -80,7 +80,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
     }
 
     @Test
@@ -95,7 +95,8 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
     }
 
     @Test
@@ -127,7 +128,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
 
         exception.expect(RemoteException.class);
         remoteAdd.setName(remoteName).setURL("someotherurl.com").call();
@@ -148,14 +149,13 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteName1, remote.getName());
         assertEquals(remoteURL1, remote.getFetchURL());
         assertEquals(remoteURL1, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName1 + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), remote.getFetch());
 
         remote = remoteAdd.setName(remoteName2).setURL(remoteURL2).call();
 
         assertEquals(remoteName2, remote.getName());
         assertEquals(remoteURL2, remote.getFetchURL());
         assertEquals(remoteURL2, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName2 + "/*", remote.getFetch());
     }
 
 }

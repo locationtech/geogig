@@ -37,7 +37,8 @@ Feature: Cat
      Then the response status should be '200'
       And the xpath "/response/success/text()" equals "true"
       And the xpath "/response/commit/id/text()" equals "{@ObjectId|repo1|master}"
-      And the xpath "/response/commit/parents/id/text()" equals "{@ObjectId|repo1|master~1}"
+      And the xpath "/response/commit/parents/id[1]/text()" equals "{@ObjectId|repo1|master^1}"
+      And the xpath "/response/commit/parents/id[2]/text()" equals "{@ObjectId|repo1|master^2}"
       And the xpath "/response/commit/author/name/text()" equals "geogigUser"
       And the xpath "/response/commit/author/email/text()" equals "repo1_Owner@geogig.org"
       And the xpath "/response/commit/committer/name/text()" equals "geogigUser"

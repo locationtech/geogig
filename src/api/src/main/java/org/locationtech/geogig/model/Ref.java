@@ -9,7 +9,10 @@
  */
 package org.locationtech.geogig.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
  * A named pointer to a {@link RevObject} that represents an entry point in a repository's revision
@@ -297,4 +300,42 @@ public class Ref implements Comparable<Ref> {
     public Ref peel() {
         return this;
     }
+
+    /**
+     * Determines if the {@code ref} is a child of {@code parent}
+     * 
+     * @param parent the parent ref name
+     * @param nodePath the path of the node
+     * @return true if {@code nodePath} is a child of {@code parentPath} at any depth level,
+     *         {@code false} if unrelated, sibling, or same path
+     */
+    public static boolean isChild(String parent, String ref) {
+        checkNotNull(parent, "parent");
+        checkNotNull(ref, "ref");
+
+        int parentSeparatorIndex = parent.endsWith("/") ? parent.length() - 1 : parent.length();
+
+        return ref.length() > parent.length()
+                && (parent.isEmpty() || ref.charAt(parentSeparatorIndex) == '/')
+                && ref.startsWith(parent);
+    }
+
+    public static String stripCommonPrefix(final String ref) {
+        Preconditions.checkNotNull(ref);
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(ref));
+        if (ref.indexOf('/') == -1) {
+            return ref;
+        }
+        if (ref.startsWith(Ref.HEADS_PREFIX)) {
+            return ref.substring(Ref.HEADS_PREFIX.length());
+        }
+        if (ref.startsWith(Ref.TAGS_PREFIX)) {
+            return ref.substring(Ref.TAGS_PREFIX.length());
+        }
+        if (ref.startsWith(Ref.REFS_PREFIX)) {
+            return ref.substring(Ref.REFS_PREFIX.length());
+        }
+        return ref;
+    }
+
 }

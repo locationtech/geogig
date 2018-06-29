@@ -79,6 +79,9 @@ public class RefRequest {
         checkNotNull(want);
         checkArgument(!want.getObjectId().isNull(),
                 "Do not request refs pointing to the NULl id: %s", want);
+        if (have != null && have.isNull()) {
+            have = null;
+        }
         return new RefRequest(want.getName(), want.getObjectId(), have);
     }
 

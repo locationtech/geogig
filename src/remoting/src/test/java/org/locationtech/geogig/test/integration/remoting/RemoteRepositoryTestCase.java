@@ -13,6 +13,7 @@ import static com.google.common.base.Optional.fromNullable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
 import java.io.File;
@@ -53,6 +54,7 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.remotes.CloneOp;
@@ -92,6 +94,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -180,6 +183,8 @@ public abstract class RemoteRepositoryTestCase {
             String name = getRemote().getName();
             IRemoteRepo override = remoteOverride.get(name);
             Preconditions.checkNotNull(override, "remote override %s not provided", name);
+            Remote remoteConfig = super.getRemote();
+            doReturn(remoteConfig).when(override).getInfo();
             return override;
         }
     }
@@ -435,6 +440,11 @@ public abstract class RemoteRepositoryTestCase {
         return objectId;
     }
 
+    protected void insertAndAdd(Repository geogig, Feature... f) throws Exception {
+        insert(geogig, f);
+        add(geogig);
+    }
+
     /**
      * Inserts the feature to the index but does not stages it to be committed
      */
@@ -491,6 +501,12 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     protected void insert(GeoGIG geogig, Feature... features) throws Exception {
+        for (Feature f : features) {
+            insert(geogig, f);
+        }
+    }
+
+    protected void insert(Repository geogig, Feature... features) throws Exception {
         for (Feature f : features) {
             insert(geogig, f);
         }
@@ -631,5 +647,9 @@ public abstract class RemoteRepositoryTestCase {
         assertNotNull(diff);
         assertEquals(before, diff.oldRef());
         assertEquals(after, diff.newRef());
+    }
+
+    protected List<RevCommit> log(Repository repo) {
+        return Lists.newArrayList(repo.command(LogOp.class).call());
     }
 }

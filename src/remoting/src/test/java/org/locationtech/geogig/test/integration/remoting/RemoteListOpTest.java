@@ -55,7 +55,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteName1, remote.getName());
         assertEquals(remoteURL1, remote.getFetchURL());
         assertEquals(remoteURL1, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName1 + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), remote.getFetch());
 
         remote = remoteAdd.setName(remoteName2).setURL(remoteURL2).setBranch(branch).call();
 
@@ -84,7 +84,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteName1, firstRemote.getName());
         assertEquals(remoteURL1, firstRemote.getFetchURL());
         assertEquals(remoteURL1, firstRemote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName1 + "/*", firstRemote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), firstRemote.getFetch());
 
         assertEquals(remoteName2, secondRemote.getName());
         assertEquals(remoteURL2, secondRemote.getFetchURL());
@@ -105,7 +105,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
 
         final ConfigOp config = geogig.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".url").call();
@@ -129,7 +129,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
 
         final ConfigOp config = geogig.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".fetch")

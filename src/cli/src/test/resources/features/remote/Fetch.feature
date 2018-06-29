@@ -15,7 +15,7 @@ Feature: "fetch" command
       And I run the command "branch --all"
      Then the response should contain "origin/master"
       And the response should contain "origin/branch1"
-      And the response should contain "origin/HEAD"
+      #And the response should contain "origin/HEAD"
       
   Scenario: Try to fetch the full history for a shallow clone
     Given I am in an empty directory
@@ -54,7 +54,7 @@ Feature: "fetch" command
       And I run the command "branch --all"
      Then the response should contain "origin/master"
       And the response should contain "origin/branch1"
-      And the response should contain "origin/HEAD"
+      #And the response should contain "origin/HEAD"
       
   Scenario: Try to fetch from an invalid remote
     Given I have a repository
@@ -72,7 +72,7 @@ Feature: "fetch" command
      Then the response should contain "origin/master"
       And the response should contain "origin/branch1"
       And the response should not contain "origin/branch2"
-      And the response should contain "origin/HEAD"
+      #And the response should contain "origin/HEAD"
 
   Scenario: Try to fetch a tag
     Given I am in an empty directory

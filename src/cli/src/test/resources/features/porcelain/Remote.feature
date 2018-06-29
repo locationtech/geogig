@@ -46,7 +46,7 @@ Feature: "remote" command
     Given I have a repository
      When I run the command "remote add myremote http://myremote.com"
       And I run the command "config remote.myremote.fetch"
-     Then it should answer "+refs/heads/*:refs/remotes/myremote/*"
+     Then it should answer "+refs/heads/*:refs/remotes/myremote/*;+refs/tags/*:refs/tags/*"
 
   Scenario: Try to add, remove, and list a remote
     Given I have a repository

@@ -64,8 +64,7 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
         }
 
         String configSection = "remote." + name;
-        String fetch = "+" + Ref.HEADS_PREFIX + branch + ":" + Ref.REMOTES_PREFIX + name + "/"
-                + branch;
+        final String fetch = "*".equals(branch)?Remote.defaultRemoteRefSpec(name):Remote.defaultMappedBranchRefSpec(name, branch);
 
         config.put(configSection + ".url", url);
         config.put(configSection + ".fetch", fetch);

@@ -26,6 +26,8 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -37,14 +39,19 @@ public class TestSupport {
                 Maps.uniqueIndex(source.command(ForEachRef.class).call(), (r) -> r.getName()));
 
         Map<String, Ref> copyRefs = new TreeMap<>();
+        Predicate<Ref> filter = (r) -> !r.getName().startsWith(Ref.REMOTES_PREFIX);
         copyRefs.putAll(//
                 Maps.uniqueIndex(//
                         copy.command(ForEachRef.class)//
-                                .setFilter((r) -> !r.getName().startsWith(Ref.REMOTES_PREFIX))
-                                .call(),
+                                .setFilter(filter).call(),
                         (r) -> r.getName())//
         );
 
+        sourceRefs.remove(Ref.STAGE_HEAD);
+        sourceRefs.remove(Ref.WORK_HEAD);
+        copyRefs.remove(Ref.STAGE_HEAD);
+        copyRefs.remove(Ref.WORK_HEAD);
+        
         assertEquals(sourceRefs.keySet(), copyRefs.keySet());
         assertEquals(sourceRefs, copyRefs);
     }
@@ -70,6 +77,26 @@ public class TestSupport {
         allRefs = Maps.filterKeys(allRefs,
                 (k) -> !k.equals(Ref.STAGE_HEAD) && !k.equals(Ref.WORK_HEAD));
 
+        return veifyRepositoryContents(repo, allRefs);
+    }
+
+    /**
+     * Verifies that all the reachable objects from the specified refs in the repo exist in the
+     * repo's database
+     */
+    public static Set<ObjectId> verifyRepositoryContents(Repository repo, String... refs) {
+        final Set<String> filter = Sets.newHashSet(refs);
+        Map<String, Ref> allRefs = Maps.uniqueIndex(
+                repo.command(ForEachRef.class).setFilter(r -> filter.contains(r.getName())).call(),
+                (r) -> r.getName());
+        for (String expected : filter) {
+            Preconditions.checkState(allRefs.containsKey(expected), "Ref %s not found", expected);
+        }
+        return veifyRepositoryContents(repo, allRefs);
+    }
+
+    private static Set<ObjectId> veifyRepositoryContents(Repository repo,
+            Map<String, Ref> allRefs) {
         Set<ObjectId> allIds = Sets.newConcurrentHashSet();
         for (Ref ref : allRefs.values()) {
             if (ref instanceof SymRef) {
@@ -96,7 +123,8 @@ public class TestSupport {
         RevObject obj = store.getIfPresent(tip);
         pathToObject.push(tip.toString());
         if (obj == null) {
-            throw new NullPointerException(format("object %s does not exist at %s", tip, pathToObject));
+            throw new NullPointerException(
+                    format("object %s does not exist at %s", tip, pathToObject));
         }
         allIds.add(obj.getId());
 

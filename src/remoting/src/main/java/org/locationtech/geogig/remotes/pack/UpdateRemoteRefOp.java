@@ -116,7 +116,7 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
 
     private @Nullable Ref convertToRemote(@Nullable Ref remoteLocalRef) {
         Ref localRemoteRef = null;
-        if (remoteLocalRef != null) {
+        if (remoteLocalRef != null && !remoteLocalRef.getObjectId().isNull()) {
             // converd local refs namespaces to remotes namespace
             localRemoteRef = command(MapRef.class)//
                     .setRemote(remote)//

@@ -9,25 +9,28 @@
  */
 package org.locationtech.geogig.remotes;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.porcelain.BranchCreateOp;
-import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.BranchResolveOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.LocalRemoteRefSpec;
 import org.locationtech.geogig.repository.Remote;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
@@ -41,6 +44,8 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
 
     private boolean rebase;
 
+    private boolean noFastForward;
+
     private boolean fullDepth = false;
 
     private Supplier<Optional<Remote>> remote;
@@ -53,6 +58,8 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
 
     private Optional<String> authorEmail = Optional.absent();
 
+    private String message;
+
     /**
      * @param all if {@code true}, pull from all remotes.
      * @return {@code this}
@@ -64,6 +71,16 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
 
     public boolean isAll() {
         return all;
+    }
+
+    public PullOp setNoFastForward(boolean noFF) {
+        this.noFastForward = noFF;
+        return this;
+    }
+
+    public PullOp setMessage(String message) {
+        this.message = message;
+        return this;
     }
 
     /**
@@ -130,12 +147,12 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
      * @return {@code this}
      */
     public PullOp setRemote(final String remoteName) {
-        Preconditions.checkNotNull(remoteName);
+        checkNotNull(remoteName);
         return setRemote(command(RemoteResolve.class).setName(remoteName));
     }
 
     public PullOp setRemote(final Remote remote) {
-        Preconditions.checkNotNull(remote);
+        checkNotNull(remote);
         return setRemote(Suppliers.ofInstance(Optional.of(remote)));
     }
 
@@ -144,7 +161,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
      * @return {@code this}
      */
     public PullOp setRemote(Supplier<Optional<Remote>> remoteSupplier) {
-        Preconditions.checkNotNull(remoteSupplier);
+        checkNotNull(remoteSupplier);
         remote = remoteSupplier;
 
         return this;
@@ -171,111 +188,102 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     }
 
     /**
-     * Executes the pull operation.
+     * Fetches the remote refs (and their contents) indicated by the {@link #addRefSpec(String)
+     * ref-specs} and merges them onto the current branch.
      * 
      * @return {@code null}
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
     @Override
     protected PullResult _call() {
-
         if (remote == null) {
             setRemote("origin");
         }
+        final Remote suppliedRemote = this.remote.get().orNull();
+        checkArgument(suppliedRemote != null, "Remote could not be resolved.");
 
-        PullResult result = new PullResult();
+        final Ref currentBranch = resolveCurrentBranch();
 
-        Optional<Remote> remoteRepo = remote.get();
-
-        Preconditions.checkArgument(remoteRepo.isPresent(), "Remote could not be resolved.");
-        getProgressListener().started();
-
-        TransferSummary fetchResult = command(FetchOp.class).addRemote(remote).setDepth(depth.or(0))
-                .setFullDepth(fullDepth).setAll(all).setProgressListener(subProgress(80.f)).call();
-
-        result.setFetchResult(fetchResult);
-
-        if (refSpecs.size() == 0) {
-            // pull current branch
-            final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-            Preconditions.checkState(currHead.isPresent(), "Repository has no HEAD, can't pull.");
-            Preconditions.checkState(currHead.get() instanceof SymRef,
-                    "Can't pull from detached HEAD");
-            final SymRef headRef = (SymRef) currHead.get();
-            final String currentBranch = Ref.localName(headRef.getTarget());
-
-            refSpecs.add(currentBranch + ":" + currentBranch);
+        if (refSpecs.isEmpty()) {
+            // TODO: use the Remote to resolve the local current branch to the remote branch
+            // mapping?
+            final String currentBranchName = currentBranch.localName();
+            refSpecs.add(String.format("%s:%s", currentBranchName, currentBranchName));
         }
 
-        for (String refspec : refSpecs) {
-            String[] refs = refspec.split(":");
-            Preconditions.checkArgument(refs.length < 3,
-                    "Invalid refspec, please use [+]<remoteref>[:<localref>].");
+        final Remote remote;// remote with the appropriate refspecs to fetch and where to
+        {
+            String localRemoteRefSpec = Joiner.on(';').join(refSpecs);
+            remote = suppliedRemote.fetch(localRemoteRefSpec);
+        }
 
-            boolean force = refspec.length() > 0 && refspec.charAt(0) == '+';
-            String remoteref = refs[0].substring(force ? 1 : 0);
-            final Optional<Ref> sourceRefOpt = findRemoteRef(remoteref);
-            if (!sourceRefOpt.isPresent()) {
+        getProgressListener().started();
+
+        PullResult result = new PullResult();
+        TransferSummary fetchResult = command(FetchOp.class)//
+                .addRemote(remote)//
+                .setDepth(depth.or(0))//
+                .setFullDepth(fullDepth)//
+                .setAllRemotes(all)//
+                .setProgressListener(subProgress(80.f))//
+                .call();
+
+        result.setFetchResult(fetchResult);
+        result.setOldRef(currentBranch);
+        result.setRemote(suppliedRemote);
+
+        // did fetch need to update any contents?
+        {
+            final Collection<RefDiff> fetchedRefs = fetchResult.getRefDiffs()
+                    .get(remote.getFetchURL());
+            if (fetchedRefs == null || fetchedRefs.isEmpty()) {
+                result.setNewRef(currentBranch);
+                return result;
+            }
+        }
+
+        for (LocalRemoteRefSpec fetchspec : remote.getFetchSpecs()) {
+            final String localRemoteRefName = fetchspec.getLocal();
+            final Optional<Ref> localRemoteRefOpt = command(RefParse.class)
+                    .setName(localRemoteRefName).call();
+            if (!localRemoteRefOpt.isPresent()) {
                 continue;
             }
-
-            String destinationref = "";
-            if (refs.length == 2) {
-                destinationref = refs[1];
+            final Ref localRemoteRef = localRemoteRefOpt.get();
+            if (rebase) {
+                command(RebaseOp.class).setUpstream(() -> localRemoteRef.getObjectId()).call();
             } else {
-                // pull into current branch
-                final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-                Preconditions.checkState(currHead.isPresent(),
-                        "Repository has no HEAD, can't pull.");
-                Preconditions.checkState(currHead.get() instanceof SymRef,
-                        "Can't pull from detached HEAD");
-                final SymRef headRef = (SymRef) currHead.get();
-                destinationref = headRef.getTarget();
-            }
-
-            final Ref sourceRef = sourceRefOpt.get();
-            final ObjectId sourceOid = sourceRef.getObjectId();
-            final Optional<Ref> destRefOpt = command(RefParse.class).setName(destinationref).call();
-            if (destRefOpt.isPresent()) {
-                final Ref destRef = destRefOpt.get();
-                if (destRef.getObjectId().equals(sourceOid) || sourceOid.isNull()) {
-                    // Already up to date.
-                    result.setOldRef(destRef);
-                    result.setNewRef(destRef);
-                    continue;
+                String message = this.message;
+                if (noFastForward && Strings.isNullOrEmpty(message)) {
+                    message = String.format("Pull changes from %s:%s onto %s", remote.getName(),
+                            fetchspec.getRemote(), fetchspec.getLocal());
                 }
-                result.setOldRef(destRef);
-
-                final boolean forceCheckout = destRef.getObjectId().isNull();
-                command(CheckoutOp.class).setSource(destinationref).setForce(forceCheckout).call();
-                if (rebase) {
-                    command(RebaseOp.class).setUpstream(Suppliers.ofInstance(sourceOid)).call();
-                } else {
-                    try {
-                        MergeReport report = command(MergeOp.class)
-                                .setAuthor(authorName.orNull(), authorEmail.orNull())
-                                .addCommit(sourceOid).call();
-                        result.setMergeReport(Optional.of(report));
-                    } catch (NothingToCommitException e) {
-                        // the branch that we are trying to pull has less history than the
-                        // branch we are pulling into
-                    }
+                try {
+                    MergeReport report = command(MergeOp.class)
+                            .setAuthor(authorName.orNull(), authorEmail.orNull())//
+                            .addCommit(localRemoteRef.getObjectId())//
+                            .setNoFastForward(noFastForward)//
+                            .setMessage(message)//
+                            .setProgressListener(getProgressListener())//
+                            .call();
+                    result.setMergeReport(Optional.of(report));
+                } catch (NothingToCommitException e) {
+                    // the branch that we are trying to pull has less history than the
+                    // branch we are pulling into
                 }
-                result.setNewRef(command(RefParse.class).setName(destinationref).call().get());
-            } else {
-                // make a new branch
-                Ref newRef = command(BranchCreateOp.class).setAutoCheckout(true)
-                        .setName(destinationref).setSource(sourceOid.toString()).call();
-                result.setNewRef(newRef);
             }
-
+            final Ref currentBranchFinalState = resolveCurrentBranch();
+            result.setNewRef(currentBranchFinalState);
         }
 
         getProgressListener().complete();
 
-        result.setRemoteName(remote.get().get().getFetchURL());
-
         return result;
+    }
+
+    private Ref resolveCurrentBranch() {
+        return command(BranchResolveOp.class).call().orElseThrow(
+                () -> new IllegalStateException("Repository has no HEAD, can't pull."));
     }
 
     /**

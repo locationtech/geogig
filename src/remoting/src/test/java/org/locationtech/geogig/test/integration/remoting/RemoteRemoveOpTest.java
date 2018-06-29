@@ -72,7 +72,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
 
         final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
 
@@ -92,7 +92,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
 
         final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
 
@@ -101,7 +101,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, deletedRemote.getName());
         assertEquals(remoteURL, deletedRemote.getFetchURL());
         assertEquals(remoteURL, deletedRemote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", deletedRemote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetch());
     }
 
     @Test
@@ -116,7 +116,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
 
         String refName = Ref.REMOTES_PREFIX + remoteName + "/branch1";
         geogig.command(UpdateRef.class).setName(refName).setNewValue(ObjectId.NULL).call();
@@ -132,7 +132,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, deletedRemote.getName());
         assertEquals(remoteURL, deletedRemote.getFetchURL());
         assertEquals(remoteURL, deletedRemote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", deletedRemote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetch());
     }
 
     @Test
@@ -147,7 +147,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
 
         final ConfigOp config = geogig.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".url").call();
@@ -159,7 +159,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, deletedRemote.getName());
         assertEquals("", deletedRemote.getFetchURL());
         assertEquals("", deletedRemote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", deletedRemote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetch());
     }
 
     @Test
@@ -174,7 +174,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals("+refs/heads/*:refs/remotes/" + remoteName + "/*", remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
 
         final ConfigOp config = geogig.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".fetch")

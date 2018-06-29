@@ -31,8 +31,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Format common v2.1, differs from {@link FormatCommonV2 v2} only in {@link RevFeature}

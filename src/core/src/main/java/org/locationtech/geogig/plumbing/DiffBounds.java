@@ -45,7 +45,7 @@ import org.opengis.referencing.operation.TransformException;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Computes the bounds of the difference between the two trees instead of the actual diffs.

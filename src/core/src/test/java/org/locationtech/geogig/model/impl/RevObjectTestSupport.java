@@ -38,7 +38,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.HashCode;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class RevObjectTestSupport {
 

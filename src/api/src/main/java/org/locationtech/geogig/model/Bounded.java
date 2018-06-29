@@ -10,7 +10,7 @@
 package org.locationtech.geogig.model;
 
 import com.google.common.base.Optional;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Super-interface for objects pointing to another object (nodes or buckets) in a {@link RevTree}.

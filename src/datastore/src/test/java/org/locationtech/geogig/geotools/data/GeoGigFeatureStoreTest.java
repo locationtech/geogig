@@ -40,7 +40,7 @@ import org.opengis.filter.Id;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.ResourceId;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 

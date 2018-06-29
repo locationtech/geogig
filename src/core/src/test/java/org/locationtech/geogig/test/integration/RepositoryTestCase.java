@@ -73,8 +73,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 
 public abstract class RepositoryTestCase extends Assert {
 

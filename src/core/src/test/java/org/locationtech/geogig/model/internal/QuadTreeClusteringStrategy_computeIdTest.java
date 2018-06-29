@@ -21,7 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class QuadTreeClusteringStrategy_computeIdTest {
 

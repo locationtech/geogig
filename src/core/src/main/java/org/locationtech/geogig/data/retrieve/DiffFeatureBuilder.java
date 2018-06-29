@@ -19,7 +19,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 
 class DiffFeatureBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleFeature> {
 

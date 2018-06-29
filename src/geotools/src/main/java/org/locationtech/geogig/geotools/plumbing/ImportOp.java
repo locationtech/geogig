@@ -75,8 +75,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
-import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
+import org.locationtech.jts.geom.CoordinateSequenceFactory;
+import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 
 /**
  * Internal operation for importing tables from a GeoTools {@link DataStore}.

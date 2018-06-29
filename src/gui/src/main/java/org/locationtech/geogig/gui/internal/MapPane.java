@@ -43,10 +43,10 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.FilterFactory;
 
 import com.beust.jcommander.internal.Lists;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 
 public class MapPane {
     static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();

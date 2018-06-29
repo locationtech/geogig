@@ -63,7 +63,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class PreOrderDiffWalkTest {
 

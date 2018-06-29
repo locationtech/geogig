@@ -27,9 +27,9 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 
 public class NodeTest {
     @Rule

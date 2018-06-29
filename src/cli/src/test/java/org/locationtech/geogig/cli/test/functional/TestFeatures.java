@@ -18,7 +18,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 
-import com.vividsolutions.jts.io.ParseException;
+import org.locationtech.jts.io.ParseException;
 
 public final class TestFeatures {
 

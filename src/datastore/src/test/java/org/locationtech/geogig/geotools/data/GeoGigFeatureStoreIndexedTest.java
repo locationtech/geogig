@@ -48,8 +48,8 @@ import org.opengis.filter.Filter;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Run all {@link GeoGigFeatureStoreTest} test cases and make sure the {@link IndexInfo index} is

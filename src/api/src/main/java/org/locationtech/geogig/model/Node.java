@@ -21,7 +21,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * An identifier->object id mapping for an object

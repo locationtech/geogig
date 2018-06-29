@@ -112,7 +112,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;

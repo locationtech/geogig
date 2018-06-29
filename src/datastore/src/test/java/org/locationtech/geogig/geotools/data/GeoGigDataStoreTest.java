@@ -48,8 +48,8 @@ import org.opengis.feature.type.Name;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
 
 public class GeoGigDataStoreTest extends RepositoryTestCase {
 

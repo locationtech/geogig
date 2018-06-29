@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class Float32BoundsSerializationTest {
 

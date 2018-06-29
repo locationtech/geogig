@@ -26,7 +26,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class DiffEntryTest {
     @Rule

@@ -88,7 +88,7 @@
     <jcommander.version>1.48</jcommander.version>
     <jsonp.version>1.0.4</jsonp.version>
     <jdt-annotation.version>1.1.0</jdt-annotation.version>
-    <jts.version>1.14.0</jts.version>
+    <jts.version>1.15.1</jts.version>
     <junit.version>4.12</junit.version>
     <xmlunit.version>2.1.0</xmlunit.version>
     <logback.version>1.1.2</logback.version>
@@ -161,7 +161,7 @@
         </exclusions>
       </dependency>
       <dependency>
-        <groupId>com.vividsolutions</groupId>
+        <groupId>org.locationtech.jts</groupId>
         <artifactId>jts-core</artifactId>
         <version>${jts.version}</version>
       </dependency>

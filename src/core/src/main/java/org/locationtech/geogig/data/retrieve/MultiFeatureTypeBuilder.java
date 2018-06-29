@@ -23,7 +23,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Function;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 
 class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, SimpleFeature> {
 

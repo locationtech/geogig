@@ -22,9 +22,9 @@ import java.util.UUID;
 
 import org.locationtech.geogig.model.FieldType;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Interface to read and write atomic values from/to a byte stream.

@@ -21,7 +21,7 @@ import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 class BucketSet {
 

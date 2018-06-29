@@ -26,10 +26,10 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Splitter;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Utility methods to deal with various spatial operations
@@ -44,7 +44,7 @@ public class SpatialOps {
      * @param newObject
      * @return the aggregated bounding box
      */
-    public static com.vividsolutions.jts.geom.Envelope aggregatedBounds(Node oldObject,
+    public static org.locationtech.jts.geom.Envelope aggregatedBounds(Node oldObject,
             Node newObject) {
         Envelope env = new Envelope();
         if (oldObject != null) {

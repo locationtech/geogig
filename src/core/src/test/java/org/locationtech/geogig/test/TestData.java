@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.io.ParseException;
+import org.locationtech.jts.io.ParseException;
 
 /**
  * A helper class to set repositories to a desired state to aid in integration testing.

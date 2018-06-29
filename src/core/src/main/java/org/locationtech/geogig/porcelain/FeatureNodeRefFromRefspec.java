@@ -26,7 +26,7 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Returns the NodeRef corresponding to a given refspec, if available.

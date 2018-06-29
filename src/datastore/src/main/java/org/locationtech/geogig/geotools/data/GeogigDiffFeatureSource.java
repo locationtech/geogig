@@ -62,7 +62,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  *

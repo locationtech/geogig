@@ -35,7 +35,7 @@ import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Reports the performance of building large {@link RevTree}

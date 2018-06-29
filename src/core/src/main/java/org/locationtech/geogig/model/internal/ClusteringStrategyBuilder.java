@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public abstract class ClusteringStrategyBuilder {
 

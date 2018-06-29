@@ -39,7 +39,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
 import com.google.common.collect.ImmutableList;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class RevTreeFormatTest {
 

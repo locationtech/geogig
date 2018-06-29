@@ -20,7 +20,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 
 public class DataStreamSerializationFactoryV2_2Test  extends ObjectSerializationFactoryTest {

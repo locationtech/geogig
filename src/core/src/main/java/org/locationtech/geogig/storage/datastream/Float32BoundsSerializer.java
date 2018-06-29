@@ -10,7 +10,7 @@
 package org.locationtech.geogig.storage.datastream;
 
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Utility class to serialize FLOAT32-gridded Envelops.

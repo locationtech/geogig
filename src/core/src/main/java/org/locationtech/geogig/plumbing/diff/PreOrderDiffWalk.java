@@ -67,7 +67,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Provides a means to "walk" the differences between two {@link RevTree trees} in in-order order

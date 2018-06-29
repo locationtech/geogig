@@ -33,7 +33,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Updates an {@link IndexInfo} with new metadata.

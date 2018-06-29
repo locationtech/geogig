@@ -33,7 +33,7 @@ import org.locationtech.geogig.web.api.ParameterSet;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class UpdateIndexTest extends AbstractIndexWebOpTest {
 

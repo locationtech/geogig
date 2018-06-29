@@ -88,8 +88,8 @@ import org.opengis.filter.temporal.TOverlaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * Utility class to decompose a {@link Filter} in two, complementary ones, the

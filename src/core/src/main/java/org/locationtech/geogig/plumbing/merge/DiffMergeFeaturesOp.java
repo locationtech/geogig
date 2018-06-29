@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Takes a feature reference to a common ancestor and the two ends of a feature merge and produces a

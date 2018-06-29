@@ -33,7 +33,7 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class QuadTreeClusteringStrategy_putTest {
 

@@ -83,7 +83,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.Files;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 import cucumber.api.DataTable;
 import cucumber.api.Scenario;

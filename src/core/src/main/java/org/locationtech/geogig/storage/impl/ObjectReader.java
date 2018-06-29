@@ -14,7 +14,7 @@ import java.io.InputStream;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Provides a base interface for reading GeoGig objects from an {@link InputStream}.

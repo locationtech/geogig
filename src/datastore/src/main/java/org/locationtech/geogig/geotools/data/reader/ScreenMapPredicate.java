@@ -25,7 +25,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Predicate;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Filters out {@link Bounded} ({@link NodeRef node refs} and {@link Bucket buckets}) based on a

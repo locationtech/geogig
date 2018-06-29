@@ -9,7 +9,6 @@
  */
 package org.geogig.web.functional;
 
-
 import org.junit.runner.RunWith;
 
 import cucumber.api.CucumberOptions;
@@ -23,7 +22,8 @@ import cucumber.api.junit.Cucumber;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(strict = true, plugin = { "pretty", "html:cucumber-report",
-        "json:cucumber-report/cucumber.json" }, glue = { "org.geogig.web.functional" }, features = {
-                "src/test/resources/features/commands", "src/test/resources/features/repo" })
+        "json:cucumber-report/cucumber.json" }, tags = { "~@Ignore" }, glue = {
+                "org.geogig.web.functional" }, features = { "src/test/resources/features/commands",
+                        "src/test/resources/features/repo" })
 public class RunFunctionalTest {
 }

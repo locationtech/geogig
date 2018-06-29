@@ -20,9 +20,12 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.Ref;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Internal representation of a GeoGig remote repository.
@@ -35,6 +38,8 @@ public class Remote {
     private String fetchurl;
 
     private String pushurl;
+
+    private ImmutableList<LocalRemoteRefSpec> fetchSpecs;
 
     private String fetch;
 
@@ -68,6 +73,8 @@ public class Remote {
         this.mappedBranch = Optional.fromNullable(mappedBranch).or("*");
         this.username = username;
         this.password = password;
+        this.fetchSpecs = Strings.isNullOrEmpty(fetch) ? ImmutableList.of()
+                : ImmutableList.copyOf(LocalRemoteRefSpec.parse(name, fetch));
     }
 
     /**
@@ -127,9 +134,70 @@ public class Remote {
 
     /**
      * @return the fetch string of the remote
+     * @deprecated use {@link #getFetchSpec()}
      */
     public String getFetch() {
         return fetch;
+    }
+
+    public String getFetchSpec() {
+        return fetch;
+    }
+
+    public ImmutableList<LocalRemoteRefSpec> getFetchSpecs() {
+        return fetchSpecs;
+    }
+
+    /**
+     * Returns the local ref a remote ref maps to according to the remote's remote-to-local refspec
+     * rules.
+     * 
+     * @param remoteRef a ref in the remote's local namespace (e.g. {@code refs/heads/master}, not
+     *        {@code refs/remotes/<remote>/master}
+     * @return the ref name that maps the remote ref to the local repository ref according to the
+     *         remote's {@link #getFetchSpecs() fetch-specs}, or
+     *         {@code java.util.Optional#empty() empty()} if none matches.
+     */
+    public java.util.Optional<String> mapToLocal(String remoteRef) {
+        Preconditions.checkNotNull(remoteRef);
+        if (fetchSpecs.isEmpty()) {
+            if (remoteRef.startsWith(Ref.TAGS_PREFIX)) {
+                return java.util.Optional.of(remoteRef);
+            }
+            String remoteSimpleName = remoteRef.startsWith(Ref.HEADS_PREFIX)
+                    ? remoteRef.substring(Ref.REMOTES_PREFIX.length())
+                    : remoteRef;
+            String localRef = String.format("refs/remotes/%s/%s", this.name, remoteSimpleName);
+            return java.util.Optional.of(localRef);
+        }
+
+        for (LocalRemoteRefSpec spec : fetchSpecs) {
+            java.util.Optional<String> localRef = spec.mapToLocal(remoteRef);
+            if (localRef.isPresent()) {
+                return localRef;
+            }
+        }
+
+        return java.util.Optional.empty();
+    }
+
+    public java.util.Optional<String> mapToRemote(final String localRef) {
+        Preconditions.checkNotNull(localRef);
+        if (fetchSpecs.isEmpty()) {
+            if (localRef.startsWith(Ref.TAGS_PREFIX)) {
+                return java.util.Optional.of(localRef);
+            }
+            return java.util.Optional.of(localRef);// match local to remote
+        }
+
+        for (LocalRemoteRefSpec spec : fetchSpecs) {
+            java.util.Optional<String> remoteRef = spec.mapToRemote(localRef);
+            if (remoteRef.isPresent()) {
+                return remoteRef;
+            }
+        }
+
+        return java.util.Optional.empty();
     }
 
     /**
@@ -228,5 +296,21 @@ public class Remote {
         } catch (Exception e) {
             return password;
         }
+    }
+
+    public Remote fetch(String localRemoteRefSpec) {
+        Preconditions.checkNotNull(localRemoteRefSpec);
+        Remote branchRemote = new Remote(name, fetchurl, pushurl, localRemoteRefSpec, mapped,
+                mappedBranch, username, password);
+        return branchRemote;
+    }
+
+    public static String defaultRemoteRefSpec(String remoteName) {
+        return String.format("+refs/heads/*:refs/remotes/%s/*;+refs/tags/*:refs/tags/*",
+                remoteName);
+    }
+
+    public static String defaultMappedBranchRefSpec(String remoteName, String branch) {
+        return String.format("+refs/heads/%s:refs/remotes/%s/%s", branch, remoteName, branch);
     }
 }

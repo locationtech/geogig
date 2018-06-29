@@ -33,6 +33,7 @@ import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
@@ -820,6 +821,13 @@ public class MergeOpTest extends RepositoryTestCase {
         assertEquals("author@test.com", mergeCommit.getAuthor().getEmail().get());
         assertEquals(COMMITTER_NAME, mergeCommit.getCommitter().getName().get());
         assertEquals(COMMITTER_EMAIL, mergeCommit.getCommitter().getEmail().get());
+
+        assertEquals(masterCommit.getId(),
+                geogig.command(RevParse.class).setRefSpec("master~1").call().get());
+        assertEquals(masterCommit.getId(),
+                geogig.command(RevParse.class).setRefSpec("master^1").call().get());
+        assertEquals(branchCommit.getId(),
+                geogig.command(RevParse.class).setRefSpec("master^2").call().get());
     }
 
     @Test

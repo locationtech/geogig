@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -36,11 +37,25 @@ public class FindCommonAncestor extends AbstractGeoGigOp<Optional<ObjectId>> {
 
     private ObjectId right;
 
+    private Supplier<GraphDatabase> leftSource = () -> graphDatabase();
+
+    private Supplier<GraphDatabase> rightSource = () -> graphDatabase();
+
     /**
      * @param left the left {@link ObjectId}
      */
     public FindCommonAncestor setLeftId(ObjectId left) {
         this.left = left;
+        return this;
+    }
+
+    public FindCommonAncestor setLeftSource(GraphDatabase leftGraph) {
+        this.leftSource = leftGraph == null ? () -> graphDatabase() : () -> leftGraph;
+        return this;
+    }
+
+    public FindCommonAncestor setRightSource(GraphDatabase rightGraph) {
+        this.rightSource = rightGraph == null ? () -> graphDatabase() : () -> rightGraph;
         return this;
     }
 
@@ -108,11 +123,10 @@ public class FindCommonAncestor extends AbstractGeoGigOp<Optional<ObjectId>> {
         Queue<GraphNode> leftQueue = new LinkedList<GraphNode>();
         Queue<GraphNode> rightQueue = new LinkedList<GraphNode>();
 
-        GraphDatabase graphDb = graphDatabase();
-        GraphNode leftNode = graphDb.getNode(leftId);
+        GraphNode leftNode = leftSource.get().getNode(leftId);
         leftQueue.add(leftNode);
 
-        GraphNode rightNode = graphDb.getNode(rightId);
+        GraphNode rightNode = rightSource.get().getNode(rightId);
         rightQueue.add(rightNode);
 
         List<GraphNode> potentialCommonAncestors = new LinkedList<GraphNode>();

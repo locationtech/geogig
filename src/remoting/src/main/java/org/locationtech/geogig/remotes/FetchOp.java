@@ -57,7 +57,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
          * Builder for command arguments
          */
         private static class Builder {
-            private boolean all;
+            private boolean allRemotes;
 
             private boolean prune;
 
@@ -70,7 +70,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             private boolean fetchTags = true;
 
             public FetchArgs build(Repository repo) {
-                if (all) {
+                if (allRemotes) {
                     remotes.clear();
                     // Add all remotes to list.
                     ImmutableList<Remote> localRemotes = repo.command(RemoteListOp.class).call();
@@ -134,14 +134,36 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     /**
      * @param all if {@code true}, fetch from all remotes.
      * @return {@code this}
+     * @deprecated use {@link #setAllRemotes} instead
      */
     public FetchOp setAll(final boolean all) {
-        argsBuilder.all = all;
+        argsBuilder.allRemotes = all;
+        return this;
+    }
+    
+    /**
+     * @param all if {@code true}, fetch from all remotes.
+     * @return {@code this}
+     */
+    public FetchOp setAllRemotes(final boolean all) {
+        argsBuilder.allRemotes = all;
         return this;
     }
 
+    public FetchOp setAutofetchTags(final boolean tags) {
+        argsBuilder.fetchTags = tags;
+        return this;
+    }
+
+    /**
+     * @deprecated use {@link #isAllRemotes} instead
+     */
     public boolean isAll() {
-        return argsBuilder.all;
+        return argsBuilder.allRemotes;
+    }
+
+    public boolean isAllRemotes() {
+        return argsBuilder.allRemotes;
     }
 
     /**
@@ -200,6 +222,10 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         return addRemote(command(RemoteResolve.class).setName(remoteName));
     }
 
+    public FetchOp addRemote(final Remote remote) {
+        return addRemote(Suppliers.ofInstance(Optional.of(remote)));
+    }
+
     public List<String> getRemoteNames() {
         return Lists.transform(argsBuilder.remotes, (remote) -> remote.getName());
     }
@@ -240,11 +266,12 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             boolean isSparse = RepositoryImpl.getFilter(repository).isPresent();
             if (!(isHttp || isShallow || isSparse)) {
                 return command(org.locationtech.geogig.remotes.pack.FetchOp.class)//
-                        .setAll(argsBuilder.all)//
+                        .setAllRemotes(argsBuilder.allRemotes)//
                         .setDepth(argsBuilder.depth.or(0))//
                         .setFullDepth(argsBuilder.fullDepth)//
                         .setPrune(argsBuilder.prune)//
                         .addRemotes(argsBuilder.remotes)//
+                        .setAutofetchTags(argsBuilder.fetchTags)//
                         .setProgressListener(getProgressListener())//
                         .call();
             }

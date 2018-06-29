@@ -12,6 +12,7 @@ package org.locationtech.geogig.remotes;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
@@ -167,7 +168,12 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
             refs.add(headRef.get());
             remoteRefs = ImmutableSet.copyOf(refs);
         }
-        return remoteRefs;
+
+        Set<Ref> filtered = remoteRefs.stream()
+                .filter(r -> remoteConfig.mapToLocal(r.getName()).isPresent())
+                .collect(Collectors.toSet());
+
+        return ImmutableSet.copyOf(filtered);
 
     }
 
@@ -179,13 +185,10 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      * @see ForEachRef
      */
     private ImmutableSet<Ref> locallyKnownRefs(final Remote remoteConfig) {
-        Predicate<Ref> filter = new Predicate<Ref>() {
-            final String prefix = Ref.REMOTES_PREFIX + remoteConfig.getName() + "/";
 
-            @Override
-            public boolean apply(Ref input) {
-                return input.getName().startsWith(prefix);
-            }
+        Predicate<Ref> filter = input -> {
+            java.util.Optional<String> remoteRef = remoteConfig.mapToRemote(input.getName());
+            return remoteRef.isPresent();
         };
         return command(ForEachRef.class).setFilter(filter).call();
     }

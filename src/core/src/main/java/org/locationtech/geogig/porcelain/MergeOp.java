@@ -199,10 +199,6 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         Ref headRef = currHead.get();
         final ObjectId oursId = headRef.getObjectId();// on top of which commit to merge
-        // checkState(currHead.get() instanceof SymRef,
-        // "Can't rebase from detached HEAD");
-        // SymRef headRef = (SymRef) currHead.get();
-        // final String currentBranch = headRef.getTarget();
 
         final ProgressListener progress = getProgressListener();
         progress.started();

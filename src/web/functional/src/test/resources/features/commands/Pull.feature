@@ -1,4 +1,4 @@
-@Commands @Pull
+@Commands @Pull @Ignore
 Feature: Pull
   The pull command allows a user to merge a remote branch into a local one and is supported through the "/repos/{repository}/pull" endpoint
   The command must be executed using the HTTP GET method

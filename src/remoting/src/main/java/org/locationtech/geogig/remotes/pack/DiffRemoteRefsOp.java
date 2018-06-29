@@ -51,7 +51,6 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
     @Override
     protected List<RefDiff> _call() {
         checkState(remote != null, "no remote provided");
-
         // list of refs/remotes/<remote>/<refname> or refs/heads according to formatAsRemoteRefs
         Map<String, Ref> remotes;
         Map<String, Ref> locals;
@@ -167,17 +166,15 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
     }
 
     private Set<Ref> getRemoteRefs() {
-
         final boolean getTags = this.getTags;
 
-        ImmutableSet<Ref> remoteRemoteRefs;
+        Set<Ref> remoteRemoteRefs;
         remoteRemoteRefs = command(LsRemoteOp.class)//
                 .setRemote(remote)//
                 .retrieveHead(true)//
                 .retrieveLocalRefs(false)//
                 .retrieveTags(getTags)//
                 .call();
-
         return remoteRemoteRefs;
     }
 }

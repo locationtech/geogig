@@ -52,7 +52,7 @@ public class BranchListOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("Branch1").call();
+        clone.setRemoteURI(remoteGeogig.envHome.toURI()).call();
     }
 
     @Test
@@ -74,7 +74,6 @@ public class BranchListOpTest extends RemoteRepositoryTestCase {
         assertEquals(Ref.HEADS_PREFIX + "Branch1", branches.get(0).getName());
         assertEquals(Ref.HEADS_PREFIX + "master", branches.get(1).getName());
         assertEquals(Ref.REMOTES_PREFIX + REMOTE_NAME + "/Branch1", branches.get(2).getName());
-        assertEquals(Ref.REMOTES_PREFIX + REMOTE_NAME + "/HEAD", branches.get(3).getName());
-        assertEquals(Ref.REMOTES_PREFIX + REMOTE_NAME + "/master", branches.get(4).getName());
+        assertEquals(Ref.REMOTES_PREFIX + REMOTE_NAME + "/master", branches.get(3).getName());
     }
 }

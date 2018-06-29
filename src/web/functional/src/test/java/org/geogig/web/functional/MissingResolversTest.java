@@ -19,8 +19,9 @@ import cucumber.api.junit.Cucumber;
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(strict = true, plugin = { "pretty", "html:cucumber-report",
-        "json:cucumber-report/cucumber.json" }, glue = { "org.geogig.web.functional" }, features = {
-                "src/test/resources/features/resolvers" })
+        "json:cucumber-report/cucumber.json" }, tags = { "~@Ignore" }, glue = {
+                "org.geogig.web.functional" }, features = {
+                        "src/test/resources/features/resolvers" })
 public class MissingResolversTest {
 
 }

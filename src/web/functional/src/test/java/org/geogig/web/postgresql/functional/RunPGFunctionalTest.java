@@ -32,7 +32,7 @@ import cucumber.api.junit.Cucumber;
 @RunWith(Cucumber.class)
 @CucumberOptions(strict = true, plugin = { "pretty", "html:cucumber-report",
         "json:cucumber-report/cucumber.json" }, tags = { "~@FileRepository",
-                "~@ShallowDepth" }, glue = {
+                "~@ShallowDepth", "~@Ignore" }, glue = {
                 "org.geogig.web.functional",
                 "org.geogig.web.postgresql.functional" }, features = {
                 "src/test/resources/features/commands", "src/test/resources/features/repo" })

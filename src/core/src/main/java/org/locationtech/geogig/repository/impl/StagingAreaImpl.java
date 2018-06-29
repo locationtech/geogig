@@ -251,6 +251,7 @@ public class StagingAreaImpl implements StagingArea {
 
         progress.started();
         progress.setMaxProgress(numChanges > 0 ? numChanges : -1);
+        progress.setProgressIndicator(p -> String.format("%,d", (long) p.getProgress()));
 
         final RevTree currentIndexHead = getTree();
         final ConflictsDatabase conflictsDb = conflictsDatabase();
@@ -318,6 +319,8 @@ public class StagingAreaImpl implements StagingArea {
             } else {
                 progress.setDescription("Done.");
             }
+        }finally {
+            progress.setProgressIndicator(null);
         }
         progress.complete();
     }

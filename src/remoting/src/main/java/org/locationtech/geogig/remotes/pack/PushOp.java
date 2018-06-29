@@ -236,33 +236,41 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
     private PushReq parseRefSpec(final String refspec, final Set<Ref> remoteRefs) {
         checkArgument(!Strings.isNullOrEmpty(refspec), "No refspec provided");
-        String[] refs = refspec.split(":");
-        checkArgument(refs.length < 3,
-                "Invalid refspec, please use [+][<localref>][:][<remoteref>].");
-
-        if (refs.length == 0) {
-            refs = new String[2];
+        String localrefspec;
+        String remoterefspec;
+        boolean force = false;
+        boolean delete = false;
+        if (refspec.startsWith(":") && !refspec.equals(":")) {
+            delete = true;
+            localrefspec = null;
+            remoterefspec = refspec.substring(1);
         } else {
-            if (refs[0].startsWith("+")) {
-                refs[0] = refs[0].substring(1);
-            }
-            for (int i = 0; i < refs.length; i++) {
-                if (Strings.isNullOrEmpty(refs[i])) {
-                    refs[i] = null;
+            String[] refs = refspec.split(":");
+            checkArgument(refs.length < 3,
+                    "Invalid refspec, please use [+][<localref>][:][<remoteref>].");
+
+            if (refs.length == 0) {
+                refs = new String[2];
+            } else {
+                if (refs[0].startsWith("+")) {
+                    refs[0] = refs[0].substring(1);
+                }
+                for (int i = 0; i < refs.length; i++) {
+                    if (Strings.isNullOrEmpty(refs[i])) {
+                        refs[i] = null;
+                    }
                 }
             }
+            localrefspec = refs[0];
+            remoterefspec = refs[refs.length == 2 ? 1 : 0];
+            force = refspec.startsWith("+");
+            delete = localrefspec == null && remoterefspec != null;
         }
-
-        String localrefspec = refs[0];
-        String remoterefspec = refs[refs.length == 2 ? 1 : 0];
-        final boolean force = refspec.startsWith("+");
-        final boolean delete = localrefspec == null && remoterefspec != null;
-
         PushReq req;
         if (delete) {
             Optional<Ref> remoteRef = resolveRemoteRef(remoterefspec, remoteRefs);
             Preconditions.checkArgument(remoteRef.isPresent(),
-                    "ref %s does not exist in the remote repository");
+                    "ref %s does not exist in the remote repository", remoterefspec);
             req = PushReq.delete(remoteRef.get().getName());
         } else {
             final Ref localRef;

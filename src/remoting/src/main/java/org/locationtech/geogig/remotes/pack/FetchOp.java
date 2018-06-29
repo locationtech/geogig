@@ -11,18 +11,21 @@ package org.locationtech.geogig.remotes.pack;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.filter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
+import org.locationtech.geogig.remotes.LsRemoteOp;
 import org.locationtech.geogig.remotes.OpenRemote;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.RemoteListOp;
@@ -30,16 +33,18 @@ import org.locationtech.geogig.remotes.RemoteResolve;
 import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.LocalRemoteRefSpec;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Fetches named heads or tags from one or more other repositories, along with the objects necessary
@@ -83,30 +88,42 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         TransferSummary result = new TransferSummary();
 
         for (Remote remote : args.remotes) {
+            if (args.fetchTags) {
+                String fetchSpec = remote.getFetchSpec();
+                fetchSpec += ";+refs/tags/*:refs/tags/*";
+                remote = remote.fetch(fetchSpec);
+            }
             try (IRemoteRepo remoteRepo = openRemote(remote)) {
-                // get ref diffs in the remote's local namespace (i.e. refs/heads/<branch>)
-                // this represents which remote refs we need to update
-                final List<RefDiff> refDiffs = diffRemoteRefs(remoteRepo, args.fetchTags);
-                // This is what needs to be transferred (what I want and what I already have for
-                // each ref)
-                final PackRequest request = prepareRequest(localRepo, refDiffs);
+                Preconditions.checkState(remote.equals(remoteRepo.getInfo()));
 
+                final List<LocalRemoteRef> localToRemoteRemoteRefs = resolveRemoteRefs(remoteRepo);
+
+                final PackRequest request = prepareRequest(localRepo, localToRemoteRemoteRefs);
+
+                if (progress.isCanceled())
+                    return null;
                 // tell the remote to send us the missing objects
-                Iterable<RefDiff> localRemoteResults;
-                localRemoteResults = remoteRepo.command(SendPackOp.class)//
+                remoteRepo.command(SendPackOp.class)//
                         .setRequest(request)//
                         .setTarget(localRepo)//
                         .setProgressListener(progress)//
                         .call();
 
+                if (progress.isCanceled())
+                    return null;
+
                 Iterable<RefDiff> remoteRemoteRefs;
 
                 // apply the ref diffs to our local remotes namespace and obtain the diffs in the
                 // refs/remotes/... namespace
-                remoteRemoteRefs = updateLocalRemoteRefs(remote, refDiffs, args.prune);
+                remoteRemoteRefs = updateLocalRemoteRefs(remote, localToRemoteRemoteRefs,
+                        args.prune);
                 result.addAll(remote.getFetchURL(), Lists.newArrayList(remoteRemoteRefs));
             }
         }
+
+        if (progress.isCanceled())
+            return null;
 
         if (args.fullDepth) {
             // The full history was fetched, this is no longer a shallow clone
@@ -122,34 +139,126 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         return result;
     }
 
-    private List<RefDiff> updateLocalRemoteRefs(Remote remote, Iterable<RefDiff> localRemoteResults,
-            boolean prune) {
+    private Iterable<RefDiff> updateLocalRemoteRefs(Remote remote, List<LocalRemoteRef> fetchSpecs,
+            final boolean prune) {
 
-        if (!prune) {
-            localRemoteResults = Iterables.filter(localRemoteResults, (d) -> !d.isDelete());
+        List<RefDiff> result = new ArrayList<>();
+
+        for (LocalRemoteRef expected : fetchSpecs) {
+            final boolean isNew = expected.isNew;
+            final boolean remoteDeleted = expected.remoteDeleted;
+            final String localName = expected.localRemoteRef.getName();
+
+            if (remoteDeleted) {
+                if (prune) {
+                    result.add(RefDiff.removed(expected.localRemoteRef));
+                    command(UpdateRef.class).setName(localName)
+                            .setOldValue(expected.localRemoteRef.getObjectId()).setDelete(true)
+                            .call();
+                }
+                continue;
+            }
+            RefDiff localRefDiff;
+
+            Ref oldRef = isNew ? null : expected.localRemoteRef;
+            Ref newRef = new Ref(localName, expected.remoteRef.getObjectId());
+
+            command(UpdateRef.class).setName(localName).setNewValue(newRef.getObjectId()).call();
+
+            localRefDiff = new RefDiff(oldRef, newRef);
+            result.add(localRefDiff);
         }
-        List<RefDiff> remoteRemoteRefs;
-        remoteRemoteRefs = command(UpdateRemoteRefOp.class)//
-                .addAll(localRemoteResults)//
-                .setRemote(remote)//
-                .call();
-        return remoteRemoteRefs;
+        return result;
+    }
+
+    private static class LocalRemoteRef {
+        final boolean force, isNew, remoteDeleted;
+
+        final Ref remoteRef, localRemoteRef;
+
+        public LocalRemoteRef(Ref remoteRef, Ref localRemoteRef, boolean force, boolean isNew,
+                boolean remoteDeleted) {
+            checkNotNull(remoteRef);
+            checkNotNull(localRemoteRef);
+            this.remoteRef = remoteRef;
+            this.localRemoteRef = localRemoteRef;
+            this.force = force;
+            this.isNew = isNew;
+            this.remoteDeleted = remoteDeleted;
+        }
+
+        public @Override String toString() {
+            return String.format("%s -> %s (%s -> %s)", remoteRef.getName(),
+                    localRemoteRef.getName(), remoteRef.getObjectId(),
+                    localRemoteRef.getObjectId());
+        }
     }
 
     /**
-     * Runs {@link DiffRemoteRefsOp} returning a list of {@link RefDiff} where each
-     * {@link RefDiff#getOldRef()} is the current value of the remote ref in the local repository
-     * (as in the repository's {@code refs/remotes/<remote>} namespace), and each
-     * {@link RefDiff#getNewRef())} is the current value of the ref returned by the remote.
+     * Based on the remote's {@link Remote#getFetchSpecs() fetch specs}, resolves which remote
+     * references need to be fetched and returns the mapping of each ref in the remote's namespate
+     * to the local remotes namespace (e.g. {@code refs/heads/master -> refs/remotes/origin/master}
      */
-    private List<RefDiff> diffRemoteRefs(IRemoteRepo remote, boolean includeTags) {
-        List<RefDiff> refdiffs;
-        refdiffs = command(DiffRemoteRefsOp.class)//
-                .setRemote(remote)//
-                .setGetRemoteTags(includeTags)//
-                .normalizeToLocalRefs()// use local namespaces to talk to the server
-                .call();
-        return refdiffs;
+    private List<LocalRemoteRef> resolveRemoteRefs(IRemoteRepo remoteRepo) {
+
+        final Map<String, Ref> remoteRemoteRefs;
+        final Map<String, Ref> localRemoteRefs;
+
+        {
+            LsRemoteOp lsRemote = command(LsRemoteOp.class).setRemote(remoteRepo);
+            remoteRemoteRefs = new HashMap<>(Maps.uniqueIndex(lsRemote.call(), r -> r.getName()));
+            localRemoteRefs = new HashMap<>(
+                    Maps.uniqueIndex(lsRemote.retrieveLocalRefs(true).call(), r -> r.getName()));
+        }
+
+        List<LocalRemoteRef> refsToFectch = new ArrayList<>();
+        final Remote remote = remoteRepo.getInfo();
+
+        for (Ref remoteRef : remoteRemoteRefs.values()) {
+            for (LocalRemoteRefSpec spec : remote.getFetchSpecs()) {
+                java.util.Optional<String> localName = remote.mapToLocal(remoteRef.getName());
+                boolean isNew = false, remoteDeleted = false;
+                if (localName.isPresent()) {
+                    Ref localRemoteRef = localRemoteRefs.remove(localName.get());
+                    if (localRemoteRef == null) {
+                        localRemoteRef = new Ref(localName.get(), ObjectId.NULL);
+                        isNew = true;
+                    }
+                    if (!remoteRef.getObjectId().equals(localRemoteRef.getObjectId())) {
+                        LocalRemoteRef localRemoteMapping;
+                        localRemoteMapping = new LocalRemoteRef(remoteRef, localRemoteRef,
+                                spec.isForce(), isNew, remoteDeleted);
+                        refsToFectch.add(localRemoteMapping);
+                    }
+                    break;
+                }
+            }
+        }
+        // remaining refs found in the local repository
+        for (Ref localRemote : localRemoteRefs.values()) {
+            for (LocalRemoteRefSpec spec : remote.getFetchSpecs()) {
+                java.util.Optional<String> remoteName;
+                remoteName = remote.mapToRemote(localRemote.getName());
+                boolean isNew = false, remoteDeleted = false;
+                if (remoteName.isPresent()) {
+                    Ref remoteRef = remoteRemoteRefs.remove(remoteName.get());
+                    if (remoteRef == null) {
+                        remoteRef = new Ref(remoteName.get(), ObjectId.NULL);
+                        remoteDeleted = true;
+                    }
+                    if (remoteDeleted
+                            || !localRemote.getObjectId().equals(remoteRef.getObjectId())) {
+                        LocalRemoteRef localRemoteMapping;
+                        localRemoteMapping = new LocalRemoteRef(remoteRef, localRemote,
+                                spec.isForce(), isNew, remoteDeleted);
+                        refsToFectch.add(localRemoteMapping);
+                    }
+                    break;
+                }
+            }
+        }
+
+        return refsToFectch;
     }
 
     /**
@@ -162,35 +271,31 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * filtered out.
      * 
      * @param local
-     * @param refdiffs
+     * @param localToRemoteRemoteRefs
      */
-    private PackRequest prepareRequest(Repository local, List<RefDiff> refdiffs) {
+    private PackRequest prepareRequest(Repository local,
+            List<LocalRemoteRef> localToRemoteRemoteRefs) {
 
         PackRequest request = new PackRequest();
 
-        // filter out pruned remote refs
-        Iterable<RefDiff> updatable = filter(refdiffs,
-                (r) -> !r.isDelete() && !r.getNewRef().getObjectId().isNull());
-
-        for (RefDiff cr : updatable) {
-            RefRequest req;
-            ObjectId haveTip = null;
-            switch (cr.getType()) {
-            case ADDED_REF:
-                break;
-            case CHANGED_REF:
-                haveTip = cr.getOldRef().getObjectId();
-                break;
-            default:
-                throw new IllegalStateException();
+        for (LocalRemoteRef refFetchSpec : localToRemoteRemoteRefs) {
+            final Ref remoteRef = refFetchSpec.remoteRef;
+            final Ref localRef = refFetchSpec.localRemoteRef;
+            if (remoteRef.getObjectId().equals(localRef.getObjectId())) {
+                continue;
             }
-            Ref want = cr.getNewRef().peel();
+            if (remoteRef.getObjectId().isNull()) {
+                continue;// filter out pruned remote refs
+            }
+
+            RefRequest req;
+            ObjectId haveTip = localRef.getObjectId();
             // may the want commit exist in the local repository's object database nonetheless?
-            ObjectId wantId = want.getObjectId();
+            ObjectId wantId = remoteRef.getObjectId();
             if (!wantId.isNull() && local.objectDatabase().exists(wantId)) {
                 haveTip = wantId;
             }
-            req = RefRequest.want(want, haveTip);
+            req = RefRequest.want(remoteRef, haveTip);
             request.addRef(req);
         }
 
@@ -295,14 +400,36 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     /**
      * @param all if {@code true}, fetch from all remotes.
      * @return {@code this}
+     * @deprecated use {@link #setAllRemotes} instead
      */
     public FetchOp setAll(final boolean all) {
         argsBuilder.allRemotes = all;
         return this;
     }
 
+    /**
+     * @param all if {@code true}, fetch from all remotes.
+     * @return {@code this}
+     */
+    public FetchOp setAllRemotes(final boolean all) {
+        argsBuilder.allRemotes = all;
+        return this;
+    }
+
+    /**
+     * @deprecated use {@link #isAllRemotes} instead
+     */
     public boolean isAll() {
         return argsBuilder.allRemotes;
+    }
+
+    public boolean isAllRemotes() {
+        return argsBuilder.allRemotes;
+    }
+
+    public FetchOp setAutofetchTags(final boolean tags) {
+        argsBuilder.fetchTags = tags;
+        return this;
     }
 
     /**

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
 import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
@@ -45,6 +46,8 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
+
+import com.google.common.base.Optional;
 
 public class PullTest extends AbstractWebOpTest {
 
@@ -114,14 +117,14 @@ public class PullTest extends AbstractWebOpTest {
 
         Ref master = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref branch1 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
-                .setName("refs/remotes/origin/branch1").call().get();
-        Ref branch2 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
-                .setName("refs/remotes/origin/branch2").call().get();
+        Optional<Ref> branch1 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("refs/remotes/origin/branch1").call();
+        Optional<Ref> branch2 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("refs/remotes/origin/branch2").call();
 
         assertEquals(remoteMaster.getObjectId(), master.getObjectId());
-        assertEquals(remoteBranch1.getObjectId(), branch1.getObjectId());
-        assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
+        assertFalse(branch1.isPresent());
+        assertFalse(branch2.isPresent());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         TestSupport.verifyRepositoryContents(geogig);
@@ -131,14 +134,12 @@ public class PullTest extends AbstractWebOpTest {
         JsonObject remoteObject = pull.getJsonObject("Fetch").getJsonObject("Remote");
         assertEquals(remote.getFetchURL(), remoteObject.getString("remoteURL"));
         JsonArray branch = remoteObject.getJsonArray("Branch");
-        String expected = "[{\"changeType\":\"ADDED_REF\",\"name\":\"branch1\",\"newValue\":\""
-                + branch1.getObjectId().toString() + "\"},"
-                + "{\"changeType\":\"ADDED_REF\",\"name\":\"branch2\",\"newValue\":\""
-                + branch2.getObjectId().toString() + "\"},"
-                + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
+
+        String expected = "[{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
                 + master.getObjectId().toString() + "\"}]";
+
         assertTrue(jsonEquals(toJSONArray(expected), branch, false));
-        assertEquals(remote.getFetchURL(), pull.getString("Remote"));
+        assertEquals(remote.getName(), pull.getString("Remote"));
         assertEquals("master", pull.getString("Ref"));
         assertEquals(9, pull.getInt("Added"));
         assertEquals(0, pull.getInt("Removed"));
@@ -176,19 +177,20 @@ public class PullTest extends AbstractWebOpTest {
                 "branch1:newbranch");
         buildCommand(options).run(testContext.get());
 
-        Ref master = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
-                .setName("refs/remotes/origin/master").call().get();
-        Ref branch1 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
-                .setName("refs/remotes/origin/branch1").call().get();
-        Ref branch2 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
-                .setName("refs/remotes/origin/branch2").call().get();
-        Ref newbranch = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
-                .setName("newbranch").call().get();
-
-        assertEquals(remoteMaster.getObjectId(), master.getObjectId());
-        assertEquals(remoteBranch1.getObjectId(), branch1.getObjectId());
-        assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
-        assertEquals(remoteBranch1.getObjectId(), newbranch.getObjectId());
+        Optional<Ref> master = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("refs/remotes/origin/master").call();
+        Optional<Ref> branch1 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("refs/remotes/origin/branch1").call();
+        Optional<Ref> branch2 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("refs/remotes/origin/branch2").call();
+        Optional<Ref> newbranch = transaction
+                .command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("refs/remotes/origin/newbranch").call();
+        assertFalse(master.isPresent());
+        assertFalse(branch1.isPresent());
+        assertFalse(branch2.isPresent());
+        assertTrue(newbranch.isPresent());
+        assertEquals(remoteBranch1.getObjectId(), newbranch.get().getObjectId());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
@@ -196,15 +198,11 @@ public class PullTest extends AbstractWebOpTest {
         JsonObject remoteObject = pull.getJsonObject("Fetch").getJsonObject("Remote");
         assertEquals(remote.getFetchURL(), remoteObject.getString("remoteURL"));
         JsonArray branch = remoteObject.getJsonArray("Branch");
-        String expected = "[{\"changeType\":\"ADDED_REF\",\"name\":\"branch1\",\"newValue\":\""
-                + branch1.getObjectId().toString() + "\"},"
-                + "{\"changeType\":\"ADDED_REF\",\"name\":\"branch2\",\"newValue\":\""
-                + branch2.getObjectId().toString() + "\"},"
-                + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
-                + master.getObjectId().toString() + "\"}]";
+        String expected = "[{\"changeType\":\"ADDED_REF\",\"name\":\"newbranch\",\"newValue\":\""
+                + newbranch.get().getObjectId() + "\"}]";
         assertTrue(jsonEquals(toJSONArray(expected), branch, false));
-        assertEquals(remote.getFetchURL(), pull.getString("Remote"));
-        assertEquals("newbranch", pull.getString("Ref"));
+        assertEquals("origin", pull.getString("Remote"));
+        assertEquals("master", pull.getString("Ref"));// pulls always onto the current branch
         assertEquals(6, pull.getInt("Added"));
         assertEquals(0, pull.getInt("Removed"));
         assertEquals(0, pull.getInt("Modified"));
@@ -389,8 +387,7 @@ public class PullTest extends AbstractWebOpTest {
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
         ParameterSet options = TestParams.of("transactionId",
-                transaction.getTransactionId().toString(), "remoteName", "origin", "ref",
-                "master:branch1");
+                transaction.getTransactionId().toString(), "remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");

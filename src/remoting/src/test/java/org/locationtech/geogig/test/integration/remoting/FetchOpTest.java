@@ -236,6 +236,83 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     }
 
     @Test
+    public void testFetchSingleRef() throws Exception {
+        final Repository remote = this.originRepo;
+        final Repository local = this.localRepo;
+
+        remote.command(BranchCreateOp.class).setName("branch2").setAutoCheckout(true).call();
+        insertAndAdd(remote, lines1_modified, lines2_modified, lines3_modified);
+        RevCommit branch2Tip = commit(remote, "modified lines on branch2");
+        checkout(remote, "master");
+
+        remote.command(BranchCreateOp.class).setName("branch3").setAutoCheckout(true).call();
+        insertAndAdd(remote, points1_modified, points2_modified, points3_modified);
+        RevCommit branch3Tip = commit(remote, "modified points on branch3");
+        checkout(remote, "master");
+
+        Optional<Ref> originBranch2 = Optional
+                .of(toRemote(origin, getRef(remote, "branch2").get()));
+
+        // fetch from the remote
+        FetchOp fetch = fetchOp().setAutofetchTags(false);
+
+        Remote singleRefOrigin = origin.fetch("refs/heads/branch2");
+
+        TransferSummary summary = fetch.addRemote(singleRefOrigin).call();
+
+        assertFalse(getRef(local, "refs/heads/branch2").isPresent());
+        assertTrue(getRef(local, "refs/remotes/origin/branch2").isPresent());
+        assertFalse(getRef(local, "branch3").isPresent());
+        assertEquals(branch2Tip.getId(),
+                getRef(local, "refs/remotes/origin/branch2").get().getObjectId());
+
+        assertEquals(1, summary.getRefDiffs().size());
+        assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
+        assertEquals(1, summary.getRefDiffs().get(origin.getFetchURL()).size());
+        assertSummary(summary, origin.getFetchURL(), absent(), originBranch2);
+        TestSupport.verifyRepositoryContents(local, "refs/remotes/origin/branch2");
+
+    }
+
+    public @Test void testFetchRespectsTargeRef() throws Exception {
+        final Repository remote = this.originRepo;
+        final Repository local = this.localRepo;
+
+        remote.command(BranchCreateOp.class).setName("branch2").setAutoCheckout(true).call();
+        insertAndAdd(remote, lines1_modified, lines2_modified, lines3_modified);
+        RevCommit branch2Tip = commit(remote, "modified lines on branch2");
+        checkout(remote, "master");
+
+        remote.command(BranchCreateOp.class).setName("branch3").setAutoCheckout(true).call();
+        insertAndAdd(remote, points1_modified, points2_modified, points3_modified);
+        RevCommit branch3Tip = commit(remote, "modified points on branch3");
+        checkout(remote, "master");
+
+        // fetch from the remote, fetching remote's branch2 to local's refs/custom/branch2 and
+        // branch3 to refs/custom/branch3 explicitly
+        FetchOp fetch = fetchOp().setAutofetchTags(false);
+        final String refSpec = "refs/heads/branch2:refs/custom/branch2;refs/heads/branch3:refs/custom/branch3;";
+        Remote singleRefOrigin = origin.fetch(refSpec);
+
+        TransferSummary summary = fetch.addRemote(singleRefOrigin).call();
+
+        assertFalse(getRef(local, "refs/heads/branch2").isPresent());
+        assertFalse(getRef(local, "refs/heads/branch3").isPresent());
+        assertFalse(getRef(local, "refs/remotes/origin/branch2").isPresent());
+        assertFalse(getRef(local, "refs/remotes/origin/branch3").isPresent());
+
+        assertTrue(getRef(local, "refs/custom/branch2").isPresent());
+        assertTrue(getRef(local, "refs/custom/branch2").isPresent());
+        assertEquals(branch2Tip.getId(), getRef(local, "refs/custom/branch2").get().getObjectId());
+        assertEquals(branch3Tip.getId(), getRef(local, "refs/custom/branch3").get().getObjectId());
+
+        assertEquals(1, summary.getRefDiffs().size());
+        assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
+        assertEquals(2, summary.getRefDiffs().get(origin.getFetchURL()).size());
+        TestSupport.verifyRepositoryContents(local, "refs/custom/branch2", "refs/custom/branch3");
+    }
+
+    @Test
     public void testFetchSpecificRemote() throws Exception {
         // fetch from the remote
         FetchOp fetch = fetchOp();
@@ -254,7 +331,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     public void testFetchSpecificRemoteAndAll() throws Exception {
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        TransferSummary summary = fetch.addRemote("upstream").setAll(true).call();
+        TransferSummary summary = fetch.addRemote("upstream").setAllRemotes(true).call();
 
         assertEquals(2, summary.getRefDiffs().size());
         assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
@@ -300,7 +377,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     public void testFetchWithPrune() throws Exception {
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        fetch.addRemote("origin").setAll(true).call();
+        fetch.addRemote("origin").setAllRemotes(true).call();
 
         verifyFetch();
         Optional<Ref> localOriginBranch1 = getRef(localRepo, "refs/remotes/origin/Branch1");
@@ -321,7 +398,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     public void testFetchWithPruneAndBranchAdded() throws Exception {
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        fetch.addRemote("origin").setAll(true).call();
+        fetch.addRemote("origin").setAllRemotes(true).call();
 
         verifyFetch();
 

@@ -21,10 +21,10 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
@@ -90,6 +90,8 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
 
     private Optional<Integer> depth = Optional.absent();
 
+    private boolean singleBranch = false;
+
     /**
      * Executes the clone operation.
      * 
@@ -104,12 +106,14 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
             // Set up origin
             final Remote remote = addRemote(cloneRepo);
             final Iterable<RefDiff> localRemoteRefs;
+            Optional<Ref> headRef;
             try (IRemoteRepo remoteRepo = openRemote(remote)) {
                 final Integer depth = this.depth.or(remoteRepo.getDepth()).or(0);
                 setDepth(cloneRepo, depth);
                 localRemoteRefs = fetchRemoteData(cloneRepo, remote, depth);
+                headRef = remoteRepo.headRef();
             }
-            setUpRemoteTrackingBranches(cloneRepo, remote, localRemoteRefs);
+            setUpRemoteTrackingBranches(cloneRepo, remote, localRemoteRefs, headRef);
         } catch (Exception e) {
             // something went wrong, need to delete the clone
             cloneRepo.close();
@@ -205,6 +209,11 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
         return this;
     }
 
+    public CloneOp setSingleBranch(boolean singleBranchClone) {
+        this.singleBranch = singleBranchClone;
+        return this;
+    }
+
     public Optional<String> getBranch() {
         return branch;
     }
@@ -224,20 +233,21 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
         return depth;
     }
 
-    private Collection<RefDiff> fetchRemoteData(final Repository clone, final Remote remote,
+    private Collection<RefDiff> fetchRemoteData(final Repository clone, Remote remote,
             final int depth) {
         // Fetch remote data
         final TransferSummary fetchResults;
-        final String remoteName = remote.getName();
         final ProgressListener progress = getProgressListener();
 
         fetchResults = clone.command(FetchOp.class)//
-                .addRemote(remoteName)//
+                .addRemote(remote)//
                 .setDepth(depth)//
+                .setAutofetchTags(true)//
                 .setProgressListener(progress)//
                 .call();
 
         Map<String, Collection<RefDiff>> changedRefs = fetchResults.getRefDiffs();
+
         String fetchURL = remote.getFetchURL();
         Collection<RefDiff> refs = changedRefs.get(fetchURL);
         if (refs == null) {
@@ -263,7 +273,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
     }
 
     private void setUpRemoteTrackingBranches(Repository clone, Remote remote,
-            Iterable<RefDiff> refdifss) {
+            Iterable<RefDiff> refdifss, Optional<Ref> remoteHeadRef) {
 
         final Iterable<Ref> remoteRefs = Iterables.transform(refdifss, (cr) -> cr.getNewRef());
         final Iterable<Ref> localRefs = command(MapRef.class)//
@@ -304,24 +314,31 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
                         branch.get());
                 getProgressListener().setDescription(warn);
             }
-        } else {
-            String remoteHead = Ref.REMOTES_PREFIX + remote.getName() + "/" + Ref.HEAD;
-            final @Nullable Ref currRemoteHead = clone.command(RefParse.class).setName(remoteHead)
-                    .call().orNull();
-            if (currRemoteHead instanceof SymRef) {
-                currentBranch = currRemoteHead.peel().localName();
+        }
+
+        if (currentBranch == null && remoteHeadRef.isPresent()) {
+            Ref rhead = remoteHeadRef.get();
+            if (rhead instanceof SymRef) {
+                currentBranch = rhead.peel().localName();
+            } else {
+                // remote is in a detached head
+                ObjectId dettachedHeadId = rhead.getObjectId();
+                if (!dettachedHeadId.isNull()) {
+                    currentBranch = dettachedHeadId.toString();
+                }
             }
+        }
+        if (currentBranch == null) {// last resort, pick a branch
+            currentBranch = createdBranches.isEmpty() ? null : createdBranches.iterator().next();
         }
         if (currentBranch != null) {
             clone.command(CheckoutOp.class).setForce(true).setSource(currentBranch).call();
-        } else {
-            // just leave at default; should be master since we just initialized the repo.
         }
     }
 
     private Remote addRemote(Repository clone) {
         final boolean sparse = clone.isSparse();
-        if (sparse) {
+        if (sparse || singleBranch) {
             checkArgument(this.branch.isPresent(), "No branch specified for sparse clone.");
         }
         {// won't be necessary once ClopeOp actually creates the clone repo
@@ -331,15 +348,16 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
             }
         }
         final @Nullable String branch = this.branch.orNull();
-        Remote remote = clone.command(RemoteAddOp.class)//
+        RemoteAddOp cmd = clone.command(RemoteAddOp.class)//
                 .setName(remoteName)//
                 .setURL(remoteURI.toString())//
                 .setMapped(sparse)//
                 .setUserName(username)//
-                .setPassword(password)//
-                .setBranch(branch).//
-                call();
-
+                .setPassword(password);
+        if (sparse || singleBranch) {
+            cmd.setBranch(branch);
+        }
+        Remote remote = cmd.call();
         return remote;
     }
 

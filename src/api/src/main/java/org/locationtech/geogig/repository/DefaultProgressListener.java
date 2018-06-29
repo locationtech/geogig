@@ -167,8 +167,8 @@ public class DefaultProgressListener implements ProgressListener {
 
     public @Override void setProgressIndicator(
             Function<ProgressListener, String> progressIndicator) {
-        Preconditions.checkNotNull(progressIndicator);
-        this.progressIndicator = progressIndicator;
+        this.progressIndicator = progressIndicator == null ? DEFAULT_PROGRES_INDICATOR
+                : progressIndicator;
     }
 
     public @Override Function<ProgressListener, String> progressIndicator() {

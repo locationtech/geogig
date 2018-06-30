@@ -98,8 +98,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 
 public abstract class RemoteRepositoryTestCase {
 

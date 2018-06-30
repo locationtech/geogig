@@ -25,7 +25,7 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 @RequiresRepository(true)
 @Parameters(commandNames = {

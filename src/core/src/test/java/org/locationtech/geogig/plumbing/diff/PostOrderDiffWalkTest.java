@@ -39,7 +39,7 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class PostOrderDiffWalkTest {
 

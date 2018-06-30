@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Given a {@code refSpec} that resolves to a root tree, finds out which indexes are defined for all

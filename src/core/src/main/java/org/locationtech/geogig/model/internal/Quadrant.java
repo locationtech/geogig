@@ -12,8 +12,8 @@ package org.locationtech.geogig.model.internal;
 import org.locationtech.geogig.model.Node;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 
 enum Quadrant {
     SW(0, 0), NW(0, 1), NE(1, 1), SE(1, 0);

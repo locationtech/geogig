@@ -75,7 +75,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Internal operation for creating a FeatureCollection from a tree content.

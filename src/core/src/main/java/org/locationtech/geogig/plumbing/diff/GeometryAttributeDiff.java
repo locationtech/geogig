@@ -21,7 +21,7 @@ import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * An implementation of AttributeDiff to be used with attributes containing geometries

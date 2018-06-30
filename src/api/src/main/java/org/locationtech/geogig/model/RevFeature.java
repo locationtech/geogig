@@ -14,8 +14,8 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * A {@code RevFeature} is an immutable data structure that contains the attribute value instances

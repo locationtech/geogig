@@ -48,7 +48,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 

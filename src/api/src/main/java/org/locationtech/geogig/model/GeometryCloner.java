@@ -10,8 +10,8 @@
 
  package org.locationtech.geogig.model;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 //simple class that clones a geometry, and resets the CoordinateSequences  to
 // CoordinateArraySequences

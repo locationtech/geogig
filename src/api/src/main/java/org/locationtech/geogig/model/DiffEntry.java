@@ -17,7 +17,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Provides a way of describing the between two different {@link Node}s.

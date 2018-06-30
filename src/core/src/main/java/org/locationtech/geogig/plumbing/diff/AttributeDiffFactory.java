@@ -13,7 +13,7 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 public class AttributeDiffFactory {
 

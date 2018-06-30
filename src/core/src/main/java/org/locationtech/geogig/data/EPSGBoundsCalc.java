@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.TransformException;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Given a code string (EPSG:####) or {@link RevFeatureType} , find the CRS bounds and return as an

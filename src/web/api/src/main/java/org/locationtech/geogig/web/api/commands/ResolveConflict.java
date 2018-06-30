@@ -36,8 +36,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Web interface to resolve a single feature conflict

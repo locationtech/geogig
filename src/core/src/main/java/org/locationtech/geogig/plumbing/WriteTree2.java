@@ -46,7 +46,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Creates a new root tree in the {@link ObjectDatabase object database} from the current index,

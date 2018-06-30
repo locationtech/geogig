@@ -37,7 +37,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class BuildIndexOpTest extends RepositoryTestCase {
 

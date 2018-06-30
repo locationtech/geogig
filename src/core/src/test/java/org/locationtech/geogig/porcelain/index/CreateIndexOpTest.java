@@ -38,7 +38,7 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class CreateIndexOpTest extends RepositoryTestCase {
 

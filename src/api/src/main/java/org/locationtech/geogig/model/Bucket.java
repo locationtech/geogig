@@ -15,7 +15,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * A Bucket is merely a bounded pointer to another tree in a {@link RevTree} data structure.

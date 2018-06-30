@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * This operation merges two features that have compatible changes, returning the result of this

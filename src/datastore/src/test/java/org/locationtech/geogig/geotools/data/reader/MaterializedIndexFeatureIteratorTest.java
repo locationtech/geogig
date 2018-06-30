@@ -30,8 +30,8 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.GeometryFactory;
 
 public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
 

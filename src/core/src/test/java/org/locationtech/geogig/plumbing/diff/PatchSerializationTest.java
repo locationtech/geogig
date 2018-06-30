@@ -27,7 +27,7 @@ import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 public class PatchSerializationTest extends RepositoryTestCase {
 

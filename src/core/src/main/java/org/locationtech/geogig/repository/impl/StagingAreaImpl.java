@@ -60,7 +60,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Default implementation of {@link StagingArea}

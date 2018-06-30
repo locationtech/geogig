@@ -38,7 +38,7 @@ import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.LineString;
+import org.locationtech.jts.geom.LineString;
 
 public class GeoJsonImportTest extends RepositoryTestCase {
 

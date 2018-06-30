@@ -15,20 +15,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.MultiPoint;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * Enumeration of value types supported as {@link RevFeature} attribute values.
@@ -269,7 +269,7 @@ public enum FieldType {
 
     /**
      * Returns a safe copy (e.g. a clone or immutable copy) of {@code value}, if it is of a mutable
-     * object type (e.g. {@code java.util.Map, com.vividsolutions.jts.geom.Geometry, etc}), or the
+     * object type (e.g. {@code java.util.Map, org.locationtech.jts.geom.Geometry, etc}), or the
      * same object if it's already immutable (e.g. {@code java.lang.Integer,etc}).
      * 
      * @param value an object of this {@code FiledType}'s {@link FieldType#getBinding() binding}

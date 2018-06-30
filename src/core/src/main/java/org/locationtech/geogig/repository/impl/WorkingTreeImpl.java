@@ -65,7 +65,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * A working tree is the collection of Features for a single FeatureType in GeoServer that has a

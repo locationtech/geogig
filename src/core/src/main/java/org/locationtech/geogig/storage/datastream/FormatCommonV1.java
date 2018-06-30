@@ -58,8 +58,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 
 public class FormatCommonV1 {
 

@@ -14,7 +14,7 @@ import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * An implementation of GeometryDiff that just stores both the new and the old value, so it actually

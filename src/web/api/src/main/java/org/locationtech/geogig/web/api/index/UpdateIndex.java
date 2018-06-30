@@ -25,7 +25,7 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * The interface for the Update Index operation in GeoGig.

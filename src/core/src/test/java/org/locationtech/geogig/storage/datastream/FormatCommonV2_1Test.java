@@ -30,9 +30,9 @@ import org.locationtech.geogig.storage.datastream.FormatCommonV2_1.LazyRevFeatur
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.WKTReader;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.WKTReader;
 
 public class FormatCommonV2_1Test {
 

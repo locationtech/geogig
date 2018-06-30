@@ -29,8 +29,8 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.util.Assert;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.util.Assert;
 
 public class MultiFeatureTypeBuilderTest {
 

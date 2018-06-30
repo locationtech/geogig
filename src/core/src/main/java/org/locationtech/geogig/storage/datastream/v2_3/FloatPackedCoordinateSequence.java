@@ -12,9 +12,9 @@ package org.locationtech.geogig.storage.datastream.v2_3;
 
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateSequence;
-import com.vividsolutions.jts.geom.impl.PackedCoordinateSequence.Float;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.impl.PackedCoordinateSequence.Float;
 
 /**
  * Seralized form is a int[][]

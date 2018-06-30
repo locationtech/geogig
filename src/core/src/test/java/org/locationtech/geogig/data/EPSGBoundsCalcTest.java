@@ -27,8 +27,8 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Point;
 
 public class EPSGBoundsCalcTest extends RepositoryTestCase {
 

@@ -20,8 +20,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTReader;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKTReader;
 
 public class RevFeatureBuilderTest extends RepositoryTestCase {
 

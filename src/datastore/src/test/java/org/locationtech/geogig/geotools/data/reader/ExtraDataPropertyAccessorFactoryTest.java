@@ -40,7 +40,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.IndexInfo;
 
 import com.google.common.collect.ImmutableMap;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class ExtraDataPropertyAccessorFactoryTest {
 

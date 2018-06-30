@@ -24,7 +24,7 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 // This test case is ignored because system properties were
 // not being properly set during the Travis CI build,

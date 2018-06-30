@@ -109,7 +109,7 @@ To illustrate the usage of this, below is an example of a hook that prevents com
 
 .. code-block:: javascript
 
-   Validator = Packages.com.vividsolutions.jts.operation.valid.IsValidOp;
+   Validator = Packages.org.locationtech.jts.operation.valid.IsValidOp;
    var features = geogig.getFeaturesToCommit(null, true);
    for (var i = 0; i < features.length; i++) {
      var feature = features[i];

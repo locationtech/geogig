@@ -34,8 +34,8 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * A {@link SimpleFeature} iterator used to build features out of nodes {@link Node#getExtraData()

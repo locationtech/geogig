@@ -55,9 +55,9 @@ import org.opengis.filter.temporal.After;
 import org.opengis.filter.temporal.AnyInteracts;
 
 import com.google.common.collect.ImmutableMap;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.WKTReader;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.WKTReader;
 
 public class PreFilterTest {
 

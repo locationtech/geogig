@@ -53,7 +53,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class WriteTree2Test extends RepositoryTestCase {
 

@@ -36,7 +36,7 @@ import org.opengis.feature.type.Name;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Function;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * This is the main entry class for retrieving features from GeoGIG.

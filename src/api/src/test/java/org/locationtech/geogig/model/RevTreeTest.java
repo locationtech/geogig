@@ -27,7 +27,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class RevTreeTest {
     @Rule

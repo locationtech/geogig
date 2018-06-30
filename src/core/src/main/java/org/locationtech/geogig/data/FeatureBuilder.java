@@ -23,7 +23,7 @@ import org.opengis.feature.type.Name;
 import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Provides a method of building features from {@link RevFeature} objects that have the type

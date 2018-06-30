@@ -33,12 +33,12 @@ import org.locationtech.geogig.model.FieldType;
 import com.google.common.base.Splitter;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.InStream;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKBWriter;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.InStream;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKBWriter;
 
 /**
  * A class to serializer/deserialize attribute values to/from a data stream

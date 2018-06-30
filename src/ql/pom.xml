@@ -30,7 +30,7 @@
         <artifactId>jsqlparser</artifactId>
       </dependency>
       <dependency>
-        <groupId>com.vividsolutions</groupId>
+        <groupId>org.locationtech.jts</groupId>
         <artifactId>jts-core</artifactId>
         <version>${jts.version}</version>
       </dependency>

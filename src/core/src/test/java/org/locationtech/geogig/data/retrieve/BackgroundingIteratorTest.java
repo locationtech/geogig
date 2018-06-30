@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
-import com.vividsolutions.jts.util.Assert;
+import org.locationtech.jts.util.Assert;
 
 public class BackgroundingIteratorTest {
 

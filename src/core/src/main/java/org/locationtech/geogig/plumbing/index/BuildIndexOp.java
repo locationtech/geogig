@@ -37,7 +37,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Builds an index tree for the given canonical tree.

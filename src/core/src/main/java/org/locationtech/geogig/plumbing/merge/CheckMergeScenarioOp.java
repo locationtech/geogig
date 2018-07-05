@@ -79,7 +79,7 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
             PeekingIterator<DiffEntry> merged = Iterators
                     .peekingIterator(Iterators.mergeSorted(commitDiffs, DiffEntry.COMPARATOR));
 
-            getProgressListener().setProgressIndicator(p->String.format("%,d", p.getProgress()));
+            getProgressListener().setProgressIndicator(p->String.format("%,d", (int) p.getProgress()));
             while (merged.hasNext()) {
                 List<DiffEntry> nextPath = nextPath(merged);
                 getProgressListener().incrementBy(1);

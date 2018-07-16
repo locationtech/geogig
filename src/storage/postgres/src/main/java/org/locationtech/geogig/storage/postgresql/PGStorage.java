@@ -299,7 +299,7 @@ public class PGStorage {
         return tableExists;
     }
 
-    public static void createTables(final Environment config) {
+    public static synchronized void createTables(final Environment config) {
 
         final DataSource dataSource = PGStorage.newDataSource(config);
         try (Connection cx = PGStorage.newConnection(dataSource)) {

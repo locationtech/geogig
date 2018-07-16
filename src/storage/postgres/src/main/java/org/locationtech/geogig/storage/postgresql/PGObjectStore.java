@@ -462,7 +462,7 @@ public class PGObjectStore implements ObjectStore {
         deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
-    protected String tableNameForType(@Nullable RevObject.TYPE type, PGId pgid) {
+    protected String tableNameForType(@Nullable RevObject.TYPE type, @Nullable PGId pgid) {
         final String tableName;
         final TableNames tables = config.getTables();
         if (type == null) {
@@ -473,7 +473,7 @@ public class PGObjectStore implements ObjectStore {
                 tableName = tables.commits();
                 break;
             case FEATURE:
-                tableName = tables.features();
+                tableName = pgid == null ? tables.features() : tables.features(pgid.hash1());
                 break;
             case FEATURETYPE:
                 tableName = tables.featureTypes();

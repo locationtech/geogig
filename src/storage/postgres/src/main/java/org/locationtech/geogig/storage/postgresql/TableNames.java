@@ -79,7 +79,7 @@ public class TableNames {
         this.featuresTablePartitionCount = featuresTablePartitionCount;
     }
 
-    public @Deprecated String features(final int hash) {
+    public String features(final int hash) {
         if (0 == featuresTablePartitionCount) {
             return features();
         }

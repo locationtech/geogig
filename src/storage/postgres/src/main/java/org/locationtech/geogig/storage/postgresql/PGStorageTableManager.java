@@ -7,6 +7,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,23 +55,21 @@ public abstract class PGStorageTableManager {
      */
     private static class Pg10TableManager extends PGStorageTableManager {
 
-        protected @Override void createObjectsTables(Connection cx, TableNames tables)
-                throws SQLException {
+        protected @Override void createObjectsTables(List<String> ddl, TableNames tables) {
             tables.setFeaturesPartitions(0);
-            createObjectsTables(cx, tables.objects(), tables.commits(), tables.featureTypes(),
+            createObjectsTables(ddl, tables.objects(), tables.commits(), tables.featureTypes(),
                     tables.tags(), tables.trees(), tables.features());
         }
 
-        protected @Override void createObjectTableIndex(Connection cx, String tableName)
-                throws SQLException {
+        protected @Override void createObjectTableIndex(List<String> ddl, String tableName) {
             String index = String.format(
                     "CREATE INDEX %s_objectid_h1_hash ON %s USING HASH (((id).h1))",
                     stripSchema(tableName), tableName);
-            run(cx, index);
+            ddl.add(index);
         }
 
-        protected @Override void createPartitionedObjectsTable(final Connection cx,
-                String parentTable, TableNames tables) throws SQLException {
+        protected @Override void createPartitionedObjectsTable(List<String> ddl, String parentTable,
+                TableNames tables) {
             if (true) {
                 throw new UnsupportedOperationException();
             }
@@ -77,8 +77,8 @@ public abstract class PGStorageTableManager {
             // ((id).h1) )";
             final String tableDDL = "CREATE TABLE %s ( ) INHERITS(%s) ";
             String sql = format(tableDDL, parentTable, tables.objects());
-            run(cx, sql);
-            createObjectTableIndex(cx, parentTable);
+            ddl.add(sql);
+            createObjectTableIndex(ddl, parentTable);
 
             //@formatter:off
             /*
@@ -123,6 +123,34 @@ public abstract class PGStorageTableManager {
         return prefixStripped;
     }
 
+    public List<String> createDDL(Environment config) {
+        final TableNames tables = config.getTables();
+        final String reposTable = tables.repositories();
+        final String schema = PGStorageTableManager.schema(reposTable);
+        final String table = PGStorageTableManager.stripSchema(reposTable);
+        List<String> ddl = new ArrayList<>();
+
+        ddl.add("-- tell postgres to send bytea fields in a more compact format than hex encoding");
+        ddl.add("SELECT pg_advisory_lock(-1);");
+        String sql = String.format("ALTER DATABASE \"%s\" SET bytea_output = 'escape'",
+                config.getDatabaseName());
+        ddl.add(sql);
+        ddl.add("SELECT pg_advisory_unlock(-1);");
+        ddl.add("SET constraint_exclusion=ON;");
+
+        createObjectIdCompositeType(ddl);
+        createRepositoriesTable(ddl, tables);
+        createConfigTable(ddl, tables);
+
+        createRefsTable(ddl, tables);
+        createConflictsTable(ddl, tables);
+        createBlobsTable(ddl, tables);
+        createIndexTables(ddl, tables);
+        createObjectsTables(ddl, tables);
+        createGraphTables(ddl, tables);
+        return ddl;
+    }
+
     public void createTables(Connection cx, Environment config) throws SQLException {
         final TableNames tables = config.getTables();
         final String reposTable = tables.repositories();
@@ -135,40 +163,17 @@ public abstract class PGStorageTableManager {
                 return;
             }
         }
+        final List<String> ddl = createDDL(config);
         try {
-            // tell postgres to send bytea fields in a more compact format than hex
-            // encoding
-            cx.setAutoCommit(true);
-            PGStorageTableManager.run(cx, "SELECT pg_advisory_lock(-1)");
-            String sql = String.format("ALTER DATABASE \"%s\" SET bytea_output = 'escape'",
-                    config.getDatabaseName());
-            try {
-                PGStorageTableManager.run(cx, sql);
-            } catch (SQLException e) {
-                LOG.warn(String.format(
-                        "Unable to run '%s'. User may need more priviledges. This is not fatal, but recommended.",
-                        sql), e);
+            cx.setAutoCommit(false);
+            for (String ddlStatement : ddl) {
+                if (ddlStatement.trim().startsWith("--")) {
+                    continue;
+                }
+                run(cx, ddlStatement);
             }
-            PGStorageTableManager.run(cx, "SELECT pg_advisory_unlock(-1)");
-
-            cx.setAutoCommit(false);
-
-            createObjectIdCompositeType(cx);
-            PGStorageTableManager.run(cx, "SET constraint_exclusion=ON");
-
-            createRepositoriesTable(cx, tables);
-            createConfigTable(cx, tables);
-            cx.commit();
-            cx.setAutoCommit(false);
-            createRefsTable(cx, tables);
-            createConflictsTable(cx, tables);
-            createBlobsTable(cx, tables);
-            createIndexTables(cx, tables);
-            createObjectsTables(cx, tables);
-            createGraphTables(cx, tables);
             cx.commit();
         } catch (SQLException | RuntimeException e) {
-            e.printStackTrace();
             cx.rollback();
             Throwables.throwIfInstanceOf(e, SQLException.class);
             throw e;
@@ -177,7 +182,7 @@ public abstract class PGStorageTableManager {
         }
     }
 
-    protected void createGraphTables(Connection cx, TableNames tables) throws SQLException {
+    protected void createGraphTables(List<String> ddl, TableNames tables) {
 
         final String edges = tables.graphEdges();
         final String properties = tables.graphProperties();
@@ -185,34 +190,34 @@ public abstract class PGStorageTableManager {
 
         String sql;
 
-        sql = format("CREATE TABLE %s (src OBJECTID, dst OBJECTID, PRIMARY KEY (src,dst))", edges);
-        run(cx, sql);
+        sql = format("CREATE TABLE %s (src OBJECTID, dst OBJECTID, PRIMARY KEY (src,dst));", edges);
+        ddl.add(sql);
 
-        sql = format("CREATE INDEX %s_src_index ON %s(src)", stripSchema(edges), edges);
-        run(cx, sql);
+        sql = format("CREATE INDEX %s_src_index ON %s(src);", stripSchema(edges), edges);
+        ddl.add(sql);
 
-        sql = format("CREATE INDEX %s_dst_index ON %s(dst)", stripSchema(edges), edges);
-        run(cx, sql);
+        sql = format("CREATE INDEX %s_dst_index ON %s(dst);", stripSchema(edges), edges);
+        ddl.add(sql);
 
         sql = format("CREATE TABLE %s (nid OBJECTID, key VARCHAR, val VARCHAR,"
-                + " PRIMARY KEY(nid,key))", properties);
-        run(cx, sql);
+                + " PRIMARY KEY(nid,key));", properties);
+        ddl.add(sql);
 
-        sql = format("CREATE TABLE %s (alias OBJECTID PRIMARY KEY, nid OBJECTID)", mappings);
-        run(cx, sql);
+        sql = format("CREATE TABLE %s (alias OBJECTID PRIMARY KEY, nid OBJECTID);", mappings);
+        ddl.add(sql);
 
-        sql = format("CREATE INDEX %s_nid_index ON %s(nid)", stripSchema(mappings), mappings);
-        run(cx, sql);
+        sql = format("CREATE INDEX %s_nid_index ON %s(nid);", stripSchema(mappings), mappings);
+        ddl.add(sql);
     }
 
-    protected void createPartitionedObjectsTable(final Connection cx, final String parentTable,
-            TableNames tables) throws SQLException {
+    protected void createPartitionedObjectsTable(List<String> ddl, final String parentTable,
+            TableNames tables) {
         final int min = Integer.MIN_VALUE;
         final long max = (long) Integer.MAX_VALUE + 1;
         final int numTables = 16;
         final int step = (int) (((long) max - (long) min) / numTables);
 
-        createObjectChildTable(cx, parentTable, tables.objects());
+        createObjectChildTable(ddl, parentTable, tables.objects());
 
         final String triggerFunction = stripSchema(
                 String.format("%s_partitioning_insert_trigger", parentTable));
@@ -235,9 +240,10 @@ public abstract class PGStorageTableManager {
             String tableName = String.format("%s_%d", parentTable, i);
             String sql = partitionedObjectTableDDL(tableName, parentTable, curr, next);
 
-            run(cx, sql);
-            createIgnoreDuplicatesRule(cx, tableName);
-            createObjectTableIndex(cx, tableName);
+            ddl.add(sql);
+
+            createIgnoreDuplicatesRule(ddl, tableName);
+            createObjectTableIndex(ddl, tableName);
 
             funcSql.append(i == 0 ? "IF" : "ELSIF");
             funcSql.append(" ( h1 >= ").append(curr);
@@ -255,28 +261,28 @@ public abstract class PGStorageTableManager {
         funcSql.append("LANGUAGE plpgsql;\n");
 
         String sql = funcSql.toString();
-        run(cx, sql);
+        ddl.add(sql);
 
         sql = String.format(
-                "CREATE TRIGGER %s BEFORE INSERT ON " + "%s FOR EACH ROW EXECUTE PROCEDURE %s()",
+                "CREATE TRIGGER %s BEFORE INSERT ON " + "%s FOR EACH ROW EXECUTE PROCEDURE %s();",
                 triggerFunction, parentTable, triggerFunction);
-        run(cx, sql);
+        ddl.add(sql);
     }
 
-    protected void createObjectTableIndex(Connection cx, String tableName) throws SQLException {
-        String index = String.format("CREATE INDEX %s_objectid_h1_hash ON %s (((id).h1))",
+    protected void createObjectTableIndex(List<String> ddl, String tableName) {
+        String index = String.format("CREATE INDEX %s_objectid_h1_hash ON %s (((id).h1));",
                 stripSchema(tableName), tableName);
-        run(cx, index);
+        ddl.add(index);
     }
 
-    protected void createIgnoreDuplicatesRule(Connection cx, String tableName) throws SQLException {
+    protected void createIgnoreDuplicatesRule(List<String> ddl, String tableName) {
         String rulePrefix = stripSchema(tableName);
 
         String rule = "CREATE OR REPLACE RULE " + rulePrefix
                 + "_ignore_duplicate_inserts AS ON INSERT TO " + tableName
                 + " WHERE (EXISTS ( SELECT 1 FROM " + tableName
                 + " WHERE ((id).h1) = (NEW.id).h1 AND id = NEW.id))" + " DO INSTEAD NOTHING;";
-        run(cx, rule);
+        ddl.add(rule);
     }
 
     protected String partitionedObjectTableDDL(String tableName, final String parentTable,
@@ -285,11 +291,10 @@ public abstract class PGStorageTableManager {
                 parentTable);
     }
 
-    protected void createObjectChildTable(Connection cx, String tableName, String parentTable)
-            throws SQLException {
+    protected void createObjectChildTable(List<String> ddl, String tableName, String parentTable) {
 
         String sql = format(CHILD_TABLE_STMT, tableName, parentTable);
-        run(cx, sql);
+        ddl.add(sql);
     }
 
     /**
@@ -297,121 +302,114 @@ public abstract class PGStorageTableManager {
      * and object_feature), have read somewhere that otherwise you'll get sequential scans from the
      * query planner that can be avoided.
      */
-    protected void createObjectsTables(Connection cx, TableNames tables) throws SQLException {
-        createObjectsTables(cx, tables.objects(), tables.commits(), tables.featureTypes(),
+    protected void createObjectsTables(List<String> ddl, TableNames tables) {
+        createObjectsTables(ddl, tables.objects(), tables.commits(), tables.featureTypes(),
                 tables.tags(), tables.trees());
-        createPartitionedObjectsTable(cx, tables.features(), tables);
+        createPartitionedObjectsTable(ddl, tables.features(), tables);
     }
 
-    protected void createObjectsTables(Connection cx, String objectsTable, String... childTables)
-            throws SQLException {
+    protected void createObjectsTables(List<String> ddl, String objectsTable,
+            String... childTables) {
 
         String sql = format(OBJECT_TABLE_STMT, objectsTable);
-        run(cx, sql);
+        ddl.add(sql);
 
         for (String tableName : childTables) {
-            createObjectChildTable(cx, tableName, objectsTable);
-            createIgnoreDuplicatesRule(cx, tableName);
-            createObjectTableIndex(cx, tableName);
+            createObjectChildTable(ddl, tableName, objectsTable);
+            createIgnoreDuplicatesRule(ddl, tableName);
+            createObjectTableIndex(ddl, tableName);
         }
     }
 
-    protected void createIndexTables(Connection cx, TableNames tables) throws SQLException {
+    protected void createIndexTables(List<String> ddl, TableNames tables) {
         String indexTable = tables.index();
         String sql = format(
                 "CREATE TABLE %s (repository INTEGER, treeName TEXT, attributeName TEXT, strategy TEXT, metadata BYTEA"
                         + ", PRIMARY KEY(repository, treeName, attributeName)"
-                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE);",
                 indexTable, tables.repositories());
-        run(cx, sql);
+        ddl.add(sql);
         String indexMappings = tables.indexMappings();
         sql = format(
                 "CREATE TABLE %s (repository INTEGER, indexId OBJECTID, treeId OBJECTID, indexTreeId OBJECTID"
                         + ", PRIMARY KEY(repository, indexId, treeId)"
-                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE);",
                 indexMappings, tables.repositories());
-        run(cx, sql);
+        ddl.add(sql);
         String indexObjects = tables.indexObjects();
         sql = format(PGStorageTableManager.OBJECT_TABLE_STMT, indexObjects);
-        run(cx, sql);
-        createIgnoreDuplicatesRule(cx, indexObjects);
-        createObjectTableIndex(cx, indexObjects);
+        ddl.add(sql);
+        createIgnoreDuplicatesRule(ddl, indexObjects);
+        createObjectTableIndex(ddl, indexObjects);
     }
 
-    protected void createBlobsTable(Connection cx, TableNames tables) throws SQLException {
+    protected void createBlobsTable(List<String> ddl, TableNames tables) {
         String blobsTable = tables.blobs();
         String sql = format(
                 "CREATE TABLE %s (repository INTEGER, namespace TEXT, path TEXT, blob BYTEA"
                         + ", PRIMARY KEY(repository,namespace,path)"
-                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE);",
                 blobsTable, tables.repositories());
-        run(cx, sql);
+        ddl.add(sql);
     }
 
-    protected void createConflictsTable(Connection cx, TableNames tables) throws SQLException {
+    protected void createConflictsTable(List<String> ddl, TableNames tables) {
         String conflictsTable = tables.conflicts();
         String sql = format(
                 "CREATE TABLE %s (repository INTEGER, namespace TEXT, path TEXT, ancestor bytea, ours bytea NOT NULL, theirs bytea NOT NULL"
                         + ", PRIMARY KEY(repository, namespace, path)"
-                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE);",
                 conflictsTable, tables.repositories());
-        run(cx, sql);
+        ddl.add(sql);
     }
 
-    protected void createRefsTable(Connection cx, TableNames tables) throws SQLException {
+    protected void createRefsTable(List<String> ddl, TableNames tables) {
         final String TABLE_STMT = format(
                 "CREATE TABLE %s (" + "repository INTEGER, path TEXT, name TEXT, value TEXT, "
                         + "PRIMARY KEY(repository, path, name), "
-                        + "FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+                        + "FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE);",
                 tables.refs(), tables.repositories());
-        run(cx, TABLE_STMT);
+        ddl.add(TABLE_STMT);
     }
 
-    protected void createConfigTable(Connection cx, TableNames tables) throws SQLException {
+    protected void createConfigTable(List<String> ddl, TableNames tables) {
         final String viewName = tables.repositoryNamesView();
         final String repositories = tables.repositories();
         String configTable = tables.config();
         String sql = format(
                 "CREATE TABLE IF NOT EXISTS %s (repository INTEGER, section TEXT, key TEXT, value TEXT,"
                         + " PRIMARY KEY (repository, section, key)"
-                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE);",
                 configTable, tables.repositories());
-        run(cx, sql);
-        sql = format("CREATE INDEX %s_section_idx ON %s (repository, section)",
+        ddl.add(sql);
+        sql = format("CREATE INDEX %s_section_idx ON %s (repository, section);",
                 stripSchema(configTable), configTable);
-        run(cx, sql);
-        try {
-            sql = format("CREATE VIEW %s " + "AS SELECT r.*, c.value AS name FROM "
-                    + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name'",
-                    viewName, repositories, configTable);
-            run(cx, sql);
-        } catch (SQLException alreadyExists) {
-            // ignore
-        }
+        ddl.add(sql);
+        sql = format("CREATE VIEW %s " + "AS SELECT r.*, c.value AS name FROM "
+                + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name';",
+                viewName, repositories, configTable);
+        ddl.add(sql);
     }
 
-    protected void createRepositoriesTable(Connection cx, TableNames tables) throws SQLException {
+    protected void createRepositoriesTable(List<String> ddl, TableNames tables) {
         final String repositories = tables.repositories();
 
-        String sql = format("CREATE TABLE %s (repository serial PRIMARY KEY, created TIMESTAMP)",
+        String sql = format("CREATE TABLE %s (repository serial PRIMARY KEY, created TIMESTAMP);",
                 repositories);
-        run(cx, sql);
-        // create an entry for global config to have a matching entry in repositories
-        sql = format("INSERT INTO %s (repository, created) VALUES (%d, NOW())", repositories,
+        ddl.add(sql);
+        ddl.add("-- create an entry for global config to have a matching entry in repositories");
+        sql = format("INSERT INTO %s (repository, created) VALUES (%d, NOW());", repositories,
                 PGConfigDatabase.GLOBAL_KEY);
-        run(cx, sql);
-
+        ddl.add(sql);
     }
 
-    protected void createObjectIdCompositeType(Connection cx) throws SQLException {
-        final boolean autoCommit = cx.getAutoCommit();
-        cx.setAutoCommit(false);
+    protected void createObjectIdCompositeType(List<String> ddl) {
 
-        // There's no CREATE TYPE IF NOT EXIST, so use this trick
-        final String func = "-- This function is to create a type if it does not exist since there's no support for IF NOT EXISTS for CREATE TYPE\n"//
-                + "CREATE OR REPLACE FUNCTION create_objectid_type() RETURNS integer AS $$\n"//
+        ddl.add("-- There's no CREATE TYPE IF NOT EXIST, so use this trick");
+        ddl.add("-- This function is to create a type if it does not exist since there's no support for IF NOT EXISTS for CREATE TYPE\n");
+
+        final String func = "CREATE OR REPLACE FUNCTION create_objectid_type() RETURNS integer AS $$\n"//
                 + "DECLARE v_exists INTEGER;\n"//
-
                 + "BEGIN\n"//
                 + "    SELECT into v_exists (SELECT 1 FROM pg_type WHERE typname = 'objectid');\n"//
                 + "    IF v_exists IS NULL THEN\n"//
@@ -421,19 +419,9 @@ public abstract class PGStorageTableManager {
                 + "END;\n"//
                 + "$$ LANGUAGE plpgsql;";
 
-        try (Statement st = cx.createStatement()) {
-            run(cx, func);
-            // Call the function you just created
-            run(cx, "SELECT create_objectid_type()");
-
-            // Remove the function you just created
-            run(cx, "DROP function create_objectid_type()");
-            cx.commit();
-            cx.setAutoCommit(autoCommit);
-        } catch (SQLException e) {
-            cx.rollback();
-            throw e;
-        }
+        ddl.add(func);
+        ddl.add("SELECT create_objectid_type();");
+        ddl.add("DROP FUNCTION IF EXISTS create_objectid_type();");
     }
 
     static void run(final Connection cx, final String sql) throws SQLException {
@@ -441,7 +429,6 @@ public abstract class PGStorageTableManager {
         if (!s.endsWith(";")) {
             s += ";";
         }
-        System.out.println(s);
         try (Statement st = cx.createStatement()) {
             st.execute(PGStorage.log(sql, PGStorage.LOG));
         }

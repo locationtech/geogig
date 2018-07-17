@@ -18,6 +18,8 @@ import javax.sql.DataSource;
 
 import org.junit.AssumptionViolatedException;
 import org.junit.rules.ExternalResource;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +119,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
             delete(cx, tables.refs());
             delete(cx, tables.config());
             delete(cx, tables.repositories());
+            delete(cx, tables.metadata());
         }
     }
 

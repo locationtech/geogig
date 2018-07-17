@@ -49,11 +49,11 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
-import org.locationtech.geogig.storage.postgresql.Environment;
-import org.locationtech.geogig.storage.postgresql.PGObjectDatabase;
-import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.performance.EnablePerformanceTestRule;
 

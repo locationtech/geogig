@@ -30,6 +30,10 @@ public class VersionOp extends AbstractGeoGigOp<VersionInfo> {
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
     protected VersionInfo _call() {
+        return get();
+    }
+
+    public static VersionInfo get() {
         Properties properties = new Properties();
         VersionInfo info = null;
         try (InputStream resource = VersionInfo.class
@@ -42,7 +46,6 @@ public class VersionOp extends AbstractGeoGigOp<VersionInfo> {
             throw new RuntimeException(e);
         }
         return info;
-
     }
 
 }

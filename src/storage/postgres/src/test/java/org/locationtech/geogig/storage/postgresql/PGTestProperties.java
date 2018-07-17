@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.test.integration.OnlineTestProperties;
 
 public class PGTestProperties extends OnlineTestProperties {

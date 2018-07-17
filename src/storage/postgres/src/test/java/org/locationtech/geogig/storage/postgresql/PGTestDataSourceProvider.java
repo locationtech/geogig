@@ -17,7 +17,9 @@ import org.junit.AssumptionViolatedException;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
-import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.Environment.ConnectionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

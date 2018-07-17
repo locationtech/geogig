@@ -21,6 +21,10 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

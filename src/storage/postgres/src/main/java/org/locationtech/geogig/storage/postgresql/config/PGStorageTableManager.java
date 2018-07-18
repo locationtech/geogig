@@ -131,7 +131,14 @@ public abstract class PGStorageTableManager {
 
         ddl.add("-- tell postgres to send bytea fields in a more compact format than hex encoding");
         ddl.add("SELECT pg_advisory_lock(-1);");
-        String sql = format("ALTER DATABASE \"%s\" SET bytea_output = 'escape'",
+        String sql = format("do language plpgsql\n"//
+                + "$$\n"//
+                + "begin\n"//
+                + " alter database %s SET bytea_output = 'escape'; \n"//
+                + " exception when others then raise notice 'Unable to set bytea_output to escape';\n"//
+                + "end;\n"//
+                + "$$;", //
+
                 config.getDatabaseName());
         ddl.add(sql);
         ddl.add("SELECT pg_advisory_unlock(-1);");
@@ -207,7 +214,9 @@ public abstract class PGStorageTableManager {
 
         String sql;
 
-        sql = format("CREATE TABLE %s (src OBJECTID, dst OBJECTID, PRIMARY KEY (src,dst));", edges);
+        sql = format(
+                "CREATE TABLE %s (src OBJECTID, dst OBJECTID, dstindex int NOT NULL, PRIMARY KEY (src,dst));",
+                edges);
         ddl.add(sql);
 
         sql = format("CREATE INDEX %s_src_index ON %s(src);", stripSchema(edges), edges);
@@ -442,12 +451,11 @@ public abstract class PGStorageTableManager {
     }
 
     static void run(final Connection cx, final String sql) throws SQLException {
-        String s = sql;
-        if (!s.endsWith(";")) {
-            s += ";";
-        }
         try (Statement st = cx.createStatement()) {
             st.execute(PGStorage.log(sql, PGStorage.LOG));
+        } catch (SQLException e) {
+            LOG.error("Error running SQL: {}", sql, e);
+            throw e;
         }
     }
 

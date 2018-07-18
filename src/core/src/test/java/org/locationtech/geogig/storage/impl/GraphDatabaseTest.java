@@ -313,8 +313,8 @@ public abstract class GraphDatabaseTest {
 
         parents = database.getParents(commit2);
         assertEquals(2, parents.size());
-        assertTrue(parents.contains(rootId));
-        assertTrue(parents.contains(commit1));
+        assertEquals(commit1, parents.get(0));
+        assertEquals(rootId, parents.get(1));
 
         parents = database.getParents(RevObjectTestSupport.hashString("nonexistent"));
         assertEquals(0, parents.size());

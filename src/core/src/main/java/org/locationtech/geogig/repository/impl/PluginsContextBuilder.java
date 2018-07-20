@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli;
+package org.locationtech.geogig.repository.impl;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -16,7 +16,6 @@ import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.impl.ContextBuilder;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -31,7 +30,7 @@ import com.google.inject.Scopes;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.util.Modules;
 
-public class CLIContextBuilder extends ContextBuilder {
+public class PluginsContextBuilder extends ContextBuilder {
 
     @Override
     public Context build(Hints hints) {
@@ -95,16 +94,16 @@ public class CLIContextBuilder extends ContextBuilder {
                 VersionedFormat conflictsDatabaseFormat = sp.getConflictsDatabaseFormat();
 
                 if (objectDatabaseFormat != null) {
-                    CLIContextBuilder.bind(objectPlugins, objectDatabaseFormat);
+                    PluginsContextBuilder.bind(objectPlugins, objectDatabaseFormat);
                 }
                 if (indexDatabaseFormat != null) {
-                    CLIContextBuilder.bind(indexPlugins, indexDatabaseFormat);
+                    PluginsContextBuilder.bind(indexPlugins, indexDatabaseFormat);
                 }
                 if (refsDatabaseFormat != null) {
-                    CLIContextBuilder.bind(refPlugins, refsDatabaseFormat);
+                    PluginsContextBuilder.bind(refPlugins, refsDatabaseFormat);
                 }
                 if (conflictsDatabaseFormat != null) {
-                    CLIContextBuilder.bind(conflictsPlugins, conflictsDatabaseFormat);
+                    PluginsContextBuilder.bind(conflictsPlugins, conflictsDatabaseFormat);
                 }
             }
         }

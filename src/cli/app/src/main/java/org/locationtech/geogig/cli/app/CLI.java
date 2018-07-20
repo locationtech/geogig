@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.model.impl.DefaultPlatform;
@@ -30,6 +29,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.FileRepositoryResolver;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Optional;
@@ -61,7 +61,7 @@ public class CLI {
             cliArgs = arglist.toArray(new String[arglist.size()]);
         }
 
-        GlobalContextBuilder.builder(new CLIContextBuilder());
+        GlobalContextBuilder.builder(new PluginsContextBuilder());
         Logging.tryConfigureLogging(platform, repoURI);
 
         {// resolve the ansi.enabled global config without opening a full repo, but just the global

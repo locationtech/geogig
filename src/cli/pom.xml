@@ -10,57 +10,11 @@
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>geogig-cli</artifactId>
-  <packaging>jar</packaging>
+  <artifactId>geogig-cli-parent</artifactId>
+  <packaging>pom</packaging>
   <name>GeoGig Command Line Interface</name>
 
   <dependencies>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-remoting</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.fusesource.jansi</groupId>
-      <artifactId>jansi</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-shapefile</artifactId>
-    </dependency>
-
-    <dependency>
-      <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jdt</groupId>
-      <artifactId>org.eclipse.jdt.annotation</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <classifier>no_aop</classifier>
-    </dependency>
-    
     <!-- Test scope dependencies -->
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -72,6 +26,11 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>info.cukes</groupId>
@@ -94,6 +53,13 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <modules>
+    <module>core</module>
+    <module>geotools</module>
+    <module>storage-postgres</module>
+    <module>app</module>
+  </modules>
 
   <build>
     <plugins>

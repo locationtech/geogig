@@ -11,7 +11,7 @@ package org.locationtech.geogig.repository.impl;
 
 public class GlobalContextBuilder {
 
-    private static ContextBuilder builder = new ContextBuilder();
+    private static ContextBuilder builder = new PluginsContextBuilder();
 
     public static ContextBuilder builder() {
         return builder;

@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
 
-import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 
 /**
@@ -38,7 +37,7 @@ public class GeopkgDataStoreAuditImportOp extends DataStoreImportOp<GeopkgImport
                     .setCommitMessage(commitMessage).setTable(table).call();
 
         } catch (IllegalArgumentException | IllegalStateException e) {
-            throw new CommandFailedException(e.getMessage(), e);
+            throw e;
         }
         return result;
     }

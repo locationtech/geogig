@@ -73,15 +73,15 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-rocksdb</artifactId>
+      <artifactId>geogig-cli</artifactId>
       <version>${project.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-cli</artifactId>
+      <artifactId>geogig-rocksdb</artifactId>
       <version>${project.version}</version>
-      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>

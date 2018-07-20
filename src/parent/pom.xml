@@ -762,9 +762,8 @@
    <module>../remoting</module>
    <module>../datastore</module>
    <module>../storage</module>
-   <module>../cli</module>
    <module>../geotools</module>
    <module>../web</module>
-   <module>../cli-app</module>
+   <module>../cli</module>
   </modules>
 </project>

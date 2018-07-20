@@ -17,7 +17,7 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.geotools.cli.TestHelper;
+import org.locationtech.geogig.geotools.TestHelper;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;

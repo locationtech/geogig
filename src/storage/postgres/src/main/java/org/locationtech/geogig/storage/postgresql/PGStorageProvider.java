@@ -11,6 +11,10 @@ package org.locationtech.geogig.storage.postgresql;
 
 import org.locationtech.geogig.storage.StorageProvider;
 import org.locationtech.geogig.storage.VersionedFormat;
+import org.locationtech.geogig.storage.postgresql.v9.PGConflictsDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGIndexDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGRefDatabase;
 
 public class PGStorageProvider extends StorageProvider {
 

@@ -20,10 +20,10 @@ import javax.sql.DataSource;
 
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.postgresql.Environment;
-import org.locationtech.geogig.storage.postgresql.PGStorageTestUtil;
 import org.locationtech.geogig.storage.postgresql.PGTestProperties;
-import org.locationtech.geogig.storage.postgresql.TableNames;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.TableNames;
+import org.locationtech.geogig.storage.postgresql.v9.PGStorageTestUtil;
 
 import com.google.common.base.Throwables;
 

@@ -40,11 +40,13 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.geogig.test.performance.EnablePerformanceTestRule;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.ning.compress.lzf.LZFOutputStream;
+
+import net.jpountz.lz4.LZ4BlockOutputStream;
 
 /**
  * Check how fast can v2.2 encode and decode trees compared to v2.1
@@ -81,8 +83,8 @@ public class RevTreeFormatPrefTest {
     @Test
     public void testFeatureLeafWithNonRepeatedMetadataIds() throws IOException {
         RevTree tree;
-        List<Node> tNodes = nodes(TYPE.TREE, 1024, true, true, false);
-        List<Node> fNodes = nodes(TYPE.FEATURE, 1024, true, true, false);
+        List<Node> tNodes = nodes(TYPE.TREE, 512, true, true, false);
+        List<Node> fNodes = nodes(TYPE.FEATURE, 512, true, true, false);
         tree = tree(2048, tNodes, fNodes, null);
         encodeDecode(tree);
     }
@@ -90,8 +92,8 @@ public class RevTreeFormatPrefTest {
     @Test
     public void testFeatureLeafWithNonRepeatedMetadataIdsAndExtraData() throws IOException {
         RevTree tree;
-        List<Node> tNodes = nodes(TYPE.TREE, 1024, true, true, true);
-        List<Node> fNodes = nodes(TYPE.FEATURE, 1024, true, true, true);
+        List<Node> tNodes = nodes(TYPE.TREE, 512, true, true, true);
+        List<Node> fNodes = nodes(TYPE.FEATURE, 512, true, true, true);
         tree = tree(2048, tNodes, fNodes, null);
         encodeDecode(tree);
     }
@@ -103,8 +105,8 @@ public class RevTreeFormatPrefTest {
                 hashString("mdid1"), //
                 hashString("mdid2"), //
                 hashString("mdid3"));
-        List<Node> tNodes = nodes(TYPE.TREE, 1024, repeatingMdIds, true, false);
-        List<Node> fNodes = nodes(TYPE.FEATURE, 1024, repeatingMdIds, true, false);
+        List<Node> tNodes = nodes(TYPE.TREE, 512, repeatingMdIds, true, false);
+        List<Node> fNodes = nodes(TYPE.FEATURE, 512, repeatingMdIds, true, false);
         tree = tree(2048, tNodes, fNodes, null);
         encodeDecode(tree);
     }
@@ -116,8 +118,8 @@ public class RevTreeFormatPrefTest {
                 hashString("mdid1"), //
                 hashString("mdid2"), //
                 hashString("mdid3"));
-        List<Node> tNodes = nodes(TYPE.TREE, 1024, repeatingMdIds, true, true);
-        List<Node> fNodes = nodes(TYPE.FEATURE, 1024, repeatingMdIds, true, true);
+        List<Node> tNodes = nodes(TYPE.TREE, 512, repeatingMdIds, true, true);
+        List<Node> fNodes = nodes(TYPE.FEATURE, 512, repeatingMdIds, true, true);
         tree = tree(2048, tNodes, fNodes, null);
         encodeDecode(tree);
     }
@@ -126,7 +128,9 @@ public class RevTreeFormatPrefTest {
     public void testBucketsTree() throws IOException {
         RevTree tree;
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
-        buckets.put(1, Bucket.create(hashString("b1"), null));
+        for (int i = 0; i < 32; i++) {
+            buckets.put(i, Bucket.create(hashString("b" + i), new Envelope(-i, -i, i, i)));
+        }
         tree = tree(1024, null, null, buckets);
         encodeDecode(tree);
     }
@@ -139,7 +143,7 @@ public class RevTreeFormatPrefTest {
 
         {
             s = Stopwatch.createStarted();
-            int repeatCount = 100;
+            int repeatCount = 1000;
             try {
                 for (int i = 0; i < repeatCount; i++) {
                     out.reset();
@@ -169,7 +173,16 @@ public class RevTreeFormatPrefTest {
                 out.reset();
                 RevTreeFormat.encode(orig, new DataOutputStream(out));
             }
-            System.err.printf("V3 encoding: %s\n", s.stop());
+            System.err.printf("V3 encoding V2 tree: %s\n", s.stop());
+
+            s = Stopwatch.createStarted();
+            final RevTree v3Tree = RevTreeFormat.decode(RevTree.EMPTY_TREE_ID, encoded);
+            for (int i = 0; i < repeatCount; i++) {
+                out.reset();
+                RevTreeFormat.encode(v3Tree, new DataOutputStream(out));
+            }
+            System.err.printf("V3 encoding V3 tree: %s\n", s.stop());
+
             s.reset().start();
             for (int i = 0; i < repeatCount; i++) {
                 RevTree d = RevTreeFormat.decode(RevTree.EMPTY_TREE_ID, encoded);
@@ -215,7 +228,7 @@ public class RevTreeFormatPrefTest {
 
     private ByteArrayOutputStream compress(byte[] bs) throws IOException {
         ByteArrayOutputStream c = new ByteArrayOutputStream();
-        OutputStream compressingOut = new LZFOutputStream(c);
+        OutputStream compressingOut = new LZ4BlockOutputStream(c);
         compressingOut.write(bs);
         compressingOut.close();
         return c;

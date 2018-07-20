@@ -126,7 +126,7 @@ public class SharedCacheTest {
 
     public @Test void testInvalidateAllForPrefix() {
         final int L1Capacity = 10;
-        SharedCache cache = SharedCache.build(L1Capacity, 16 * 1024 * 1024);
+        SharedCache cache = SharedCache.build(L1Capacity, 32 * 1024 * 1024);
 
         List<RevObject> objects = createObjects(100);
 
@@ -147,7 +147,7 @@ public class SharedCacheTest {
 
     public @Test void testInvalidateAll() {
         final int L1Capacity = 10;
-        SharedCache cache = SharedCache.build(L1Capacity, 16 * 1024 * 1024);
+        SharedCache cache = SharedCache.build(L1Capacity, 32 * 1024 * 1024);
 
         List<RevObject> objects = createObjects(500);
 

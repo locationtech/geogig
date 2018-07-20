@@ -169,9 +169,7 @@ interface SharedCache {
         }
 
         private static final ObjectSerializingFactory ENCODER = //
-                new LZ4SerializationFactory(//
-                        DataStreamSerializationFactoryV2_3.INSTANCE//
-                );
+                        DataStreamSerializationFactoryV2_3.INSTANCE;
 
         /**
          * Size of the L1 cache {@link Key} -> {@link RevTree}

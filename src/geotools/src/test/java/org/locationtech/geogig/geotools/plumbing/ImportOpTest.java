@@ -26,7 +26,7 @@ import org.geotools.referencing.CRS;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.geotools.cli.TestHelper;
+import org.locationtech.geogig.geotools.TestHelper;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;

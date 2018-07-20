@@ -22,7 +22,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.Test;
-import org.locationtech.geogig.geotools.cli.TestHelper;
+import org.locationtech.geogig.geotools.TestHelper;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.LsTreeOp;

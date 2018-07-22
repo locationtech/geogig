@@ -5,11 +5,10 @@
 
   <parent>
     <groupId>org.locationtech.geogig</groupId>
-    <artifactId>storage</artifactId>
+    <artifactId>geogig-storage</artifactId>
     <version>1.4-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.locationtech.geogig</groupId>
   <artifactId>geogig-postgres</artifactId>
   <packaging>jar</packaging>
   <name>PostgreSQL Storage Backend</name>
@@ -67,13 +66,20 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-cli</artifactId>
+      <artifactId>geogig-cli-core</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-cli-remoting</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-cli</artifactId>
+      <artifactId>geogig-cli-remoting</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>

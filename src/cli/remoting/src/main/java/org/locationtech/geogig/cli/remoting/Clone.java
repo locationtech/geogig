@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.cli.porcelain;
+package org.locationtech.geogig.cli.remoting;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.cli.porcelain.Init;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.remotes.CloneOp;

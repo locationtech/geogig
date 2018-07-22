@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.cli.porcelain;
+package org.locationtech.geogig.cli.remoting;
 
 import java.io.IOException;
 

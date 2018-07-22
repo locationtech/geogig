@@ -5,7 +5,7 @@
 
   <parent>
     <groupId>org.locationtech.geogig</groupId>
-    <artifactId>web</artifactId>
+    <artifactId>geogig-web</artifactId>
     <version>1.4-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
@@ -17,7 +17,7 @@
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-cli</artifactId>
+      <artifactId>geogig-cli-remoting</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -70,39 +70,39 @@
       <artifactId>json-path</artifactId>
       <version>1.1.0</version>
       <scope>test</scope>
-	</dependency>
-	<dependency>
+    </dependency>
+    <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path-assert</artifactId>
       <version>1.1.0</version>
       <scope>test</scope>
-	</dependency>
-    <dependency>
-        <groupId>org.locationtech.geogig</groupId>
-        <artifactId>geogig-core</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>org.locationtech.geogig</groupId>
-        <artifactId>geogig-cli</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-core</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>org.locationtech.geogig</groupId>
-        <artifactId>geogig-geotools</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-cli-core</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>org.locationtech.geogig</groupId>
-        <artifactId>geogig-rocksdb</artifactId>
-        <version>${project.version}</version>
-        <scope>test</scope>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-geotools</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-rocksdb</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -126,8 +126,9 @@
             <version>2.17</version>
             <configuration>
               <excludes combine.children="append">
-                <!-- Exclude VersionTest from web api command tests when running on Travis as the git.properties used by VersionOp is unavailable to the unit tests when running there. -->
-	            <exclude>**/VersionTest.java</exclude>
+                <!-- Exclude VersionTest from web api command tests when running on Travis as the git.properties used by 
+                  VersionOp is unavailable to the unit tests when running there. -->
+                <exclude>**/VersionTest.java</exclude>
               </excludes>
             </configuration>
           </plugin>

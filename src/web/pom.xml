@@ -10,8 +10,7 @@
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>web</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <artifactId>geogig-web</artifactId>
   <packaging>pom</packaging>
   <name>Web modules</name>
 

@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.porcelain;
+package org.locationtech.geogig.cli.remoting;
 
 import java.io.IOException;
 import java.util.Collection;

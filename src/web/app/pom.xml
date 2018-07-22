@@ -5,7 +5,7 @@
 
   <parent>
     <groupId>org.locationtech.geogig</groupId>
-    <artifactId>web</artifactId>
+    <artifactId>geogig-web</artifactId>
     <version>1.4-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
@@ -18,11 +18,6 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-web-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-cli</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

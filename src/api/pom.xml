@@ -23,12 +23,10 @@
     <dependency>
       <groupId>org.locationtech.jts</groupId>
       <artifactId>jts-core</artifactId>
-     <version>${jts.version}</version>
     </dependency>
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-opengis</artifactId>
-      <version>${gt.version}</version>
       <exclusions>
         <exclusion>
           <groupId>javax.media</groupId>
@@ -40,7 +38,6 @@
       <!--NOTE: only needed until removing geotools dependencies from WorkingTree -->
       <groupId>org.geotools</groupId>
       <artifactId>gt-main</artifactId>
-      <version>${gt.version}</version>
       <exclusions>
         <exclusion>
           <groupId>javax.media</groupId>

@@ -10,13 +10,12 @@
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>storage</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <artifactId>geogig-storage</artifactId>
   <packaging>pom</packaging>
   <name>Storage backends</name>
 
   <modules>
-   <module>postgres</module>
-   <module>rocksdb</module>
+    <module>postgres</module>
+    <module>rocksdb</module>
   </modules>
 </project>

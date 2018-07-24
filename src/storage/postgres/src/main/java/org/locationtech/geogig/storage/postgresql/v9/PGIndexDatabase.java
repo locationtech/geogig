@@ -41,10 +41,10 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 import org.locationtech.geogig.storage.datastream.ValueSerializer;
+import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
-import org.locationtech.geogig.storage.postgresql.config.Environment.ConnectionConfig;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;

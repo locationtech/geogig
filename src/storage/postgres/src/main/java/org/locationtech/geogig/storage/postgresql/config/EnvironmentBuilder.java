@@ -152,6 +152,12 @@ public class EnvironmentBuilder {
         return config;
     }
 
+    public static ConnectionConfig parse(URI uri) {
+        EnvironmentBuilder eb = new EnvironmentBuilder(uri);
+        Environment e = eb.build();
+        return e.connectionConfig;
+    }
+
     /**
      * Extracts all of the {@link Environment} properties from a given root URI.
      * 

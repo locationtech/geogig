@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.DataSourceManager;
-import org.locationtech.geogig.storage.postgresql.config.Environment.ConnectionConfig;
 import org.mockito.ArgumentCaptor;
 
 import com.google.common.collect.ImmutableList;

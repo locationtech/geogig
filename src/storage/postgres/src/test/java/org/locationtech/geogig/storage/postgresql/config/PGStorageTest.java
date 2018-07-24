@@ -35,7 +35,6 @@ import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.PGStorageTableManager;
 import org.locationtech.geogig.storage.postgresql.config.TableNames;
-import org.locationtech.geogig.storage.postgresql.config.Environment.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 public class PGStorageTest {

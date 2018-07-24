@@ -34,7 +34,7 @@ import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-public class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.Key, DataSource> {
+public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, DataSource> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceManager.class);
 
@@ -127,7 +127,7 @@ public class DataSourceManager extends ConnectionManager<Environment.ConnectionC
     }
 
     @Override
-    protected DataSource connect(Environment.ConnectionConfig.Key connInfo) {
+    protected DataSource connect(ConnectionConfig.Key connInfo) {
         if (!verifyDriverVersion()) {
             throw new IllegalStateException(
                     "PostgreSQL JDBC Driver version not supported by GeoGig: " + driverVersion);

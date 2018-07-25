@@ -11,7 +11,7 @@ package org.locationtech.geogig.web.api;
 
 import java.io.File;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.jdt.annotation.Nullable;
 
 

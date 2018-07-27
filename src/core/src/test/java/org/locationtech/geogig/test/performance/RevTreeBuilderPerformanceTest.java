@@ -12,6 +12,9 @@ package org.locationtech.geogig.test.performance;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,13 +32,12 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.AbstractIterator;
 import org.locationtech.jts.geom.Envelope;
+
+import com.google.common.base.Stopwatch;
 
 /**
  * Reports the performance of building large {@link RevTree}
@@ -51,6 +53,8 @@ public class RevTreeBuilderPerformanceTest {
     private ObjectStore odb;
 
     private static final ObjectId FAKE_ID = RevObjectTestSupport.hashString("fake");
+
+    private static final ObjectId UPDATE_ID = RevObjectTestSupport.hashString("fake2");
 
     @Rule
     public TestName testName = new TestName();
@@ -102,24 +106,8 @@ public class RevTreeBuilderPerformanceTest {
         }
     }
 
-    private Iterable<Node> nodes(final int numNodes) {
-        return new Iterable<Node>() {
-            @Override
-            public Iterator<Node> iterator() {
-                return new AbstractIterator<Node>() {
-                    int count = 0;
-
-                    @Override
-                    protected Node computeNext() {
-                        count++;
-                        if (count > numNodes) {
-                            return endOfData();
-                        }
-                        return createNode(count);
-                    }
-                };
-            }
-        };
+    private Stream<Node> nodes(final int numNodes, ObjectId fakeId) {
+        return IntStream.range(0, numNodes).parallel().mapToObj(i -> createNode(i, fakeId));
     }
 
     @Test
@@ -137,13 +125,13 @@ public class RevTreeBuilderPerformanceTest {
         testBuildUnordered(5000_000);
     }
 
-    //@Ignore
+    // @Ignore
     @Test
     public void testBuilUnordered_04_10M() {
         testBuildUnordered(10_000_000);
     }
 
-    @Ignore
+    // @Ignore
     @Test
     public void testBuilUnordered_05_50M() {
         testBuildUnordered(50_000_000);
@@ -156,55 +144,85 @@ public class RevTreeBuilderPerformanceTest {
     }
 
     private void testBuildUnordered(final int size) {
-        System.err.println(testName.getMethodName() + ":\n----------------------");
-        Stopwatch totalTime = Stopwatch.createUnstarted();
-        Iterable<Node> nodes = nodes(size);
+        System.err.printf("\n----------------------\n%s\nObjectStore: %s\t DAG Store: %s\n",
+                testName.getMethodName(), //
+                odb.getClass().getSimpleName(), //
+                ClusteringStrategyBuilder.getDAGStoreName());
+
+        Stopwatch totalTime = Stopwatch.createStarted();
+        Stream<Node> nodes = nodes(size, FAKE_ID);
 
         RevTreeBuilder builder = CanonicalTreeBuilder.create(odb);
 
-        createTree(size, nodes, builder, totalTime);
+        System.err.print("\tInserting nodes...");
+        Stopwatch swputall = Stopwatch.createStarted();
 
-        totalTime.start();
+        final int count = putAll(size, nodes, builder);
 
-        System.err.println("\tbuilding...");
-        Stopwatch sw = Stopwatch.createStarted();
+        System.err.printf("%,d nodes inserted in %s\n", count, swputall.stop());
+        System.err.flush();
 
-        RevTree tree = builder.build();
+        System.err.print("\tbuilding...");
+        Stopwatch swbuild = Stopwatch.createStarted();
+        final RevTree tree = builder.build();
+        System.err.printf("%,d features tree built in %s (%s)\n\tUpdating...", tree.size(),
+                swbuild.stop(), tree.getId());
+        assertEquals(size, tree.size());
 
-        sw.stop();
+        if (!(odb instanceof HeapObjectStore)) {
+            odb.close();
+            odb.open();
+        }
+
+        builder = CanonicalTreeBuilder.create(odb, tree);
+        Stopwatch swputallupdate = Stopwatch.createStarted();
+        final int updateCount = putAll(size / 2, nodes(size / 2, UPDATE_ID), builder);
+        System.err.printf("%,d nodes updated in %s\n", updateCount, swputallupdate.stop());
+
+        System.err.print("\tbuilding...");
+        Stopwatch swbuildupdate = Stopwatch.createStarted();
+        final RevTree updatedTree = builder.build();
+        System.err.printf("%,d features tree updated in %s (%s)\n", updatedTree.size(),
+                swbuildupdate.stop(), updatedTree.getId());
+
         totalTime.stop();
-
-        System.err.printf("%,d features tree built in %s (%s)\n", tree.size(), sw, tree.getId());
         System.err.printf("\tTotal time: %s\n", totalTime);
         if (odb instanceof HeapObjectStore) {
             HeapObjectStore hos = (HeapObjectStore) odb;
             System.err.printf("\tTotal trees created: %,d\n", hos.size());
         }
-        assertEquals(size, tree.size());
+        System.err.println(
+                "SIZE\tINSERT\tBUILD\tUPDATE\tBUILD UPDATE\tTOTAL CREATE\tTOTAL UPDATE\tTOTAL\tTreeID\tUpdatedTreeID");
+        TimeUnit millis = TimeUnit.MILLISECONDS;
+        System.err.printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%s\n", //
+                size, //
+                swputall.elapsed(millis), //
+                swbuild.elapsed(millis), //
+                swputallupdate.elapsed(millis), //
+                swbuildupdate.elapsed(millis), //
+                swputall.elapsed(millis) + swbuild.elapsed(millis), //
+                swputallupdate.elapsed(millis) + swbuildupdate.elapsed(millis), //
+                totalTime.elapsed(millis), //
+                tree.getId(), //
+                updatedTree.getId()//
+        );
+        System.err.println("----------------------");
     }
 
-    private static Node createNode(int i) {
-        byte[] rawID = FAKE_ID.getRawValue();
-        String key = "Feature." + i;
-        ObjectId id = new ObjectId(rawID);
+    private Node createNode(int i, ObjectId fakeId) {
+        String name = "Feature." + i;
         Envelope env = new Envelope(0, 0, i, i);
-        Node ref = Node.create(key, id, FAKE_ID, TYPE.FEATURE, env);
+        Node ref = Node.create(name, fakeId, ObjectId.NULL, TYPE.FEATURE, env);
         return ref;
     }
 
-    private RevTreeBuilder createTree(final int size, final Iterable<Node> nodes,
-            final RevTreeBuilder b, Stopwatch totalTime) {
-
-        Preconditions.checkArgument(!totalTime.isRunning());
-        System.err.print("\tInserting nodes...");
+    private int putAll(final int size, final Stream<Node> nodes, final RevTreeBuilder b) {
         int count = 0, s = 0;
         final int step = size / 100;
-        Stopwatch sw = Stopwatch.createUnstarted();
-        // Iterable<List<Node>> partitions = Iterables.partition(nodes, 100_000);
-        // for (List<Node> partition : partitions) {
-        sw.start();
-        totalTime.start();
-        for (Node n : nodes) {
+
+        Node n = null;
+        for (Iterator<Node> it = nodes.iterator(); it.hasNext();) {
+            n = it.next();
             count++;
             s++;
             b.put(n);
@@ -213,12 +231,8 @@ public class RevTreeBuilderPerformanceTest {
                 System.err.print('#');
             }
         }
-        sw.stop();
-        totalTime.stop();
-        // }
-        System.err.printf("\n%,d nodes inserted in %s\n", count, sw);
-        System.err.flush();
-        return b;
+        System.err.println();
+        return count;
     }
 
 }

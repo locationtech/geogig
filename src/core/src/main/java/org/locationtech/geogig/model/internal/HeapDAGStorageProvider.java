@@ -36,11 +36,11 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
 
     private TreeCache treeCache;
 
-    HeapDAGStorageProvider(ObjectStore source) {
+    public HeapDAGStorageProvider(ObjectStore source) {
         this(source, new TreeCache(source));
     }
 
-    HeapDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
+    public HeapDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
         this.source = source;
         this.treeCache = treeCache;
         this.nodes = new ConcurrentHashMap<>();

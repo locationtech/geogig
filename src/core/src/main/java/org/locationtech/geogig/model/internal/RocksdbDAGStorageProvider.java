@@ -37,11 +37,11 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
 
     private final RocksdbDAGStore dagStore;
 
-    RocksdbDAGStorageProvider(ObjectStore source) {
+    public RocksdbDAGStorageProvider(ObjectStore source) {
         this(source, new TreeCache(source));
     }
 
-    RocksdbDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
+    public RocksdbDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
         this.objectStore = source;
         this.treeCache = treeCache;
         Path dagDbDir = null;

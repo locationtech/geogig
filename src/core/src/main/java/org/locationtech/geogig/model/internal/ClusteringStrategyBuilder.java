@@ -13,13 +13,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.locationtech.jts.geom.Envelope;
 
 public abstract class ClusteringStrategyBuilder {
 
@@ -52,10 +53,29 @@ public abstract class ClusteringStrategyBuilder {
         }
     }
 
+    private static final Class<? extends DAGStorageProvider> DAGSTORECLASS = CachingDAGStorageProvider.class;
+
+    public @VisibleForTesting static String getDAGStoreName() {
+        if (CachingDAGStorageProvider.class.equals(DAGSTORECLASS)) {
+            return String.format("%s(%s)", DAGSTORECLASS.getSimpleName(),
+                    CachingDAGStorageProvider.DELEGATECLASS.getSimpleName());
+        }
+        return DAGSTORECLASS.getSimpleName();
+    }
+
     protected DAGStorageProvider createDAGStoreageProvider() {
-        return new CachingDAGStorageProvider(treeStore);
+        // return new CachingDAGStorageProvider(treeStore);
+        // return new LMDBDAGStorageProvider(treeStore);
         // return new HeapDAGStorageProvider(treeStore);
         // return new RocksdbDAGStorageProvider(treeStore);
+        DAGStorageProvider provider;
+        try {
+            provider = DAGSTORECLASS.getConstructor(ObjectStore.class).newInstance(treeStore);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            throw new RuntimeException(e);
+        }
+        return provider;
     }
 
     protected abstract ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider);

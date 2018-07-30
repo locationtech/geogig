@@ -340,11 +340,11 @@ public class FindChangedTreesTest extends Assert {
 
     private List<NodeRef> createLayers(int base, int count) {
         SimpleFeatureTypeBuilder ftb = new SimpleFeatureTypeBuilder();
-        ftb.init(ftproto);
         Map<String, SimpleFeatureType> types = new HashMap<>();
         for (int i = base; i < count; i++) {
             String treePath = "tree" + i;
             ftb.setName(treePath);
+            ftb.addAll(ftproto.getAttributeDescriptors());
             SimpleFeatureType featureType = ftb.buildFeatureType();
             types.put(treePath, featureType);
         }

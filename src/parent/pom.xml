@@ -604,7 +604,7 @@
               </includes>
               <forkCount>1</forkCount>
               <reuseForks>false</reuseForks>
-              <argLine>-Xms2G -Xmx2G</argLine>
+	      <argLine>${argLine}</argLine>
             </configuration>
           </plugin>
         </plugins>

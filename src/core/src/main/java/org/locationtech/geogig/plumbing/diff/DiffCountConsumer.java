@@ -12,7 +12,6 @@ package org.locationtech.geogig.plumbing.diff;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;
-import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
@@ -29,12 +28,19 @@ import org.locationtech.geogig.storage.ObjectStore;
  */
 public class DiffCountConsumer extends PreOrderDiffWalk.AbstractConsumer {
 
-    private final ObjectStore db;
-
     private DiffObjectCount count = new DiffObjectCount();
 
+    private ObjectStore leftSource;
+
+    private ObjectStore rightSource;
+
     public DiffCountConsumer(ObjectStore db) {
-        this.db = db;
+        this(db, db);
+    }
+
+    public DiffCountConsumer(ObjectStore leftSource, ObjectStore rightSource) {
+        this.leftSource = leftSource;
+        this.rightSource = rightSource;
     }
 
     public DiffObjectCount get() {
@@ -61,7 +67,8 @@ public class DiffCountConsumer extends PreOrderDiffWalk.AbstractConsumer {
             return true;
         }
         if (left == null || right == null) {
-            addTreeFeatures(node.getObjectId(), left != null, right != null);
+            RevTree tree = (left == null ? rightSource : leftSource).getTree(node.getObjectId());
+            addTreeFeatures(tree, left != null, right != null);
             if (left == null) {
                 count.addedTrees(1);
             } else {
@@ -80,14 +87,14 @@ public class DiffCountConsumer extends PreOrderDiffWalk.AbstractConsumer {
 
         if (bucketIndex.left().isEmpty() || bucketIndex.right().isEmpty()) {
             Bucket bucket = left == null ? right : left;
-            addTreeFeatures(bucket.getObjectId(), left != null, right != null);
+            RevTree tree = (left == null ? rightSource : leftSource).getTree(bucket.getObjectId());
+            addTreeFeatures(tree, left != null, right != null);
             return false;
         }
         return true;
     }
 
-    private boolean addTreeFeatures(ObjectId treeId, boolean leftPresent, boolean rightPresent) {
-        RevTree tree = db.getTree(treeId);
+    private boolean addTreeFeatures(RevTree tree, boolean leftPresent, boolean rightPresent) {
         long size = tree.size();
         if (leftPresent && rightPresent) {
             count.changedFeatures(size);

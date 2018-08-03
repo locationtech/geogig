@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
@@ -33,8 +32,8 @@ import org.locationtech.geogig.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
@@ -45,7 +44,6 @@ import org.opengis.referencing.operation.TransformException;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Computes the bounds of the difference between the two trees instead of the actual diffs.
@@ -53,19 +51,35 @@ import org.locationtech.jts.geom.Envelope;
  */
 public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, BoundingBox>> {
 
-    private String oldVersion;
+    private ObjectStore leftSource, rightSource;
 
-    private String newVersion;
+    private String oldVersion, newVersion;
 
-    private boolean cached;
+    private RevTree oldTree, newTree;
 
-    private List<String> pathFilters;
+    private List<String> pathFilters = ImmutableList.of();
 
     private CoordinateReferenceSystem crs;
 
+    private boolean compareStaged;
+
+    public DiffBounds setLeftSource(ObjectStore leftSource) {
+        this.leftSource = leftSource;
+        return this;
+    }
+
+    public DiffBounds setRightSource(ObjectStore rightSource) {
+        this.rightSource = rightSource;
+        return this;
+    }
+
     public DiffBounds setOldVersion(String oldVersion) {
         this.oldVersion = oldVersion;
-        this.pathFilters = ImmutableList.of();
+        return this;
+    }
+
+    public DiffBounds setOldVersion(RevTree oldVersion) {
+        this.oldTree = oldVersion;
         return this;
     }
 
@@ -74,8 +88,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         return this;
     }
 
-    public DiffBounds setCompareIndex(boolean cached) {
-        this.cached = cached;
+    public DiffBounds setNewVersion(RevTree newVersion) {
+        this.newTree = newVersion;
         return this;
     }
 
@@ -99,26 +113,26 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
     @Override
     protected DiffSummary<BoundingBox, BoundingBox> _call() {
-        checkArgument(cached && oldVersion == null || !cached,
+        checkArgument(compareStaged && oldVersion == null && oldTree == null || !compareStaged,
                 String.format(
                         "compare index allows only one revision to check against, got %s / %s",
                         oldVersion, newVersion));
+        if (compareStaged) {
+            oldVersion = Ref.HEAD;
+            newVersion = Ref.STAGE_HEAD;
+        } else {
+            oldVersion = oldVersion == null ? (oldTree == null ? Ref.HEAD : null) : oldVersion;
+            newVersion = newVersion == null ? (newTree == null ? Ref.WORK_HEAD : null) : newVersion;
+        }
 
-        checkArgument(newVersion == null || oldVersion != null,
-                "If new rev spec is specified then old rev spec is mandatory");
+        ObjectStore leftSource = this.leftSource == null ? objectDatabase() : this.leftSource;
+        ObjectStore rightSource = this.rightSource == null ? objectDatabase() : this.rightSource;
+        RevTree left = resolveTree(oldTree, oldVersion, leftSource);
+        RevTree right = resolveTree(newTree, newVersion, rightSource);
 
-        final String leftRefSpec = fromNullable(oldVersion).or(Ref.HEAD);
-        final String rightRefSpec = fromNullable(newVersion)
-                .or(cached ? Ref.STAGE_HEAD : Ref.WORK_HEAD);
-
-        RevTree left = resolveTree(leftRefSpec);
-        RevTree right = resolveTree(rightRefSpec);
-
-        ObjectDatabase leftSource = objectDatabase();
-        ObjectDatabase rightSource = objectDatabase();
         PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
         CoordinateReferenceSystem crs = resolveCrs();
-        BoundsWalk walk = new BoundsWalk(crs, objectDatabase());
+        BoundsWalk walk = new BoundsWalk(crs, leftSource, rightSource);
         PreOrderDiffWalk.Consumer consumer = walk;
         if (!pathFilters.isEmpty()) {
             consumer = new PathFilteringDiffConsumer(pathFilters, walk);
@@ -141,12 +155,15 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         return defaultCrs;
     }
 
-    private RevTree resolveTree(String refSpec) {
-
-        Optional<ObjectId> id = command(ResolveTreeish.class).setTreeish(refSpec).call();
-        Preconditions.checkState(id.isPresent(), "%s did not resolve to a tree", refSpec);
-
-        return objectDatabase().getTree(id.get());
+    private RevTree resolveTree(@Nullable RevTree tree, @Nullable String refSpec,
+            ObjectStore source) {
+        if (tree == null) {
+            Optional<ObjectId> id = command(ResolveTreeish.class).setSource(source)
+                    .setTreeish(refSpec).call();
+            Preconditions.checkState(id.isPresent(), "%s did not resolve to a tree", refSpec);
+            tree = source.getTree(id.get());
+        }
+        return tree;
     }
 
     private static class BoundsWalk extends PreOrderDiffWalk.AbstractConsumer {
@@ -186,13 +203,15 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
         private final CoordinateReferenceSystem crs;
 
-        private final ObjectStore source;
+        private final ObjectStore leftSource, rightSource;
 
         private final ConcurrentMap<ObjectId, MathTransform> transformsByMetadataId;
 
-        public BoundsWalk(CoordinateReferenceSystem crs, ObjectStore source) {
+        public BoundsWalk(CoordinateReferenceSystem crs, ObjectStore leftSource,
+                ObjectStore rightSource) {
             this.crs = crs;
-            this.source = source;
+            this.leftSource = leftSource;
+            this.rightSource = rightSource;
             this.transformsByMetadataId = new ConcurrentHashMap<>();
             leftEnv = new ThreadSafeReferencedEnvelope(this.crs);
             rightEnv = new ThreadSafeReferencedEnvelope(this.crs);
@@ -200,8 +219,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
         @Override
         public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
-            ReferencedEnvelope leftHelper = getEnv(left);
-            ReferencedEnvelope rightHelper = getEnv(right);
+            ReferencedEnvelope leftHelper = getEnv(left, leftSource);
+            ReferencedEnvelope rightHelper = getEnv(right, rightSource);
 
             if (!leftHelper.equals(rightHelper)) {
                 leftEnv.expandToInclude(leftHelper);
@@ -212,8 +231,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
         @Override
         public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
-            ReferencedEnvelope leftHelper = getEnv(left);
-            ReferencedEnvelope rightHelper = getEnv(right);
+            ReferencedEnvelope leftHelper = getEnv(left, leftSource);
+            ReferencedEnvelope rightHelper = getEnv(right, rightSource);
 
             if (leftHelper.isNull() && rightHelper.isNull()) {
                 return false;
@@ -252,8 +271,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
                 @Nullable Bucket left, @Nullable Bucket right) {
 
-            ReferencedEnvelope leftHelper = getEnv(left, leftParent);
-            ReferencedEnvelope rightHelper = getEnv(right, rightParent);
+            ReferencedEnvelope leftHelper = getEnv(left, leftParent, leftSource);
+            ReferencedEnvelope rightHelper = getEnv(right, rightParent, rightSource);
 
             if (leftHelper.isNull() && rightHelper.isNull()) {
                 return false;
@@ -273,18 +292,19 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
             return null == node ? ObjectId.NULL : node.getMetadataId();
         }
 
-        private ReferencedEnvelope getEnv(@Nullable NodeRef ref) {
-            return getEnv(ref, ref);
+        private ReferencedEnvelope getEnv(@Nullable NodeRef ref, ObjectStore source) {
+            return getEnv(ref, ref, source);
         }
 
-        private ReferencedEnvelope getEnv(@Nullable Bounded bounded, NodeRef ref) {
+        private ReferencedEnvelope getEnv(@Nullable Bounded bounded, NodeRef ref,
+                ObjectStore source) {
 
             ObjectId metadataId = md(ref);
             ReferencedEnvelope env = new ReferencedEnvelope(this.crs);
             if (bounded != null) {
                 bounded.expand(env);
                 if (!env.isNull() && !metadataId.isNull()) {
-                    MathTransform transform = getMathTransform(metadataId);
+                    MathTransform transform = getMathTransform(metadataId, source);
                     if (!transform.isIdentity()) {
                         Envelope targetEnvelope = new ReferencedEnvelope(crs);
                         try {
@@ -305,7 +325,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
             return env.getWidth() == 0D && env.getHeight() == 0D;
         }
 
-        private MathTransform getMathTransform(ObjectId mdid) {
+        private MathTransform getMathTransform(ObjectId mdid, ObjectStore source) {
             MathTransform transform = this.transformsByMetadataId.get(mdid);
             if (transform == null) {
                 RevFeatureType revtype = source.getFeatureType(mdid);
@@ -335,6 +355,11 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
             return r;
         }
 
+    }
+
+    public DiffBounds setCompareIndex(boolean cached) {
+        this.compareStaged = cached;
+        return this;
     }
 
 }

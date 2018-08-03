@@ -21,7 +21,7 @@ import org.locationtech.geogig.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -35,25 +35,13 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
 
     private final List<String> pathFilters = Lists.newLinkedList();
 
-    /**
-     * either one of oldRefSpec or oldTreeId must be set. Setting one nulls out the other.
-     */
-    private String oldRefSpec;
+    private ObjectStore leftSource, rightSource;
 
-    /**
-     * either one of oldRefSpec or oldTreeId must be set. Setting one nulls out the other.
-     */
-    private ObjectId oldTreeId;
+    private String oldRefSpec, newRefSpec;
 
-    /**
-     * either one of newRefSpec or newTreeId must be set. Setting one nulls out the other.
-     */
-    private String newRefSpec;
+    private ObjectId oldTreeId, newTreeId;
 
-    /**
-     * either one of newRefSpec or newTreeId must be set. Setting one nulls out the other.
-     */
-    private ObjectId newTreeId;
+    private RevTree oldTree, newTree;
 
     public DiffCount setOldVersion(String refSpec) {
         this.oldRefSpec = refSpec;
@@ -76,6 +64,26 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
     public DiffCount setNewTree(ObjectId newTreeId) {
         this.newRefSpec = null;
         this.newTreeId = newTreeId;
+        return this;
+    }
+
+    public DiffCount setOldTree(RevTree oldTree) {
+        this.oldTree = oldTree;
+        return this;
+    }
+
+    public DiffCount setNewTree(RevTree newTree) {
+        this.newTree = newTree;
+        return this;
+    }
+
+    public DiffCount setLeftSource(ObjectStore leftSource) {
+        this.leftSource = leftSource;
+        return this;
+    }
+
+    public DiffCount setRightSource(ObjectStore rightSource) {
+        this.rightSource = rightSource;
         return this;
     }
 
@@ -104,17 +112,22 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
 
     @Override
     protected DiffObjectCount _call() {
-        checkState(oldRefSpec != null || oldTreeId != null, "old ref spec not provided");
-        checkState(newRefSpec != null || newTreeId != null, "new ref spec not provided");
+        checkState(oldRefSpec != null || oldTreeId != null || oldTree != null,
+                "old ref spec not provided");
+        checkState(newRefSpec != null || newTreeId != null || newTree != null,
+                "new ref spec not provided");
 
-        final RevTree oldTree = getTree(oldRefSpec, oldTreeId);
-        final RevTree newTree = getTree(newRefSpec, newTreeId);
+        final ObjectStore leftSource = this.leftSource == null ? objectDatabase() : this.leftSource;
+        final ObjectStore rightSource = this.rightSource == null ? objectDatabase()
+                : this.rightSource;
+
+        final RevTree oldTree = getTree(oldRefSpec, oldTreeId, this.oldTree, leftSource);
+        final RevTree newTree = getTree(newRefSpec, newTreeId, this.newTree, rightSource);
 
         DiffObjectCount diffCount;
-        ObjectDatabase index = objectDatabase();
-        PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, index, index);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource, rightSource);
 
-        DiffCountConsumer counter = new DiffCountConsumer(index);
+        DiffCountConsumer counter = new DiffCountConsumer(leftSource, rightSource);
         PreOrderDiffWalk.Consumer filter = counter;
         if (!pathFilters.isEmpty()) {
             filter = new PathFilteringDiffConsumer(pathFilters, counter);
@@ -128,19 +141,18 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
     /**
      * @return the tree referenced by the old ref, or the head of the index.
      */
-    private RevTree getTree(@Nullable String refSpec, @Nullable ObjectId treeId) {
-        checkState(refSpec == null || treeId == null);
-
-        final RevTree headTree;
-        Optional<ObjectId> resolved = refSpec == null ? Optional.of(treeId)
-                : command(ResolveTreeish.class).setTreeish(refSpec).call();
-        if (resolved.isPresent()) {
-            ObjectId headTreeId = resolved.get();
-            headTree = objectDatabase().getTree(headTreeId);
-        } else {
-            headTree = RevTree.EMPTY;
+    private RevTree getTree(@Nullable String refSpec, @Nullable ObjectId treeId,
+            @Nullable RevTree tree, ObjectStore source) {
+        if (tree == null) {
+            Optional<ObjectId> resolved = refSpec == null ? Optional.of(treeId)
+                    : command(ResolveTreeish.class).setTreeish(refSpec).call();
+            if (resolved.isPresent()) {
+                tree = source.getTree(resolved.get());
+            } else {
+                tree = RevTree.EMPTY;
+            }
         }
-        return headTree;
+        return tree;
     }
 
 }

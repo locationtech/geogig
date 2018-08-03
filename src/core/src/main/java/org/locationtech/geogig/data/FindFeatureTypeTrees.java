@@ -9,20 +9,25 @@
  */
 package org.locationtech.geogig.data;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.ObjectStore;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 
 /**
  * 
@@ -31,6 +36,10 @@ import com.google.common.collect.Iterators;
 public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
 
     private String refSpec;
+
+    private ObjectStore source;
+
+    private RevTree rootTree;
 
     /**
      * @param refSpec a ref spec, as supported by {@link RevParse}, that resolves to the root tree
@@ -42,25 +51,76 @@ public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
         return this;
     }
 
+    public FindFeatureTypeTrees setRootTree(RevTree rootTree) {
+        this.rootTree = rootTree;
+        return this;
+    }
+
+    public FindFeatureTypeTrees setSource(ObjectStore source) {
+        this.source = source;
+        return this;
+    }
+
     @Override
     protected List<NodeRef> _call() {
-        Preconditions.checkNotNull(refSpec, "refSpec was not provided");
-        Iterator<NodeRef> allTrees;
-        try {
-            allTrees = context.command(LsTreeOp.class).setReference(refSpec)
-                    .setStrategy(LsTreeOp.Strategy.DEPTHFIRST_ONLY_TREES).call();
-        } catch (IllegalArgumentException noWorkHead) {
-            return ImmutableList.of();
+        Preconditions.checkArgument(refSpec != null || rootTree != null,
+                "refSpec was not provided");
+        if (source == null) {
+            source = objectDatabase();
         }
-        Iterator<NodeRef> typeTrees = Iterators.filter(allTrees, new Predicate<NodeRef>() {
-            @Override
-            public boolean apply(NodeRef input) {
-                ObjectId metadataId = input.getMetadataId();
-                return !metadataId.isNull();
-            }
-        });
 
-        return ImmutableList.copyOf(typeTrees);
+        final RevTree rootTree = resolveRootTree();
+        List<NodeRef> featureTypeRefs = getSubTrees(rootTree, NodeRef.ROOT);
+        return featureTypeRefs;
+    }
+
+    private List<NodeRef> getSubTrees(RevTree tree, String parentPath) {
+        if (tree.numTrees() == 0) {
+            return Collections.emptyList();
+        }
+
+        List<NodeRef> subtrees = new ArrayList<>();
+        if (tree.treesSize() > 0) {
+            subtrees.addAll(toNodeRef(tree.trees(), parentPath));
+        }
+        if (tree.bucketsSize() > 0) {
+            List<ObjectId> bucketIds = tree.buckets().values().stream().map(b -> b.getObjectId())
+                    .collect(Collectors.toList());
+            Iterator<RevTree> bucketTrees = source.getAll(bucketIds, BulkOpListener.NOOP_LISTENER,
+                    RevTree.class);
+            bucketTrees
+                    .forEachRemaining(bucket -> subtrees.addAll(getSubTrees(bucket, parentPath)));
+        }
+        return subtrees;
+    }
+
+    private List<NodeRef> toNodeRef(List<Node> trees, String parentPath) {
+        List<NodeRef> refs = new ArrayList<>();
+        for (Node treeNode : trees) {
+            Optional<ObjectId> metadataId = treeNode.getMetadataId();
+            if (metadataId.isPresent()) {
+                refs.add(NodeRef.create(parentPath, treeNode));
+            } else {
+                // nested parent
+                if (!treeNode.getObjectId().equals(RevTree.EMPTY_TREE_ID)) {
+                    String path = NodeRef.appendChild(parentPath, treeNode.getName());
+                    RevTree subtree = source.getTree(treeNode.getObjectId());
+                    List<NodeRef> subTrees = getSubTrees(subtree, path);
+                    refs.addAll(subTrees);
+                }
+            }
+        }
+        return refs;
+    }
+
+    private RevTree resolveRootTree() {
+        RevTree root = this.rootTree;
+        if (root == null) {
+            Optional<ObjectId> treeish = command(ResolveTreeish.class).setSource(source)
+                    .setTreeish(refSpec).call();
+            return treeish.isPresent() ? source.getTree(treeish.get()) : RevTree.EMPTY;
+        }
+        return root;
     }
 
 }

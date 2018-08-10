@@ -150,7 +150,7 @@
                 <!--exclude>${postgresOnline.skip.pattern}</exclude-->
                 <!--exclude>${postgresWebFunctional.skip.pattern}</exclude-->
               </excludes>
-              <forkCount>1</forkCount> <!-- http functional tests use the same port -->
+              <forkCount>1C</forkCount>
               <reuseForks>true</reuseForks>
             </configuration>
           </plugin>

@@ -22,6 +22,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jetty.server.ServerConnector;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
@@ -58,7 +59,7 @@ import com.google.common.collect.Sets;
  */
 public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
-    private static final int TEST_HTTP_PORT = 8182;
+    private int serverPort;
 
     private MultiRepositoryProvider repoProvider;
 
@@ -113,13 +114,16 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
     @Override
     protected void serveHttpRepos() throws Exception {
-        server = new JettyServer(TEST_HTTP_PORT, repoProvider);
+        final int requestRandomPort = 0;
+        server = new JettyServer(requestRandomPort, repoProvider);
         server.start(true);
+        serverPort = ((ServerConnector) server.getServer().getConnectors()[0]).getLocalPort();
+        System.err.println("Server running on port " + serverPort);
     }
 
     @Override
     public String getHttpLocation(String repoName) {
-        return String.format("http://localhost:%d/repos/%s", TEST_HTTP_PORT, repoName);
+        return String.format("http://localhost:%d/repos/%s", serverPort, repoName);
     }
 
     /**
@@ -162,6 +166,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         this.lastResponseText = null;
         this.lastResponseDocument = null;
     }
+
     /**
      * Issue a POST request to the provided URL with the given file passed as form data.
      * 
@@ -177,8 +182,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         MockMvc mvc = MockMvcBuilders.webAppContextSetup(wac).build();
         try (FileInputStream fis = new FileInputStream(file)) {
             MockMultipartFile mFile = new MockMultipartFile(formFieldName, fis);
-            MockMultipartHttpServletRequestBuilder request =
-                    MockMvcRequestBuilders.fileUpload(new URI(resourceUri)).file(mFile);
+            MockMultipartHttpServletRequestBuilder request = MockMvcRequestBuilders
+                    .fileUpload(new URI(resourceUri)).file(mFile);
             request.requestAttr(RepositoryProvider.KEY, repoProvider);
             setLastResponse(mvc.perform(request).andReturn());
         } catch (Exception e) {
@@ -342,8 +347,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     @Override
     public Set<String> getLastResponseAllowedMethods() {
         // HttpHeaders for ALLOW comes back as a comma separated list in a single String, not
-        Object headerValues = getLastResponse().getResponse()
-                .getHeaderValue(HttpHeaders.ALLOW);
+        Object headerValues = getLastResponse().getResponse().getHeaderValue(HttpHeaders.ALLOW);
         return Sets.newHashSet(headerValues.toString().split(","));
     }
 

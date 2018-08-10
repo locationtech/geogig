@@ -14,7 +14,7 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-public class TableNames {
+public class TableNames  implements Cloneable{
 
     public static final String DEFAULT_SCHEMA = "public";
 

@@ -11,23 +11,35 @@ package org.locationtech.geogig.storage.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.IndexDatabase;
+import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.memory.HeapIndexDatabase;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 /**
  * Base class to check an {@link IndexDatabase}'s implementation conformance to the interface
@@ -444,4 +456,81 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
 
     }
 
+    public @Test void testCopyIndexesTo() {
+        HeapIndexDatabase target = new HeapIndexDatabase();
+        target.open();
+        testCopyIndexesTo(target);
+    }
+
+    protected void testCopyIndexesTo(IndexDatabase target) {
+        IndexInfo index1 = createIndex("Layer1", this.indexDb);
+        this.indexDb.copyIndexesTo(target);
+        Optional<IndexInfo> indexInfo = target.getIndexInfo(index1.getTreeName(),
+                index1.getAttributeName());
+        assertNotNull(indexInfo);
+        assertTrue(indexInfo.isPresent());
+        assertEquals(index1, indexInfo.get());
+
+        Set<IndexTreeMapping> expectedMappings = toSet(this.indexDb.resolveIndexedTrees(index1));
+        Set<IndexTreeMapping> actualMappings = toSet(target.resolveIndexedTrees(index1));
+        assertEquals(expectedMappings.size(), actualMappings.size());
+        assertEquals(expectedMappings, actualMappings);
+
+        Set<ObjectId> expectedIndexTrees = verifyAllReachableTrees(this.indexDb, expectedMappings);
+        Set<ObjectId> actualIndexTrees = verifyAllReachableTrees(target, actualMappings);
+        assertEquals(expectedIndexTrees.size(), actualIndexTrees.size());
+        assertEquals(expectedIndexTrees, actualIndexTrees);
+    }
+
+    private Set<IndexTreeMapping> toSet(AutoCloseableIterator<IndexTreeMapping> mappings) {
+        try {
+            return Sets.newHashSet(mappings);
+        } finally {
+            mappings.close();
+        }
+    }
+
+    private IndexInfo createIndex(String treeName, IndexDatabase target) {
+
+        IndexInfo index = target.createIndexInfo(treeName, "the_geom", IndexType.QUADTREE, null);
+
+        Envelope maxBounds = new Envelope(-180, 180, -90, 90);
+        Envelope bounds = new Envelope();
+        RevTree tree = RevTree.EMPTY;
+        for (int y = -90; y <= 90; y += 5) {
+            QuadTreeBuilder builder = QuadTreeBuilder.create(target, target, tree, maxBounds);
+            for (int x = -180; x <= 180; x += 5) {
+                bounds.init(x, x, y, y);
+                String name = String.format("%d_%d", x, y);
+                ObjectId oid = RevObjectTestSupport.hashString(name);
+                Node node = Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds);
+                builder.put(node);
+            }
+            tree = builder.build();
+            ObjectId originalTree = RevObjectTestSupport.hashString("fake" + tree.getId());
+            target.addIndexedTree(index, originalTree, tree.getId());
+        }
+        return index;
+    }
+
+    private Set<ObjectId> verifyAllReachableTrees(IndexDatabase db,
+            Set<IndexTreeMapping> mappings) {
+        Set<ObjectId> allIds = new HashSet<>();
+        mappings.stream().map(m -> m.indexTree)
+                .forEach(id -> allIds.addAll(verifyAllReachableTrees(db, id)));
+        return allIds;
+    }
+
+    public static Set<ObjectId> verifyAllReachableTrees(ObjectStore store, ObjectId treeId) {
+        Set<ObjectId> allIds = new HashSet<>();
+        RevTree tree = store.getTree(treeId);
+        allIds.add(tree.getId());
+        tree.trees()
+                .forEach(node -> allIds.addAll(verifyAllReachableTrees(store, node.getObjectId())));
+
+        tree.buckets()
+                .forEach((i, b) -> allIds.addAll(verifyAllReachableTrees(store, b.getObjectId())));
+
+        return allIds;
+    }
 }

@@ -33,7 +33,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     private Environment environment;
 
-    private final String repositoryId;
+    private final String repositoryName;
 
     private PGTestDataSourceProvider dataSourceProvider;
 
@@ -41,7 +41,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     public PGTemporaryTestConfig(String repositoryId) {
         Preconditions.checkNotNull(repositoryId);
-        this.repositoryId = repositoryId;
+        this.repositoryName = repositoryId;
         this.dataSourceProvider = new PGTestDataSourceProvider();
         this.externalDataSource = false;
     }
@@ -49,7 +49,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
     public PGTemporaryTestConfig(String repositoryId, PGTestDataSourceProvider dataSourceProvider) {
         Preconditions.checkNotNull(repositoryId);
         Preconditions.checkNotNull(dataSourceProvider);
-        this.repositoryId = repositoryId;
+        this.repositoryName = repositoryId;
         this.dataSourceProvider = dataSourceProvider;
         this.externalDataSource = true;
     }
@@ -76,7 +76,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
             return;
         }
         try {
-            delete();
+            delete(environment);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -95,7 +95,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
         return dataSourceProvider.getDataSource();
     }
 
-    private void delete() throws SQLException {
+    public void delete(Environment environment) throws SQLException {
         if (environment == null) {
             return;
         }
@@ -141,13 +141,18 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     public synchronized Environment getEnvironment() {
         if (environment == null) {
-            String tablePrefix;
-            synchronized (RND) {
-                tablePrefix = "geogig_" + Math.abs(RND.nextInt(100_000)) + "_";
-            }
-            environment = dataSourceProvider.newEnvironment(repositoryId, tablePrefix);
+            environment = newEnvironment(repositoryName);
         }
         return environment;
+    }
+
+    public Environment newEnvironment(String repositoryName) {
+        String tablePrefix;
+        synchronized (RND) {
+            tablePrefix = "geogig_" + Math.abs(RND.nextInt(100_000)) + "_";
+        }
+        Environment env = dataSourceProvider.newEnvironment(repositoryName, tablePrefix);
+        return env;
     }
 
     public String getRootURI() {

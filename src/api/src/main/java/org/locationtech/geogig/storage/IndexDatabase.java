@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -27,6 +28,27 @@ import com.google.common.base.Optional;
  * @since 1.1
  */
 public interface IndexDatabase extends ObjectStore {
+
+    public static class IndexTreeMapping {
+        public final ObjectId featureTree;
+
+        public final ObjectId indexTree;
+
+        public IndexTreeMapping(ObjectId featureTree, ObjectId indexTree) {
+            this.featureTree = featureTree;
+            this.indexTree = indexTree;
+        }
+
+        public @Override boolean equals(Object o) {
+            return o instanceof IndexTreeMapping
+                    && featureTree.equals(((IndexTreeMapping) o).featureTree)
+                    && indexTree.equals(((IndexTreeMapping) o).indexTree);
+        }
+
+        public @Override int hashCode() {
+            return Objects.hash(featureTree, indexTree);
+        }
+    }
 
     /**
      * Performs any setup required before first open, including setting default configuration.
@@ -88,7 +110,7 @@ public interface IndexDatabase extends ObjectStore {
      * @return a list with all of the {@link IndexInfo} associated with the given tree
      */
     public List<IndexInfo> getIndexInfos(String treeName);
-    
+
     /**
      * Gets all of the indexes in the database.
      * 
@@ -127,4 +149,18 @@ public interface IndexDatabase extends ObjectStore {
      * @param treeId the {@link ObjectId} of the canonical tree
      */
     public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId);
+
+    public AutoCloseableIterator<IndexTreeMapping> resolveIndexedTrees(IndexInfo index);
+
+    /**
+     * Copies all the spatial indexes from this database to the provided one.
+     * 
+     * @implNote this default implementation uses {@link IndexDuplicator} to generically perform the
+     *           task. Implementations of this interface should override in case they can do better
+     *           (e.g. copying to the same database for a different repository)
+     * @param target the index database to replicate all the indexes to
+     */
+    public default void copyIndexesTo(final IndexDatabase target) {
+        new IndexDuplicator(this, target).run();
+    }
 }

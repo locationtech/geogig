@@ -11,8 +11,10 @@ package org.locationtech.geogig.storage.memory;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -20,6 +22,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
@@ -86,8 +89,8 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         if (isOpen()) {
             return;
         }
-        indexes = new HashMap<String, List<IndexInfo>>();
-        indexTreeMappings = new HashMap<ObjectId, Map<ObjectId, ObjectId>>();
+        indexes = new ConcurrentHashMap<String, List<IndexInfo>>();
+        indexTreeMappings = new ConcurrentHashMap<ObjectId, Map<ObjectId, ObjectId>>();
         super.open();
     }
 
@@ -205,7 +208,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     @Override
     public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
         if (!indexTreeMappings.containsKey(index.getId())) {
-            indexTreeMappings.put(index.getId(), new HashMap<ObjectId, ObjectId>());
+            indexTreeMappings.put(index.getId(), new ConcurrentHashMap<ObjectId, ObjectId>());
         }
         indexTreeMappings.get(index.getId()).put(originalTree, indexedTree);
     }
@@ -217,5 +220,16 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
             return Optional.fromNullable(indexMappings.get(treeId));
         }
         return Optional.absent();
+    }
+
+    public @Override AutoCloseableIterator<IndexTreeMapping> resolveIndexedTrees(IndexInfo index) {
+        Map<ObjectId, ObjectId> indexMappings = indexTreeMappings.get(index.getId());
+        if (indexMappings == null || indexMappings.isEmpty()) {
+            return AutoCloseableIterator.emptyIterator();
+        }
+        indexMappings = new HashMap<>(indexMappings);
+        Iterator<IndexTreeMapping> iterator = indexMappings.entrySet().stream()
+                .map(e -> new IndexTreeMapping(e.getKey(), e.getValue())).iterator();
+        return AutoCloseableIterator.fromIterator(iterator);
     }
 }

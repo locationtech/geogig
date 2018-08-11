@@ -30,7 +30,7 @@ import com.google.common.base.Preconditions;
  * pool and other resources that have to be per database singletons, such as object cache, and
  * thread pools.
  */
-public class Environment {
+public class Environment implements Cloneable {
 
     public static final String KEY_DB_SERVER = "postgres.server";
 
@@ -74,7 +74,7 @@ public class Environment {
 
     public final ConnectionConfig connectionConfig;
 
-    private final String repositoryName;
+    private String repositoryName;
 
     private final TableNames tables;
 
@@ -192,4 +192,20 @@ public class Environment {
     public boolean isRepositorySet() {
         return repositoryId != REPOSITORY_ID_UNSET;
     }
+
+    public @Override Environment clone() {
+        try {
+            return (Environment) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Environment asRepository(String repoName) {
+        Environment clone = clone();
+        clone.repositoryId = REPOSITORY_ID_UNSET;
+        clone.repositoryName = repoName;
+        return clone;
+    }
+
 }

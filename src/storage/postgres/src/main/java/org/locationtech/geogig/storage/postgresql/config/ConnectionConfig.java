@@ -10,18 +10,41 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
-public class ConnectionConfig {
+public class ConnectionConfig implements Cloneable {
 
     private final ConnectionConfig.Key key;
 
     /**
-     * Encapsulates the parts of the connection config that uniquely identify a connection to
-     * the database in order to be used as key for {@link DataSourceManager}. As such, #schema
-     * and #tablePrefix are ignored by {@link #equals(Object)} and {@link #hashCode()}, while
-     * they're taking into account for {@link ConnectionConfig} itself.
+     * Checks if both connection configs target the same database regardless of the schema, user,
+     * and password they're connected with
+     */
+    public boolean isSameDatabase(ConnectionConfig other) {
+        Preconditions.checkNotNull(other);
+        boolean same = Objects.equal(key.server, other.key.server) && //
+                Objects.equal(key.portNumber, other.key.portNumber) && //
+                Objects.equal(key.databaseName, other.key.databaseName);
+        return same;
+    }
+
+    /**
+     * Checks if both connection configs target the same database and schema regardless of the user
+     * and password they're connected with
+     */
+    public boolean isSameDatabaseAndSchema(ConnectionConfig other) {
+        boolean same = isSameDatabase(other) && //
+                Objects.equal(key.schema, other.key.schema)
+                && Objects.equal(key.tablePrefix, other.key.tablePrefix);
+        return same;
+    }
+
+    /**
+     * Encapsulates the parts of the connection config that uniquely identify a connection to the
+     * database in order to be used as key for {@link DataSourceManager}. As such, #schema and
+     * #tablePrefix are ignored by {@link #equals(Object)} and {@link #hashCode()}, while they're
+     * taking into account for {@link ConnectionConfig} itself.
      *
      */
-    static class Key {
+    static class Key implements Cloneable {
 
         final String server;
 
@@ -77,8 +100,7 @@ public class ConnectionConfig {
     ConnectionConfig(final String server, final int portNumber, final String databaseName,
             final String schema, @Nullable final String user, @Nullable final String password,
             @Nullable String tablePrefix) {
-        this.key = new Key(server, portNumber, databaseName, schema, user, password,
-                tablePrefix);
+        this.key = new Key(server, portNumber, databaseName, schema, user, password, tablePrefix);
     }
 
     public URI toURI() {

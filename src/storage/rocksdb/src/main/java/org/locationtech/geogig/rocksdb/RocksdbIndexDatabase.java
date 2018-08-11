@@ -13,6 +13,7 @@ import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME
 import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
 import java.io.DataInput;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.StorageType;
@@ -36,6 +38,7 @@ import org.rocksdb.RocksIterator;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
@@ -215,7 +218,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     @Override
     public void clearIndex(IndexInfo index) {
         checkOpen();
-        byte[] mappingKey = computeIndexTreeLookupId(index.getId(), null);
+        byte[] mappingKey = computeIndexTreePrefixLookupKey(index.getId());
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             try (RocksIterator it = dbRef.db().newIterator(indexMappingsColumn)) {
                 it.seek(mappingKey);
@@ -239,8 +242,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
         byte[] indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
         try (RocksDBReference dbRef = dbhandle.getReference()) {
-            dbRef.db().put(indexMappingsColumn, indexTreeLookupId,
-                    indexedTree.getRawValue());
+            dbRef.db().put(indexMappingsColumn, indexTreeLookupId, indexedTree.getRawValue());
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
@@ -263,11 +265,56 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return Optional.absent();
     }
 
+    private static ObjectId parseTreeIdFromKey(byte[] key) {
+        String stringKey = new String(key, Charsets.UTF_8);
+        String stringId = stringKey.substring(stringKey.indexOf('.') + 1);
+        return ObjectId.valueOf(stringId);
+    }
+
     private static byte[] computeIndexTreeLookupId(ObjectId indexId, @Nullable ObjectId treeId) {
         StringBuilder sb = new StringBuilder(indexId.toString()).append(".");
         if (treeId != null) {
             sb.append(treeId.toString());
         }
         return sb.toString().getBytes(Charsets.UTF_8);
+    }
+
+    private static byte[] computeIndexTreePrefixLookupKey(ObjectId indexId) {
+        return computeIndexTreeLookupId(indexId, null);
+    }
+
+    public @Override AutoCloseableIterator<IndexTreeMapping> resolveIndexedTrees(IndexInfo index) {
+        checkOpen();
+        List<IndexTreeMapping> mappings = new ArrayList<>();
+
+        final byte[] keyPrefix = computeIndexTreePrefixLookupKey(index.getId());
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            try (RocksIterator it = dbRef.db().newIterator(indexMappingsColumn)) {
+                it.seek(keyPrefix);
+                while (it.isValid() && prefixEquals(keyPrefix, it.key())) {
+                    ObjectId treeId = parseTreeIdFromKey(it.key());
+                    ObjectId indexTreeId = ObjectId.create(it.value());
+                    mappings.add(new IndexTreeMapping(treeId, indexTreeId));
+                    it.next();
+                }
+            } catch (Exception e) {
+                Throwables.throwIfUnchecked(e);
+                throw new RuntimeException(e);
+            }
+        }
+        return AutoCloseableIterator.fromIterator(mappings.iterator());
+    }
+
+    private boolean prefixEquals(byte[] keyPrefix, byte[] key) {
+        int length = keyPrefix.length;
+        if (length < key.length) {
+            return false;
+        }
+        for (int i = 0; i < length; i++) {
+            if (keyPrefix[i] != key[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

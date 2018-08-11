@@ -302,7 +302,6 @@ public class PGStorage {
     }
 
     public static synchronized void createTables(final Environment config) {
-
         final DataSource dataSource = PGStorage.newDataSource(config);
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             final Version serverVersion = getServerVersion(cx);

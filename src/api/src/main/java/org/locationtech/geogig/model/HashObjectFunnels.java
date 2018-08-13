@@ -181,7 +181,9 @@ public class HashObjectFunnels {
 
         @Override
         public void funnel(ObjectId from, PrimitiveSink into) {
-            Funnels.byteArrayFunnel().funnel(from.getRawValue(), into);
+            for (int i = 0; i < ObjectId.NUM_BYTES; i++) {
+                into.putByte((byte) from.byteN(i));
+            }
         }
     };
 

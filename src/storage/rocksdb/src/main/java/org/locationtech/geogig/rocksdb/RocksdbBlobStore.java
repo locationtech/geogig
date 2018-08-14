@@ -109,7 +109,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
 
     @Override
     public Optional<InputStream> getBlobAsStream(String namespace, String path) {
-        Optional<byte[]> blob = getBlob(path);
+        Optional<byte[]> blob = getBlob(namespace, path);
         return blob.transform((b) -> new ByteArrayInputStream(b));
     }
 
@@ -126,7 +126,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
     @Override
     public void putBlob(String namespace, String path, InputStream blob) {
         try {
-            putBlob(path, ByteStreams.toByteArray(blob));
+            putBlob(namespace, path, ByteStreams.toByteArray(blob));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -135,7 +135,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
     @Override
     public void removeBlob(String namespace, String path) {
         try (RocksDBReference dbRef = db()) {
-            dbRef.db().remove(key(namespace, path));
+            dbRef.db().delete(key(namespace, path));
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
@@ -155,7 +155,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
                         }
                     }
                     try {
-                        dbRef.db().remove(key);
+                        dbRef.db().delete(key);
                     } catch (RocksDBException e) {
                         throw new RuntimeException(e);
                     }

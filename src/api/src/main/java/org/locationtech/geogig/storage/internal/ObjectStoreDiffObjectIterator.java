@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage.internal;
 
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,7 +24,6 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -36,7 +37,7 @@ public class ObjectStoreDiffObjectIterator<T extends RevObject>
 
     private final Class<T> type;
 
-    private final ObjectStore store;
+    private final ObjectStore leftStore, rightStore;
 
     private Iterator<DiffObjectInfo<T>> nextBatch;
 
@@ -46,11 +47,22 @@ public class ObjectStoreDiffObjectIterator<T extends RevObject>
 
     private int getAllBatchSize = 1_000;
 
-    public ObjectStoreDiffObjectIterator(Iterator<DiffEntry> refs, Class<T> type,
-            ObjectStore store) {
+    public ObjectStoreDiffObjectIterator(//@formatter:off
+            Iterator<DiffEntry> refs, 
+            Class<T> type,
+            ObjectStore store) {//@formatter:on
+        this(refs, type, store, store);
+    }
+
+    public ObjectStoreDiffObjectIterator(//@formatter:off
+            Iterator<DiffEntry> refs, 
+            Class<T> type,
+            ObjectStore leftStore,
+            ObjectStore rightStore) {//@formatter:on
         this.nodes = Iterators.peekingIterator(refs);
         this.type = type;
-        this.store = store;
+        this.leftStore = leftStore;
+        this.rightStore = rightStore;
     }
 
     public @Override void close() {
@@ -97,20 +109,27 @@ public class ObjectStoreDiffObjectIterator<T extends RevObject>
         final int queryBatchSize = this.getAllBatchSize;
 
         List<DiffEntry> nextEntries = Iterators.partition(this.nodes, queryBatchSize).next();
-        Set<ObjectId> entriesIds = new HashSet<>();
+        Set<ObjectId> leftEntriesIds = new HashSet<>();
+        Set<ObjectId> rightEntriesIds = this.leftStore == this.rightStore ? leftEntriesIds
+                : new HashSet<>();
+
         nextEntries.forEach((e) -> {
             ObjectId oldId = e.oldObjectId();
             ObjectId newId = e.newObjectId();
             if (!oldId.isNull()) {
-                entriesIds.add(oldId);
+                leftEntriesIds.add(oldId);
             }
             if (!newId.isNull()) {
-                entriesIds.add(newId);
+                rightEntriesIds.add(newId);
             }
         });
 
-        Iterator<T> objects = store.getAll(entriesIds, BulkOpListener.NOOP_LISTENER, this.type);
-        Map<ObjectId, T> objectsById = new HashMap<>();// Maps.uniqueIndex(objects, o -> o.getId());
+        Iterator<T> objects = leftStore.getAll(leftEntriesIds, NOOP_LISTENER, this.type);
+        if (rightEntriesIds != leftEntriesIds && !rightEntriesIds.isEmpty()) {
+            objects = Iterators.concat(objects,
+                    rightStore.getAll(rightEntriesIds, NOOP_LISTENER, this.type));
+        }
+        Map<ObjectId, T> objectsById = new HashMap<>();
         objects.forEachRemaining((o) -> objectsById.putIfAbsent(o.getId(), o));
         nextBatch = createBatch(nextEntries, objectsById);
         return computeNext();

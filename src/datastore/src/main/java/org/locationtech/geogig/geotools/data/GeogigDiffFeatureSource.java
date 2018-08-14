@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.data;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -48,7 +49,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -62,7 +63,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  *
@@ -77,14 +77,25 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
 
     private boolean flattenSchema;
 
+    private Context oldContext;
+
     /**
      * <b>Precondition</b>: {@code entry.getDataStore() instanceof GeoGigDataStore}
-     * 
-     * @param entry
      */
     public GeogigDiffFeatureSource(ContentEntry entry, String oldRoot) {
         super(entry, Query.ALL);
+        checkNotNull(oldRoot);
         this.oldRoot = oldRoot;
+        this.oldContext = null;
+        checkArgument(entry.getDataStore() instanceof GeoGigDataStore);
+    }
+
+    public GeogigDiffFeatureSource(ContentEntry entry, String oldRoot, Context oldContext) {
+        super(entry, Query.ALL);
+        checkNotNull(oldRoot);
+        checkNotNull(oldContext);
+        this.oldRoot = oldRoot;
+        this.oldContext = oldContext;
         checkArgument(entry.getDataStore() instanceof GeoGigDataStore);
     }
 
@@ -95,10 +106,6 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
 
     public void setChangeType(GeoGigDataStore.ChangeType changeType) {
         this.changeType = changeType;
-    }
-
-    public void setOldRoot(@Nullable String oldRoot) {
-        this.oldRoot = oldRoot;
     }
 
     String oldRoot() {
@@ -335,8 +342,6 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
     private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(final Query query,
             final boolean retypeIfNeeded) throws IOException {
 
-        final Context context = getCommandLocator();
-
         final Hints hints = query.getHints();
         final @Nullable GeometryFactory geometryFactory = (GeometryFactory) hints
                 .get(Hints.JTS_GEOMETRY_FACTORY);
@@ -354,23 +359,26 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
         final RevFeatureType nativeType = getNativeType();
         final NodeRef typeRef = this.getTypeRef();
 
-        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, nativeType, typeRef);
+        Context leftContext = this.oldContext == null ? getCommandLocator() : this.oldContext;
+        Context rightContext = getCommandLocator();
+        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(leftContext, rightContext,
+                nativeType, typeRef);
         builder//
                 .targetSchema(getSchema())//
                 .filter(filter)//
                 .headRef(getRootRef())//
                 .oldHeadRef(oldRoot())//
-                // .ignoreIndex()//
                 .changeType(changeType())//
                 .geometryFactory(geometryFactory)//
-                // .simplificationDistance(simplifDistance)//
                 .offset(offset)//
                 .limit(limit)//
-                // .propertyNames(propertyNames)//
                 .screenMap(screenMap)//
-                // .sortBy(sortBy)//
-                // .retypeIfNeeded(retypeIfNeeded)//
                 .retypeIfNeeded(false);
+        // .ignoreIndex()//
+        // .simplificationDistance(simplifDistance)//
+        // .propertyNames(propertyNames)//
+        // .sortBy(sortBy)//
+        // .retypeIfNeeded(retypeIfNeeded)//
 
         final WalkInfo diffWalkInfo = builder.buildTreeWalk();
 
@@ -386,8 +394,8 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
         }
         AutoCloseableIterator<DiffEntry> entries = diffWalkInfo.diffOp.call();
         try {
-            ObjectStore store = getCommandLocator().objectDatabase();
-            BulkFeatureRetriever retriever = new BulkFeatureRetriever(store);
+            BulkFeatureRetriever retriever = new BulkFeatureRetriever(leftContext.objectDatabase(),
+                    rightContext.objectDatabase());
 
             AutoCloseableIterator<SimpleFeature> diffFeatures;
             diffFeatures = retriever.getGeoToolsDiffFeatures(entries, nativeType, diffType,

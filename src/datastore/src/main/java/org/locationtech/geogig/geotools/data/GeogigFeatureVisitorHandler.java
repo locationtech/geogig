@@ -197,7 +197,7 @@ class GeogigFeatureVisitorHandler {
             try (AutoCloseableIterator<NodeRef> refs = FeatureReaderBuilder
                     .toFeatureRefs(diff.call(), ChangeType.ADDED)) {
                 try (AutoCloseableIterator<ObjectInfo<RevFeature>> features = new BulkFeatureRetriever(
-                        store).getGeoGIGFeatures(refs)) {
+                        store, store).getGeoGIGFeatures(refs)) {
                     while (features.hasNext()) {
                         ObjectInfo<RevFeature> obj = features.next();
                         RevFeature revFeature = obj.object();

@@ -24,6 +24,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
+import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -60,7 +61,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 /**
  * 
  */
-public class QLInsert extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
+public @CanRunDuringConflict class QLInsert extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
 
     public String statement;
 

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -42,7 +43,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 /**
  * 
  */
-public class QLUpdate extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
+public @CanRunDuringConflict class QLUpdate extends AbstractGeoGigOp<Supplier<DiffObjectCount>> {
 
     public String statement;
 

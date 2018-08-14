@@ -28,6 +28,7 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffCount;
@@ -89,7 +90,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
  * <li><b>{@code <limit>}</b> := {@code 0 | <positive-integer>}
  * </ul>
  */
-public class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
+public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatureCollection> {
 
     public String statement;
 

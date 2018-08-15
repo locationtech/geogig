@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
+import static com.google.common.base.Preconditions.*;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,6 +26,8 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.internal.ObjectStoreDiffObjectIterator;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -36,7 +39,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Function;
-import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * This is the main entry class for retrieving features from GeoGIG.
@@ -56,10 +58,19 @@ public class BulkFeatureRetriever {
 
     public static final String DIFF_FEATURE_CHANGETYPE_ATTNAME = "geogig.changeType";
 
-    ObjectStore odb;
+    private ObjectStore odb;
 
-    public BulkFeatureRetriever(ObjectStore odb) {
-        this.odb = odb;
+    private ObjectStore leftDb;
+
+    public BulkFeatureRetriever(ObjectStore db) {
+        this(db, db);
+    }
+
+    public BulkFeatureRetriever(ObjectStore leftDb, ObjectStore rightDb) {
+        checkNotNull(leftDb);
+        checkNotNull(rightDb);
+        this.leftDb = leftDb;
+        this.odb = rightDb;
     }
 
     /**
@@ -151,7 +162,7 @@ public class BulkFeatureRetriever {
 
         final AutoCloseableIterator<DiffEntry> closeableRefs = AutoCloseableIterator
                 .fromIterator(refs);
-        objects = odb.getDiffObjects(refs, RevFeature.class);
+        objects = getDiffObjects(refs, RevFeature.class);
 
         return new AutoCloseableIterator<DiffObjectInfo<RevFeature>>() {
             public @Override void close() {
@@ -169,9 +180,19 @@ public class BulkFeatureRetriever {
         };
     }
 
-    public AutoCloseableIterator<SimpleFeature> getGeoToolsDiffFeatures(
-            AutoCloseableIterator<DiffEntry> refs, RevFeatureType nativeType, Name typeName,
-            boolean flattenSchema, @Nullable GeometryFactory geometryFactory) {
+    private AutoCloseableIterator<DiffObjectInfo<RevFeature>> getDiffObjects(
+            Iterator<DiffEntry> refs, Class<RevFeature> type) {
+        if (leftDb == null || leftDb == odb) {
+            return odb.getDiffObjects(refs, type);
+        }
+        return new ObjectStoreDiffObjectIterator<>(refs, type, leftDb, odb);
+    }
+
+    public AutoCloseableIterator<SimpleFeature> getGeoToolsDiffFeatures(//@formatter:off
+            AutoCloseableIterator<DiffEntry> refs, 
+            RevFeatureType nativeType, Name typeName,
+            boolean flattenSchema, 
+            @Nullable GeometryFactory geometryFactory) {//@formatter:on
 
         SimpleFeatureType diffType;
         if (flattenSchema) {
@@ -183,9 +204,11 @@ public class BulkFeatureRetriever {
         return getGeoToolsDiffFeatures(refs, nativeType, diffType, geometryFactory);
     }
 
-    public AutoCloseableIterator<SimpleFeature> getGeoToolsDiffFeatures(
-            AutoCloseableIterator<DiffEntry> refs, RevFeatureType nativeType,
-            SimpleFeatureType diffType, @Nullable GeometryFactory geometryFactory) {
+    public AutoCloseableIterator<SimpleFeature> getGeoToolsDiffFeatures(//@formatter:off
+            AutoCloseableIterator<DiffEntry> refs, 
+            RevFeatureType nativeType,
+            SimpleFeatureType diffType, 
+            @Nullable GeometryFactory geometryFactory) {//@formatter:on
 
         boolean flattenedType = !isDiffFeatureType(diffType);
         Function<DiffObjectInfo<RevFeature>, SimpleFeature> builder;

@@ -437,6 +437,24 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return source;
     }
 
+    public GeogigDiffFeatureSource getDiffFeatureSource(final String typeName, final String oldRoot,
+            final Context oldContext, final ChangeType changeType) throws IOException {
+        Preconditions.checkNotNull(typeName, "typeName");
+        Preconditions.checkNotNull(oldRoot, "oldRoot");
+        Preconditions.checkNotNull(changeType, "changeType");
+
+        final Name name = name(typeName);
+        ensureEntry(name);// make sure the featuretype exists
+
+        // can't reuse the content entry as it has the native schema cached, and the diff feature
+        // source creates its own FeatureType with "old" and "new" SimpleFeature attributes
+        final ContentEntry entry = new ContentEntry(this, name);
+
+        GeogigDiffFeatureSource source = new GeogigDiffFeatureSource(entry, oldRoot, oldContext);
+        source.setChangeType(changeType);
+        return source;
+    }
+
     /**
      * Creates or updates an existing index for a given path/layer in the GeoGig repository/branch
      * associated with this DataStore. If an index does not already exist, a spatial index using the

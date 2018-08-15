@@ -40,8 +40,6 @@ import com.google.common.collect.Maps;
 
 public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
 
-    private static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
-
     private GeoGigDataStore dataStore;
 
     private List<RevCommit> masterBranchCommits, branch1Commits;

@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.notNull;
@@ -19,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -59,6 +59,9 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -73,7 +76,6 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -82,9 +84,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 
 /**
  * A builder object for a {@link FeatureReader} that fetches data from a geogig {@link RevTree}
@@ -101,7 +100,7 @@ public class FeatureReaderBuilder {
     // CommonFactoryFinder.getFilterFactory2
     private static final FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
 
-    private final Context repo;
+    private final Context leftRepo, rightRepo;
 
     /**
      * The feature tree's geogig type
@@ -157,8 +156,10 @@ public class FeatureReaderBuilder {
 
     private boolean screenMapReplaceGeometryWithPx = true;
 
-    public FeatureReaderBuilder(Context repo, RevFeatureType nativeType, NodeRef typeRef) {
-        this.repo = repo;
+    FeatureReaderBuilder(Context leftRepo, Context rightRepo, RevFeatureType nativeType,
+            NodeRef typeRef) {
+        this.leftRepo = leftRepo;
+        this.rightRepo = rightRepo;
         this.nativeType = nativeType;
         this.nativeSchema = (SimpleFeatureType) nativeType.type();
         this.typeRef = typeRef;
@@ -184,7 +185,16 @@ public class FeatureReaderBuilder {
 
     public static FeatureReaderBuilder builder(Context repo, RevFeatureType nativeType,
             NodeRef typeRef) {
-        return new FeatureReaderBuilder(repo, nativeType, typeRef);
+        return builder(repo, repo, nativeType, typeRef);
+    }
+
+    public static FeatureReaderBuilder builder(Context leftRepo, Context rightRepo,
+            RevFeatureType nativeType, NodeRef typeRef) {
+        checkNotNull(leftRepo);
+        checkNotNull(rightRepo);
+        checkNotNull(nativeType);
+        checkNotNull(typeRef);
+        return new FeatureReaderBuilder(leftRepo, rightRepo, nativeType, typeRef);
     }
 
     public FeatureReaderBuilder oldHeadRef(@Nullable String oldHeadRef) {
@@ -297,14 +307,16 @@ public class FeatureReaderBuilder {
 
         // perform the diff op with the supported Bucket/NodeRef filtering that'll provide the
         // NodeRef iterator to back the FeatureReader with
-        info.diffOp = repo.command(DiffTree.class);
+        // it doesn't matter if we use left or right repo, we'll be setting left/right source on the
+        // command
+        info.diffOp = leftRepo.command(DiffTree.class);
 
         // the RevTree id at the left side of the diff
         final ObjectId oldFeatureTypeTree;
         // the RevTree id at the right side of the diff
         final ObjectId newFeatureTypeTree;
         // where to get RevTree instances from (either the object or the index database)
-        final ObjectStore treeSource;
+        final ObjectStore leftSource, rightSource;
         final NodeOrdering diffNodeOrdering;
         {
             final String nativeTypeName = nativeSchema.getTypeName();
@@ -317,15 +329,13 @@ public class FeatureReaderBuilder {
             final Optional<Index> headIndex;
 
             final Optional<NodeRef> oldCanonicalTree = resolveCanonicalTree(oldHeadRef,
-                    nativeTypeName);
-            final Optional<NodeRef> newCanonicalTree = resolveCanonicalTree(headRef,
-                    nativeTypeName);
-            final ObjectId oldCanonicalTreeId = oldCanonicalTree.isPresent()
-                    ? oldCanonicalTree.get().getObjectId()
-                    : RevTree.EMPTY_TREE_ID;
-            final ObjectId newCanonicalTreeId = newCanonicalTree.isPresent()
-                    ? newCanonicalTree.get().getObjectId()
-                    : RevTree.EMPTY_TREE_ID;
+                    nativeTypeName, leftRepo);
+            final Optional<NodeRef> newCanonicalTree = resolveCanonicalTree(headRef, nativeTypeName,
+                    rightRepo);
+            final ObjectId oldCanonicalTreeId = oldCanonicalTree.map(r -> r.getObjectId())
+                    .orElse(RevTree.EMPTY_TREE_ID);
+            final ObjectId newCanonicalTreeId = newCanonicalTree.map(r -> r.getObjectId())
+                    .orElse(RevTree.EMPTY_TREE_ID);
 
             // featureTypeId = newCanonicalTree.isPresent() ? newCanonicalTree.get().getMetadataId()
             // : oldCanonicalTree.get().getMetadataId();
@@ -351,7 +361,8 @@ public class FeatureReaderBuilder {
             if (oldHeadIndex.isPresent()) {
                 oldFeatureTypeTree = oldHeadIndex.get().indexTreeId();
                 newFeatureTypeTree = headIndex.get().indexTreeId();
-                treeSource = repo.indexDatabase();
+                leftSource = leftRepo.indexDatabase();
+                rightSource = rightRepo.indexDatabase();
                 IndexInfo indexInfo = oldHeadIndex.get().info();
                 Envelope maxBounds = IndexInfo.getMaxBounds(indexInfo);
                 if (maxBounds == null) {
@@ -363,7 +374,8 @@ public class FeatureReaderBuilder {
             } else {
                 oldFeatureTypeTree = oldCanonicalTreeId;
                 newFeatureTypeTree = newCanonicalTreeId;
-                treeSource = repo.objectDatabase();
+                leftSource = leftRepo.objectDatabase();
+                rightSource = rightRepo.objectDatabase();
                 diffNodeOrdering = CanonicalNodeOrder.INSTANCE;
             }
 
@@ -396,8 +408,8 @@ public class FeatureReaderBuilder {
                 .setChangeTypeFilter(resolveChangeType()) //
                 .setOldTree(oldFeatureTypeTree) //
                 .setNewTree(newFeatureTypeTree) //
-                .setLeftSource(treeSource) //
-                .setRightSource(treeSource) //
+                .setLeftSource(leftSource) //
+                .setRightSource(rightSource) //
                 .setNodeOrdering(diffNodeOrdering)//
                 .recordStats();
 
@@ -416,7 +428,8 @@ public class FeatureReaderBuilder {
             featureRefs = applyOffsetAndLimit(featureRefs);
         }
 
-        final ObjectStore revFeatureSource = repo.objectDatabase();
+        final ObjectStore leftFeatureSource = leftRepo.objectDatabase();
+        final ObjectStore rightFeatureSource = rightRepo.objectDatabase();
 
         AutoCloseableIterator<? extends SimpleFeature> features;
 
@@ -432,7 +445,8 @@ public class FeatureReaderBuilder {
             features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
                     geometryFactory, nativeCrs);
         } else {
-            BulkFeatureRetriever retriever = new BulkFeatureRetriever(revFeatureSource);
+            BulkFeatureRetriever retriever;
+            retriever = new BulkFeatureRetriever(leftFeatureSource, rightFeatureSource);
             Name typeNameOverride;
             if (simpleNames(nativeSchema).equals(simpleNames(walkInfo.fullSchema))) {
                 resultSchema = walkInfo.fullSchema;
@@ -584,7 +598,8 @@ public class FeatureReaderBuilder {
     }
 
     @SuppressWarnings("unchecked")
-    private static final Optional<Index>[] NO_INDEX = new Optional[] { absent(), absent() };
+    private static final Optional<Index>[] NO_INDEX = new Optional[] { Optional.empty(),
+            Optional.empty() };
 
     @SuppressWarnings("unchecked")
     private Optional<Index>[] resolveIndex(final ObjectId oldCanonical, final ObjectId newCanonical,
@@ -596,37 +611,49 @@ public class FeatureReaderBuilder {
                     treeName);
             return NO_INDEX;
         }
-
-        Optional<Index>[] indexes = NO_INDEX;
-        final IndexDatabase indexDatabase = repo.indexDatabase();
-        Optional<IndexInfo> indexInfo = indexDatabase.getIndexInfo(treeName, attributeName);
-        if (indexInfo.isPresent()) {
-            IndexInfo info = indexInfo.get();
-            Optional<Index> oldIndex = resolveIndex(oldCanonical, info, indexDatabase);
-            if (oldIndex.isPresent()) {
-                Optional<Index> newIndex = resolveIndex(newCanonical, info, indexDatabase);
-                if (newIndex.isPresent()) {
-                    indexes = new Optional[2];
-                    indexes[0] = oldIndex;
-                    indexes[1] = newIndex;
-                }
-            }
+        Optional<Index> leftIndex = resolveIndex(oldCanonical, treeName, attributeName, leftRepo);
+        Optional<Index> rightIndex = leftIndex.isPresent()
+                ? resolveIndex(newCanonical, treeName, attributeName, rightRepo)
+                : Optional.empty();
+        if (!leftIndex.isPresent() || !rightIndex.isPresent()) {
+            return NO_INDEX;
         }
+        Optional<Index>[] indexes = new Optional[2];
+        indexes[0] = leftIndex;
+        indexes[1] = rightIndex;
         return indexes;
     }
 
-    private Optional<NodeRef> resolveCanonicalTree(@Nullable String head, String treeName) {
-        Optional<NodeRef> treeRef = Optional.absent();
+    private Optional<Index> resolveIndex(final ObjectId oldCanonical, final String treeName,
+            final String attributeName, final Context repo) {
+        if (Boolean.getBoolean("geogig.ignoreindex")) {
+            // TODO: remove debugging aid
+            System.err.printf(
+                    "Ignoring index lookup for %s as indicated by -Dgeogig.ignoreindex=true\n",
+                    treeName);
+            return Optional.empty();
+        }
+        final IndexDatabase indexDatabase = repo.indexDatabase();
+        IndexInfo info = indexDatabase.getIndexInfo(treeName, attributeName).orNull();
+        Optional<Index> index = Optional.empty();
+        if (info != null) {
+            index = resolveIndex(oldCanonical, info, indexDatabase);
+        }
+        return index;
+    }
+
+    private Optional<NodeRef> resolveCanonicalTree(@Nullable String head, String treeName,
+            Context repo) {
+        NodeRef treeRef = null;
         if (head != null) {
-            Optional<ObjectId> rootTree = repo.command(ResolveTreeish.class).setTreeish(head)
-                    .call();
-            if (rootTree.isPresent()) {
-                RevTree tree = repo.objectDatabase().getTree(rootTree.get());
+            ObjectId rootTree = repo.command(ResolveTreeish.class).setTreeish(head).call().orNull();
+            if (rootTree != null) {
+                RevTree tree = repo.objectDatabase().getTree(rootTree);
                 treeRef = repo.command(FindTreeChild.class).setParent(tree).setChildPath(treeName)
-                        .call();
+                        .call().orNull();
             }
         }
-        return treeRef;
+        return Optional.ofNullable(treeRef);
     }
 
     private Optional<Index> resolveIndex(ObjectId canonicalTreeId, IndexInfo indexInfo,
@@ -634,13 +661,13 @@ public class FeatureReaderBuilder {
 
         Index index = new Index(indexInfo, RevTree.EMPTY_TREE_ID, indexDatabase);
         if (!RevTree.EMPTY_TREE_ID.equals(canonicalTreeId)) {
-            Optional<ObjectId> indexedTree = indexDatabase.resolveIndexedTree(indexInfo,
-                    canonicalTreeId);
-            if (indexedTree.isPresent()) {
-                index = new Index(indexInfo, indexedTree.get(), indexDatabase);
+            ObjectId indexedTree = indexDatabase.resolveIndexedTree(indexInfo, canonicalTreeId)
+                    .orNull();
+            if (indexedTree != null) {
+                index = new Index(indexInfo, indexedTree, indexDatabase);
             }
         }
-        return Optional.fromNullable(index);
+        return Optional.ofNullable(index);
     }
 
     private Set<String> resolveMaterializedProperties(Optional<Index> index) {

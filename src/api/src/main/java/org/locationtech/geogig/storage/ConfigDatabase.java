@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,7 @@ import com.google.common.base.Optional;
  * 
  * @since 1.0
  */
-public interface ConfigDatabase extends Closeable{
+public interface ConfigDatabase extends Closeable {
 
     /**
      * Queries the repository config file for a particular name.
@@ -117,6 +119,16 @@ public interface ConfigDatabase extends Closeable{
      * @throws ConfigException if an error is encountered
      */
     public void put(String key, Object value);
+
+    public default void putSection(String section, final Map<String, String> kvp) {
+        checkNotNull(section);
+        checkNotNull(kvp);
+        kvp.forEach((k, v) -> {
+            checkNotNull(k);
+            checkNotNull(v);
+            put(String.format("%s.%s", section, k), v);
+        });
+    }
 
     /**
      * Sets a value in the global config file

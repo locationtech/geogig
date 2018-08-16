@@ -309,6 +309,21 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
     }
 
     @Test
+    public void testPutSection() {
+        // Test integer and string
+        ImmutableMap<String, String> map = ImmutableMap.of(//
+                "k1", "v1", //
+                "subsection.string", "2", //
+                "subsection.int", "1", //
+                "subsection.long", "4"//
+        );
+        config.putSection("section1", map);
+        assertEquals(ImmutableMap.of("k1", "v1"), config.getAllSection("section1"));
+        assertEquals(ImmutableMap.of("string", "2", "int", "1", "long", "4"),
+                config.getAllSection("section1.subsection"));
+    }
+
+    @Test
     public void testRemoveSection() {
         // Test integer and string
         config.put("section1.int", 1);

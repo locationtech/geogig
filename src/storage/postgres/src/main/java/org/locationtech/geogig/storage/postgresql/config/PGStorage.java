@@ -148,7 +148,7 @@ public class PGStorage {
         }
     }
 
-    static Version getServerVersion(Connection cx) throws SQLException {
+    public static Version getServerVersion(Connection cx) throws SQLException {
         try (Statement st = cx.createStatement()) {
             try (ResultSet rs = st.executeQuery("SHOW server_version")) {
                 Preconditions.checkState(rs.next(),

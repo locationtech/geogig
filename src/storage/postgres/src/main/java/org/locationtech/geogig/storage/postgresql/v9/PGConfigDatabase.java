@@ -21,9 +21,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.sql.DataSource;
 
@@ -35,6 +38,7 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +81,8 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     private DataSource dataSource;
 
+    private Version _serverVersion;
+
     @Inject
     public PGConfigDatabase(Hints hints) throws URISyntaxException {
         this(Environment.get(hints));
@@ -84,6 +90,13 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     public PGConfigDatabase(Environment environment) {
         this.config = environment;
+    }
+
+    private Version serverVersion(Connection cx) throws SQLException {
+        if (_serverVersion == null) {
+            _serverVersion = PGStorage.getServerVersion(cx);
+        }
+        return _serverVersion;
     }
 
     @Override
@@ -153,6 +166,14 @@ public class PGConfigDatabase implements ConfigDatabase {
     @Override
     public void putGlobal(String key, Object value) {
         put(new Entry(key), value, global());
+    }
+
+    public @Override void putSection(final String section, final Map<String, String> kvp) {
+        checkNotNull(section);
+        checkNotNull(kvp);
+        Map<Entry, String> entries = new HashMap<>();
+        kvp.forEach((k, v) -> entries.put(new Entry(String.format("%s.%s", section, k)), v));
+        put(entries, local());
     }
 
     @Override
@@ -232,6 +253,11 @@ public class PGConfigDatabase implements ConfigDatabase {
             section = sectionAndKey.substring(0, idx);
             key = sectionAndKey.substring(idx + 1);
         }
+
+        //@formatter:off
+        public @Override int hashCode() {return Objects.hash(section, key);}
+        public @Override boolean equals(Object o) {return (o instanceof Entry) && ((Entry)o).section.equals(section) && ((Entry)o).key.equals(key);}
+        //@formatter:on
     }
 
     @Nullable
@@ -334,39 +360,66 @@ public class PGConfigDatabase implements ConfigDatabase {
         }
     }
 
-    protected void put(final Entry entry, final String value, final int repositoryPK) {
+    private void put(final Entry entry, final String value, final int repositoryPK) {
+        put(Collections.singletonMap(entry, value), repositoryPK);
+    }
 
-        if ("repo".equals(entry.section) && "name".equals(entry.key)) {
-            try {
-                Optional<Integer> pk = resolveRepositoryPK(value);
-                if (pk.isPresent() && pk.get() != repositoryPK) {
-                    String msg = format(
-                            "A repsitory named '%s' already exists with primary key value: %d",
-                            value, pk.get());
-                    throw new IllegalArgumentException(msg);
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+    private static Entry REPO_NAME = new Entry("repo.name");
+
+    private String _INSERT, _UPSERT;
+
+    private String insertSql() {
+        if (_INSERT == null) {
+            _INSERT = format("insert into %s (repository, section, key, value) values(?, ?, ?, ?)",
+                    config.getTables().config());
         }
-        final String sql = format(
-                "insert into %s (repository, section, key, value) values(?, ?, ?, ?)",
-                config.getTables().config());
+        return _INSERT;
+    }
+
+    private String upsertSql() {
+        if (_UPSERT == null) {
+            _UPSERT = format(
+                    "insert into %s (repository, section, key, value) values(?, ?, ?, ?) ON CONFLICT (repository, section, key) DO UPDATE SET value = ?",
+                    config.getTables().config());
+        }
+        return _UPSERT;
+    }
+
+    private void put(final Map<Entry, String> entries, final int repositoryPK) {
 
         try (Connection cx = PGStorage.newConnection(connect(config))) {
+            final Version version = serverVersion(cx);
+            final boolean useUpsert = version.greatherOrEqualTo(Version.V9_5_0);
+            final String sql = useUpsert ? upsertSql() : insertSql();
+
             cx.setAutoCommit(false);
-            doRemove(entry, cx, repositoryPK);
-            String s = entry.section;
-            String k = entry.key;
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
 
-            try (PreparedStatement ps = cx
-                    .prepareStatement(log(sql, LOG, repositoryPK, s, k, value))) {
-                ps.setInt(1, repositoryPK);
-                ps.setString(2, s);
-                ps.setString(3, k);
-                ps.setString(4, value);
+                for (Map.Entry<Entry, String> mentry : entries.entrySet()) {
+                    final Entry entry = mentry.getKey();
+                    final String value = mentry.getValue();
+                    checkRepoNameClash(repositoryPK, entry, value);
 
-                ps.executeUpdate();
+                    if (!useUpsert) {
+                        doRemove(entry, cx, repositoryPK);
+                    }
+
+                    String s = entry.section;
+                    String k = entry.key;
+
+                    ps.setInt(1, repositoryPK);
+                    ps.setString(2, s);
+                    ps.setString(3, k);
+                    ps.setString(4, value);
+                    if (useUpsert) {
+                        ps.setString(5, value);
+                    }
+                    ps.addBatch();
+                }
+
+                ps.executeBatch();
+            }
+            try {
                 cx.commit();
             } catch (SQLException e) {
                 rollbackAndRethrow(cx, e);
@@ -375,6 +428,19 @@ public class PGConfigDatabase implements ConfigDatabase {
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void checkRepoNameClash(final int repositoryPK, final Entry entry, final String value)
+            throws SQLException {
+        if (REPO_NAME.equals(entry)) {
+            Optional<Integer> pk = resolveRepositoryPK(value);
+            if (pk.isPresent() && !pk.get().equals(repositoryPK)) {
+                String msg = format(
+                        "A repsitory named '%s' already exists with primary key value: %d", value,
+                        pk.get());
+                throw new IllegalArgumentException(msg);
+            }
         }
     }
 
@@ -456,26 +522,32 @@ public class PGConfigDatabase implements ConfigDatabase {
      */
     public Optional<Integer> resolveRepositoryPK(String repositoryName) throws SQLException {
         checkNotNull(repositoryName, "provided null repository name");
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
+            return resolveRepositoryPK(repositoryName, cx);
+        }
+    }
+
+    private Optional<Integer> resolveRepositoryPK(String repositoryName, Connection cx)
+            throws SQLException {
+
         final String configTable = config.getTables().repositoryNamesView();
         final String sql = format("SELECT repository FROM %s WHERE name = ?", configTable);
 
         Integer repoPK = null;
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
-            try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, repositoryName);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        repoPK = rs.getInt(1);
-                        List<Integer> all = Lists.newArrayList(repoPK);
-                        while (rs.next()) {
-                            all.add(rs.getInt(1));
-                        }
-                        if (all.size() > 1) {
-                            throw new IllegalStateException(format(
-                                    "There're more than one repository named '%s'. "
-                                            + "Check the repo.name config property for the following repository ids: %s",
-                                    repositoryName, all.toString()));
-                        }
+        try (PreparedStatement ps = cx.prepareStatement(sql)) {
+            ps.setString(1, repositoryName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    repoPK = rs.getInt(1);
+                    List<Integer> all = Lists.newArrayList(repoPK);
+                    while (rs.next()) {
+                        all.add(rs.getInt(1));
+                    }
+                    if (all.size() > 1) {
+                        throw new IllegalStateException(format(
+                                "There're more than one repository named '%s'. "
+                                        + "Check the repo.name config property for the following repository ids: %s",
+                                repositoryName, all.toString()));
                     }
                 }
             }

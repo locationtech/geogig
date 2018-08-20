@@ -12,6 +12,7 @@ package org.locationtech.geogig.test;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
@@ -40,14 +42,19 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.InitOp;
+import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.jts.io.ParseException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
@@ -55,9 +62,9 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.io.ParseException;
 
 /**
  * A helper class to set repositories to a desired state to aid in integration testing.
@@ -278,6 +285,12 @@ public class TestData {
         return this;
     }
 
+    public Ref getRef(String refSpec) {
+        Optional<Ref> ref = getContext().command(RefParse.class).setName(refSpec).call();
+        checkState(ref.isPresent(), "Ref %s not found", refSpec);
+        return ref.get();
+    }
+
     public TestData commit(String commitMessage) {
         return commit(commitMessage, false);
     }
@@ -325,6 +338,12 @@ public class TestData {
         return this;
     }
 
+    public TestData remove(String... featureIds) {
+        WorkingTree workingTree = getContext().workingTree();
+        workingTree.delete(Arrays.asList(featureIds).iterator(), new DefaultProgressListener());
+        return this;
+    }
+
     public TestData add() {
         getContext().command(AddOp.class).call();
         return this;
@@ -352,6 +371,17 @@ public class TestData {
             builder.set(i, value);
         }
         return builder.buildFeature(id);
+    }
+
+    public Iterator<RevCommit> log(String refSpec) {
+        ObjectId tip = getRepo().command(RevParse.class).setRefSpec(refSpec).call().get();
+        Iterator<RevCommit> iterator = getRepo().command(LogOp.class).setUntil(tip).call();
+        return iterator;
+    }
+
+    public TestData resetHard(ObjectId id) {
+        getRepo().command(ResetOp.class).setCommit(id).setMode(ResetMode.HARD).call();
+        return this;
     }
 
 }

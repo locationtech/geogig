@@ -41,6 +41,8 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
 
     private String reason;
 
+    private boolean verifyValue = true;
+
     /**
      * @param name the name of the ref to update
      * @return {@code this}
@@ -94,6 +96,11 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
         return this;
     }
 
+    public UpdateRef setCheckObjectExists(boolean verifyValue) {
+        this.verifyValue = verifyValue;
+        return this;
+    }
+
     /**
      * Executes the operation.
      * 
@@ -128,7 +135,7 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
             return oldRef;
         }
 
-        checkState(newValue.isNull() || objectDatabase().exists(newValue),
+        checkState(!verifyValue || newValue.isNull() || objectDatabase().exists(newValue),
                 "Tried to update Ref %s to an object that doesn't exist: %s", name, newValue);
 
         // if not changing a head

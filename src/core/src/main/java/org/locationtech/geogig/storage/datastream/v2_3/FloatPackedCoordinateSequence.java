@@ -14,7 +14,7 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.impl.PackedCoordinateSequence.Float;
+import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 
 /**
  * Seralized form is a int[][]
@@ -27,7 +27,7 @@ import org.locationtech.jts.geom.impl.PackedCoordinateSequence.Float;
  *    The ordinate list is a delta list on the Int32 form of the Float ordinate.
  *    This allows for exact representation as well as good VarInt encoding.
  */
-public class FloatPackedCoordinateSequence extends Float {
+public class FloatPackedCoordinateSequence extends PackedCoordinateSequence.Float {
 
     public static final CoordinateSequence EMPTY_2D = new FloatPackedCoordinateSequence(2, 0);
 
@@ -35,10 +35,10 @@ public class FloatPackedCoordinateSequence extends Float {
        super(coords.toArray(new Coordinate[coords.size()]), dimensions);
     }
     public FloatPackedCoordinateSequence(final int dimensions, final int initialSize) {
-        super(initialSize,dimensions);
+        super(initialSize,dimensions, 0);
     }
     public FloatPackedCoordinateSequence(int[][] serializedForm) {
-        super(deserializeCoords(serializedForm),serializedForm.length);
+        super(deserializeCoords(serializedForm),serializedForm.length, 0);
     }
 
     public int[][] toSerializedForm() {

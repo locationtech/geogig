@@ -489,4 +489,37 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
         }
         return bucketsByDepth;
     }
+
+    static final TreeId failingDag = TreeId.fromString("[1, 0, 2, 2, 3, 2, 0, 0, 2, 2, 3, 1]");
+
+    boolean startedRemoving = false;
+
+//    protected @Override synchronized int put(final DAG dag, final NodeId nodeId,
+//            final boolean remove) {
+//        mergeRoot(dag);
+//
+//        long prechildcount = dag.getTotalChildCount();
+//        if (remove && 129 == prechildcount && dag.getId().equals(failingDag)) {
+//            System.out.printf("### Removing %s\t from %s. pre: %,d, thread: %s\n", nodeId.name,
+//                    dag.getId(), prechildcount, Thread.currentThread().getName());
+//        }
+//        int delta = super.put(dag, nodeId, remove);
+//        if (dag.getId().equals(failingDag)) {
+//            if (remove) {
+//                startedRemoving = true;
+//                long childcount = dag.getTotalChildCount();
+//                System.out.printf(
+//                        "<<< Removed %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
+//                        nodeId.name, dag.getId(), prechildcount, childcount, delta,
+//                        Thread.currentThread().getName());
+//            } else if (startedRemoving) {
+//                long childcount = dag.getTotalChildCount();
+//                System.out.printf(
+//                        ">>> Added   %s\t to   %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
+//                        nodeId.name, dag.getId(), prechildcount, childcount, delta,
+//                        Thread.currentThread().getName());
+//            }
+//        }
+//        return delta;
+//    }
 }

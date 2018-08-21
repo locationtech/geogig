@@ -101,7 +101,8 @@ public class PreOrderDiffWalk {
     private static final ForkJoinPool SHARED_FORK_JOIN_POOL;
 
     static {
-        final int parallelism = Math.max(2, Runtime.getRuntime().availableProcessors());
+        final int parallelism = Math.max(2,
+                Math.min(16, Runtime.getRuntime().availableProcessors()));
         // establishes local first-in-first-out scheduling mode for forked
         // more appropriate than default locally stack-based mode when
         // worker threads only process event-style asynchronous tasks
@@ -255,8 +256,6 @@ public class PreOrderDiffWalk {
     private CancellableConsumer walkConsumer = null;
 
     private AtomicBoolean finished = new AtomicBoolean(false);
-
-    private boolean reportTrees = true;
 
     private boolean reportFeatures = true;
 

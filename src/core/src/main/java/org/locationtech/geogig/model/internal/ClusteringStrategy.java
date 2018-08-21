@@ -41,7 +41,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Base class for strategy objects that define the internal structure of a {@link RevTree}.
@@ -270,6 +269,9 @@ public abstract class ClusteringStrategy extends NodeOrdering {
 
         if (dag.numBuckets() > 0) {
             final @Nullable TreeId bucketId = computeBucketId(nodeId, dagDepth + 1);
+            // if (remove && dag.getId().equals(failingDag)) {
+            // System.err.printf("Removing %s\t from %s\n", nodeId.name, dag.getId());
+            // }
             if (bucketId != null) {
                 final DAG bucketDAG = getOrCreateDAG(bucketId);
                 dag.addBucket(bucketId);
@@ -314,8 +316,25 @@ public abstract class ClusteringStrategy extends NodeOrdering {
 
         if (deltaSize != 0) {
             changed = true;
+            long pre = dag.getTotalChildCount();
             dag.setTotalChildCount(dag.getTotalChildCount() + deltaSize);
-            shrinkIfUnderflow(dag);
+            long post = dag.getTotalChildCount();
+            Preconditions.checkState(pre + deltaSize == post);
+//            if (remove && dag.getId().equals(failingDag)) {
+//                Set<NodeId> childrenRecursive = getChildrenRecursive(dag);
+//                Preconditions.checkState(post == childrenRecursive.size());
+//            }
+            try {
+                shrinkIfUnderflow(dag);
+            } catch (IllegalStateException e) {
+                if (remove) {
+                    System.out.printf(
+                            "!!! Error removing %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
+                            nodeId.name, dag.getId(), pre, post, deltaSize,
+                            Thread.currentThread().getName());
+                }
+                throw e;
+            }
         }
         if (changed) {
             dag.setChanged();
@@ -323,10 +342,13 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         return deltaSize;
     }
 
+    static final TreeId failingDag = TreeId.fromString("[1, 0, 2, 2, 3, 2, 0, 0, 2, 2, 3, 1]");
+
     private void shrinkIfUnderflow(final DAG dag) {
         if (dag.numBuckets() == 0) {
             return;
         }
+
         final long childCount = dag.getTotalChildCount();
         // TODO: in the case of quadtrees would need to check if it's an unpromotables bucket and
         // use canonical's normalized size limit instead?
@@ -335,12 +357,17 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         if (childCount > normalizedSizeLimit) {
             return;
         }
-
         Set<NodeId> childrenRecursive = getChildrenRecursiveAndClearBuckets(dag);
+        int collectedSize = childrenRecursive.size();
 
-        checkState(childrenRecursive.size() == childCount, "expected %s, got %s, at: %s",
-                childCount, childrenRecursive.size(), dag);
+        if (dag.getId().equals(failingDag)) {
+            System.err.printf("expected: %d, collected: %d\n", childCount, collectedSize);
+        }
 
+        if (collectedSize != childCount) {
+            throw new IllegalStateException(String.format("expected %s, got %s, at: %s", childCount,
+                    childrenRecursive.size(), dag));
+        }
         dag.clearBuckets();
         childrenRecursive.forEach((id) -> dag.addChild(id));
 
@@ -364,8 +391,35 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                 mergeRoot(bucket);
             }
             Set<NodeId> bucketChildren = getChildrenRecursiveAndClearBuckets(bucket);
+            int pre = children.size();
             children.addAll(bucketChildren);
+            int post = children.size();
+            Preconditions.checkState(pre + bucketChildren.size() == post);
             bucket.reset(RevTree.EMPTY_TREE_ID);
+        }
+
+        return children;
+    }
+
+    private Set<NodeId> getChildrenRecursive(final DAG dag) {
+
+        Set<NodeId> children = new HashSet<>();
+        dag.forEachChild((id) -> children.add(id));
+
+        if (!children.isEmpty()) {
+            return children;
+        }
+        final List<TreeId> bucketIds = dag.bucketList();
+        for (TreeId bucketId : bucketIds) {
+            DAG bucket = getOrCreateDAG(bucketId);
+            if (bucket.getState() == STATE.INITIALIZED) {
+                mergeRoot(bucket);
+            }
+            Set<NodeId> bucketChildren = getChildrenRecursive(bucket);
+            int pre = children.size();
+            children.addAll(bucketChildren);
+            int post = children.size();
+            Preconditions.checkState(pre + bucketChildren.size() == post);
         }
 
         return children;

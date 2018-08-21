@@ -21,6 +21,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.rocksdb.RocksDB;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
@@ -31,7 +32,9 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
 
     private final TreeCache treeCache;
 
-    private final RocksdbHandle dagDb;
+    private Path directory;
+
+    private RocksdbHandle dagDb, nodeDb;
 
     private final RocksdbNodeStore nodeStore;
 
@@ -44,15 +47,34 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     public RocksdbDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
         this.objectStore = source;
         this.treeCache = treeCache;
-        Path dagDbDir = null;
-        try {
-            dagDbDir = Files.createTempDirectory("geogig-dag-store");
-            dagDb = RocksdbHandle.create(dagDbDir);
+        this.dagStore = new RocksdbDAGStore(this::getOrCreateDagDb);
+        this.nodeStore = new RocksdbNodeStore(this::getOrCreateNodeDb);
+    }
 
-            this.dagStore = new RocksdbDAGStore(dagDb.db);
-            this.nodeStore = new RocksdbNodeStore(dagDb.db);
+    private RocksDB getOrCreateNodeDb() {
+        if (nodeDb == null) {
+            nodeDb = createDb("node");
+        }
+        return nodeDb.db;
+    }
+
+    private RocksDB getOrCreateDagDb() {
+        if (dagDb == null) {
+            dagDb = createDb("dag");
+        }
+        return nodeDb.db;
+    }
+
+    private synchronized RocksdbHandle createDb(String name) {
+        try {
+            if (directory == null) {
+                directory = Files.createTempDirectory("geogig-tmp-tree-store");
+            }
+            Path dbdir = directory.resolve(name);
+            RocksdbHandle db = RocksdbHandle.create(dbdir);
+            return db;
         } catch (Exception e) {
-            RocksdbHandle.delete(dagDbDir.toFile());
+            RocksdbHandle.delete(directory.toFile());
             Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
@@ -60,14 +82,22 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
 
     @Override
     public void dispose() {
-        try {
+        if (nodeStore != null) {
+            nodeStore.close();
+        }
+        if (dagStore != null) {
             dagStore.close();
-        } finally {
-            try {
-                nodeStore.close();
-            } finally {
-                dagDb.dispose();
-            }
+        }
+        close(dagDb);
+        close(nodeDb);
+        if (directory != null) {
+            RocksdbHandle.delete(directory.toFile());
+        }
+    }
+
+    private void close(RocksdbHandle handle) {
+        if (handle != null) {
+            handle.dispose();
         }
     }
 
@@ -77,7 +107,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException{
+    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
         return dagStore.getTrees(ids);
     }
 

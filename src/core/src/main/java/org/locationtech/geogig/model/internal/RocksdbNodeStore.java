@@ -12,177 +12,153 @@ package org.locationtech.geogig.model.internal;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
-import org.rocksdb.BlockBasedTableConfig;
-import org.rocksdb.BloomFilter;
-import org.rocksdb.ColumnFamilyDescriptor;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.ColumnFamilyOptions;
+import org.rocksdb.DBOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksObject;
+import org.rocksdb.WriteBatchWithIndex;
 import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 
 class RocksdbNodeStore {
 
-    private RocksDB db;
+    private Supplier<RocksDB> _dbSupplier;
+
+    private RocksDB _db;
+
+    private final int WRITE_THRESHOLD = 10_000;
+
+    private DBOptions batchOptions;
+
+    private WriteBatchWithIndex batch = new WriteBatchWithIndex();
 
     private WriteOptions writeOptions;
 
     private ReadOptions readOptions;
 
-    private ColumnFamilyHandle column;
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private BloomFilter bloomFilter;
-
-    private ColumnFamilyOptions colFamilyOptions;
-
-    public RocksdbNodeStore(RocksDB db) {
-        this.db = db;
-        try {
-            // enable bloom filter to speed up RocksDB.get() calls
-            BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
-            bloomFilter = new BloomFilter();
-            // tableFormatConfig.setFilter(bloomFilter);
-            // tableFormatConfig.setBlockSize(16*1024);
-            // tableFormatConfig.setBlockCacheSize(4 * 1024 * 1024);
-
-            colFamilyOptions = new ColumnFamilyOptions();
-            colFamilyOptions.setTableFormatConfig(tableFormatConfig);
-
-            byte[] tableNameKey = "nodes".getBytes(Charsets.UTF_8);
-            ColumnFamilyDescriptor columnDescriptor = new ColumnFamilyDescriptor(tableNameKey,
-                    colFamilyOptions);
-            column = db.createColumnFamily(columnDescriptor);
-        } catch (RocksDBException e) {
-            throw new RuntimeException(e);
-        }
-
-        this.writeOptions = new WriteOptions();
-        writeOptions.setDisableWAL(true);
-        writeOptions.setSync(false);
-
-        readOptions = new ReadOptions();
-        readOptions.setFillCache(true).setVerifyChecksums(false);
+    public RocksdbNodeStore(Supplier<RocksDB> db) {
+        this._dbSupplier = db;
+        this.batchOptions = new DBOptions();
     }
 
     public void close() {
-        readOptions.close();
-        writeOptions.close();
-        column.close();
-        colFamilyOptions.close();
-        bloomFilter.close();
-        db = null;
+        close(batch);
+        close(batchOptions);
+        close(readOptions);
+        close(writeOptions);
+        _db = null;
+        _dbSupplier = null;
     }
 
-    public DAGNode get(NodeId nodeId) {
-        byte[] value;
-        byte[] key = toKey(nodeId);
-        try {
-            value = db.get(column, readOptions, key);
-            if (value == null) {
-                throw new NoSuchElementException("Node " + nodeId + " not found");
+    private void close(RocksObject obj) {
+        if (obj != null)
+            try {
+                obj.close();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    }
+
+    private RocksDB db() {
+        if (_db == null) {
+            writeOptions = new WriteOptions();
+            writeOptions.setDisableWAL(true);
+            writeOptions.setSync(false);
+
+            readOptions = new ReadOptions();
+            readOptions.setFillCache(true).setVerifyChecksums(false);
+            _db = _dbSupplier.get();
         }
-        return decode(value);
+        return _db;
     }
 
     public Map<NodeId, DAGNode> getAll(Set<NodeId> nodeIds) {
         if (nodeIds.isEmpty()) {
             return ImmutableMap.of();
         }
-
-        Map<byte[], byte[]> map;
-        try {
-            List<byte[]> keys = nodeIds.stream().map(id -> toKey(id)).collect(Collectors.toList());
-            map = db.multiGet(readOptions, Collections.nCopies(nodeIds.size(), column), keys);
-        } catch (RocksDBException e) {
-            throw new RuntimeException(e);
-        }
-
-        Map<String, NodeId> ids = Maps.uniqueIndex(nodeIds, i -> i.name());
         Map<NodeId, DAGNode> res = new HashMap<>();
-        map.forEach((key, val) -> {
-            NodeId id = ids.get(fromKey(key));
-            DAGNode dag = decode(val);
-            res.put(id, dag);
-        });
-        return res;
-    }
-
-    public Map<NodeId, DAGNode> getAllOld(Set<NodeId> nodeIds) {
-        if (nodeIds.isEmpty()) {
-            return ImmutableMap.of();
-        }
-        Map<NodeId, DAGNode> res = new HashMap<>();
-        byte[] valueBuff = new byte[512];
+        lock.readLock().lock();
         try {
             for (NodeId id : nodeIds) {
-                byte[] val = valueBuff;
                 byte[] key = toKey(id);
-                int ret = db.get(column, readOptions, key, val);
-                Preconditions.checkState(ret != RocksDB.NOT_FOUND);
-                if (ret > valueBuff.length) {
-                    val = db.get(column, key);
+                byte[] val;
+                if (_db == null) {
+                    val = batch.getFromBatch(batchOptions, key);
+                } else {
+                    val = batch.getFromBatchAndDB(db(), readOptions, key);
                 }
+                Preconditions.checkState(val != null);
                 DAGNode node = decode(val);
                 res.put(id, node);
             }
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
+        } finally {
+            lock.readLock().unlock();
         }
         return res;
+    }
+
+    private void flush() {
+        lock.writeLock().lock();
+        try {
+            if (batch.count() >= WRITE_THRESHOLD) {
+                db().write(writeOptions, batch);
+                batch.clear();
+            }
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public void put(NodeId nodeId, DAGNode node) {
         byte[] key = toKey(nodeId);
         byte[] value = encode(node);
+        lock.writeLock().lock();
         try {
-            db.put(column, writeOptions, key, value);
-        } catch (RocksDBException e) {
-            throw new RuntimeException(e);
+            batch.put(key, value);
+            flush();
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     public void putAll(Map<NodeId, DAGNode> nodeMappings) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-        nodeMappings.forEach((nodeId, dagNode) -> {
-            out.reset();
-            encode(dagNode, out);
-            byte[] value = out.toByteArray();
-            byte[] key = toKey(nodeId);
-            try {
-                db.put(column, writeOptions, key, value);
-            } catch (RocksDBException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        lock.writeLock().lock();
+        try {
+            nodeMappings.forEach((nodeId, dagNode) -> {
+                out.reset();
+                encode(dagNode, out);
+                byte[] value = out.toByteArray();
+                byte[] key = toKey(nodeId);
+                batch.put(key, value);
+            });
+            flush();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     private byte[] toKey(NodeId nodeId) {
         byte[] key = nodeId.name().getBytes(Charsets.UTF_8);
         return key;
-    }
-
-    private String fromKey(byte[] key) {
-        return new String(key, Charsets.UTF_8);
     }
 
     private byte[] encode(DAGNode node) {

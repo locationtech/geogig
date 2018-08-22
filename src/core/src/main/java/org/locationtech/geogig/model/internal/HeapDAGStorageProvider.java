@@ -47,6 +47,10 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         this.trees = new TreeMap<>();
     }
 
+    public void close() {
+        dispose();
+    }
+
     public synchronized void dispose() {
         if (nodes != null) {
             nodes.clear();
@@ -128,4 +132,5 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     public long nodeCount() {
         return nodes.size();
     }
+
 }

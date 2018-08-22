@@ -197,23 +197,27 @@ public class RocksdbGraphDatabase implements GraphDatabase {
             node = new NodeData(commitId, parentIds);
             updated = true;
         }
-        for (ObjectId parent : parentIds) {
-            if (!node.outgoing.contains(parent)) {
-                node.outgoing.add(parent);
-                updated = true;
+        try {
+            for (ObjectId parent : parentIds) {
+                if (!node.outgoing.contains(parent)) {
+                    node.outgoing.add(parent);
+                    updated = true;
+                }
+                NodeData parentNode = getNodeInternal(dbref, parent, false, batch);
+                if (parentNode == null) {
+                    parentNode = new NodeData(parent);
+                    updated = true;
+                }
+                if (!parentNode.incoming.contains(commitId)) {
+                    parentNode.incoming.add(commitId);
+                    updated = true;
+                }
+                batch.put(parent.getRawValue(), BINDING.objectToEntry(parentNode));
             }
-            NodeData parentNode = getNodeInternal(dbref, parent, false, batch);
-            if (parentNode == null) {
-                parentNode = new NodeData(parent);
-                updated = true;
-            }
-            if (!parentNode.incoming.contains(commitId)) {
-                parentNode.incoming.add(commitId);
-                updated = true;
-            }
-            batch.put(parent.getRawValue(), BINDING.objectToEntry(parentNode));
+            batch.put(commitId.getRawValue(), BINDING.objectToEntry(node));
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
         }
-        batch.put(commitId.getRawValue(), BINDING.objectToEntry(node));
         return updated;
     }
 

@@ -53,13 +53,9 @@ public abstract class ClusteringStrategyBuilder {
         }
     }
 
-    private static final Class<? extends DAGStorageProvider> DAGSTORECLASS = CachingDAGStorageProvider.class;
+    private static final Class<? extends DAGStorageProvider> DAGSTORECLASS = RocksdbDAGStorageProvider.class;
 
     public @VisibleForTesting static String getDAGStoreName() {
-        if (CachingDAGStorageProvider.class.equals(DAGSTORECLASS)) {
-            return String.format("%s(%s)", DAGSTORECLASS.getSimpleName(),
-                    CachingDAGStorageProvider.DELEGATECLASS.getSimpleName());
-        }
         return DAGSTORECLASS.getSimpleName();
     }
 

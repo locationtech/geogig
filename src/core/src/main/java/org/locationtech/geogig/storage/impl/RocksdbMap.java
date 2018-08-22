@@ -198,7 +198,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
             ObjectOutput keyOut = new ObjectOutputStream(keyBytes);
             keyOut.writeObject(key);
             keyOut.flush();
-            db.remove(keyBytes.toByteArray());
+            db.delete(keyBytes.toByteArray());
         } catch (IOException | RocksDBException e) {
             throw new RuntimeException(e);
         }

@@ -239,7 +239,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         checkWritable();
         byte[] key = objectId.getRawValue();
         try (RocksDBReference dbRef = dbhandle.getReference()) {
-            dbRef.db().remove(key);
+            dbRef.db().delete(key);
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
@@ -320,17 +320,15 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                     ObjectId id = ids.next();
                     id.getRawValue(keybuff);
                     if (!checkExists || exists(dbRef, ro, keybuff)) {
-                        batch.remove(keybuff);
+                        batch.delete(keybuff);
                         listener.deleted(id);
                     } else {
                         listener.notFound(id);
                     }
                 }
-                try {
-                    dbRef.db().write(writeOps, batch);
-                } catch (RocksDBException e) {
-                    throw new RuntimeException(e);
-                }
+                dbRef.db().write(writeOps, batch);
+            } catch (RocksDBException e) {
+                throw new RuntimeException(e);
             }
         }
     }

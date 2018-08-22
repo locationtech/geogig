@@ -96,7 +96,7 @@
     <slf4j.version>1.7.5</slf4j.version>
     <sqljdbc4.version>3.0</sqljdbc4.version>
     <hikaricp.version>2.4.2</hikaricp.version>
-    <rocksdb.version>5.7.3</rocksdb.version>
+    <rocksdb.version>5.14.2</rocksdb.version>
     <postgresql.version>42.1.1</postgresql.version>
     <springweb.version>4.3.7.RELEASE</springweb.version>
     <servlet-api.version>3.1.0</servlet-api.version>

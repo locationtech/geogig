@@ -89,14 +89,44 @@ public final class IndexInfo {
             return Objects.equals(getTreeName(), i.getTreeName())
                     && Objects.equals(getAttributeName(), i.getAttributeName())
                     && Objects.equals(getIndexType(), i.getIndexType())
-                    && Objects.equals(getMetadata(), i.getMetadata());
+                    && compareMetadatas(getMetadata(), i.getMetadata());
         }
         return false;
     }
 
+    /**
+     * Properly compares two IndexInfo metadatas.  Since some of the values in the map
+     * can be String[], normal Objects.equals() do not work.  We use a better comparison.
+     *
+     * @param meta1
+     * @param meta2
+     * @return
+     */
+    public static boolean compareMetadatas(Map<String, Object> meta1, Map<String, Object> meta2) {
+        if ((meta1 == null) && (meta2 == null))
+            return true; // both null
+        if ((meta1 == null) || (meta2 == null))
+            return false; // one null, the other not
+        if (meta1 == meta2)
+            return true; //both the same reference
+        if (meta1.size() != meta2.size())
+            return false; //different # of entries
+
+        for (Map.Entry<String, Object> entry : meta1.entrySet()) {
+            if (!meta2.containsKey(entry.getKey()))
+                return false;
+            Object v1 = entry.getValue();
+            Object v2 = meta2.get(entry.getKey());
+            if (!Objects.deepEquals(v1, v2))
+                return false;
+        }
+        return true;
+    }
+
+
     @Override
     public int hashCode() {
-        return Objects.hash(getTreeName(), getAttributeName(), getIndexType(), getMetadata());
+        return Objects.hash(getTreeName(), getAttributeName(), getIndexType(), getMetadata().size());
     }
 
     public static ObjectId getIndexId(String treeName, String attributeName) {

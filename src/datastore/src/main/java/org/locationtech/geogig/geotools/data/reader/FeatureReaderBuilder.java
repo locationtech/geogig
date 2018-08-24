@@ -732,7 +732,15 @@ public class FeatureReaderBuilder {
     private Filter resolveNativeFilter() {
         Filter nativeFilter = this.filter;
         nativeFilter = SimplifyingFilterVisitor.simplify(nativeFilter, nativeSchema);
-        nativeFilter = reprojectFilter(this.filter);
+        nativeFilter = reprojectFilter(nativeFilter);
+
+        String defaultGeometryPName = this.nativeSchema.getGeometryDescriptor().getName().getLocalPart();
+        RenamePropertyFilterVisitor renameBoundsVisitor = new RenamePropertyFilterVisitor("@bounds",defaultGeometryPName);
+        nativeFilter =  (Filter) nativeFilter.accept(renameBoundsVisitor,null);
+
+        InReplacingFilterVisitor inreplacer = new InReplacingFilterVisitor();
+        nativeFilter =  (Filter) nativeFilter.accept(inreplacer,null);
+
         return nativeFilter;
     }
 

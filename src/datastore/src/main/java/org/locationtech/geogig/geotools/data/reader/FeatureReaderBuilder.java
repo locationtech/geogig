@@ -67,6 +67,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
+import org.opengis.filter.And;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Id;
@@ -817,7 +818,15 @@ public class FeatureReaderBuilder {
         final boolean indexFullySupportsQuery = walkInfo.filterIsFullySupportedByIndex;
         final boolean preserveIterationOrder = shallPreserveIterationOrder();
 
-        Predicate<Bounded> predicate = PreFilter.forFilter(preFilter);
+        List<Predicate<Bounded>> predicates = new ArrayList<>();
+        if (preFilter instanceof And) {
+            for (Filter f: ((And) preFilter).getChildren()){
+                predicates.add(PreFilter.forFilter(f));
+            }
+        } else {
+            predicates.add(PreFilter.forFilter(preFilter));
+        }
+
         final boolean ignore = Boolean.getBoolean("geogig.ignorescreenmap");
         // if the index is not fully supported, do not apply the screenmap filter at this stage
         // otherwise we will remove too many features
@@ -831,9 +840,9 @@ public class FeatureReaderBuilder {
             if (preserveIterationOrder) {
                 screenMapFilter.optimizeForSingleThreadedCalls();
             }
-            predicate = Predicates.and(predicate, screenMapFilter);
+            predicates.add(screenMapFilter);
         }
-        return predicate;
+        return Predicates.and(predicates);
     }
 
     /**

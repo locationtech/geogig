@@ -11,7 +11,6 @@ package org.locationtech.geogig.repository;
 
 import java.util.function.Function;
 
-import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.AtomicDouble;
 
 /**

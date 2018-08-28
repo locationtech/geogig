@@ -19,7 +19,6 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditImport;
 import org.locationtech.geogig.geotools.geopkg.GeopkgImportResult;
-import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 
@@ -71,7 +70,7 @@ public class GeopkgPull extends AbstractCommand {
 
             result.close();
 
-        } catch (IllegalArgumentException | IllegalStateException | MergeConflictsException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new CommandFailedException(e.getMessage(), e);
         }
 

@@ -21,7 +21,9 @@ import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -155,8 +157,13 @@ public class GeogigTransaction implements Context {
     }
 
     public void commit() throws ConflictsException {
+        commit(DefaultProgressListener.NULL);
+    }
+
+    public void commit(ProgressListener listener) throws ConflictsException {
         context.command(TransactionEnd.class).setAuthor(authorName.orNull(), authorEmail.orNull())
-                .setTransaction(this).setCancel(false).setRebase(true).call();
+                .setTransaction(this).setCancel(false).setRebase(true).setProgressListener(listener)
+                .call();
     }
 
     public void commitSyncTransaction() throws ConflictsException {

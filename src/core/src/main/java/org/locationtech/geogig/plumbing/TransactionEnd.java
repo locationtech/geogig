@@ -164,22 +164,25 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
                     if (rebase) {
                         // Try to rebase
                         transaction.command(CheckoutOp.class).setSource(refName).setForce(true)
-                                .call();
+                                .setProgressListener(getProgressListener()).call();
                         transaction.command(RebaseOp.class)
                                 .setUpstream(Suppliers.ofInstance(currentRef.get().getObjectId()))
-                                .call();
+                                .setProgressListener(getProgressListener()).call();
 
                         updatedRef = transaction.command(RefParse.class).setName(refName).call()
                                 .get();
                     } else {
                         // sync transactions have to use merge to prevent divergent history
                         transaction.command(CheckoutOp.class).setSource(refName).setForce(true)
-                                .call();
+                                .setProgressListener(getProgressListener()).call();
                         try {
                             transaction.command(MergeOp.class)
                                     .setAuthor(authorName.orNull(), authorEmail.orNull())
-                                    .addCommit(currentRef.get().getObjectId()).call();
+                                    .addCommit(currentRef.get().getObjectId())
+                                    .setProgressListener(getProgressListener()).call();
                         } catch (NothingToCommitException e) {
+                            LOGGER.debug("Transaction merge for {} unnecessary. {}",
+                                    currentRef.get().getName(), e.getMessage());
                             // The repo commit is already in our history, this is a fast
                             // forward.
                         }

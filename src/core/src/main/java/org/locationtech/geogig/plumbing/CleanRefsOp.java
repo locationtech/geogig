@@ -39,23 +39,20 @@ public class CleanRefsOp extends AbstractGeoGigOp<ImmutableList<String>> {
     @Override
     protected ImmutableList<String> _call() {
         Builder<String> cleaned = new ImmutableList.Builder<String>();
-        Optional<Ref> ref = command(RefParse.class).setName(Ref.MERGE_HEAD).call();
+        Optional<Ref> ref = command(UpdateRef.class).setDelete(true).setName(Ref.MERGE_HEAD).call();
         if (ref.isPresent()) {
             cleaned.add(Ref.MERGE_HEAD);
-            command(UpdateRef.class).setDelete(true).setName(Ref.MERGE_HEAD).call();
         }
-        ref = command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        ref = command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
         if (ref.isPresent()) {
             cleaned.add(Ref.ORIG_HEAD);
-            command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
         }
-        ref = command(RefParse.class).setName(Ref.CHERRY_PICK_HEAD).call();
+        ref = command(UpdateRef.class).setDelete(true).setName(Ref.CHERRY_PICK_HEAD).call();
         if (ref.isPresent()) {
             cleaned.add(Ref.CHERRY_PICK_HEAD);
-            command(UpdateRef.class).setDelete(true).setName(Ref.CHERRY_PICK_HEAD).call();
         }
         BlobStore blobStore = context.blobStore();
-        Optional<String> blob = Blobs.getBlobAsString(blobStore, MergeOp.MERGE_MSG);
+        Optional<byte[]> blob = Blobs.getBlob(blobStore, MergeOp.MERGE_MSG);
         if (blob.isPresent()) {
             cleaned.add(MergeOp.MERGE_MSG);
             blobStore.removeBlob(MergeOp.MERGE_MSG);

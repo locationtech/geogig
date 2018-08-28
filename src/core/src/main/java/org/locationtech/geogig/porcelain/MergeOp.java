@@ -22,6 +22,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.CleanRefsOp;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -61,6 +62,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     private boolean theirs;
 
+    private boolean continueMerge;
+
     private boolean noCommit;
 
     private boolean noFastForward;
@@ -81,6 +84,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
     private Ref origWorkHead = null;
 
     private Ref origStageHead = null;
+
+    private boolean abort;
 
     /**
      * @param message the message for the merge commit
@@ -103,6 +108,11 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     public MergeOp addCommit(final ObjectId commit) {
         this.commits.add(checkNotNull(commit));
+        return this;
+    }
+
+    public MergeOp setAbort() {
+        this.abort = true;
         return this;
     }
 
@@ -177,8 +187,11 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
      */
     @Override
     protected MergeReport _call() throws RuntimeException {
+        if (abort) {
+            return abort();
+        }
         final List<ObjectId> commits = this.commits;
-        checkArgument(commits.size() > 0, "No commits specified for merge.");
+        checkArgument(continueMerge || commits.size() > 0, "No commits specified for merge.");
         checkArgument(!(ours && theirs), "Cannot use both --ours and --theirs.");
         checkArgument(!(noFastForward && fastForwardOnly), "Cannot use both --no-ff and --ff-only");
 
@@ -347,6 +360,12 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         return result;
 
+    }
+
+    private MergeReport abort() {
+        command(CleanRefsOp.class).call();
+        conflictsDatabase().removeConflicts(null);
+        return null;
     }
 
     private Ref doFastForwardMerge(Ref headRef, ObjectId commitId,

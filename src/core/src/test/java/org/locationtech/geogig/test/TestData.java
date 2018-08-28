@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.memory.MemoryDataStore;
@@ -33,8 +34,11 @@ import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
@@ -65,6 +69,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * A helper class to set repositories to a desired state to aid in integration testing.
@@ -183,7 +188,46 @@ public class TestData {
         this.transaction = transaction;
     }
 
-    private Context getContext() {
+    /**
+     * Opposite of {@link #resumeTransaction}, shorthand for {@link #setTransaction
+     * setTransaction(null)}
+     */
+    public TestData exitFromTransaction() {
+        setTransaction(null);
+        return this;
+    }
+
+    public TestData resumeTransaction(UUID transactionId) {
+        checkState(transaction == null, "There's a transaction already running");
+        Optional<GeogigTransaction> tx = getContext().command(TransactionResolve.class)
+                .setId(transactionId).call();
+        checkState(tx.isPresent(), "Transaction %s does not exist", transactionId);
+        setTransaction(tx.get());
+        return this;
+    }
+
+    public TestData startTransaction() {
+        checkState(transaction == null, "There's a transaction already running");
+        GeogigTransaction tx = getContext().command(TransactionBegin.class).call();
+        setTransaction(tx);
+        return this;
+    }
+
+    public TestData commitTransaction() {
+        checkState(transaction != null, "There's no transaction active");
+        transaction.commit();
+        setTransaction(null);
+        return this;
+    }
+
+    public TestData abortTransaction() {
+        checkState(transaction != null, "There's no transaction active");
+        transaction.abort();
+        setTransaction(null);
+        return this;
+    }
+
+    public Context getContext() {
         if (transaction != null) {
             return transaction;
         }
@@ -311,7 +355,8 @@ public class TestData {
     }
 
     public TestData insert(SimpleFeature... features) {
-        WorkingTree workingTree = getContext().workingTree();
+        Context context = getContext();
+        WorkingTree workingTree = context.workingTree();
         Map<FeatureType, RevFeatureType> types = new HashMap<>();
         for (SimpleFeature sf : features) {
             SimpleFeatureType ft = sf.getType();
@@ -319,7 +364,7 @@ public class TestData {
             if (null == rft) {
                 rft = RevFeatureTypeBuilder.build(ft);
                 types.put(ft, rft);
-                getContext().objectDatabase().put(rft);
+                context.objectDatabase().put(rft);
             }
             String parentTreePath = ft.getName().getLocalPart();
             String path = NodeRef.appendChild(parentTreePath, sf.getID());
@@ -336,6 +381,12 @@ public class TestData {
             workingTree.delete(parentTreePath, sf.getID());
         }
         return this;
+    }
+
+    public Map<String, NodeRef> getFeatureNodes(String treeIsh) {
+        Iterator<NodeRef> refs = getContext().command(LsTreeOp.class).setReference(treeIsh)
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
+        return Maps.uniqueIndex(refs, n -> n.path());
     }
 
     public TestData remove(String... featureIds) {
@@ -384,4 +435,9 @@ public class TestData {
         return this;
     }
 
+    public static SimpleFeature clone(SimpleFeature f) {
+        SimpleFeatureBuilder cloner = new SimpleFeatureBuilder(f.getFeatureType());
+        cloner.init(f);
+        return cloner.buildFeature(f.getID());
+    }
 }

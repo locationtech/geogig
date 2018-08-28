@@ -12,7 +12,7 @@ package org.locationtech.geogig.porcelain;
 /**
  * Exception that indicates that an operation cannot be finished due to conflicts
  */
-public class ConflictsException extends RuntimeException {
+public class ConflictsException extends IllegalStateException{
 
     private static final long serialVersionUID = 1L;
 

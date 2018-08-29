@@ -425,13 +425,13 @@ public class TestData {
     }
 
     public Iterator<RevCommit> log(String refSpec) {
-        ObjectId tip = getRepo().command(RevParse.class).setRefSpec(refSpec).call().get();
-        Iterator<RevCommit> iterator = getRepo().command(LogOp.class).setUntil(tip).call();
+        ObjectId tip = getContext().command(RevParse.class).setRefSpec(refSpec).call().get();
+        Iterator<RevCommit> iterator = getContext().command(LogOp.class).setUntil(tip).call();
         return iterator;
     }
 
     public TestData resetHard(ObjectId id) {
-        getRepo().command(ResetOp.class).setCommit(id).setMode(ResetMode.HARD).call();
+        getContext().command(ResetOp.class).setCommit(id).setMode(ResetMode.HARD).call();
         return this;
     }
 

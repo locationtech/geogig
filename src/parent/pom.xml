@@ -9,25 +9,14 @@
   <packaging>pom</packaging>
   <name>GeoGig</name>
 
- <scm>
-  <connection>scm:git:git@github.com:locationtech/geogig.git</connection>
-  <developerConnection>scm:git:[fetch=]git://github.com/locationtech/geogig.git[push=]git@github.com:locationtech/geogig.git</developerConnection>
-  <url>https://github.com/locationtech/geogigeogig</url>
- </scm>
+  <scm>
+    <connection>scm:git:git@github.com:locationtech/geogig.git</connection>
+    <developerConnection>scm:git:[fetch=]git://github.com/locationtech/geogig.git[push=]git@github.com:locationtech/geogig.git</developerConnection>
+    <url>https://github.com/locationtech/geogigeogig</url>
+  </scm>
 
-  <!--
-
-  Build Instructions and Profiles
-
-  Handled as a normal maven java project:
-
-    mvn clean install
-
-  Online tests avaialble using:
-
-    mvn -Ponline
-
-  -->
+  <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests avaialble using: 
+    mvn -Ponline -->
   <organization>
     <name>Boundless</name>
     <url>http://boundlessgeo.com</url>
@@ -62,6 +51,7 @@
   </repositories>
 
   <properties>
+    <lombok.version>1.18.2</lombok.version>
     <lz4.version>1.3.0</lz4.version>
     <compress-lzf.version>1.0.3</compress-lzf.version>
     <cucumber-java.version>1.2.4</cucumber-java.version>
@@ -104,6 +94,12 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+        <scope>provided</scope>
+      </dependency>
       <!-- https://mvnrepository.com/artifact/org.rocksdb/rocksdbjni -->
       <dependency>
         <groupId>org.rocksdb</groupId>
@@ -112,9 +108,9 @@
       </dependency>
       <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 -->
       <dependency>
-          <groupId>net.jpountz.lz4</groupId>
-          <artifactId>lz4</artifactId>
-          <version>${lz4.version}</version>
+        <groupId>net.jpountz.lz4</groupId>
+        <artifactId>lz4</artifactId>
+        <version>${lz4.version}</version>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
@@ -128,8 +124,8 @@
         <classifier>no_aop</classifier>
         <exclusions>
           <exclusion>
-           <groupId>aopalliance</groupId>
-           <artifactId>aopalliance</artifactId>
+            <groupId>aopalliance</groupId>
+            <artifactId>aopalliance</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -139,8 +135,8 @@
         <version>${guice.version}</version>
         <exclusions>
           <exclusion>
-           <groupId>com.google.inject</groupId>
-           <artifactId>guice</artifactId>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -342,14 +338,8 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <!--
-        Cucumber: http://cukes.info/
-        Cucumber for the JVM: https://github.com/cucumber/cucumber-jvm
-        Other resources:
-         - http://c0deattack.wordpress.com/2012/03/
-         - http://aslakhellesoy.com/post/20006051268/cucumber-jvm-1-0-0
-         - http://maxheapsize.com/2012/04/12/cucumber-jvm-for-java/
-        -->
+        <!-- Cucumber: http://cukes.info/ Cucumber for the JVM: https://github.com/cucumber/cucumber-jvm Other resources: 
+          - http://c0deattack.wordpress.com/2012/03/ - http://aslakhellesoy.com/post/20006051268/cucumber-jvm-1-0-0 - http://maxheapsize.com/2012/04/12/cucumber-jvm-for-java/ -->
         <groupId>info.cukes</groupId>
         <artifactId>cucumber-java</artifactId>
         <version>${cucumber-java.version}</version>
@@ -375,6 +365,12 @@
     </dependencies>
   </dependencyManagement>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+  </dependencies>
   <distributionManagement>
     <repository>
       <id>boundless</id>
@@ -400,10 +396,7 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <!--
-            generates OS specific scripts for starting java applications
-            see http://mojo.codehaus.org/appassembler/appassembler-maven-plugin/index.html
-          -->
+          <!-- generates OS specific scripts for starting java applications see http://mojo.codehaus.org/appassembler/appassembler-maven-plugin/index.html -->
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>appassembler-maven-plugin</artifactId>
           <version>${appassembler.plugin.version}</version>
@@ -457,14 +450,14 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.0.2</version>
-          <configuration>
-            <archive>
-              <manifest>
-                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-              </manifest>
-            </archive>
-          </configuration>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+          </archive>
+        </configuration>
         <executions>
           <execution>
             <phase>package</phase>
@@ -556,8 +549,8 @@
               </includes>
               <excludes>
                 <exclude>${online.skip.pattern}</exclude>
-                <!--exclude>${postgresOnline.skip.pattern}</exclude-->
-                <!--exclude>${postgresWebFunctional.skip.pattern}</exclude-->
+                <!--exclude>${postgresOnline.skip.pattern}</exclude -->
+                <!--exclude>${postgresWebFunctional.skip.pattern}</exclude -->
               </excludes>
               <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
               <reuseForks>true</reuseForks>
@@ -577,18 +570,15 @@
               <systemPropertyVariables>
                 <geogig.runPerformanceTests>true</geogig.runPerformanceTests>
               </systemPropertyVariables>
-              <!--excludes>
-                <exclude>${online.skip.pattern}</exclude>
-                <exclude>${postgresOnline.skip.pattern}</exclude>
-                <exclude>${postgresWebFunctional.skip.pattern}</exclude>
-              </excludes-->
+              <!--excludes> <exclude>${online.skip.pattern}</exclude> <exclude>${postgresOnline.skip.pattern}</exclude> <exclude>${postgresWebFunctional.skip.pattern}</exclude> 
+                </excludes -->
               <includes>
                 <include>**/*StressTest.java</include>
                 <include>**/*PerformanceTest.java</include>
               </includes>
               <forkCount>1</forkCount>
               <reuseForks>false</reuseForks>
-	      <argLine>${argLine}</argLine>
+              <argLine>${argLine}</argLine>
             </configuration>
           </plugin>
         </plugins>
@@ -627,11 +617,11 @@
       </build>
     </profile>
     <profile>
-     <id>experimental</id>
-     <modules>
-       <module>../ql</module>
-       <module>../gui</module>
-     </modules>
+      <id>experimental</id>
+      <modules>
+        <module>../ql</module>
+        <module>../gui</module>
+      </modules>
     </profile>
     <profile>
       <id>locationtech</id>
@@ -741,13 +731,13 @@
   </reporting>
 
   <modules>
-   <module>../api</module>
-   <module>../core</module>
-   <module>../remoting</module>
-   <module>../datastore</module>
-   <module>../storage</module>
-   <module>../geotools</module>
-   <module>../web</module>
-   <module>../cli</module>
+    <module>../api</module>
+    <module>../core</module>
+    <module>../remoting</module>
+    <module>../datastore</module>
+    <module>../storage</module>
+    <module>../geotools</module>
+    <module>../web</module>
+    <module>../cli</module>
   </modules>
 </project>

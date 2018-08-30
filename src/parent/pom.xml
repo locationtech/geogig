@@ -27,22 +27,6 @@
 
     mvn -Ponline
 
-  To build additional support for commercial databases:
-
-  * For Oracle:
-
-    mvn clean install -Poracle
-
-    Note: the ojdbc driver must be in your local Maven repository,
-    you can install it by issuing:
-
-    mvn install:install-file  -Dfile=<path to ojdbc14.jar>
-         -DartifactId=ojdbc14 \
-         -DgroupId=com.oracle \
-         -Dversion=10.2.0.3.0 \
-         -Dpackaging=jar \
-         -DgeneratePom=true
-
   -->
   <organization>
     <name>Boundless</name>

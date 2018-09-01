@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.remotes;
+package org.locationtech.geogig.plumbing.remotes;
 
 /**
  * Exception thrown by remote commands.

@@ -11,6 +11,8 @@ package org.locationtech.geogig.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Optional;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
@@ -188,6 +190,15 @@ public class Ref implements Comparable<Ref> {
             return REFS_PREFIX;
         }
         return ref;
+    }
+
+    public static Optional<String> remoteName(final String ref) {
+        if (ref.startsWith(REMOTES_PREFIX)) {
+            String remote = ref.substring(REMOTES_PREFIX.length());
+            remote = remote.substring(0, remote.indexOf('/'));
+            return Optional.of(remote);
+        }
+        return Optional.empty();
     }
 
     /**

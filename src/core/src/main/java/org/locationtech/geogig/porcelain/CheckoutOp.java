@@ -34,6 +34,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.MapRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
@@ -42,20 +43,19 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.porcelain.CheckoutException.StatusCode;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Updates objects in the working tree to match the version in the index or the specified tree. If
@@ -277,12 +277,12 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         Optional<ObjectId> targetCommitId = Optional.absent();
         Optional<ObjectId> targetTreeId = Optional.absent();
         if (targetRef.isPresent()) {
-            ObjectId commitId = targetRef.get().getObjectId();
-            if (targetRef.get().getName().startsWith(Ref.REMOTES_PREFIX)) {
-                String remoteName = targetRef.get().getName();
-                remoteName = remoteName.substring(Ref.REMOTES_PREFIX.length(),
-                        targetRef.get().getName().lastIndexOf("/"));
+            final java.util.Optional<String> remoteRepoName = Ref
+                    .remoteName(targetRef.get().getName());
 
+            final ObjectId commitId = targetRef.get().getObjectId();
+            if (remoteRepoName.isPresent()) {
+                String remoteName = remoteRepoName.get();
                 if (branchOrCommit.contains(remoteName + '/')) {
                     RevCommit commit = command(RevObjectParse.class).setObjectId(commitId)
                             .call(RevCommit.class).get();
@@ -291,19 +291,17 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                     targetCommitId = Optional.of(commit.getId());
                     targetRef = Optional.absent();
                 } else {
+//                    Remote remote = command(remotere);
+//                    command(MapRef.class).setRemote(remote).add(targetRef.get()).call().get(0);
 
                     Ref branch = command(BranchCreateOp.class).setName(targetRef.get().localName())
-                            .setSource(commitId.toString()).call();
+                            .setSource(commitId.toString())//
+                            .setRemoteName(remoteName)//
+                            .setRemoteBranch(targetRef.get().localName()).call();
 
-                    command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
-                            .setScope(ConfigScope.LOCAL)
-                            .setName("branches." + branch.localName() + ".remote")
-                            .setValue(remoteName).call();
-
-                    command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
-                            .setScope(ConfigScope.LOCAL)
-                            .setName("branches." + branch.localName() + ".merge")
-                            .setValue(targetRef.get().getName()).call();
+                    command(BranchConfigOp.class).setName(branch.localName())
+                            .setRemoteName(remoteName).setRemoteBranch(targetRef.get().localName())
+                            .set();
 
                     targetRef = Optional.of(branch);
                     result.setResult(CheckoutResult.Results.CHECKOUT_REMOTE_BRANCH);

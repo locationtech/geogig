@@ -20,12 +20,15 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Optional;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Deletes a branch by deleting its reference.
  * <p>
  * If trying to delete the current branch (i.e. HEAD points to that same branch), the operation
  * fails.
  */
+@Slf4j
 public class BranchDeleteOp extends AbstractGeoGigOp<Optional<? extends Ref>> {
 
     private String branchName;
@@ -66,10 +69,17 @@ public class BranchDeleteOp extends AbstractGeoGigOp<Optional<? extends Ref>> {
                             && ((SymRef) head.get()).getTarget().equals(ref.getName())),
                     "Cannot delete the branch you are on");
 
+            BranchConfig config;
+            try {
+                config = command(BranchConfigOp.class).setName(ref.getName()).delete();
+            } catch (RuntimeException ignore) {
+                config = null;
+            }
             UpdateRef updateRef = command(UpdateRef.class).setName(ref.getName()).setDelete(true)
                     .setReason("Delete branch " + ref.getName());
             branchRef = updateRef.call();
             checkState(branchRef.isPresent());
+            log.debug("Deleted branch {} {}", branchRef.get(), config);
         }
         return branchRef;
     }

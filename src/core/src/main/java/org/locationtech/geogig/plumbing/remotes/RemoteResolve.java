@@ -7,11 +7,11 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.remotes;
+package org.locationtech.geogig.plumbing.remotes;
 
 import java.util.List;
 
-import org.locationtech.geogig.remotes.RemoteException.StatusCode;
+import org.locationtech.geogig.plumbing.remotes.RemoteException.StatusCode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -62,15 +62,15 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
             Optional<String> remoteMappedBranch = config.get(remoteSection + ".mappedBranch");
             Optional<String> remoteUserName = config.get(remoteSection + ".username");
             Optional<String> remotePassword = config.get(remoteSection + ".password");
+            Optional<String> remotePushURL = Optional.absent();
             if (remoteFetchURL.isPresent() && remoteFetch.isPresent()) {
-                Optional<String> remotePushURL = config.get(remoteSection + ".pushurl");
-
-                Remote remote = new Remote(name, remoteFetchURL.get(),
-                        remotePushURL.or(remoteFetchURL.get()), remoteFetch.get(),
-                        remoteMapped.or("false").equals("true"), remoteMappedBranch.orNull(),
-                        remoteUserName.orNull(), remotePassword.orNull());
-                result = Optional.of(remote);
+                remotePushURL = config.get(remoteSection + ".pushurl");
             }
+            Remote remote = new Remote(name, remoteFetchURL.or(""),
+                    remotePushURL.or(remoteFetchURL).or(""), remoteFetch.or(""),
+                    remoteMapped.or("false").equals("true"), remoteMappedBranch.orNull(),
+                    remoteUserName.orNull(), remotePassword.orNull());
+            result = Optional.of(remote);
         }
         return result;
     }

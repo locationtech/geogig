@@ -24,9 +24,6 @@ import com.google.common.collect.Lists;
  * Creates a new head ref (branch) pointing to the specified tree-ish or the current HEAD if no
  * tree-ish was specified.
  * <p>
- * 
- * @TODO: support branch descriptions
- * @TODO: support setting up the branch to track a remote branch
  */
 public class BranchListOp extends AbstractGeoGigOp<ImmutableList<Ref>> {
 

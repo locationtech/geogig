@@ -27,6 +27,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Renames a branch by updating its reference
  * <p>
@@ -37,6 +39,7 @@ import com.google.common.collect.Lists;
  * the other branch to that name.
  * 
  */
+@Slf4j
 public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
 
     private boolean force;
@@ -86,18 +89,18 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
         checkArgument(!newBranchName.equals(oldBranchName), "Done");
         command(CheckRefFormat.class).setThrowsException(true).setRef(newBranchName)
                 .setAllowOneLevel(true).call();
-        Optional<Ref> branch = Optional.absent();
+        Optional<Ref> oldBranch = Optional.absent();
 
         if (oldBranchName == null) {
             Optional<Ref> headRef = command(RefParse.class).setName(Ref.HEAD).call();
             checkArgument(headRef.isPresent() && headRef.get() instanceof SymRef,
                     "Cannot rename detached HEAD.");
-            branch = command(RefParse.class).setName(((SymRef) (headRef.get())).getTarget()).call();
+            oldBranch = command(RefParse.class).setName(headRef.get().peel().localName()).call();
         } else {
-            branch = command(RefParse.class).setName(oldBranchName).call();
+            oldBranch = command(RefParse.class).setName(oldBranchName).call();
         }
 
-        checkState(branch.isPresent(), "The branch could not be resolved.");
+        checkState(oldBranch.isPresent(), "The branch could not be resolved.");
 
         Optional<Ref> newBranch = command(RefParse.class).setName(newBranchName).call();
 
@@ -107,9 +110,17 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
         }
 
         Optional<Ref> renamedBranch = command(UpdateRef.class)
-                .setName(branch.get().namespace() + newBranchName)
-                .setNewValue(branch.get().getObjectId()).call();
+                .setName(oldBranch.get().namespace() + newBranchName)
+                .setNewValue(oldBranch.get().getObjectId()).call();
 
+        final BranchConfig oldConfig = command(BranchConfigOp.class)
+                .setName(oldBranch.get().localName()).delete();
+        final BranchConfig newConfig = command(BranchConfigOp.class)
+                .setName(renamedBranch.get().localName())//
+                .setRemoteName(oldConfig.getRemoteName().orElse(null))//
+                .setRemoteBranch(oldConfig.getRemoteBranch().orElse(null))//
+                .setDescription(oldConfig.getDescription().orElse(null))//
+                .call();
         // update any sym refs that pointed to the old branch
         final Predicate<Ref> filter = new Predicate<Ref>() {
             @Override
@@ -123,15 +134,16 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
 
         List<Ref> symRefs = Lists.newArrayList(command(ForEachRef.class).setFilter(filter).call());
         for (Ref ref : symRefs) {
-            if (((SymRef) ref).getTarget().equals(branch.get().getName())) {
+            if (((SymRef) ref).getTarget().equals(oldBranch.get().getName())) {
                 command(UpdateSymRef.class).setName(ref.getName())
                         .setNewValue(renamedBranch.get().getName()).call();
             }
         }
 
         // delete old ref
-        command(UpdateRef.class).setName(branch.get().getName()).setDelete(true).call();
+        command(UpdateRef.class).setName(oldBranch.get().getName()).setDelete(true).call();
 
+        log.debug("Renamed branch {} -> {} {}", oldBranch.get(), renamedBranch.get(), newConfig);
         return renamedBranch.get();
 
     }

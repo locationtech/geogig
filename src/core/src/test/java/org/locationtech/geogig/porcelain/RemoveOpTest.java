@@ -7,7 +7,7 @@
  * Contributors:
  * Victor Olaya (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test.integration.remoting;
+package org.locationtech.geogig.porcelain;
 
 import java.util.Iterator;
 import java.util.List;

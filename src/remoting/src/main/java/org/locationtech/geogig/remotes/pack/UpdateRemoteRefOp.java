@@ -19,6 +19,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.MapRef;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.remotes.RefDiff;

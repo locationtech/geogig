@@ -7,14 +7,14 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.test.integration.remoting;
+package org.locationtech.geogig.plumbing.remotes;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.remotes.RemoteAddOp;
-import org.locationtech.geogig.remotes.RemoteException;
+import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
+import org.locationtech.geogig.plumbing.remotes.RemoteException;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 

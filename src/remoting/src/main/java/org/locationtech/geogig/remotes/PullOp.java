@@ -19,6 +19,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.remotes.RemoteResolve;
 import org.locationtech.geogig.porcelain.BranchResolveOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;

@@ -7,26 +7,31 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.remotes;
+package org.locationtech.geogig.plumbing.remotes;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.remotes.RemoteException.StatusCode;
+import org.locationtech.geogig.plumbing.remotes.RemoteException.StatusCode;
+import org.locationtech.geogig.porcelain.BranchConfig;
+import org.locationtech.geogig.porcelain.BranchConfigOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Removes a remote from the local config database.
  * 
  * @see ConfigDatabase
  */
+@Slf4j
 public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
 
     private String name;
@@ -42,40 +47,36 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
         if (name == null || name.isEmpty()) {
             throw new RemoteException(StatusCode.MISSING_NAME);
         }
-        ConfigDatabase config = configDatabase();
-        List<String> allRemotes = config.getAllSubsections("remote");
-        if (!allRemotes.contains(name)) {
+
+        final String name = this.name;
+        final Optional<Remote> remote = command(RemoteResolve.class).setName(name).call();
+        if (!remote.isPresent()) {
             throw new RemoteException(StatusCode.REMOTE_NOT_FOUND);
         }
 
-        Remote remote = null;
         String remoteSection = "remote." + name;
-        Optional<String> remoteFetchURL = config.get(remoteSection + ".url");
-        Optional<String> remoteFetch = config.get(remoteSection + ".fetch");
-        Optional<String> remotePushURL = Optional.absent();
-        Optional<String> remoteMapped = config.get(remoteSection + ".mapped");
-        Optional<String> remoteMappedBranch = config.get(remoteSection + ".mappedBranch");
-        Optional<String> remoteUserName = config.get(remoteSection + ".username");
-        Optional<String> remotePassword = config.get(remoteSection + ".password");
-        if (remoteFetchURL.isPresent() && remoteFetch.isPresent()) {
-            remotePushURL = config.get(remoteSection + ".pushurl");
-        }
-
-        remote = new Remote(name, remoteFetchURL.or(""), remotePushURL.or(remoteFetchURL.or("")),
-                remoteFetch.or(""), remoteMapped.or("false").equals("true"),
-                remoteMappedBranch.orNull(), remoteUserName.orNull(), remotePassword.orNull());
-
-        config.removeSection(remoteSection);
+        configDatabase().removeSection(remoteSection);
 
         // Remove refs
-        final ImmutableSet<Ref> localRemoteRefs = command(LsRemoteOp.class).retrieveLocalRefs(true)
-                .setRemote(Suppliers.ofInstance(Optional.of(remote))).call();
-
+        final String remotePrefix = Ref.append(Ref.REMOTES_PREFIX, name);
+        ImmutableSet<Ref> localRemoteRefs = command(ForEachRef.class)
+                .setFilter(r -> Ref.isChild(remotePrefix, r.getName())).call();
         for (Ref localRef : localRemoteRefs) {
             command(UpdateRef.class).setDelete(true).setName(localRef.getName()).call();
         }
 
-        return remote;
+        Stream<BranchConfig> branchesMappedToThisRemote = command(BranchConfigOp.class).getAll()
+                .stream().filter(c -> name.equals(c.getRemoteName().orElse(null)));
+
+        branchesMappedToThisRemote.forEach(c -> {
+            Ref localBranch = c.getBranch();
+            command(BranchConfigOp.class).setName(localBranch.getName()).setRemoteBranch(null)
+                    .setRemoteName(null).setDescription(c.getDescription().orElse(null)).set();
+            String msg = String.format("Removed branch tracking of %s to %s/%s", localBranch, name,
+                    c.getRemoteBranch().orElse(null));
+            log.debug(msg);
+        });
+        return remote.get();
     }
 
     /**

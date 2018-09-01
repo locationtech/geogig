@@ -24,15 +24,16 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Creates a new head ref (branch) pointing to the specified tree-ish or the current HEAD if no
  * tree-ish was specified.
  * <p>
- * 
- * @TODO: support branch descriptions
- * @TODO: support setting up the branch to track a remote branch
  */
+@Slf4j
 public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
 
     private String branchName;
@@ -44,6 +45,10 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
     private boolean orphan;
 
     private boolean force;
+
+    private @Nullable String description;
+
+    private @Nullable String remoteName, remoteBranch;
 
     /**
      * @param branchName the name of the branch to create, must not already exist
@@ -80,6 +85,21 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
         return this;
     }
 
+    public BranchCreateOp setRemoteName(String remote) {
+        this.remoteName = remote;
+        return this;
+    }
+
+    public BranchCreateOp setRemoteBranch(String branch) {
+        this.remoteBranch = branch;
+        return this;
+    }
+
+    public BranchCreateOp setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
     /**
      * @param checkout if {@code true}, in addition to creating the new branch, a {@link CheckoutOp
      *        checkout} operation will be performed against the newly created branch. If the check
@@ -94,26 +114,36 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
 
     protected Ref _call() {
         checkState(branchName != null, "branch name was not provided");
-        final String branchRefPath = Ref.append(Ref.HEADS_PREFIX, branchName);
+        final String branchRefPath;
+        if (Ref.isChild(Ref.HEADS_PREFIX, branchName)) {
+            branchRefPath = branchName;
+        } else {
+            branchRefPath = Ref.append(Ref.HEADS_PREFIX, branchName);
+        }
         checkArgument(force || !command(RefParse.class).setName(branchRefPath).call().isPresent(),
                 "A branch named '" + branchName + "' already exists.");
 
         command(CheckRefFormat.class).setThrowsException(true).setRef(branchRefPath).call();
-
-        Optional<Ref> branchRef;
+        if (!Strings.isNullOrEmpty(remoteBranch)) {
+            command(CheckRefFormat.class).setAllowOneLevel(true).setThrowsException(true)
+                    .setRef(remoteBranch).call();
+        }
+        ObjectId branchOriginCommitId;
         if (orphan) {
-            branchRef = command(UpdateRef.class).setName(branchRefPath).setNewValue(ObjectId.NULL)
-                    .setProgressListener(getProgressListener()).call();
+            branchOriginCommitId = ObjectId.NULL;
         } else {
             final String branchOrigin = Optional.fromNullable(commit_ish).or(Ref.HEAD);
-
-            final ObjectId branchOriginCommitId = resolveOriginCommitId(branchOrigin);
-
-            branchRef = command(UpdateRef.class).setName(branchRefPath)
-                    .setNewValue(branchOriginCommitId).setProgressListener(getProgressListener()).call();
-            checkState(branchRef.isPresent());
+            branchOriginCommitId = resolveOriginCommitId(branchOrigin);
         }
+        Optional<Ref> branchRef = command(UpdateRef.class).setName(branchRefPath)
+                .setNewValue(branchOriginCommitId).call();
+        checkState(branchRef.isPresent());
 
+        BranchConfig branchConfig = command(BranchConfigOp.class).setName(branchRefPath)
+                .setRemoteName(remoteName).setRemoteBranch(remoteBranch).setDescription(description)
+                .set();
+
+        log.debug("Created branch {} {}", branchRef.get(), branchConfig);
         if (checkout) {
             command(CheckoutOp.class).setSource(branchRefPath).call();
         }

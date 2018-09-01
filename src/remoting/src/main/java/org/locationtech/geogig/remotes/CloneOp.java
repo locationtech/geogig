@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.net.URI;
 import java.util.Collection;
@@ -25,14 +24,17 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.MapRef;
+import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
+import org.locationtech.geogig.plumbing.remotes.RemoteRemoveOp;
+import org.locationtech.geogig.plumbing.remotes.RemoteResolve;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.remotes.pack.MapRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
@@ -287,19 +289,15 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
             final String refName = localRef.getName();
             final boolean isSymRef = localRef instanceof SymRef;
             final boolean isBranch = !isSymRef && refName.startsWith(Ref.HEADS_PREFIX);
-
-            if (!isSymRef) {
-                // can't create branches out of symrefs
-                Optional<Ref> ref = command(UpdateRef.class).setName(refName)
-                        .setNewValue(localRef.getObjectId()).call();
-                checkState(ref.isPresent());
-            }
-
             if (isBranch) {
-                String branchName = localRef.localName();
-                createdBranches.add(branchName);
-                setConfig(clone, "branches." + branchName + ".remote", remote.getName());
-                setConfig(clone, "branches." + branchName + ".merge", refName);
+                Ref ref = command(BranchCreateOp.class)//
+                        .setName(refName)//
+                        .setForce(true)//
+                        .setSource(localRef.getObjectId().toString())//
+                        .setRemoteName(remote.getName())//
+                        .setRemoteBranch(refName)//
+                        .call();
+                createdBranches.add(ref.localName());
             }
         }
 

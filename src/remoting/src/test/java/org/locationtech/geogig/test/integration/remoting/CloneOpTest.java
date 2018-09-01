@@ -23,13 +23,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.BranchConfig;
+import org.locationtech.geogig.porcelain.BranchConfigOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.BranchDeleteOp;
+import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
@@ -110,6 +114,18 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         assertEquals(expected, logged);
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
         TestSupport.verifySameContents(remoteRepo, cloneRepo);
+        verifyBranchConfig(remoteRepo, cloneRepo);
+    }
+
+    private void verifyBranchConfig(Repository remote, Repository clone) {
+        ImmutableList<Ref> remoteBranches = remote.command(BranchListOp.class).call();
+        for (Ref remoteBranch : remoteBranches) {
+            BranchConfig config = clone.command(BranchConfigOp.class)
+                    .setName(remoteBranch.localName()).get();
+            assertEquals(remoteBranch.localName(), config.getBranch().localName());
+            assertEquals("origin", config.getRemoteName().get());
+            assertEquals(remoteBranch.getName(), config.getRemoteBranch().get());
+        }
     }
 
     @Test
@@ -201,8 +217,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         // Make sure the local repository got all of the commits
         logged = newArrayList(cloneRepo.command(LogOp.class).call());
-        List<RevCommit> expected = newArrayList(
-                remoteRepo.command(LogOp.class).call());
+        List<RevCommit> expected = newArrayList(remoteRepo.command(LogOp.class).call());
 
         assertEquals(expected, logged);
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
@@ -559,7 +574,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
                 .setCloneURI(localGeogig.envHome.toURI())//
                 .setBranch("Branch1")//
                 .call();
-      //  TestSupport.verifySameContents(remoteRepo, cloneRepo);
+        // TestSupport.verifySameContents(remoteRepo, cloneRepo);
         // Make sure the specified branch was checked out on the new clone
         assertEquals("Branch1",
                 cloneRepo.command(RefParse.class).setName("HEAD").call().get().peel().localName());

@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.plumbing.MapRef;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.remotes.LsRemoteOp;
 import org.locationtech.geogig.remotes.RefDiff;

@@ -161,7 +161,7 @@ public class Patch {
      * 
      * @return
      */
-    public ImmutableList<FeatureTypeDiff> getAlteredTrees() {
+    public List<FeatureTypeDiff> getAlteredTrees() {
         return ImmutableList.copyOf(alteredTrees);
     }
 
@@ -254,8 +254,8 @@ public class Patch {
                 && !diff.getOldFeatureType().equals(ObjectId.NULL)) {
             RevFeatureType oldFeatureType = getFeatureTypeFromId(diff.getOldFeatureType()).get();
             RevFeatureType newFeatureType = getFeatureTypeFromId(diff.getNewFeatureType()).get();
-            ImmutableList<PropertyDescriptor> oldDescriptors = oldFeatureType.descriptors();
-            ImmutableList<PropertyDescriptor> newDescriptors = newFeatureType.descriptors();
+            List<PropertyDescriptor> oldDescriptors = oldFeatureType.descriptors();
+            List<PropertyDescriptor> newDescriptors = newFeatureType.descriptors();
             BitSet updatedDescriptors = new BitSet(newDescriptors.size());
             for (int i = 0; i < oldDescriptors.size(); i++) {
                 PropertyDescriptor oldDescriptor = oldDescriptors.get(i);

@@ -81,7 +81,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -287,7 +286,7 @@ public class ResponseWriter {
         writeElement("id", commit.getId().toString());
         writeElement("tree", commit.getTreeId().toString());
 
-        ImmutableList<ObjectId> parentIds = commit.getParentIds();
+        List<ObjectId> parentIds = commit.getParentIds();
         out.writeStartElement("parents");
         out.writeStartArray("id");
         for (ObjectId parentId : parentIds) {
@@ -396,7 +395,7 @@ public class ResponseWriter {
         out.writeStartElement(tag);
         writeElement("id", featureType.getId().toString());
         writeElement("name", featureType.getName().toString());
-        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
+        List<PropertyDescriptor> descriptors = featureType.descriptors();
         out.writeStartArray("attribute");
         for (PropertyDescriptor descriptor : descriptors) {
             out.writeStartArrayElement("attribute");
@@ -757,7 +756,7 @@ public class ResponseWriter {
         writeTag(tag, "Tag", false);
     }
 
-    public void writeRebuildGraphResponse(ImmutableList<ObjectId> updatedObjects, boolean quiet)
+    public void writeRebuildGraphResponse(List<ObjectId> updatedObjects, boolean quiet)
             throws StreamWriterException {
         out.writeStartElement("RebuildGraph");
         if (updatedObjects.size() > 0) {

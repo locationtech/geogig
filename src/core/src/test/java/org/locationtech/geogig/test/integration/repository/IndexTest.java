@@ -12,6 +12,7 @@ package org.locationtech.geogig.test.integration.repository;
 import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +40,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 
 public class IndexTest extends RepositoryTestCase {
 
@@ -285,7 +285,7 @@ public class IndexTest extends RepositoryTestCase {
         final ObjectId oId2_1 = insertAndAdd(lines1);
 
         {// simulate a commit so the repo head points to this new tree
-            List<ObjectId> parents = ImmutableList.of();
+            List<ObjectId> parents = Collections.emptyList();
 
             RevCommit commit = RevCommit.builder().treeId(newRepoTreeId1).parentIds(parents)
                     .build();
@@ -325,7 +325,7 @@ public class IndexTest extends RepositoryTestCase {
         }
 
         {// simulate a commit so the repo head points to this new tree
-            List<ObjectId> parents = ImmutableList.of();
+            List<ObjectId> parents = Collections.emptyList();
             RevCommit commit = RevCommit.builder().treeId(newRepoTreeId2).parentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();

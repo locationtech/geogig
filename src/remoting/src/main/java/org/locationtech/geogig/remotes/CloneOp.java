@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +45,6 @@ import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
@@ -273,7 +273,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
         String fetchURL = remote.getFetchURL();
         Collection<RefDiff> refs = changedRefs.get(fetchURL);
         if (refs == null) {
-            refs = ImmutableList.of();
+            refs = Collections.emptyList();
         }
         return refs;
     }

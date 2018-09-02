@@ -81,7 +81,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -610,8 +609,8 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         RevFeatureType oldFeatureType;
         oldFeatureType = command(RevObjectParse.class).setObjectId(node.getMetadataId())
                 .call(RevFeatureType.class).get();
-        ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
-        ImmutableList<PropertyDescriptor> newAttributes = featureType.descriptors();
+        List<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
+        List<PropertyDescriptor> newAttributes = featureType.descriptors();
         RevFeatureBuilder builder = RevFeature.builder();
         for (int i = 0; i < newAttributes.size(); i++) {
             int idx = oldAttributes.indexOf(newAttributes.get(i));

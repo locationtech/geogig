@@ -31,7 +31,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Verifies if a patch can be applied to the current working tree
@@ -98,7 +97,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
             Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(), path);
             RevFeatureType featureType = command(RevObjectParse.class)
                     .setObjectId(noderef.get().getMetadataId()).call(RevFeatureType.class).get();
-            ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
+            List<PropertyDescriptor> descriptors = featureType.descriptors();
             Set<Entry<PropertyDescriptor, AttributeDiff>> attrDiffs = diff.getDiffs().entrySet();
             boolean ok = true;
             for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = attrDiffs
@@ -174,7 +173,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                 }
             }
         }
-        ImmutableList<FeatureTypeDiff> alteredTrees = patch.getAlteredTrees();
+        List<FeatureTypeDiff> alteredTrees = patch.getAlteredTrees();
         for (FeatureTypeDiff diff : alteredTrees) {
             DepthSearch depthSearch = new DepthSearch(objectDatabase());
             Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(), diff.getPath());

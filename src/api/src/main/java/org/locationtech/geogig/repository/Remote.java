@@ -11,6 +11,8 @@ package org.locationtech.geogig.repository;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -18,7 +20,6 @@ import org.locationtech.geogig.model.Ref;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -34,7 +35,7 @@ public class Remote {
 
     private String pushurl;
 
-    private ImmutableList<LocalRemoteRefSpec> fetchSpecs;
+    private List<LocalRemoteRefSpec> fetchSpecs;
 
     private String fetch;
 
@@ -68,8 +69,8 @@ public class Remote {
         this.mappedBranch = Optional.ofNullable(mappedBranch).orElse("*");
         this.username = username;
         this.password = password;
-        this.fetchSpecs = Strings.isNullOrEmpty(fetch) ? ImmutableList.of()
-                : ImmutableList.copyOf(LocalRemoteRefSpec.parse(name, fetch));
+        this.fetchSpecs = Strings.isNullOrEmpty(fetch) ? Collections.emptyList()
+                : Collections.unmodifiableList(LocalRemoteRefSpec.parse(name, fetch));
     }
 
     /**
@@ -120,7 +121,7 @@ public class Remote {
         return fetch;
     }
 
-    public ImmutableList<LocalRemoteRefSpec> getFetchSpecs() {
+    public List<LocalRemoteRefSpec> getFetchSpecs() {
         return fetchSpecs;
     }
 

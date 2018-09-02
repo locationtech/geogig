@@ -253,8 +253,8 @@ public class FormatCommonV2 {
         }
         checkState(nBuckets == buckets.size(), "expected %s buckets, got %s", nBuckets,
                 buckets.size());
-        ImmutableList<Node> trees = treesBuilder.build();
-        ImmutableList<Node> features = featuresBuilder.build();
+        List<Node> trees = treesBuilder.build();
+        List<Node> features = featuresBuilder.build();
 
         if (id == null) {
             id = HashObject.hashTree(trees, features, buckets);
@@ -592,7 +592,7 @@ public class FormatCommonV2 {
     public void writeFeatureType(RevFeatureType object, DataOutput data) throws IOException {
         writeName(object.getName(), data);
 
-        ImmutableList<PropertyDescriptor> descriptors = object.descriptors();
+        List<PropertyDescriptor> descriptors = object.descriptors();
         writeUnsignedVarInt(descriptors.size(), data);
 
         for (PropertyDescriptor desc : object.type().getDescriptors()) {

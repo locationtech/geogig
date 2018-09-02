@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -46,7 +47,6 @@ import org.locationtech.geogig.model.internal.DAG.STATE;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSortedSet;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -284,9 +284,7 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
             long size = 0;
             int childTreeCount = 0;
 
-            ImmutableSortedSet.Builder<Bucket> bucketsByIndex;
-            bucketsByIndex = ImmutableSortedSet.naturalOrder();
-
+            SortedSet<Bucket> buckets = new TreeSet<>();
             for (Entry<Integer, ForkJoinTask<RevTree>> e : subtasks.entrySet()) {
 
                 Integer bucketIndex = e.getKey();
@@ -306,11 +304,10 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
                     Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
                             bucketTree.getId(), bucketIndex, RevObjects.boundsOf(bucketTree));
 
-                    bucketsByIndex.add(bucket);
+                    buckets.add(bucket);
                 }
             }
 
-            SortedSet<Bucket> buckets = bucketsByIndex.build();
             List<Node> treeNodes = null;
             List<Node> featureNodes = null;
 

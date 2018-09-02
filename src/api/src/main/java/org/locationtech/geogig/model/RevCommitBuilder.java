@@ -15,8 +15,6 @@ import java.util.List;
 import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Platform;
 
-import com.google.common.collect.ImmutableList;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -88,8 +86,8 @@ public final @Accessors(fluent = true) class RevCommitBuilder {
         int authorOffset = authorTimeZoneOffset == null ? committerOffset : authorTimeZoneOffset;
 
         final ObjectId treeId = this.treeId;
-        final ImmutableList<ObjectId> parentIds = this.parentIds == null ? ImmutableList.of()
-                : ImmutableList.copyOf(this.parentIds);
+        final List<ObjectId> parentIds = this.parentIds == null ? new ArrayList<>()
+                : this.parentIds;
 
         final RevPerson author = RevPerson.builder().build(this.author, authorEmail, authorTs,
                 authorOffset);
@@ -107,7 +105,7 @@ public final @Accessors(fluent = true) class RevCommitBuilder {
         final ObjectId commitId = HashObjectFunnels.hashCommit(treeId, parents, author, committer,
                 message);
 
-        return RevObjectFactory.defaultInstance().createCommit(commitId, treeId,
-                ImmutableList.copyOf(parents), author, committer, message);
+        return RevObjectFactory.defaultInstance().createCommit(commitId, treeId, parents, author,
+                committer, message);
     }
 }

@@ -42,7 +42,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -166,8 +165,8 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
                     .call(RevFeature.class).get();
 
             RevFeatureType newRevFeatureType = getFeatureType(diff, feature, oldRevFeatureType);
-            ImmutableList<PropertyDescriptor> oldDescriptors = oldRevFeatureType.descriptors();
-            ImmutableList<PropertyDescriptor> newDescriptors = newRevFeatureType.descriptors();
+            List<PropertyDescriptor> oldDescriptors = oldRevFeatureType.descriptors();
+            List<PropertyDescriptor> newDescriptors = newRevFeatureType.descriptors();
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
                     (SimpleFeatureType) newRevFeatureType.type());
             Map<Name, Object> attrs = Maps.newHashMap();
@@ -201,7 +200,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
             workTree.insert(featureInfo);
 
         }
-        ImmutableList<FeatureTypeDiff> alteredTrees = patch.getAlteredTrees();
+        List<FeatureTypeDiff> alteredTrees = patch.getAlteredTrees();
         for (FeatureTypeDiff diff : alteredTrees) {
             Optional<RevFeatureType> featureType;
             if (diff.getOldFeatureType().isNull()) {

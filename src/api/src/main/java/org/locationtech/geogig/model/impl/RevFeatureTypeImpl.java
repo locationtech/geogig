@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import java.util.List;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObjects;
@@ -50,7 +52,7 @@ class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureType {
     /**
      * @return the list of {@link PropertyDescriptor}s of the feature type
      */
-    public @Override ImmutableList<PropertyDescriptor> descriptors() {
+    public @Override List<PropertyDescriptor> descriptors() {
         return ImmutableList.copyOf(featureType.getDescriptors());
     }
 

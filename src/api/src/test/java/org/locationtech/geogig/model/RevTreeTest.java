@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -27,7 +28,6 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 
 public class RevTreeTest {
@@ -47,7 +47,6 @@ public class RevTreeTest {
         assertTrue(emptyTree.isEmpty());
         assertTrue(emptyTree.toString().contains("EMPTY TREE"));
         assertEquals(emptyTree, emptyTree);
-        assertFalse(emptyTree.equals(RevTree.EMPTY_TREE_ID));
     }
 
     @Test
@@ -80,13 +79,13 @@ public class RevTreeTest {
             }
 
             @Override
-            public ImmutableList<Node> trees() {
-                return ImmutableList.copyOf(trees);
+            public List<Node> trees() {
+                return new ArrayList<>(trees);
             }
 
             @Override
-            public ImmutableList<Node> features() {
-                return ImmutableList.copyOf(features);
+            public List<Node> features() {
+                return new ArrayList<>(features);
             }
 
             @Override
@@ -132,13 +131,13 @@ public class RevTreeTest {
             }
 
             @Override
-            public ImmutableList<Node> trees() {
-                return ImmutableList.of();
+            public List<Node> trees() {
+                return Collections.emptyList();
             }
 
             @Override
-            public ImmutableList<Node> features() {
-                return ImmutableList.of();
+            public List<Node> features() {
+                return Collections.emptyList();
             }
 
             @Override
@@ -176,13 +175,13 @@ public class RevTreeTest {
             }
 
             @Override
-            public ImmutableList<Node> trees() {
-                return ImmutableList.of();
+            public List<Node> trees() {
+                return Collections.emptyList();
             }
 
             @Override
-            public ImmutableList<Node> features() {
-                return ImmutableList.of();
+            public List<Node> features() {
+                return Collections.emptyList();
             }
 
             @Override
@@ -237,13 +236,13 @@ public class RevTreeTest {
             }
 
             @Override
-            public ImmutableList<Node> trees() {
-                return ImmutableList.copyOf(trees);
+            public List<Node> trees() {
+                return new ArrayList<>(trees);
             }
 
             @Override
-            public ImmutableList<Node> features() {
-                return ImmutableList.copyOf(features);
+            public List<Node> features() {
+                return new ArrayList<>(features);
             }
 
             @Override

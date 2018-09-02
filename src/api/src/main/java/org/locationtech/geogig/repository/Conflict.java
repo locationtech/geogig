@@ -9,9 +9,10 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.Objects;
+
 import org.locationtech.geogig.model.ObjectId;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
@@ -88,9 +89,9 @@ public final class Conflict {
     public boolean equals(Object x) {
         if (x instanceof Conflict) {
             Conflict that = (Conflict) x;
-            return Objects.equal(this.ancestor, that.ancestor)
-                    && Objects.equal(this.theirs, that.theirs)
-                    && Objects.equal(this.ours, that.ours) && Objects.equal(this.path, that.path);
+            return Objects.equals(this.ancestor, that.ancestor)
+                    && Objects.equals(this.theirs, that.theirs)
+                    && Objects.equals(this.ours, that.ours) && Objects.equals(this.path, that.path);
         } else {
             return false;
         }
@@ -100,7 +101,7 @@ public final class Conflict {
      * Generates a hash code for the conflict.
      */
     public int hashCode() {
-        return Objects.hashCode(ancestor, theirs, ours, path);
+        return Objects.hash(ancestor, theirs, ours, path);
     }
 
     /**

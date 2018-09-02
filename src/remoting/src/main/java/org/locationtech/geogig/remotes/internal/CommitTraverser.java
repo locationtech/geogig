@@ -17,8 +17,6 @@ import java.util.Stack;
 
 import org.locationtech.geogig.model.ObjectId;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * Provides a method of traversing the commit graph with overridable functions to determine when to
  * prune the traversal, and when to process a commit node.
@@ -31,7 +29,7 @@ public abstract class CommitTraverser {
 
     public List<ObjectId> have;
 
-    private Hashtable<ObjectId, ImmutableList<ObjectId>> commitParents;
+    private Hashtable<ObjectId, List<ObjectId>> commitParents;
 
     /**
      * Traversal node that stores information about the ObjectId of the commit and it's depth from
@@ -104,7 +102,7 @@ public abstract class CommitTraverser {
     public CommitTraverser() {
         commits = new Stack<ObjectId>();
         have = new LinkedList<ObjectId>();
-        commitParents = new Hashtable<ObjectId, ImmutableList<ObjectId>>();
+        commitParents = new Hashtable<ObjectId, List<ObjectId>>();
     }
 
     /**
@@ -121,7 +119,7 @@ public abstract class CommitTraverser {
      * 
      * @param commitNode the commit to apply
      */
-    protected void apply(CommitNode commitNode, ImmutableList<ObjectId> parents) {
+    protected void apply(CommitNode commitNode, List<ObjectId> parents) {
         if (commits.contains(commitNode.getObjectId())) {
             commits.remove(commitNode.getObjectId());
         }
@@ -140,7 +138,7 @@ public abstract class CommitTraverser {
         while (!commitQueue.isEmpty()) {
             CommitNode node = commitQueue.remove();
             Evaluation evaluation = evaluate(node);
-            ImmutableList<ObjectId> parents;
+            List<ObjectId> parents;
             switch (evaluation) {
             case INCLUDE_AND_PRUNE:
                 parents = getParents(node.getObjectId());
@@ -173,7 +171,7 @@ public abstract class CommitTraverser {
      * 
      * @param commitNode the commit whose parents need to be added
      */
-    private void addParents(CommitNode commitNode, ImmutableList<ObjectId> parents) {
+    private void addParents(CommitNode commitNode, List<ObjectId> parents) {
         for (ObjectId parent : parents) {
             CommitNode parentNode = new CommitNode(parent, commitNode.getDepth() + 1);
             if (commitQueue.contains(parentNode)) {
@@ -183,8 +181,8 @@ public abstract class CommitTraverser {
         }
     }
 
-    private ImmutableList<ObjectId> getParents(ObjectId commitId) {
-        ImmutableList<ObjectId> parents = commitParents.get(commitId);
+    private List<ObjectId> getParents(ObjectId commitId) {
+        List<ObjectId> parents = commitParents.get(commitId);
         if (parents == null) {
             parents = getParentsInternal(commitId);
             commitParents.put(commitId, parents);
@@ -198,7 +196,7 @@ public abstract class CommitTraverser {
      * @param commitId the id of the commit whose parents need to be retrieved
      * @return the list of parents
      */
-    protected abstract ImmutableList<ObjectId> getParentsInternal(ObjectId commitId);
+    protected abstract List<ObjectId> getParentsInternal(ObjectId commitId);
 
     /**
      * Determines if the given commitId exists in the destination.

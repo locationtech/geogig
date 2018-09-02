@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapIndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 /**
@@ -122,7 +122,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         assertEquals(treeName, index.getTreeName());
         assertEquals(attributeName, index.getAttributeName());
         assertEquals(IndexType.QUADTREE, index.getIndexType());
-        assertEquals(ImmutableMap.of(), index.getMetadata());
+        assertEquals(Collections.emptyMap(), index.getMetadata());
         assertEquals(IndexInfo.getIndexId(treeName, attributeName), index.getId());
 
         Map<String, Object> metadata = new HashMap<String, Object>();
@@ -167,7 +167,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         assertEquals(treeName, index.getTreeName());
         assertEquals(attributeName, index.getAttributeName());
         assertEquals(IndexType.QUADTREE, index.getIndexType());
-        assertEquals(ImmutableMap.of(), index.getMetadata());
+        assertEquals(Collections.emptyMap(), index.getMetadata());
         assertEquals(IndexInfo.getIndexId(treeName, attributeName), index.getId());
 
         index = indexDb.getIndexInfo(treeName, attributeName).get();
@@ -175,7 +175,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         assertEquals(treeName, index.getTreeName());
         assertEquals(attributeName, index.getAttributeName());
         assertEquals(IndexType.QUADTREE, index.getIndexType());
-        assertEquals(ImmutableMap.of(), index.getMetadata());
+        assertEquals(Collections.emptyMap(), index.getMetadata());
         assertEquals(IndexInfo.getIndexId(treeName, attributeName), index.getId());
     }
 

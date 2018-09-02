@@ -323,7 +323,7 @@ public abstract class AbstractObjectStoreStressTest {
     private RevObject fakeObject(ObjectId forcedId) {
         // String oidString = objectId.toString();
         // ObjectId treeId = ObjectId.forString("tree" + oidString);
-        // ImmutableList<ObjectId> parentIds = ImmutableList.of();
+        // ImmutableList<ObjectId> parentIds = Collections.emptyList();
         // RevPerson author = new RevPersonImpl("Gabriel", "groldan@boundlessgeo.com", 1000, -3);
         // RevPerson committer = new RevPersonImpl("Gabriel", "groldan@boundlessgeo.com", 1000, -3);
         // String message = "message " + oidString;

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -61,7 +62,7 @@ public @ToString final class IndexInfo {
         this.treeName = treeName;
         this.attributeName = attributeName;
         this.indexType = indexType;
-        this.metadata = metadata == null ? ImmutableMap.of() : ImmutableMap.copyOf(metadata);
+        this.metadata = metadata == null ? Collections.emptyMap() : ImmutableMap.copyOf(metadata);
     }
 
     public ObjectId getId() {

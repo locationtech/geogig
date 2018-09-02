@@ -12,6 +12,7 @@ package org.locationtech.geogig.model.internal;
 import static com.google.common.base.Objects.equal;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
@@ -97,7 +97,7 @@ public class DAG implements Cloneable, Serializable {
 
     public DAG(TreeId id) {
         this.id = id;
-        this.children = ImmutableMap.of();
+        this.children = Collections.emptyMap();
         this.originalTreeId = RevTree.EMPTY_TREE_ID;
         this.state = STATE.INITIALIZED;
     }
@@ -117,7 +117,7 @@ public class DAG implements Cloneable, Serializable {
         this.children = new HashMap<>();
         this.originalTreeId = originalTreeId;
         this.state = STATE.INITIALIZED;
-        this.children = ImmutableMap.of();
+        this.children = Collections.emptyMap();
         this.buckets = ImmutableSet.of();
     }
 
@@ -166,7 +166,7 @@ public class DAG implements Cloneable, Serializable {
     public void clearChildren() {
         if (!children.isEmpty()) {
             setMutated();
-            this.children = ImmutableMap.of();
+            this.children = Collections.emptyMap();
         }
     }
 

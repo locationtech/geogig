@@ -15,6 +15,7 @@ import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,7 +82,7 @@ public class HashObjectFunnelsTest {
             }
 
             @Override
-            public ImmutableList<ObjectId> getParentIds() {
+            public List<ObjectId> getParentIds() {
                 return parents;
             }
 
@@ -196,12 +197,12 @@ public class HashObjectFunnelsTest {
             }
 
             @Override
-            public ImmutableList<Node> trees() {
+            public List<Node> trees() {
                 return ImmutableList.copyOf(trees);
             }
 
             @Override
-            public ImmutableList<Node> features() {
+            public List<Node> features() {
                 return ImmutableList.copyOf(features);
             }
 
@@ -265,7 +266,7 @@ public class HashObjectFunnelsTest {
             }
 
             @Override
-            public ImmutableList<Optional<Object>> getValues() {
+            public List<Optional<Object>> getValues() {
                 return ImmutableList.copyOf(values);
             }
 
@@ -301,7 +302,7 @@ public class HashObjectFunnelsTest {
         ObjectId emptyFeatureId1 = ObjectId.create(rawKey);
 
         hasher = Hashing.sha1().newHasher();
-        HashObjectFunnels.feature(hasher, ImmutableList.of());
+        HashObjectFunnels.feature(hasher, Collections.emptyList());
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
         ObjectId emptyFeatureId2 = ObjectId.create(rawKey);
@@ -472,7 +473,7 @@ public class HashObjectFunnelsTest {
             }
 
             @Override
-            public ImmutableList<PropertyDescriptor> descriptors() {
+            public List<PropertyDescriptor> descriptors() {
                 return ImmutableList.copyOf(featureType.getDescriptors());
             }
 

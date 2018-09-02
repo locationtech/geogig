@@ -10,6 +10,7 @@
 package org.locationtech.geogig.test.integration;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,7 +35,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -109,7 +109,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         Optional<RevFeature> feature = geogig.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:" + path).call(RevFeature.class);
         assertTrue(feature.isPresent());
-        ImmutableList<Optional<Object>> values = feature.get().getValues();
+        List<Optional<Object>> values = feature.get().getValues();
         assertEquals("new", values.get(0).get());
     }
 
@@ -151,7 +151,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         Optional<RevFeature> feature = geogig.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:" + path).call(RevFeature.class);
         assertTrue(feature.isPresent());
-        ImmutableList<Optional<Object>> values = feature.get().getValues();
+        List<Optional<Object>> values = feature.get().getValues();
         assertEquals(points1.getProperties().size(), values.size());
         assertFalse(values.contains(Optional.of("ExtraString")));
 

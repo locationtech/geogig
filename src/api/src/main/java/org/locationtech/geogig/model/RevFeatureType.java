@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.List;
+
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * {@code RevFeatureType} is an immutable data structure that describes the schema for a set of
@@ -67,7 +67,7 @@ public interface RevFeatureType extends RevObject {
      * 
      * @return the {@link PropertyDescriptor}s of the feature type
      */
-    public abstract ImmutableList<PropertyDescriptor> descriptors();
+    public abstract List<PropertyDescriptor> descriptors();
 
     /**
      * @return the name of the feature type

@@ -45,7 +45,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Shows formatted information about a commit, tree, feature or feature type
@@ -95,7 +94,7 @@ public class Show extends AbstractCommand implements CLICommand {
                         .setRefSpec(ref).call();
                 if (opt.isPresent()) {
                     RevFeatureType ft = opt.get();
-                    ImmutableList<PropertyDescriptor> attribs = ft.descriptors();
+                    List<PropertyDescriptor> attribs = ft.descriptors();
                     RevFeature feature = (RevFeature) revObject;
                     Ansi ansi = super.newAnsi(console);
                     ansi.a(ref).newline();
@@ -146,7 +145,7 @@ public class Show extends AbstractCommand implements CLICommand {
                         .setRefSpec(ref).call();
                 if (opt.isPresent()) {
                     RevFeatureType ft = opt.get();
-                    ImmutableList<PropertyDescriptor> attribs = ft.descriptors();
+                    List<PropertyDescriptor> attribs = ft.descriptors();
                     RevFeature feature = (RevFeature) revObject;
                     Ansi ansi = super.newAnsi(console);
                     ansi.newline().fg(Color.YELLOW).a("ID:  ").reset().a(feature.getId().toString())
@@ -231,7 +230,7 @@ public class Show extends AbstractCommand implements CLICommand {
     }
 
     private void printFeatureType(Ansi ansi, RevFeatureType ft, boolean useDefaultKeyword) {
-        ImmutableList<PropertyDescriptor> attribs = ft.descriptors();
+        List<PropertyDescriptor> attribs = ft.descriptors();
 
         ansi.fg(Color.YELLOW).a(useDefaultKeyword ? "DEFAULT " : "").a("FEATURE TYPE ID:  ").reset()
                 .a(ft.getId().toString()).newline().newline();

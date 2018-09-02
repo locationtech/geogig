@@ -39,7 +39,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -470,7 +469,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 lastCommit = repo.getCommit(parent.get());
             }
 
-            ImmutableList<ObjectId> children = this.graphDb.getChildren(lastCommit.getId());
+            List<ObjectId> children = this.graphDb.getChildren(lastCommit.getId());
             if (children.size() > 1) {
                 stopPoints.add(lastCommit.getId());
             }

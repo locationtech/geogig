@@ -12,6 +12,7 @@ package org.locationtech.geogig.tempstorage.rocksdb;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +32,6 @@ import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 
 class RocksdbNodeStore {
@@ -90,7 +90,7 @@ class RocksdbNodeStore {
 
     public Map<NodeId, DAGNode> getAll(Set<NodeId> nodeIds) {
         if (nodeIds.isEmpty()) {
-            return ImmutableMap.of();
+            return Collections.emptyMap();
         }
         Map<NodeId, DAGNode> res = new HashMap<>();
         lock.readLock().lock();

@@ -11,6 +11,8 @@ package org.locationtech.geogig.repository;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -20,8 +22,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-
-import com.google.common.collect.ImmutableList;
 
 public class FeatureInfoTest {
 
@@ -41,8 +41,8 @@ public class FeatureInfoTest {
             }
 
             @Override
-            public ImmutableList<Optional<Object>> getValues() {
-                return ImmutableList.of();
+            public List<Optional<Object>> getValues() {
+                return Collections.emptyList();
             }
 
             @Override

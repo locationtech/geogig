@@ -11,8 +11,6 @@ package org.locationtech.geogig.storage;
 
 import java.util.ServiceLoader;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * A plug-in mechanism for providers of storage backends for the different kinds of geogig
  * databases.
@@ -68,6 +66,6 @@ public abstract class StorageProvider {
     public static Iterable<StorageProvider> findProviders() {
         ServiceLoader<StorageProvider> loader = ServiceLoader.load(StorageProvider.class,
                 StorageProvider.class.getClassLoader());
-        return ImmutableList.copyOf(loader.iterator());
+        return loader;
     }
 }

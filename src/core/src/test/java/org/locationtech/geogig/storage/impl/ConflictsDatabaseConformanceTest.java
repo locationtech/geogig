@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.ObjectId.NULL;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -212,16 +213,16 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
         conflicts.addConflicts(txId, pois);
 
         testGetByPrefix(null, "rivers", rivers);
-        testGetByPrefix(txId, "rivers", ImmutableList.of());
+        testGetByPrefix(txId, "rivers", Collections.emptyList());
 
         testGetByPrefix(null, "roads", highways);
-        testGetByPrefix(txId, "roads", ImmutableList.of());
+        testGetByPrefix(txId, "roads", Collections.emptyList());
 
         testGetByPrefix(txId, "buildings", buildings);
-        testGetByPrefix(null, "buildings", ImmutableList.of());
+        testGetByPrefix(null, "buildings", Collections.emptyList());
 
         testGetByPrefix(txId, "pois", pois);
-        testGetByPrefix(null, "pois", ImmutableList.of());
+        testGetByPrefix(null, "pois", Collections.emptyList());
 
         List<Conflict> defaultns = new ArrayList<>(rivers);
         defaultns.addAll(highways);

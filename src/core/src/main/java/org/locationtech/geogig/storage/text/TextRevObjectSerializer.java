@@ -67,7 +67,6 @@ import org.opengis.util.InternationalString;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
@@ -404,8 +403,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             writeBuckets(w, revTree.getBuckets());
         }
 
-        private void writeChildren(Writer w, ImmutableCollection<Node> children)
-                throws IOException {
+        private void writeChildren(Writer w, Collection<Node> children) throws IOException {
             for (Node ref : children) {
                 writeNode(w, ref);
             }

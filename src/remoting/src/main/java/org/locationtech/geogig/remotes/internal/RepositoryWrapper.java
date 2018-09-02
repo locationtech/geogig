@@ -9,11 +9,10 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * Provides an interface to make basic queries to a repository.
@@ -34,7 +33,7 @@ public interface RepositoryWrapper {
      * @param commit the id of the commit whose parents to retrieve
      * @return a list of parent ids for the commit
      */
-    public ImmutableList<ObjectId> getParents(ObjectId commitId);
+    public List<ObjectId> getParents(ObjectId commitId);
 
     /**
      * Gets the depth of the given commit.

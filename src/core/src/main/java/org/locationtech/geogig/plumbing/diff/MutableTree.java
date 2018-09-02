@@ -39,7 +39,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -290,7 +289,7 @@ public class MutableTree implements Cloneable {
         final RevTree original = EMPTY_TREE_ID.equals(treeId) ? EMPTY : store.getTree(treeId);
 
         RevTreeBuilder builder = RevTreeBuilder.builder(store, original);
-        ImmutableList<Node> currentTrees = original.trees();
+        List<Node> currentTrees = original.trees();
         currentTrees.forEach(builder::remove);
 
         for (MutableTree childTree : this.childTrees.values()) {

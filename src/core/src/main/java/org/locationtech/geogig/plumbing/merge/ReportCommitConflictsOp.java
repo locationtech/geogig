@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing.merge;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -41,7 +42,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Used for cherry pick and rebase to see if the changes from a single commit conflict with another
@@ -173,7 +173,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                             .get();
                     final RevFeatureType headFeatureType = ftCache
                             .get(headFeatureRef.getMetadataId());
-                    ImmutableList<PropertyDescriptor> descriptors = headFeatureType.descriptors();
+                    List<PropertyDescriptor> descriptors = headFeatureType.descriptors();
 
                     FeatureDiff featureDiff = DiffFeature.compare(path, oldFeature, newFeature,
                             ftCache.get(diff.oldMetadataId()), ftCache.get(diff.newMetadataId()));

@@ -20,6 +20,8 @@ import static org.locationtech.geogig.model.NodeRef.isChild;
 import static org.locationtech.geogig.model.NodeRef.isDirectChild;
 import static org.locationtech.geogig.model.NodeRef.parentPath;
 
+import java.util.Collections;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -266,7 +268,7 @@ public class NodeRefTest {
     public void testSplit() {
         assertEquals(ImmutableList.of("Points", "sub", "points.1"),
                 NodeRef.split("Points/sub/points.1"));
-        assertEquals(ImmutableList.of(), NodeRef.split(""));
+        assertEquals(Collections.emptyList(), NodeRef.split(""));
 
         exception.expect(NullPointerException.class);
         NodeRef.split(null);

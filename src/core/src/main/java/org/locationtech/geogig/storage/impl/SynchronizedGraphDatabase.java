@@ -9,11 +9,12 @@
  */
 package org.locationtech.geogig.storage.impl;
 
+import java.util.List;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 public class SynchronizedGraphDatabase implements GraphDatabase {
     private final GraphDatabase delegate;
@@ -47,19 +48,19 @@ public class SynchronizedGraphDatabase implements GraphDatabase {
         }
     }
 
-    public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+    public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         synchronized (delegate) {
             return delegate.getParents(commitId);
         }
     }
 
-    public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+    public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
         synchronized (delegate) {
             return delegate.getChildren(commitId);
         }
     }
 
-    public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
+    public boolean put(ObjectId commitId, List<ObjectId> parentIds) {
         synchronized (delegate) {
             return delegate.put(commitId, parentIds);
         }

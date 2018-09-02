@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
@@ -25,8 +26,6 @@ import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  *
@@ -79,7 +78,7 @@ public class ParentsControllerTest extends AbstractControllerTest {
         assertTrue(call.hasNext());
         while (call.hasNext()) {
             RevCommit next = call.next();
-            ImmutableList<ObjectId> parentIds = next.getParentIds();
+            List<ObjectId> parentIds = next.getParentIds();
             // build the API request
             String oid = next.getId().toString();
             MockHttpServletRequestBuilder get =

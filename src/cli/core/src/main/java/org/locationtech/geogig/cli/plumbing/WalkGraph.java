@@ -11,6 +11,7 @@ package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 /**

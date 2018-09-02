@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +17,6 @@ import org.locationtech.geogig.storage.BlobStore;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Utility methods to manipulate BLOBs in a {@link BlobStore}
@@ -45,7 +45,7 @@ public class Blobs {
     }
 
     public static List<String> readLines(Optional<byte[]> blob) {
-        List<String> lines = ImmutableList.of();
+        List<String> lines = Collections.emptyList();
         if (blob.isPresent()) {
             String contents = new String(blob.get(), Charsets.UTF_8);
             lines = Splitter.on("\n").splitToList(contents);

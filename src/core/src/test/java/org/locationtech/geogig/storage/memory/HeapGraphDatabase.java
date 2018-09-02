@@ -117,7 +117,7 @@ public class HeapGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
+    public boolean put(ObjectId commitId, List<ObjectId> parentIds) {
         Node n = graph.getOrAdd(commitId);
         synchronized (n) {
             if (parentIds.isEmpty()) {

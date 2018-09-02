@@ -31,8 +31,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * Builds an index for every commit a given type tree is present at. Returns the number of trees
  * that were built.
@@ -102,8 +100,7 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
      * @return the number of trees that were built
      */
     private int indexHistory(IndexInfo index) {
-        ImmutableList<Ref> branches = command(BranchListOp.class).setLocal(true).setRemotes(true)
-                .call();
+        List<Ref> branches = command(BranchListOp.class).setLocal(true).setRemotes(true).call();
         int builtTrees = 0;
         ProgressListener listener = getProgressListener();
         for (Ref ref : branches) {
@@ -144,7 +141,7 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
             return false;
         }
         RevTree newCanonicalTree = objectDatabase().getTree(treeNode.get().getObjectId());
-        ImmutableList<ObjectId> oldCommits = graphDatabase().getChildren(commit.getId());
+        List<ObjectId> oldCommits = graphDatabase().getChildren(commit.getId());
         RevTree oldCanonicalTree = RevTree.EMPTY;
         for (ObjectId oldCommitId : oldCommits) {
             Optional<ObjectId> oldTreeId = command(ResolveTreeish.class)

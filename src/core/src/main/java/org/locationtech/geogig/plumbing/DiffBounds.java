@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,7 +58,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
     private RevTree oldTree, newTree;
 
-    private List<String> pathFilters = ImmutableList.of();
+    private List<String> pathFilters = Collections.emptyList();
 
     private CoordinateReferenceSystem crs;
 
@@ -95,7 +96,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
     public DiffBounds setPathFilters(@Nullable final List<String> pathFilters) {
         if (null == pathFilters) {
-            this.pathFilters = ImmutableList.of();
+            this.pathFilters = Collections.emptyList();
         } else {
             this.pathFilters = ImmutableList.copyOf(pathFilters);
         }

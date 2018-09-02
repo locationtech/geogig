@@ -30,8 +30,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * Resolves the reference given by a ref spec to the {@link ObjectId} it finally points to,
  * dereferencing symbolic refs as necessary.
@@ -245,7 +243,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
 
         ObjectId ancestor = objectId;
         for (int i = 0; i < ancestorN; i++) {
-            ImmutableList<ObjectId> parents = graph.getParents(ancestor);
+            List<ObjectId> parents = graph.getParents(ancestor);
             if (parents.isEmpty()) {
                 return Optional.empty();
             }

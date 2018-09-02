@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing.diff;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -24,7 +25,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -79,7 +79,7 @@ public class FeatureDiff {
             Preconditions.checkArgument(oldRevFeatureType != null,
                     "Old feature type must be provided.");
 
-            ImmutableList<PropertyDescriptor> oldAttributes = oldRevFeatureType.descriptors();
+            List<PropertyDescriptor> oldAttributes = oldRevFeatureType.descriptors();
 
             for (int i = 0; i < oldAttributes.size(); i++) {
                 Optional<Object> oldValue = oldRevFeature.get(i);
@@ -96,7 +96,7 @@ public class FeatureDiff {
             Preconditions.checkArgument(newRevFeatureType != null,
                     "New feature type must be provided.");
 
-            ImmutableList<PropertyDescriptor> newAttributes = newRevFeatureType.descriptors();
+            List<PropertyDescriptor> newAttributes = newRevFeatureType.descriptors();
 
             for (int i = 0; i < newAttributes.size(); i++) {
                 Optional<Object> newValue = newRevFeature.get(i);
@@ -110,8 +110,8 @@ public class FeatureDiff {
                 }
             }
         } else {
-            ImmutableList<PropertyDescriptor> oldAttributes = oldRevFeatureType.descriptors();
-            ImmutableList<PropertyDescriptor> newAttributes = newRevFeatureType.descriptors();
+            List<PropertyDescriptor> oldAttributes = oldRevFeatureType.descriptors();
+            List<PropertyDescriptor> newAttributes = newRevFeatureType.descriptors();
             BitSet updatedAttributes = new BitSet(newRevFeature.size());
             for (int i = 0; i < oldAttributes.size(); i++) {
                 Optional<Object> oldValue = oldRevFeature.get(i);

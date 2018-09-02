@@ -9,9 +9,8 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.List;
 import java.util.Optional;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * A revision commit is an immutable data structure that represents the full state of the repository
@@ -91,7 +90,7 @@ public interface RevCommit extends RevObject {
      * 
      * @return the list of parent commit ids for this commit
      */
-    public ImmutableList<ObjectId> getParentIds();
+    public List<ObjectId> getParentIds();
 
     /**
      * Short cut for {@code getParentIds().get(parentIndex)}, retuning an optional with the parent

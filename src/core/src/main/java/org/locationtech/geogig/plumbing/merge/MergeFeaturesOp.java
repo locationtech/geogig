@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -125,7 +126,7 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
 
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
                 (SimpleFeatureType) featureType.type());
-        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
+        List<PropertyDescriptor> descriptors = featureType.descriptors();
         for (int i = 0; i < descriptors.size(); i++) {
             final PropertyDescriptor descriptor = descriptors.get(i);
             final boolean isGeom = descriptor instanceof GeometryDescriptor;

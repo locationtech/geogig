@@ -9,12 +9,11 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.locationtech.jts.geom.Geometry;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * A {@code RevFeature} is an immutable data structure that contains the attribute value instances
@@ -53,7 +52,7 @@ public interface RevFeature extends RevObject, ValueArray {
     /**
      * @return a list of values, with {@link Optional#empty()} representing a null value
      */
-    public ImmutableList<Optional<Object>> getValues();
+    public List<Optional<Object>> getValues();
 
     public static RevFeatureBuilder builder() {
         return new RevFeatureBuilder();

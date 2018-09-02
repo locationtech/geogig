@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.DiffEntry;
@@ -35,7 +36,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
 
 /**
  *
@@ -72,7 +72,7 @@ public class ApplyChangesControllerTest extends AbstractControllerTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serialFac.write(masterCommit, baos);
         // number of parent IDs?
-        ImmutableList<ObjectId> parentIds = masterCommit.getParentIds();
+        List<ObjectId> parentIds = masterCommit.getParentIds();
         baos.write(parentIds.size());
         for (ObjectId parent : parentIds) {
             baos.write(parent.getRawValue());

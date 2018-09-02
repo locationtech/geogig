@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,7 +49,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -147,7 +147,7 @@ public class LegacyMergeFeatureService extends AbstractRepositoryService {
                         (SimpleFeatureType) (ourFeatureType != null ? ourFeatureType.type() :
                                  theirFeatureType.type()));
 
-                ImmutableList<PropertyDescriptor> descriptors = (ourFeatureType == null ?
+                List<PropertyDescriptor> descriptors = (ourFeatureType == null ?
                          theirFeatureType : ourFeatureType).descriptors();
 
                 for (Map.Entry<String, JsonElement> entry : merges.entrySet()) {
@@ -496,7 +496,7 @@ public class LegacyMergeFeatureService extends AbstractRepositoryService {
         throw new IOException();
     }
 
-    private int getDescriptorIndex(String key, ImmutableList<PropertyDescriptor> properties) {
+    private int getDescriptorIndex(String key, List<PropertyDescriptor> properties) {
         for (int i = 0; i < properties.size(); i++) {
             PropertyDescriptor prop = properties.get(i);
             if (prop.getName().toString().equals(key)) {

@@ -13,6 +13,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -23,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 
 abstract class StringTable {
 
-    public static final StringTable EMPTY = new Immutable(ImmutableList.of());
+    public static final StringTable EMPTY = new Immutable(Collections.emptyList());
 
     /**
      * Factory method for a mutable string table that ensures it contains no duplicates

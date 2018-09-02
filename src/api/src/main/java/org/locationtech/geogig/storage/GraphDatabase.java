@@ -11,11 +11,11 @@ package org.locationtech.geogig.storage;
 
 import java.io.Closeable;
 import java.util.Iterator;
+import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.annotations.Beta;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Provides an interface for implementations of a graph database, which keeps track of the
@@ -161,7 +161,7 @@ public interface GraphDatabase extends Closeable {
      * @return a list of the parents of the provided commit
      * @throws IllegalArgumentException
      */
-    public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException;
+    public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException;
 
     /**
      * Retrieves all of the children for the given commit.
@@ -170,7 +170,7 @@ public interface GraphDatabase extends Closeable {
      * @return a list of the children of the provided commit
      * @throws IllegalArgumentException
      */
-    public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException;
+    public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException;
 
     /**
      * Adds a commit to the database with the given parents. If a commit with the same id already
@@ -180,7 +180,7 @@ public interface GraphDatabase extends Closeable {
      * @param parentIds the commit ids of the commit's parents
      * @return true if the commit id was inserted or updated, false if it was already there
      */
-    public boolean put(final ObjectId commitId, ImmutableList<ObjectId> parentIds);
+    public boolean put(final ObjectId commitId, List<ObjectId> parentIds);
 
     /**
      * Maps a commit to another original commit. This is used in sparse repositories.

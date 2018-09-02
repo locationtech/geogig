@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,7 +80,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -675,7 +675,7 @@ public class PGObjectStore implements ObjectStore {
                 return null;
             }
             try (Connection cx = PGStorage.newConnection(ds)) {
-                Map<EncodedObject, Boolean> insertResults = ImmutableMap.of();
+                Map<EncodedObject, Boolean> insertResults = Collections.emptyMap();
                 cx.setAutoCommit(false);
                 try {
                     insertResults = doInsert(cx, batch);

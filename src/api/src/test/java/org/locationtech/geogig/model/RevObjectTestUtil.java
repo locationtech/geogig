@@ -34,7 +34,6 @@ import org.opengis.feature.type.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -128,8 +127,8 @@ public @UtilityClass class RevObjectTestUtil {
         assertNotNull(actual.getName());
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getType(), actual.getType());
-        ImmutableList<PropertyDescriptor> eds = expected.descriptors();
-        ImmutableList<PropertyDescriptor> ads = actual.descriptors();
+        List<PropertyDescriptor> eds = expected.descriptors();
+        List<PropertyDescriptor> ads = actual.descriptors();
         assertEquals(eds.size(), ads.size());
         for (int i = 0; i < eds.size(); i++) {
             PropertyDescriptor ed = eds.get(i);

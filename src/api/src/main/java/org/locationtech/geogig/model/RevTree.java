@@ -11,6 +11,7 @@ package org.locationtech.geogig.model;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -20,7 +21,6 @@ import java.util.function.Consumer;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
@@ -93,8 +93,8 @@ public interface RevTree extends RevObject {
         }
 
         @Override
-        public ImmutableList<Node> trees() {
-            return ImmutableList.of();
+        public List<Node> trees() {
+            return Collections.emptyList();
         }
 
         @Override
@@ -113,8 +113,8 @@ public interface RevTree extends RevObject {
         }
 
         @Override
-        public ImmutableList<Node> features() {
-            return ImmutableList.of();
+        public List<Node> features() {
+            return Collections.emptyList();
         }
 
         @Override
@@ -194,7 +194,7 @@ public interface RevTree extends RevObject {
      * 
      * @apiNote the returned list does not contain {@code null} objects
      */
-    public ImmutableList<Node> trees();
+    public List<Node> trees();
 
     /**
      * @return the number of {@link Node}s in the {@link #trees} property
@@ -237,7 +237,7 @@ public interface RevTree extends RevObject {
      * 
      * @apiNote the returned list does not contain {@code null} objects
      */
-    public ImmutableList<Node> features();
+    public List<Node> features();
 
     /**
      * @return the number of {@link Node}s in the {@link #features} property

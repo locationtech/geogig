@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -687,8 +688,8 @@ public class WriteTree2Test extends RepositoryTestCase {
         RevTree tree = b.build();
         long size = tree.size();
         int childTreeCount = tree.numTrees();
-        ImmutableList<Node> trees = tree.trees();
-        ImmutableList<Node> features = tree.features();
+        List<Node> trees = tree.trees();
+        List<Node> features = tree.features();
         SortedSet<Bucket> buckets = ImmutableSortedSet.copyOf(tree.getBuckets());
         RevObjectFactory factory = RevObjectFactory.defaultInstance();
         RevTree fakenId;

@@ -12,6 +12,7 @@ package org.locationtech.geogig.geotools.plumbing;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,8 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.geotools.TestHelper;
-
-import com.google.common.collect.ImmutableMap;
 
 public class ListOpTest {
 
@@ -37,7 +36,8 @@ public class ListOpTest {
     @Test
     public void testEmptyDataStore() throws Exception {
         ListOp list = new ListOp();
-        list.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+        list.setDataStore(
+                TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         Optional<List<String>> features = list.call();
         assertFalse(features.isPresent());
     }
@@ -45,8 +45,8 @@ public class ListOpTest {
     @Test
     public void testTypeNameException() throws Exception {
         ListOp list = new ListOp();
-        list.setDataStore(
-                TestHelper.createFactoryWithGetNamesException().createDataStore(ImmutableMap.of()));
+        list.setDataStore(TestHelper.createFactoryWithGetNamesException()
+                .createDataStore(Collections.emptyMap()));
         exception.expect(GeoToolsOpException.class);
         list.call();
     }
@@ -54,7 +54,7 @@ public class ListOpTest {
     @Test
     public void testList() throws Exception {
         ListOp list = new ListOp();
-        list.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
+        list.setDataStore(TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         Optional<List<String>> features = list.call();
         assertTrue(features.isPresent());
 

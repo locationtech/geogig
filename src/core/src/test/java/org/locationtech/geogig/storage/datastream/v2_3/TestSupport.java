@@ -147,9 +147,9 @@ public class TestSupport {
 
         ObjectId id = HashObject.hashTree(treeNodes, featureNodes, buckets);
 
-        ImmutableList<Node> trees = treeNodes == null ? ImmutableList.of()
+        List<Node> trees = treeNodes == null ? Collections.emptyList()
                 : ImmutableList.copyOf(treeNodes);
-        ImmutableList<Node> features = featureNodes == null ? ImmutableList.of()
+        List<Node> features = featureNodes == null ? Collections.emptyList()
                 : ImmutableList.copyOf(featureNodes);
         buckets = buckets == null ? Collections.emptySortedSet() : buckets;
         int childTreeCount = treeNodes == null ? 0 : treeNodes.size();

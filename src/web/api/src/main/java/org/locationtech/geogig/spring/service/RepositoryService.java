@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.spring.service;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -43,7 +45,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Service for Repository stats.
@@ -63,21 +64,21 @@ public class RepositoryService extends AbstractRepositoryService {
         return null;
     }
 
-    public ImmutableList<Ref> getBranchList(RepositoryProvider provider, String repoName,
+    public List<Ref> getBranchList(RepositoryProvider provider, String repoName,
             boolean includeRemotes) {
         Repository repository = getRepository(provider, repoName);
         if (repository != null) {
             return repository.command(BranchListOp.class).setRemotes(includeRemotes).call();
         }
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 
-    public ImmutableList<RevTag> getTagList(RepositoryProvider provider, String repoName) {
+    public List<RevTag> getTagList(RepositoryProvider provider, String repoName) {
         Repository repository = getRepository(provider, repoName);
         if (repository != null) {
             return repository.command(TagListOp.class).call();
         }
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 
     public Ref getCurrentHead(RepositoryProvider provider, String repoName) {
@@ -144,7 +145,7 @@ public class RepositoryService extends AbstractRepositoryService {
         }
     }
 
-    private int getDescriptorIndex(String key, ImmutableList<PropertyDescriptor> properties) {
+    private int getDescriptorIndex(String key, List<PropertyDescriptor> properties) {
         for (int i = 0; i < properties.size(); i++) {
             PropertyDescriptor prop = properties.get(i);
             if (prop.getName().toString().equals(key)) {
@@ -213,7 +214,7 @@ public class RepositoryService extends AbstractRepositoryService {
                     (SimpleFeatureType) (ourFeatureType != null ? ourFeatureType.type() :
                              theirFeatureType.type()));
             // get an iterator of the feature properties
-            ImmutableList<PropertyDescriptor> descriptors = (ourFeatureType == null ?
+            List<PropertyDescriptor> descriptors = (ourFeatureType == null ?
                     theirFeatureType : ourFeatureType).descriptors();
             // configure the builder
             for (Merge merge : request.getMerges()) {

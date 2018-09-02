@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +33,6 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public class AddOpTest extends RepositoryTestCase {
@@ -59,7 +59,7 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points3);
         geogig.command(AddOp.class).call();
         List<DiffEntry> unstaged = toList(repo.workingTree().getUnstaged(null));
-        assertEquals(ImmutableList.of(), unstaged);
+        assertEquals(Collections.emptyList(), unstaged);
     }
 
     @Test

@@ -40,7 +40,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -114,7 +113,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                         Optional<RevObject> obj = geogig.command(RevObjectParse.class)
                                 .setObjectId(noderef.getObjectId()).call();
                         RevFeature feature = (RevFeature) obj.get();
-                        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
+                        List<PropertyDescriptor> descriptors = featureType.descriptors();
                         int idx = 0;
                         for (PropertyDescriptor descriptor : descriptors) {
                             if (diffs.containsKey(descriptor)) {

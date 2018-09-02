@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -43,13 +45,13 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
         this.values = values;
     }
 
-    public @Override ImmutableList<Optional<Object>> getValues() {
+    public @Override List<Optional<Object>> getValues() {
         final int size = size();
-        Builder<Optional<Object>> builder = ImmutableList.builder();
+        List<Optional<Object>> retvalues = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
-            builder.add(Optional.ofNullable(ValueArray.safeCopy(values[i])));
+            retvalues.add(Optional.ofNullable(ValueArray.safeCopy(values[i])));
         }
-        return builder.build();
+        return retvalues;
     }
 
     public @Override int size() {

@@ -40,7 +40,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -159,7 +158,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
                                 || commitToSquash.getParentIds().size() > 1,
                         "The commits to squash include a branch starting point. Squashing that type of commit is not supported.");
             }
-            ImmutableList<ObjectId> parentIds = commitToSquash.getParentIds();
+            List<ObjectId> parentIds = commitToSquash.getParentIds();
             for (int i = 1; i < parentIds.size(); i++) {
                 secondaryParents.add(parentIds.get(i));
             }

@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -124,25 +125,25 @@ public class RocksdbGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+    public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         NodeData node = getNodeInternal(commitId, false);
         if (node != null) {
             return ImmutableList.copyOf(node.outgoing);
         }
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 
     @Override
-    public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+    public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
         NodeData node = getNodeInternal(commitId, false);
         if (node != null) {
             return ImmutableList.copyOf(node.incoming);
         }
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 
     @Override
-    public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
+    public boolean put(ObjectId commitId, List<ObjectId> parentIds) {
         try (WriteBatchWithIndex batch = new WriteBatchWithIndex(); //
                 RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions()) {
@@ -173,7 +174,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
             wo.setSync(true);
             for (RevCommit c : commits) {
                 ObjectId commitId = c.getId();
-                ImmutableList<ObjectId> parentIds = c.getParentIds();
+                List<ObjectId> parentIds = c.getParentIds();
                 put(dbRef, commitId, parentIds, batch);
                 count++;
             }
@@ -186,8 +187,8 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         }
     }
 
-    private boolean put(RocksDBReference dbref, ObjectId commitId,
-            ImmutableList<ObjectId> parentIds, WriteBatchWithIndex batch) {
+    private boolean put(RocksDBReference dbref, ObjectId commitId, List<ObjectId> parentIds,
+            WriteBatchWithIndex batch) {
 
         @Nullable
         NodeData node = getNodeInternal(dbref, commitId, false, batch);

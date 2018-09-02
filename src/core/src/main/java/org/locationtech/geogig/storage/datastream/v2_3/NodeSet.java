@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +39,6 @@ import org.locationtech.jts.geom.Envelope;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 class NodeSet {
 
@@ -447,7 +447,7 @@ class NodeSet {
 
     public Map<String, Object> getExtraData(final int nodeExtraDataRelOffset) {
         if (nodeExtraDataRelOffset < 0) {
-            return ImmutableMap.of();
+            return Collections.emptyMap();
         }
         Map<String, Object> extraData;
         try {

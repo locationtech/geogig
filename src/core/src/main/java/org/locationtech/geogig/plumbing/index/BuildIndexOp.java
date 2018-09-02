@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing.index;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -36,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Builds an index tree for the given canonical tree.
@@ -186,7 +186,7 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
     }
 
     private int indexOf(String attName, RevFeatureType featureType) {
-        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
+        List<PropertyDescriptor> descriptors = featureType.descriptors();
         for (int i = 0; i < descriptors.size(); i++) {
             String name = descriptors.get(i).getName().getLocalPart();
             if (attName.equals(name)) {

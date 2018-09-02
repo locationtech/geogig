@@ -38,7 +38,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Abstract base implementation for mapped (sparse) clone.
@@ -81,7 +80,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         }
 
         @Override
-        protected ImmutableList<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.getParents(commitId);
         }
 
@@ -113,7 +112,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         }
 
         @Override
-        protected ImmutableList<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.graphDatabase().getParents(commitId);
         }
 

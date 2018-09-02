@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -22,7 +23,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Provides a base implementation for different representations of the {@link IRemoteRepo}.
@@ -75,7 +75,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
         }
 
         @Override
-        protected ImmutableList<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.getParents(commitId);
         }
 
@@ -128,7 +128,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
         }
 
         @Override
-        protected ImmutableList<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.getParents(commitId);
         }
 
@@ -164,7 +164,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
         }
 
         @Override
-        protected ImmutableList<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.getParents(commitId);
         }
 

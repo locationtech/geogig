@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,6 +39,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Function;
 
+import lombok.NonNull;
+
 /**
  * This is the main entry class for retrieving features from GeoGIG.
  *
@@ -67,9 +67,7 @@ public class BulkFeatureRetriever {
         this(db, db);
     }
 
-    public BulkFeatureRetriever(ObjectStore leftDb, ObjectStore rightDb) {
-        checkNotNull(leftDb);
-        checkNotNull(rightDb);
+    public BulkFeatureRetriever(@NonNull ObjectStore leftDb, @NonNull ObjectStore rightDb) {
         this.leftDb = leftDb;
         this.odb = rightDb;
     }

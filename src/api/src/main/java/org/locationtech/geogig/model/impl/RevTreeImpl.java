@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.impl;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -22,7 +23,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
 
@@ -43,12 +43,14 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
             this.trees = trees;
         }
 
-        public @Override ImmutableList<Node> features() {
-            return features == null ? ImmutableList.of() : ImmutableList.copyOf(features);
+        public @Override List<Node> features() {
+            return features == null ? Collections.emptyList()
+                    : Collections.unmodifiableList(Arrays.asList(features));
         }
 
-        public @Override ImmutableList<Node> trees() {
-            return trees == null ? ImmutableList.of() : ImmutableList.copyOf(trees);
+        public @Override List<Node> trees() {
+            return trees == null ? Collections.emptyList()
+                    : Collections.unmodifiableList(Arrays.asList(trees));
         }
 
         public @Override int numTrees() {
@@ -154,12 +156,12 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         return size;
     }
 
-    public @Override ImmutableList<Node> features() {
-        return ImmutableList.of();
+    public @Override List<Node> features() {
+        return Collections.emptyList();
     }
 
-    public @Override ImmutableList<Node> trees() {
-        return ImmutableList.of();
+    public @Override List<Node> trees() {
+        return Collections.emptyList();
     }
 
     public @Override ImmutableSortedMap<Integer, Bucket> buckets() {

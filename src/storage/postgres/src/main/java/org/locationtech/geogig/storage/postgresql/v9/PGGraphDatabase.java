@@ -141,7 +141,7 @@ public class PGGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+    public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         final PGId node = PGId.valueOf(commitId);
 
         // (p) -> p.toObjectId()
@@ -156,7 +156,7 @@ public class PGGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+    public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
 
         // (p) -> p.toObjectId()
         Function<PGId, ObjectId> fn = new Function<PGId, ObjectId>() {
@@ -170,7 +170,7 @@ public class PGGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
+    public boolean put(ObjectId commitId, List<ObjectId> parentIds) {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return put(cx, commitId, parentIds);
         } catch (SQLException e) {
@@ -259,7 +259,7 @@ public class PGGraphDatabase implements GraphDatabase {
         try (PreparedStatement ps = cx.prepareStatement(insert)) {
             for (RevCommit c : uniqueCommits) {
                 src = PGId.valueOf(c.getId());
-                ImmutableList<ObjectId> parentIds = c.getParentIds();
+                List<ObjectId> parentIds = c.getParentIds();
                 for (int parentIndex = 0; parentIndex < parentIds.size(); parentIndex++) {
                     ObjectId parent = parentIds.get(parentIndex);
                     dst = PGId.valueOf(parent);
@@ -306,7 +306,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 RevCommit c = iterator.next();
                 count++;
                 src = PGId.valueOf(c.getId());
-                ImmutableList<ObjectId> parentIds = c.getParentIds();
+                List<ObjectId> parentIds = c.getParentIds();
                 for (int parentIndex = 0; parentIndex < parentIds.size(); parentIndex++) {
                     ObjectId parent = parentIds.get(parentIndex);
                     dst = PGId.valueOf(parent);

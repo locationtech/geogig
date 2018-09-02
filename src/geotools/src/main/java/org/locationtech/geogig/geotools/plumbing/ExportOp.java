@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,7 +72,6 @@ import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
@@ -338,8 +338,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             final RevFeature oldFeature;
             oldFeature = (RevFeature) sf.getUserData().get(RevFeature.class);
 
-            ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
-            ImmutableList<PropertyDescriptor> newAttributes = targetType.descriptors();
+            List<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
+            List<PropertyDescriptor> newAttributes = targetType.descriptors();
 
             RevFeatureBuilder builder = RevFeature.builder();
             for (int i = 0; i < newAttributes.size(); i++) {

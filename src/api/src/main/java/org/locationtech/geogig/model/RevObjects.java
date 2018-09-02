@@ -9,10 +9,11 @@
  */
 package org.locationtech.geogig.model;
 
-import static com.google.common.base.Objects.equal;
-
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,9 +23,7 @@ import org.locationtech.geogig.model.impl.Float32Bounds;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 import lombok.NonNull;
@@ -124,9 +123,9 @@ public @UtilityClass class RevObjects {
         if (tree.featuresSize() == 0) {
             return tree.trees().iterator();
         }
-        ImmutableList<Node> trees = tree.trees();
-        ImmutableList<Node> features = tree.features();
-        return Iterators.mergeSorted(ImmutableList.of(trees.iterator(), features.iterator()),
+        List<Node> trees = tree.trees();
+        List<Node> features = tree.features();
+        return Iterators.mergeSorted(Arrays.asList(trees.iterator(), features.iterator()),
                 comparator);
     }
 
@@ -261,13 +260,14 @@ public @UtilityClass class RevObjects {
     }
 
     public static boolean equals(@NonNull RevPerson p1, @NonNull RevPerson person) {
-        return equal(p1.getName(), person.getName()) && equal(p1.getEmail(), person.getEmail())
+        return Objects.equals(p1.getName(), person.getName())
+                && Objects.equals(p1.getEmail(), person.getEmail())
                 && p1.getTimestamp() == person.getTimestamp()
                 && p1.getTimeZoneOffset() == person.getTimeZoneOffset();
     }
 
     public static int hashCode(@NonNull RevPerson p) {
-        return Objects.hashCode(p.getName(), p.getEmail(), p.getTimestamp(), p.getTimeZoneOffset());
+        return Objects.hash(p.getName(), p.getEmail(), p.getTimestamp(), p.getTimeZoneOffset());
     }
 
     public static String toString(@NonNull RevPerson p) {

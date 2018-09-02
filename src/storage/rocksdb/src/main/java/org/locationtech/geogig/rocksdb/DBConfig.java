@@ -28,7 +28,7 @@ class DBConfig {
     private Set<String> columnFamilyNames;
 
     public DBConfig(String dbpath, boolean readOnly) {
-        this(dbpath, readOnly, ImmutableMap.of(), Collections.emptySet());
+        this(dbpath, readOnly, Collections.emptyMap(), Collections.emptySet());
     }
 
     public DBConfig(String dbpath, boolean readOnly, Map<String, String> defaultMetadata,

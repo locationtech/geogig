@@ -85,7 +85,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -925,7 +924,7 @@ public class FeatureReaderBuilder {
     }
 
     private List<String> createFidFilter(Filter filter) {
-        List<String> pathFilters = ImmutableList.of();
+        List<String> pathFilters = Collections.emptyList();
         if (filter instanceof Id) {
             final Set<Identifier> identifiers = ((Id) filter).getIdentifiers();
             Iterator<FeatureId> featureIds = Iterators

@@ -30,7 +30,6 @@ import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.SquashOp;
 import org.opengis.feature.Feature;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public class SquashOpTest extends RepositoryTestCase {
@@ -220,7 +219,7 @@ public class SquashOpTest extends RepositoryTestCase {
         ArrayList<RevCommit> log = Lists
                 .newArrayList(geogig.command(LogOp.class).setFirstParentOnly(true).call());
         assertEquals(3, log.size());
-        ImmutableList<ObjectId> parents = log.get(0).getParentIds();
+        List<ObjectId> parents = log.get(0).getParentIds();
         assertEquals(2, parents.size());
         assertEquals("Squashed", log.get(1).getMessage());
         assertEquals(log.get(1).getId(), parents.get(0));
@@ -301,7 +300,7 @@ public class SquashOpTest extends RepositoryTestCase {
         ArrayList<RevCommit> log = Lists
                 .newArrayList(geogig.command(LogOp.class).setFirstParentOnly(true).call());
         assertEquals(2, log.size());
-        ImmutableList<ObjectId> parents = log.get(0).getParentIds();
+        List<ObjectId> parents = log.get(0).getParentIds();
         assertEquals(c1.getId(), parents.get(0));
         assertEquals(c2.getId(), parents.get(1));
 

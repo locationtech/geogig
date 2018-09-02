@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         Map<String, ? extends Serializable> params;
         DataStore dataStore;
 
-        params = ImmutableMap.of();
+        params = Collections.emptyMap();
         dataStore = DataStoreFinder.getDataStore(params);
         assertNull(dataStore);
 
@@ -79,7 +80,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     public void testCanProcess() {
         final File workingDir = repoDirectory;
 
-        Map<String, Serializable> params = ImmutableMap.of();
+        Map<String, Serializable> params = Collections.emptyMap();
         assertFalse(factory.canProcess(params));
         params = ImmutableMap.of(REPOSITORY.key,
                 (Serializable) (workingDir.getName() + "/testCanProcess"));

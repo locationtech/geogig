@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,8 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.geotools.TestHelper;
-
-import com.google.common.collect.ImmutableMap;
 
 public class DescribeOpTest {
 
@@ -40,7 +39,7 @@ public class DescribeOpTest {
     public void testNullTable() throws Exception {
         DescribeOp describe = new DescribeOp();
         describe.setDataStore(
-                TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+                TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         exception.expect(GeoToolsOpException.class);
         describe.call();
     }
@@ -50,7 +49,7 @@ public class DescribeOpTest {
         DescribeOp describe = new DescribeOp();
         describe.setTable("");
         describe.setDataStore(
-                TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+                TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         exception.expect(GeoToolsOpException.class);
         describe.call();
     }
@@ -59,7 +58,7 @@ public class DescribeOpTest {
     public void testEmptyDataStore() throws Exception {
         DescribeOp describe = new DescribeOp();
         describe.setDataStore(
-                TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+                TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         describe.setTable("table1");
         Optional<Map<String, String>> features = describe.call();
         assertFalse(features.isPresent());
@@ -68,8 +67,8 @@ public class DescribeOpTest {
     @Test
     public void testTypeNameException() throws Exception {
         DescribeOp describe = new DescribeOp();
-        describe.setDataStore(
-                TestHelper.createFactoryWithGetNamesException().createDataStore(ImmutableMap.of()));
+        describe.setDataStore(TestHelper.createFactoryWithGetNamesException()
+                .createDataStore(Collections.emptyMap()));
         describe.setTable("table1");
         exception.expect(GeoToolsOpException.class);
         describe.call();
@@ -79,7 +78,7 @@ public class DescribeOpTest {
     public void testGetFeatureSourceException() throws Exception {
         DescribeOp describe = new DescribeOp();
         describe.setDataStore(TestHelper.createFactoryWithGetFeatureSourceException()
-                .createDataStore(ImmutableMap.of()));
+                .createDataStore(Collections.emptyMap()));
         describe.setTable("table1");
         exception.expect(GeoToolsOpException.class);
         describe.call();
@@ -88,7 +87,8 @@ public class DescribeOpTest {
     @Test
     public void testDescribe() throws Exception {
         DescribeOp describe = new DescribeOp();
-        describe.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
+        describe.setDataStore(
+                TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         describe.setTable("table1");
         Optional<Map<String, String>> properties = describe.call();
         assertTrue(properties.isPresent());

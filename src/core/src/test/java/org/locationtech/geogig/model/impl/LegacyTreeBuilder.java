@@ -373,7 +373,6 @@ public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuild
 
         ImmutableList<Node> featuresList = ImmutableList.of();
         ImmutableList<Node> treesList = ImmutableList.of();
-
         if (!features.isEmpty()) {
             featuresList = NODE_STORAGE_ORDER.immutableSortedCopy(features);
         }

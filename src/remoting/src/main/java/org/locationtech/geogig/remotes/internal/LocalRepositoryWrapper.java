@@ -9,12 +9,11 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Repository;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * Provides an interface to make basic queries to a local repository.
@@ -50,7 +49,7 @@ class LocalRepositoryWrapper implements RepositoryWrapper {
      * @return a list of parent ids for the commit
      */
     @Override
-    public ImmutableList<ObjectId> getParents(ObjectId commitId) {
+    public List<ObjectId> getParents(ObjectId commitId) {
         return localRepository.graphDatabase().getParents(commitId);
     }
 

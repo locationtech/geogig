@@ -90,7 +90,7 @@ public class RevTreeTest {
             }
 
             @Override
-            public ImmutableSortedMap<Integer, Bucket> buckets() {
+            public SortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.copyOf(buckets);
             }
 
@@ -142,7 +142,7 @@ public class RevTreeTest {
             }
 
             @Override
-            public ImmutableSortedMap<Integer, Bucket> buckets() {
+            public SortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.of();
             }
 
@@ -186,7 +186,7 @@ public class RevTreeTest {
             }
 
             @Override
-            public ImmutableSortedMap<Integer, Bucket> buckets() {
+            public SortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.of();
             }
 
@@ -247,7 +247,7 @@ public class RevTreeTest {
             }
 
             @Override
-            public ImmutableSortedMap<Integer, Bucket> buckets() {
+            public SortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.of();
             }
 

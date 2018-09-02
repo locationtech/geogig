@@ -36,7 +36,6 @@ import org.opengis.feature.type.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Funnels;
 import com.google.common.hash.Hasher;
@@ -114,7 +113,7 @@ public class HashObjectFunnels {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         trees = trees == null ? ImmutableList.of() : trees;
         features = features == null ? ImmutableList.of() : features;
-        buckets = buckets == null ? ImmutableSortedMap.of() : buckets;
+        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
         HashObjectFunnels.tree(hasher, trees, features, buckets.values());
 
         final byte[] rawKey = hasher.hash().asBytes();

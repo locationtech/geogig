@@ -12,6 +12,7 @@ package org.locationtech.geogig.model;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -20,7 +21,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -118,8 +118,8 @@ public interface RevTree extends RevObject {
         }
 
         @Override
-        public ImmutableSortedMap<Integer, Bucket> buckets() {
-            return ImmutableSortedMap.of();
+        public SortedMap<Integer, Bucket> buckets() {
+            return Collections.emptySortedMap();
         }
 
         @Override
@@ -273,7 +273,7 @@ public interface RevTree extends RevObject {
      * @apiNote the returned map does not contain {@code null} keys nor values
      * @deprecated
      */
-    public ImmutableSortedMap<Integer, Bucket> buckets();
+    public SortedMap<Integer, Bucket> buckets();
 
     public Iterable<Bucket> getBuckets();
 

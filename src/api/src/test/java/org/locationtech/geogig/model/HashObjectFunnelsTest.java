@@ -206,7 +206,7 @@ public class HashObjectFunnelsTest {
             }
 
             @Override
-            public ImmutableSortedMap<Integer, Bucket> buckets() {
+            public SortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.copyOf(buckets);
             }
 

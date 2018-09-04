@@ -19,15 +19,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.geotools.data.DataUtilities;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
+import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
@@ -58,6 +63,9 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.jts.io.ParseException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -67,9 +75,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 /**
  * A helper class to set repositories to a desired state to aid in integration testing.
@@ -383,10 +394,54 @@ public class TestData {
         return this;
     }
 
-    public Map<String, NodeRef> getFeatureNodes(String treeIsh) {
+    public Map<String, NodeRef> getFeatureNodes(@NonNull String treeIsh) {
         Iterator<NodeRef> refs = getContext().command(LsTreeOp.class).setReference(treeIsh)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         return Maps.uniqueIndex(refs, n -> n.path());
+    }
+
+    public Map<String, SimpleFeature> getFeatures(@NonNull String rootTreeIsh) {
+        return getFeatures(rootTreeIsh, null);
+    }
+
+    public Map<String, SimpleFeature> getFeatures(@NonNull String rootTreeIsh,
+            @Nullable String layerName) {
+
+        Map<String, RevFeatureType> types = getFeatureTypes(rootTreeIsh);
+        String treeIsh = layerName == null ? rootTreeIsh
+                : String.format("%s:%s", rootTreeIsh, layerName);
+
+        Map<String, NodeRef> nodes = getFeatureNodes(treeIsh);
+        Context context = getContext();
+
+        Map<String, SimpleFeature> featuresByPath = new HashMap<>();
+
+        try (AutoCloseableIterator<ObjectInfo<RevFeature>> features = context.objectDatabase()
+                .getObjects(nodes.values().iterator(), BulkOpListener.NOOP_LISTENER,
+                        RevFeature.class)) {
+
+            features.forEachRemaining(rf -> {
+                String typeName = rf.ref().getParentPath();
+                String path = rf.ref().path();
+                String id = rf.node().getName();
+                SimpleFeature feature = (SimpleFeature) new FeatureBuilder(types.get(typeName))
+                        .build(id, rf.object());
+                featuresByPath.put(path, feature);
+            });
+        }
+        return featuresByPath;
+    }
+
+    public Map<String, RevFeatureType> getFeatureTypes(@NonNull String rootTreeIsh) {
+        Context context = getContext();
+        List<NodeRef> treeNodes = context.command(FindFeatureTypeTrees.class)
+                .setRootTreeRef(rootTreeIsh).call();
+
+        Iterator<RevFeatureType> types = context.objectDatabase().getAll(
+                Iterables.transform(treeNodes, n -> n.getMetadataId()),
+                BulkOpListener.NOOP_LISTENER, RevFeatureType.class);
+
+        return Maps.uniqueIndex(types, t -> t.getName().getLocalPart());
     }
 
     public TestData remove(String... featureIds) {

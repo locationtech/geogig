@@ -22,6 +22,21 @@
       <comments>The Eclipse Distribution License (a BSD-3 style license)</comments>
     </license>
   </licenses>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>geogig.remoting</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -79,7 +94,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-  </build>
 </project>

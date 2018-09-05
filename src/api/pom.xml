@@ -13,7 +13,7 @@
   <artifactId>geogig-api</artifactId>
   <packaging>jar</packaging>
   <name>GeoGig Core API</name>
-  <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests available using:
+  <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests available using: 
     mvn -Ponline Corertura is configured for a test coverage report: mvn cobertura:cobertura open target/site/cobertura/index.html -->
   <dependencies>
     <dependency>
@@ -67,5 +67,18 @@
   </dependencies>
 
   <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>geogig.api</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>

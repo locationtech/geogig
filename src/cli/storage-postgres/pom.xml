@@ -14,6 +14,21 @@
   <packaging>jar</packaging>
   <name>GeoGigi CLI Postgres Storage Commands</name>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>geogig.cli.postgres</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -62,9 +77,4 @@
     </dependency>
     
   </dependencies>
-
-  <build>
-    <plugins>
-    </plugins>
-  </build>
 </project>

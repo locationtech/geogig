@@ -13,6 +13,21 @@
   <packaging>jar</packaging>
   <name>RocksDB storage backend</name>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>geogig.storage.rocksdb</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
      <!-- https://mvnrepository.com/artifact/org.rocksdb/rocksdbjni -->
      <dependency>
@@ -65,7 +80,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-  </build>
 </project>

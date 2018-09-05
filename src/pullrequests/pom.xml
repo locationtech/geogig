@@ -14,6 +14,22 @@
   <packaging>jar</packaging>
   <name>GeoGig Pull Requests Support Commands</name>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>geogig.prs</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -25,7 +41,7 @@
       <artifactId>geogig-remoting</artifactId>
       <version>${project.version}</version>
     </dependency>
-    
+
     <!-- Test scope dependencies -->
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

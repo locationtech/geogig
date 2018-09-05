@@ -234,14 +234,14 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         result.setRemote(suppliedRemote);
 
         // did fetch need to update any contents?
-        {
-            final Collection<RefDiff> fetchedRefs = fetchResult.getRefDiffs()
-                    .get(remote.getFetchURL());
-            if (fetchedRefs == null || fetchedRefs.isEmpty()) {
-                result.setNewRef(currentBranch);
-                return result;
-            }
-        }
+//        {
+//            final Collection<RefDiff> fetchedRefs = fetchResult.getRefDiffs()
+//                    .get(remote.getFetchURL());
+//            if (fetchedRefs == null || fetchedRefs.isEmpty()) {
+//                result.setNewRef(currentBranch);
+//                return result;
+//            }
+//        }
 
         for (LocalRemoteRefSpec fetchspec : remote.getFetchSpecs()) {
             final String localRemoteRefName = fetchspec.getLocal();

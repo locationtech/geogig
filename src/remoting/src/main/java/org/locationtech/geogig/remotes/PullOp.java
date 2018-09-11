@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -233,16 +232,6 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         result.setFetchResult(fetchResult);
         result.setOldRef(currentBranch);
         result.setRemote(suppliedRemote);
-
-        // did fetch need to update any contents?
-        {
-            final Collection<RefDiff> fetchedRefs = fetchResult.getRefDiffs()
-                    .get(remote.getFetchURL());
-            if (fetchedRefs == null || fetchedRefs.isEmpty()) {
-                result.setNewRef(currentBranch);
-                return result;
-            }
-        }
 
         for (LocalRemoteRefSpec fetchspec : remote.getFetchSpecs()) {
             final String localRemoteRefName = fetchspec.getLocal();

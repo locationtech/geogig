@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -131,7 +130,8 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     }
 
     /**
-     * @param refSpec the refspec of a remote branch
+     * @param refSpec specifies a remote ref to fetch and optionally which local ref to update,
+     *        using the format {@code <remote ref>[:<localRef>]}
      * @return {@code this}
      */
     public PullOp addRefSpec(final String refSpec) {
@@ -233,16 +233,6 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         result.setOldRef(currentBranch);
         result.setRemote(suppliedRemote);
 
-        // did fetch need to update any contents?
-        {
-            final Collection<RefDiff> fetchedRefs = fetchResult.getRefDiffs()
-                    .get(remote.getFetchURL());
-            if (fetchedRefs == null || fetchedRefs.isEmpty()) {
-                result.setNewRef(currentBranch);
-                return result;
-            }
-        }
-
         for (LocalRemoteRefSpec fetchspec : remote.getFetchSpecs()) {
             final String localRemoteRefName = fetchspec.getLocal();
             final Optional<Ref> localRemoteRefOpt = command(RefParse.class)
@@ -285,15 +275,5 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     private Ref resolveCurrentBranch() {
         return command(BranchResolveOp.class).call().orElseThrow(
                 () -> new IllegalStateException("Repository has no HEAD, can't pull."));
-    }
-
-    /**
-     * @param ref the ref to find
-     * @return an {@link Optional} of the ref, or {@link Optional#absent()} if it wasn't found
-     */
-    public Optional<Ref> findRemoteRef(String ref) {
-
-        String remoteRef = Ref.REMOTES_PREFIX + remote.get().get().getName() + "/" + ref;
-        return command(RefParse.class).setName(remoteRef).call();
     }
 }

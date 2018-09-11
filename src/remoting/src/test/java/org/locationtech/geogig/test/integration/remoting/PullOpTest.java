@@ -166,6 +166,25 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         assertEquals(expectedMaster, logged);
     }
 
+    @Test
+    public void testPullMergeNothingToFetch() throws Exception {
+        // Add a commit to the remote
+        insertAndAdd(remoteGeogig.geogig, lines3);
+        RevCommit commit = commit(remoteGeogig.repo, "lines3");
+        expectedMaster.addFirst(commit);
+
+        // call fetch first so the missing objects are already in the local repo
+        fetchOp().call();
+
+        // Then Pull should update the target ref even if there's nothing to fetch
+        PullOp pull = pullOp();
+        pull.setRemote("origin").call();
+
+        List<RevCommit> logged = log(localGeogig.repo);
+
+        assertEquals(expectedMaster, logged);
+    }
+
     /**
      * Pull from a remote that's not being saved as named remote in the repository
      */

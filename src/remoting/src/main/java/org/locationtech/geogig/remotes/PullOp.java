@@ -131,7 +131,8 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     }
 
     /**
-     * @param refSpec the refspec of a remote branch
+     * @param refSpec specifies a remote ref to fetch and optionally which local ref to update,
+     *        using the format {@code <remote ref>[:<localRef>]}
      * @return {@code this}
      */
     public PullOp addRefSpec(final String refSpec) {
@@ -285,15 +286,5 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     private Ref resolveCurrentBranch() {
         return command(BranchResolveOp.class).call().orElseThrow(
                 () -> new IllegalStateException("Repository has no HEAD, can't pull."));
-    }
-
-    /**
-     * @param ref the ref to find
-     * @return an {@link Optional} of the ref, or {@link Optional#absent()} if it wasn't found
-     */
-    public Optional<Ref> findRemoteRef(String ref) {
-
-        String remoteRef = Ref.REMOTES_PREFIX + remote.get().get().getName() + "/" + ref;
-        return command(RefParse.class).setName(remoteRef).call();
     }
 }

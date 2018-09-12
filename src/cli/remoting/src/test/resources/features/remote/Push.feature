@@ -19,7 +19,7 @@ Feature: "push" command
       And I run the command "commit -m Commit6"
      Then the response should contain "Committed, counting objects"
       And I run the command "push"
-     Then the response should contain "Applying changes of refs/heads/master"
+     Then the response should contain "Saving missing revision objects changes for refs/heads/master"
      
   Scenario: Try to push a symbolic reference
     Given I clone a remote repository

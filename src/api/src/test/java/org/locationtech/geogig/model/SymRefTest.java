@@ -26,7 +26,7 @@ public class SymRefTest {
 
         String symRefString = symRef.toString();
 
-        assertEquals("SymRef[TestRef -> " + "Ref[" + testRef.getName() + " -> "
-                + testRef.getObjectId().toString() + "]]", symRefString);
+        assertEquals("TestRef -> " + "[" + testRef.getName() + " -> "
+                + testRef.getObjectId().toString() + "]", symRefString);
     }
 }

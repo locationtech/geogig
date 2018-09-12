@@ -203,6 +203,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         // capture original values in case the operation is cancelled
         origHead = currHead.get();
+        getProgressListener().setDescription(String.format("Merge: merging %s onto %s", commits, origHead));
         if (origHead instanceof SymRef) {
             final String currentBranch = ((SymRef) origHead).getTarget();
             origCurrentBranch = command(RefParse.class).setName(currentBranch).call().get();
@@ -290,16 +291,17 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                     "Conflicted merge.\nCannot merge more than two commits when conflicts exist"
                             + " or features have been modified in several histories");
             for (ObjectId commitId : commits) {
-                progress.setDescription("Merging commit " + commitId);
-
                 if (headRef.getObjectId().isNull()) {
                     // Fast-forward
                     headRef = doFastForwardMerge(headRef, commitId, mergeStatusBuilder);
                     continue;
                 }
-
-                RevCommit headCommit = repository().getCommit(headRef.getObjectId());
+                final RevCommit headCommit = repository().getCommit(headRef.getObjectId());
                 final RevCommit targetCommit = repository().getCommit(commitId);
+
+                progress.setDescription(String.format("Merging commit %s onto %s",
+                        fmt(targetCommit), fmt(headCommit)));
+
 
                 Optional<ObjectId> ancestorCommit = command(FindCommonAncestor.class)
                         .setLeft(headCommit).setRight(targetCommit).call();
@@ -346,20 +348,30 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
             progress.complete();
         }
-
         if (!mergeStatusBuilder.isChanged()) {
+            progress.setDescription("Merge: complete, nothing to merge.");
             throw new NothingToCommitException("The branch has already been merged.");
         }
         if (noFastForward) {
             mergeStatusBuilder.setFastFoward(false);
         }
+        progress.setDescription("Creating merge commit");
         RevCommit mergeCommit = commit(mergeStatusBuilder.isFastForward());
 
+        progress.setDescription("Merge: created merge commit " + mergeCommit);
         MergeReport result = new MergeReport(mergeCommit, Optional.fromNullable(mergeScenario),
                 oursId, pairs);
 
         return result;
 
+    }
+
+    private String fmt(RevCommit c) {
+        String msg = c.getMessage();
+        if (msg.length() > 30) {
+            msg = msg.substring(0, 30) + "...";
+        }
+        return String.format("%s (%s)", c.getId().toString().substring(0, 8), msg);
     }
 
     private MergeReport abort() {
@@ -370,6 +382,9 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     private Ref doFastForwardMerge(Ref headRef, ObjectId commitId,
             MergeStatusBuilder mergeStatusBuilder) {
+        getProgressListener().setDescription(String.format("Fast forward merging %s onto %s",
+                commitId.toString().substring(0, 8),
+                headRef.getObjectId().toString().substring(0, 8)));
         if (headRef instanceof SymRef) {
             final String currentBranch = ((SymRef) headRef).getTarget();
             command(UpdateRef.class).setName(currentBranch).setNewValue(commitId).call();

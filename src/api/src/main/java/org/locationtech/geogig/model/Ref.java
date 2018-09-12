@@ -265,7 +265,7 @@ public class Ref implements Comparable<Ref> {
      */
     @Override
     public String toString() {
-        return String.format("Ref[%s -> %s]", name, objectId);
+        return String.format("[%s -> %s]", name, objectId);
     }
 
     public static String append(String namespace, String child) {

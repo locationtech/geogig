@@ -104,7 +104,7 @@ class PackImpl implements Pack {
 
         progress.started();
 
-        progress.setDescription("Applying changes of " + req.name);
+        progress.setDescription("Saving missing revision objects changes for " + req.name);
         ObjectReporter objectReport = new ObjectReporter(progress);
 
         // back up current progress indicator

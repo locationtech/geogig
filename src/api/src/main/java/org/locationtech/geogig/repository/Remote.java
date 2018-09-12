@@ -229,7 +229,7 @@ public class Remote {
     }
 
     public @Override String toString() {
-        return String.format("%s", getName());
+        return String.format("%s [%s]", getName(), fetch);
     }
 
     /**

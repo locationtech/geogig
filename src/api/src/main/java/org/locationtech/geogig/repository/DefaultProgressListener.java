@@ -62,14 +62,9 @@ public class DefaultProgressListener implements ProgressListener {
         return description;
     }
 
-    /**
-     * Sets the description of the task.
-     * 
-     * @param description the text to use for the description
-     */
     @Override
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDescription(String format, Object... args) {
+        this.description = String.format(format, args);
     }
 
     /**

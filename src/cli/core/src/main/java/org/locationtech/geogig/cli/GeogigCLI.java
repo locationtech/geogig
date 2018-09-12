@@ -798,11 +798,11 @@ public class GeogigCLI {
                 }
 
                 @Override
-                public void setDescription(String s) {
+                public void setDescription(String s, Object... args) {
                     lastRun = platform.nanoTime();
                     try {
                         console.println();
-                        console.println(s);
+                        console.println(String.format(s, args));
                         console.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);

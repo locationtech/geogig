@@ -219,6 +219,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         }
 
         getProgressListener().started();
+        getProgressListener().setDescription("Pull: pulling " + remote);
 
         PullResult result = new PullResult();
         TransferSummary fetchResult = command(FetchOp.class)//
@@ -226,7 +227,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
                 .setDepth(depth.or(0))//
                 .setFullDepth(fullDepth)//
                 .setAllRemotes(all)//
-                .setProgressListener(subProgress(80.f))//
+                .setProgressListener(getProgressListener())//
                 .call();
 
         result.setFetchResult(fetchResult);
@@ -242,8 +243,10 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
             }
             final Ref localRemoteRef = localRemoteRefOpt.get();
             if (rebase) {
+                getProgressListener().setDescription("Pull: rebasing...");
                 command(RebaseOp.class).setUpstream(() -> localRemoteRef.getObjectId()).call();
             } else {
+                getProgressListener().setDescription("Pull: merging...");
                 String message = this.message;
                 if (noFastForward && Strings.isNullOrEmpty(message)) {
                     message = String.format("Pull changes from %s:%s onto %s", remote.getName(),
@@ -267,6 +270,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
             result.setNewRef(currentBranchFinalState);
         }
 
+        getProgressListener().setDescription("Pull: finished pulling " + remote);
         getProgressListener().complete();
 
         return result;

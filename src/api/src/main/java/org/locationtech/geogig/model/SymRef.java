@@ -53,7 +53,7 @@ public class SymRef extends Ref {
 
     @Override
     public String toString() {
-        return String.format("SymRef[%s -> Ref[%s -> %s]]", getName(), target, getObjectId());
+        return String.format("%s -> [%s -> %s]", getName(), target, getObjectId());
     }
 
     /**

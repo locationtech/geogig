@@ -43,7 +43,7 @@ public class RefTest {
     public void testToString() throws Exception {
         Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid);
 
-        assertEquals("Ref[" + testRef.getName() + " -> " + testRef.getObjectId().toString() + "]",
+        assertEquals("[" + testRef.getName() + " -> " + testRef.getObjectId().toString() + "]",
                 testRef.toString());
     }
 

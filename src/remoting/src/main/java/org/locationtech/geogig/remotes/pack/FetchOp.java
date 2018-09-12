@@ -46,6 +46,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Fetches named heads or tags from one or more other repositories, along with the objects necessary
  * to complete them.
@@ -74,6 +76,7 @@ import com.google.common.collect.Maps;
  * repository under its {@code refs/heads/ or {@code refs/tags} namespaces that were created,
  * deleted, or updated.
  */
+@Slf4j
 public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
     private FetchArgs.Builder argsBuilder = new FetchArgs.Builder();
@@ -95,7 +98,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             }
             try (IRemoteRepo remoteRepo = openRemote(remote)) {
                 Preconditions.checkState(remote.equals(remoteRepo.getInfo()));
-
+                progress.setDescription("Fetching " + remoteRepo.getInfo());
                 final List<LocalRemoteRef> localToRemoteRemoteRefs = resolveRemoteRefs(remoteRepo);
 
                 final PackRequest request = prepareRequest(localRepo, localToRemoteRemoteRefs);
@@ -119,6 +122,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 remoteRemoteRefs = updateLocalRemoteRefs(remote, localToRemoteRemoteRefs,
                         args.prune);
                 result.addAll(remote.getFetchURL(), Lists.newArrayList(remoteRemoteRefs));
+                progress.setDescription("Fetched " + remoteRepo.getInfo());
             }
         }
 

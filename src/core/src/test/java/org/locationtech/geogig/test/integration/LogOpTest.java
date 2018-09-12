@@ -133,8 +133,8 @@ public class LogOpTest extends RepositoryTestCase {
 
     protected static final ProgressListener SIMPLE_PROGRESS = new DefaultProgressListener() {
         public @Override
-        void setDescription(String msg) {
-            System.err.println(msg);
+        void setDescription(String msg, Object... args) {
+            System.err.printf(msg+"\n", args);
         }
     };
 

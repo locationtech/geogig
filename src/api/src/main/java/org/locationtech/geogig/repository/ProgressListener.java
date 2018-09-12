@@ -44,9 +44,10 @@ public interface ProgressListener {
     /**
      * Sets the description of the current task being run
      * 
-     * @param description
+     * @param format description format like in {@link String#format}
+     * @param args format arguments like in {@link String#format}
      */
-    void setDescription(String description);
+    void setDescription(String format, Object... args);
 
     /**
      * Notifies this listener that the operation begins.
@@ -60,7 +61,7 @@ public interface ProgressListener {
      * 
      */
     void setProgress(float progress);
-    
+
     void incrementBy(float amount);
 
     /**

@@ -70,6 +70,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
             private boolean fetchTags = true;
 
+            public boolean fetchIndexes;
+
             public FetchArgs build(Repository repo) {
                 if (allRemotes) {
                     remotes.clear();
@@ -105,7 +107,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 }
 
                 return new FetchArgs(fetchTags, prune, fullDepth, ImmutableList.copyOf(remotes),
-                        depth);
+                        depth, fetchIndexes);
             }
 
         }
@@ -120,13 +122,16 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         final boolean fetchTags;
 
+        final boolean fetchIndexes;
+
         private FetchArgs(boolean fetchTags, boolean prune, boolean fullDepth,
-                ImmutableList<Remote> remotes, Optional<Integer> depth) {
+                ImmutableList<Remote> remotes, Optional<Integer> depth, boolean fetchIndexes) {
             this.fetchTags = fetchTags;
             this.prune = prune;
             this.fullDepth = fullDepth;
             this.remotes = remotes;
             this.depth = depth;
+            this.fetchIndexes = fetchIndexes;
         }
     }
 
@@ -141,7 +146,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         argsBuilder.allRemotes = all;
         return this;
     }
-    
+
     /**
      * @param all if {@code true}, fetch from all remotes.
      * @return {@code this}
@@ -179,6 +184,11 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
     public boolean isPrune() {
         return argsBuilder.prune;
+    }
+
+    public FetchOp setFetchIndexes(boolean fetchIndexes) {
+        argsBuilder.fetchIndexes = fetchIndexes;
+        return this;
     }
 
     /**
@@ -273,6 +283,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                         .setPrune(argsBuilder.prune)//
                         .addRemotes(argsBuilder.remotes)//
                         .setAutofetchTags(argsBuilder.fetchTags)//
+                        .setFetchIndexes(argsBuilder.fetchIndexes)//
                         .setProgressListener(getProgressListener())//
                         .call();
             }

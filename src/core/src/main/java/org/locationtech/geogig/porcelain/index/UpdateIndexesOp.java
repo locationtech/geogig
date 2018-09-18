@@ -21,12 +21,12 @@ import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.IndexDatabase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import org.locationtech.jts.geom.Envelope;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Given a {@code refSpec} that resolves to a root tree, finds out which indexes are defined for all
@@ -34,9 +34,8 @@ import org.locationtech.jts.geom.Envelope;
  * the current canonical tree versions.
  *
  */
+@Slf4j
 public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(UpdateIndexesOp.class);
 
     private Ref rootRefSpec;
 
@@ -79,6 +78,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
 
         final IndexDatabase indexDatabase = indexDatabase();
 
+        
         List<Index> result = new ArrayList<>();
 
         for (NodeRef treeRef : featureTypeTreeRefs) {
@@ -88,7 +88,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
                 final @Nullable NodeRef oldTreeRef = previousTreeRefs.get(treePath);
 
                 List<Index> updated = updateIndexes(oldTreeRef, treeRef, layerIndexes);
-                if(getProgressListener().isCanceled()){
+                if (getProgressListener().isCanceled()) {
                     return null;
                 }
                 result.addAll(updated);
@@ -111,7 +111,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
         for (IndexInfo index : indexes) {
             indexTreeId = indexDatabase.resolveIndexedTree(index, newCanonicalTreeId);
             if (indexTreeId.isPresent()) {
-                LOG.debug("Index for tree {}({}) exists: {}", newTreeRef.path(), newCanonicalTreeId,
+                log.debug("Index for tree {}({}) exists: {}", newTreeRef.path(), newCanonicalTreeId,
                         indexTreeId.get());
             } else {
                 if (progress.isCanceled()) {
@@ -130,7 +130,8 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
                     oldCanonicalTree = RevTree.EMPTY;
                 }
                 final RevTree newCanonicalTree = newCanonicalTreeId.equals(RevTree.EMPTY_TREE_ID)
-                        ? RevTree.EMPTY : objectDatabase().getTree(newCanonicalTreeId);
+                        ? RevTree.EMPTY
+                        : objectDatabase().getTree(newCanonicalTreeId);
 
                 BuildIndexOp cmd = command(BuildIndexOp.class);
                 cmd.setIndex(index);

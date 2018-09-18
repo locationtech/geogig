@@ -90,6 +90,9 @@ public class Clone extends AbstractCommand implements CLICommand {
     @Parameter(description = "<repository> [<directory>|<clone URI>]")
     private List<String> args = new ArrayList<>(2);
 
+    @Parameter(names = { "-I", "--include-indexes" }, description = "Clone also spatial indexes")
+    private boolean withIndexes = false;
+
     /**
      * Executes the clone command using the provided options.
      */
@@ -161,6 +164,7 @@ public class Clone extends AbstractCommand implements CLICommand {
                     .setUserName(username)//
                     .setPassword(password)//
                     .setDepth(depth)//
+                    .setCloneIndexes(withIndexes)//
                     .setProgressListener(cli.getProgressListener());
 
             clone.call();

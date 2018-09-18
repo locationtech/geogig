@@ -82,7 +82,7 @@ public class RefRequest {
         if (have != null && have.isNull()) {
             have = null;
         }
-        return new RefRequest(want.getName(), want.getObjectId(), have);
+        return create(want.getName(), want.getObjectId(), have);
     }
 
     public static RefRequest create(String name, ObjectId wantId, @Nullable ObjectId haveId) {

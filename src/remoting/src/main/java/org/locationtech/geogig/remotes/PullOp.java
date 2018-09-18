@@ -48,6 +48,8 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
 
     private boolean fullDepth = false;
 
+    private boolean includeIndexes = false;
+
     private Supplier<Optional<Remote>> remote;
 
     private List<String> refSpecs = new ArrayList<String>();
@@ -180,6 +182,18 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         return this;
     }
 
+    /**
+     * If {@code true}, also synchronize the spatial indexes. Defaults to {@code false}.
+     */
+    public PullOp setIncludeIndexes(boolean pullIndexes) {
+        this.includeIndexes = pullIndexes;
+        return this;
+    }
+
+    public boolean isIncludeIndexes() {
+        return includeIndexes;
+    }
+
     public String getAuthor() {
         return authorName.orNull();
     }
@@ -227,6 +241,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
                 .setDepth(depth.or(0))//
                 .setFullDepth(fullDepth)//
                 .setAllRemotes(all)//
+                .setFetchIndexes(includeIndexes)//
                 .setProgressListener(getProgressListener())//
                 .call();
 

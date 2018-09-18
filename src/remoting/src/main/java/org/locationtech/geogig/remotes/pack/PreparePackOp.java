@@ -20,16 +20,23 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindChangedTrees;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.IndexDatabase;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -166,7 +173,8 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
 
         for (RefRequest req : allrefs) {
             builder.startRefResponse(req);
-            checkArgument(!req.want.isNull(), "Requested NULL tip for ref %s", req.name);
+            final String refName = req.name;
+            checkArgument(!req.want.isNull(), "Requested NULL tip for ref %s", refName);
 
             ObjectId wantCommit = req.want;
             ObjectId haveCommit = req.have.or(ObjectId.NULL);
@@ -174,7 +182,7 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
             if (wantCommit.equals(haveCommit)) {
                 branchCommits = Collections.emptyIterator();
             } else {
-                if (req.name.startsWith(Ref.TAGS_PREFIX)) {
+                if (refName.startsWith(Ref.TAGS_PREFIX)) {
                     wantCommit = local.objectDatabase().getTag(wantCommit).getCommitId();
                     if (!haveCommit.isNull()) {
                         haveCommit = local.objectDatabase().getTag(haveCommit).getCommitId();
@@ -192,6 +200,9 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
                 RevCommit commit = branchCommits.next();
                 if (visited.add(commit)) {
                     builder.addCommit(commit);
+                    if (request.isSyncIndexes()) {
+                        addIndexes(builder, local, commit);
+                    }
                     progress.setProgress(++count);
                 }
             }
@@ -201,5 +212,51 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
 
         progress.complete();
         progress.setProgressIndicator(oldIndicator);
+    }
+
+    private Map<String, IndexInfo> indexInfosByFeatureTreeName;
+
+    private void addIndexes(PackBuilder builder, Repository local, RevCommit commit) {
+        if (indexInfosByFeatureTreeName != null && indexInfosByFeatureTreeName.isEmpty()) {
+            return;
+        }
+
+        final IndexDatabase indexdb = local.indexDatabase();
+        indexInfosByFeatureTreeName = indexdb.getIndexInfos().stream()
+                .collect(Collectors.toMap(i -> i.getTreeName(), i -> i));
+        if (indexInfosByFeatureTreeName.isEmpty()) {
+            return;
+        }
+
+        final List<ObjectId> parents = commit.getParentIds().isEmpty()
+                ? Collections.singletonList(ObjectId.NULL)
+                : commit.getParentIds();
+
+        for (ObjectId parentId : parents) {
+            List<DiffEntry> changedTrees = local.command(FindChangedTrees.class)
+                    .setOldTreeIsh(parentId).setNewTreeIsh(commit.getId()).call();
+
+            for (DiffEntry treeDiff : changedTrees) {
+                final String treePath = treeDiff.path();
+                final IndexInfo indexInfo = indexInfosByFeatureTreeName.get(treePath);
+                if (indexInfo == null) {
+                    continue;
+                }
+                final ObjectId oldCanonical = treeDiff.oldObjectId().isNull()
+                        ? RevTree.EMPTY_TREE_ID
+                        : treeDiff.oldObjectId();
+                final ObjectId newCanonical = treeDiff.newObjectId().isNull()
+                        ? RevTree.EMPTY_TREE_ID
+                        : treeDiff.newObjectId();
+
+                ObjectId oldIndexTreeId = indexdb.resolveIndexedTree(indexInfo, oldCanonical)
+                        .or(RevTree.EMPTY_TREE_ID);
+                ObjectId newIndexTreeId = indexdb.resolveIndexedTree(indexInfo, newCanonical)
+                        .or(RevTree.EMPTY_TREE_ID);
+
+                builder.addIndex(indexInfo, newCanonical, oldIndexTreeId, newIndexTreeId);
+
+            }
+        }
     }
 }

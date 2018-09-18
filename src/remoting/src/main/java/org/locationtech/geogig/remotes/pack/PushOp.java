@@ -122,6 +122,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
     private String remoteName;
 
+    private boolean pushIndexes;
+
     protected @Override TransferSummary _call() {
         final Remote remote = resolveRemote();
         final Repository localRepo = repository();
@@ -134,7 +136,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
             final Set<Ref> remoteRefs = getRemoteRefs(remoteRepo);
             final List<PushReq> pushRequests = parseRequests(remoteRefs);
             final PackRequest request = prepareRequest(pushRequests, remoteRefs);
-
+            request.syncIndexes(pushIndexes);
+            
             List<RefDiff> dataTransferResults = localRepo.command(SendPackOp.class)//
                     .setRequest(request)//
                     .setTarget(remoteRepo)//
@@ -584,6 +587,11 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                     localRef == null ? "" : localRef.getName(), //
                     remoteRef == null ? "" : remoteRef);
         }
+    }
+
+    public PushOp setPushIndexes(boolean pushIndexes) {
+        this.pushIndexes = pushIndexes;
+        return this;
     }
 
 }

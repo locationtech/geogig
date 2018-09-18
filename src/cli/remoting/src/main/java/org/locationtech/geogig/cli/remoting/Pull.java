@@ -64,6 +64,9 @@ public class Pull extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--fulldepth" }, description = "Pull the full history from the repository.")
     private boolean fulldepth = false;
 
+    @Parameter(names = { "-I", "--include-indexes" }, description = "Pull also spatial indexes")
+    private boolean withIndexes = false;
+
     @Parameter(description = "[<repository> [<refspec>...]]")
     private List<String> args;
 
@@ -87,7 +90,8 @@ public class Pull extends AbstractCommand implements CLICommand {
         pull.setProgressListener(cli.getProgressListener());
         pull.setAll(all).setRebase(rebase).setFullDepth(fulldepth);
         pull.setDepth(depth);
-
+        pull.setIncludeIndexes(withIndexes);
+        
         if (args != null) {
             if (args.size() > 0) {
                 pull.setRemote(args.get(0));

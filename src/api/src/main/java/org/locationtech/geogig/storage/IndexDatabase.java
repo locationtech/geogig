@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -21,6 +20,8 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
 
+import lombok.Value;
+
 /**
  * The {@code IndexDatabase} keeps track of spatial and attribute indexes of user-specified data
  * sets.
@@ -29,25 +30,10 @@ import com.google.common.base.Optional;
  */
 public interface IndexDatabase extends ObjectStore {
 
-    public static class IndexTreeMapping {
+    public static @Value class IndexTreeMapping {
         public final ObjectId featureTree;
 
         public final ObjectId indexTree;
-
-        public IndexTreeMapping(ObjectId featureTree, ObjectId indexTree) {
-            this.featureTree = featureTree;
-            this.indexTree = indexTree;
-        }
-
-        public @Override boolean equals(Object o) {
-            return o instanceof IndexTreeMapping
-                    && featureTree.equals(((IndexTreeMapping) o).featureTree)
-                    && indexTree.equals(((IndexTreeMapping) o).indexTree);
-        }
-
-        public @Override int hashCode() {
-            return Objects.hash(featureTree, indexTree);
-        }
     }
 
     /**

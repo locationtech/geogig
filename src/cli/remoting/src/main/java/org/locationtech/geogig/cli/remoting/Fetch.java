@@ -57,6 +57,9 @@ public class Fetch extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--fulldepth" }, description = "Fetch the full history from the repository.")
     private boolean fulldepth = false;
 
+    @Parameter(names = { "-I", "--include-indexes" }, description = "Fetch also spatial indexes")
+    private boolean withIndexes = false;
+
     @Parameter(description = "[<repository>...]")
     private List<String> args;
 
@@ -79,7 +82,8 @@ public class Fetch extends AbstractCommand implements CLICommand {
             fetch.setProgressListener(cli.getProgressListener());
             fetch.setAll(all).setPrune(prune).setFullDepth(fulldepth);
             fetch.setDepth(depth);
-
+            fetch.setFetchIndexes(withIndexes);
+            
             if (args != null) {
                 for (String repo : args) {
                     fetch.addRemote(repo);

@@ -21,6 +21,7 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 /**
@@ -48,7 +49,8 @@ public class ReceivePackOp extends AbstractGeoGigOp<List<RefDiff>> {
     protected PackProcessor getPackProcessor() {
         Repository repo = repository();
         ObjectDatabase store = repo.objectDatabase();
-        return new LocalPackProcessor(store);
+        IndexDatabase index = repo.indexDatabase();
+        return new LocalPackProcessor(store, index);
     }
 
     public ReceivePackOp setPack(Pack pack) {

@@ -111,7 +111,7 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
         return hash((h) -> HashObjectFunnels.featureType(h, featureType));
     }
 
-    public static ObjectId hashCommit(ObjectId treeId, ImmutableList<ObjectId> parentIds,
+    public static ObjectId hashCommit(ObjectId treeId, List<ObjectId> parentIds,
             RevPerson author, RevPerson committer, String commitMessage) {
 
         return hash((h)->HashObjectFunnels.commit(h, treeId, parentIds, author, committer, commitMessage));

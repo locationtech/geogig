@@ -263,10 +263,17 @@ public final class CommitBuilder {
 
         final String commitMessage = this.message == null ? "" : this.message;
 
-        final ObjectId commitId = HashObject.hashCommit(treeId, parentIds, author, committer,
-                commitMessage);
+        return build(treeId, parentIds, author, committer, commitMessage);
+    }
 
-        return new RevCommitImpl(commitId, treeId, parentIds, author, committer, commitMessage);
+    public static RevCommit build(ObjectId treeId, List<ObjectId> parents, RevPerson author,
+            RevPerson committer, String message) {
+
+        final ObjectId commitId = HashObject.hashCommit(treeId, parents, author, committer,
+                message);
+
+        return new RevCommitImpl(commitId, treeId, ImmutableList.copyOf(parents), author, committer,
+                message);
     }
 
     public static RevCommit create(ObjectId id, ObjectId treeId, List<ObjectId> parents,

@@ -54,15 +54,19 @@ public abstract class AbstractRevObject implements RevObject {
     }
 
     /**
-     * Equality is based on id
+     * Equality is based on id, since to revision objects that hashed out to the same
+     * {@link ObjectId} are guaranteed to be equal (as far as SHA-1 collision probabilities go)
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override final boolean equals(Object o) {
         if (!(o instanceof RevObject)) {
             return false;
         }
         return getId().equals(((RevObject) o).getId());
+    }
+
+    public @Override final int hashCode() {
+        return h1;
     }
 }

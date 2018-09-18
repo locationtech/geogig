@@ -567,7 +567,7 @@ public class HashObjectFunnels {
     }
 
     public static void commit(PrimitiveSink into, ObjectId treeId,
-            ImmutableList<ObjectId> parentIds, RevPerson author, RevPerson committer,
+            List<ObjectId> parentIds, RevPerson author, RevPerson committer,
             String commitMessage) {
         checkNotNull(into);
         checkNotNull(treeId);

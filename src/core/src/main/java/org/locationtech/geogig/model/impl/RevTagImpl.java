@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Objects.equal;
-
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
@@ -81,15 +79,5 @@ class RevTagImpl extends AbstractRevObject implements RevTag {
     @Override
     public ObjectId getCommitId() {
         return commit;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof RevTag) && super.equals(o)) {
-            return false;
-        }
-        RevTag t = (RevTag) o;
-        return equal(getName(), t.getName()) && equal(getCommitId(), t.getCommitId())
-                && equal(getMessage(), t.getMessage());
     }
 }

@@ -9,13 +9,10 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Objects.equal;
-
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevPerson;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
@@ -100,27 +97,5 @@ class RevCommitImpl extends AbstractRevObject implements RevCommit {
     @Override
     public String toString() {
         return "Commit[" + getId() + ", '" + message + "']";
-    }
-
-    /**
-     * Equality is based on author, committer, message, parent ids, and tree id.
-     * 
-     * @see AbstractRevObject#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof RevCommit) && !super.equals(o)) {
-            return false;
-        }
-        RevCommit c = (RevCommit) o;
-        return equal(getAuthor(), c.getAuthor()) && equal(getCommitter(), c.getCommitter())
-                && equal(getMessage(), c.getMessage()) && equal(getParentIds(), c.getParentIds())
-                && equal(getTreeId(), c.getTreeId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getId(), getTreeId(), getParentIds(), getAuthor(), getCommitter(),
-                getMessage());
     }
 }

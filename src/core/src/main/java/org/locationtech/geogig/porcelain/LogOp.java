@@ -24,9 +24,12 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Repository;
@@ -238,11 +241,15 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
             if (this.until == null) {
                 newestCommitId = command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
             } else {
-                if (!repository().commitExists(this.until)) {
+                RevObject obj = command(RevObjectParse.class).setObjectId(until).call().orNull();
+                if (obj instanceof RevTag) {
+                    newestCommitId = ((RevTag) obj).getCommitId();
+                } else if (obj instanceof RevCommit) {
+                    newestCommitId = this.until;
+                } else {
                     throw new IllegalArgumentException(
                             "Provided 'until' commit id does not exist: " + until.toString());
                 }
-                newestCommitId = this.until;
             }
             if (this.since == null) {
                 oldestCommitId = ObjectId.NULL;
@@ -279,6 +286,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
         }
         return filteredCommits;
     }
+
     /**
      * Iterator that traverses the commit history backwards starting from the provided commit, in
      * chronological order. It performs a reverse breadth-first search
@@ -286,21 +294,21 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      * ChronologicalHistoryIterator walks the Commit Graph and atempts to walk the nodes in
      * Chronological order.
      *
-     * In general, if all the commit times are unique (not occurring at the same time) and
-     * commit order is in chronological order then this process is simple.
+     * In general, if all the commit times are unique (not occurring at the same time) and commit
+     * order is in chronological order then this process is simple.
      *
      * However, if commits can occur at the same time or if time can be not always moving forward
-     *  (i.e. due to changes in the clock or clock skew for a remote) this can be more complex.
+     * (i.e. due to changes in the clock or clock skew for a remote) this can be more complex.
      *
-     *  This method is likely not perfect, however, it will usually be correct (without a lot of
-     *  extra DB work).
+     * This method is likely not perfect, however, it will usually be correct (without a lot of
+     * extra DB work).
      *
-     *  It could be improved by using some of the techniques in the Topological operator, however,
-     *  the extra DB work is not justified since its mostly only useful for giving a "better" order
-     *  for cases where commits happen at the same time (which is ambiguous).
+     * It could be improved by using some of the techniques in the Topological operator, however,
+     * the extra DB work is not justified since its mostly only useful for giving a "better" order
+     * for cases where commits happen at the same time (which is ambiguous).
      *
-     *  We do, however, store all the nodes that we've seen so we don't re-traverse them.
-     *  This is quick, and memory efficient (1,000,000 history is about 20M of memory).
+     * We do, however, store all the nodes that we've seen so we don't re-traverse them. This is
+     * quick, and memory efficient (1,000,000 history is about 20M of memory).
      *
      */
     private static class ChronologicalHistoryIterator extends AbstractIterator<RevCommit> {
@@ -308,7 +316,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
         private final Repository repo;
 
         private Set<RevCommit> parents;
-        private Set<ObjectId> seenCommits; //don't re-traverse the same part of the tree
+
+        private Set<ObjectId> seenCommits; // don't re-traverse the same part of the tree
 
         /**
          * Constructs a new {@code LinearHistoryIterator} with the given parameters.
@@ -423,7 +432,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
             Optional<ObjectId> parent = Optional.absent();
             int index = 0;
             for (ObjectId parentId : lastCommit.getParentIds()) {
-                if (stopPoints.contains(parentId)){
+                if (stopPoints.contains(parentId)) {
                     index++;
                     continue;
                 }
@@ -459,7 +468,6 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 }
                 lastCommit = repo.getCommit(parent.get());
             }
-
 
             ImmutableList<ObjectId> children = this.graphDb.getChildren(lastCommit.getId());
             if (children.size() > 1) {

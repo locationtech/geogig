@@ -33,12 +33,13 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.hash.HashCode;
-import org.locationtech.jts.geom.Envelope;
 
 public class RevObjectTestSupport {
 
@@ -235,6 +236,29 @@ public class RevObjectTestSupport {
             }
         }
         return nodes;
+    }
+
+    public static Set<RevTree> getAllTrees(ObjectStore source, ObjectId rootTree) {
+        RevTree root = rootTree.equals(RevTree.EMPTY_TREE_ID) ? RevTree.EMPTY
+                : source.getTree(rootTree);
+        return getAllTrees(source, root);
+    }
+
+    public static Set<RevTree> getAllTrees(ObjectStore source, RevTree tree) {
+        Set<RevTree> trees = new HashSet<>();
+        trees.add(tree);
+        if (!tree.buckets().isEmpty()) {
+            Iterable<ObjectId> ids = Iterables.transform(tree.buckets().values(),
+                    (b) -> b.getObjectId());
+
+            List<RevTree> buckets = Lists
+                    .newArrayList(source.getAll(ids, BulkOpListener.NOOP_LISTENER, RevTree.class));
+            trees.addAll(buckets);
+            for (RevTree bucket : buckets) {
+                trees.addAll(getAllTrees(source, bucket));
+            }
+        }
+        return trees;
     }
 
     /**

@@ -15,6 +15,8 @@ import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -34,20 +38,23 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.internal.DeduplicationService;
 import org.locationtech.geogig.remotes.internal.Deduplicator;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -63,22 +70,29 @@ class PackImpl implements Pack {
      */
     private final LinkedHashMap<RefRequest, List<RevCommit>> missingCommits;
 
+    private LinkedHashMap<RefRequest, List<IndexDef>> missingIndexes;
+
     private final List<RevTag> missingTags;
 
     protected PackImpl(Repository source, List<RevTag> missingTags,
-            LinkedHashMap<RefRequest, List<RevCommit>> missingCommits) {
+            LinkedHashMap<RefRequest, List<RevCommit>> missingCommits,
+            LinkedHashMap<RefRequest, List<IndexDef>> missingIndexes) {
         checkNotNull(source);
         checkNotNull(missingTags);
         checkNotNull(missingCommits);
+        checkNotNull(missingIndexes);
 
         this.source = source;
         this.missingTags = missingTags;
         this.missingCommits = missingCommits;
+        this.missingIndexes = missingIndexes;
     }
 
     public @Override List<RefDiff> applyTo(PackProcessor target, ProgressListener progress) {
         checkNotNull(target);
         checkNotNull(progress);
+
+        progress.started();
 
         List<RefDiff> result = new ArrayList<>();
         List<RefRequest> reqs = Lists.newArrayList(missingCommits.keySet());
@@ -96,13 +110,26 @@ class PackImpl implements Pack {
 
         List<RevTag> tags = this.missingTags;
         target.putAll(tags.iterator(), NOOP_LISTENER);
+
+        // process indexes
+        if (!missingIndexes.isEmpty()) {
+            reqs = Lists.newArrayList(missingIndexes.keySet());
+            deduplicator = DeduplicationService.create();
+            try {
+                for (RefRequest req : reqs) {
+                    applyIndex(target, req, deduplicator, progress);
+                }
+            } finally {
+                deduplicator.release();
+            }
+        }
+        progress.complete();
+
         return result;
     }
 
     private RefDiff applyToPreOrder(PackProcessor target, RefRequest req, Deduplicator deduplicator,
             ProgressListener progress) {
-
-        progress.started();
 
         progress.setDescription("Saving missing revision objects changes for " + req.name);
         ObjectReporter objectReport = new ObjectReporter(progress);
@@ -117,8 +144,11 @@ class PackImpl implements Pack {
         checkNotNull(commits);
 
         final ObjectDatabase sourceStore = source.objectDatabase();
-        final ContentIdsProducer producer = new ContentIdsProducer(sourceStore, commits,
-                deduplicator, objectReport);
+
+        List<ObjectId[]> diffRootTreeIds = collectMissingRootTreeIdPairs(commits, sourceStore);
+
+        final ContentIdsProducer producer = ContentIdsProducer.forCommits(sourceStore,
+                diffRootTreeIds, deduplicator, objectReport);
 
         final ExecutorService producerThread = Executors.newSingleThreadExecutor();
         try {
@@ -129,7 +159,7 @@ class PackImpl implements Pack {
             {
                 Iterator<RevObject> missingContents;
                 Iterator<RevCommit> commitsIterator;
-                missingContents = source.objectDatabase().getAll(() -> missingContentIds);
+                missingContents = sourceStore.getAll(() -> missingContentIds);
                 commitsIterator = Iterators.filter(commits.iterator(), (c) -> {
                     objectReport.addCommit();
                     return true;
@@ -146,8 +176,6 @@ class PackImpl implements Pack {
                 String description = String.format("Objects inserted: %,d, repeated: %,d, time: %s",
                         objectReport.inserted(), objectReport.found(), sw.stop());
                 progress.setDescription(description);
-
-                progress.complete();
             }
         } finally {
             producerThread.shutdownNow();
@@ -162,7 +190,114 @@ class PackImpl implements Pack {
         return changedRef;
     }
 
-    private class ContentIdsProducer implements Consumer<ObjectId>, Runnable {
+    private List<ObjectId[]> collectMissingRootTreeIdPairs(List<RevCommit> commits,
+            ObjectDatabase sourceStore) {
+
+        final Map<ObjectId, RevCommit> rootsById = new HashMap<>(
+                Maps.uniqueIndex(commits, (c) -> c.getId()));
+
+        List<ObjectId[]> diffRootTreeIds = new ArrayList<>();
+
+        for (RevCommit commit : commits) {
+
+            final ObjectId rightTreeId = commit.getTreeId();
+            List<ObjectId> parentIds = commit.getParentIds();
+            if (parentIds.isEmpty()) {
+                diffRootTreeIds.add(new ObjectId[] { RevTree.EMPTY_TREE_ID, rightTreeId });
+                continue;
+            }
+            for (ObjectId parentId : parentIds) {
+                final @Nullable RevCommit parent = parentId.isNull() ? null
+                        : Optional.fromNullable((RevCommit) rootsById.get(parentId))
+                                .or(() -> source.getCommit(parentId));
+
+                ObjectId oldRootTreeId = parent == null ? RevTree.EMPTY_TREE_ID
+                        : parent.getTreeId();
+                diffRootTreeIds.add(new ObjectId[] { oldRootTreeId, rightTreeId });
+            }
+        }
+
+        return diffRootTreeIds;
+    }
+
+    private void applyIndex(PackProcessor target, RefRequest req, Deduplicator deduplicator,
+            ProgressListener progress) {
+
+        progress.setDescription("Updating spatial indexes for " + req.name);
+        ObjectReporter objectReport = new ObjectReporter(progress);
+
+        // back up current progress indicator
+        final Function<ProgressListener, String> defaultProgressIndicator;
+        defaultProgressIndicator = progress.progressIndicator();
+        // set our custom progress indicator
+        progress.setProgressIndicator((p) -> objectReport.toString());
+
+        final List<IndexDef> indexes = missingIndexes.get(req);
+        checkNotNull(indexes);
+
+        final IndexDatabase sourceStore = source.indexDatabase();
+        final ExecutorService producerThread = Executors.newSingleThreadExecutor();
+        try {
+
+            final Stopwatch sw = Stopwatch.createStarted();
+
+            for (IndexDef def : indexes) {
+                final ObjectId oldIndexTreeId = def.getParentIndexTreeId();
+                final ObjectId newIndexTreeId = def.getIndexTreeId();
+
+                List<ObjectId[]> treeIds = Collections
+                        .singletonList(new ObjectId[] { oldIndexTreeId, newIndexTreeId });
+                final ContentIdsProducer producer = ContentIdsProducer.forIndex(def.getIndex(),
+                        sourceStore, treeIds, deduplicator, objectReport);
+
+                producerThread.submit(producer);
+                Iterator<ObjectId> missingContentIds = producer.iterator();
+
+                Iterator<RevTree> missingContents;
+                missingContents = sourceStore.getAll(() -> missingContentIds, NOOP_LISTENER,
+                        RevTree.class);
+
+                target.putIndex(def, missingContents, objectReport);
+            }
+            progress.complete();
+            if (objectReport.total.get() > 0) {
+                progress.started();
+                String description = String.format("Indexes updated: %,d, repeated: %,d, time: %s",
+                        objectReport.inserted(), objectReport.found(), sw.stop());
+                progress.setDescription(description);
+            }
+        } finally {
+            producerThread.shutdownNow();
+            // restore previous progress indicator
+            progress.setProgressIndicator(defaultProgressIndicator);
+        }
+    }
+
+    private static class ContentIdsProducer
+            implements java.util.function.Consumer<ObjectId>, Runnable {
+
+        public static ContentIdsProducer forCommits(ObjectStore source,
+                List<ObjectId[]> diffTreeIds, Deduplicator deduplicator,
+                ObjectReporter objectReport) {
+
+            boolean reportFeatures = true;
+            return new ContentIdsProducer(source, diffTreeIds, deduplicator, objectReport,
+                    reportFeatures);
+        }
+
+        public static ContentIdsProducer forIndex(IndexInfo indexInfo, IndexDatabase sourceStore,
+                List<ObjectId[]> treeIds, Deduplicator deduplicator, ObjectReporter objectReport) {
+
+            Envelope maxBounds = IndexInfo.getMaxBounds(indexInfo);
+            Preconditions.checkNotNull(maxBounds);
+            NodeOrdering diffNodeOrdering = QuadTreeBuilder.nodeOrdering(maxBounds);
+
+            boolean reportFeatures = false;
+            ContentIdsProducer producer = new ContentIdsProducer(sourceStore, treeIds, deduplicator,
+                    objectReport, reportFeatures);
+            producer.diffOrder = diffNodeOrdering;
+            return producer;
+        }
 
         private final ObjectStore source;
 
@@ -170,16 +305,21 @@ class PackImpl implements Pack {
 
         private LinkedBlockingQueue<ObjectId> queue = new LinkedBlockingQueue<>(1_000_000);
 
-        private final List<RevCommit> commits;
+        private final List<ObjectId[]> roots;
 
         private final ObjectReporter objectReport;
 
-        ContentIdsProducer(ObjectStore source, List<RevCommit> commits, Deduplicator deduplicator,
-                ObjectReporter objectReport) {
+        private final boolean reportFeatures;
+
+        private NodeOrdering diffOrder = CanonicalNodeOrder.INSTANCE;
+
+        private ContentIdsProducer(ObjectStore source, List<ObjectId[]> diffTreeIds,
+                Deduplicator deduplicator, ObjectReporter objectReport, boolean reportFeatures) {
             this.source = source;
-            this.commits = commits;
+            this.roots = diffTreeIds;
             this.deduplicator = deduplicator;
             this.objectReport = objectReport;
+            this.reportFeatures = reportFeatures;
         }
 
         public Iterator<ObjectId> iterator() {
@@ -188,23 +328,11 @@ class PackImpl implements Pack {
         }
 
         public @Override void run() {
-            final Map<ObjectId, RevCommit> commitsById = Maps.uniqueIndex(commits,
-                    (c) -> c.getId());
-
-            for (RevCommit commit : commits) {
-                List<ObjectId> parentIds = commit.getParentIds();
-                if (parentIds.isEmpty()) {
-                    parentIds = ImmutableList.of(ObjectId.NULL);
-                }
-                for (ObjectId parentId : parentIds) {
-                    RevCommit parent = parentId.isNull() ? null
-                            : Optional.fromNullable(commitsById.get(parentId))
-                                    .or(() -> source.getCommit(parentId));
-
-                    visitPreOrder(parent, commit, deduplicator, objectReport, this);
-                }
+            for (ObjectId[] oldNewTreeId : this.roots) {
+                ObjectId leftRootId = oldNewTreeId[0];
+                ObjectId rightRootId = oldNewTreeId[1];
+                visitPreorder(leftRootId, rightRootId, deduplicator, objectReport, this);
             }
-
             accept(ObjectId.NULL);// terminal token
         }
 
@@ -217,23 +345,20 @@ class PackImpl implements Pack {
             }
         }
 
-        private void visitPreOrder(@Nullable RevCommit parent, RevCommit commit,
+        private void visitPreorder(final ObjectId leftTreeId, final ObjectId rightTreeId,
                 Deduplicator deduplicator, ObjectReporter progress, Consumer<ObjectId> consumer) {
-
-            final ObjectId leftRootId = parent == null ? EMPTY_TREE_ID : parent.getTreeId();
-            final ObjectId rightRootId = commit.getTreeId();
-
-            if (deduplicator.isDuplicate(rightRootId)) {
+            if (deduplicator.isDuplicate(rightTreeId)) {
                 return;
             }
 
             final ObjectStore source = this.source;
-            final RevTree left = EMPTY_TREE_ID.equals(leftRootId) ? EMPTY
-                    : source.getTree(leftRootId);
-            final RevTree right = EMPTY_TREE_ID.equals(rightRootId) ? EMPTY
-                    : source.getTree(rightRootId);
+            final RevTree left = EMPTY_TREE_ID.equals(leftTreeId) ? EMPTY
+                    : source.getTree(leftTreeId);
+            final RevTree right = EMPTY_TREE_ID.equals(rightTreeId) ? EMPTY
+                    : source.getTree(rightTreeId);
 
             PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source);
+            walk.nodeOrder(this.diffOrder);
 
             /**
              * A diff consumer that reports only the new objects, with deduplication
@@ -265,9 +390,11 @@ class PackImpl implements Pack {
                 }
 
                 public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
-                    if (right != null && consume(right.getObjectId())) {
-                        progress.addFeature();
-                        addMetadataId(progress, right);
+                    if (reportFeatures) {
+                        if (right != null && consume(right.getObjectId())) {
+                            progress.addFeature();
+                            addMetadataId(progress, right);
+                        }
                     }
                     return true;
                 }

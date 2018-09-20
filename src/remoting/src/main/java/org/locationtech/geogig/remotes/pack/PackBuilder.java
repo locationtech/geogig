@@ -11,8 +11,10 @@ package org.locationtech.geogig.remotes.pack;
 
 import java.util.Set;
 
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.repository.IndexInfo;
 
 public interface PackBuilder {
 
@@ -21,6 +23,9 @@ public interface PackBuilder {
     void startRefResponse(RefRequest req);
 
     void addCommit(RevCommit commit);
+
+    public void addIndex(IndexInfo indexDef, ObjectId canonicalFeatureTreeId,
+            ObjectId oldIndexTreeId, ObjectId newIndexTreeId);
 
     void endRefResponse();
 

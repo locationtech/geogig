@@ -58,7 +58,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
- * {@link CloneOpTest} integration test suite for full clones (for shallow and sparse clones see
+ * {@link CloneOp} integration test suite for full clones (for shallow and sparse clones see
  * {@link ShallowCloneTest} and {@link SparseCloneTest})
  *
  */
@@ -66,9 +66,9 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private Repository remoteRepo;
+    protected Repository remoteRepo;
 
-    private Repository cloneRepo;
+    protected Repository cloneRepo;
 
     @Override
     protected void setUpInternal() throws Exception {

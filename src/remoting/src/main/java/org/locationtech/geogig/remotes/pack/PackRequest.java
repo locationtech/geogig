@@ -46,6 +46,8 @@ public class PackRequest {
 
     private @Nullable RepositoryFilter sparseFilter;
 
+    private boolean syncIndexes;
+
     /**
      * Adds a ref to pack, its {@link Ref#getObjectId() objectId} indicates which version the local
      * copy of the remote ref points to, {@link ObjectId#NULL} must be used in case there's no local
@@ -77,6 +79,15 @@ public class PackRequest {
 
     public Optional<RepositoryFilter> getSparseFilter() {
         return Optional.fromNullable(sparseFilter);
+    }
+
+    public PackRequest syncIndexes(boolean syncIndexes) {
+        this.syncIndexes = syncIndexes;
+        return this;
+    }
+
+    public boolean isSyncIndexes() {
+        return syncIndexes;
     }
 
     /**

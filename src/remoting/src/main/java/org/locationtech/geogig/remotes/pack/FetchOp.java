@@ -46,6 +46,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import lombok.AllArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -102,6 +104,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 final List<LocalRemoteRef> localToRemoteRemoteRefs = resolveRemoteRefs(remoteRepo);
 
                 final PackRequest request = prepareRequest(localRepo, localToRemoteRemoteRefs);
+                request.syncIndexes(args.fetchIndexes);
 
                 if (progress.isCanceled())
                     return null;
@@ -323,7 +326,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     /**
      * Immutable state of command arguments
      */
-    private static class FetchArgs {
+    private static @AllArgsConstructor @Value class FetchArgs {
 
         /**
          * Builder for command arguments
@@ -340,6 +343,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             private Optional<Integer> depth = Optional.absent();
 
             private boolean fetchTags = true;
+
+            private boolean fetchIndexes = false;
 
             public FetchArgs build(Repository repo) {
                 if (allRemotes) {
@@ -376,10 +381,12 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 }
 
                 return new FetchArgs(fetchTags, prune, fullDepth, ImmutableList.copyOf(remotes),
-                        depth);
+                        depth, fetchIndexes);
             }
 
         }
+
+        final boolean fetchTags;
 
         final boolean prune;
 
@@ -389,16 +396,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         final Optional<Integer> depth;
 
-        final boolean fetchTags;
-
-        private FetchArgs(boolean fetchTags, boolean prune, boolean fullDepth,
-                ImmutableList<Remote> remotes, Optional<Integer> depth) {
-            this.fetchTags = fetchTags;
-            this.prune = prune;
-            this.fullDepth = fullDepth;
-            this.remotes = remotes;
-            this.depth = depth;
-        }
+        private boolean fetchIndexes;
     }
 
     /**
@@ -512,4 +510,10 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     public List<Remote> getRemotes() {
         return ImmutableList.copyOf(argsBuilder.remotes);
     }
+
+    public FetchOp setFetchIndexes(boolean fetchIndexes) {
+        argsBuilder.fetchIndexes = fetchIndexes;
+        return this;
+    }
+
 }

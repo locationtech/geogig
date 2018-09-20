@@ -61,7 +61,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
     LinkedList<RevCommit> expectedBranch;
 
-    private Repository originRepo, localRepo, upstreamRepo;
+    protected Repository originRepo, localRepo, upstreamRepo;
 
     private Remote origin, upstream;
 
@@ -78,6 +78,11 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
+
+        localRepo = localGeogig.repo;
+        originRepo = remoteGeogig.repo;
+        upstreamRepo = upstreamGeogig.repo;
+
         // clone the repository
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
@@ -133,10 +138,6 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         logs = remoteGeogig.geogig.command(LogOp.class).call();
         logged = Lists.newArrayList(logs);
         assertEquals(expectedMaster, logged);
-
-        localRepo = localGeogig.repo;
-        originRepo = remoteGeogig.repo;
-        upstreamRepo = upstreamGeogig.repo;
 
         upstreamRepo.command(CloneOp.class).setRemoteURI(originRepo.getLocation())
                 .setRemoteName("origin").call();

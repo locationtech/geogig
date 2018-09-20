@@ -94,6 +94,8 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
 
     private boolean singleBranch = false;
 
+    private boolean cloneIndexes = false;
+
     /**
      * Executes the clone operation.
      * 
@@ -216,6 +218,11 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
         return this;
     }
 
+    public CloneOp setCloneIndexes(boolean cloneIndexes) {
+        this.cloneIndexes = cloneIndexes;
+        return this;
+    }
+
     public Optional<String> getBranch() {
         return branch;
     }
@@ -245,6 +252,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
                 .addRemote(remote)//
                 .setDepth(depth)//
                 .setAutofetchTags(true)//
+                .setFetchIndexes(cloneIndexes)//
                 .setProgressListener(progress)//
                 .call();
 

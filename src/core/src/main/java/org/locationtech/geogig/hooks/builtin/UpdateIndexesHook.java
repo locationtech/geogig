@@ -16,11 +16,14 @@ import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.base.Optional;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Hooks into {@link UpdateRef} to update all the indexes that need updating after a branch is
  * updated.
  *
  */
+@Slf4j
 public class UpdateIndexesHook implements CommandHook {
 
     @Override
@@ -52,7 +55,7 @@ public class UpdateIndexesHook implements CommandHook {
                 try {
                     ProgressListener listener = command.getProgressListener();
                     listener.started();
-
+                    log.debug("Calling UpdateIndexesOp for {}", ref);
                     updates = context.command(UpdateIndexesOp.class)//
                             .setRef(ref)//
                             .setProgressListener(listener)//

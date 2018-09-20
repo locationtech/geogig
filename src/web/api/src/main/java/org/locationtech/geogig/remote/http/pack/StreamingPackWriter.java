@@ -15,8 +15,10 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.remotes.pack.LocalPackBuilder;
 import org.locationtech.geogig.remotes.pack.Pack;
+import org.locationtech.geogig.remotes.pack.Pack.IndexDef;
 import org.locationtech.geogig.remotes.pack.PackBuilder;
 import org.locationtech.geogig.remotes.pack.PackProcessor;
 import org.locationtech.geogig.remotes.pack.RefRequest;
@@ -88,5 +90,9 @@ public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public @Override void putIndex(IndexDef index, Iterator<RevTree> indexContents, BulkOpListener listener) {
+        throw new UnsupportedOperationException("implement!");
     }
 }

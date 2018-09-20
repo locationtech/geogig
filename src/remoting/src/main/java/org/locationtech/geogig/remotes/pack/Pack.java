@@ -11,14 +11,28 @@ package org.locationtech.geogig.remotes.pack;
 
 import java.util.List;
 
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.remotes.RefDiff;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * @author groldan
  *
  */
 public interface Pack {
+
+    public static @Value @Builder class IndexDef {
+        private final @NonNull IndexInfo index;
+
+        private final @NonNull ObjectId canonical;
+
+        private final @NonNull ObjectId parentIndexTreeId, indexTreeId;
+    }
 
     /**
      * @param target

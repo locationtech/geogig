@@ -17,6 +17,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -24,8 +25,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hasher;
-import org.locationtech.jts.geom.Envelope;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@EqualsAndHashCode
+@ToString
 public final class IndexInfo {
     public static enum IndexType {
         QUADTREE
@@ -82,21 +87,9 @@ public final class IndexInfo {
         return metadata;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof IndexInfo) {
-            IndexInfo i = (IndexInfo) o;
-            return Objects.equals(getTreeName(), i.getTreeName())
-                    && Objects.equals(getAttributeName(), i.getAttributeName())
-                    && Objects.equals(getIndexType(), i.getIndexType())
-                    && compareMetadatas(getMetadata(), i.getMetadata());
-        }
-        return false;
-    }
-
     /**
-     * Properly compares two IndexInfo metadatas.  Since some of the values in the map
-     * can be String[], normal Objects.equals() do not work.  We use a better comparison.
+     * Properly compares two IndexInfo metadatas. Since some of the values in the map can be
+     * String[], normal Objects.equals() do not work. We use a better comparison.
      *
      * @param meta1
      * @param meta2
@@ -108,9 +101,9 @@ public final class IndexInfo {
         if ((meta1 == null) || (meta2 == null))
             return false; // one null, the other not
         if (meta1 == meta2)
-            return true; //both the same reference
+            return true; // both the same reference
         if (meta1.size() != meta2.size())
-            return false; //different # of entries
+            return false; // different # of entries
 
         for (Map.Entry<String, Object> entry : meta1.entrySet()) {
             if (!meta2.containsKey(entry.getKey()))
@@ -121,12 +114,6 @@ public final class IndexInfo {
                 return false;
         }
         return true;
-    }
-
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getTreeName(), getAttributeName(), getIndexType(), getMetadata().size());
     }
 
     public static ObjectId getIndexId(String treeName, String attributeName) {

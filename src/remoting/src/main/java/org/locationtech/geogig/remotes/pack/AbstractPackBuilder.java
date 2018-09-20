@@ -12,16 +12,20 @@ package org.locationtech.geogig.remotes.pack;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.remotes.pack.Pack.IndexDef;
+import org.locationtech.geogig.repository.IndexInfo;
 
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
 
 public abstract class AbstractPackBuilder implements PackBuilder {
 
@@ -35,9 +39,13 @@ public abstract class AbstractPackBuilder implements PackBuilder {
 
     private RefRequest currentRef;
 
-    private List<RevCommit> currentRefCommits;
+    private LinkedList<RevCommit> currentRefCommits;
+
+    private LinkedList<Pack.IndexDef> currentRefIndexes;
 
     protected LinkedHashMap<RefRequest, List<RevCommit>> missingCommits;
+
+    protected LinkedHashMap<RefRequest, List<Pack.IndexDef>> missingIndexes;
 
     private void require(Status expected) {
         checkState(this.status == expected, "Expected status %s, but it's %s", expected,
@@ -58,6 +66,7 @@ public abstract class AbstractPackBuilder implements PackBuilder {
         checkNotNull(tags);
         require(Status.IDLE);
         this.missingCommits = new LinkedHashMap<>();
+        this.missingIndexes = new LinkedHashMap<>();
         this.tags = Lists.newArrayList(tags);
         set(Status.READY);
     }
@@ -67,23 +76,44 @@ public abstract class AbstractPackBuilder implements PackBuilder {
         checkNotNull(req);
         requireAndSet(Status.READY, Status.PROCESS_REF);
         this.currentRef = req;
-        this.currentRefCommits = new ArrayList<>();
+        this.currentRefCommits = new LinkedList<>();
+        this.currentRefIndexes = new LinkedList<>();
     }
 
     @Override
     public void addCommit(RevCommit commit) {
         checkNotNull(commit);
         require(Status.PROCESS_REF);
-        this.currentRefCommits.add(commit);
+        this.currentRefCommits.addFirst(commit);
+    }
+
+    public @Override void addIndex(//@formatter:off
+            @NonNull IndexInfo indexInfo, 
+            @NonNull ObjectId canonicalFeatureTreeId, 
+            @NonNull ObjectId oldIndexTreeId, 
+            @NonNull ObjectId newIndexTreeId) {//@formatter:on
+
+        require(Status.PROCESS_REF);
+
+        IndexDef def = IndexDef.builder()//
+                .index(indexInfo)//
+                .canonical(canonicalFeatureTreeId)//
+                .parentIndexTreeId(oldIndexTreeId)//
+                .indexTreeId(newIndexTreeId)//
+                .build();
+
+        this.currentRefIndexes.add(def);
     }
 
     @Override
     public void endRefResponse() {
         require(Status.PROCESS_REF);
-        Collections.reverse(currentRefCommits);
+
         missingCommits.put(currentRef, currentRefCommits);
+        missingIndexes.put(currentRef, currentRefIndexes);
         currentRef = null;
         currentRefCommits = null;
+        currentRefIndexes = null;
         set(Status.READY);
     }
 

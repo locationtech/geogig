@@ -85,11 +85,18 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
         progress.setDescription("Preparing pull request #%s '%s'", pr.getId(), pr.getTitle());
 
         final GeogigTransaction transaction = pr.getTransaction(context());
+        final String testMergeRef = pr.getMergeRef();
 
         if (!preStatus.isRemoteBranchBehind() && !preStatus.isTargetBranchBehind()) {
             boolean conflictsAlreadyChecked = preStatus.isConflicted();
             boolean testMergeDone = preStatus.getMergeCommit().isPresent();
             if (conflictsAlreadyChecked || testMergeDone) {
+                if (testMergeDone && this.message != null) {
+                    RevCommit ammended = transaction.command(CommitOp.class).setAmend(true)
+                            .setMessage(message).call();
+                    setRef(transaction, testMergeRef, ammended.getId());
+                    preStatus = preStatus.withMergeCommit(Optional.of(ammended.getId()));
+                }
                 progress.setDescription("Pull request up to date, returning current status");
                 return preStatus;
             }
@@ -108,7 +115,6 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
 
         MergeScenarioReport mergeScenarioReport = null;
         long conflictCount = 0;
-        final String testMergeRef = pr.getMergeRef();
         try {
             int commitsBehind = preStatus.getCommitsBehindRemoteBranch();
             if (commitsBehind > 0) {

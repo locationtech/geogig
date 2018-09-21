@@ -40,7 +40,7 @@ public class PRMergeOp extends PRCommand<PRStatus> {
     protected @Override PRStatus _call() throws NothingToCommitException, MergeConflictsException {
         final PRStatus preStatus = command(PRPrepareOp.class).setId(prId).setMessage(message)
                 .setProgressListener(getProgressListener()).call();
-        
+
         PR pr = preStatus.getRequest();
 
         final Optional<ObjectId> testMerge = preStatus.getMergeCommit();
@@ -49,7 +49,9 @@ public class PRMergeOp extends PRCommand<PRStatus> {
                 && !preStatus.isTargetBranchBehind() && testMerge.isPresent()
                 && testMerge.get().equals(liveTarget.getObjectId());
         if (nothingToCommit) {
-            throw new NothingToCommitException("Pull request does not represent any changes");
+            String msg = "Pull request does not represent any changes, not merging.";
+            getProgressListener().setDescription(msg);
+            throw new NothingToCommitException(msg);
         }
 
         if (!preStatus.isConflicted() && preStatus.getMergeCommit().isPresent()) {
@@ -59,10 +61,13 @@ public class PRMergeOp extends PRCommand<PRStatus> {
         PRStatus postStatus = command(PRHealthCheckOp.class).setRequest(pr).call();
         postStatus = postStatus.withReport(preStatus.getReport());
         if (postStatus.isConflicted()) {
-            throw new MergeConflictsException(
-                    String.format("Unable to merge pull request, %,d conflict(s) remaining",
-                            postStatus.getNumConflicts()));
+            String msg = String.format("Unable to merge pull request, %,d conflict(s) remaining",
+                    postStatus.getNumConflicts());
+            getProgressListener().setDescription(msg);
+            throw new MergeConflictsException(msg);
         }
+        String msg = String.format("Pull request %,d merged successfully", pr.getId());
+        getProgressListener().setDescription(msg);
         return postStatus;
     }
 }

@@ -14,10 +14,14 @@ import static org.locationtech.geogig.test.integration.remoting.RemotesIndexTest
 import static org.locationtech.geogig.test.integration.remoting.RemotesIndexTestSupport.verifyClonedIndexes;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.remotes.RefDiff;
@@ -27,6 +31,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp.CommandListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.test.TestData;
 
 import com.google.common.base.Optional;
 
@@ -102,4 +107,14 @@ public class FetchOpWithIndexTest extends FetchOpTest {
                 @Nullable RuntimeException exception) {
         }
     };
+
+    public @Test void test1() throws Exception {
+        GeogigContainer c1 = new GeogigContainer("repo1");
+        Repository repo1 = c1.repo;
+        TestData td1 = new TestData(repo1);
+        td1.loadDefaultData();
+        Map<Ref, List<Index>> indexesByBranch = createIndexes(repo1);
+        System.err.println(indexesByBranch);
+    }
+
 }

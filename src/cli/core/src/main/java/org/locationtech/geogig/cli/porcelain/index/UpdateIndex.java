@@ -22,10 +22,10 @@ import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.porcelain.index.UpdateIndexOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.locationtech.jts.geom.Envelope;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import org.locationtech.jts.geom.Envelope;
 
 @RequiresRepository(true)
 @Parameters(commandNames = {
@@ -35,8 +35,7 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
     @Parameter(names = "--tree", required = true, description = "Name or path of the feature tree to update the index for.")
     private String treeRefSpec;
 
-    @Parameter(names = { "-a",
-            "--attribute" }, description = "Attribute to update the index for.")
+    @Parameter(names = { "-a", "--attribute" }, description = "Attribute to update the index for.")
     private String attribute;
 
     @Parameter(names = { "-e",
@@ -65,22 +64,29 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
 
         Envelope envelope = SpatialOps.parseNonReferencedBBOX(bbox);
 
-        Index index = repo.command(UpdateIndexOp.class)//
-                .setTreeRefSpec(treeRefSpec)//
-                .setAttributeName(attribute)//
-                .setExtraAttributes(extraAttributes)//
-                .setOverwrite(overwrite)//
-                .setAdd(add)//
-                .setIndexHistory(indexHistory)//
-                .setBounds(envelope)//
-                .setProgressListener(cli.getProgressListener())//
-                .call();
+        Index index;
+        try {
+            index = repo.command(UpdateIndexOp.class)//
+                    .setTreeRefSpec(treeRefSpec)//
+                    .setAttributeName(attribute)//
+                    .setExtraAttributes(extraAttributes)//
+                    .setOverwrite(overwrite)//
+                    .setAdd(add)//
+                    .setIndexHistory(indexHistory)//
+                    .setBounds(envelope)//
+                    .setProgressListener(cli.getProgressListener())//
+                    .call();
+        } catch (IllegalStateException e) {
+            throw new CommandFailedException(e);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidParameterException(e.getMessage(), e);
+        }
 
         if (cli.getProgressListener().isCanceled()) {
             cli.getConsole().println("Index update cancelled.");
         } else {
-            cli.getConsole().println(
-                "Index updated successfully: " + index.indexTreeId().toString().substring(0, 8));
+            cli.getConsole().println("Index updated successfully: "
+                    + index.indexTreeId().toString().substring(0, 8));
         }
 
     }

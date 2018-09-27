@@ -57,4 +57,9 @@ public class CommandFailedException extends RuntimeException {
         this(cause.getMessage(), cause);
     }
 
+    public CommandFailedException(Throwable cause, boolean reportOnly) {
+        super(cause.getMessage(), cause);
+        this.reportOnly = reportOnly;
+    }
+
 }

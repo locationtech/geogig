@@ -12,6 +12,7 @@ package org.locationtech.geogig.test.integration.remoting;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,8 @@ import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.index.Index;
+import org.locationtech.geogig.porcelain.index.UpdateIndexOp;
+import org.locationtech.geogig.porcelain.index.UpdateIndexesOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
@@ -48,24 +51,32 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RemotesIndexTestSupport {
 
-    public static void createIndexes(Repository repo) {
+    public static Map<Ref, List<Index>> createIndexes(Repository repo) {
+        Map<Ref, List<Index>> indexes = new HashMap<>();
         ImmutableList<Ref> branches = repo.command(BranchListOp.class).call();
-        branches.forEach(ref -> createIndexes(repo, ref));
+        branches.forEach(ref -> indexes.put(ref, createIndexes(repo, ref)));
+        return indexes;
     }
 
-    public static void createIndexes(Repository repo, Ref ref) {
+    public static List<Index> createIndexes(Repository repo, Ref ref) {
         Envelope bounds = new Envelope(-180, 180, -90, 90);
         List<NodeRef> types = repo.command(FindFeatureTypeTrees.class).setRootTreeRef(ref.getName())
                 .call();
 
+        List<Index> indexes = new ArrayList<>();
         for (NodeRef treeRef : types) {
             Map<String, IndexInfo> typeIndexes = getIndexes(repo, treeRef.path());
-            if (!typeIndexes.containsKey(treeRef.path())) {
+            if (typeIndexes.containsKey(treeRef.path())) {
+                List<Index> list = repo.command(UpdateIndexesOp.class).setRef(ref).call();
+                indexes.addAll(list);
+            } else {
                 Index index = repo.command(CreateQuadTree.class).setBounds(bounds)
                         .setIndexHistory(true).setTypeTreeRef(treeRef).call();
                 log.info("Created index {} before cloning", index);
+                indexes.add(index);
             }
         }
+        return indexes;
     }
 
     public static void verifyClonedIndexes(Repository local, Repository remote,
@@ -107,7 +118,7 @@ public class RemotesIndexTestSupport {
                     .getAllTrees(local.indexDatabase(), indexId);
 
             assertEquals(allRemoteIndexContents.size(), allLocalIndexContents.size());
-            if(!allRemoteIndexContents.equals(allLocalIndexContents)) {
+            if (!allRemoteIndexContents.equals(allLocalIndexContents)) {
                 System.err.println("wtf: " + allRemoteIndexContents.equals(allLocalIndexContents));
             }
             assertEquals(allRemoteIndexContents, allLocalIndexContents);

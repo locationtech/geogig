@@ -43,6 +43,8 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
 
     private @Nullable String attributeName;
 
+    private boolean onlyMissing;
+
     /**
      * @param treeRefSpec the tree refspec of the index to be built
      * @return {@code this}
@@ -58,6 +60,11 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
      */
     public BuildFullHistoryIndexOp setAttributeName(String attributeName) {
         this.attributeName = attributeName;
+        return this;
+    }
+
+    public BuildFullHistoryIndexOp setMissingOnly(boolean onlyMissing) {
+        this.onlyMissing = onlyMissing;
         return this;
     }
 
@@ -81,11 +88,12 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
 
         IndexInfo index = indexInfos.get(0);
 
-        indexDatabase().clearIndex(index);
+        if (!onlyMissing) {
+            indexDatabase().clearIndex(index);
+        }
         int builtTrees = indexHistory(index);
         return builtTrees;
     }
-
 
     /**
      * Builds an index on every reachable commit in the history.
@@ -102,6 +110,8 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
             if (listener.isCanceled()) {
                 break;
             }
+            getProgressListener().setDescription("Building index for %s:%s at %s",
+                    index.getTreeName(), index.getAttributeName(), ref.getName());
             Iterator<RevCommit> commits = command(LogOp.class).setUntil(ref.getObjectId()).call();
             while (commits.hasNext()) {
                 if (listener.isCanceled()) {

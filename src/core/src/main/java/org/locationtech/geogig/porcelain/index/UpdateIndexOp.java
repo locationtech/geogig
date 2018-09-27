@@ -10,7 +10,6 @@
 package org.locationtech.geogig.porcelain.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 import java.util.Map;
@@ -28,12 +27,12 @@ import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Updates an {@link IndexInfo} with new metadata.
@@ -147,8 +146,8 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
         final List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(indexDatabase(), treeName,
                 attributeName);
 
-        checkState(!indexInfos.isEmpty(), "A matching index could not be found.");
-        checkState(indexInfos.size() == 1,
+        checkArgument(!indexInfos.isEmpty(), "A matching index could not be found.");
+        checkArgument(indexInfos.size() == 1,
                 "Multiple indexes were found for the specified tree, please specify the attribute.");
 
         IndexInfo oldIndexInfo = indexInfos.get(0);
@@ -175,7 +174,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
         } else if (overwrite) {
             updatedAttributes = newAttributes;
         } else if (newAttributes != null) {
-            checkState(oldAttributes == null,
+            checkArgument(oldAttributes == null,
                     "Extra attributes already exist on index, specify add or overwrite to update.");
             updatedAttributes = newAttributes;
         } else {
@@ -197,7 +196,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
             updated = true;
         }
 
-        checkState(updated, "Nothing to update...");
+        checkArgument(updated, "Nothing to update...");
 
         final RevTree canonicalTree = objectDatabase.getTree(typeTreeRef.getObjectId());
 
@@ -216,7 +215,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
                         .call();
                 Optional<ObjectId> headIndexedTreeId = indexDatabase
                         .resolveIndexedTree(newIndexInfo, canonicalTree.getId());
-                checkState(headIndexedTreeId.isPresent(),
+                checkArgument(headIndexedTreeId.isPresent(),
                         "HEAD indexed tree could not be resolved after building history indexes.");
                 indexedTreeId = headIndexedTreeId.get();
             } else {

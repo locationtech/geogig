@@ -23,6 +23,8 @@ import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Optional;
 
+import lombok.Getter;
+
 /**
  * Update the object name stored in a {@link Ref} safely.
  * <p>
@@ -31,15 +33,15 @@ import com.google.common.base.Optional;
 @Hookable(name = "update-ref")
 public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
 
-    private String name;
+    private @Getter String name;
 
-    private ObjectId newValue;
+    private @Getter ObjectId newValue;
 
-    private String oldValue;
+    private @Getter String oldValue;
 
-    private boolean delete;
+    private @Getter boolean delete;
 
-    private String reason;
+    private @Getter String reason;
 
     private boolean verifyValue = true;
 
@@ -163,9 +165,4 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
 
         return newRef;
     }
-
-    public boolean isDelete() {
-        return delete;
-    }
-
 }

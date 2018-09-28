@@ -17,8 +17,6 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.StagingAreaImpl;
-import org.locationtech.geogig.repository.impl.WorkingTreeImpl;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
@@ -157,96 +155,5 @@ public class GuiceContext implements Context {
     @Override
     public Context snapshot() {
         return new SnapshotContext(this);
-    }
-
-    private static class SnapshotContext implements Context {
-
-        private Context context;
-
-        private RefDatabaseSnapshot refsSnapshot;
-
-        public SnapshotContext(Context context) {
-            this.context = context;
-            this.refsSnapshot = new RefDatabaseSnapshot(context.refDatabase());
-            this.refsSnapshot.create();
-        }
-
-        @Override
-        public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
-            T command = context.command(commandClass);
-            command.setContext(this);
-            return command;
-        }
-
-        @Override
-        public WorkingTree workingTree() {
-            return new WorkingTreeImpl(this);
-        }
-
-        @Override
-        public StagingArea index() {
-            return index();
-        }
-
-        @Override
-        public StagingArea stagingArea() {
-            return new StagingAreaImpl(this);
-        }
-
-        @Override
-        public RefDatabase refDatabase() {
-            return refsSnapshot;
-        }
-
-        @Override
-        public Context snapshot() {
-            return this;
-        }
-        //////////////// END OF DECORATED METHODS /////////////////
-
-        @Override
-        public Platform platform() {
-            return context.platform();
-        }
-
-        @Override
-        public ObjectDatabase objectDatabase() {
-            return context.objectDatabase();
-        }
-
-        @Override
-        public IndexDatabase indexDatabase() {
-            return context.indexDatabase();
-        }
-
-        @Override
-        public ConflictsDatabase conflictsDatabase() {
-            return context.conflictsDatabase();
-        }
-
-        @Override
-        public ConfigDatabase configDatabase() {
-            return context.configDatabase();
-        }
-
-        @Override
-        public GraphDatabase graphDatabase() {
-            return context.graphDatabase();
-        }
-
-        @Override
-        public Repository repository() {
-            return context.repository();
-        }
-
-        @Override
-        public BlobStore blobStore() {
-            return context.blobStore();
-        }
-
-        @Override
-        public PluginDefaults pluginDefaults() {
-            return context.pluginDefaults();
-        }
     }
 }

@@ -42,7 +42,7 @@ public abstract class AbstractGeoGigOp<T> {
 
     protected Context context;
 
-    private Map<Serializable, Serializable> metadata;
+    private Map<Serializable, Object> metadata;
 
     /**
      * Interface for a listener that will be notified before and after the op is called.
@@ -88,9 +88,9 @@ public abstract class AbstractGeoGigOp<T> {
     /**
      * @return a content holder for client code data that can be used by decorators/interceptors
      */
-    public Map<Serializable, Serializable> getClientData() {
+    public Map<Serializable, Object> getClientData() {
         if (metadata == null) {
-            metadata = new HashMap<Serializable, Serializable>();
+            metadata = new HashMap<>();
         }
         return metadata;
     }
@@ -100,7 +100,7 @@ public abstract class AbstractGeoGigOp<T> {
             return Optional.absent();
         }
         V res = null;
-        Serializable value = metadata.get(key);
+        Object value = metadata.get(key);
         if (value != null) {
             res = Converters.convert(value, type);
         }

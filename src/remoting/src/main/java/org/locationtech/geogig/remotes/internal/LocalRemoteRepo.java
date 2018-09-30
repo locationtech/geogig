@@ -59,14 +59,16 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
+import lombok.Getter;
+
 /**
  * An implementation of a remote repository that exists on the local machine.
  * 
  * @see IRemoteRepo
  */
-class LocalRemoteRepo extends AbstractRemoteRepo {
+public class LocalRemoteRepo extends AbstractRemoteRepo {
 
-    private Repository remoteRepository;
+    private @Getter Repository remoteRepository;
 
     private URI remoteRepoURI;
 

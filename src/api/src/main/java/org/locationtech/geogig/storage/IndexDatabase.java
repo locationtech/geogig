@@ -149,4 +149,8 @@ public interface IndexDatabase extends ObjectStore {
     public default void copyIndexesTo(final IndexDatabase target) {
         new IndexDuplicator(this, target).run();
     }
+
+    public default void copyIndexTo(final IndexInfo index, final IndexDatabase target) {
+        new IndexDuplicator(this, target, index).run();
+    }
 }

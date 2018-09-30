@@ -12,8 +12,9 @@ package org.locationtech.geogig.remotes.pack;
 import java.util.Iterator;
 
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.IndexDatabase;
 
 /**
  * Applies changes of a pack to a repository.
@@ -27,6 +28,7 @@ public interface PackProcessor {
 
     public void putAll(Iterator<? extends RevObject> iterator, BulkOpListener listener);
 
-    public void putIndex(Pack.IndexDef index, Iterator<RevTree> indexContents, BulkOpListener listener);
+    public void putIndex(Pack.IndexDef index, IndexDatabase sourceStore,
+            ObjectReporter objectReport, Deduplicator deduplicator);
 
 }

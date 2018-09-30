@@ -63,7 +63,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
     protected Repository originRepo, localRepo, upstreamRepo;
 
-    private Remote origin, upstream;
+    protected Remote origin, upstream;
 
     private Optional<Ref> originMaster, originBranch1, originTag;
 

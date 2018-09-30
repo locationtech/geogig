@@ -35,6 +35,7 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
+import org.locationtech.geogig.remotes.internal.LocalRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
@@ -112,10 +113,20 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
             final Iterable<RefDiff> localRemoteRefs;
             Optional<Ref> headRef;
             try (IRemoteRepo remoteRepo = openRemote(remote)) {
+                boolean fetchIndexes = this.cloneIndexes;
+                if (fetchIndexes && remoteRepo instanceof LocalRemoteRepo) {
+                    fetchIndexes = false;
+                }
                 final Integer depth = this.depth.or(remoteRepo.getDepth()).or(0);
                 setDepth(cloneRepo, depth);
-                localRemoteRefs = fetchRemoteData(cloneRepo, remote, depth);
+                localRemoteRefs = fetchRemoteData(cloneRepo, remote, depth, fetchIndexes);
                 headRef = remoteRepo.headRef();
+
+                if (this.cloneIndexes && remoteRepo instanceof LocalRemoteRepo) {
+                    Repository localRemote = ((LocalRemoteRepo) remoteRepo).getRemoteRepository();
+                    localRemote.indexDatabase().copyIndexesTo(cloneRepo.indexDatabase());
+                }
+
             }
             setUpRemoteTrackingBranches(cloneRepo, remote, localRemoteRefs, headRef);
         } catch (Exception e) {
@@ -243,7 +254,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
     }
 
     private Collection<RefDiff> fetchRemoteData(final Repository clone, Remote remote,
-            final int depth) {
+            final int depth, final boolean cloneIndexes) {
         // Fetch remote data
         final TransferSummary fetchResults;
         final ProgressListener progress = getProgressListener();

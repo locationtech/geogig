@@ -46,6 +46,7 @@ import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.BranchDeleteOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
@@ -328,6 +329,13 @@ public class TestData {
         return this;
     }
 
+    public TestData branchDelete(String branch) {
+        Optional<? extends Ref> ref = getContext().command(BranchDeleteOp.class).setName(branch)
+                .call();
+        checkState(ref.isPresent());
+        return this;
+    }
+
     public TestData checkout(String branch) {
         getContext().command(CheckoutOp.class).setSource(branch).call();
         Ref head = getContext().command(RefParse.class).setName(Ref.HEAD).call().get();
@@ -366,6 +374,10 @@ public class TestData {
     }
 
     public TestData insert(SimpleFeature... features) {
+        return insert(Arrays.asList(features));
+    }
+
+    public TestData insert(List<SimpleFeature> features) {
         Context context = getContext();
         WorkingTree workingTree = context.workingTree();
         Map<FeatureType, RevFeatureType> types = new HashMap<>();
@@ -491,8 +503,13 @@ public class TestData {
     }
 
     public static SimpleFeature clone(SimpleFeature f) {
+        return copy(f, f.getID());
+    }
+
+    public static SimpleFeature copy(SimpleFeature f, String newId) {
         SimpleFeatureBuilder cloner = new SimpleFeatureBuilder(f.getFeatureType());
         cloner.init(f);
-        return cloner.buildFeature(f.getID());
+        return cloner.buildFeature(newId);
     }
+
 }

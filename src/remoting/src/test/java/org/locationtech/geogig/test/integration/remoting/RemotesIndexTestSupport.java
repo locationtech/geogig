@@ -34,10 +34,9 @@ import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.index.Index;
-import org.locationtech.geogig.porcelain.index.UpdateIndexOp;
-import org.locationtech.geogig.porcelain.index.UpdateIndexesOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
 import org.locationtech.jts.geom.Envelope;
 
@@ -67,8 +66,13 @@ public class RemotesIndexTestSupport {
         for (NodeRef treeRef : types) {
             Map<String, IndexInfo> typeIndexes = getIndexes(repo, treeRef.path());
             if (typeIndexes.containsKey(treeRef.path())) {
-                List<Index> list = repo.command(UpdateIndexesOp.class).setRef(ref).call();
-                indexes.addAll(list);
+                IndexInfo indexInfo = typeIndexes.get(treeRef.path());
+                IndexDatabase indexdb = repo.indexDatabase();
+                Optional<ObjectId> indexedTree = indexdb.resolveIndexedTree(indexInfo,
+                        treeRef.getObjectId());
+                if (indexedTree.isPresent()) {
+                    indexes.add(new Index(indexInfo, indexedTree.get(), indexdb));
+                }
             } else {
                 Index index = repo.command(CreateQuadTree.class).setBounds(bounds)
                         .setIndexHistory(true).setTypeTreeRef(treeRef).call();
@@ -144,7 +148,9 @@ public class RemotesIndexTestSupport {
                         .get();
                 Optional<ObjectId> indexedTree = repo.indexDatabase().resolveIndexedTree(indexInfo,
                         canonicalTreeId);
-                assertTrue(indexedTree.isPresent());
+                String msg = String.format("Expected index at %s:%s", branch.getName(),
+                        indexInfo.getTreeName());
+                assertTrue(msg, indexedTree.isPresent());
                 mappings.add(new IndexTreeMapping(canonicalTreeId, indexedTree.get()));
             }
         }

@@ -57,14 +57,21 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
 
         Envelope envelope = SpatialOps.parseNonReferencedBBOX(bbox);
 
-        Index index = repo.command(CreateQuadTree.class)//
-                .setTreeRefSpec(treeRefSpec)//
-                .setGeometryAttributeName(attribute)//
-                .setExtraAttributes(extraAttributes)//
-                .setIndexHistory(indexHistory)//
-                .setBounds(envelope)//
-                .setProgressListener(cli.getProgressListener())//
-                .call();
+        Index index;
+        try {
+            index = repo.command(CreateQuadTree.class)//
+                    .setTreeRefSpec(treeRefSpec)//
+                    .setGeometryAttributeName(attribute)//
+                    .setExtraAttributes(extraAttributes)//
+                    .setIndexHistory(indexHistory)//
+                    .setBounds(envelope)//
+                    .setProgressListener(cli.getProgressListener())//
+                    .call();
+        } catch (IllegalStateException e) {
+            throw new CommandFailedException(e.getMessage(), true);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidParameterException(e.getMessage(), e);
+        }
 
         if (cli.getProgressListener().isCanceled()) {
             cli.getConsole().println("Index creation cancelled.");

@@ -24,9 +24,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hasher;
+
+import lombok.ToString;
+
 import org.locationtech.jts.geom.Envelope;
 
-public final class IndexInfo {
+public @ToString final class IndexInfo {
     public static enum IndexType {
         QUADTREE
     }

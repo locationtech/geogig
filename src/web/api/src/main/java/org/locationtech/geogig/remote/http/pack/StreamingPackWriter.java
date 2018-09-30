@@ -15,8 +15,9 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.remotes.pack.LocalPackBuilder;
+import org.locationtech.geogig.remotes.pack.ObjectReporter;
 import org.locationtech.geogig.remotes.pack.Pack;
 import org.locationtech.geogig.remotes.pack.Pack.IndexDef;
 import org.locationtech.geogig.remotes.pack.PackBuilder;
@@ -24,6 +25,7 @@ import org.locationtech.geogig.remotes.pack.PackProcessor;
 import org.locationtech.geogig.remotes.pack.RefRequest;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.IndexDatabase;
 
 public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder, PackProcessor {
 
@@ -92,7 +94,9 @@ public class StreamingPackWriter extends LocalPackBuilder implements PackBuilder
         }
     }
 
-    public @Override void putIndex(IndexDef index, Iterator<RevTree> indexContents, BulkOpListener listener) {
+    public @Override void putIndex(IndexDef index, IndexDatabase sourceStore,
+            ObjectReporter objectReport, Deduplicator deduplicator) {
         throw new UnsupportedOperationException("implement!");
     }
+
 }

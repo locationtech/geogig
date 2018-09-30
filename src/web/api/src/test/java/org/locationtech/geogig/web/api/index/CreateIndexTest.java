@@ -219,7 +219,7 @@ public class CreateIndexTest extends AbstractIndexWebOpTest {
 
         ParameterSet options = TestParams.of("treeRefSpec", "Points");
 
-        ex.expect(IllegalStateException.class);
+        ex.expect(IllegalArgumentException.class);
         ex.expectMessage("An index has already been created on that tree and attribute.");
         buildCommand(options).run(testContext.get());
     }

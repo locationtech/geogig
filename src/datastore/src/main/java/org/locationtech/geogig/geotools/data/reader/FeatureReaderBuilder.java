@@ -12,6 +12,7 @@ package org.locationtech.geogig.geotools.data.reader;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.notNull;
+import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,12 +87,15 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * A builder object for a {@link FeatureReader} that fetches data from a geogig {@link RevTree}
  * representing a "layer".
  * <p>
  * 
  */
+@Slf4j
 public class FeatureReaderBuilder {
 
     private static final GeometryFactory DEFAULT_GEOMETRY_FACTORY = new GeometryFactory(
@@ -274,7 +278,7 @@ public class FeatureReaderBuilder {
         Set<String> requiredProperties;
 
         // properties present in the RevTree nodes' extra data
-        public Set<String> materializedIndexProperties;
+        public Set<String> materializedIndexProperties = Collections.emptySet();
 
         // whether the RevTree nodes contain all required properties (hence no need to fetch
         // RevFeatures from the database)
@@ -313,53 +317,39 @@ public class FeatureReaderBuilder {
         info.diffOp = leftRepo.command(DiffTree.class);
 
         // the RevTree id at the left side of the diff
-        final ObjectId oldFeatureTypeTree;
+        ObjectId oldFeatureTypeTree;
         // the RevTree id at the right side of the diff
-        final ObjectId newFeatureTypeTree;
+        ObjectId newFeatureTypeTree;
         // where to get RevTree instances from (either the object or the index database)
-        final ObjectStore leftSource, rightSource;
-        final NodeOrdering diffNodeOrdering;
+        ObjectStore leftSource = leftRepo.objectDatabase();
+        ObjectStore rightSource = rightRepo.objectDatabase();
+        NodeOrdering diffNodeOrdering = CanonicalNodeOrder.INSTANCE;
+        ReferencedEnvelope boundsPreFilter = null;
         {
             final String nativeTypeName = nativeSchema.getTypeName();
 
-            // TODO: resolve based on filter, in case the feature type has more than one geometry
-            // attribute
-            final @Nullable GeometryDescriptor geometryAttribute = nativeSchema
-                    .getGeometryDescriptor();
-            final Optional<Index> oldHeadIndex;
-            final Optional<Index> headIndex;
+            final Optional<NodeRef> oldCanonicalTree;
+            final Optional<NodeRef> newCanonicalTree;
 
-            final Optional<NodeRef> oldCanonicalTree = resolveCanonicalTree(oldHeadRef,
-                    nativeTypeName, leftRepo);
-            final Optional<NodeRef> newCanonicalTree = resolveCanonicalTree(headRef, nativeTypeName,
-                    rightRepo);
-            final ObjectId oldCanonicalTreeId = oldCanonicalTree.map(r -> r.getObjectId())
-                    .orElse(RevTree.EMPTY_TREE_ID);
-            final ObjectId newCanonicalTreeId = newCanonicalTree.map(r -> r.getObjectId())
-                    .orElse(RevTree.EMPTY_TREE_ID);
+            oldCanonicalTree = resolveCanonicalTree(oldHeadRef, nativeTypeName, leftRepo);
+            newCanonicalTree = resolveCanonicalTree(headRef, nativeTypeName, rightRepo);
+            oldFeatureTypeTree = oldCanonicalTree.map(r -> r.getObjectId()).orElse(EMPTY_TREE_ID);
+            newFeatureTypeTree = newCanonicalTree.map(r -> r.getObjectId()).orElse(EMPTY_TREE_ID);
 
-            // featureTypeId = newCanonicalTree.isPresent() ? newCanonicalTree.get().getMetadataId()
-            // : oldCanonicalTree.get().getMetadataId();
+            boundsPreFilter = createBoundsFilter(info.fullSchema, info.nativeFilter,
+                    oldFeatureTypeTree, leftSource, newFeatureTypeTree, rightSource);
 
-            Optional<Index> indexes[];
+            final Optional<Index>[] indexes = resolveIndexes(oldFeatureTypeTree, newFeatureTypeTree,
+                    info.nativeFilter);
 
-            // if native filter is a simple "fid filter" then force ignoring the index for a faster
-            // look-up (looking up for a fid in the canonical tree is much faster)
-            final boolean ignoreIndex = geometryAttribute == null || this.ignoreIndex
-                    || info.nativeFilter instanceof Id;
-            if (ignoreIndex) {
-                indexes = NO_INDEX;
-            } else {
-                indexes = resolveIndex(oldCanonicalTreeId, newCanonicalTreeId, nativeTypeName,
-                        geometryAttribute.getLocalName());
-            }
-            oldHeadIndex = indexes[0];
-            headIndex = indexes[1];
+            final Optional<Index> oldHeadIndex = indexes[0];
+            final Optional<Index> headIndex = indexes[1];
+
             // neither is present or both have the same indexinfo
             checkState(!(oldHeadIndex.isPresent() || headIndex.isPresent()) || //
                     headIndex.get().info().equals(oldHeadIndex.get().info()));
 
-            if (oldHeadIndex.isPresent()) {
+            if (oldHeadIndex.isPresent() && headIndex.isPresent()) {
                 oldFeatureTypeTree = oldHeadIndex.get().indexTreeId();
                 newFeatureTypeTree = headIndex.get().indexTreeId();
                 leftSource = leftRepo.indexDatabase();
@@ -372,15 +362,8 @@ public class FeatureReaderBuilder {
                 Preconditions.checkNotNull(maxBounds);
                 diffNodeOrdering = QuadTreeBuilder.nodeOrdering(maxBounds);
                 info.diffUsesIndex = true;
-            } else {
-                oldFeatureTypeTree = oldCanonicalTreeId;
-                newFeatureTypeTree = newCanonicalTreeId;
-                leftSource = leftRepo.objectDatabase();
-                rightSource = rightRepo.objectDatabase();
-                diffNodeOrdering = CanonicalNodeOrder.INSTANCE;
+                info.materializedIndexProperties = resolveMaterializedProperties(headIndex);
             }
-
-            info.materializedIndexProperties = resolveMaterializedProperties(headIndex);
 
             PrePostFilterSplitter filterSplitter;
             filterSplitter = new PrePostFilterSplitter()
@@ -393,6 +376,7 @@ public class FeatureReaderBuilder {
                     .containsAll(info.requiredProperties);
 
             info.filterIsFullySupportedByIndex = Filter.INCLUDE.equals(info.postFilter);
+
         }
         // TODO: for some reason setting the default metadata id is making several tests fail,
         // though it's not really needed here because we have the FeatureType already. Nonetheless
@@ -403,9 +387,10 @@ public class FeatureReaderBuilder {
                 .setPreserveIterationOrder(preserveIterationOrder)//
                 .setPathFilter(createFidFilter(info.nativeFilter)) //
                 .setCustomFilter(indexPreFilter) //
-                // no need to set a bounds filter, the preFilter takes care of it
-                // .setBoundsFilter(createBoundsFilter(info.fullSchema, info.nativeFilter,
-                // newFeatureTypeTree, treeSource)) //
+                // although preFilter will also evaluate the spatial filters in-process based on the
+                // geotools feature model, settings the DiffWalk bounds filter helps in avoiding a
+                // lot of those more expensive checks
+                .setBoundsFilter(boundsPreFilter) //
                 .setChangeTypeFilter(resolveChangeType()) //
                 .setOldTree(oldFeatureTypeTree) //
                 .setNewTree(newFeatureTypeTree) //
@@ -415,6 +400,30 @@ public class FeatureReaderBuilder {
                 .recordStats();
 
         return info;
+    }
+
+    private Optional<Index>[] resolveIndexes(final ObjectId oldCanonicalTreeId,
+            final ObjectId newCanonicalTreeId, final Filter nativeFilter) {
+        Optional<Index> indexes[];
+
+        // TODO: resolve based on filter, in case the feature type has more than one geometry
+        // attribute
+        final @Nullable GeometryDescriptor geometryAttribute = nativeSchema.getGeometryDescriptor();
+        final String typeName = nativeSchema.getTypeName();
+        final boolean ignoreIndexVmArg = Boolean.getBoolean("geogig.ignoreindex");
+        if (ignoreIndexVmArg) {
+            log.info("Ignoring index lookup for {} as indicated by -Dgeogig.ignoreindex=true",
+                    typeName);
+        }
+
+        // if native filter is a simple "fid filter" then force ignoring the index for a faster
+        // look-up (looking up for a fid in the canonical tree is much faster)
+        final boolean ignoreIndex = ignoreIndexVmArg || geometryAttribute == null
+                || this.ignoreIndex || nativeFilter instanceof Id;
+        indexes = ignoreIndex ? NO_INDEX
+                : resolveIndex(oldCanonicalTreeId, newCanonicalTreeId, typeName,
+                        geometryAttribute.getLocalName());
+        return indexes;
     }
 
     public FeatureReader<SimpleFeatureType, SimpleFeature> build() {
@@ -605,16 +614,12 @@ public class FeatureReaderBuilder {
     @SuppressWarnings("unchecked")
     private Optional<Index>[] resolveIndex(final ObjectId oldCanonical, final ObjectId newCanonical,
             final String treeName, final String attributeName) {
-        if (Boolean.getBoolean("geogig.ignoreindex")) {
-            // TODO: remove debugging aid
-            System.err.printf(
-                    "Ignoring index lookup for %s as indicated by -Dgeogig.ignoreindex=true\n",
-                    treeName);
-            return NO_INDEX;
-        }
-        Optional<Index> leftIndex = resolveIndex(oldCanonical, treeName, attributeName, leftRepo);
+        IndexDatabase leftDb = leftRepo.indexDatabase();
+        IndexDatabase rightDb = rightRepo.indexDatabase();
+
+        Optional<Index> leftIndex = resolveIndex(oldCanonical, treeName, attributeName, leftDb);
         Optional<Index> rightIndex = leftIndex.isPresent()
-                ? resolveIndex(newCanonical, treeName, attributeName, rightRepo)
+                ? resolveIndex(newCanonical, treeName, attributeName, rightDb)
                 : Optional.empty();
         if (!leftIndex.isPresent() || !rightIndex.isPresent()) {
             return NO_INDEX;
@@ -625,20 +630,19 @@ public class FeatureReaderBuilder {
         return indexes;
     }
 
+    /**
+     * @param oldCanonical the layer's canonical tree id
+     * @param treeName the layer's tree path
+     * @param attributeName the index attribute name
+     * @param repo
+     * @return
+     */
     private Optional<Index> resolveIndex(final ObjectId oldCanonical, final String treeName,
-            final String attributeName, final Context repo) {
-        if (Boolean.getBoolean("geogig.ignoreindex")) {
-            // TODO: remove debugging aid
-            System.err.printf(
-                    "Ignoring index lookup for %s as indicated by -Dgeogig.ignoreindex=true\n",
-                    treeName);
-            return Optional.empty();
-        }
-        final IndexDatabase indexDatabase = repo.indexDatabase();
-        IndexInfo info = indexDatabase.getIndexInfo(treeName, attributeName).orNull();
+            final String attributeName, final IndexDatabase db) {
+        IndexInfo info = db.getIndexInfo(treeName, attributeName).orNull();
         Optional<Index> index = Optional.empty();
         if (info != null) {
-            index = resolveIndex(oldCanonical, info, indexDatabase);
+            index = resolveIndex(oldCanonical, info, db);
         }
         return index;
     }
@@ -658,14 +662,16 @@ public class FeatureReaderBuilder {
     }
 
     private Optional<Index> resolveIndex(ObjectId canonicalTreeId, IndexInfo indexInfo,
-            IndexDatabase indexDatabase) {
+            IndexDatabase db) {
 
-        Index index = new Index(indexInfo, RevTree.EMPTY_TREE_ID, indexDatabase);
-        if (!RevTree.EMPTY_TREE_ID.equals(canonicalTreeId)) {
-            ObjectId indexedTree = indexDatabase.resolveIndexedTree(indexInfo, canonicalTreeId)
-                    .orNull();
+        Index index = null;
+
+        if (EMPTY_TREE_ID.equals(canonicalTreeId)) {
+            index = new Index(indexInfo, EMPTY_TREE_ID, db);
+        } else {
+            ObjectId indexedTree = db.resolveIndexedTree(indexInfo, canonicalTreeId).orNull();
             if (indexedTree != null) {
-                index = new Index(indexInfo, indexedTree, indexDatabase);
+                index = new Index(indexInfo, indexedTree, db);
             }
         }
         return Optional.ofNullable(index);
@@ -736,14 +742,15 @@ public class FeatureReaderBuilder {
         nativeFilter = reprojectFilter(nativeFilter);
 
         if (this.nativeSchema.getGeometryDescriptor() != null) {
-            String defaultGeometryPName = this.nativeSchema.getGeometryDescriptor().getName().getLocalPart();
+            String defaultGeometryPName = this.nativeSchema.getGeometryDescriptor().getName()
+                    .getLocalPart();
             RenamePropertyFilterVisitor renameBoundsVisitor = new RenamePropertyFilterVisitor(
                     "@bounds", defaultGeometryPName);
             nativeFilter = (Filter) nativeFilter.accept(renameBoundsVisitor, null);
         }
 
         InReplacingFilterVisitor inreplacer = new InReplacingFilterVisitor();
-        nativeFilter =  (Filter) nativeFilter.accept(inreplacer,null);
+        nativeFilter = (Filter) nativeFilter.accept(inreplacer, null);
 
         return nativeFilter;
     }
@@ -779,9 +786,42 @@ public class FeatureReaderBuilder {
         }
     }
 
-    private @Nullable ReferencedEnvelope createBoundsFilter(SimpleFeatureType fullSchema,
-            Filter filterInNativeCrs, ObjectId featureTypeTreeId, ObjectStore treeSource) {
-        if (RevTree.EMPTY_TREE_ID.equals(featureTypeTreeId)) {
+    private @Nullable ReferencedEnvelope createBoundsFilter(//@formatter:off
+            SimpleFeatureType fullSchema,
+            Filter filterInNativeCrs, 
+            ObjectId oldFeatureTypeTree, 
+            ObjectStore leftSource, 
+            ObjectId newFeatureTypeTree, 
+            ObjectStore rightSource) {//@formatter:on
+
+        final List<Envelope> bounds = ExtractBounds.getBounds(filterInNativeCrs);
+
+        final @Nullable ReferencedEnvelope leftFilter;
+        final @Nullable ReferencedEnvelope rightFilter;
+        leftFilter = createBoundsFilter(fullSchema, bounds, oldFeatureTypeTree, leftSource);
+        rightFilter = createBoundsFilter(fullSchema, bounds, newFeatureTypeTree, rightSource);
+
+        if (leftFilter == null && rightFilter == null) {
+            return null;
+        }
+        if (leftFilter == null && rightFilter != null) {
+            return rightFilter;
+        }
+        if (leftFilter != null && rightFilter == null) {
+            return leftFilter;
+        }
+        ReferencedEnvelope boundsPreFilter = leftFilter;
+        boundsPreFilter.expandToInclude(rightFilter);
+        return boundsPreFilter;
+    }
+
+    private @Nullable ReferencedEnvelope createBoundsFilter(//@formatter:off
+            SimpleFeatureType fullSchema,
+            List<Envelope> bounds, 
+            ObjectId featureTypeTreeId, 
+            ObjectStore treeSource) {//@formatter:on
+
+        if (EMPTY_TREE_ID.equals(featureTypeTreeId)) {
             return null;
         }
 
@@ -791,7 +831,6 @@ public class FeatureReaderBuilder {
         }
 
         final Envelope queryBounds = new Envelope();
-        List<Envelope> bounds = ExtractBounds.getBounds(filterInNativeCrs);
 
         if (bounds != null && !bounds.isEmpty()) {
             final RevTree tree = treeSource.getTree(featureTypeTreeId);
@@ -823,7 +862,7 @@ public class FeatureReaderBuilder {
 
         List<Predicate<Bounded>> predicates = new ArrayList<>();
         if (preFilter instanceof And) {
-            for (Filter f: ((And) preFilter).getChildren()){
+            for (Filter f : ((And) preFilter).getChildren()) {
                 predicates.add(PreFilter.forFilter(f));
             }
         } else {

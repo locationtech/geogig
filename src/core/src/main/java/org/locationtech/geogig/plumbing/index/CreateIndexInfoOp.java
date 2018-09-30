@@ -82,7 +82,7 @@ public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
         checkArgument(attributeName != null, "indexing attribute name not provided");
         checkArgument(indexType != null, "index type not provided");
 
-        checkState(!indexDatabase.getIndexInfo(treeName, attributeName).isPresent(),
+        checkArgument(!indexDatabase.getIndexInfo(treeName, attributeName).isPresent(),
                 "An index has already been created on that tree and attribute.");
 
         Map<String, Object> metadata = this.metadata;

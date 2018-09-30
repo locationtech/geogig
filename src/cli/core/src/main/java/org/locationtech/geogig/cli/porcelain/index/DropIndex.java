@@ -40,11 +40,17 @@ public class DropIndex extends AbstractCommand implements CLICommand {
 
         Repository repo = cli.getGeogig().getRepository();
 
-        repo.command(DropIndexOp.class)//
-                .setTreeRefSpec(treeRefSpec)//
-                .setAttributeName(attribute)//
-                .setProgressListener(cli.getProgressListener())//
-                .call();
+        try {
+            repo.command(DropIndexOp.class)//
+                    .setTreeRefSpec(treeRefSpec)//
+                    .setAttributeName(attribute)//
+                    .setProgressListener(cli.getProgressListener())//
+                    .call();
+        } catch (IllegalStateException e) {
+            throw new CommandFailedException(e);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidParameterException(e.getMessage(), e);
+        }
 
         cli.getConsole().println("Index successfully dropped.");
 

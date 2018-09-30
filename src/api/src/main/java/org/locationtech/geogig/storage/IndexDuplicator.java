@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -57,14 +58,23 @@ public class IndexDuplicator {
 
     private final IndexDatabase targetIndex;
 
+    private IndexInfo index;
+
     public IndexDuplicator(IndexDatabase srcIndex, IndexDatabase targetIndex) {
+        this(srcIndex, targetIndex, null);
+    }
+
+    public IndexDuplicator(IndexDatabase srcIndex, IndexDatabase targetIndex, IndexInfo index) {
         this.srcIndex = srcIndex;
         this.targetIndex = targetIndex;
+        this.index = index;
     }
 
     public void run() {
         List<ForkJoinTask<?>> tasks = new ArrayList<>();
-        for (IndexInfo index : srcIndex.getIndexInfos()) {
+        List<IndexInfo> indexInfos = index == null ? srcIndex.getIndexInfos()
+                : Collections.singletonList(index);
+        for (IndexInfo index : indexInfos) {
             ForkJoinTask<Void> task = FORK_JOIN_POOL
                     .submit(new IndexCopyTask(index, srcIndex, targetIndex));
             tasks.add(task);

@@ -31,10 +31,10 @@ import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Envelope;
 
 public class UpdateIndexOpTest extends RepositoryTestCase {
 
@@ -271,7 +271,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     public void testUpdateIndexAttributesNoFlagSpecified() {
         createIndex("x");
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
                 "Extra attributes already exist on index, specify add or overwrite to update.");
         geogig.command(UpdateIndexOp.class)//
@@ -284,7 +284,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     public void testUpdateIndexOverwriteSameAttribute() {
         createIndex("x");
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Nothing to update...");
         geogig.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
@@ -297,7 +297,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     public void testUpdateIndexAddSameAttribute() {
         createIndex("x", "y");
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Nothing to update...");
         geogig.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
@@ -310,7 +310,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     public void testUpdateIndexDoNothing() {
         createIndex("x");
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Nothing to update...");
         geogig.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
@@ -319,7 +319,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
     @Test
     public void testUpdateNoExistingIndex() {
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("A matching index could not be found.");
         geogig.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
@@ -330,7 +330,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     @Test
     public void testUpdateNoMatchingIndex() {
         indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("A matching index could not be found.");
         geogig.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
@@ -342,7 +342,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     public void testUpdateMultipleMatchingIndexes() {
         indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
         indexdb.createIndexInfo(worldPointsLayer.getName(), "y", IndexType.QUADTREE, null);
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
                 "Multiple indexes were found for the specified tree, please specify the attribute.");
         geogig.command(UpdateIndexOp.class)//

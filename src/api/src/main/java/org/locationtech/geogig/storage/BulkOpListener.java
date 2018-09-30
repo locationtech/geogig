@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 
+import lombok.ToString;
+
 /**
  * Base listener implementation for bulk operation on an {@link ObjectDatabase}. This can be used to
  * be notified when objects are found, inserted, deleted, or not found during bulk operations.
@@ -158,7 +160,7 @@ public abstract class BulkOpListener {
      * Implementation of {@code BulkOpListener} that keeps track of the number of times each
      * function is called.
      */
-    public static class CountingListener extends BulkOpListener {
+    public @ToString static class CountingListener extends BulkOpListener {
         private AtomicInteger found = new AtomicInteger();
 
         private AtomicInteger inserted = new AtomicInteger();

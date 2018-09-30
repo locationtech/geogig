@@ -9,14 +9,22 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
+
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.remotes.pack.Pack.IndexDef;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -40,25 +48,48 @@ public class LocalPackProcessor implements PackProcessor {
         target.putAll(iterator, listener);
     }
 
-    public @Override void putIndex(IndexDef indexDef, Iterator<RevTree> indexContents,
-            BulkOpListener listener) {
+    public @Override void putIndex(//@formatter:off
+            @NonNull IndexDef indexDef, 
+            @NonNull IndexDatabase sourceStore,
+            @NonNull ObjectReporter objectReport, 
+            @NonNull Deduplicator deduplicator
+            ) {//@formatter:on
 
-        IndexDatabase indexdb = targetIndexdb;
-
-        String treeName = indexDef.getIndex().getTreeName();
-        String attributeName = indexDef.getIndex().getAttributeName();
-        Optional<IndexInfo> existingIndex = indexdb.getIndexInfo(treeName, attributeName);
-        IndexInfo indexInfo = indexDef.getIndex();
-
-        indexdb.putAll(indexContents, listener);
+        final IndexDatabase indexdb = targetIndexdb;
+        final String treeName = indexDef.getIndex().getTreeName();
+        final String attributeName = indexDef.getIndex().getAttributeName();
+        final Optional<IndexInfo> existingIndex = indexdb.getIndexInfo(treeName, attributeName);
 
         if (!existingIndex.isPresent()) {
-            indexInfo = indexdb.createIndexInfo(treeName, attributeName, indexInfo.getIndexType(),
-                    indexInfo.getMetadata());
+            sourceStore.copyIndexTo(indexDef.getIndex(), indexdb);
+            return;
         }
-        ObjectId originalTree = indexDef.getCanonical();
-        ObjectId indexedTree = indexDef.getIndexTreeId();
-        indexdb.addIndexedTree(indexInfo, originalTree, indexedTree);
+        final ExecutorService producerThread = Executors.newSingleThreadExecutor();
+        Iterator<RevTree> missingContents;
+        try {
+            final ObjectId oldIndexTreeId = indexDef.getParentIndexTreeId();
+            final ObjectId newIndexTreeId = indexDef.getIndexTreeId();
+
+            List<ObjectId[]> treeIds = Collections
+                    .singletonList(new ObjectId[] { oldIndexTreeId, newIndexTreeId });
+            final ContentIdsProducer producer = ContentIdsProducer.forIndex(indexDef.getIndex(),
+                    sourceStore, treeIds, deduplicator, objectReport);
+
+            producerThread.submit(producer);
+            Iterator<ObjectId> missingContentIds = producer.iterator();
+
+            missingContents = sourceStore.getAll(() -> missingContentIds, NOOP_LISTENER,
+                    RevTree.class);
+            IndexInfo indexInfo = indexDef.getIndex();
+            CountingListener c = new BulkOpListener.CountingListener();
+            indexdb.putAll(missingContents, c);
+
+            ObjectId originalTree = indexDef.getCanonical();
+            ObjectId indexedTree = indexDef.getIndexTreeId();
+            indexdb.addIndexedTree(indexInfo, originalTree, indexedTree);
+        } finally {
+            producerThread.shutdownNow();
+        }
     }
 
 }

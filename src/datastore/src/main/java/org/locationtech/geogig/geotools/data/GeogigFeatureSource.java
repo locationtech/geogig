@@ -33,6 +33,7 @@ import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
+import org.locationtech.geogig.geotools.data.reader.WalkInfo;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -41,6 +42,7 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureVisitor;
 import org.opengis.feature.simple.SimpleFeature;
@@ -54,17 +56,22 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  *
  */
-class GeogigFeatureSource extends ContentFeatureSource {
+public class GeogigFeatureSource extends ContentFeatureSource {
 
     private final GeogigFeatureVisitorHandler visitorHandler = new GeogigFeatureVisitorHandler();
+
     private static final String SCREENMAP_REPLACE_GEOMETRY_WITH_PX = "Renderer.ScreenMap.replaceGeometryWithPX";
-    private static final Hints.ConfigurationMetadataKey SCREENMAP_REPLACE_GEOMETRY_WITH_PX_KEY =
-                    Hints.ConfigurationMetadataKey.get(SCREENMAP_REPLACE_GEOMETRY_WITH_PX);
+
+    private static final Hints.ConfigurationMetadataKey SCREENMAP_REPLACE_GEOMETRY_WITH_PX_KEY = Hints.ConfigurationMetadataKey
+            .get(SCREENMAP_REPLACE_GEOMETRY_WITH_PX);
+
+    public static final Hints.Key WALK_INFO_KEY = new Hints.Key(Boolean.class);
+
+    public static final ThreadLocal<WalkInfo> WALK_INFO = new ThreadLocal<>();
 
     /**
      * <b>Precondition</b>: {@code entry.getDataStore() instanceof GeoGigDataStore}
@@ -312,7 +319,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final @Nullable Integer limit = query.isMaxFeaturesUnlimited() ? null
                 : query.getMaxFeatures();
         final @Nullable Double simplifyDistance = (Double) hints.get(Hints.GEOMETRY_SIMPLIFICATION);
-        final @Nullable Boolean replaceScreenGeomWithPX = (Boolean) hints.get(SCREENMAP_REPLACE_GEOMETRY_WITH_PX_KEY);
+        final @Nullable Boolean replaceScreenGeomWithPX = (Boolean) hints
+                .get(SCREENMAP_REPLACE_GEOMETRY_WITH_PX_KEY);
 
         final @Nullable ScreenMap screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
         final @Nullable String[] propertyNames = query.getPropertyNames();
@@ -343,6 +351,9 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .retypeIfNeeded(retypeIfNeeded)//
                 .build();
 
+        if (query.getHints().containsKey(GeogigFeatureSource.WALK_INFO_KEY)) {
+            WALK_INFO.set(builder.getBuiltWalkInfo());
+        }
         return featureReader;
 
     }

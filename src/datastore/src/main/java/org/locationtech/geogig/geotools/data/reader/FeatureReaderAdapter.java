@@ -35,7 +35,7 @@ public class FeatureReaderAdapter<T extends FeatureType, F extends Feature>
         this.iterator = iterator;
     }
 
-    public static <T extends FeatureType, F extends Feature> FeatureReader<T, F> of(T schema,
+    public static <T extends FeatureType, F extends Feature> FeatureReaderAdapter<T, F> of(T schema,
             AutoCloseableIterator<? extends F> iterator) {
         return new FeatureReaderAdapter<T, F>(schema, iterator);
     }

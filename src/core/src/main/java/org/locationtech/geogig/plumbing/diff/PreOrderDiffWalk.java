@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Sets.newTreeSet;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
@@ -21,7 +20,6 @@ import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +35,7 @@ import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -52,6 +51,7 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +66,8 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Provides a means to "walk" the differences between two {@link RevTree trees} in in-order order
@@ -538,18 +538,17 @@ public class PreOrderDiffWalk {
                 Set<ObjectId> ids = Sets.union(lbucketIds, rbucketIds);
                 Iterator<RevTree> titer = info.left.source.getAll(ids, NOOP_LISTENER,
                         RevTree.class);
-                trees = uniqueIndex(titer, (t) -> t.getId());
+                trees = Streams.stream(titer).collect(Collectors.toMap(t -> t.getId(), t -> t));
             } else {
-                trees = new HashMap<>();
-                trees.putAll(uniqueIndex(
-                        info.left.source.getAll(lbucketIds, NOOP_LISTENER, RevTree.class),
-                        (t) -> t.getId()));
+                trees = Streams
+                        .stream(info.left.source.getAll(lbucketIds, NOOP_LISTENER, RevTree.class))
+                        .collect(Collectors.toMap(t -> t.getId(), t -> t));
 
                 // avoid re-fetching objects at both sides
                 Set<ObjectId> missingAtRight = Sets.difference(rbucketIds, lbucketIds);
-                trees.putAll(uniqueIndex(
-                        info.right.source.getAll(missingAtRight, NOOP_LISTENER, RevTree.class),
-                        (t) -> t.getId()));
+                trees.putAll(Streams.stream(
+                        info.right.source.getAll(missingAtRight, NOOP_LISTENER, RevTree.class))
+                        .collect(Collectors.toMap(t -> t.getId(), t -> t)));
 
             }
             return trees;
@@ -667,8 +666,8 @@ public class PreOrderDiffWalk {
             {
 
                 Iterable<ObjectId> ids = transform(buckets.values(), (b) -> b.getObjectId());
-                bucketTrees = uniqueIndex(source.getAll(ids, NOOP_LISTENER, RevTree.class),
-                        (t) -> t.getId());
+                bucketTrees = Streams.stream(source.getAll(ids, NOOP_LISTENER, RevTree.class))
+                        .collect(Collectors.toMap(t -> t.getId(), t -> t));
             }
             return bucketTrees;
         }

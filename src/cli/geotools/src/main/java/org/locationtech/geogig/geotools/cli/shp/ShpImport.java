@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.geotools.data.DataStore;
+import org.geotools.filter.text.cql2.CQLException;
+import org.geotools.filter.text.ecql.ECQL;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -21,6 +23,7 @@ import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.filter.Filter;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -90,6 +93,9 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
             "--charset" }, description = "Use the specified charset to decode attributes. Default is ISO-8859-1.")
     String charset = "ISO-8859-1";
 
+    @Parameter(names = { "-f", "--cql-filter" }, description = "GetoTools ECQL filter")
+    String cqlFilter;
+
     /**
      * Executes the import command using the provided options.
      */
@@ -116,6 +122,14 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
                             "The specified attribute does not exist in the selected shapefile");
                 }
             }
+            Filter filter = Filter.INCLUDE;
+            if (cqlFilter != null) {
+                try {
+                    filter = ECQL.toFilter(cqlFilter);
+                } catch (CQLException e) {
+                    throw new IllegalArgumentException("Error parsing CQL filter", e);
+                }
+            }
 
             try {
                 cli.getConsole().println("Importing from shapefile " + shp);
@@ -125,7 +139,7 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
                         .setDestinationPath(destTable).setDataStore(dataStore)
                         .setFidAttribute(fidAttribute)
                         .setAdaptToDefaultFeatureType(!forceFeatureType)
-                        .setCreateSchemaOnly(onlyCreate);
+                        .setCreateSchemaOnly(onlyCreate).setFilter(filter);
 
                 // force the import not to use paging due to a bug in the shapefile datastore
                 command.setUsePaging(false);

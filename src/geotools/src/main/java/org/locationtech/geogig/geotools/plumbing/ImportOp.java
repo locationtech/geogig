@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
+import static org.geotools.data.DataUtilities.attributeNames;
 import static org.locationtech.geogig.repository.impl.SpatialOps.findIdentifier;
 
 import java.io.IOException;
@@ -19,6 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
@@ -57,6 +60,8 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.jts.geom.CoordinateSequenceFactory;
+import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -64,6 +69,7 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.opengis.filter.Filter;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
@@ -75,8 +81,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.CoordinateSequenceFactory;
-import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
+
+import lombok.NonNull;
 
 /**
  * Internal operation for importing tables from a GeoTools {@link DataStore}.
@@ -137,6 +145,8 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     private boolean usePaging = true;
 
     private ForwardingFeatureIteratorProvider forwardingFeatureIteratorProvider = null;
+
+    private Filter filter = Filter.INCLUDE;
 
     /**
      * Executes the import operation using the parameters that have been specified. Features will be
@@ -205,6 +215,18 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             FeatureSource featureSource = getFeatureSource(typeName);
             SimpleFeatureType featureType = (SimpleFeatureType) featureSource.getSchema();
 
+            if (!Filter.INCLUDE.equals(filter)) {
+                Set<String> filterAtts = Sets.newHashSet(attributeNames(filter, featureType));
+                SetView<String> missing = Sets.difference(filterAtts,
+                        featureType.getAttributeDescriptors().stream()
+                                .map(att -> att.getLocalName()).collect(Collectors.toSet()));
+                if (!missing.isEmpty()) {
+                    throw new IllegalArgumentException(String.format(
+                            "The following attributes required by the CQL filter do not exist in %s: %s",
+                            typeName, missing));
+                }
+            }
+
             final String fidPrefix = featureType.getTypeName() + ".";
 
             String path;
@@ -221,6 +243,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
             featureSource = new ForceTypeAndFidFeatureSource<FeatureType, Feature>(featureSource,
                     featureType, fidPrefix);
+
             boolean hasPrimaryKey = hasPrimaryKey(typeName);
             boolean forbidSorting = !usePaging || !hasPrimaryKey;
             ((ForceTypeAndFidFeatureSource) featureSource).setForbidSorting(forbidSorting);
@@ -499,6 +522,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             final ProgressListener taskProgress) {
 
         final Query query = new Query();
+        query.setFilter(filter);
         CoordinateSequenceFactory coordSeq = new PackedCoordinateSequenceFactory();
         query.getHints().add(new Hints(Hints.JTS_COORDINATE_SEQUENCE_FACTORY, coordSeq));
 
@@ -724,6 +748,11 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
      */
     public ImportOp setAdaptToDefaultFeatureType(boolean adaptToDefaultFeatureType) {
         this.adaptToDefaultFeatureType = adaptToDefaultFeatureType;
+        return this;
+    }
+
+    public ImportOp setFilter(@NonNull Filter filter) {
+        this.filter = filter;
         return this;
     }
 }

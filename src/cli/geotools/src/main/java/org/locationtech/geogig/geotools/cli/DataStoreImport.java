@@ -12,6 +12,8 @@ package org.locationtech.geogig.geotools.cli;
 import java.io.IOException;
 
 import org.geotools.data.DataStore;
+import org.geotools.filter.text.cql2.CQLException;
+import org.geotools.filter.text.ecql.ECQL;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
@@ -20,6 +22,7 @@ import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvid
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.opengis.filter.Filter;
 
 import com.beust.jcommander.Parameter;
 
@@ -77,6 +80,9 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
             "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 
+    @Parameter(names = { "-f", "--cql-filter" }, description = "GetoTools ECQL filter")
+    String cqlFilter;
+
     protected abstract String getSourceDatabaseName();
 
     protected abstract DataStore getDataStore();
@@ -89,6 +95,15 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
         DataStore dataStore = getDataStore();
 
         try {
+            Filter filter = Filter.INCLUDE;
+            if (cqlFilter != null) {
+                try {
+                    filter = ECQL.toFilter(cqlFilter);
+                } catch (CQLException e) {
+                    throw new IllegalArgumentException(
+                            "Error parsing CQL filter: " + e.getMessage(), e);
+                }
+            }
 
             cli.getConsole().println("Importing from database " + getSourceDatabaseName());
 
@@ -97,7 +112,7 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
             ImportOp op = cli.getGeogig().command(ImportOp.class).setAll(all).setTable(table)
                     .setAlter(alter).setDestinationPath(destTable).setOverwrite(!add)
                     .setDataStore(dataStore).setAdaptToDefaultFeatureType(!forceFeatureType)
-                    .setFidAttribute(fidAttribute);
+                    .setFidAttribute(fidAttribute).setFilter(filter);
             ForwardingFeatureIteratorProvider transformer = getForwardingFeatureIteratorProvider();
             if (transformer != null) {
                 op.setForwardingFeatureIteratorProvider(transformer);

@@ -37,8 +37,8 @@ import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderAdapter;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
-import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder.WalkInfo;
 import org.locationtech.geogig.geotools.data.reader.SpatialDiffMerger;
+import org.locationtech.geogig.geotools.data.reader.WalkInfo;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -414,8 +414,13 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
                 });
             }
 
-            FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
+            FeatureReaderAdapter<SimpleFeatureType, SimpleFeature> featureReader;
             featureReader = FeatureReaderAdapter.of(diffType, diffFeatures);
+
+            if (query.getHints().containsKey(GeogigFeatureSource.WALK_INFO_KEY)) {
+                GeogigFeatureSource.WALK_INFO.set(diffWalkInfo);
+            }
+
             return featureReader;
         } catch (Exception e) {
             entries.close();

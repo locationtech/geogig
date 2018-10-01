@@ -48,11 +48,14 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
@@ -82,11 +85,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -264,38 +268,7 @@ public class FeatureReaderBuilder {
         return this;
     }
 
-    public static class WalkInfo {
-        public SimpleFeatureType fullSchema;
-
-        // query filter in native CRS
-        public Filter nativeFilter;
-
-        public Filter preFilter;
-
-        public Filter postFilter;
-
-        @Nullable
-        Set<String> requiredProperties;
-
-        // properties present in the RevTree nodes' extra data
-        public Set<String> materializedIndexProperties = Collections.emptySet();
-
-        // whether the RevTree nodes contain all required properties (hence no need to fetch
-        // RevFeatures from the database)
-        public boolean indexContainsAllRequiredProperties;
-
-        // whether the filter is fully supported by the NodeRef filtering (hence no need for
-        // pos-processing filtering). This is the case if the filter is a simple BBOX, Id, or
-        // INCLUDE, or all the required properties are present in the index Nodes
-        public boolean filterIsFullySupportedByIndex;
-
-        public boolean diffUsesIndex;
-
-        public DiffTree diffOp;
-
-        public ScreenMapPredicate screenMapFilter;
-
-    }
+    private @Getter WalkInfo builtWalkInfo;
 
     public WalkInfo buildTreeWalk() {
         WalkInfo info = new WalkInfo();
@@ -327,42 +300,48 @@ public class FeatureReaderBuilder {
         ReferencedEnvelope boundsPreFilter = null;
         {
             final String nativeTypeName = nativeSchema.getTypeName();
-
             final Optional<NodeRef> oldCanonicalTree;
             final Optional<NodeRef> newCanonicalTree;
+            info.leftRef = resolveRef(oldHeadRef, leftRepo);
+            info.rightRef = resolveRef(headRef, rightRepo);
 
-            oldCanonicalTree = resolveCanonicalTree(oldHeadRef, nativeTypeName, leftRepo);
-            newCanonicalTree = resolveCanonicalTree(headRef, nativeTypeName, rightRepo);
+            oldCanonicalTree = resolveCanonicalTree(info.leftRef, nativeTypeName, leftRepo);
+            newCanonicalTree = resolveCanonicalTree(info.rightRef, nativeTypeName, rightRepo);
             oldFeatureTypeTree = oldCanonicalTree.map(r -> r.getObjectId()).orElse(EMPTY_TREE_ID);
             newFeatureTypeTree = newCanonicalTree.map(r -> r.getObjectId()).orElse(EMPTY_TREE_ID);
+
+            info.leftTree = oldFeatureTypeTree;
+            info.rightTree = newFeatureTypeTree;
 
             boundsPreFilter = createBoundsFilter(info.fullSchema, info.nativeFilter,
                     oldFeatureTypeTree, leftSource, newFeatureTypeTree, rightSource);
 
             final Optional<Index>[] indexes = resolveIndexes(oldFeatureTypeTree, newFeatureTypeTree,
                     info.nativeFilter);
-
-            final Optional<Index> oldHeadIndex = indexes[0];
-            final Optional<Index> headIndex = indexes[1];
+            info.leftIndex = indexes[0];
+            info.rightIndex = indexes[1];
 
             // neither is present or both have the same indexinfo
-            checkState(!(oldHeadIndex.isPresent() || headIndex.isPresent()) || //
-                    headIndex.get().info().equals(oldHeadIndex.get().info()));
+            checkState(!(info.leftIndex.isPresent() || info.rightIndex.isPresent()) || //
+                    info.rightIndex.get().info().equals(info.leftIndex.get().info()));
 
-            if (oldHeadIndex.isPresent() && headIndex.isPresent()) {
-                oldFeatureTypeTree = oldHeadIndex.get().indexTreeId();
-                newFeatureTypeTree = headIndex.get().indexTreeId();
+            if (info.leftIndex.isPresent() && info.rightIndex.isPresent()) {
+                Index leftIndex = info.leftIndex.get();
+                Index rightIndex = info.rightIndex.get();
+                oldFeatureTypeTree = leftIndex.indexTreeId();
+                newFeatureTypeTree = rightIndex.indexTreeId();
                 leftSource = leftRepo.indexDatabase();
                 rightSource = rightRepo.indexDatabase();
-                IndexInfo indexInfo = oldHeadIndex.get().info();
+                IndexInfo indexInfo = leftIndex.info();
+
                 Envelope maxBounds = IndexInfo.getMaxBounds(indexInfo);
                 if (maxBounds == null) {
-                    maxBounds = IndexInfo.getMaxBounds(headIndex.get().info());
+                    maxBounds = IndexInfo.getMaxBounds(indexInfo);
                 }
                 Preconditions.checkNotNull(maxBounds);
                 diffNodeOrdering = QuadTreeBuilder.nodeOrdering(maxBounds);
                 info.diffUsesIndex = true;
-                info.materializedIndexProperties = resolveMaterializedProperties(headIndex);
+                info.materializedIndexProperties = resolveMaterializedProperties(indexInfo);
             }
 
             PrePostFilterSplitter filterSplitter;
@@ -399,6 +378,7 @@ public class FeatureReaderBuilder {
                 .setNodeOrdering(diffNodeOrdering)//
                 .recordStats();
 
+        this.builtWalkInfo = info;
         return info;
     }
 
@@ -427,14 +407,14 @@ public class FeatureReaderBuilder {
     }
 
     public FeatureReader<SimpleFeatureType, SimpleFeature> build() {
-        final WalkInfo walkInfo = buildTreeWalk();
+        WalkInfo info = buildTreeWalk();
 
-        AutoCloseableIterator<DiffEntry> diffs = walkInfo.diffOp.call();
+        AutoCloseableIterator<DiffEntry> diffs = info.diffOp.call();
 
         AutoCloseableIterator<NodeRef> featureRefs = toFeatureRefs(diffs, changeType);
 
         // post-processing
-        if (walkInfo.filterIsFullySupportedByIndex) {
+        if (info.filterIsFullySupportedByIndex) {
             featureRefs = applyOffsetAndLimit(featureRefs);
         }
 
@@ -447,20 +427,18 @@ public class FeatureReaderBuilder {
         // filter
         final SimpleFeatureType resultSchema;
 
-        if (walkInfo.indexContainsAllRequiredProperties) {
-            resultSchema = resolveMinimalNativeSchema(walkInfo.fullSchema,
-                    walkInfo.requiredProperties);
-            CoordinateReferenceSystem nativeCrs = walkInfo.fullSchema
-                    .getCoordinateReferenceSystem();
+        if (info.indexContainsAllRequiredProperties) {
+            resultSchema = resolveMinimalNativeSchema(info.fullSchema, info.requiredProperties);
+            CoordinateReferenceSystem nativeCrs = info.fullSchema.getCoordinateReferenceSystem();
             features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
                     geometryFactory, nativeCrs);
         } else {
             BulkFeatureRetriever retriever;
             retriever = new BulkFeatureRetriever(leftFeatureSource, rightFeatureSource);
             Name typeNameOverride;
-            if (simpleNames(nativeSchema).equals(simpleNames(walkInfo.fullSchema))) {
-                resultSchema = walkInfo.fullSchema;
-                typeNameOverride = walkInfo.fullSchema.getName();
+            if (simpleNames(nativeSchema).equals(simpleNames(info.fullSchema))) {
+                resultSchema = info.fullSchema;
+                typeNameOverride = info.fullSchema.getName();
             } else {
                 resultSchema = nativeSchema;
                 typeNameOverride = null;
@@ -470,8 +448,8 @@ public class FeatureReaderBuilder {
                     geometryFactory);
         }
 
-        if (!walkInfo.filterIsFullySupportedByIndex) {
-            features = applyPostFilter(walkInfo.postFilter, features);
+        if (!info.filterIsFullySupportedByIndex) {
+            features = applyPostFilter(info.postFilter, features);
             features = applyOffsetAndLimit(features);
         }
 
@@ -491,17 +469,16 @@ public class FeatureReaderBuilder {
 
         // we only want a sub-set of the attributes provided - we need to re-type
         // the features (either from the index or the full-feature)
-        final boolean retypeRequired = isRetypeRequired(walkInfo.fullSchema, resultSchema);
+        final boolean retypeRequired = isRetypeRequired(info.fullSchema, resultSchema);
         if (retypeRequired) {
             List<String> outputSchemaProperties;
             if (this.outputSchemaPropertyNames == Query.ALL_NAMES) {
-                outputSchemaProperties = simpleNames(walkInfo.fullSchema);
+                outputSchemaProperties = simpleNames(info.fullSchema);
             } else {
                 outputSchemaProperties = Lists.newArrayList(this.outputSchemaPropertyNames);
             }
             SimpleFeatureType outputSchema;
-            outputSchema = SimpleFeatureTypeBuilder.retype(walkInfo.fullSchema,
-                    outputSchemaProperties);
+            outputSchema = SimpleFeatureTypeBuilder.retype(info.fullSchema, outputSchemaProperties);
 
             boolean cloneValues = false;
             featureReader = new ReTypeFeatureReader(featureReader, outputSchema, cloneValues);
@@ -647,11 +624,28 @@ public class FeatureReaderBuilder {
         return index;
     }
 
-    private Optional<NodeRef> resolveCanonicalTree(@Nullable String head, String treeName,
+    private Optional<Ref> resolveRef(@Nullable String head, Context repo) {
+        Ref ref = null;
+        if (head != null) {
+            ref = repo.command(RefParse.class).setName(head).call().orNull();
+            if (null == ref) {
+                RevObject root = repo.command(RevObjectParse.class).setRefSpec(head).call()
+                        .orNull();
+                if (null != root) {
+                    ref = new Ref(root.getType().toString(), root.getId());
+                }
+            }
+        }
+        return Optional.ofNullable(ref);
+    }
+
+    private Optional<NodeRef> resolveCanonicalTree(@Nullable Optional<Ref> head, String treeName,
             Context repo) {
         NodeRef treeRef = null;
-        if (head != null) {
-            ObjectId rootTree = repo.command(ResolveTreeish.class).setTreeish(head).call().orNull();
+        if (head.isPresent()) {
+            ObjectId commitOrRootId = head.get().getObjectId();
+            ObjectId rootTree = repo.command(ResolveTreeish.class).setTreeish(commitOrRootId).call()
+                    .orNull();
             if (rootTree != null) {
                 RevTree tree = repo.objectDatabase().getTree(rootTree);
                 treeRef = repo.command(FindTreeChild.class).setParent(tree).setChildPath(treeName)
@@ -677,12 +671,8 @@ public class FeatureReaderBuilder {
         return Optional.ofNullable(index);
     }
 
-    private Set<String> resolveMaterializedProperties(Optional<Index> index) {
-        Set<String> availableAtts = ImmutableSet.of();
-        if (index.isPresent()) {
-            IndexInfo info = index.get().info();
-            availableAtts = IndexInfo.getMaterializedAttributeNames(info);
-        }
+    private Set<String> resolveMaterializedProperties(@NonNull IndexInfo info) {
+        Set<String> availableAtts = IndexInfo.getMaterializedAttributeNames(info);
         return availableAtts;
     }
 

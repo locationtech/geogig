@@ -27,7 +27,7 @@ import org.geotools.feature.visitor.UniqueVisitor;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
-import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder.WalkInfo;
+import org.locationtech.geogig.geotools.data.reader.WalkInfo;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;

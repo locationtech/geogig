@@ -30,9 +30,9 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
 import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -56,7 +56,7 @@ public class ObjectCacheStressTest {
 
     private List<RevTree> bucketTrees;
 
-    private static final List<ObjectSerializingFactory> encoders = ImmutableList.of(//
+    private static final List<RevObjectSerializer> encoders = ImmutableList.of(//
             // raw encoders
             // DataStreamSerializationFactoryV1.INSTANCE //
             // , DataStreamSerializationFactoryV2.INSTANCE //
@@ -138,13 +138,13 @@ public class ObjectCacheStressTest {
         System.err.println(
                 "----------------------------------------------------------------------------------");
         System.err.printf("Format\t\t Count\t Hits\t Insert\t\t Query\t\t Size\t\t Stats\n");
-        for (ObjectSerializingFactory encoder : encoders) {
+        for (RevObjectSerializer encoder : encoders) {
             cache.invalidateAll();
             run(encoder, objects);
         }
     }
 
-    public void run(ObjectSerializingFactory encoder, List<? extends RevObject> objects) {
+    public void run(RevObjectSerializer encoder, List<? extends RevObject> objects) {
         // cache.setEncoder(encoder);
         final Stopwatch put = put(objects);
         try {

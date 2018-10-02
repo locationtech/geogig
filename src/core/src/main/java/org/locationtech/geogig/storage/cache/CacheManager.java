@@ -29,12 +29,15 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.ServiceFinder;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
 
 /**
  * Manages a pool of {@link ObjectCache} operating against a single internal shared cache.
@@ -130,6 +133,10 @@ public class CacheManager implements CacheManagerBean {
         return _SHARED_CACHE;
     }
 
+    public void setEncoder(@NonNull RevObjectSerializer encoder) {
+        sharedCache().setEncoder(encoder);
+    }
+    
     /**
      * Resolves the default maximum cache size in bytes.
      * <p>

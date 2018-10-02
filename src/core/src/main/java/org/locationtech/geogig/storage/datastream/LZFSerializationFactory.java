@@ -16,7 +16,7 @@ import java.io.OutputStream;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 
 import com.google.common.base.Preconditions;
 import com.ning.compress.lzf.ChunkDecoder;
@@ -28,9 +28,9 @@ import com.ning.compress.lzf.util.ChunkDecoderFactory;
 /**
  * Wrapper Factory that deflates/inflates data written to/read from streams using LZF compression.
  */
-public class LZFSerializationFactory implements ObjectSerializingFactory {
+public class LZFSerializationFactory implements RevObjectSerializer {
 
-    private final ObjectSerializingFactory factory;
+    private final RevObjectSerializer factory;
 
     /**
      * ChunkDecoder is stateless and can be reused concurrently, so cache it to avoid the factory
@@ -38,7 +38,7 @@ public class LZFSerializationFactory implements ObjectSerializingFactory {
      */
     private static final ChunkDecoder CHUNK_DECODER = ChunkDecoderFactory.optimalInstance();
 
-    public LZFSerializationFactory(final ObjectSerializingFactory factory) {
+    public LZFSerializationFactory(final RevObjectSerializer factory) {
         Preconditions.checkNotNull(factory);
         this.factory = factory;
     }

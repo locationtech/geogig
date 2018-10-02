@@ -50,8 +50,9 @@ import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
+import org.locationtech.geogig.model.impl.RevTagBuilder;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -138,7 +139,7 @@ import com.google.common.collect.Maps;
  * ...
  * </pre>
  */
-public class TextSerializationFactory implements ObjectSerializingFactory {
+public class TextSerializationFactory implements RevObjectSerializer {
 
     public static final TextSerializationFactory INSTANCE = new TextSerializationFactory();
 
@@ -856,12 +857,16 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
     private static final TextReader<RevTag> TAG_READER = new TextReader<RevTag>() {
 
         @Override
-        protected RevTag read(ObjectId id, BufferedReader reader, TYPE type) throws IOException {
+        protected RevTag read(@Nullable ObjectId id, BufferedReader reader, TYPE type)
+                throws IOException {
             Preconditions.checkArgument(TYPE.TAG.equals(type), "Wrong type: %s", type.name());
             String name = parseLine(requireLine(reader), "name");
-            String message = parseLine(requireLine(reader), "message");
             String commitId = parseLine(requireLine(reader), "commitid");
+            String message = parseLine(requireLine(reader), "message");
             RevPerson tagger = parsePerson(requireLine(reader));
+            if (id == null) {
+                return RevTagBuilder.build(name, ObjectId.valueOf(commitId), message, tagger);
+            }
             return RevObjectFactory.defaultInstance().createTag(id, name,
                     ObjectId.valueOf(commitId), message, tagger);
         }

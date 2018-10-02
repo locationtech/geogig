@@ -19,8 +19,8 @@ import java.io.OutputStreamWriter;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 /**
  *
@@ -28,7 +28,7 @@ import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 public class TextSerializationFactoryTest extends ObjectSerializationFactoryTest {
 
     @Override
-    protected ObjectSerializingFactory getObjectSerializingFactory() {
+    protected RevObjectSerializer getObjectSerializingFactory() {
         return new TextSerializationFactory();
     }
 

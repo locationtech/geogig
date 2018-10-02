@@ -45,12 +45,12 @@ import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectInfo;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -123,8 +123,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         this.bulkReadOptions.setFillCache(false);
         this.bulkReadOptions.setVerifyChecksums(false);
 
-        ObjectSerializingFactory defaultSerializer = new SerializationFactoryProxy();
-        ObjectSerializingFactory serializer = defaultSerializer;
+        RevObjectSerializer defaultSerializer = new SerializationFactoryProxy();
+        RevObjectSerializer serializer = defaultSerializer;
         final Optional<String> serializerValue = dbhandle.getMetadata("serializer");
         if (serializerValue.isPresent()) {
             String sval = serializerValue.get();

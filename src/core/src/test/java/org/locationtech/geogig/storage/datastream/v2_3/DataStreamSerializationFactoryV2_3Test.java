@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.storage.datastream.v2_3;
 
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_2Test;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 public class DataStreamSerializationFactoryV2_3Test extends DataStreamSerializationFactoryV2_2Test {
 
     @Override
-    protected ObjectSerializingFactory getObjectSerializingFactory() {
+    protected RevObjectSerializer getObjectSerializingFactory() {
         return DataStreamSerializationFactoryV2_3.INSTANCE;
     }
 

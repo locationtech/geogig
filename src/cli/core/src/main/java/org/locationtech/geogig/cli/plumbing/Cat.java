@@ -21,8 +21,8 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.CatObject;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -69,7 +69,7 @@ public class Cat extends AbstractCommand {
         }
         checkParameter(obj.isPresent(), "refspec did not resolve to any object.");
         if (binary) {
-            ObjectSerializingFactory factory = DataStreamSerializationFactoryV1.INSTANCE;
+            RevObjectSerializer factory = DataStreamSerializationFactoryV1.INSTANCE;
             factory.write(obj.get(), System.out);
         } else {
             CharSequence s = geogig.command(CatObject.class)

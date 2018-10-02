@@ -10,8 +10,8 @@ import java.util.Arrays;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 public class StreamingPackIO {
 
@@ -25,7 +25,7 @@ public class StreamingPackIO {
         OBJECT_STREAM_END //
     }
 
-    private ObjectSerializingFactory objmarshaller = DataStreamSerializationFactoryV2_3.INSTANCE;
+    private RevObjectSerializer objmarshaller = DataStreamSerializationFactoryV2_3.INSTANCE;
 
     public @Nullable RevObject readObject(DataInputStream in) throws IOException {
         Event evt = readNextEvent(in);

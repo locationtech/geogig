@@ -28,14 +28,13 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.cache.CacheIdentifier;
 import org.locationtech.geogig.storage.cache.CacheKey;
 import org.locationtech.geogig.storage.cache.CacheStats;
 import org.locationtech.geogig.storage.cache.SharedCache;
 import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalCause;
@@ -71,10 +70,10 @@ public class GuavaSharedCache implements SharedCache {
                 new ArrayBlockingQueue<Runnable>(nThreads), tf, sameThreadHandler);
     }
 
-    private static final ObjectSerializingFactory ENCODER = //
+    private static final RevObjectSerializer ENCODER = //
             DataStreamSerializationFactoryV2_3.INSTANCE;
 
-    private ObjectSerializingFactory encoder = ENCODER;
+    private RevObjectSerializer encoder = ENCODER;
 
     /**
      * Used to track the size in bytes of the cache, since {@link Cache} can return only the
@@ -110,8 +109,7 @@ public class GuavaSharedCache implements SharedCache {
         }
     }
 
-    @VisibleForTesting
-    public void setEncoder(ObjectSerializingFactory encoder) {
+    public void setEncoder(RevObjectSerializer encoder) {
         this.encoder = encoder;
     }
 

@@ -7,7 +7,7 @@
  * Contributors:
  * David Winslow (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.impl;
+package org.locationtech.geogig.storage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,11 +18,10 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 
 /**
- * The ObjectSerializingFactory is used to create instances of the various writers and readers used
- * to work with the serialized forms of various repository elements.
+ * Defines a serialization/de-serialization mechanism for {@link RevObject} instances
  * 
  */
-public interface ObjectSerializingFactory {
+public interface RevObjectSerializer {
 
     void write(RevObject o, OutputStream out) throws IOException;
 

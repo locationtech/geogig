@@ -116,12 +116,14 @@ public class FormatCommonV1 {
     private static final FeatureTypeFactory DEFAULT_FEATURETYPE_FACTORY = new SimpleFeatureTypeBuilder()
             .getFeatureTypeFactory();
 
-    public static RevTag readTag(ObjectId id, DataInput in) throws IOException {
+    public static RevTag readTag(@Nullable ObjectId id, DataInput in) throws IOException {
         final ObjectId commitId = readObjectId(in);
         final String name = in.readUTF();
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
-
+        if (id == null) {
+            return RevTagBuilder.build(name, commitId, message, tagger);
+        }
         return RevObjectFactory.defaultInstance().createTag(id, name, commitId, message, tagger);
     }
 

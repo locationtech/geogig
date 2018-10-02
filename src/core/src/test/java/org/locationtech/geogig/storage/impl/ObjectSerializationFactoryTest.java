@@ -53,12 +53,21 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevPersonBuilder;
+import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.storage.RevObjectSerializer;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
@@ -70,14 +79,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.ParseException;
 
 public abstract class ObjectSerializationFactoryTest {
 
-    protected ObjectSerializingFactory serializer;
+    protected RevObjectSerializer serializer;
 
     private CommitBuilder testCommit;
 
@@ -188,7 +193,7 @@ public abstract class ObjectSerializationFactoryTest {
 
     }
 
-    protected abstract ObjectSerializingFactory getObjectSerializingFactory();
+    protected abstract RevObjectSerializer getObjectSerializingFactory();
 
     @Test
     public void testCommitSerialization() throws IOException {
@@ -343,7 +348,11 @@ public abstract class ObjectSerializationFactoryTest {
         assertEquals(newFeature.getValues().size(), feat.getValues().size());
 
         for (int i = 0; i < newFeature.getValues().size(); i++) {
-            assertEquals(newFeature.getValues().get(i).orNull(), feat.getValues().get(i).orNull());
+            Object expected = newFeature.getValues().get(i).orNull();
+            String msg = "At index " + i + ": "
+                    + (expected == null ? null : expected.getClass().getSimpleName());
+            Object actual = feat.get(i).orNull();
+            assertEquals(msg, expected, actual);
         }
 
     }
@@ -538,6 +547,7 @@ public abstract class ObjectSerializationFactoryTest {
     @Test
     public void testRoundTripLeafTree() throws IOException {
         RevTree roundTripped = (RevTree) read(tree1_leaves.getId(), write(tree1_leaves));
+        assertNotNull(roundTripped);
         assertTreesAreEqual(tree1_leaves, roundTripped);
     }
 
@@ -677,6 +687,35 @@ public abstract class ObjectSerializationFactoryTest {
                 Assert.fail("At idex " + i + ": " + ioe.getMessage());
             }
         }
+    }
+
+    public @Test void testTag() throws IOException {
+        RevPerson tagger = RevPersonBuilder.build("Gabriel Roldan", "gabe@example.com", 12345678,
+                -3);
+        RevTag tag;
+        tag = RevTagBuilder.build("v1.0.0", RevObjectTestSupport.hashString("test"),
+                "Version 1.0.0", tagger);
+        testTag(tag);
+    }
+
+    private void testTag(RevTag tag) throws IOException {
+        byte[] buff = write(tag);
+        RevTag read;
+        read = (RevTag) read(tag.getId(), buff);
+        assertTag(tag, read);
+
+        read = (RevTag) read(null, buff);
+        assertTag(tag, read);
+
+    }
+
+    private void assertTag(RevTag tag, RevTag read) {
+        assertEquals(tag, read);
+        assertEquals(tag.getId(), read.getId());
+        assertEquals(tag.getName(), read.getName());
+        assertEquals(tag.getMessage(), read.getMessage());
+        assertEquals(tag.getCommitId(), read.getCommitId());
+        assertEquals(tag.getTagger(), read.getTagger());
     }
 
     private byte[] write(RevObject object) {

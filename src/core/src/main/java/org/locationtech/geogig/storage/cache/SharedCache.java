@@ -15,7 +15,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 
 /**
  * A {@link RevObject} cache to be used by multiple {@link ObjectStore} instances operating upon a
@@ -42,12 +42,12 @@ public interface SharedCache {
      */
     static final SharedCache NO_CACHE = new SharedCache() {
         @Override
-        public void setEncoder(ObjectSerializingFactory encoder) {
+        public void setEncoder(RevObjectSerializer encoder) {
             // nothing to do
         }
     };
 
-    public void setEncoder(ObjectSerializingFactory encoder);
+    public void setEncoder(RevObjectSerializer encoder);
 
     /**
      * Creates and returns a shared cache with the given maximum heap memory capacity in bytes.

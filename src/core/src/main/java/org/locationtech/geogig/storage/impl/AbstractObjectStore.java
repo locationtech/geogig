@@ -30,6 +30,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 
@@ -42,23 +43,23 @@ import com.google.common.io.Closeables;
  */
 public abstract class AbstractObjectStore implements ObjectStore {
 
-    private ObjectSerializingFactory serializer;
+    private RevObjectSerializer serializer;
 
     public AbstractObjectStore() {
         this(new SerializationFactoryProxy());
     }
 
-    public AbstractObjectStore(final ObjectSerializingFactory serializer) {
+    public AbstractObjectStore(final RevObjectSerializer serializer) {
         checkNotNull(serializer);
         this.serializer = serializer;
     }
 
-    protected void setSerializationFactory(ObjectSerializingFactory serializer) {
+    protected void setSerializationFactory(RevObjectSerializer serializer) {
         checkNotNull(serializer);
         this.serializer = serializer;
     }
 
-    public ObjectSerializingFactory serializer() {
+    public RevObjectSerializer serializer() {
         return serializer;
     }
 

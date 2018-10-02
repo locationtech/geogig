@@ -17,18 +17,18 @@ import java.io.OutputStream;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 
 /**
  * An encoder for {@link RevObject} instances that delegates the the best available
- * {@link ObjectSerializingFactory} while maintaining backwards compatibility.
+ * {@link RevObjectSerializer} while maintaining backwards compatibility.
  * <p>
- * The purpose of this encoder is to allow improved {@link ObjectSerializingFactory} implementations
+ * The purpose of this encoder is to allow improved {@link RevObjectSerializer} implementations
  * to be added transparently, while maintaining backwards compatibility with objects encoded with
  * prior versions of the serialization format.
  * <p>
  * Serialized representations of {@code RevObject}s created by this encoder are composed of a
- * one-byte header followed by the encoded result of the concrete {@link ObjectSerializingFactory}
+ * one-byte header followed by the encoded result of the concrete {@link RevObjectSerializer}
  * this encoder delegates to.
  * <p>
  * When deserializing, the header is used to identify which serializer "version" the object was
@@ -36,12 +36,12 @@ import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
  * serialization formats in the same database transparently, so upgrading the serialization format
  * requires no extra maintenance.
  */
-public class SerializationFactoryProxy implements ObjectSerializingFactory {
+public class SerializationFactoryProxy implements RevObjectSerializer {
     /**
      * The serialized object is added a header that's one unsigned byte with the index of the
      * corresponding factory in this array
      */
-    private static final ObjectSerializingFactory[] SUPPORTED_FORMATS = { //
+    private static final RevObjectSerializer[] SUPPORTED_FORMATS = { //
             new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE), //
             new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE), //
             new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE), //
@@ -53,7 +53,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     /**
      * The serialization factory used for writing is the highest supported version one
      */
-    private static final ObjectSerializingFactory WRITER = SUPPORTED_FORMATS[MAX_FORMAT_CODE];
+    private static final RevObjectSerializer WRITER = SUPPORTED_FORMATS[MAX_FORMAT_CODE];
 
     @Override
     public void write(RevObject o, OutputStream out) throws IOException {
@@ -66,7 +66,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     public RevObject read(ObjectId id, InputStream in) throws IOException {
         final int serialVersionHeader = in.read();
         assert serialVersionHeader >= 0 && serialVersionHeader <= MAX_FORMAT_CODE;
-        final ObjectSerializingFactory serializer = serializer(id, serialVersionHeader);
+        final RevObjectSerializer serializer = serializer(id, serialVersionHeader);
         RevObject revObject = serializer.read(id, in);
         return revObject;
     }
@@ -75,7 +75,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) {
         final int serialVersionHeader = data[offset] & 0xFF;
         assert serialVersionHeader >= 0 && serialVersionHeader <= MAX_FORMAT_CODE;
-        final ObjectSerializingFactory serializer = serializer(id, serialVersionHeader);
+        final RevObjectSerializer serializer = serializer(id, serialVersionHeader);
         RevObject revObject;
         try {
             revObject = serializer.read(id, data, offset + 1, length - 1);
@@ -85,7 +85,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
         return revObject;
     }
 
-    private ObjectSerializingFactory serializer(final @Nullable ObjectId id,
+    private RevObjectSerializer serializer(final @Nullable ObjectId id,
             final int serializerIndex) {
         if (serializerIndex < 0) {
             throw new RuntimeException(
@@ -123,7 +123,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     @Override
     public String getDisplayName() {
         StringBuilder sb = new StringBuilder("Proxy[");
-        for (ObjectSerializingFactory f : SUPPORTED_FORMATS) {
+        for (RevObjectSerializer f : SUPPORTED_FORMATS) {
             sb.append(f.getDisplayName()).append(", ");
         }
         if (sb.length() > 2) {

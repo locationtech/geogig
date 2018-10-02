@@ -1,0 +1,146 @@
+namespace org.locationtech.geogig.flatbuffers.generated.values;
+
+struct Bounds{
+	x1: float;
+	y1: float;
+	x2: float;
+	y2: float;
+}
+
+table MapEntry{
+  key: string (key);
+  value: Value;
+}
+
+table Dictionary{
+ entries: [MapEntry];
+}
+
+///Matches org.locationtech.geogig.model.FieldType
+enum ValueType : byte {
+  NULL = 0,
+  BOOLEAN,
+  BYTE,
+  SHORT,
+  INTEGER,
+  LONG,
+  FLOAT,
+  DOUBLE,
+  STRING,
+  BOOLEAN_ARRAY,
+  BYTE_ARRAY,
+  SHORT_ARRAY,
+  INTEGER_ARRAY,
+  LONG_ARRAY,  
+  FLOAT_ARRAY,
+  DOUBLE_ARRAY,
+  STRING_ARRAY,
+  POINT,
+  LINESTRING,
+  POLYGON,
+  MULTIPOINT,
+  MULTILINESTRING,
+  MULTIPOLYGON,
+  GEOMETRYCOLLECTION,
+  GEOMETRY,
+  UUID,
+  BIG_INTEGER,
+  BIG_DECIMAL,
+  DATETIME,
+  DATE,
+  TIME,
+  TIMESTAMP,
+  MAP,
+  CHAR,
+  CHAR_ARRAY,
+  ENVELOPE_2D
+}
+
+//Primitives, including string
+table BOOLEAN{value: bool;}
+table BYTE{value: byte;}
+table SHORT{value: short;}
+table INTEGER{value: int;}
+table LONG{value: long;}
+table FLOAT{value: float;}
+table DOUBLE{value: double;}
+table CHAR{value: int;}
+table STRING{value: string;}
+
+//Arrays of primitives
+table BOOLEAN_ARRAY{value: [bool];}
+table BYTE_ARRAY{value: [byte];}
+table SHORT_ARRAY{value: [short];}
+table INTEGER_ARRAY{value: [int];}
+table LONG_ARRAY{value: [long];}
+table FLOAT_ARRAY{value: [float];}
+table DOUBLE_ARRAY{value: [double];}
+table CHAR_ARRAY{value: [double];}
+table STRING_ARRAY{value: [string];}
+table ENVELOPE_2D{value: Bounds;}
+
+enum GeometryType: byte{
+	Point,
+	LineString,
+	Polygon,
+	MultiPoint,
+	MultiLineString,
+	MultiPolygon,
+	GeometryCollection
+}
+table WKBGEOMETRY{
+	value: [ubyte];
+}
+table TWKBGEOMETRY{
+	value: [ubyte];
+}
+table FLATGEOMETRY{
+	dimension: ubyte;
+	type: GeometryType;
+	ordinates: [double];
+}
+union ENCODEDGEOMETRY{
+	WKBGEOMETRY,
+	TWKBGEOMETRY,
+	FLATGEOMETRY
+}
+table GEOMETRY{value: ENCODEDGEOMETRY;}
+
+table UUID{lsb: long; msb: long;}
+table BIG_INTEGER{value: [ubyte];}
+table BIG_DECIMAL{scale: int; value: [ubyte];}
+table DATETIME{millis: long;}
+table TIMESTAMP{millis: long; nanos: int;}
+
+union ValueUnion{
+  BOOLEAN,
+  BYTE,
+  SHORT,
+  INTEGER,
+  LONG,
+  FLOAT,
+  DOUBLE,
+  CHAR,
+  STRING,
+  BOOLEAN_ARRAY,
+  BYTE_ARRAY,
+  SHORT_ARRAY,
+  INTEGER_ARRAY,
+  LONG_ARRAY,  
+  FLOAT_ARRAY,
+  DOUBLE_ARRAY,
+  CHAR_ARRAY,
+  STRING_ARRAY,
+  GEOMETRY,
+  BIG_INTEGER,
+  BIG_DECIMAL,
+  DATETIME,
+  TIMESTAMP,
+  UUID,
+  ENVELOPE_2D,
+  Dictionary
+}
+
+table Value{
+	value: ValueUnion;
+}

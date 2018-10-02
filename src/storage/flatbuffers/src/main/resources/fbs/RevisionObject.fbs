@@ -1,0 +1,92 @@
+include "Value.fbs";
+namespace org.locationtech.geogig.flatbuffers.generated;
+
+enum ObjectType : byte {
+	Commit = 0,
+	LeafTree,
+	NodeTree,
+	Feature,
+	Tag,
+	SimpleFeatureType
+}
+
+struct SHA{
+	h1: int;
+	h2: long;
+	h3: long;
+}
+
+table Person{
+	name: string;
+	email: string;
+	timestamp: long;
+	timezoneOffset: int;
+}
+
+table Commit{
+	parent_ids: [SHA];
+	tree_id: SHA (required);
+	message: string (required);
+	author: 	Person (required);
+	committer: 	Person (required);
+}
+
+table Bucket{
+	index: int;
+	tree_id: SHA;
+	bounds: org.locationtech.geogig.flatbuffers.generated.values.Bounds;
+}
+
+table LeafTree{
+	size: long;
+	num_direct_tree_nodes: int;
+	nodes_names: [string];
+	nodes_ids: [SHA];
+	nodes_metadata_ids: [SHA];
+	nodes_bounds: [org.locationtech.geogig.flatbuffers.generated.values.Bounds];
+	nodes_extra_data: [org.locationtech.geogig.flatbuffers.generated.values.Dictionary];
+}
+
+table NodeTree{
+	size: long;
+	num_trees_recursive: int;
+	buckets: [Bucket];
+}
+
+table Feature{
+	values: [org.locationtech.geogig.flatbuffers.generated.values.Value];
+}
+
+table Tag{
+	commit_id: SHA (required);
+	name: string (required);
+	message: string (required);
+	tagger:	Person (required);
+}
+
+table SimpleAttributeDescriptor{
+	name: string (required);
+	binding: org.locationtech.geogig.flatbuffers.generated.values.ValueType;
+	geometric: bool;
+	crs_authority_code: string;
+	crs_wkt: string;
+}
+
+table SimpleFeatureType{
+	name: string (required);
+	defaultGeometryName: string;
+	attributes: [SimpleAttributeDescriptor];
+}
+
+table RevisionObject{
+	object_type: ObjectType;
+	commit: Commit;
+	leaf_tree: LeafTree;
+	node_tree: NodeTree;
+	feature: Feature;
+	tag: Tag;
+	simple_feature_type: SimpleFeatureType;
+}
+
+
+root_type RevisionObject;

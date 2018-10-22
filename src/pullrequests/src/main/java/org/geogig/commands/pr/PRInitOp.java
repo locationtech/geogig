@@ -22,12 +22,11 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.CheckoutOp;
-import org.locationtech.geogig.porcelain.MergeOp;
-import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.porcelain.CheckoutResult.Results;
-import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
@@ -135,6 +134,19 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
         Preconditions.checkNotNull(pr.getTransactionId());
         Preconditions.checkNotNull(pr.getId());
         getProgressListener().setDescription("Initializing pull request " + pr);
+
+        com.google.common.base.Optional<GeogigTransaction> tx = command(TransactionResolve.class)
+                .setId(pr.getTransactionId()).call();
+        if (!tx.isPresent()) {
+            PRStatus status = command(PRHealthCheckOp.class).setRequest(pr).call();
+            checkState(!status.isMerged(),
+                    "Cannot re open pull request %s because it's already merged", pr.getId());
+            // reinitialize a transaction, pr was closes
+            final GeogigTransaction txContext = command(TransactionBegin.class).call();
+            final UUID txId = txContext.getTransactionId();
+            pr.setTransactionId(txId);
+        }
+
         if (remoteURI != null)
             pr.setRemote(remoteURI);
         if (remoteBranch != null)

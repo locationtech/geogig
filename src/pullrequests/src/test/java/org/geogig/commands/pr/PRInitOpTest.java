@@ -11,18 +11,23 @@ package org.geogig.commands.pr;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.test.TestData;
 
@@ -30,6 +35,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Iterators;
 
 public class PRInitOpTest {
+
+    public @Rule ExpectedException ex = ExpectedException.none();
 
     public @Rule TestSupport testSupport = new TestSupport();
 
@@ -176,4 +183,74 @@ public class PRInitOpTest {
         assertFalse(modifiedReq.resolveMergeRef(tx).isPresent());
     }
 
+    public @Test void testReOpenPullRequest() {
+        final RevCommit commonAncestor = Iterators.getLast(origin.log("master"));
+
+        clone.branchAndCheckout("issuerBranch")//
+                .resetHard(commonAncestor.getId())//
+                .remove(TestData.line1).add().commit("remove line1")//
+                .insert(TestData.poly4).add().commit("add poly 4")//
+                .insert(TestData.point1_modified).add().commit("modify point1");
+
+        // System.err.println("Common ancestor: " + commonAncestor);
+        // System.err.println(Lists.newArrayList(clone.log("issuerBranch")));
+        PRInitOp prinit = PRInitOp.builder()//
+                .id(1)//
+                .remoteURI(clone.getRepo().getLocation())//
+                .remoteBranch("issuerBranch")//
+                .targetBranch("master")//
+                .title("first PR")//
+                .description(null)//
+                .build();
+        Repository repo = origin.getRepo();
+        prinit.setContext(repo.context());
+        PR request = prinit.call();
+        assertNotNull(request);
+
+        assertNotNull(request.getTransactionId());
+        final UUID txId = request.getTransactionId();
+
+        PRStatus closeStatus = repo.command(PRCloseOp.class).setId(request.getId()).call();
+        assertTrue(closeStatus.isClosed());
+        assertFalse(repo.command(TransactionResolve.class).setId(txId).call().isPresent());
+        java.util.Optional<PR> pr = repo.command(PRFindOp.class).setId(request.getId()).call();
+        assertTrue(pr.isPresent());
+
+        // re-open
+        PR reopen = repo.command(PRInitOp.class).setId(request.getId()).call();
+        UUID newtx = reopen.getTransactionId();
+        assertNotNull(newtx);
+        assertNotEquals(txId, newtx);
+    }
+
+    public @Test void tryReOpenMergedPullRequest() {
+        final RevCommit commonAncestor = Iterators.getLast(origin.log("master"));
+
+        clone.branchAndCheckout("issuerBranch")//
+                .resetHard(commonAncestor.getId())//
+                .remove(TestData.line1).add().commit("remove line1")//
+                .insert(TestData.poly4).add().commit("add poly 4")//
+                .insert(TestData.point1_modified).add().commit("modify point1");
+
+        // System.err.println("Common ancestor: " + commonAncestor);
+        // System.err.println(Lists.newArrayList(clone.log("issuerBranch")));
+        PRInitOp prinit = PRInitOp.builder()//
+                .id(1)//
+                .remoteURI(clone.getRepo().getLocation())//
+                .remoteBranch("issuerBranch")//
+                .targetBranch("master")//
+                .title("first PR")//
+                .description(null)//
+                .build();
+        Repository repo = origin.getRepo();
+        prinit.setContext(repo.context());
+        PR request = prinit.call();
+
+        PRStatus status = repo.command(PRMergeOp.class).setId(request.getId()).call();
+        assertTrue(status.isMerged());
+
+        ex.expect(IllegalStateException.class);
+        ex.expectMessage("already merged");
+        repo.command(PRInitOp.class).setId(request.getId()).call();
+    }
 }

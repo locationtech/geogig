@@ -15,59 +15,25 @@ import org.locationtech.geogig.repository.Remote;
 
 import com.google.common.base.Optional;
 
-public class PullResult {
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    private Ref oldRef = null;
+public @Data @Builder @NoArgsConstructor @AllArgsConstructor class PullResult {
 
-    private Ref newRef = null;
+    private Ref oldRef;
 
-    private TransferSummary fetchResult = null;
+    private Ref newRef;
 
-    private Optional<MergeReport> mergeReport = Optional.absent();
+    private TransferSummary fetchResult;
+
+    private @Default Optional<MergeReport> mergeReport = Optional.absent();
 
     private Remote remote;
 
     public String getRemoteName() {
         return remote.getName();
-    }
-
-    public Remote getRemote() {
-        return remote;
-    }
-
-    void setRemote(Remote remote) {
-        this.remote = remote;
-    }
-
-    public TransferSummary getFetchResult() {
-        return fetchResult;
-    }
-
-    void setFetchResult(TransferSummary fetchResult) {
-        this.fetchResult = fetchResult;
-    }
-
-    public Ref getOldRef() {
-        return oldRef;
-    }
-
-    void setOldRef(Ref oldRef) {
-        this.oldRef = oldRef;
-    }
-
-    public Ref getNewRef() {
-        return newRef;
-    }
-
-    void setNewRef(Ref newRef) {
-        this.newRef = newRef;
-    }
-
-    public Optional<MergeReport> getMergeReport() {
-        return mergeReport;
-    }
-
-    void setMergeReport(Optional<MergeReport> mergeReport) {
-        this.mergeReport = mergeReport;
     }
 }

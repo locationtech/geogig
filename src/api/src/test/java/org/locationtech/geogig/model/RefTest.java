@@ -141,4 +141,13 @@ public class RefTest {
         assertFalse(new Ref("refs/heads/master", oid)
                 .hashCode() == new Ref("refs/heads/branch1", oid2).hashCode());
     }
+
+    @Test
+    public void testStripCommonPrefix() {
+        assertEquals("branch1", Ref.stripCommonPrefix("branch1"));
+        assertEquals("branch1", Ref.stripCommonPrefix(Ref.HEADS_PREFIX + "branch1"));
+        assertEquals("branch1", Ref.stripCommonPrefix(Ref.TAGS_PREFIX + "branch1"));
+        assertEquals("branch1", Ref.stripCommonPrefix(Ref.REFS_PREFIX + "branch1"));
+        assertEquals("/branch1", Ref.stripCommonPrefix("/" + "branch1"));
+    }
 }

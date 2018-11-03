@@ -324,7 +324,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
             final LinkedHashMap<String, String> columnNames) throws SQLException {
 
         StringBuilder trigger = new StringBuilder(
-                format("CREATE TRIGGER '%s_insert' AFTER INSERT ON '%s'\n", auditTable, tableName));
+                format("CREATE TRIGGER IF NOT EXISTS '%s_insert' AFTER INSERT ON '%s'\n", auditTable, tableName));
         trigger.append("BEGIN\n");
         trigger.append(format("  INSERT INTO '%s' (", auditTable));
         for (String colName : columnNames.keySet()) {
@@ -347,7 +347,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
             final LinkedHashMap<String, String> columnNames) throws SQLException {
 
         StringBuilder trigger = new StringBuilder(
-                format("CREATE TRIGGER '%s_update' AFTER UPDATE ON '%s'\n", auditTable, tableName));
+                format("CREATE TRIGGER IF NOT EXISTS '%s_update' AFTER UPDATE ON '%s'\n", auditTable, tableName));
         trigger.append("BEGIN\n");
         trigger.append(format("  INSERT INTO '%s' (", auditTable));
         for (String colName : columnNames.keySet()) {
@@ -370,7 +370,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
             final LinkedHashMap<String, String> columnNames) throws SQLException {
 
         StringBuilder trigger = new StringBuilder(
-                format("CREATE TRIGGER '%s_delete' AFTER DELETE ON '%s'\n", auditTable, tableName));
+                format("CREATE TRIGGER IF NOT EXISTS '%s_delete' AFTER DELETE ON '%s'\n", auditTable, tableName));
         trigger.append("BEGIN\n");
 
         final String insert = format("  INSERT INTO '%s' ('fid', audit_op) VALUES (OLD.fid, %s);\n",

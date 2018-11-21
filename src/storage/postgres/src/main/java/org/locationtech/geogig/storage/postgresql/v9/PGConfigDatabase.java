@@ -168,14 +168,6 @@ public class PGConfigDatabase implements ConfigDatabase {
         put(new Entry(key), value, global());
     }
 
-    public @Override void putSection(final String section, final Map<String, String> kvp) {
-        checkNotNull(section);
-        checkNotNull(kvp);
-        Map<Entry, String> entries = new HashMap<>();
-        kvp.forEach((k, v) -> entries.put(new Entry(String.format("%s.%s", section, k)), v));
-        put(entries, local());
-    }
-
     @Override
     public void remove(String key) {
         remove(new Entry(key), local());

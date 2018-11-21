@@ -560,7 +560,7 @@ public class PGObjectStore implements ObjectStore {
                 List<T> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
             } catch (Exception e) {
-                Throwables.throwIfUnchecked(e);
+                Throwables.propagateIfPossible(e);
                 throw new RuntimeException(e);
             }
         }
@@ -580,7 +580,7 @@ public class PGObjectStore implements ObjectStore {
                 List<ObjectInfo<T>> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
             } catch (Exception e) {
-                Throwables.throwIfUnchecked(e);
+                Throwables.propagateIfPossible(e);
                 throw new RuntimeException(e);
             }
         }
@@ -697,7 +697,7 @@ public class PGObjectStore implements ObjectStore {
                 }
             } catch (Exception ex) {
                 abortFlag.set(ex);
-                Throwables.throwIfUnchecked(ex);
+                Throwables.propagateIfPossible(ex);
                 throw new RuntimeException(ex);
             }
             return null;
@@ -838,7 +838,7 @@ public class PGObjectStore implements ObjectStore {
                     } catch (ExecutionException e) {
                         throw new RuntimeException(e);
                     }
-                    Throwables.throwIfUnchecked(error);
+                    Throwables.propagateIfPossible(error);
                     throw new RuntimeException(error);
                 }
             } catch (InterruptedException e) {

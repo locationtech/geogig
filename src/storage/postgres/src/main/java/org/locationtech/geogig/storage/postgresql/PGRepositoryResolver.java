@@ -111,7 +111,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
         try {
             config = new EnvironmentBuilder(repoURI).build();
         } catch (RuntimeException e) {
-            Throwables.throwIfInstanceOf(e, IllegalArgumentException.class);
+            Throwables.propagateIfInstanceOf(e, IllegalArgumentException.class);
             throw new IllegalArgumentException("Error parsing URI " + repoURI, e);
         }
         Preconditions.checkArgument(config.getRepositoryName() != null,

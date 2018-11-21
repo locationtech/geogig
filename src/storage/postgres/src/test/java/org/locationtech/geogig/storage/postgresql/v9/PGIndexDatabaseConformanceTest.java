@@ -55,39 +55,4 @@ public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest
             configdb = null;
         }
     }
-
-    public @Test void testCopyIndexesToSameDatabase() {
-        Environment newRepoConfig = testConfig.getEnvironment().asRepository("targetRepo");
-        testCopyIndexesToSameDatabase(newRepoConfig);
-    }
-
-    public @Test void testCopyIndexesToSameDatabaseDifferentSchema() throws SQLException {
-        // instead of creating a new schema, we're using a different table prefix, which will create
-        // a new set of geogig tables on the same schema, achieving the same expected result
-        Environment targetEnv = testConfig.newEnvironment("targetRepo");
-        assertNotEquals(testConfig.getEnvironment().getTables().getPrefix(),
-                targetEnv.getTables().getPrefix());
-        try {
-            testCopyIndexesToSameDatabase(targetEnv);
-        } finally {
-            testConfig.delete(targetEnv);
-        }
-    }
-
-    private void testCopyIndexesToSameDatabase(Environment newRepoConfig) {
-        assertTrue(PGStorage.createNewRepo(newRepoConfig));
-        PGConfigDatabase targetRepoConfigDb = new PGConfigDatabase(newRepoConfig);
-        try {
-            PGIndexDatabase target = new PGIndexDatabase(targetRepoConfigDb, newRepoConfig, false);
-            try {
-                target.open();
-                super.testCopyIndexesTo(target);
-            } finally {
-                target.close();
-            }
-        } finally {
-            targetRepoConfigDb.close();
-        }
-    }
-
 }

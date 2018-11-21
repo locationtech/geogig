@@ -199,7 +199,7 @@ public abstract class PGStorageTableManager {
             cx.commit();
         } catch (SQLException | RuntimeException e) {
             cx.rollback();
-            Throwables.throwIfInstanceOf(e, SQLException.class);
+            Throwables.propagateIfInstanceOf(e, SQLException.class);
             throw e;
         } finally {
             cx.setAutoCommit(true);

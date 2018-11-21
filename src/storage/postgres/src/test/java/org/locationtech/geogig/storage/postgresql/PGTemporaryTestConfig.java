@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
-import java.security.SecureRandom;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -18,21 +18,20 @@ import javax.sql.DataSource;
 
 import org.junit.AssumptionViolatedException;
 import org.junit.rules.ExternalResource;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 public class PGTemporaryTestConfig extends ExternalResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(PGTemporaryTestConfig.class);
 
-    private static SecureRandom RND = new SecureRandom();
-
     private Environment environment;
 
-    private final String repositoryId;
+    private final String repositoryName;
 
     private PGTestDataSourceProvider dataSourceProvider;
 
@@ -40,7 +39,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     public PGTemporaryTestConfig(String repositoryId) {
         Preconditions.checkNotNull(repositoryId);
-        this.repositoryId = repositoryId;
+        this.repositoryName = repositoryId;
         this.dataSourceProvider = new PGTestDataSourceProvider();
         this.externalDataSource = false;
     }
@@ -48,7 +47,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
     public PGTemporaryTestConfig(String repositoryId, PGTestDataSourceProvider dataSourceProvider) {
         Preconditions.checkNotNull(repositoryId);
         Preconditions.checkNotNull(dataSourceProvider);
-        this.repositoryId = repositoryId;
+        this.repositoryName = repositoryId;
         this.dataSourceProvider = dataSourceProvider;
         this.externalDataSource = true;
     }
@@ -75,9 +74,9 @@ public class PGTemporaryTestConfig extends ExternalResource {
             return;
         }
         try {
-            delete();
+            delete(environment);
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             if (!externalDataSource) {
                 dataSourceProvider.after();
@@ -94,7 +93,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
         return dataSourceProvider.getDataSource();
     }
 
-    private void delete() throws SQLException {
+    public void delete(Environment environment) throws SQLException {
         if (environment == null) {
             return;
         }
@@ -118,6 +117,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
             delete(cx, tables.refs());
             delete(cx, tables.config());
             delete(cx, tables.repositories());
+            delete(cx, tables.metadata());
         }
     }
 
@@ -139,13 +139,43 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     public synchronized Environment getEnvironment() {
         if (environment == null) {
-            String tablePrefix;
-            synchronized (RND) {
-                tablePrefix = "geogig_" + Math.abs(RND.nextInt(100_000)) + "_";
-            }
-            environment = dataSourceProvider.newEnvironment(repositoryId, tablePrefix);
+            environment = newEnvironment(repositoryName);
         }
         return environment;
+    }
+
+    public Environment newEnvironment(String repositoryName) {
+        try (Connection cx = getDataSource().getConnection()) {
+        } catch (SQLException e) {
+            throw new RuntimeException();
+        }
+        String tablePrefix = "geogig_" + newTablePrefix() + "_";
+        Environment env = dataSourceProvider.newEnvironment(repositoryName, tablePrefix);
+        return env;
+    }
+
+    private int newTablePrefix() {
+        // this method of creating a sequence if it doesn't exist is compatible with PG prior to 9.5
+        final String createSequence = "DO $$ BEGIN CREATE SEQUENCE geogig_test_prefix_sequence; EXCEPTION WHEN duplicate_table THEN END $$ LANGUAGE plpgsql;";
+        try (Connection cx = getDataSource().getConnection()) {
+            cx.setAutoCommit(false);
+            try (Statement st = cx.createStatement()) {
+                st.execute(createSequence);
+                cx.commit();
+                cx.setAutoCommit(true);
+            }
+            try (Statement st = cx.createStatement()) {
+                try (ResultSet rs = st
+                        .executeQuery("select nextval('geogig_test_prefix_sequence')")) {
+                    rs.next();
+                    int val = rs.getInt(1);
+                    return val;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     public String getRootURI() {
@@ -158,8 +188,19 @@ public class PGTemporaryTestConfig extends ExternalResource {
     }
 
     public String getRepoURL() {
-        PGTestProperties props = dataSourceProvider.getTestProperties();
         Environment env = getEnvironment();
+        return getRepoURI(env);
+    }
+
+    public String newRepoURI(String repositoryName) {
+        Environment env = getEnvironment();
+        PGTestProperties props = dataSourceProvider.getTestProperties();
+        String url = props.buildRepoURL(repositoryName, env.getTables().getPrefix());
+        return url;
+    }
+
+    public String getRepoURI(Environment env) {
+        PGTestProperties props = dataSourceProvider.getTestProperties();
         String url = props.buildRepoURL(env.getRepositoryName(), env.getTables().getPrefix());
         return url;
     }

@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -30,7 +30,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
+import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.DataSourceManager;
 import org.mockito.ArgumentCaptor;
 
 import com.google.common.collect.ImmutableList;

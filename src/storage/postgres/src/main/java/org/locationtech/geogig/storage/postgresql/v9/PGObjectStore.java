@@ -7,23 +7,21 @@
  * Contributors:
  * Johnathan Garrett (Prominent Edge) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
-import static org.locationtech.geogig.storage.postgresql.Environment.KEY_GETALL_BATCH_SIZE;
-import static org.locationtech.geogig.storage.postgresql.Environment.KEY_PUTALL_BATCH_SIZE;
-import static org.locationtech.geogig.storage.postgresql.Environment.KEY_THREADPOOL_SIZE;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.rollbackAndRethrow;
+import static org.locationtech.geogig.storage.postgresql.config.Environment.KEY_GETALL_BATCH_SIZE;
+import static org.locationtech.geogig.storage.postgresql.config.Environment.KEY_PUTALL_BATCH_SIZE;
+import static org.locationtech.geogig.storage.postgresql.config.Environment.KEY_THREADPOOL_SIZE;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.rollbackAndRethrow;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,12 +31,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.Callable;
@@ -47,7 +42,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
@@ -61,6 +55,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -72,24 +67,21 @@ import org.locationtech.geogig.storage.cache.CacheManager;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
-import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
+import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGId;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
-import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.PeekingIterator;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -112,13 +104,13 @@ public class PGObjectStore implements ObjectStore {
 
     protected final ConfigDatabase configdb;
 
-    private static final SerializationFactoryProxy encoder = new SerializationFactoryProxy();
+    static final SerializationFactoryProxy encoder = new SerializationFactoryProxy();
 
     protected DataSource dataSource;
 
-    private ObjectCache sharedCache = null;
+    ObjectCache sharedCache = null;
 
-    private int getAllBatchSize = DEFAULT_GET_ALL_PARTITION_SIZE;
+    int getAllBatchSize = DEFAULT_GET_ALL_PARTITION_SIZE;
 
     private int putAllBatchSize = DEFAULT_PUT_ALL_PARTITION_SIZE;
 
@@ -254,7 +246,7 @@ public class PGObjectStore implements ObjectStore {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -266,7 +258,7 @@ public class PGObjectStore implements ObjectStore {
         checkState(isOpen(), "db is closed");
         config.checkRepositoryExists();
 
-        final int hash1 = PGId.intHash(ObjectId.toRaw(partialId));
+        final int hash1 = RevObjects.h1(partialId);
         final String sql = format(
                 "SELECT ((id).h2), ((id).h3) FROM %s WHERE ((id).h1) = ? LIMIT 1000",
                 objectsTable());
@@ -289,7 +281,7 @@ public class PGObjectStore implements ObjectStore {
                 return matchList;
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -408,7 +400,7 @@ public class PGObjectStore implements ObjectStore {
         checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
 
-        Iterator<T> stream = new GetAllIterator(ids.iterator(), type, listener, this);
+        Iterator<T> stream = new PGObjectStoreGetAllIterator(ids.iterator(), type, listener, this);
 
         return stream;
     }
@@ -422,272 +414,10 @@ public class PGObjectStore implements ObjectStore {
         checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
 
-        AutoCloseableIterator<ObjectInfo<T>> stream = new ObjectIterator<T>(refs, type, listener,
-                this);
+        AutoCloseableIterator<ObjectInfo<T>> stream = new PGObjectStoreObjectIterator<T>(refs, type,
+                listener, this);
 
         return stream;
-    }
-
-    private static class ObjectIterator<T extends RevObject>
-            implements AutoCloseableIterator<ObjectInfo<T>> {
-
-        private PeekingIterator<NodeRef> nodes;
-
-        private final Class<T> type;
-
-        private final BulkOpListener listener;
-
-        private final PGObjectStore store;
-
-        private Iterator<ObjectInfo<T>> nextBatch;
-
-        final ObjectCache cache;
-
-        private boolean closed;
-
-        private ObjectInfo<T> next;
-
-        public ObjectIterator(Iterator<NodeRef> refs, Class<T> type, BulkOpListener listener,
-                PGObjectStore store) {
-            this.nodes = Iterators.peekingIterator(refs);
-            this.type = type;
-            this.listener = listener;
-            this.store = store;
-            cache = store.sharedCache;
-        }
-
-        @Override
-        public void close() {
-            closed = true;
-            nodes = null;
-            nextBatch = null;
-        }
-
-        @Override
-        public boolean hasNext() {
-            if (closed) {
-                return false;
-            }
-            if (next == null) {
-                next = computeNext();
-            }
-            return next != null;
-        }
-
-        @Override
-        public ObjectInfo<T> next() {
-            if (closed) {
-                throw new NoSuchElementException("Iterator is closed");
-            }
-            final ObjectInfo<T> curr;
-            if (next == null) {
-                curr = computeNext();
-            } else {
-                curr = next;
-                next = null;
-            }
-            if (curr == null) {
-                throw new NoSuchElementException();
-            }
-            return curr;
-        }
-
-        private @Nullable ObjectInfo<T> computeNext() {
-            if (nextBatch != null && nextBatch.hasNext()) {
-                return nextBatch.next();
-            }
-            if (!nodes.hasNext()) {
-                return null;
-            }
-            {
-                ObjectInfo<T> obj = tryNextCached();
-                if (obj != null) {
-                    return obj;
-                }
-            }
-
-            final int queryBatchSize = store.getAllBatchSize;
-            final int superPartitionBatchSize = 10 * queryBatchSize;
-
-            List<ObjectInfo<T>> hits = new LinkedList<>();
-            List<NodeRef> cacheMisses = new ArrayList<>(superPartitionBatchSize);
-            for (int i = 0; i < superPartitionBatchSize && nodes.hasNext(); i++) {
-                NodeRef node = nodes.next();
-                ObjectId id = node.getObjectId();
-                RevObject cached = cache.getIfPresent(id);
-                if (cached == null) {
-                    cacheMisses.add(node);
-                } else {
-                    T obj = cacheHit(id, cached);
-                    if (obj != null) {
-                        hits.add(new ObjectInfo<T>(node, obj));
-                    }
-                }
-            }
-            List<List<NodeRef>> partitions = Lists.partition(cacheMisses, queryBatchSize);
-            List<Future<List<ObjectInfo<T>>>> futures = new ArrayList<>(partitions.size());
-            for (List<NodeRef> partition : partitions) {
-                Future<List<ObjectInfo<T>>> dbBatch;
-                dbBatch = store.getObjects(partition, listener, type);
-                futures.add(dbBatch);
-            }
-
-            final Function<Future<List<ObjectInfo<T>>>, List<ObjectInfo<T>>> futureGetter = (
-                    objs) -> {
-                try {
-                    return objs.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                    throw propagate(e);
-                }
-            };
-
-            Iterable<List<ObjectInfo<T>>> lists = Iterables.transform(futures, futureGetter);
-            Iterable<ObjectInfo<T>> concat = Iterables.concat(lists);
-            Iterator<ObjectInfo<T>> iterator = concat.iterator();
-
-            nextBatch = Iterators.concat(hits.iterator(), iterator);
-            return computeNext();
-        }
-
-        private ObjectInfo<T> tryNextCached() {
-            while (nodes.hasNext()) {
-                NodeRef node = nodes.peek();
-                ObjectId id = node.getObjectId();
-                RevObject cached = cache.getIfPresent(id);
-                if (cached == null) {
-                    return null;
-                } else {
-                    nodes.next();
-                    T obj = cacheHit(id, cached);
-                    if (obj != null) {
-                        return new ObjectInfo<T>(node, obj);
-                    }
-                }
-            }
-            return null;
-        }
-
-        @Nullable
-        private T cacheHit(ObjectId id, RevObject object) {
-            if (type.isInstance(object)) {
-                listener.found(id, null);
-                return type.cast(object);
-            } else {
-                listener.notFound(id);
-            }
-            return null;
-        }
-    }
-
-    private static class GetAllIterator<T extends RevObject> extends AbstractIterator<T> {
-
-        private final PeekingIterator<ObjectId> ids;
-
-        private final Class<T> type;
-
-        private final BulkOpListener listener;
-
-        private final PGObjectStore store;
-
-        private Iterator<T> nextBatch;
-
-        final ObjectCache cache;
-
-        public GetAllIterator(Iterator<ObjectId> ids, Class<T> type, BulkOpListener listener,
-                PGObjectStore store) {
-            this.ids = Iterators.peekingIterator(ids);
-            this.type = type;
-            this.listener = listener;
-            this.store = store;
-            cache = store.sharedCache;
-        }
-
-        @Override
-        protected T computeNext() {
-            if (nextBatch != null && nextBatch.hasNext()) {
-                return nextBatch.next();
-            }
-            if (!ids.hasNext()) {
-                return endOfData();
-            }
-            {
-                T obj = tryNextCached();
-                if (obj != null) {
-                    return obj;
-                }
-            }
-
-            final int queryBatchSize = store.getAllBatchSize;
-            final int superPartitionBatchSize = 10 * queryBatchSize;
-
-            List<T> hits = new LinkedList<>();
-            List<ObjectId> cacheMisses = new ArrayList<>(superPartitionBatchSize);
-            for (int i = 0; i < superPartitionBatchSize && ids.hasNext(); i++) {
-                ObjectId id = ids.next();
-                RevObject cached = cache.getIfPresent(id);
-                if (cached == null) {
-                    cacheMisses.add(id);
-                } else {
-                    T obj = cacheHit(id, cached);
-                    if (obj != null) {
-                        hits.add(obj);
-                    }
-                }
-            }
-            List<List<ObjectId>> partitions = Lists.partition(cacheMisses, queryBatchSize);
-            List<Future<List<T>>> futures = new ArrayList<>(partitions.size());
-            for (List<ObjectId> partition : partitions) {
-                Future<List<T>> dbBatch;
-                dbBatch = store.getAll(partition, listener, type);
-                futures.add(dbBatch);
-            }
-
-            final Function<Future<List<T>>, List<T>> futureGetter = (objs) -> {
-                try {
-                    return objs.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                    throw propagate(e);
-                }
-            };
-
-            Iterable<List<T>> lists = Iterables.transform(futures, futureGetter);
-            Iterable<T> concat = Iterables.concat(lists);
-            Iterator<T> iterator = concat.iterator();
-
-            nextBatch = Iterators.concat(hits.iterator(), iterator);
-            return computeNext();
-        }
-
-        private T tryNextCached() {
-            while (ids.hasNext()) {
-                ObjectId id = ids.peek();
-                RevObject cached = cache.getIfPresent(id);
-                if (cached == null) {
-                    return null;
-                } else {
-                    ids.next();
-                    T obj = cacheHit(id, cached);
-                    if (obj != null) {
-                        return obj;
-                    }
-                }
-            }
-            return null;
-        }
-
-        @Nullable
-        private T cacheHit(ObjectId id, RevObject object) {
-            if (type.isInstance(object)) {
-                listener.found(id, null);
-                return type.cast(object);
-            } else {
-                listener.notFound(id);
-            }
-            return null;
-        }
-
     }
 
     @Override
@@ -714,7 +444,7 @@ public class PGObjectStore implements ObjectStore {
                 return inserted;
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -736,7 +466,7 @@ public class PGObjectStore implements ObjectStore {
         deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
-    protected String tableNameForType(@Nullable RevObject.TYPE type, PGId pgid) {
+    protected String tableNameForType(@Nullable RevObject.TYPE type, @Nullable PGId pgid) {
         final String tableName;
         final TableNames tables = config.getTables();
         if (type == null) {
@@ -747,7 +477,7 @@ public class PGObjectStore implements ObjectStore {
                 tableName = tables.commits();
                 break;
             case FEATURE:
-                tableName = pgid != null ? tables.features(pgid.hash1()) : tables.features();
+                tableName = pgid == null ? tables.features() : tables.features(pgid.hash1());
                 break;
             case FEATURETYPE:
                 tableName = tables.featureTypes();
@@ -805,7 +535,7 @@ public class PGObjectStore implements ObjectStore {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         if (bytes == null) {
@@ -817,7 +547,7 @@ public class PGObjectStore implements ObjectStore {
         return obj;
     }
 
-    private <T extends RevObject> Future<List<T>> getAll(final Collection<ObjectId> ids,
+    <T extends RevObject> Future<List<T>> getAll(final Collection<ObjectId> ids,
             final BulkOpListener listener, final Class<T> type) {
         checkState(isOpen(), "Database is closed");
 
@@ -829,15 +559,16 @@ public class PGObjectStore implements ObjectStore {
                 List<T> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
             } catch (Exception e) {
-                propagate(e);
+                Throwables.throwIfUnchecked(e);
+                throw new RuntimeException(e);
             }
         }
         Future<List<T>> future = resources.executor().submit(getAllOp);
         return future;
     }
 
-    private <T extends RevObject> Future<List<ObjectInfo<T>>> getObjects(
-            final Collection<NodeRef> nodes, final BulkOpListener listener, final Class<T> type) {
+    <T extends RevObject> Future<List<ObjectInfo<T>>> getObjects(final Collection<NodeRef> nodes,
+            final BulkOpListener listener, final Class<T> type) {
         checkState(isOpen(), "Database is closed");
 
         GetObjectOp<T> getAllOp = new GetObjectOp<T>(nodes, listener, this, type);
@@ -848,207 +579,12 @@ public class PGObjectStore implements ObjectStore {
                 List<ObjectInfo<T>> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
             } catch (Exception e) {
-                propagate(e);
+                Throwables.throwIfUnchecked(e);
+                throw new RuntimeException(e);
             }
         }
         Future<List<ObjectInfo<T>>> future = resources.executor().submit(getAllOp);
         return future;
-    }
-
-    private static class GetAllOp<T extends RevObject> implements Callable<List<T>> {
-
-        private final Set<ObjectId> queryIds;
-
-        private final BulkOpListener callback;
-
-        private final PGObjectStore db;
-
-        private final ObjectCache sharedCache;
-
-        private final Class<T> type;
-
-        private final boolean notify;
-
-        public GetAllOp(Collection<ObjectId> ids, BulkOpListener listener, PGObjectStore db,
-                Class<T> type) {
-            this.queryIds = Sets.newHashSet(ids);
-            this.callback = listener;
-            this.notify = !BulkOpListener.NOOP_LISTENER.equals(listener);
-            this.db = db;
-            this.type = type;
-            this.sharedCache = db.sharedCache;
-        }
-
-        @Override
-        public List<T> call() throws Exception {
-            checkState(db.isOpen(), "Database is closed");
-            final TYPE objType = RevObject.class.equals(type) ? null : RevObject.TYPE.valueOf(type);
-            final String tableName = db.tableNameForType(objType, null);
-
-            final int queryCount = queryIds.size();
-            List<T> found = new ArrayList<>(queryCount);
-
-            if (tableName != null) {
-                byte[] bytes;
-                ObjectId id;
-
-                final String sql = format(
-                        "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
-                        tableName);
-
-                try (Connection cx = PGStorage.newConnection(db.dataSource)) {
-                    try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, queryIds))) {
-                        final Array array = toJDBCArray(cx, queryIds);
-                        ps.setFetchSize(queryCount);
-                        ps.setArray(1, array);
-
-                        final Stopwatch sw = LOG.isTraceEnabled() ? Stopwatch.createStarted()
-                                : null;
-
-                        try (ResultSet rs = ps.executeQuery()) {
-                            if (LOG.isTraceEnabled()) {
-                                LOG.trace(String.format("Executed getAll for %,d ids in %,dms",
-                                        queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
-                            }
-                            while (rs.next()) {
-                                id = PGId.valueOf(rs, 1).toObjectId();
-                                // only add those that are in the query set. The resultset may
-                                // contain
-                                // more due to hash1 clashes
-                                if (queryIds.contains(id)) {
-                                    bytes = rs.getBytes(4);
-
-                                    RevObject obj = encoder.decode(id, bytes);
-                                    if (objType == null || objType.equals(obj.getType())) {
-                                        if (notify) {
-                                            queryIds.remove(id);
-                                            callback.found(id, Integer.valueOf(bytes.length));
-                                        }
-                                        found.add(type.cast(obj));
-                                        sharedCache.put(obj);
-                                    }
-                                }
-                            }
-                        }
-                        if (LOG.isTraceEnabled()) {
-                            sw.stop();
-                            LOG.trace(String.format(
-                                    "Finished getAll for %,d out of %,d ids in %,dms", found.size(),
-                                    queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
-                        }
-                    }
-                }
-            }
-            if (notify) {
-                for (ObjectId oid : queryIds) {
-                    callback.notFound(oid);
-                }
-            }
-            return found;
-        }
-
-        private Array toJDBCArray(Connection cx, final Collection<ObjectId> queryIds)
-                throws SQLException {
-            Array array;
-            Object[] arr = new Object[queryIds.size()];
-            Iterator<ObjectId> it = queryIds.iterator();
-            for (int i = 0; it.hasNext(); i++) {
-                ObjectId id = it.next();
-                arr[i] = Integer.valueOf(PGId.valueOf(id).hash1());
-            }
-            array = cx.createArrayOf("integer", arr);
-            return array;
-        }
-    }
-
-    private static class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> {
-
-        private final Set<NodeRef> queryNodes;
-
-        private final BulkOpListener callback;
-
-        private final PGObjectStore db;
-
-        private final ObjectCache sharedCache;
-
-        private final Class<T> type;
-
-        public GetObjectOp(Collection<NodeRef> ids, BulkOpListener listener, PGObjectStore db,
-                Class<T> type) {
-            this.queryNodes = Sets.newHashSet(ids);
-            this.callback = listener;
-            this.db = db;
-            this.type = type;
-            this.sharedCache = db.sharedCache;
-        }
-
-        @Override
-        public List<ObjectInfo<T>> call() throws Exception {
-
-            checkState(db.isOpen(), "Database is closed");
-            final TYPE objType = RevObject.class.equals(type) ? null : RevObject.TYPE.valueOf(type);
-            final String tableName = db.tableNameForType(objType, null);
-
-            final int queryCount = queryNodes.size();
-
-            final String sql = format(
-                    "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
-                    tableName);
-
-            Map<ObjectId, byte[]> queryMatches = new HashMap<>();
-
-            try (Connection cx = PGStorage.newConnection(db.dataSource)) {
-
-                final Array array = toJDBCArray(cx, queryNodes);
-
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, queryNodes))) {
-                    ps.setFetchSize(queryCount);
-                    ps.setArray(1, array);
-
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            ObjectId id = PGId.valueOf(rs, 1).toObjectId();
-                            byte[] bytes = rs.getBytes(4);
-                            queryMatches.put(id, bytes);
-                        }
-                    }
-                }
-            }
-
-            List<ObjectInfo<T>> result = new ArrayList<>(queryCount);
-            for (NodeRef n : queryNodes) {
-                ObjectId id = n.getObjectId();
-                byte[] bytes = queryMatches.get(id);
-                if (bytes == null) {
-                    callback.notFound(n.getObjectId());
-                } else {
-                    RevObject obj = encoder.decode(id, bytes);
-                    if (objType == null || objType.equals(obj.getType())) {
-                        callback.found(id, null/* this arg should be deprecated */);
-                        ObjectInfo<T> info = ObjectInfo.of(n, type.cast(obj));
-                        result.add(info);
-                        sharedCache.put(obj);
-                    } else {
-                        callback.notFound(n.getObjectId());
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        private Array toJDBCArray(Connection cx, final Collection<NodeRef> queryIds)
-                throws SQLException {
-            Array array;
-            Object[] arr = new Object[queryIds.size()];
-            Iterator<NodeRef> it = queryIds.iterator();
-            for (int i = 0; it.hasNext(); i++) {
-                ObjectId id = it.next().getObjectId();
-                arr[i] = Integer.valueOf(PGId.valueOf(id).hash1());
-            }
-            array = cx.createArrayOf("integer", arr);
-            return array;
-        }
     }
 
     /**
@@ -1069,7 +605,7 @@ public class PGObjectStore implements ObjectStore {
                 sharedCache.invalidate(id);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -1160,7 +696,8 @@ public class PGObjectStore implements ObjectStore {
                 }
             } catch (Exception ex) {
                 abortFlag.set(ex);
-                throw Throwables.propagate(ex);
+                Throwables.throwIfUnchecked(ex);
+                throw new RuntimeException(ex);
             }
             return null;
         }
@@ -1298,12 +835,13 @@ public class PGObjectStore implements ObjectStore {
                             r.get();
                         }
                     } catch (ExecutionException e) {
-                        throw Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
-                    throw Throwables.propagate(error);
+                    Throwables.throwIfUnchecked(error);
+                    throw new RuntimeException(error);
                 }
             } catch (InterruptedException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
     }
@@ -1313,7 +851,7 @@ public class PGObjectStore implements ObjectStore {
         case COMMIT:
             return tables.commits();
         case FEATURE:
-            return tables.features(hash);
+            return tables.features();
         case FEATURETYPE:
             return tables.featureTypes();
         case TAG:
@@ -1376,7 +914,7 @@ public class PGObjectStore implements ObjectStore {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException connectEx) {
-            throw propagate(connectEx);
+            throw new RuntimeException(connectEx);
         }
     }
 

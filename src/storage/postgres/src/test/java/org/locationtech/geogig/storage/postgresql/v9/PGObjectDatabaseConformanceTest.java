@@ -5,9 +5,9 @@
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Johnathan Garrett (Prominent Edge) - initial implementation
+ * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import java.io.IOException;
 
@@ -15,10 +15,15 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.IndexDatabase;
-import org.locationtech.geogig.storage.impl.IndexDatabaseConformanceTest;
+import org.locationtech.geogig.storage.impl.ObjectDatabaseConformanceTest;
+import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
 
-public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest {
+public class PGObjectDatabaseConformanceTest extends ObjectDatabaseConformanceTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 
@@ -28,19 +33,19 @@ public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest
     ConfigDatabase configdb;
 
     @Override
-    protected IndexDatabase createIndexDatabase(boolean readOnly) throws IOException {
+    protected PGObjectDatabase createOpen(boolean readOnly) throws IOException {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
 
         closeConfigDb();
 
         configdb = new PGConfigDatabase(config);
-        PGIndexDatabase db = new PGIndexDatabase(configdb, config, readOnly);
+        PGObjectDatabase db = new PGObjectDatabase(configdb, config, readOnly);
+        db.open();
         return db;
     }
 
-    @After
-    public void closeConfigDb() throws IOException {
+    public @After void closeConfigDb() throws IOException {
         if (configdb != null) {
             configdb.close();
             configdb = null;

@@ -7,16 +7,15 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.newConnection;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newConnection;
 
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -37,12 +36,13 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 
 public class PGRefDatabase implements RefDatabase {
@@ -137,7 +137,7 @@ public class PGRefDatabase implements RefDatabase {
             if (e.getMessage().contains("canceling")) {
                 throw new TimeoutException("The attempt to lock the database timed out.");
             }
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -154,7 +154,7 @@ public class PGRefDatabase implements RefDatabase {
                 st.setInt(1, repo);
                 st.executeQuery();
             } catch (SQLException e) {
-                Throwables.propagate(e);
+                throw new RuntimeException(e);
             } finally {
                 LockConnection.remove();
                 try {
@@ -207,7 +207,7 @@ public class PGRefDatabase implements RefDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return doGet(refPath, cx);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -285,7 +285,7 @@ public class PGRefDatabase implements RefDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -326,7 +326,7 @@ public class PGRefDatabase implements RefDatabase {
             }
             return updateCount == 0 ? null : oldval;
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -345,7 +345,7 @@ public class PGRefDatabase implements RefDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return doGetall(cx, prefixes);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -411,7 +411,7 @@ public class PGRefDatabase implements RefDatabase {
             }
             return oldvalues;
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

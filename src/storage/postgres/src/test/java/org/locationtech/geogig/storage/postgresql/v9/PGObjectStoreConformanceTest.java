@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +28,12 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
+import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGObjectStore;
 
 import com.google.common.collect.Lists;
 

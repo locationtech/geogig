@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import java.net.URI;
 
@@ -16,6 +16,11 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
+import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.v9.PGConflictsDatabase;
 
 public class PGConflictsDatabaseConformanceTest
         extends ConflictsDatabaseConformanceTest<PGConflictsDatabase> {

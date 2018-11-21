@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -29,7 +29,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 
 public class EnvironmentBuilder {
 
@@ -62,7 +61,7 @@ public class EnvironmentBuilder {
             try {
                 shortKeys.put(p.get(0), URLDecoder.decode(p.get(1), StandardCharsets.UTF_8.name()));
             } catch (UnsupportedEncodingException uee) {
-                Throwables.propagate(uee);
+                throw new RuntimeException(uee);
             }
         }
         return shortKeys;
@@ -151,6 +150,12 @@ public class EnvironmentBuilder {
 
     public Environment build() {
         return config;
+    }
+
+    public static ConnectionConfig parse(URI uri) {
+        EnvironmentBuilder eb = new EnvironmentBuilder(uri);
+        Environment e = eb.build();
+        return e.connectionConfig;
     }
 
     /**

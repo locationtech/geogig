@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import static java.lang.String.format;
 import static org.junit.Assert.assertFalse;
@@ -30,9 +30,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
-import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
-
-import com.google.common.base.Throwables;
+import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGStorageTableManager;
+import org.locationtech.geogig.storage.postgresql.config.TableNames;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 public class PGStorageTest {
 
@@ -234,13 +237,13 @@ public class PGStorageTest {
     private boolean tableExists(DataSource dataSource, final String tableName) {
         try (Connection cx = dataSource.getConnection()) {
             DatabaseMetaData md = cx.getMetaData();
-            final String schema = PGStorage.schema(tableName);
-            final String table = PGStorage.stripSchema(tableName);
+            final String schema = PGStorageTableManager.schema(tableName);
+            final String table = PGStorageTableManager.stripSchema(tableName);
             try (ResultSet rs = md.getTables(null, schema, table, null)) {
                 return rs.next();
             }
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

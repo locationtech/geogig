@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
@@ -28,7 +28,8 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
-import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
+import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;

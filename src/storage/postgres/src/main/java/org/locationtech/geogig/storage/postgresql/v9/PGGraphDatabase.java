@@ -7,13 +7,12 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.closeDataSource;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.newDataSource;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.closeDataSource;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newDataSource;
 
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -38,12 +37,16 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGId;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.TableNames;
+import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -116,7 +119,7 @@ public class PGGraphDatabase implements GraphDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return exists(node, cx);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -153,24 +156,48 @@ public class PGGraphDatabase implements GraphDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return put(cx, commitId, parentIds);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
-    boolean put(Connection cx, ObjectId commitId, ImmutableList<ObjectId> parentIds) {
+    boolean put(Connection cx, ObjectId commitId, List<ObjectId> parentIds) {
         try {
             boolean updated;
-            final PGId node = PGId.valueOf(commitId);
-            updated = !exists(node, cx);
+            cx.setAutoCommit(false);
+            final PGId src = PGId.valueOf(commitId);
+            updated = !exists(src, cx);
             // NOTE: runs in autoCommit mode to ignore statement failures due to duplicates (?)
             // TODO: if node was node added should we severe existing parent relationships?
+            int dstindex = 0;
+            final String insert = format(
+                    "INSERT INTO %s (src, dst, dstindex) VALUES (ROW(?,?,?), ROW(?,?,?), ?)",
+                    EDGES);
+
             for (ObjectId p : parentIds) {
-                boolean isDuplicate = relate(node, PGId.valueOf(p), cx);
+                final PGId dst = PGId.valueOf(p);
+                boolean isDuplicate = false;
+                try (PreparedStatement ps = cx.prepareStatement(log(insert, LOG, src, dst))) {
+                    src.setArgs(ps, 1);
+                    dst.setArgs(ps, 4);
+                    ps.setInt(7, dstindex);
+                    dstindex++;
+                    try {
+                        ps.executeUpdate();
+                    } catch (SQLException duplicateTuple) {
+                        isDuplicate = true;
+                    }
+                }
                 updated = updated || !isDuplicate;
             }
+            cx.commit();
             return updated;
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            try {
+                cx.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+            throw new RuntimeException(e);
         }
     }
 
@@ -198,7 +225,7 @@ public class PGGraphDatabase implements GraphDatabase {
 
         final String tmpTable = "graph_edge_tmp";
         final String tmpTableSql = format(
-                "CREATE TEMPORARY TABLE %s (src OBJECTID, dst OBJECTID, PRIMARY KEY (src,dst)) ON COMMIT DROP",
+                "CREATE TEMPORARY TABLE %s (src OBJECTID, dst OBJECTID, dstindex int NOT NULL, PRIMARY KEY (src,dst)) ON COMMIT DROP",
                 tmpTable, EDGES);
 
         // create temporary table. The temporary table is local to the transaction
@@ -208,16 +235,19 @@ public class PGGraphDatabase implements GraphDatabase {
 
         // insert all rows to the tmp table
         final String insert = "INSERT INTO " + tmpTable
-                + " (src, dst) VALUES (ROW(?,?,?), ROW(?,?,?))";
+                + " (src, dst, dstindex) VALUES (ROW(?,?,?), ROW(?,?,?), ?)";
 
         PGId src, dst;
         try (PreparedStatement ps = cx.prepareStatement(insert)) {
             for (RevCommit c : uniqueCommits) {
                 src = PGId.valueOf(c.getId());
-                for (ObjectId parent : c.getParentIds()) {
+                ImmutableList<ObjectId> parentIds = c.getParentIds();
+                for (int parentIndex = 0; parentIndex < parentIds.size(); parentIndex++) {
+                    ObjectId parent = parentIds.get(parentIndex);
                     dst = PGId.valueOf(parent);
                     src.setArgs(ps, 1);
                     dst.setArgs(ps, 4);
+                    ps.setInt(7, parentIndex);
                     ps.addBatch();
                 }
             }
@@ -225,8 +255,8 @@ public class PGGraphDatabase implements GraphDatabase {
         }
 
         // copy all new rows to the edges table
-        final String insertUniqueSql = "INSERT INTO " + EDGES + "(src,dst)\n"//
-                + " SELECT DISTINCT src,dst FROM " + tmpTable + "\n"//
+        final String insertUniqueSql = "INSERT INTO " + EDGES + "(src,dst,dstindex)\n"//
+                + " SELECT DISTINCT src,dst,dstindex FROM " + tmpTable + "\n"//
                 + " WHERE NOT EXISTS (\n"//
                 + "  SELECT 1 FROM " + EDGES + "\n"//
                 + "  WHERE \n" //
@@ -245,7 +275,7 @@ public class PGGraphDatabase implements GraphDatabase {
     private void putWithUpsert(Connection cx, Stream<RevCommit> commits) throws SQLException {
         // from PG 9.5+
         final String upsert = format(
-                "INSERT INTO %s (src, dst) VALUES (ROW(?,?,?), ROW(?,?,?)) ON CONFLICT DO NOTHING",
+                "INSERT INTO %s (src, dst, dstindex) VALUES (ROW(?,?,?), ROW(?,?,?), ?) ON CONFLICT DO NOTHING",
                 EDGES);
 
         final Stopwatch sw = LOG.isTraceEnabled() ? Stopwatch.createStarted() : null;
@@ -258,10 +288,13 @@ public class PGGraphDatabase implements GraphDatabase {
                 RevCommit c = iterator.next();
                 count++;
                 src = PGId.valueOf(c.getId());
-                for (ObjectId parent : c.getParentIds()) {
+                ImmutableList<ObjectId> parentIds = c.getParentIds();
+                for (int parentIndex = 0; parentIndex < parentIds.size(); parentIndex++) {
+                    ObjectId parent = parentIds.get(parentIndex);
                     dst = PGId.valueOf(parent);
                     src.setArgs(ps, 1);
                     dst.setArgs(ps, 4);
+                    ps.setInt(7, parentIndex);
                     ps.addBatch();
                 }
             }
@@ -274,30 +307,6 @@ public class PGGraphDatabase implements GraphDatabase {
                 }
             }
         }
-    }
-
-    /**
-     * Relates two nodes in the graph.
-     * 
-     * @param src The source (origin) node of the relationship.
-     * @param dst The destination (origin) node of the relationship.
-     * @return {@code true} if the relationship already existed in the database
-     */
-    boolean relate(final PGId src, final PGId dst, final Connection cx) throws SQLException {
-        final String insert = format("INSERT INTO %s (src, dst) VALUES (ROW(?,?,?), ROW(?,?,?))",
-                EDGES);
-
-        boolean isDuplicate = false;
-        try (PreparedStatement ps = cx.prepareStatement(log(insert, LOG, src, dst))) {
-            src.setArgs(ps, 1);
-            dst.setArgs(ps, 4);
-            try {
-                ps.executeUpdate();
-            } catch (SQLException duplicateTuple) {
-                isDuplicate = true;
-            }
-        }
-        return isDuplicate;
     }
 
     /**
@@ -336,7 +345,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -364,7 +373,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return mapped;
@@ -395,7 +404,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 next.clear();
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return depth;
@@ -434,7 +443,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -457,7 +466,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -489,7 +498,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -497,7 +506,7 @@ public class PGGraphDatabase implements GraphDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return outgoing(node, cx);
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -507,7 +516,7 @@ public class PGGraphDatabase implements GraphDatabase {
      */
     Iterable<PGId> outgoing(final PGId node, final Connection cx) throws SQLException {
         final String sql = format(
-                "SELECT ((dst).h1), ((dst).h2),((dst).h3) FROM %s WHERE src = CAST(ROW(?,?,?) AS OBJECTID)",
+                "SELECT ((dst).h1), ((dst).h2),((dst).h3), dstindex FROM %s WHERE src = CAST(ROW(?,?,?) AS OBJECTID) ORDER BY dstindex",
                 EDGES);
 
         List<PGId> outgoing = new ArrayList<>(2);
@@ -516,7 +525,9 @@ public class PGGraphDatabase implements GraphDatabase {
             node.setArgs(ps, 1);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    outgoing.add(PGId.valueOf(rs, 1));
+                    PGId dst = PGId.valueOf(rs, 1);
+                    int index = rs.getInt(4);
+                    outgoing.add(index, dst);
                 }
             }
         }
@@ -544,7 +555,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return incoming;
     }

@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import static org.junit.Assert.assertTrue;
 
@@ -25,9 +25,13 @@ import org.junit.Test;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGRefDatabase;
 import org.locationtech.geogig.test.integration.repository.RefDatabaseTest;
-
-import com.google.common.base.Throwables;
 
 public class PGRefDatabaseTest extends RefDatabaseTest {
 
@@ -55,7 +59,7 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
             try {
                 configdb.close();
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             configdb = null;
         }

@@ -7,13 +7,12 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 
 import java.net.URISyntaxException;
 import java.sql.Array;
@@ -35,13 +34,14 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
@@ -166,7 +166,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -208,7 +208,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -236,15 +236,15 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                         @Nullable
                         byte[] ancestorb = rs.getBytes(2);
                         ObjectId ancestor = ancestorb == null ? ObjectId.NULL
-                                : ObjectId.createNoClone(ancestorb);
-                        ObjectId ours = ObjectId.createNoClone(rs.getBytes(3));
-                        ObjectId theirs = ObjectId.createNoClone(rs.getBytes(4));
+                                : ObjectId.create(ancestorb);
+                        ObjectId ours = ObjectId.create(rs.getBytes(3));
+                        ObjectId theirs = ObjectId.create(rs.getBytes(4));
                         conflict = new Conflict(path, ancestor, ours, theirs);
                     }
                 }
             }
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return Optional.fromNullable(conflict);
     }
@@ -265,7 +265,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return hasConflicts;
     }
@@ -305,16 +305,16 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                         if (ancestorb == null) {
                             ancestor = ObjectId.NULL;
                         } else {
-                            ancestor = ObjectId.createNoClone(ancestorb);
+                            ancestor = ObjectId.create(ancestorb);
                         }
-                        ObjectId ours = ObjectId.createNoClone(rs.getBytes(3));
-                        ObjectId theirs = ObjectId.createNoClone(rs.getBytes(4));
+                        ObjectId ours = ObjectId.create(rs.getBytes(3));
+                        ObjectId theirs = ObjectId.create(rs.getBytes(4));
                         conflicts.add(new Conflict(path, ancestor, ours, theirs));
                     }
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return conflicts;
     }
@@ -358,9 +358,9 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                         @Nullable
                         byte[] ancestorb = rs.getBytes(2);
                         ObjectId ancestor = ancestorb == null ? ObjectId.NULL
-                                : ObjectId.createNoClone(ancestorb);
-                        ObjectId ours = ObjectId.createNoClone(rs.getBytes(3));
-                        ObjectId theirs = ObjectId.createNoClone(rs.getBytes(4));
+                                : ObjectId.create(ancestorb);
+                        ObjectId ours = ObjectId.create(rs.getBytes(3));
+                        ObjectId theirs = ObjectId.create(rs.getBytes(4));
                         batch.add(new Conflict(path, ancestor, ours, theirs));
                     }
                 }
@@ -410,7 +410,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
             try {
                 batch = db.getBatch(namespace, treePath, offset, pageSize);
             } catch (SQLException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
             this.offset += pageSize;
             this.currentPageSize = batch.size();
@@ -447,7 +447,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         return count;
     }
@@ -481,7 +481,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -517,7 +517,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -542,7 +542,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -582,7 +582,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 throw e;
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return matches;
@@ -614,7 +614,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 }

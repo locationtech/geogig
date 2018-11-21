@@ -1,6 +1,9 @@
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
 import javax.sql.DataSource;
+
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 
 /**
  * Utility class to give external testing packages access to PGStorage data source functions.

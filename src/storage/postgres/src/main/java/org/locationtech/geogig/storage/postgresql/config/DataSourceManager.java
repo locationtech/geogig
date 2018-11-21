@@ -7,10 +7,10 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,7 +34,7 @@ import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.Key, DataSource> {
+public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, DataSource> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceManager.class);
 
@@ -76,7 +76,8 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.K
             } catch (Throwable e) {
                 driverMajorVersion = 0;
                 driverVersion = "Unknown";
-                throw Throwables.propagate(e);
+                Throwables.throwIfUnchecked(e);
+                throw new RuntimeException(e);
             } finally {
                 driverVersionVerified = true;
             }
@@ -126,7 +127,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.K
     }
 
     @Override
-    protected DataSource connect(Environment.ConnectionConfig.Key connInfo) {
+    protected DataSource connect(ConnectionConfig.Key connInfo) {
         if (!verifyDriverVersion()) {
             throw new IllegalStateException(
                     "PostgreSQL JDBC Driver version not supported by GeoGig: " + driverVersion);
@@ -173,9 +174,9 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.K
             String[] maxConnections = Environment.KEY_MAX_CONNECTIONS.split("\\.");
             String section = maxConnections[0];
             String key = maxConnections[1];
-            try (PreparedStatement ps = c
-                    .prepareStatement(log(sql, LOG, PGConfigDatabase.GLOBAL_KEY, section, key))) {
-                ps.setInt(1, PGConfigDatabase.GLOBAL_KEY);
+            try (PreparedStatement ps = c.prepareStatement(
+                    log(sql, LOG, Environment.GLOBAL_KEY, section, key))) {
+                ps.setInt(1, Environment.GLOBAL_KEY);
                 ps.setString(2, section);
                 ps.setString(3, key);
 
@@ -192,7 +193,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig.K
             LOG.debug("Connected to " + jdbcUrl + " as " + connInfo.user);
         } catch (SQLException e) {
             LOG.error("Unable to connect to " + jdbcUrl + " as " + connInfo.user, e);
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return ds;
     }

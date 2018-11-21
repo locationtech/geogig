@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import java.util.Objects;
 
@@ -26,6 +26,8 @@ public class Version implements Comparable<Version> {
     public static final Version V9_5_0 = new Version(9, 5, 0);
 
     public static final Version V9_6_0 = new Version(9, 6, 0);
+
+    public static final Version V10_0_0 = new Version(10, 0, 0);
 
     public final int major;
 

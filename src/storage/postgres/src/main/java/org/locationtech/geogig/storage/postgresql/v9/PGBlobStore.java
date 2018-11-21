@@ -7,11 +7,10 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.v9;
 
-import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
+import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -24,12 +23,12 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.locationtech.geogig.storage.impl.TransactionBlobStore;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 
 class PGBlobStore implements TransactionBlobStore {
@@ -98,7 +97,7 @@ class PGBlobStore implements TransactionBlobStore {
                 }
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         return Optional.fromNullable(bytes);
@@ -148,7 +147,7 @@ class PGBlobStore implements TransactionBlobStore {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -159,7 +158,7 @@ class PGBlobStore implements TransactionBlobStore {
         try {
             bytes = ByteStreams.toByteArray(blob);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         putBlob(namespace, path, bytes);
     }
@@ -189,7 +188,7 @@ class PGBlobStore implements TransactionBlobStore {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -215,7 +214,7 @@ class PGBlobStore implements TransactionBlobStore {
                 cx.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

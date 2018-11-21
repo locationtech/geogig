@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import static com.google.common.base.Objects.equal;
 
@@ -18,10 +18,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * <p>
@@ -30,7 +30,7 @@ import com.google.common.base.Throwables;
  * pool and other resources that have to be per database singletons, such as object cache, and
  * thread pools.
  */
-public class Environment {
+public class Environment implements Cloneable {
 
     public static final String KEY_DB_SERVER = "postgres.server";
 
@@ -70,180 +70,11 @@ public class Environment {
      * 
      * @see PGConfigDatabase#resolveRepositoryPK(String)
      */
-    static final int REPOSITORY_ID_UNSET = Integer.MIN_VALUE;
+    public static final int REPOSITORY_ID_UNSET = Integer.MIN_VALUE;
 
-    static class ConnectionConfig {
+    public final ConnectionConfig connectionConfig;
 
-        private final Key key;
-
-        /**
-         * Encapsulates the parts of the connection config that uniquely identify a connection to
-         * the database in order to be used as key for {@link DataSourceManager}. As such, #schema
-         * and #tablePrefix are ignored by {@link #equals(Object)} and {@link #hashCode()}, while
-         * they're taking into account for {@link ConnectionConfig} itself.
-         *
-         */
-        static class Key {
-
-            final String server;
-
-            final int portNumber;
-
-            final String databaseName;
-
-            @Nullable
-            final String user;
-
-            @Nullable
-            final String password;
-
-            final String schema;
-
-            @Nullable
-            final String tablePrefix;
-
-            Key(String server, int portNumber, String databaseName, String schema, String user,
-                    String password, String tablePrefix) {
-                this.server = server;
-                this.portNumber = portNumber;
-                this.databaseName = databaseName;
-                this.schema = schema;
-                this.user = user;
-                this.password = password;
-                this.tablePrefix = tablePrefix;
-            }
-
-            public @Override boolean equals(Object o) {
-                if (o instanceof Key) {
-                    Key k = (Key) o;
-                    return equal(server, k.server) && equal(portNumber, k.portNumber)
-                            && equal(databaseName, k.databaseName) && equal(user, k.user)
-                            && equal(password, k.password);
-                }
-                return false;
-            }
-
-            public @Override int hashCode() {
-                return Objects.hashCode(server, portNumber, databaseName, user, password);
-            }
-
-            public @Override String toString() {
-                return String.format(
-                        "%s[host: %s, port: %d, db: %s, schema: %s, user: %s, pwd: %s, prefix: %s]",
-                        getClass().getSimpleName(), server, portNumber, databaseName, schema, user,
-                        "***", tablePrefix);
-            }
-
-        }
-
-        ConnectionConfig(final String server, final int portNumber, final String databaseName,
-                final String schema, @Nullable final String user, @Nullable final String password,
-                @Nullable String tablePrefix) {
-            this.key = new Key(server, portNumber, databaseName, schema, user, password,
-                    tablePrefix);
-        }
-
-        public URI toURI() {
-            return toURIInternal(null);
-        }
-
-        public URI toURI(final String repositoryName) {
-            Preconditions.checkNotNull(repositoryName);
-            return toURIInternal(repositoryName);
-        }
-
-        private URI toURIInternal(final @Nullable String repositoryName) {
-
-            // postgresql://<server>:<port>/<database>/<schema>[/<repoid>]?user=<username>][&password=<pwd>][&tablePrefix=<prefix>]
-            StringBuilder sb = new StringBuilder("postgresql://").append(key.server).append(":")
-                    .append(key.portNumber).append("/").append(key.databaseName).append("/")
-                    .append(key.schema);
-
-            if (repositoryName != null) {
-                sb.append("/").append(repositoryName);
-            }
-            StringBuilder args = new StringBuilder();
-            if (key.user != null) {
-                args.append("user=").append(key.user);
-            }
-            if (key.password != null) {
-                args.append(args.length() > 0 ? "&password=" : "password=").append(key.password);
-            }
-            if (key.tablePrefix != null) {
-                args.append(args.length() > 0 ? "&tablePrefix=" : "tablePrefix=")
-                        .append(key.tablePrefix);
-            }
-            if (args.length() > 0) {
-                sb.append("?").append(args);
-            }
-
-            URI repoURI = null;
-            try {
-                repoURI = new URI(sb.toString());
-            } catch (URISyntaxException e) {
-                Throwables.propagate(e);
-            }
-            return repoURI;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof ConnectionConfig)) {
-                return false;
-            }
-            ConnectionConfig d = (ConnectionConfig) o;
-            return equal(key, d.key) && equal(getSchema(), d.getSchema())
-                    && equal(key.tablePrefix, d.key.tablePrefix);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(key, key.schema, key.tablePrefix);
-        }
-
-        public @Override String toString() {
-            return String.format("%s[%s]", getClass().getSimpleName(), key);
-        }
-
-        String getDatabaseName() {
-            return key.databaseName;
-        }
-
-        @Nullable
-        String getUser() {
-            return key.user;
-        }
-
-        @Nullable
-        String getPassword() {
-            return key.password;
-        }
-
-        String getSchema() {
-            return key.schema;
-        }
-
-        int getPortNumber() {
-            return key.portNumber;
-        }
-
-        String getServer() {
-            return key.server;
-        }
-
-        @Nullable
-        String getTablePrefix() {
-            return key.tablePrefix;
-        }
-
-        public Key getKey() {
-            return key;
-        }
-    }
-
-    final ConnectionConfig connectionConfig;
-
-    private final String repositoryName;
+    private String repositoryName;
 
     private final TableNames tables;
 
@@ -259,7 +90,7 @@ public class Environment {
      * @param repositoryName repository id, optional. If not given this config can only be used by
      *        {@link PGConfigDatabase} to access the "global" configuration.
      */
-    Environment(final String server, final int portNumber, final String databaseName,
+    public Environment(final String server, final int portNumber, final String databaseName,
             final String schema, final String user, final String password,
             final @Nullable String repositoryName, @Nullable String tablePrefix) {
 
@@ -297,6 +128,8 @@ public class Environment {
     }
 
     private AtomicBoolean repositoryExistsChecked = new AtomicBoolean();
+
+    public static final int GLOBAL_KEY = -1;
 
     public void checkRepositoryExists() throws IllegalStateException {
         if (repositoryExistsChecked.get()) {
@@ -359,4 +192,20 @@ public class Environment {
     public boolean isRepositorySet() {
         return repositoryId != REPOSITORY_ID_UNSET;
     }
+
+    public @Override Environment clone() {
+        try {
+            return (Environment) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Environment asRepository(String repoName) {
+        Environment clone = clone();
+        clone.repositoryId = REPOSITORY_ID_UNSET;
+        clone.repositoryName = repoName;
+        return clone;
+    }
+
 }

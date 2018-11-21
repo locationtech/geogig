@@ -7,7 +7,7 @@
  * Contributors:
  * Erik Merkle (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
+import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class EnvironmentBuilderTest {
@@ -87,7 +88,7 @@ public class EnvironmentBuilderTest {
         URI uri = buildUri(host, port, dbName, schema, repoName, user, password);
         // Build an Environment
         EnvironmentBuilder builder = new EnvironmentBuilder(uri);
-        Environment.ConnectionConfig config = builder.build().connectionConfig;
+        ConnectionConfig config = builder.build().connectionConfig;
         // assert properties
         assertEquals("Unexpected HOST value", host, config.getServer());
         if (port != null) {

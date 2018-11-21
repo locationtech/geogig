@@ -7,14 +7,14 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import java.util.List;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-public class TableNames {
+public class TableNames  implements Cloneable{
 
     public static final String DEFAULT_SCHEMA = "public";
 
@@ -37,6 +37,10 @@ public class TableNames {
 
     public String getPrefix() {
         return prefix;
+    }
+
+    public String metadata() {
+        return name("medatada");
     }
 
     public String repositories() {
@@ -71,10 +75,21 @@ public class TableNames {
         return name("index_object");
     }
 
+    private int featuresTablePartitionCount = 16;
+
+    void setFeaturesPartitions(int featuresTablePartitionCount) {
+        Preconditions.checkArgument(
+                featuresTablePartitionCount >= 0 && featuresTablePartitionCount <= 256);
+        this.featuresTablePartitionCount = featuresTablePartitionCount;
+    }
+
     public String features(final int hash) {
+        if (0 == featuresTablePartitionCount) {
+            return features();
+        }
         final int min = Integer.MIN_VALUE;
         final long max = (long) Integer.MAX_VALUE + 1;
-        final int numTables = 16;
+        final int numTables = featuresTablePartitionCount;
         final int step = (int) (((long) max - (long) min) / numTables);
 
         int index = 0;
@@ -135,9 +150,9 @@ public class TableNames {
     }
 
     public List<String> all() {
-        return ImmutableList.of(repositories(), config(), refs(), conflicts(), objects(), index(),
-                indexMappings(), indexObjects(), commits(), features(), featureTypes(), trees(),
-                graphEdges(), graphMappings(), graphProperties(), blobs());
+        return ImmutableList.of(metadata(), repositories(), config(), refs(), conflicts(),
+                objects(), index(), indexMappings(), indexObjects(), commits(), features(),
+                featureTypes(), trees(), graphEdges(), graphMappings(), graphProperties(), blobs());
     }
 
 }

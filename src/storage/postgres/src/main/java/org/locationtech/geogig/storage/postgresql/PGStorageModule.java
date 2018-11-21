@@ -14,6 +14,11 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGConflictsDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGIndexDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGRefDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

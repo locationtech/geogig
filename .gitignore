@@ -14,3 +14,5 @@ nb-configuration.xml
 # IntelliJ module files
 *.iml
 hs_err_pid*
+#KDE
+.directory

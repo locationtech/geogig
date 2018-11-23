@@ -70,7 +70,8 @@ class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> 
 
             final Array array = toJDBCArray(cx, queryNodes);
 
-            try (PreparedStatement ps = cx.prepareStatement(log(sql, PGObjectStore.LOG, queryNodes))) {
+            try (PreparedStatement ps = cx
+                    .prepareStatement(log(sql, PGObjectStore.LOG, queryNodes))) {
                 ps.setFetchSize(queryCount);
                 ps.setArray(1, array);
 

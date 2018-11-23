@@ -495,6 +495,7 @@ public class PGConfigDatabase implements ConfigDatabase {
             if (!PGStorage.tableExists(this.dataSource, config.getTables().config())) {
                 PGStorage.createTables(config);
             }
+            PGStorage.verifyDatabaseCompatibility(dataSource, config);
         }
         return dataSource;
     }

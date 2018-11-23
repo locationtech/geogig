@@ -498,4 +498,16 @@ public abstract class PGStorageTableManager {
         }
     }
 
+    public void checkCompatibility(Connection cx, Environment env)
+            throws IllegalArgumentException, SQLException {
+        final int latestSchemaVersion = getLatestSchemaVersion();
+        final int currentSchemaVersion = getSchemaVersion(cx, env.getTables());
+        if (currentSchemaVersion < latestSchemaVersion) {
+            String msg = String.format(
+                    "ERROR: Database %s is running an outdated geogig schema. You need to run `geogig postgres-upgrade` from the command line before continuing.",
+                    env.getDatabaseName());
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
 }

@@ -6,6 +6,7 @@ target
 bin/
 #when run from within eclipse, cucumber tests create report folders in the project dir instead of it's target/ directory
 cucumber-report*
+git.properties
 git.geogig.properties
 # Netbeans project files
 nb-configuration.xml

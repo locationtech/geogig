@@ -193,7 +193,7 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
             LOG.debug("Connected to " + jdbcUrl + " as " + connInfo.user);
         } catch (SQLException e) {
             LOG.error("Unable to connect to " + jdbcUrl + " as " + connInfo.user, e);
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
         return ds;
     }

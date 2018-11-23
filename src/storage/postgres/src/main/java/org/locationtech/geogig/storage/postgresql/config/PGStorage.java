@@ -72,12 +72,23 @@ public class PGStorage {
     }
 
     public synchronized static DataSource newDataSource(Environment config) {
-        return newDataSource(config.connectionConfig);
+        DataSource dataSource = newDataSource(config.connectionConfig);
+        return dataSource;
     }
 
     public synchronized static DataSource newDataSource(ConnectionConfig config) {
         DataSource dataSource = DATASOURCE_POOL.acquire(config.getKey());
         return dataSource;
+    }
+
+    public static void verifyDatabaseCompatibility(DataSource dataSource, Environment config) {
+        try (Connection cx = dataSource.getConnection()) {
+            Version version = getServerVersion(cx);
+            PGStorageTableManager tableManager = PGStorageTableManager.forVersion(version);
+            tableManager.checkCompatibility(cx, config);
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public static void closeDataSource(DataSource ds) {

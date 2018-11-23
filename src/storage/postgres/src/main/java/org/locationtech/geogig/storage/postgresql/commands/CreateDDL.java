@@ -44,7 +44,7 @@ public class CreateDDL extends AbstractGeoGigOp<List<String>> {
 		if (environment != null) {
 			return environment;
 		}
-		EnvironmentBuilder environmentBuilder = new EnvironmentBuilder(baseURI);
+		EnvironmentBuilder environmentBuilder = new EnvironmentBuilder(baseURI, true);
 		Environment env = environmentBuilder.build();
 		return env;
 	}

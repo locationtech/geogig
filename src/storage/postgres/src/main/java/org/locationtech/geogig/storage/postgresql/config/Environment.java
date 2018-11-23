@@ -208,9 +208,9 @@ public class Environment implements Cloneable {
         return clone;
     }
 
-	public URI toURI() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public URI toURI() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

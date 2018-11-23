@@ -13,3 +13,5 @@ nb-configuration.xml
 .DS_store
 # IntelliJ module files
 *.iml
+#KDE
+.directory

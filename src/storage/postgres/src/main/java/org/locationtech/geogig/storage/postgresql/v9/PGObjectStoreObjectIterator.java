@@ -51,8 +51,8 @@ class PGObjectStoreObjectIterator<T extends RevObject>
 
     private ObjectInfo<T> next;
 
-    public PGObjectStoreObjectIterator(Iterator<NodeRef> refs, Class<T> type, BulkOpListener listener,
-            PGObjectStore store) {
+    public PGObjectStoreObjectIterator(Iterator<NodeRef> refs, Class<T> type,
+            BulkOpListener listener, PGObjectStore store) {
         this.nodes = Iterators.peekingIterator(refs);
         this.type = type;
         this.listener = listener;
@@ -136,8 +136,7 @@ class PGObjectStoreObjectIterator<T extends RevObject>
             futures.add(dbBatch);
         }
 
-        final Function<Future<List<ObjectInfo<T>>>, List<ObjectInfo<T>>> futureGetter = (
-                objs) -> {
+        final Function<Future<List<ObjectInfo<T>>>, List<ObjectInfo<T>>> futureGetter = (objs) -> {
             try {
                 return objs.get();
             } catch (InterruptedException | ExecutionException e) {

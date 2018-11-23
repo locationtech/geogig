@@ -43,8 +43,8 @@ class PGObjectStoreGetAllIterator<T extends RevObject> extends AbstractIterator<
 
     final ObjectCache cache;
 
-    public PGObjectStoreGetAllIterator(Iterator<ObjectId> ids, Class<T> type, BulkOpListener listener,
-            PGObjectStore store) {
+    public PGObjectStoreGetAllIterator(Iterator<ObjectId> ids, Class<T> type,
+            BulkOpListener listener, PGObjectStore store) {
         this.ids = Iterators.peekingIterator(ids);
         this.type = type;
         this.listener = listener;

@@ -26,38 +26,38 @@ import com.google.common.base.Preconditions;
  * @since 1.2.1
  */
 public class CreateDDL extends AbstractGeoGigOp<List<String>> {
-	private Environment environment;
+    private Environment environment;
 
-	private URI baseURI;
+    private URI baseURI;
 
-	protected @Override List<String> _call() {
-		Environment env = resolveEnvironment();
-		Version dbVersion = PGStorage.getServerVersion(env);
-		PGStorageTableManager tableManager = PGStorageTableManager.forVersion(dbVersion);
-		List<String> ddl = tableManager.createDDL(env);
-		return ddl;
-	}
+    protected @Override List<String> _call() {
+        Environment env = resolveEnvironment();
+        Version dbVersion = PGStorage.getServerVersion(env);
+        PGStorageTableManager tableManager = PGStorageTableManager.forVersion(dbVersion);
+        List<String> ddl = tableManager.createDDL(env);
+        return ddl;
+    }
 
-	private Environment resolveEnvironment() {
-		Preconditions.checkArgument(environment != null || baseURI != null,
-				"Environment or base URI argument not provided");
-		if (environment != null) {
-			return environment;
-		}
-		EnvironmentBuilder environmentBuilder = new EnvironmentBuilder(baseURI, true);
-		Environment env = environmentBuilder.build();
-		return env;
-	}
+    private Environment resolveEnvironment() {
+        Preconditions.checkArgument(environment != null || baseURI != null,
+                "Environment or base URI argument not provided");
+        if (environment != null) {
+            return environment;
+        }
+        EnvironmentBuilder environmentBuilder = new EnvironmentBuilder(baseURI, true);
+        Environment env = environmentBuilder.build();
+        return env;
+    }
 
-	public CreateDDL setEnvironment(Environment env) {
-		this.environment = env;
-		this.baseURI = null;
-		return this;
-	}
+    public CreateDDL setEnvironment(Environment env) {
+        this.environment = env;
+        this.baseURI = null;
+        return this;
+    }
 
-	public CreateDDL setBaseURI(URI baseURI) {
-		this.environment = null;
-		this.baseURI = baseURI;
-		return this;
-	}
+    public CreateDDL setBaseURI(URI baseURI) {
+        this.environment = null;
+        this.baseURI = baseURI;
+        return this;
+    }
 }

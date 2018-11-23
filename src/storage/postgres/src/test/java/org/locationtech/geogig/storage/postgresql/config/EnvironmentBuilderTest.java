@@ -26,12 +26,14 @@ public class EnvironmentBuilderTest {
 
     private static final String UTF8 = StandardCharsets.UTF_8.name();
 
-    private URI buildUri(String host, @Nullable Integer port, String dbName, @Nullable String schema, String repoName,
-            String user, String password) throws URISyntaxException, UnsupportedEncodingException {
+    private URI buildUri(String host, @Nullable Integer port, String dbName,
+            @Nullable String schema, String repoName, String user, String password)
+            throws URISyntaxException, UnsupportedEncodingException {
         /**
-         * Using Spring's URI builder utils here because java.net.URI doesn't handle special characters in the query
-         * parameter encoding correctly. If we want to build a URI with host=localhost, port=5432, dbName=myDb,
-         * schema=mySchema, repoName=myRepo, user=myUser and password=myPass&word, the URI should look like this:
+         * Using Spring's URI builder utils here because java.net.URI doesn't handle special
+         * characters in the query parameter encoding correctly. If we want to build a URI with
+         * host=localhost, port=5432, dbName=myDb, schema=mySchema, repoName=myRepo, user=myUser and
+         * password=myPass&word, the URI should look like this:
          * <p>
          * postgresql://localhost:5432/myDb/mySchema/myRepo?user=myUser&password=myPass%26word
          * <p>
@@ -39,22 +41,25 @@ public class EnvironmentBuilderTest {
          * <p>
          * "postgresql://localhost:5432/myDb/mySchema/myRepo?user=myUser&password=myPass&word"
          * <p>
-         * java.net.URI will try to Encode the String, but will interpret the `&` in the password value as a query
-         * parameter delimiter, in this case yielding 3 query parameters: user, password and myPass.
+         * java.net.URI will try to Encode the String, but will interpret the `&` in the password
+         * value as a query parameter delimiter, in this case yielding 3 query parameters: user,
+         * password and myPass.
          * <p>
          * If we URLEncode the password value before building the URI, using this string:
          * <p>
          * "postgresql://localhost:5432/myDb/mySchema/myRepo?user=myUser&password=myPass%26word"
          * <p>
-         * java.net.URI will try to Encode the String anyway, thus double encoding the password value, resulting in:
+         * java.net.URI will try to Encode the String anyway, thus double encoding the password
+         * value, resulting in:
          * <p>
          * postgresql://localhost:5432/myDb/mySchema/myRepo?user=myUser&password=myPass%2526word
          * <p>
-         * java.net.URI doesn't have a way to construct a URI with a pre-encoded query parameter value, so there isn't
-         * a way to use it to correctly encode special characters in query parameter values. Using Spring-web's
-         * URIComponentsBuilder, we can URLEncode the parameter values first, then build a URIComponents such that
-         * the URI doesn't double encode the query parameter by using URIComponentsBuilder.build(true), which tells
-         * the builder that the URI is already encoded.
+         * java.net.URI doesn't have a way to construct a URI with a pre-encoded query parameter
+         * value, so there isn't a way to use it to correctly encode special characters in query
+         * parameter values. Using Spring-web's URIComponentsBuilder, we can URLEncode the parameter
+         * values first, then build a URIComponents such that the URI doesn't double encode the
+         * query parameter by using URIComponentsBuilder.build(true), which tells the builder that
+         * the URI is already encoded.
          */
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
         // set the scheme
@@ -82,8 +87,9 @@ public class EnvironmentBuilderTest {
         return builder.build(true).toUri();
     }
 
-    private void test(String host, @Nullable Integer port, String dbName, @Nullable String schema, String repoName,
-            String user, String password) throws URISyntaxException, UnsupportedEncodingException {
+    private void test(String host, @Nullable Integer port, String dbName, @Nullable String schema,
+            String repoName, String user, String password)
+            throws URISyntaxException, UnsupportedEncodingException {
         // build the URI
         URI uri = buildUri(host, port, dbName, schema, repoName, user, password);
         // Build an Environment
@@ -113,19 +119,22 @@ public class EnvironmentBuilderTest {
     }
 
     @Test
-    public void testextractShortKeys_withPassword_hash() throws URISyntaxException, UnsupportedEncodingException {
+    public void testextractShortKeys_withPassword_hash()
+            throws URISyntaxException, UnsupportedEncodingException {
         // test some basic values
         test("testHost", null, "testDb", null, "testRepo", "testUser", "test#Password");
     }
 
     @Test
-    public void testextractShortKeys_withPassword_ampersand() throws URISyntaxException, UnsupportedEncodingException {
+    public void testextractShortKeys_withPassword_ampersand()
+            throws URISyntaxException, UnsupportedEncodingException {
         // test some basic values
         test("testHost", null, "testDb", null, "testRepo", "testUser", "test&Password");
     }
 
     @Test
-    public void testextractShortKeys_withPassword_multiSpecial() throws URISyntaxException, UnsupportedEncodingException {
+    public void testextractShortKeys_withPassword_multiSpecial()
+            throws URISyntaxException, UnsupportedEncodingException {
         // test some basic values
         test("testHost", null, "testDb", null, "testRepo", "testUser", "!@#$%^&*()");
     }

@@ -84,9 +84,7 @@ public class FormatCommonV1 {
     }
 
     public final static ObjectId readObjectId(DataInput in) throws IOException {
-        byte[] bytes = new byte[ObjectId.NUM_BYTES];
-        in.readFully(bytes);
-        return ObjectId.createNoClone(bytes);
+        return ObjectId.readFrom(in);
     }
 
     public static final byte COMMIT_TREE_REF = 0x01;
@@ -130,7 +128,7 @@ public class FormatCommonV1 {
     }
 
     public static void writeTag(RevTag tag, DataOutput out) throws IOException {
-        out.write(tag.getCommitId().getRawValue());
+        tag.getCommitId().writeTo(out);
         out.writeUTF(tag.getName());
         out.writeUTF(tag.getMessage());
         writePerson(tag.getTagger(), out);
@@ -142,9 +140,7 @@ public class FormatCommonV1 {
             throw new IllegalArgumentException("Commit should include a tree ref");
         }
 
-        final byte[] treeIdBytes = new byte[20];
-        in.readFully(treeIdBytes);
-        final ObjectId treeId = ObjectId.createNoClone(treeIdBytes);
+        final ObjectId treeId = ObjectId.readFrom(in);
         final Builder<ObjectId> parentListBuilder = ImmutableList.builder();
 
         while (true) {
@@ -152,9 +148,7 @@ public class FormatCommonV1 {
             if (tag != COMMIT_PARENT_REF) {
                 break;
             } else {
-                final byte[] parentIdBytes = new byte[20];
-                in.readFully(parentIdBytes);
-                parentListBuilder.add(ObjectId.createNoClone(parentIdBytes));
+                parentListBuilder.add(ObjectId.readFrom(in));
             }
         }
 
@@ -239,16 +233,13 @@ public class FormatCommonV1 {
 
     public static Node readNode(DataInput in) throws IOException {
         final String name = in.readUTF();
-        final byte[] objectId = new byte[20];
-        in.readFully(objectId);
-        final byte[] metadataId = new byte[20];
-        in.readFully(metadataId);
+        final ObjectId objectId = ObjectId.readFrom(in);
+        final ObjectId metadataId = ObjectId.readFrom(in);
         final RevObject.TYPE contentType = RevObject.TYPE.valueOf(in.readByte());
         final Envelope bbox = readBBox(in);
         Map<String, Object> extraData = DataStreamValueSerializerV1.INSTANCE.readMap(in);
         final Node node;
-        node = Node.create(name, ObjectId.createNoClone(objectId),
-                ObjectId.createNoClone(metadataId), contentType, bbox, extraData);
+        node = Node.create(name, objectId, metadataId, contentType, bbox, extraData);
         return node;
     }
 
@@ -269,16 +260,13 @@ public class FormatCommonV1 {
 
     public static NodeRef readNodeRef(DataInput in) throws IOException {
         Node node = readNode(in);
-        final byte[] metadataId = new byte[20];
-        in.readFully(metadataId);
+        final ObjectId metadataId = ObjectId.readFrom(in);
         String parentPath = in.readUTF();
-        return new NodeRef(node, parentPath, ObjectId.createNoClone(metadataId));
+        return new NodeRef(node, parentPath, metadataId);
     }
 
     public static final Bucket readBucket(DataInput in) throws IOException {
-        final byte[] hash = new byte[20];
-        in.readFully(hash);
-        ObjectId objectId = ObjectId.createNoClone(hash);
+        ObjectId objectId = ObjectId.readFrom(in);
         Envelope bounds = readBBox(in);
         return Bucket.create(objectId, bounds);
     }
@@ -405,7 +393,7 @@ public class FormatCommonV1 {
     public static void writeBucket(int index, Bucket bucket, DataOutput data, Envelope envBuff) {
         try {
             data.writeInt(index);
-            data.write(bucket.getObjectId().getRawValue());
+            bucket.getObjectId().writeTo(data);
             envBuff.setToNull();
             bucket.expand(envBuff);
             writeBoundingBox(envBuff, data);
@@ -421,8 +409,8 @@ public class FormatCommonV1 {
     public static void writeNode(Node node, DataOutput data, Envelope envBuff) {
         try {
             data.writeUTF(node.getName());
-            data.write(node.getObjectId().getRawValue());
-            data.write(node.getMetadataId().or(ObjectId.NULL).getRawValue());
+            node.getObjectId().writeTo(data);
+            node.getMetadataId().or(ObjectId.NULL).writeTo(data);
             int typeN = node.getType().value();
             data.writeByte(typeN);
             envBuff.setToNull();
@@ -453,7 +441,7 @@ public class FormatCommonV1 {
 
     public static void writeNodeRef(NodeRef nodeRef, DataOutput data) throws IOException {
         writeNode(nodeRef.getNode(), data);
-        data.write(nodeRef.getMetadataId().getRawValue());
+        nodeRef.getMetadataId().writeTo(data);
         data.writeUTF(nodeRef.getParentPath());
     }
 }

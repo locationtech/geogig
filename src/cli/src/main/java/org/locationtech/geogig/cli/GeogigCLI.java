@@ -851,8 +851,8 @@ public class GeogigCLI {
                             console.print(description);
                         }
                         String progressDescription = super.getProgressDescription();
-                        console.print(progressDescription);
                         console.redrawLine();
+                        console.print(progressDescription);
                         console.flush();
                     } catch (IOException e) {
                         Throwables.propagate(e);

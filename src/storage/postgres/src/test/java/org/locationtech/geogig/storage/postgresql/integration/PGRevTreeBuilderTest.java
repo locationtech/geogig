@@ -17,12 +17,12 @@ import org.junit.Rule;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilderTest;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.postgresql.Environment;
-import org.locationtech.geogig.storage.postgresql.PGConfigDatabase;
-import org.locationtech.geogig.storage.postgresql.PGObjectDatabase;
-import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
 
 public class PGRevTreeBuilderTest extends CanonicalTreeBuilderTest {
 

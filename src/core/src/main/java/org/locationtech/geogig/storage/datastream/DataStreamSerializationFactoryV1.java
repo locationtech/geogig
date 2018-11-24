@@ -146,10 +146,10 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
             try {
                 FormatCommonV1.writeHeader(data, "commit");
                 data.writeByte(COMMIT_TREE_REF);
-                data.write(commit.getTreeId().getRawValue());
+                commit.getTreeId().writeTo(data);
                 for (ObjectId pId : commit.getParentIds()) {
                     data.writeByte(COMMIT_PARENT_REF);
-                    data.write(pId.getRawValue());
+                    pId.writeTo(data);
                 }
                 data.writeByte(COMMIT_AUTHOR_PREFIX);
                 FormatCommonV1.writePerson(commit.getAuthor(), data);

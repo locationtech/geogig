@@ -122,7 +122,9 @@ public abstract class Node implements Bounded, Comparable<Node> {
         /**
          * Id of the object this ref points to
          */
-        private final ObjectId objectId;
+        private final int objectId_h1;
+
+        private final long objectId_h2, objectId_h3;
 
         private final ExtraData extraData;
 
@@ -134,7 +136,9 @@ public abstract class Node implements Bounded, Comparable<Node> {
             checkNotNull(oid);
             checkNotNull(metadataId);
             this.name = name;
-            this.objectId = oid;
+            this.objectId_h1 = RevObjects.h1(oid);
+            this.objectId_h2 = RevObjects.h2(oid);
+            this.objectId_h3 = RevObjects.h3(oid);
             this.metadataId = metadataId.isNull() ? null : metadataId;
             this.extraData = ExtraData.of(extraData);
             this.bounds = Float32Bounds.valueOf(bounds);
@@ -157,7 +161,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
          * @return the id of the {@link RevObject} this Node points to
          */
         public ObjectId getObjectId() {
-            return objectId;
+            return ObjectId.create(objectId_h1, objectId_h2, objectId_h3);
         }
 
         @Override

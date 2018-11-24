@@ -13,13 +13,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.google.common.primitives.UnsignedBytes;
+import com.google.common.primitives.UnsignedInts;
+import com.google.common.primitives.UnsignedLongs;
 
 /**
  * A unique identifier for a {@link RevObject}, which is created by passing a {@link HashFunction}
@@ -68,14 +68,9 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         NULL = new ObjectId(new byte[20]);
     }
 
-    private final byte[] hashCode;
+    final int h1;
 
-    /**
-     * Constructs a new {@code NULL} object id.
-     */
-    public ObjectId() {
-        this.hashCode = NULL.hashCode;
-    }
+    final long h2, h3;
 
     /**
      * Constructs a new object id with the given byte code.
@@ -83,18 +78,60 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      * @param raw the byte code to use
      */
     public ObjectId(byte[] raw) {
-        this(raw, true);
-    }
-
-    private ObjectId(byte[] raw, boolean cloneArg) {
-        Preconditions.checkNotNull(raw);
-        Preconditions.checkArgument(raw.length == NUM_BYTES, "expected a byte[%s], got byte[%s]",
+        Preconditions.checkArgument(raw.length >= NUM_BYTES, "expected a byte[%s], got byte[%s]",
                 NUM_BYTES, raw.length);
-        this.hashCode = cloneArg ? raw.clone() : raw;
+        this.h1 = readH1(raw);
+        this.h2 = readH2(raw);
+        this.h3 = readH3(raw);
     }
 
+    private ObjectId(int h1, long h2, long h3) {
+        this.h1 = h1;
+        this.h2 = h2;
+        this.h3 = h3;
+    }
+
+    private static int readH1(byte[] raw) {
+        int h = byteN(raw, 0) << 24;
+        h |= byteN(raw, 1) << 16;
+        h |= byteN(raw, 2) << 8;
+        h |= byteN(raw, 3) << 0;
+        return h;
+    }
+
+    private static long readH2(byte[] raw) {
+        return readLong(raw, 4);
+    }
+
+    private static long readH3(byte[] raw) {
+        return readLong(raw, 12);
+    }
+
+    private static long readLong(byte[] raw, int offset) {
+        long h = ((long) byteN(raw, offset)) << 56;
+        h |= ((long) byteN(raw, offset + 1)) << 48;
+        h |= ((long) byteN(raw, offset + 2)) << 40;
+        h |= ((long) byteN(raw, offset + 3)) << 32;
+        h |= ((long) byteN(raw, offset + 4)) << 24;
+        h |= ((long) byteN(raw, offset + 5)) << 16;
+        h |= ((long) byteN(raw, offset + 6)) << 8;
+        h |= ((long) byteN(raw, offset + 7)) << 0;
+        return h;
+    }
+
+    /**
+     * @deprecated use #create
+     */
     public static ObjectId createNoClone(byte[] rawHash) {
-        return new ObjectId(rawHash, false);
+        return new ObjectId(rawHash);
+    }
+
+    public static ObjectId create(byte[] raw) {
+        return new ObjectId(raw);
+    }
+
+    public static ObjectId create(int h1, long h2, long h3) {
+        return new ObjectId(h1, h2, h3);
     }
 
     /**
@@ -111,13 +148,11 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      */
     @Override
     public boolean equals(Object o) {
-        if (o == this) {
-            return true;
+        if (o instanceof ObjectId) {
+            ObjectId i = (ObjectId) o;
+            return this == o || (h1 == i.h1 && h2 == i.h2 && h3 == i.h3);
         }
-        if (!(o instanceof ObjectId)) {
-            return false;
-        }
-        return Arrays.equals(hashCode, ((ObjectId) o).hashCode);
+        return false;
     }
 
     /**
@@ -125,10 +160,7 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      */
     @Override
     public int hashCode() {
-        return 17 ^ ((hashCode[0] & 0xFF)//
-                | ((hashCode[1] & 0xFF) << 8)//
-                | ((hashCode[2] & 0xFF) << 16)//
-                | ((hashCode[3] & 0xFF) << 24));
+        return 31 ^ (h1 == 0 ? 1 : h1);
     }
 
     /**
@@ -151,15 +183,12 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         Preconditions.checkNotNull(hash);
         Preconditions.checkArgument(hash.length() == NUM_CHARS, hash,
                 String.format("ObjectId.valueOf: Invalid hash string %s", hash));
-
-        // this is perhaps the worse way of doing this...
-
-        final byte[] raw = new byte[NUM_BYTES];
-        final int radix = 16;
-        for (int i = 0; i < NUM_BYTES; i++) {
-            raw[i] = (byte) Integer.parseInt(hash.substring(2 * i, 2 * i + 2), radix);
-        }
-        return new ObjectId(raw, false);
+        //@formatter:off
+        int h1 = RevObjects.h1(hash);
+        long h2 = RevObjects.h2(hash);
+        long h3 = RevObjects.h3(hash);
+        //@formatter:on
+        return create(h1, h2, h3);
     }
 
     /**
@@ -196,9 +225,17 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(final ObjectId o) {
-        byte[] left = this.hashCode;
-        byte[] right = o.hashCode;
-        return UnsignedBytes.lexicographicalComparator().compare(left, right);
+        if (this == o) {
+            return 0;
+        }
+        int c = UnsignedInts.compare(h1, o.h1);
+        if (c == 0) {
+            c = UnsignedLongs.compare(h2, o.h2);
+            if (c == 0) {
+                c = UnsignedLongs.compare(h3, o.h3);
+            }
+        }
+        return c;
     }
 
     /**
@@ -206,7 +243,9 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      *         do not affect this object.
      */
     public byte[] getRawValue() {
-        return hashCode.clone();
+        byte[] raw = new byte[NUM_BYTES];
+        getRawValue(raw);
+        return raw;
     }
 
     /**
@@ -235,7 +274,9 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         Preconditions.checkArgument(length >= 0);
         Preconditions.checkArgument(length <= NUM_BYTES);
         Preconditions.checkArgument(target.length >= length);
-        System.arraycopy(hashCode, 0, target, 0, length);
+        for (int i = 0; i < length; i++) {
+            target[i] = (byte) byteN(i);
+        }
     }
 
     /**
@@ -248,17 +289,40 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      */
     public int byteN(final int index) {
         Preconditions.checkArgument(index >= 0 && index < NUM_BYTES);
-        int b = this.hashCode[index] & 0xFF;
-        return b;
+        long word;
+        int byteOffset;
+
+        if (index < 4) {
+            word = h1;
+            byteOffset = 3 - index;
+        } else if (index < 12) {
+            word = h2;
+            byteOffset = 7 - (index - 4);
+        } else {
+            word = h3;
+            byteOffset = 7 - (index - 12);
+        }
+
+        int byteN;
+        int bitOffset = byteOffset * 8;
+        byteN = (int) (word >>> bitOffset) & 0xFF;
+        return byteN;
+    }
+
+    private static int byteN(final byte[] raw, final int index) {
+        return raw[index] & 0xFF;
     }
 
     public static ObjectId readFrom(DataInput in) throws IOException {
-        byte[] rawid = new byte[ObjectId.NUM_BYTES];
-        in.readFully(rawid);
-        return new ObjectId(rawid);
+        int h1 = in.readInt();
+        long h2 = in.readLong();
+        long h3 = in.readLong();
+        return create(h1, h2, h3);
     }
 
     public void writeTo(DataOutput out) throws IOException {
-        out.write(this.hashCode);
+        out.writeInt(h1);
+        out.writeLong(h2);
+        out.writeLong(h3);
     }
 }

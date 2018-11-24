@@ -126,9 +126,9 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
     @Override
     public String toString() {
-        final int nSubtrees = trees().size();
-        final int nBuckets = buckets().size();
-        final int nFeatures = features().size();
+        final int nSubtrees = treesSize();
+        final int nBuckets = bucketsSize();
+        final int nFeatures = featuresSize();
 
         StringBuilder builder = new StringBuilder();
         builder.append("Tree[");

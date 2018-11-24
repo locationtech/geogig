@@ -25,26 +25,28 @@ import com.google.common.base.Throwables;
 @CanRunDuringConflict
 public class VersionOp extends AbstractGeoGigOp<VersionInfo> {
 
-    /**
-     * Executes the Version operation.
-     * 
-     * @return the version info of the current build
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
-     */
-    protected VersionInfo _call() {
-        Properties properties = new Properties();
-        VersionInfo info = null;
-        try (InputStream resource = VersionInfo.class
-                .getResourceAsStream("/git.geogig.properties")) {
-            if (resource != null) {
-                properties.load(resource);
-                info = new VersionInfo(properties);
-            }
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        }
-        return info;
+	/**
+	 * Executes the Version operation.
+	 * 
+	 * @return the version info of the current build
+	 * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+	 */
+	protected VersionInfo _call() {
+		return get();
+	}
 
-    }
+	public static VersionInfo get() {
+		Properties properties = new Properties();
+		VersionInfo info = null;
+		try (InputStream resource = VersionInfo.class.getResourceAsStream("/git.geogig.properties")) {
+			if (resource != null) {
+				properties.load(resource);
+				info = new VersionInfo(properties);
+			}
+		} catch (IOException e) {
+			Throwables.propagate(e);
+		}
+		return info;
+	}
 
 }

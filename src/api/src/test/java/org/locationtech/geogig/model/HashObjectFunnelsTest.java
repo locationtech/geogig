@@ -217,7 +217,7 @@ public class HashObjectFunnelsTest {
         byte[] rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
 
-        ObjectId id1 = ObjectId.createNoClone(rawKey);
+        ObjectId id1 = ObjectId.create(rawKey);
 
         trees.add(testNode);
         features.add(testNode);
@@ -229,7 +229,7 @@ public class HashObjectFunnelsTest {
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
 
-        ObjectId id2 = ObjectId.createNoClone(rawKey);
+        ObjectId id2 = ObjectId.create(rawKey);
 
         assertNotSame(id1, id2);
 
@@ -292,13 +292,13 @@ public class HashObjectFunnelsTest {
 
         byte[] rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
-        ObjectId emptyFeatureId1 = ObjectId.createNoClone(rawKey);
+        ObjectId emptyFeatureId1 = ObjectId.create(rawKey);
 
         hasher = Hashing.sha1().newHasher();
         HashObjectFunnels.feature(hasher, ImmutableList.of());
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
-        ObjectId emptyFeatureId2 = ObjectId.createNoClone(rawKey);
+        ObjectId emptyFeatureId2 = ObjectId.create(rawKey);
 
         assertEquals(emptyFeatureId1, emptyFeatureId2);
 
@@ -351,13 +351,13 @@ public class HashObjectFunnelsTest {
 
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
-        ObjectId featureId1 = ObjectId.createNoClone(rawKey);
+        ObjectId featureId1 = ObjectId.create(rawKey);
 
         hasher = Hashing.sha1().newHasher();
         HashObjectFunnels.feature(hasher, Lists.transform(values, (value) -> value.orNull()));
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
-        ObjectId featureId2 = ObjectId.createNoClone(rawKey);
+        ObjectId featureId2 = ObjectId.create(rawKey);
 
         assertEquals(featureId1, featureId2);
 

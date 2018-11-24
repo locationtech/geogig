@@ -461,9 +461,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
                     return ObjectId.NULL;
                 }
                 Preconditions.checkState(ObjectId.NUM_BYTES == size);
-                byte[] hash = new byte[size];
-                input.readFully(hash);
-                return ObjectId.createNoClone(hash);
+                return ObjectId.readFrom(input);
             }
 
             public void objectToEntry(@Nullable ObjectId object, DataOutput output)
@@ -472,7 +470,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
                     output.writeByte(0);
                 } else {
                     output.writeByte(ObjectId.NUM_BYTES);
-                    output.write(object.getRawValue());
+                    object.writeTo(output);
                 }
             }
         }

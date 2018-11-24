@@ -103,7 +103,7 @@ public final class IndexInfo {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         hasher.putBytes(treeName.getBytes(Charsets.UTF_8));
         hasher.putBytes(attributeName.getBytes(Charsets.UTF_8));
-        return ObjectId.createNoClone(hasher.hash().asBytes());
+        return ObjectId.create(hasher.hash().asBytes());
     }
 
     public static Set<String> getMaterializedAttributeNames(IndexInfo info) {

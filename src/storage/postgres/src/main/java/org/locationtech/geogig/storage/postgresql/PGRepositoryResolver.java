@@ -21,6 +21,10 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -123,6 +127,13 @@ public class PGRepositoryResolver extends RepositoryResolver {
         hints.set(Hints.REPOSITORY_URL, repositoryLocation.toString());
         Context context = GlobalContextBuilder.builder().build(hints);
         Repository repository = new GeoGIG(context).getRepository();
+        // Ensure the repository exists. If it's null, we might have a non-existing repo URI
+        // location
+        if (repository == null) {
+            throw new RepositoryConnectionException(
+                    "Could not connect to repository. Check that the URI is valid: "
+                            + repositoryLocation);
+        }
         repository.open();
         return repository;
     }

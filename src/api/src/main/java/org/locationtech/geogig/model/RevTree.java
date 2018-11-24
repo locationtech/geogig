@@ -10,6 +10,9 @@
 package org.locationtech.geogig.model;
 
 import java.util.Comparator;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -186,6 +189,25 @@ public interface RevTree extends RevObject {
     public ImmutableList<Node> trees();
 
     /**
+     * @return the number of {@link Node}s in the {@link #trees} property
+     */
+    public default int treesSize() {
+        return trees().size();
+    }
+
+    public default Node getTree(int index) {
+        return trees().get(index);
+    }
+
+    /**
+     * Performs the given action for each element of the {@link #trees} collection respecting its
+     * iteration order
+     */
+    public default void forEachTree(Consumer<Node> consumer) {
+        trees().forEach(consumer);
+    }
+
+    /**
      * The {@link TYPE#FEATURE feature} nodes held directly by this tree.
      * <p>
      * A {@code RevTree} instance may hold as many feature nodes as allowed by it's builder before
@@ -210,6 +232,25 @@ public interface RevTree extends RevObject {
     public ImmutableList<Node> features();
 
     /**
+     * @return the number of {@link Node}s in the {@link #features} property
+     */
+    public default int featuresSize() {
+        return features().size();
+    }
+
+    public default Node getFeature(int index) {
+        return features().get(index);
+    }
+
+    /**
+     * Performs the given action for each element of the {@link #features} collection respecting its
+     * iteration order
+     */
+    public default void forEachFeature(Consumer<Node> consumer) {
+        features().forEach(consumer);
+    }
+
+    /**
      * The mapping of (zero-based) bucket index to the bucket (pointer to {@link RevTree} instance)
      * this revtree has been split into.
      * <p>
@@ -224,4 +265,26 @@ public interface RevTree extends RevObject {
      * @apiNote the returned map does not contain {@code null} keys nor values
      */
     public ImmutableSortedMap<Integer, Bucket> buckets();
+
+    /**
+     * @return the number of buckets in the {@link #buckets} property
+     */
+    public default int bucketsSize() {
+        return buckets().size();
+    }
+
+    /**
+     * Performs the given action for each element of the {@link #buckets} collection respecting its
+     * iteration order, which is the order of the bucket index.
+     * 
+     * @param consumer a consumer that accepts a tuple given by the bucket index and the bucket
+     *        itself
+     */
+    public default void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
+        buckets().forEach(consumer);
+    }
+
+    public default Optional<Bucket> getBucket(int bucketIndex) {
+        return Optional.ofNullable(buckets().get(Integer.valueOf(bucketIndex)));
+    }
 }

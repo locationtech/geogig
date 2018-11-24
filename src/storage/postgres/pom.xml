@@ -9,11 +9,25 @@
     <version>1.2-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.locationtech.geogig</groupId>
   <artifactId>geogig-postgres</artifactId>
   <packaging>jar</packaging>
   <name>PostgreSQL Storage Backend</name>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>geogig.storage.postgres</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -69,19 +83,13 @@
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli</artifactId>
       <version>${project.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-rocksdb</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-cli</artifactId>
-      <version>${project.version}</version>
-      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>

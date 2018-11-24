@@ -19,7 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
@@ -30,8 +29,6 @@ import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -364,10 +361,9 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
                 return;
             }
             final RevTree tree = (RevTree) object;
-            ImmutableList<Node> features = tree.features();
-            if (!features.isEmpty()) {
+            if (tree.featuresSize() > 0) {
                 final Set<ObjectId> seen = Sets.newHashSet();
-                features.forEach((n) -> {
+                tree.forEachFeature((n) -> {
                     if (n.getMetadataId().isPresent()) {
                         seen.add(n.getMetadataId().get());
                     }
@@ -391,12 +387,14 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
                 ObjectStore database) {
             if (object instanceof RevTree) {
                 final RevTree tree = (RevTree) object;
-                if (!tree.trees().isEmpty()) {
+                if (tree.treesSize() > 0) {
                     final Set<ObjectId> seen = new HashSet<ObjectId>();
-                    for (Node n : tree.trees()) {
-                        seen.add(n.getMetadataId().get());
+                    tree.forEachTree((n) -> {
+                        if (n.getMetadataId().isPresent()) {
+                            seen.add(n.getMetadataId().get());
+                        }
                         seen.add(n.getObjectId());
-                    }
+                    });
                     Iterator<RevObject> all = database.getAll(seen);
                     all.forEachRemaining((o) -> successors.add(o));
                 }
@@ -417,11 +415,10 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
                 ObjectStore database) {
             if (object instanceof RevTree) {
                 final RevTree tree = (RevTree) object;
-                if (!tree.buckets().isEmpty()) {
-                    Iterable<ObjectId> bucketIds = Iterables.transform(tree.buckets().values(),
-                            (b) -> b.getObjectId());
-                    Iterator<RevTree> buckets = database.getAll(bucketIds, NOOP_LISTENER,
-                            RevTree.class);
+                if (tree.bucketsSize() > 0) {
+                    List<ObjectId> ids = new ArrayList<>(tree.bucketsSize());
+                    tree.forEachBucket((i, b) -> ids.add(b.getObjectId()));
+                    Iterator<RevTree> buckets = database.getAll(ids, NOOP_LISTENER, RevTree.class);
                     buckets.forEachRemaining((b) -> successors.add(b));
                 }
             }

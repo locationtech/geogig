@@ -14,6 +14,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 
@@ -29,11 +30,18 @@ import com.google.common.base.Preconditions;
  * @see RevTag
  */
 public abstract class AbstractRevObject implements RevObject {
-    private final ObjectId id;
+
+    private final int h1;
+
+    private final long h2;
+
+    private final long h3;
 
     public AbstractRevObject(final ObjectId id) {
         Preconditions.checkNotNull(id);
-        this.id = id;
+        this.h1 = RevObjects.h1(id);
+        this.h2 = RevObjects.h2(id);
+        this.h3 = RevObjects.h3(id);
     }
 
     /**
@@ -42,7 +50,7 @@ public abstract class AbstractRevObject implements RevObject {
      * @return unique hash of this object.
      */
     public final ObjectId getId() {
-        return id;
+        return ObjectId.create(h1, h2, h3);
     }
 
     /**
@@ -55,6 +63,6 @@ public abstract class AbstractRevObject implements RevObject {
         if (!(o instanceof RevObject)) {
             return false;
         }
-        return id.equals(((RevObject) o).getId());
+        return getId().equals(((RevObject) o).getId());
     }
 }

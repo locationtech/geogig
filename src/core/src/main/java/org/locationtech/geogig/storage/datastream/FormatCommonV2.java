@@ -72,6 +72,7 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSortedMap;
@@ -103,9 +104,7 @@ public class FormatCommonV2 {
     }
 
     public final ObjectId readObjectId(DataInput in) throws IOException {
-        byte[] bytes = new byte[ObjectId.NUM_BYTES];
-        in.readFully(bytes);
-        return ObjectId.createNoClone(bytes);
+        return ObjectId.readFrom(in);
     }
 
     /**
@@ -147,18 +146,18 @@ public class FormatCommonV2 {
     }
 
     public void writeTag(RevTag tag, DataOutput out) throws IOException {
-        out.write(tag.getCommitId().getRawValue());
+        tag.getCommitId().writeTo(out);
         out.writeUTF(tag.getName());
         out.writeUTF(tag.getMessage());
         writePerson(tag.getTagger(), out);
     }
 
     public void writeCommit(RevCommit commit, DataOutput data) throws IOException {
-        data.write(commit.getTreeId().getRawValue());
+        commit.getTreeId().writeTo(data);
         final int nParents = commit.getParentIds().size();
         writeUnsignedVarInt(nParents, data);
         for (ObjectId pId : commit.getParentIds()) {
-            data.write(pId.getRawValue());
+            pId.writeTo(data);
         }
 
         writePerson(commit.getAuthor(), data);
@@ -216,23 +215,23 @@ public class FormatCommonV2 {
 
         Envelope envBuff = new Envelope();
 
-        final int nFeatures = tree.features().size();
+        final int nFeatures = tree.featuresSize();
         writeUnsignedVarInt(nFeatures, data);
-        for (Node feature : tree.features()) {
-            writeNode(feature, data, envBuff);
-        }
-        final int nTrees = tree.trees().size();
-        writeUnsignedVarInt(nTrees, data);
-        for (Node subTree : tree.trees()) {
-            writeNode(subTree, data, envBuff);
-        }
+        tree.forEachFeature((n) -> writeNodeQuiet(n, data, envBuff));
 
-        ImmutableSortedMap<Integer, Bucket> buckets = tree.buckets();
-        final int nBuckets = buckets.size();
+        final int nTrees = tree.treesSize();
+        writeUnsignedVarInt(nTrees, data);
+        tree.forEachTree((n) -> writeNodeQuiet(n, data, envBuff));
+
+        final int nBuckets = tree.bucketsSize();
         writeUnsignedVarInt(nBuckets, data);
-        for (Map.Entry<Integer, Bucket> bucket : buckets.entrySet()) {
-            writeBucket(bucket.getKey(), bucket.getValue(), data, envBuff);
-        }
+        tree.forEachBucket((index, bucket) -> {
+            try {
+                writeBucket(index.intValue(), bucket, data, envBuff);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+        });
     }
 
     public RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
@@ -427,7 +426,7 @@ public class FormatCommonV2 {
 
         writeUnsignedVarInt(index, data);
 
-        data.write(bucket.getObjectId().getRawValue());
+        bucket.getObjectId().writeTo(data);
         envBuff.setToNull();
         bucket.expand(envBuff);
         if (envBuff.isNull()) {
@@ -486,6 +485,14 @@ public class FormatCommonV2 {
 
     static final int TYPE_READ_MASK = 0b000111;
 
+    private void writeNodeQuiet(Node node, DataOutput data, Envelope env) {
+        try {
+            writeNode(node, data, env);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public void writeNode(Node node, DataOutput data, Envelope env) throws IOException {
         // Encode the node type and the bounds and metadata presence masks in one single byte:
         // - bits 1-3 for the object type (up to 8 types, there are only 5 and no plans to add more)
@@ -521,9 +528,9 @@ public class FormatCommonV2 {
 
         data.writeByte(typeAndMasks);
         data.writeUTF(node.getName());
-        data.write(node.getObjectId().getRawValue());
+        node.getObjectId().writeTo(data);
         if (metadataMask == METADATA_PRESENT_MASK) {
-            data.write(node.getMetadataId().or(ObjectId.NULL).getRawValue());
+            node.getMetadataId().or(ObjectId.NULL).writeTo(data);
         }
         if (BOUNDS_BOX2D_MASK == boundsMask) {
             writeBoundingBox(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(), data);
@@ -593,7 +600,7 @@ public class FormatCommonV2 {
 
     public void writeNodeRef(NodeRef nodeRef, DataOutput data) throws IOException {
         writeNode(nodeRef.getNode(), data);
-        data.write(nodeRef.getMetadataId().getRawValue());
+        nodeRef.getMetadataId().writeTo(data);
         data.writeUTF(nodeRef.getParentPath());
     }
 

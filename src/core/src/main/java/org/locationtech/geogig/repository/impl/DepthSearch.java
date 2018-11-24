@@ -26,8 +26,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 
 /**
@@ -140,20 +138,22 @@ public class DepthSearch {
             return Optional.absent();
         }
 
-        if (!parent.trees().isEmpty() || !parent.features().isEmpty()) {
-            if (!parent.trees().isEmpty()) {
-                ImmutableList<Node> refs = parent.trees();
-                for (int i = 0; i < refs.size(); i++) {
-                    if (directChildName.equals(refs.get(i).getName())) {
-                        return Optional.of(refs.get(i));
+        if (parent.treesSize() > 0 || parent.featuresSize() > 0) {
+            if (parent.treesSize() > 0) {
+                final int size = parent.treesSize();
+                for (int i = 0; i < size; i++) {
+                    Node node = parent.getTree(i);
+                    if (directChildName.equals(node.getName())) {
+                        return Optional.of(node);
                     }
                 }
             }
-            if (!parent.features().isEmpty()) {
-                ImmutableList<Node> refs = parent.features();
-                for (int i = 0; i < refs.size(); i++) {
-                    if (directChildName.equals(refs.get(i).getName())) {
-                        return Optional.of(refs.get(i));
+            if (parent.featuresSize() > 0) {
+                final int size = parent.featuresSize();
+                for (int i = 0; i < size; i++) {
+                    Node node = parent.getFeature(i);
+                    if (directChildName.equals(node.getName())) {
+                        return Optional.of(node);
                     }
                 }
             }
@@ -161,8 +161,7 @@ public class DepthSearch {
         }
 
         Integer bucket = refOrder.bucket(directChildName, subtreesDepth);
-        ImmutableSortedMap<Integer, Bucket> buckets = parent.buckets();
-        Bucket subtreeBucket = buckets.get(bucket);
+        Bucket subtreeBucket = parent.getBucket(bucket.intValue()).orElse(null);
         if (subtreeBucket == null) {
             return Optional.absent();
         }

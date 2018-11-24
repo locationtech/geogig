@@ -1,3 +1,116 @@
+# GeoGig 1.2.1 Release Notes
+
+November 23, 2018
+
+`1.2.1` is a maintenance release. It backports some fixes and improvements for managing GeoGig repositories in a PostgreSQL database. Hence you should only worry about an upgrade process if you have an existing GeoGig database in Postgres. On the contrary, if you're creating a new geogig database, there's nothing extra to do, GeoGig will create the correct database schema for you.
+
+### ls-repos
+
+ls-repos shows repository names at a given base URI (i.e. directory or database). The verbose option can be used to generate CSV or a nice table with some extra information like number of branches, commits, feature types, and features per repository.
+
+```
+$ export repo="postgresql://localhost:5435/missouri?user=postgres&password=..."
+$ geogig ls-repos --help
+Usage: geogig ls-repos [options] <base URI> The URI without a repository name. (e.g. geogig ls-repos postgresql://localhost:5432/geogig_db?user=...&password=...)
+  Options:
+    -c, --csv
+       If verbose output, use comma separated list instead of table output
+       Default: false
+    -v, --verbose
+       verbose output
+       Default: false
+ $ geogig ls-repos $repo
+groldan:missouri
+volaya:missouri
+ $ 
+ $ geogig ls-repos -v $repo
+╔══════════════════╤══════════╤═══════════════╤════════════════╤═══════════════╤════════════════╗
+║ Name             │ Branches │ Total commits │ Unique commits │ Feature types │ Total features ║
+╠══════════════════╪══════════╪═══════════════╪════════════════╪═══════════════╪════════════════╣
+║ groldan:missouri │ 4        │ 125           │ 65             │ 5             │ 76,354,104     ║
+║ volaya:missouri  │ 4        │ 122           │ 62             │ 5             │ 74,704,638     ║
+╚══════════════════╧══════════╧═══════════════╧════════════════╧═══════════════╧════════════════╝
+
+ $ geogig ls-repos -v --csv $repo
+Name,Branches,Total commits,Unique commits,Feature types,Total features
+groldan:missouri,4,125,65,5,76354104
+volaya:missouri,4,122,62,5,74704638
+ $ 
+```
+
+### postgres-ddl
+
+`postgres-ddl` is an utility to generate the DDL script to initialize
+a PostgreSQL database to be used by Geogig. Most of the time Geogig
+does it all by itself when first accessing the database, but it could be
+the case where the database user used to connect with has no enough
+proviledges and the script needs to be run by hand using psql for
+example.
+
+### postgres-upgrade    
+
+`postgres-upgrade` is an utility to upgrade an existing geogig database
+from any geogig version prior to `1.2.1`. It will create a `geogig_metadata`
+table and add a column to `geogig_graph_edge` in that is used to ensure the
+correct order of commit parents in a commit graph traversal. Curiously,
+in Postgres 9.4 it worked by accident, but Postgres 9.5+ returns the
+parents in different order unless the query instructs it how to, which
+is ok and exposed a bug in geogig itself.
+
+If the PostgreSQL version is `10.0` or higher, and you're creating a new GeoGig 
+database, the DDL script that GeoGig runs to initialize it will now create `HASH`
+ indexes for the `geogig_object_*` tables, where the revision objects (commits, 
+ tags, features, etc) are stored. This is because just since version 10.0, PostgreSQL 
+ HASH indexes are WAL safe, and they result in slightly better performance under 
+ load/with big datasets.
+
+In order to fix an important bug, one of the geogig tables got a new column. For instance, 
+`geogig_graph_edge` has a new `dstindex INT NOT NULL` column, which is used to
+ensure the parent commit ids of any given merge commit are returned in the correct 
+order when performing a commit graph traversal. For this reason, a new command has 
+being added to GeoGig's command line interface to aid in the upgrade process, both in 
+order to run the required DDL script, and to re-build the commit graph for all the repositories 
+in the database in one shot.
+
+```
+$ geogig postgres-upgrade "postgresql://<server>[:port]/<database>?user=<dbuser>&password=<dbpassword>"
+```
+
+Here is an example output of running `postgres-upgrade`:
+
+```
+$ geogig postgres-upgrade "postgresql://localhost:5432/geogig_repositories?user=geogig&password=..."
+
+Running DDL script:
+
+-- SCRIPT START --
+CREATE TABLE public.geogig_medatada (key TEXT PRIMARY KEY, value TEXT, description TEXT);
+INSERT INTO public.geogig_medatada (key, value) VALUES ('geogig.version', '1.2.1');
+INSERT INTO public.geogig_medatada (key, value) VALUES ('geogig.commit-id', 'f34c8dfc07454b7fd2fa339a7ae36ebdd5f97159');
+INSERT INTO public.geogig_medatada (key, value) VALUES ('schema.version', '1');
+INSERT INTO public.geogig_medatada (key, value) VALUES ('schema.features.partitions', '16');
+TRUNCATE public.geogig_graph_edge;
+ALTER TABLE public.geogig_graph_edge ADD COLUMN dstindex INT NOT NULL;
+-- SCRIPT END --
+       
+Upgrading commit graph for all 17 repositories...
+Upgrading graph for repository reg_2016_wgs84_g_83ee687a
+Finished upgrading the geogig database to the latest version.
+```
+
+This will connect to the database and run the necessary DDL sentences, as well as rebuild the commit graph of all the repositories, which is not something that can be done purely in SQL, and would be the same than running `geogig rebuild-graph` for each of the repositories in the database.
+
+Finally, if the database is up to date with the latest geogig postgres schema, a message saying so will be displayed:
+
+```
+$ geogig postgres-upgrade "postgresql://localhost:5432/geogig_repositories?user=geogig&password=..."
+
+Database schema is up to date, checking for non DDL related upgrade actions...
+
+Nothing to upgrade. Database schema is up to date
+```
+---
+
 # GeoGig 1.2.0 Release Notes
 
 October 20, 2017.
@@ -27,6 +140,7 @@ Numerous usability improvements to support the GeoGig-QGIS plugin
 
 This release supports the upcoming GeoGig-QGIS plugin, which gives a powerful and user-friendly GUI front end to GeoGig. We've made some improvements - bug fixes and performance increases - to make this plugin as useable as possible. The GeoGig-QGIS plugin will be released on Boundless Connect (https://connect.boundlessgeo.com/) early 2018.
 
+---
 
 # GeoGig 1.1.1 Release Notes
 
@@ -162,6 +276,8 @@ For spatial searches, the QuadTree organization of the index makes for efficient
 The most common types of attribute query (“only display Highway and Freeways”, “only display data marked between these two dates” ) is also optimized by storing Extra Attributes inside the QuadTree.  When executing the query, GeoGig can use the extra information in the index to quickly filter out unneeded features.
 
 The end result is **much** faster query performance (and much less network traffic).
+
+---
 
 GeoGig 1.0.0 Release Notes
 ==========================

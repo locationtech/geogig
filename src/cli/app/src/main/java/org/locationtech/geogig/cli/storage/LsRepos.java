@@ -21,9 +21,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.StreamSupport;
 
+import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.geotools.io.TableWriter;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -91,7 +95,7 @@ public class LsRepos extends AbstractCommand implements CLICommand {
 
         public int uniqueCommits;
 
-        public Object uniqueLayerNames;
+        public int uniqueLayerNames;
 
         public long totalFeatures;
 
@@ -213,14 +217,17 @@ public class LsRepos extends AbstractCommand implements CLICommand {
         info.name = name;
         ImmutableList<Ref> branches = repo.command(BranchListOp.class).call();
         info.numBranches = branches.size();
-        Set<ObjectId> uniqueCommits = new HashSet<>();
-        Set<String> layerNames = new HashSet<>();
-        AtomicLong totalCommits = new AtomicLong();
-        AtomicLong totalFeatures = new AtomicLong();
+        final Set<ObjectId> uniqueCommits = new ConcurrentHashSet<>();
+        final Set<String> layerNames = new ConcurrentHashSet<>();
+        final AtomicLong totalCommits = new AtomicLong();
+        final AtomicLong totalFeatures = new AtomicLong();
         branches.forEach(ref -> {
-            Iterator<RevCommit> commits = repo.command(LogOp.class).setUntil(ref.getObjectId())
-                    .call();
-            commits.forEachRemaining(c -> {
+            ObjectId commitId = ref.getObjectId();
+            Iterator<RevCommit> commits = commitId.isNull() ? Collections.emptyIterator()
+                    : repo.command(LogOp.class).setUntil(commitId).call();
+            Spliterator<RevCommit> spliterator = Spliterators.spliteratorUnknownSize(commits,
+                    Spliterator.DISTINCT | Spliterator.IMMUTABLE | Spliterator.NONNULL);
+            StreamSupport.stream(spliterator, true).forEach(c -> {
                 totalCommits.incrementAndGet();
                 uniqueCommits.add(c.getId());
                 ObjectId treeId = c.getTreeId();

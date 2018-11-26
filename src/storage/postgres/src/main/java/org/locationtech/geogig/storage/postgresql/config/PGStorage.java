@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTransientConnectionException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -32,8 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 
 /**
  * Utility class for PostgreSQL storage.
@@ -73,12 +72,23 @@ public class PGStorage {
     }
 
     public synchronized static DataSource newDataSource(Environment config) {
-        return newDataSource(config.connectionConfig);
+        DataSource dataSource = newDataSource(config.connectionConfig);
+        return dataSource;
     }
 
     public synchronized static DataSource newDataSource(ConnectionConfig config) {
         DataSource dataSource = DATASOURCE_POOL.acquire(config.getKey());
         return dataSource;
+    }
+
+    public static void verifyDatabaseCompatibility(DataSource dataSource, Environment config) {
+        try (Connection cx = dataSource.getConnection()) {
+            Version version = getServerVersion(cx);
+            PGStorageTableManager tableManager = PGStorageTableManager.forVersion(version);
+            tableManager.checkCompatibility(cx, config);
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public static void closeDataSource(DataSource ds) {
@@ -160,29 +170,7 @@ public class PGStorage {
     }
 
     static Version getVersionFromQueryResult(final String versionQueryResult) {
-        // version string may not be a simple x.y.x value. Let's just take it from the front and
-        // stop at the first
-        // non-digit, non-decimal-point character
-        final String regex = "[^0-9.]";
-        // replace first non-digit, non-decimal point with XXX
-        String marked = versionQueryResult.replaceFirst(regex, "XXX");
-        if (marked.contains("XXX")) {
-            // no throw away everything starting with XXX
-            marked = marked.substring(0, marked.indexOf("XXX"));
-        }
-        final List<Integer> versions = Lists.transform(Splitter.on('.').splitToList(marked),
-                (s) -> Integer.parseInt(s));
-        // version string can be either
-        // {major}.{minor}.{patch}
-        // or (since PostgreSQL 10)
-        // {major}.{minor}
-        Preconditions.checkState(versions.size() == 3 || versions.size() == 2,
-                "Expected version format x.y.z or x.y, got " + versionQueryResult);
-        int major = versions.get(0).intValue();
-        int minor = versions.get(1).intValue();
-        // patch may not be present. If not, just use 0
-        int patch = (versions.size() == 3) ? versions.get(2).intValue() : 0;
-        return new Version(major, minor, patch);
+        return Version.valueOf(versionQueryResult);
     }
 
     /**
@@ -193,31 +181,35 @@ public class PGStorage {
      */
     public static List<String> listRepos(final Environment config) {
         checkNotNull(config);
-
-        List<String> repoNames = Lists.newLinkedList();
         final DataSource dataSource = PGStorage.newDataSource(config);
-
-        final String repoNamesView = config.getTables().repositoryNamesView();
-        if (!tableExists(dataSource, repoNamesView)) {
-            PGStorage.closeDataSource(dataSource);
-            return repoNames;
-        }
+        TableNames tables = config.getTables();
 
         try (Connection cx = PGStorage.newConnection(dataSource)) {
-            String sql = format("SELECT name FROM %s", repoNamesView);
-            try (Statement st = cx.createStatement()) {
-                try (ResultSet repos = st.executeQuery(sql)) {
-                    while (repos.next()) {
-                        repoNames.add(repos.getString(1));
-                    }
-                }
-            }
+            return listRepos(cx, tables);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             PGStorage.closeDataSource(dataSource);
         }
+    }
 
+    public static List<String> listRepos(final Connection cx, TableNames tables)
+            throws SQLException {
+        checkNotNull(cx);
+        checkNotNull(tables);
+        List<String> repoNames = new ArrayList<>();
+        final String repoNamesView = tables.repositoryNamesView();
+        if (!tableExists(cx, repoNamesView)) {
+            return repoNames;
+        }
+        String sql = format("SELECT name FROM %s", repoNamesView);
+        try (Statement st = cx.createStatement()) {
+            try (ResultSet repos = st.executeQuery(sql)) {
+                while (repos.next()) {
+                    repoNames.add(repos.getString(1));
+                }
+            }
+        }
         return repoNames;
     }
 
@@ -269,7 +261,8 @@ public class PGStorage {
                     cx.setAutoCommit(true);
                 }
             }
-            // set the config option outside the try-with-resources block to avoid acquiring 2
+            // set the config option outside the try-with-resources block to avoid acquiring
+            // 2
             // connections
             configdb.put("repo.name", argRepoName);
             checkState(pk == configdb.resolveRepositoryPK(argRepoName)
@@ -288,15 +281,22 @@ public class PGStorage {
         boolean tableExists = false;
         if (dataSource != null) {
             try (Connection cx = PGStorage.newConnection(dataSource)) {
-                DatabaseMetaData md = cx.getMetaData();
-                final String schema = PGStorageTableManager.schema(tableName);
-                final String table = PGStorageTableManager.stripSchema(tableName);
-                try (ResultSet tables = md.getTables(null, schema, table, null)) {
-                    tableExists = tables.next();
-                }
+                tableExists = tableExists(cx, tableName);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
+        }
+        return tableExists;
+    }
+
+    public static boolean tableExists(final Connection cx, final String tableName)
+            throws SQLException {
+        boolean tableExists = false;
+        DatabaseMetaData md = cx.getMetaData();
+        final String schema = PGStorageTableManager.schema(tableName);
+        final String table = PGStorageTableManager.stripSchema(tableName);
+        try (ResultSet tables = md.getTables(null, schema, table, null)) {
+            tableExists = tables.next();
         }
         return tableExists;
     }

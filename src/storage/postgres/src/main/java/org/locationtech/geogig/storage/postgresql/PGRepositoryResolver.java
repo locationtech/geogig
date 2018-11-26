@@ -127,10 +127,12 @@ public class PGRepositoryResolver extends RepositoryResolver {
         hints.set(Hints.REPOSITORY_URL, repositoryLocation.toString());
         Context context = GlobalContextBuilder.builder().build(hints);
         Repository repository = new GeoGIG(context).getRepository();
-        // Ensure the repository exists. If it's null, we might have a non-existing repo URI location
+        // Ensure the repository exists. If it's null, we might have a non-existing repo URI
+        // location
         if (repository == null) {
-            throw new RepositoryConnectionException("Could not connect to repository. Check that the URI is valid: " +
-            repositoryLocation);
+            throw new RepositoryConnectionException(
+                    "Could not connect to repository. Check that the URI is valid: "
+                            + repositoryLocation);
         }
         repository.open();
         return repository;

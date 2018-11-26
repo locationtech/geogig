@@ -174,8 +174,8 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
             String[] maxConnections = Environment.KEY_MAX_CONNECTIONS.split("\\.");
             String section = maxConnections[0];
             String key = maxConnections[1];
-            try (PreparedStatement ps = c.prepareStatement(
-                    log(sql, LOG, Environment.GLOBAL_KEY, section, key))) {
+            try (PreparedStatement ps = c
+                    .prepareStatement(log(sql, LOG, Environment.GLOBAL_KEY, section, key))) {
                 ps.setInt(1, Environment.GLOBAL_KEY);
                 ps.setString(2, section);
                 ps.setString(3, key);
@@ -193,7 +193,7 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
             LOG.debug("Connected to " + jdbcUrl + " as " + connInfo.user);
         } catch (SQLException e) {
             LOG.error("Unable to connect to " + jdbcUrl + " as " + connInfo.user, e);
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
         return ds;
     }

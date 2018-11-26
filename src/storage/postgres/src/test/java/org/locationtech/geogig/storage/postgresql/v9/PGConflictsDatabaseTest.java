@@ -45,8 +45,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class PGConflictsDatabaseTest {
 
-    private static final Conflict c1 = new Conflict("Rivers/1", NULL, RevObjectTestSupport.hashString("ours"),
-            RevObjectTestSupport.hashString("theirs"));
+    private static final Conflict c1 = new Conflict("Rivers/1", NULL,
+            RevObjectTestSupport.hashString("ours"), RevObjectTestSupport.hashString("theirs"));
 
     @Rule
     public ExpectedException expected = ExpectedException.none();

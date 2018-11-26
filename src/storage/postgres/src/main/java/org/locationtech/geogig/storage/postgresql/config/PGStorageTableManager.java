@@ -57,9 +57,11 @@ public abstract class PGStorageTableManager {
      */
     private static class Pg10TableManager extends PGStorageTableManager {
 
-        // protected @Override void createObjectsTables(List<String> ddl, TableNames tables) {
+        // protected @Override void createObjectsTables(List<String> ddl, TableNames
+        // tables) {
         // // tables.setFeaturesPartitions(0);
-        // createObjectsTables(ddl, tables.objects(), tables.commits(), tables.featureTypes(),
+        // createObjectsTables(ddl, tables.objects(), tables.commits(),
+        // tables.featureTypes(),
         // tables.tags(), tables.trees(), tables.features());
         // }
 
@@ -69,13 +71,15 @@ public abstract class PGStorageTableManager {
             ddl.add(index);
         }
 
-        // protected @Override void createPartitionedObjectsTable(List<String> ddl, String
+        // protected @Override void createPartitionedObjectsTable(List<String> ddl,
+        // String
         // parentTable,
         // TableNames tables) {
         // if (true) {
         // throw new UnsupportedOperationException();
         // }
-        // // final String tableDDL = "CREATE TABLE %s ( ) INHERITS(%s) PARTITION BY RANGE (
+        // // final String tableDDL = "CREATE TABLE %s ( ) INHERITS(%s) PARTITION BY
+        // RANGE (
         // // ((id).h1) )";
         // final String tableDDL = "CREATE TABLE %s ( ) INHERITS(%s) ";
         // String sql = format(tableDDL, parentTable, tables.objects());
@@ -127,6 +131,11 @@ public abstract class PGStorageTableManager {
 
     public List<String> createDDL(Environment config) {
         final TableNames tables = config.getTables();
+        final String databaseName = config.getDatabaseName();
+        return createDDL(databaseName, tables);
+    }
+
+    public List<String> createDDL(final String databaseName, final TableNames tables) {
         List<String> ddl = new ArrayList<>();
 
         ddl.add("-- tell postgres to send bytea fields in a more compact format than hex encoding");
@@ -139,7 +148,7 @@ public abstract class PGStorageTableManager {
                 + "end;\n"//
                 + "$$;", //
 
-                config.getDatabaseName());
+                databaseName);
         ddl.add(sql);
         ddl.add("SELECT pg_advisory_unlock(-1);");
         ddl.add("SET constraint_exclusion=ON;");
@@ -158,21 +167,47 @@ public abstract class PGStorageTableManager {
         return ddl;
     }
 
-    private void createMetadata(List<String> ddl, TableNames tables) {
+    public void createMetadata(List<String> ddl, TableNames tables) {
         VersionInfo productVersion = VersionOp.get();
 
         final String table = tables.metadata();
-        ddl.add(format("create table %s (key text primary key, value text, description text);",
+        int latestVersion = getLatestSchemaVersion();
+        ddl.add(format("CREATE TABLE %s (key TEXT PRIMARY KEY, value TEXT, description TEXT);",
                 table));
-        ddl.add(format("insert into %s (key, value) values ('geogig.version', '%s');", table,
+        ddl.add(format("INSERT INTO %s (key, value) VALUES ('geogig.version', '%s');", table,
                 productVersion.getProjectVersion()));
-        ddl.add(format("insert into %s (key, value) values ('geogig.commit-id', '%s');", table,
+        ddl.add(format("INSERT INTO %s (key, value) VALUES ('geogig.commit-id', '%s');", table,
                 productVersion.getCommitId()));
-        ddl.add(format("insert into %s (key, value) values ('schema.version', '1');", table));
-        ddl.add(format("insert into %s (key, value) values ('schema.features.partitions', '16');",
+        ddl.add(format("INSERT INTO %s (key, value) VALUES ('schema.version', '%s');", table,
+                latestVersion));
+        ddl.add(format("INSERT INTO %s (key, value) VALUES ('schema.features.partitions', '16');",
                 table));
         // ddl.add(format(
-        // "insert into %s (key, value) values ('schema.databse-version', '10');", table));
+        // "insert into %s (key, value) values ('schema.databse-version', '10');",
+        // table));
+    }
+
+    public int getLatestSchemaVersion() {
+        return 1;
+    }
+
+    public int getSchemaVersion(Connection cx, TableNames tables) throws SQLException {
+        String tableName = tables.metadata();
+        if (!PGStorage.tableExists(cx, tableName)) {
+            return 0;
+        } else {
+            try (Statement st = cx.createStatement()) {
+                String sql = format("select value from %s where key = 'schema.version'", tableName);
+                try (ResultSet rs = st.executeQuery(sql)) {
+                    if (rs.next()) {
+                        String sv = rs.getString(1);
+                        return Integer.parseInt(sv);
+                    }
+                }
+            }
+        }
+        throw new IllegalStateException(
+                "Table " + tableName + " exists but has no schema.version entry");
     }
 
     public void createTables(Connection cx, Environment config) throws SQLException {
@@ -190,19 +225,23 @@ public abstract class PGStorageTableManager {
         final List<String> ddl = createDDL(config);
         try {
             cx.setAutoCommit(false);
-            for (String ddlStatement : ddl) {
-                if (ddlStatement.trim().startsWith("--")) {
-                    continue;
-                }
-                run(cx, ddlStatement);
-            }
+            runScript(cx, ddl);
             cx.commit();
         } catch (SQLException | RuntimeException e) {
             cx.rollback();
-            Throwables.throwIfInstanceOf(e, SQLException.class);
+            Throwables.propagateIfInstanceOf(e, SQLException.class);
             throw e;
         } finally {
             cx.setAutoCommit(true);
+        }
+    }
+
+    public void runScript(Connection cx, final List<String> ddl) throws SQLException {
+        for (String ddlStatement : ddl) {
+            if (ddlStatement.trim().startsWith("--")) {
+                continue;
+            }
+            run(cx, ddlStatement);
         }
     }
 
@@ -456,6 +495,18 @@ public abstract class PGStorageTableManager {
         } catch (SQLException e) {
             LOG.error("Error running SQL: {}", sql, e);
             throw e;
+        }
+    }
+
+    public void checkCompatibility(Connection cx, Environment env)
+            throws IllegalArgumentException, SQLException {
+        final int latestSchemaVersion = getLatestSchemaVersion();
+        final int currentSchemaVersion = getSchemaVersion(cx, env.getTables());
+        if (currentSchemaVersion < latestSchemaVersion) {
+            String msg = String.format(
+                    "ERROR: Database %s is running an outdated geogig schema. You need to run `geogig postgres-upgrade` from the command line before continuing.",
+                    env.getDatabaseName());
+            throw new IllegalArgumentException(msg);
         }
     }
 

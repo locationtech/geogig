@@ -38,7 +38,7 @@ public class EnvironmentBuilder {
         Optional<Serializable> repoUrl = hints.get(Hints.REPOSITORY_URL);
         checkArgument(repoUrl.isPresent(), "%s was not given", Hints.REPOSITORY_URL);
         URI url = new URI(String.valueOf(repoUrl.get()));
-        init(url);
+        init(url, false);
     }
 
     public EnvironmentBuilder(Properties props) {
@@ -50,7 +50,11 @@ public class EnvironmentBuilder {
      *        {@code postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>}
      */
     public EnvironmentBuilder(URI repoUrl) {
-        init(repoUrl);
+        this(repoUrl, false);
+    }
+
+    public EnvironmentBuilder(URI repoUrl, boolean isBaseURI) {
+        init(repoUrl, isBaseURI);
     }
 
     private static Map<String, String> extractShortKeys(String rawQuery) {
@@ -67,7 +71,7 @@ public class EnvironmentBuilder {
         return shortKeys;
     }
 
-    private void init(URI repoUrl) {
+    private void init(URI repoUrl, boolean forceBaseURL) {
         // postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>
         Preconditions.checkNotNull(repoUrl);
         final String uriScheme = repoUrl.getScheme();
@@ -77,7 +81,7 @@ public class EnvironmentBuilder {
         final String portNumber;
         final String dbName;
         final String schema;
-        final String repsitoryId;
+        final String repositoryId;
         final String user, password;
         final String tablePrefix;// mainly used for unit testing
 
@@ -88,13 +92,17 @@ public class EnvironmentBuilder {
         portNumber = String.valueOf(port);
 
         List<String> path = Splitter.on('/').omitEmptyStrings().splitToList(repoUrl.getPath());
-        Preconditions.checkArgument(path.size() >= 2 && path.size() <= 3,
-                "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>",
+        Preconditions.checkArgument(forceBaseURL || (path.size() >= 1 && path.size() <= 3),
+                "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>][/<repoid>]?user=<username>&password=<pwd>",
                 repoUrl);
 
         dbName = path.get(0);
-        schema = path.size() == 2 ? "public" : path.get(1);
-        repsitoryId = path.size() == 2 ? path.get(1) : path.get(2);
+        if (forceBaseURL) {
+            schema = path.size() == 1 ? "public" : path.get(1);
+        } else {
+            schema = path.size() == 2 ? "public" : path.get(1);
+        }
+        repositoryId = forceBaseURL ? null : (path.size() == 2 ? path.get(1) : path.get(2));
         Map<String, String> shortKeys = extractShortKeys(repoUrl.getRawQuery());
         user = shortKeys.get("user");
         password = shortKeys.get("password");
@@ -105,7 +113,9 @@ public class EnvironmentBuilder {
         props.setProperty(Environment.KEY_DB_PORT, portNumber);
         props.setProperty(Environment.KEY_DB_NAME, dbName);
         props.setProperty(Environment.KEY_DB_SCHEMA, schema);
-        props.setProperty(Environment.KEY_REPOSITORY_ID, repsitoryId);
+        if (repositoryId != null) {
+            props.setProperty(Environment.KEY_REPOSITORY_ID, repositoryId);
+        }
         props.setProperty(Environment.KEY_DB_USERNAME, user);
         props.setProperty(Environment.KEY_DB_PASSWORD, password);
         if (!Strings.isNullOrEmpty(tablePrefix)) {
@@ -235,5 +245,4 @@ public class EnvironmentBuilder {
 
         return repoURI;
     }
-
 }

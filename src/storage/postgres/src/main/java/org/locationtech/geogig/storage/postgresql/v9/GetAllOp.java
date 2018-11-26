@@ -70,18 +70,21 @@ class GetAllOp<T extends RevObject> implements Callable<List<T>> {
                     tableName);
 
             try (Connection cx = PGStorage.newConnection(db.dataSource)) {
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, PGObjectStore.LOG, queryIds))) {
+                try (PreparedStatement ps = cx
+                        .prepareStatement(log(sql, PGObjectStore.LOG, queryIds))) {
                     final Array array = toJDBCArray(cx, queryIds);
                     ps.setFetchSize(queryCount);
                     ps.setArray(1, array);
 
-                    final Stopwatch sw = PGObjectStore.LOG.isTraceEnabled() ? Stopwatch.createStarted()
+                    final Stopwatch sw = PGObjectStore.LOG.isTraceEnabled()
+                            ? Stopwatch.createStarted()
                             : null;
 
                     try (ResultSet rs = ps.executeQuery()) {
                         if (PGObjectStore.LOG.isTraceEnabled()) {
-                            PGObjectStore.LOG.trace(String.format("Executed getAll for %,d ids in %,dms",
-                                    queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
+                            PGObjectStore.LOG
+                                    .trace(String.format("Executed getAll for %,d ids in %,dms",
+                                            queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
                         }
                         while (rs.next()) {
                             id = PGId.valueOf(rs, 1).toObjectId();

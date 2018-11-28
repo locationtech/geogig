@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.opengis.feature.type.FeatureType;
@@ -19,14 +17,14 @@ import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 /**
  * A binary representation of the state of a Feature Type.
  */
 class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureType {
 
     private final FeatureType featureType;
-
-    private ImmutableList<PropertyDescriptor> sortedDescriptors;
 
     /**
      * Constructs a new {@code RevFeatureType} from the given {@link ObjectId} and
@@ -35,11 +33,9 @@ class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureType {
      * @param id the object id to use for this feature type
      * @param featureType the feature type to use
      */
-    RevFeatureTypeImpl(ObjectId id, FeatureType featureType) {
+    RevFeatureTypeImpl(@NonNull ObjectId id, @NonNull FeatureType featureType) {
         super(id);
-        checkNotNull(featureType);
         this.featureType = featureType;
-        this.sortedDescriptors = ImmutableList.copyOf(featureType.getDescriptors());
     }
 
     @Override
@@ -57,7 +53,7 @@ class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureType {
      */
     @Override
     public ImmutableList<PropertyDescriptor> descriptors() {
-        return sortedDescriptors;
+        return ImmutableList.copyOf(featureType.getDescriptors());
     }
 
     /**
@@ -65,8 +61,7 @@ class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureType {
      */
     @Override
     public Name getName() {
-        Name name = type().getName();
-        return name;
+        return type().getName();
     }
 
     @Override

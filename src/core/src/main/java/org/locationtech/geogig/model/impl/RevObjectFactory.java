@@ -7,9 +7,11 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.opengis.feature.type.FeatureType;
 
 import lombok.NonNull;
 
@@ -31,4 +33,7 @@ public interface RevObjectFactory {
 
     public @NonNull RevTag createTag(@NonNull ObjectId id, @NonNull String name,
             @NonNull ObjectId commitId, @NonNull String message, @NonNull RevPerson tagger);
+
+    public @NonNull RevFeatureType createFeatureType(@NonNull ObjectId id,
+            @NonNull FeatureType ftype);
 }

@@ -15,11 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.locationtech.jts.geom.GeometryFactory;
 import org.eclipse.jdt.annotation.Nullable;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.Maps;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -29,6 +25,9 @@ import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
 
 /**
  * Enumeration of value types supported as {@link RevFeature} attribute values.

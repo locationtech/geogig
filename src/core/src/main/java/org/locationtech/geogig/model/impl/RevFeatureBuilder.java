@@ -19,6 +19,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
@@ -82,7 +83,7 @@ public final class RevFeatureBuilder {
      * @see FieldType#safeCopy(Object)
      */
     public RevFeatureBuilder addValue(@Nullable Object value) {
-        return addValueNoCopy(safeCopy(value));
+        return addValueNoCopy(ValueArray.safeCopy(value));
     }
 
     /**
@@ -115,17 +116,6 @@ public final class RevFeatureBuilder {
             normalizeIfNeeded(geometryN);
         }
 
-    }
-
-    private Object safeCopy(@Nullable Object value) {
-        FieldType fieldType = FieldType.forValue(value);
-        if (FieldType.UNKNOWN.equals(fieldType)) {
-            throw new IllegalArgumentException(String.format(
-                    "Objects of class %s are not supported as RevFeature attributes: ",
-                    value.getClass().getName()));
-        }
-        value = fieldType.safeCopy(value);
-        return value;
     }
 
     public RevFeatureBuilder addAll(List<Object> values) {
@@ -166,7 +156,7 @@ public final class RevFeatureBuilder {
             }
         } else {
             Collection<Property> props = feature.getProperties();
-            props.forEach((p) -> builder.addProperty(p));
+            props.forEach(builder::addProperty);
         }
         return builder.build();
     }

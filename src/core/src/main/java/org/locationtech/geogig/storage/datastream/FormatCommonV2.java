@@ -137,10 +137,10 @@ public class FormatCommonV2 {
 
         RevTag tag;
         if (id == null) {
-            tag = RevTagBuilder.create(ObjectId.NULL, name, commitId, message, tagger);
-            id = new HashObject().setObject(tag).call();
+            tag = RevTagBuilder.build(name, commitId, message, tagger);
+        } else {
+            tag = RevObjectFactory.defaultInstance().createTag(id, name, commitId, message, tagger);
         }
-        tag = RevTagBuilder.create(id, name, commitId, message, tagger);
         return tag;
     }
 

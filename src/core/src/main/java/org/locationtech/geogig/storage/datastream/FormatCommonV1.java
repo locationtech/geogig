@@ -122,7 +122,7 @@ public class FormatCommonV1 {
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
 
-        return RevTagBuilder.create(id, name, commitId, message, tagger);
+        return RevObjectFactory.defaultInstance().createTag(id, name, commitId, message, tagger);
     }
 
     public static void writeTag(RevTag tag, DataOutput out) throws IOException {

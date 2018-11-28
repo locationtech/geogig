@@ -50,7 +50,6 @@ import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
-import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
@@ -863,12 +862,11 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String message = parseLine(requireLine(reader), "message");
             String commitId = parseLine(requireLine(reader), "commitid");
             RevPerson tagger = parsePerson(requireLine(reader));
-            RevTag tag = RevTagBuilder.create(id, name, ObjectId.valueOf(commitId), message,
-                    tagger);
-            return tag;
+            return RevObjectFactory.defaultInstance().createTag(id, name,
+                    ObjectId.valueOf(commitId), message, tagger);
         }
 
-        private RevPerson parsePerson(String line) throws IOException {
+        private RevPerson parsePerson(String line) {
             String[] tokens = line.split("\t");
             String header = "tagger";
             Preconditions.checkArgument(header.equals(tokens[0]), "Expected field %s, got '%s'",

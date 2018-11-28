@@ -8,6 +8,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.LeafTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.NodeTree;
@@ -41,4 +42,10 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
 
         return new NodeTree(id, size, childTreeCount, buckets);
     }
+
+    public @Override @NonNull RevTag createTag(@NonNull ObjectId id, @NonNull String name,
+            @NonNull ObjectId commitId, @NonNull String message, @NonNull RevPerson tagger) {
+        return new RevTagImpl(id, name, commitId, message, tagger);
+    }
+
 }

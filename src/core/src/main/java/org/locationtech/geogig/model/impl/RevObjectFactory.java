@@ -8,6 +8,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 
 import lombok.NonNull;
@@ -27,4 +28,7 @@ public interface RevObjectFactory {
 
     public @NonNull RevTree createTree(@NonNull ObjectId id, long size, int childTreeCount,
             @NonNull SortedMap<Integer, Bucket> buckets);
+
+    public @NonNull RevTag createTag(@NonNull ObjectId id, @NonNull String name,
+            @NonNull ObjectId commitId, @NonNull String message, @NonNull RevPerson tagger);
 }

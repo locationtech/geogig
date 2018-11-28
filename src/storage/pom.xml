@@ -17,5 +17,6 @@
   <modules>
     <module>postgres</module>
     <module>rocksdb</module>
+    <module>caffeine</module>
   </modules>
 </project>

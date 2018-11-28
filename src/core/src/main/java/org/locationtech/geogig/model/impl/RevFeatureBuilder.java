@@ -17,6 +17,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.jts.geom.Geometry;

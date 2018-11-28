@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.plumbing.HashObject;

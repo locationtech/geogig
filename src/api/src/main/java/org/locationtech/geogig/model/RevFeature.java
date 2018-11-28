@@ -10,12 +10,11 @@
 package org.locationtech.geogig.model;
 
 import java.util.Map;
-import java.util.function.Consumer;
+
+import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * A {@code RevFeature} is an immutable data structure that contains the attribute value instances

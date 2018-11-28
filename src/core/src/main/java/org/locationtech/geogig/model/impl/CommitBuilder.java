@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.repository.Platform;

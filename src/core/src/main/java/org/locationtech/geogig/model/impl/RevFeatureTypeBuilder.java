@@ -18,6 +18,7 @@ import org.geotools.feature.SchemaException;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;

@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,14 +19,15 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.plumbing.HashObject;
-import org.opengis.feature.Feature;
-import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeature;
-
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.Feature;
+import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
+
+import lombok.NonNull;
 
 /**
  * Builder for {@link RevFeature} instances.
@@ -54,11 +53,11 @@ public final class RevFeatureBuilder {
 
     public RevFeature build() {
         ObjectId id = HashObject.hashFeature(values);
-        return new RevFeatureImpl(id, new ArrayList<>(values));
+        return RevObjectFactory.defaultInstance().createFeature(id, values);
     }
 
-    public RevFeature build(ObjectId id) {
-        return new RevFeatureImpl(id, new ArrayList<>(values));
+    public RevFeature build(@NonNull ObjectId id) {
+        return RevObjectFactory.defaultInstance().createFeature(id, values);
     }
 
     public RevFeatureBuilder reset() {
@@ -66,8 +65,7 @@ public final class RevFeatureBuilder {
         return this;
     }
 
-    public RevFeatureBuilder addProperty(Property featureProp) {
-        checkNotNull(featureProp);
+    public RevFeatureBuilder addProperty(@NonNull Property featureProp) {
         // This is where we might handle complex properties if ever supported
         addValue(featureProp.getValue());
         return this;
@@ -118,16 +116,14 @@ public final class RevFeatureBuilder {
 
     }
 
-    public RevFeatureBuilder addAll(List<Object> values) {
-        checkNotNull(values);
+    public RevFeatureBuilder addAll(@NonNull List<Object> values) {
         for (Object v : values) {
             addValue(v);
         }
         return this;
     }
 
-    public RevFeatureBuilder addAll(Object... values) {
-        checkNotNull(values);
+    public RevFeatureBuilder addAll(@NonNull Object... values) {
         for (Object v : values) {
             addValue(v);
         }
@@ -140,10 +136,7 @@ public final class RevFeatureBuilder {
      * @param feature the feature to build from
      * @return the newly constructed RevFeature
      */
-    public static RevFeature build(Feature feature) {
-        if (feature == null) {
-            throw new IllegalStateException("No feature set");
-        }
+    public static RevFeature build(@NonNull Feature feature) {
 
         RevFeatureBuilder builder = RevFeatureBuilder.builder();
 

@@ -7,6 +7,7 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
@@ -54,6 +55,16 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
             @NonNull FeatureType ftype) {
 
         return new RevFeatureTypeImpl(id, ftype);
+    }
+
+    public @Override @NonNull RevFeature createFeature(@NonNull ObjectId id,
+            @NonNull List<Object> values) {
+        return new RevFeatureImpl(id, values.toArray());
+    }
+
+    public @Override @NonNull RevFeature createFeature(@NonNull ObjectId id,
+            @NonNull Object... values) {
+        return new RevFeatureImpl(id, values.clone());
     }
 
 }

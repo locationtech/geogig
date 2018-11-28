@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -32,17 +31,11 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
 
     /**
      * Constructs a new {@code RevFeature} with the provided {@link ObjectId} and set of values
+     * <p>
+     * Takes ownership of the array, which is given by the builder, no need to copy
      * 
      * @param id the {@link ObjectId} to use for this feature
      * @param values a list of values, {@code null} members allowed
-     */
-    RevFeatureImpl(ObjectId id, ArrayList<Object> values) {
-        super(id);
-        this.values = values.toArray();
-    }
-
-    /**
-     * Takes ownership of the array, which is given by the builder, no need to copy
      */
     RevFeatureImpl(ObjectId id, Object[] values) {
         super(id);

@@ -7,6 +7,7 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
@@ -36,4 +37,8 @@ public interface RevObjectFactory {
 
     public @NonNull RevFeatureType createFeatureType(@NonNull ObjectId id,
             @NonNull FeatureType ftype);
+
+    public @NonNull RevFeature createFeature(@NonNull ObjectId id, @NonNull List<Object> values);
+
+    public @NonNull RevFeature createFeature(@NonNull ObjectId id, @NonNull Object... values);
 }

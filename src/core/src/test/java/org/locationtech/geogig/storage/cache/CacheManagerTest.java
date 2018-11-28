@@ -33,8 +33,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.google.common.cache.CacheStats;
-
 public class CacheManagerTest {
 
     @Rule
@@ -344,7 +342,13 @@ public class CacheManagerTest {
 
     public @Test void testStats() {
         SharedCache sharedCache = mock(SharedCache.class);
-        CacheStats stats = new CacheStats(1, 1, 1, 1, 1, 1);
+        CacheStats stats = mock(CacheStats.class);
+        when(stats.evictionCount()).thenReturn(1L);
+        when(stats.missCount()).thenReturn(1L);
+        when(stats.hitCount()).thenReturn(1L);
+        when(stats.missRate()).thenReturn(0.5);
+        when(stats.hitRate()).thenReturn(0.5);
+
         when(sharedCache.getStats()).thenReturn(stats);
         when(sharedCache.sizeBytes()).thenReturn(1000L);
         when(sharedCache.objectCount()).thenReturn(100L);

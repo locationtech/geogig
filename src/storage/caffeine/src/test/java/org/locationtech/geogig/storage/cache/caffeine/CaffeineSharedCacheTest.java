@@ -1,13 +1,13 @@
-/* Copyright (c) 2017 Boundless and others.
+/* Copyright (c) 2018 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Gabriel Roldan (Boundless) - initial implementation
+ * Gabriel Roldan - initial implementation
  */
-package org.locationtech.geogig.storage.cache;
+package org.locationtech.geogig.storage.cache.caffeine;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,9 +30,12 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.cache.CacheIdentifier;
+import org.locationtech.geogig.storage.cache.CacheKey;
+import org.locationtech.geogig.storage.cache.SharedCache;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
-public class SharedCacheTest {
+public class CaffeineSharedCacheTest {
 
     private final long maxCacheSizeBytes = 1024 * 1024;
 
@@ -48,7 +51,7 @@ public class SharedCacheTest {
     private RevTree obj;
 
     public @Before void before() {
-        cache = spy(SharedCache.build(maxCacheSizeBytes));
+        cache = spy(new CaffeineSharedCache(1, maxCacheSizeBytes));
         repo1Id = new CacheIdentifier(1);
         repo2Id = new CacheIdentifier(1000);
         store = new HeapObjectStore();

@@ -29,14 +29,12 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
 import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheStats;
 import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
@@ -46,7 +44,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 /**
  * A {@link RevObject} cache to be used by multiple {@link ObjectStore} instances operating upon a
  * single internal cache, discriminating specific {@link ObjectStore} entries by means of the
- * {@link Key} instances, which provide a target backend's store prefix besides the
+ * {@link CacheKey} instances, which provide a target backend's store prefix besides the
  * {@code RevObject's} id.
  * <p>
  * Except for unit tests, one single instance of a {@code SharedCache} will exist at any given time
@@ -55,7 +53,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * {@code SharedCache} instances are created through the {@link #build(long)} factory method.
  * 
  */
-interface SharedCache {
+public interface SharedCache {
 
     /**
      * Singleton no-op cache instance for when {@link #build(long)} is called with {@code 0L} as
@@ -101,12 +99,12 @@ interface SharedCache {
         Impl.SizeTracker sizeTracker = new Impl.SizeTracker();
         cacheBuilder.removalListener(sizeTracker);
 
-        Cache<Key, byte[]> byteCache = cacheBuilder.build();
+        Cache<CacheKey, byte[]> byteCache = cacheBuilder.build();
 
         return new Impl(L1capacity, byteCache, sizeTracker);
     }
 
-    default boolean contains(Key id) {
+    default boolean contains(CacheKey id) {
         return false;
     }
 
@@ -119,14 +117,14 @@ interface SharedCache {
     default void dispose() {
     }
 
-    default void invalidate(Key id) {
+    default void invalidate(CacheKey id) {
     }
 
-    default @Nullable RevObject getIfPresent(Key key) {
+    default @Nullable RevObject getIfPresent(CacheKey key) {
         return null;
     }
 
-    default @Nullable Future<?> put(Key key, RevObject obj) {
+    default @Nullable Future<?> put(CacheKey key, RevObject obj) {
         return null;
     }
 
@@ -139,7 +137,8 @@ interface SharedCache {
     }
 
     default CacheStats getStats() {
-        return new CacheStats(0, 0, 0, 0, 0, 0);
+        return new CacheStats() {
+        };
     }
 
     static class Impl implements SharedCache {
@@ -153,7 +152,7 @@ interface SharedCache {
          * of encoding and caching instead of running an unbounded number of threads to store the
          * objects in the cache.
          * 
-         * @see #insert(Key, RevObject)
+         * @see #insert(CacheKey, RevObject)
          */
         static final ExecutorService WRITE_BACK_EXECUTOR;
         static {
@@ -169,10 +168,10 @@ interface SharedCache {
         }
 
         private static final ObjectSerializingFactory ENCODER = //
-                        DataStreamSerializationFactoryV2_3.INSTANCE;
+                DataStreamSerializationFactoryV2_3.INSTANCE;
 
         /**
-         * Size of the L1 cache {@link Key} -> {@link RevTree}
+         * Size of the L1 cache {@link CacheKey} -> {@link RevTree}
          */
         private static final int L1_CACHE_SIZE = 10_000;
 
@@ -183,14 +182,14 @@ interface SharedCache {
          * approximate number of entries but not the accumulated {@link Weigher#weigh weight}
          *
          */
-        private static class SizeTracker implements RemovalListener<Key, byte[]> {
+        private static class SizeTracker implements RemovalListener<CacheKey, byte[]> {
 
-            private static Weigher<Key, byte[]> WEIGHER = new Weigher<Key, byte[]>() {
+            private static Weigher<CacheKey, byte[]> WEIGHER = new Weigher<CacheKey, byte[]>() {
 
                 static final int ESTIMATED_Key_SIZE = 32;
 
                 @Override
-                public int weigh(Key key, byte[] value) {
+                public int weigh(CacheKey key, byte[] value) {
                     return ESTIMATED_Key_SIZE + value.length;
                 }
 
@@ -199,14 +198,14 @@ interface SharedCache {
             public final AtomicLong size = new AtomicLong();
 
             @Override
-            public void onRemoval(RemovalNotification<Key, byte[]> notification) {
-                Key key = notification.getKey();
+            public void onRemoval(RemovalNotification<CacheKey, byte[]> notification) {
+                CacheKey key = notification.getKey();
                 byte[] value = notification.getValue();
                 int weigh = WEIGHER.weigh(key, value);
                 size.addAndGet(-weigh);
             }
 
-            public void inserted(Key id, byte[] value) {
+            public void inserted(CacheKey id, byte[] value) {
                 int weigh = WEIGHER.weigh(id, value);
                 size.addAndGet(weigh);
             }
@@ -224,16 +223,16 @@ interface SharedCache {
          * When trees are evicted from the L1Cache due to size constraints, their serialized version
          * will be added to the L2Cache if it's not already present.
          * 
-         * @see #put(Key, RevObject)
-         * @see #getIfPresent(Key)
+         * @see #put(CacheKey, RevObject)
+         * @see #getIfPresent(CacheKey)
          */
-        final Cache<Key, RevTree> L1Cache;
+        final Cache<CacheKey, RevTree> L1Cache;
 
         /**
          * The Level2 cache contains serialized versions of RevObjects, as they take less memory
          * than Java objects and their size can be more or less accurately tracked.
          */
-        final Cache<Key, byte[]> L2Cache;
+        final Cache<CacheKey, byte[]> L2Cache;
 
         private final SizeTracker sizeTracker;
 
@@ -243,14 +242,14 @@ interface SharedCache {
             this.sizeTracker = new SizeTracker();
         }
 
-        Impl(final int L1Capacity, Cache<Key, byte[]> byteCache, SizeTracker sizeTracker) {
+        Impl(final int L1Capacity, Cache<CacheKey, byte[]> byteCache, SizeTracker sizeTracker) {
             this.L2Cache = byteCache;
             this.sizeTracker = sizeTracker;
 
-            RemovalListener<Key, RevObject> L1WriteBack = (notification) -> {
+            RemovalListener<CacheKey, RevObject> L1WriteBack = (notification) -> {
                 RemovalCause cause = notification.getCause();
                 if (RemovalCause.SIZE == cause) {
-                    Key key = notification.getKey();
+                    CacheKey key = notification.getKey();
                     RevObject value = notification.getValue();
                     if (value != null) {
                         putInternal(key, value);
@@ -266,12 +265,12 @@ interface SharedCache {
                     .build();
         }
 
-        public boolean contains(Key id) {
+        public @Override boolean contains(CacheKey id) {
             boolean contains = L1Cache.asMap().containsKey(id) || L2Cache.asMap().containsKey(id);
             return contains;
         }
 
-        public void invalidateAll() {
+        public @Override void invalidateAll() {
             L1Cache.invalidateAll();
             L2Cache.invalidateAll();
 
@@ -279,26 +278,24 @@ interface SharedCache {
             L2Cache.cleanUp();
         }
 
-        public void invalidateAll(CacheIdentifier prefix) {
+        public @Override void invalidateAll(CacheIdentifier prefix) {
             invalidateAll(prefix, L1Cache.asMap());
             invalidateAll(prefix, L2Cache.asMap());
         }
 
-        private void invalidateAll(CacheIdentifier prefix, ConcurrentMap<Key, ?> map) {
+        private void invalidateAll(CacheIdentifier prefix, ConcurrentMap<CacheKey, ?> map) {
             map.keySet().parallelStream().filter((k) -> {
                 int keyprefix = k.prefix();
                 int expectedPrefix = prefix.prefix();
                 return keyprefix == expectedPrefix;
-            }).forEach((k) -> {
-                map.remove(k);
-            });
+            }).forEach(map::remove);
         }
 
-        public void dispose() {
+        public @Override void dispose() {
             invalidateAll();
         }
 
-        public void invalidate(Key id) {
+        public @Override void invalidate(CacheKey id) {
             L2Cache.invalidate(id);
         }
 
@@ -310,7 +307,7 @@ interface SharedCache {
          * to the L1 cache that resulted in a cache hit to the L2 cache, and where the resulting
          * object is a {@code RevTree}, will result in the tree being added back to the L1 cache.
          */
-        public @Nullable RevObject getIfPresent(Key key) {
+        public @Override @Nullable RevObject getIfPresent(CacheKey key) {
             RevObject obj = L1Cache.getIfPresent(key);
             if (obj == null) {
                 // call cache.getIfPresent instead of map.get() or the cache stats don't record the
@@ -333,9 +330,10 @@ interface SharedCache {
          * {@link #L1Cache}. In either case, it's serialized version will be, possibly
          * asynchronously, added to the {@link #L2Cache}.
          */
-        public @Nullable Future<?> put(Key key, RevObject obj) {
+        public @Override @Nullable Future<?> put(CacheKey key, RevObject obj) {
             RevObject l1val = TYPE.TREE == obj.getType()
-                    ? L1Cache.asMap().putIfAbsent(key, (RevTree) obj) : null;
+                    ? L1Cache.asMap().putIfAbsent(key, (RevTree) obj)
+                    : null;
             if (l1val == null) {
                 // add it to L2 if not already present, even if it's a RevTree and has been added to
                 // the L1 cache, since removal notifications happen after the fact
@@ -345,14 +343,14 @@ interface SharedCache {
         }
 
         @Nullable
-        Future<?> putInternal(Key key, RevObject obj) {
+        Future<?> putInternal(CacheKey key, RevObject obj) {
             if (!L2Cache.asMap().containsKey(key)) {
                 return WRITE_BACK_EXECUTOR.submit(() -> insert(key, obj));
             }
             return null;
         }
 
-        void insert(Key key, RevObject obj) {
+        void insert(CacheKey key, RevObject obj) {
             byte[] value = encode(obj);
             if (null == L2Cache.asMap().putIfAbsent(key, value)) {
                 sizeTracker.inserted(key, value);
@@ -370,7 +368,7 @@ interface SharedCache {
             return byteArray;
         }
 
-        private RevObject decode(Key key, byte[] val) {
+        private RevObject decode(CacheKey key, byte[] val) {
             try {
                 return encoder.read(key.id(), val, 0, val.length);
             } catch (IOException e) {
@@ -378,7 +376,7 @@ interface SharedCache {
             }
         }
 
-        public String toString() {
+        public @Override String toString() {
             long size = L2Cache.size();
             long bytes = sizeTracker.size.get();
             long avg = size == 0 ? 0 : bytes / size;
@@ -386,16 +384,38 @@ interface SharedCache {
                     avg, L2Cache.stats());
         }
 
-        public long sizeBytes() {
+        public @Override long sizeBytes() {
             return sizeTracker.size.get();
         }
 
-        public long objectCount() {
+        public @Override long objectCount() {
             return L2Cache.size();
         }
 
-        public CacheStats getStats() {
-            return L2Cache.stats();
+        public @Override CacheStats getStats() {
+            final com.google.common.cache.CacheStats stats = L2Cache.stats();
+            return new CacheStats() {
+                public @Override long hitCount() {
+                    return stats.hitCount();
+                }
+
+                public @Override double hitRate() {
+                    return stats.hitRate();
+                }
+
+                public @Override long missCount() {
+                    return stats.missCount();
+                }
+
+                public @Override double missRate() {
+                    return stats.missRate();
+                }
+
+                public @Override long evictionCount() {
+                    return stats.evictionCount();
+                }
+            };
         }
     }
+
 }

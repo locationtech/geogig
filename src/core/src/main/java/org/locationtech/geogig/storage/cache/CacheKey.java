@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.cache;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 
 /**
  * The key used by {@link SharedCache}, composed of an integer {@link #prefix()} and the
@@ -23,40 +24,50 @@ import org.locationtech.geogig.model.RevObject;
  *            {@code prefix} is a single {@code byte} when the prefix is inside the byte value
  *            range, or an {@code int} otherwise.
  */
-abstract class Key {
+public abstract class CacheKey {
 
-    private final ObjectId id;
+    final int h1;
 
-    protected Key(ObjectId id) {
-        this.id = id;
+    final long h2;
+
+    final long h3;
+
+    protected CacheKey(ObjectId id) {
+        this.h1 = RevObjects.h1(id);
+        this.h2 = RevObjects.h2(id);
+        this.h3 = RevObjects.h3(id);
     }
 
     public abstract int prefix();
 
     public ObjectId id() {
-        return this.id;
+        return ObjectId.create(h1, h2, h3);
     }
 
-    public @Override boolean equals(Object o) {
-        if (!(o instanceof Key)) {
+    public final @Override boolean equals(Object o) {
+        if (!(o instanceof CacheKey)) {
             return false;
         }
-        Key k = (Key) o;
-        return prefix() == k.prefix() && id.equals(k.id);
+        CacheKey k = (CacheKey) o;
+        return prefix() == k.prefix() && h1 == k.h1 && h2 == k.h2 && h3 == k.h3;
     }
 
-    public @Override int hashCode() {
-        return 31 * prefix() + id.hashCode();
+    public final @Override int hashCode() {
+        int hash = 17;
+        hash = hash * 31 + h1;
+        hash = 31 * hash + (int) (h2 ^ (h2 >>> 32));
+        hash = 31 * hash + (int) (h2 ^ (h2 >>> 32));
+        return hash;
     }
 
-    public static Key create(int keyPrefix, ObjectId id) {
+    public static CacheKey create(int keyPrefix, ObjectId id) {
         if (keyPrefix >= Byte.MIN_VALUE && keyPrefix <= Byte.MAX_VALUE) {
             return new SmallKey((byte) keyPrefix, id);
         }
         return new BigKey(keyPrefix, id);
     }
 
-    static final class SmallKey extends Key {
+    static final class SmallKey extends CacheKey {
 
         private final byte keyPrefix;
 
@@ -71,7 +82,7 @@ abstract class Key {
         }
     }
 
-    static final class BigKey extends Key {
+    static final class BigKey extends CacheKey {
 
         private final int keyPrefix;
 

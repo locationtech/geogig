@@ -177,15 +177,12 @@ public class FormatCommonV2 {
         final RevPerson committer = readRevPerson(in);
         final String message = in.readUTF();
 
-        ObjectId commitId = id;
+        final List<ObjectId> parents = parentListBuilder.build();
+        RevCommit commit;
         if (id == null) {
-            commitId = ObjectId.NULL;
-        }
-        RevCommit commit = CommitBuilder.create(commitId, treeId, parentListBuilder.build(), author,
-                committer, message);
-        if (id == null) {
-            commitId = new HashObject().setObject(commit).call();
-            commit = CommitBuilder.create(commitId, treeId, parentListBuilder.build(), author,
+            commit = CommitBuilder.build(treeId, parents, author, committer, message);
+        } else {
+            commit = RevObjectFactory.defaultInstance().createCommit(id, treeId, parents, author,
                     committer, message);
         }
         return commit;

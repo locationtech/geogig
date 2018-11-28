@@ -39,7 +39,6 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectFactory;
@@ -168,8 +167,8 @@ public class FormatCommonV1 {
 
         final String message = in.readUTF();
 
-        return CommitBuilder.create(id, treeId, parentListBuilder.build(), author, committer,
-                message);
+        return RevObjectFactory.defaultInstance().createCommit(id, treeId,
+                parentListBuilder.build(), author, committer, message);
     }
 
     public static final RevPerson readRevPerson(DataInput in) throws IOException {

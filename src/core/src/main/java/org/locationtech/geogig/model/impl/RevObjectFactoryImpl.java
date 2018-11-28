@@ -6,9 +6,13 @@ import java.util.SortedMap;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.LeafTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.NodeTree;
+
+import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -16,7 +20,15 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
 
     static final RevObjectFactory INSTANCE = new RevObjectFactoryImpl();
 
-    public @Override RevTree createTree(final @NonNull ObjectId id, final long size,
+    public @Override @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,
+            @NonNull List<ObjectId> parents, @NonNull RevPerson author,
+            @NonNull RevPerson committer, @NonNull String message) {
+
+        return new RevCommitImpl(id, treeId, ImmutableList.copyOf(parents), author, committer,
+                message);
+    }
+
+    public @Override @NonNull RevTree createTree(final @NonNull ObjectId id, final long size,
             @NonNull List<Node> trees, @NonNull List<Node> features) {
 
         Node[] f = features.isEmpty() ? null : features.toArray(new Node[features.size()]);
@@ -24,7 +36,7 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
         return new LeafTree(id, size, f, t);
     }
 
-    public @Override RevTree createTree(final @NonNull ObjectId id, final long size,
+    public @Override @NonNull RevTree createTree(final @NonNull ObjectId id, final long size,
             final int childTreeCount, @NonNull SortedMap<Integer, Bucket> buckets) {
 
         return new NodeTree(id, size, childTreeCount, buckets);

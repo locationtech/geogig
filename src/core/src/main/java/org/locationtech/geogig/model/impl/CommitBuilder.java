@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -22,6 +20,8 @@ import org.locationtech.geogig.repository.Platform;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
 
 public final class CommitBuilder {
 
@@ -272,20 +272,17 @@ public final class CommitBuilder {
         final ObjectId commitId = HashObject.hashCommit(treeId, parents, author, committer,
                 message);
 
-        return new RevCommitImpl(commitId, treeId, ImmutableList.copyOf(parents), author, committer,
-                message);
+        return RevObjectFactory.defaultInstance().createCommit(commitId, treeId,
+                ImmutableList.copyOf(parents), author, committer, message);
     }
 
-    public static RevCommit create(ObjectId id, ObjectId treeId, List<ObjectId> parents,
-            RevPerson author, RevPerson committer, String message) {
-        checkNotNull(id);
-        checkNotNull(treeId);
-        checkNotNull(parents);
-        checkNotNull(author);
-        checkNotNull(committer);
-        checkNotNull(message);
-        return new RevCommitImpl(id, treeId, ImmutableList.copyOf(parents), author, committer,
-                message);
+    @Deprecated
+    public static RevCommit create(@NonNull ObjectId id, @NonNull ObjectId treeId,
+            @NonNull List<ObjectId> parents, @NonNull RevPerson author,
+            @NonNull RevPerson committer, @NonNull String message) {
+
+        return RevObjectFactory.defaultInstance().createCommit(id, treeId,
+                ImmutableList.copyOf(parents), author, committer, message);
     }
 
 }

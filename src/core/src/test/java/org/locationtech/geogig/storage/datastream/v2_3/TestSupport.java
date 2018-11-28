@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
@@ -148,10 +150,13 @@ public class TestSupport {
                 : ImmutableList.copyOf(treeNodes);
         ImmutableList<Node> features = featureNodes == null ? ImmutableList.of()
                 : ImmutableList.copyOf(featureNodes);
+        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
         int childTreeCount = treeNodes == null ? 0 : treeNodes.size();
-        RevTree tree = RevTreeBuilder.create(id, treeSize, childTreeCount, trees, features,
-                buckets);
-        return tree;
+        if (buckets.isEmpty()) {
+            return RevObjectFactory.defaultInstance().createTree(id, treeSize, childTreeCount,
+                    buckets);
+        }
+        return RevObjectFactory.defaultInstance().createTree(id, treeSize, trees, features);
     }
 
     public static void assertEqualsFully(RevTree o1, RevTree o2) {

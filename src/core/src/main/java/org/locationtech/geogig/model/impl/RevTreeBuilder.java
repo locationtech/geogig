@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.function.BooleanSupplier;
@@ -21,9 +22,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 
 /**
  * A builder for {@link RevTree} instances whose {@link Node nodes} are arranged following a
@@ -93,13 +91,19 @@ public interface RevTreeBuilder {
     public @Nullable RevTree build(BooleanSupplier abortFlag);
 
     public void dispose();
-    
-    static RevTree build(final long size, final int childTreeCount,
-            @Nullable List<Node> trees, @Nullable List<Node> features,
-            @Nullable SortedMap<Integer, Bucket> buckets) {
+
+    static RevTree build(final long size, final int childTreeCount, @Nullable List<Node> trees,
+            @Nullable List<Node> features, @Nullable SortedMap<Integer, Bucket> buckets) {
 
         ObjectId id = HashObject.hashTree(trees, features, buckets);
-        return RevTreeImpl.create(id, size, childTreeCount, trees, features, buckets);
+        trees = trees == null ? Collections.emptyList() : trees;
+        features = features == null ? Collections.emptyList() : features;
+        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
+
+        if (buckets.isEmpty()) {
+            return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);
+        }
+        return RevObjectFactory.defaultInstance().createTree(id, size, childTreeCount, buckets);
     }
 
     /**
@@ -117,16 +121,21 @@ public interface RevTreeBuilder {
      * @param features
      * @param buckets
      * @return
+     * @deprecated use {@link RevObjectFactory#createTree} (
+     *             {@link RevObjectFactory#defaultInstance()})
      */
     static RevTree create(final ObjectId id, final long size, final int childTreeCount,
-            @Nullable ImmutableList<Node> trees, @Nullable ImmutableList<Node> features,
+            @Nullable List<Node> trees, @Nullable List<Node> features,
             @Nullable SortedMap<Integer, Bucket> buckets) {
 
-        ImmutableSortedMap<Integer, Bucket> immutableBuckets = buckets == null ? null
-                : ImmutableSortedMap.copyOfSorted(buckets);
+        trees = trees == null ? Collections.emptyList() : trees;
+        features = features == null ? Collections.emptyList() : features;
+        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
 
-        return RevTreeImpl.create(id, size, childTreeCount, trees, features, immutableBuckets);
-
+        if (buckets.isEmpty()) {
+            return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);
+        }
+        return RevObjectFactory.defaultInstance().createTree(id, size, childTreeCount, buckets);
     }
 
     public int getDepth();

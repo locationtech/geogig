@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +26,8 @@ import org.locationtech.geogig.model.RevTree;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
+
+import lombok.NonNull;
 
 /**
  *
@@ -95,19 +95,14 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
     static final class NodeTree extends RevTreeImpl {
 
-        // private final ImmutableSortedMap<Integer, Bucket> buckets;
-
         private final int childTreeCount;
 
         private final IndexedBucket[] ibuckets;
 
         public NodeTree(final ObjectId id, final long size, final int childTreeCount,
-                final SortedMap<Integer, Bucket> innerTrees) {
+                final @NonNull SortedMap<Integer, Bucket> innerTrees) {
             super(id, size);
-            checkNotNull(innerTrees);
             this.childTreeCount = childTreeCount;
-            // this.buckets = innerTrees;
-            // this.buckets = null;
             ArrayList<IndexedBucket> ibucketl = new ArrayList<>(innerTrees.size());
             innerTrees.forEach((i, b) -> ibucketl.add(new IndexedBucket(i, b)));
             this.ibuckets = ibucketl.toArray(new IndexedBucket[ibucketl.size()]);
@@ -190,24 +185,14 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         return ImmutableSortedMap.of();
     }
 
+    /**
+     * @deprecated user {@link RevObjectFactory#createTree}
+     */
+    @Deprecated
     public static RevTree create(final ObjectId id, final long size, final int childTreeCount,
             @Nullable List<Node> trees, @Nullable List<Node> features,
             @Nullable SortedMap<Integer, Bucket> buckets) {
-
-        checkNotNull(id);
-
-        if (buckets == null || buckets.isEmpty()) {
-            Node[] f = features == null ? null : features.toArray(new Node[features.size()]);
-            Node[] t = trees == null ? null : trees.toArray(new Node[trees.size()]);
-            return new LeafTree(id, size, f, t);
-        }
-
-        if ((features == null || features.isEmpty()) && (trees == null || trees.isEmpty())) {
-            return new NodeTree(id, size, childTreeCount, buckets);
-        }
-
-        throw new IllegalArgumentException(
-                "Mixed (containing nodes and buckets) trees are not supported");
+        return RevTreeBuilder.create(id, size, childTreeCount, trees, features, buckets);
     }
 
     @Override

@@ -42,10 +42,12 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
 import org.locationtech.geogig.model.impl.RevTagBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -58,8 +60,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 public class FormatCommonV1 {
 
@@ -226,8 +226,10 @@ public class FormatCommonV1 {
         if (null == id) {
             id = HashObject.hashTree(trees, features, buckets);
         }
-        RevTree tree = RevTreeBuilder.create(id, size, treeCount, trees, features, buckets);
-        return tree;
+        if (buckets.isEmpty()) {
+            return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);
+        }
+        return RevObjectFactory.defaultInstance().createTree(id, size, treeCount, buckets);
     }
 
     public static Node readNode(DataInput in) throws IOException {

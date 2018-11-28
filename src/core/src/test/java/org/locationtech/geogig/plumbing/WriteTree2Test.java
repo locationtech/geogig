@@ -33,6 +33,7 @@ import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
@@ -691,8 +692,13 @@ public class WriteTree2Test extends RepositoryTestCase {
         ImmutableList<Node> trees = tree.trees();
         ImmutableList<Node> features = tree.features();
         SortedMap<Integer, Bucket> buckets = tree.buckets();
-        RevTree fakenId = RevTreeBuilder.create(treeId, size, childTreeCount, trees, features,
-                buckets);
+        RevObjectFactory factory = RevObjectFactory.defaultInstance();
+        RevTree fakenId;
+        if (buckets.isEmpty()) {
+            fakenId = factory.createTree(treeId, size, trees, features);
+        } else {
+            fakenId = factory.createTree(treeId, size, childTreeCount, buckets);
+        }
         return fakenId;
     }
 

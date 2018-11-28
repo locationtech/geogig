@@ -54,10 +54,12 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
 import org.locationtech.geogig.model.impl.RevTagBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -72,13 +74,10 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.math.DoubleMath;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 public class FormatCommonV2 {
 
@@ -229,7 +228,7 @@ public class FormatCommonV2 {
             try {
                 writeBucket(index.intValue(), bucket, data, envBuff);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         });
     }
@@ -266,7 +265,6 @@ public class FormatCommonV2 {
             {
                 Integer idx = Integer.valueOf(bucketIndex);
                 checkState(!buckets.containsKey(idx), "duplicate bucket index: %s", idx);
-                // checkState(bucketIndex < RevTree.MAX_BUCKETS, "Illegal bucket index: %s", idx);
             }
             Bucket bucket = readBucketBody(in);
             buckets.put(Integer.valueOf(bucketIndex), bucket);
@@ -279,8 +277,10 @@ public class FormatCommonV2 {
         if (id == null) {
             id = HashObject.hashTree(trees, features, ImmutableSortedMap.copyOf(buckets));
         }
-        RevTree tree = RevTreeBuilder.create(id, size, treeCount, trees, features, buckets);
-        return tree;
+        if (buckets.isEmpty()) {
+            return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);
+        }
+        return RevObjectFactory.defaultInstance().createTree(id, size, treeCount, buckets);
     }
 
     public DiffEntry readDiff(DataInput in) throws IOException {
@@ -489,7 +489,7 @@ public class FormatCommonV2 {
         try {
             writeNode(node, data, env);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

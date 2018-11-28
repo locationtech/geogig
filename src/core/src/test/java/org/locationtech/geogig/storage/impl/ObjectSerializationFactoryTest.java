@@ -56,6 +56,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.opengis.feature.Feature;
@@ -560,7 +561,7 @@ public abstract class ObjectSerializationFactoryTest {
         int childTreeCount = 0;
         SortedMap<Integer, Bucket> bucketTrees = createBuckets(32);
 
-        final RevTree tree = RevTreeBuilder.create(id, size, childTreeCount, null, null,
+        final RevTree tree = RevObjectFactory.defaultInstance().createTree(id, size, childTreeCount,
                 bucketTrees);
 
         RevTree roundTripped = (RevTree) read(tree.getId(), write(tree));

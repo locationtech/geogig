@@ -10,13 +10,12 @@
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>geogig-storage</artifactId>
+  <artifactId>geogig-storage-cache</artifactId>
   <packaging>pom</packaging>
-  <name>Storage backends</name>
+  <name>RevObject cache implementations</name>
 
   <modules>
-    <module>postgres</module>
-    <module>rocksdb</module>
-    <module>cache</module>
+    <module>guava</module>
+    <module>caffeine</module>
   </modules>
 </project>

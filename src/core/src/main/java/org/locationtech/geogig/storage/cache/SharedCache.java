@@ -61,17 +61,10 @@ public interface SharedCache {
      * @throws IllegalArgumentException if {@code maxCacheSizeBytes} is lower than zero, with zero
      *         meaning no caching at all.
      */
-    public static SharedCache build(final long maxCacheSizeBytes) {
-        return SharedCache.build(L1_CACHE_SIZE, maxCacheSizeBytes);
-    }
+//    public static SharedCache build(final long maxCacheSizeBytes) {
+//        return SharedCache.build(L1_CACHE_SIZE, maxCacheSizeBytes);
+//    }
 
-    @VisibleForTesting
-    static SharedCache build(int L1capacity, long maxCacheSizeBytes) {
-        if (0L == maxCacheSizeBytes) {
-            return NO_CACHE;
-        }
-        return new GuavaSharedCache(L1capacity, maxCacheSizeBytes);
-    }
 
     default boolean contains(CacheKey id) {
         return false;

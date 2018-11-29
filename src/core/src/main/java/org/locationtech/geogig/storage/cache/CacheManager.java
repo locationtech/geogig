@@ -408,7 +408,7 @@ public class CacheManager implements CacheManagerBean {
     @Override
     public double getMaximumSizeMB() {
         long maxCacheSizeBytes = currentMaxCacheSize;
-        return maxCacheSizeBytes / (1024 * 1024);
+        return maxCacheSizeBytes / (1024d * 1024d);
     }
 
     @Override
@@ -417,7 +417,7 @@ public class CacheManager implements CacheManagerBean {
         checkArgument(maxSizeBytes >= 0 && maxSizeBytes <= absoluteMaximumSize,
                 "Cache max size must be between 0 and %s, got %s", absoluteMaximumSize,
                 maxSizeBytes);
-        SharedCache cache = SharedCache.build(maxSizeBytes);
+        SharedCache cache = SharedCache.NO_CACHE;
         SharedCache old = _SHARED_CACHE;
         _SHARED_CACHE = cache;
         if (old != null) {

@@ -1,4 +1,4 @@
-package org.locationtech.geogig.storage.cache.caffeine;
+package org.locationtech.geogig.storage.cache;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -19,27 +19,19 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.storage.cache.CacheIdentifier;
-import org.locationtech.geogig.storage.cache.CacheKey;
-import org.locationtech.geogig.storage.cache.CacheStats;
-import org.locationtech.geogig.storage.cache.SharedCache;
 import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.RemovalCause;
-import com.github.benmanes.caffeine.cache.RemovalListener;
-import com.github.benmanes.caffeine.cache.Weigher;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalCause;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.cache.Weigher;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-/**
- * 
- * @since 1.4
- */
-public class CaffeineSharedCache implements SharedCache {
-
+public class GuavaSharedCache implements SharedCache {
     /**
      * Executor service used to encode a {@link RevObject} to a {@code byte[]} and add it to the
      * L2cache.
@@ -69,11 +61,6 @@ public class CaffeineSharedCache implements SharedCache {
     private static final ObjectSerializingFactory ENCODER = //
             DataStreamSerializationFactoryV2_3.INSTANCE;
 
-    /**
-     * Size of the L1 cache {@link CacheKey} -> {@link RevTree}
-     */
-    private static final int L1_CACHE_SIZE = 10_000;
-
     private ObjectSerializingFactory encoder = ENCODER;
 
     /**
@@ -85,18 +72,21 @@ public class CaffeineSharedCache implements SharedCache {
 
         private static Weigher<CacheKey, byte[]> WEIGHER = new Weigher<CacheKey, byte[]>() {
 
-            static final int ESTIMATED_KEY_SIZE = 32;
+            static final int ESTIMATED_Key_SIZE = 32;
 
             @Override
             public int weigh(CacheKey key, byte[] value) {
-                return ESTIMATED_KEY_SIZE + value.length;
+                return ESTIMATED_Key_SIZE + value.length;
             }
 
         };
 
         public final AtomicLong size = new AtomicLong();
 
-        public @Override void onRemoval(CacheKey key, byte[] value, RemovalCause cause) {
+        @Override
+        public void onRemoval(RemovalNotification<CacheKey, byte[]> notification) {
+            CacheKey key = notification.getKey();
+            byte[] value = notification.getValue();
             int weigh = WEIGHER.weigh(key, value);
             size.addAndGet(-weigh);
         }
@@ -130,71 +120,57 @@ public class CaffeineSharedCache implements SharedCache {
      */
     final Cache<CacheKey, byte[]> L2Cache;
 
-    private final SizeTracker sizeTracker;
+    private final GuavaSharedCache.SizeTracker sizeTracker;
 
     private long maxCacheSizeBytes;
 
-    CaffeineSharedCache() {
-        this.L1Cache = Caffeine.newBuilder().maximumSize(0).build();
-        this.L2Cache = Caffeine.newBuilder().maximumSize(0).build();
+    GuavaSharedCache() {
+        this.L1Cache = CacheBuilder.newBuilder().maximumSize(0).build();
+        this.L2Cache = CacheBuilder.newBuilder().maximumSize(0).build();
         this.sizeTracker = new SizeTracker();
     }
 
-    public CaffeineSharedCache(final int L1Capacity, long maxCacheSizeBytes) {
+    public GuavaSharedCache(final int l1capacity, final long maxCacheSizeBytes) {
         this.maxCacheSizeBytes = maxCacheSizeBytes;
-        checkArgument(L1Capacity >= 0);
+        checkArgument(l1capacity >= 0);
         checkArgument(maxCacheSizeBytes >= 0, "Cache size can't be < 0, 0 meaning no cache at all");
-
         int initialCapacityCount = 1_000_000;
         int concurrencyLevel = 16;
 
-        Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder();
+        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
         cacheBuilder = cacheBuilder.maximumWeight(maxCacheSizeBytes);
-        cacheBuilder.weigher(SizeTracker.WEIGHER);
+        cacheBuilder.weigher(GuavaSharedCache.SizeTracker.WEIGHER);
 
         cacheBuilder.initialCapacity(initialCapacityCount);
-        // cacheBuilder.concurrencyLevel(concurrencyLevel);
+        cacheBuilder.concurrencyLevel(concurrencyLevel);
         cacheBuilder.recordStats();
-        sizeTracker = new SizeTracker();
+
+        this.sizeTracker = new SizeTracker();
         cacheBuilder.removalListener(sizeTracker);
-        Cache<CacheKey, byte[]> byteCache = cacheBuilder.build();
 
-        this.L2Cache = byteCache;
-
-        RemovalListener<CacheKey, RevObject> L1WriteBack = (key, value, cause) -> {
-            if (RemovalCause.SIZE == cause && value != null) {
-                putInternal(key, value);
+        RemovalListener<CacheKey, RevObject> L1WriteBack = (notification) -> {
+            RemovalCause cause = notification.getCause();
+            if (RemovalCause.SIZE == cause) {
+                CacheKey key = notification.getKey();
+                RevObject value = notification.getValue();
+                if (value != null) {
+                    putInternal(key, value);
+                }
             }
         };
 
-        this.L1Cache = Caffeine.newBuilder()//
-                .maximumSize(L1Capacity)//
+        this.L1Cache = CacheBuilder.newBuilder()//
+                .concurrencyLevel(1)//
+                .maximumSize(l1capacity)//
                 .softValues()//
                 .removalListener(L1WriteBack)//
                 .build();
-
-    }
-
-    CaffeineSharedCache(final int L1Capacity, Cache<CacheKey, byte[]> byteCache,
-            SizeTracker sizeTracker) {
-        this.L2Cache = byteCache;
-        this.sizeTracker = sizeTracker;
-
-        RemovalListener<CacheKey, RevObject> L1WriteBack = (key, value, cause) -> {
-            if (RemovalCause.SIZE == cause && value != null) {
-                putInternal(key, value);
-            }
-        };
-
-        this.L1Cache = Caffeine.newBuilder()//
-                .maximumSize(L1Capacity)//
-                .softValues()//
-                .removalListener(L1WriteBack)//
-                .build();
+        this.L2Cache = cacheBuilder.build();
     }
 
     public @Override boolean contains(CacheKey id) {
-        return L1Cache.asMap().containsKey(id) || L2Cache.asMap().containsKey(id);
+        boolean contains = L1Cache.asMap().containsKey(id) || L2Cache.asMap().containsKey(id);
+        return contains;
     }
 
     public @Override void invalidateAll() {
@@ -211,7 +187,7 @@ public class CaffeineSharedCache implements SharedCache {
     }
 
     private void invalidateAll(CacheIdentifier prefix, ConcurrentMap<CacheKey, ?> map) {
-        map.keySet().parallelStream().filter(k -> {
+        map.keySet().parallelStream().filter((k) -> {
             int keyprefix = k.prefix();
             int expectedPrefix = prefix.prefix();
             return keyprefix == expectedPrefix;
@@ -264,10 +240,11 @@ public class CaffeineSharedCache implements SharedCache {
         if (maxCacheSizeBytes > 0L && l1val == null) {
             // add it to L2 if not already present, even if it's a RevTree and has been added to
             // the L1 cache, since removal notifications happen after the fact
-            //return putInternal(key, obj);
-            insert(key, obj);
+            return putInternal(key, obj);
         }
         return null;
+        // insert(key, obj);
+        // return null;
     }
 
     @Nullable
@@ -292,7 +269,8 @@ public class CaffeineSharedCache implements SharedCache {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return out.toByteArray();
+        byte[] byteArray = out.toByteArray();
+        return byteArray;
     }
 
     private RevObject decode(CacheKey key, byte[] val) {
@@ -304,7 +282,7 @@ public class CaffeineSharedCache implements SharedCache {
     }
 
     public @Override String toString() {
-        long size = L2Cache.estimatedSize();
+        long size = L2Cache.size();
         long bytes = sizeTracker.size.get();
         long avg = size == 0 ? 0 : bytes / size;
         return String.format("Size: %,d, bytes: %,d, avg: %,d bytes/entry, %s", size, bytes, avg,
@@ -316,11 +294,11 @@ public class CaffeineSharedCache implements SharedCache {
     }
 
     public @Override long objectCount() {
-        return L2Cache.estimatedSize();
+        return L2Cache.size();
     }
 
     public @Override CacheStats getStats() {
-        final com.github.benmanes.caffeine.cache.stats.CacheStats stats = L2Cache.stats();
+        final com.google.common.cache.CacheStats stats = L2Cache.stats();
         return new CacheStats() {
             public @Override long hitCount() {
                 return stats.hitCount();

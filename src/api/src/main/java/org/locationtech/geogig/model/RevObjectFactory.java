@@ -10,7 +10,6 @@
 package org.locationtech.geogig.model;
 
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.SortedMap;
 
 import org.opengis.feature.type.FeatureType;
@@ -33,7 +32,7 @@ import lombok.NonNull;
  * case there are multiple implementations in the classpath.
  *
  */
-public interface RevObjectFactory {
+public interface RevObjectFactory extends PriorityService {
 
     /**
      * Returns the default implementation of {@code RevObjectFactory} found as descried in this
@@ -42,12 +41,6 @@ public interface RevObjectFactory {
     public static RevObjectFactory defaultInstance() {
         return RevObjects.lookupDefaultFactory();
     }
-
-    /**
-     * Defines a priority when loaded using {@link ServiceLoader}, the higher priority wins in case
-     * there are several implementations, with the lowest priority being {@code 0}.
-     */
-    public int getPriority();
 
     public @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,
             @NonNull List<ObjectId> parents, @NonNull RevPerson author,

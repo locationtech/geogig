@@ -24,6 +24,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -208,7 +209,7 @@ public class ObjectCacheStressTest {
             buckets.put(b, bucket);
         }
         final ObjectId fakeId = RevObjectTestSupport.hashString(String.valueOf(i));
-        RevTree tree = RevTreeBuilder.create(fakeId, 1024, 0, null, null, buckets);
+        RevTree tree = RevObjectFactory.defaultInstance().createTree(fakeId, 1024, 0, buckets);
         return tree;
     }
 
@@ -221,8 +222,8 @@ public class ObjectCacheStressTest {
         }
 
         ObjectId id = RevObjectTestSupport.hashString("fake-tree-" + i);
-        RevTree tree = RevTreeBuilder.create(id, numNodes, 0, null, ImmutableList.copyOf(nodes),
-                null);
+        RevTree tree = RevObjectFactory.defaultInstance().createTree(id, numNodes,
+                Collections.emptyList(), ImmutableList.copyOf(nodes));
         return tree;
     }
 

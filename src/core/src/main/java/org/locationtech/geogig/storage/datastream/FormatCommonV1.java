@@ -35,17 +35,18 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
 import org.locationtech.geogig.model.impl.RevTagBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -58,8 +59,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 public class FormatCommonV1 {
 
@@ -123,7 +122,7 @@ public class FormatCommonV1 {
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
 
-        return RevTagBuilder.create(id, name, commitId, message, tagger);
+        return RevObjectFactory.defaultInstance().createTag(id, name, commitId, message, tagger);
     }
 
     public static void writeTag(RevTag tag, DataOutput out) throws IOException {
@@ -168,8 +167,8 @@ public class FormatCommonV1 {
 
         final String message = in.readUTF();
 
-        return CommitBuilder.create(id, treeId, parentListBuilder.build(), author, committer,
-                message);
+        return RevObjectFactory.defaultInstance().createCommit(id, treeId,
+                parentListBuilder.build(), author, committer, message);
     }
 
     public static final RevPerson readRevPerson(DataInput in) throws IOException {
@@ -226,8 +225,10 @@ public class FormatCommonV1 {
         if (null == id) {
             id = HashObject.hashTree(trees, features, buckets);
         }
-        RevTree tree = RevTreeBuilder.create(id, size, treeCount, trees, features, buckets);
-        return tree;
+        if (buckets.isEmpty()) {
+            return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);
+        }
+        return RevObjectFactory.defaultInstance().createTree(id, size, treeCount, buckets);
     }
 
     public static Node readNode(DataInput in) throws IOException {

@@ -18,6 +18,7 @@ import java.util.Collections;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevPerson;
 
@@ -36,7 +37,8 @@ public class RevCommitImplTest {
         String message = "This is a test commit";
         ImmutableList<ObjectId> parentIds = ImmutableList
                 .of(RevObjectTestSupport.hashString("Parent 1"));
-        RevCommit commit = CommitBuilder.create(id, treeId, parentIds, author, committer, message);
+        RevCommit commit = RevObjectFactory.defaultInstance().createCommit(id, treeId, parentIds,
+                author, committer, message);
 
         assertEquals(committer, commit.getCommitter());
         assertEquals(author, commit.getAuthor());
@@ -48,7 +50,8 @@ public class RevCommitImplTest {
         assertEquals(parentIds.get(0), commit.parentN(0).get());
 
         parentIds = ImmutableList.of();
-        commit = CommitBuilder.create(id, treeId, parentIds, author, committer, message);
+        commit = RevObjectFactory.defaultInstance().createCommit(id, treeId, parentIds, author,
+                committer, message);
         assertEquals(Collections.EMPTY_LIST, commit.getParentIds());
         assertEquals(Optional.absent(), commit.parentN(0));
     }

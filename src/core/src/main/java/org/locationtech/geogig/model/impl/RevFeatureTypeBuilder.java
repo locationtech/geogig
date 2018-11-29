@@ -18,11 +18,14 @@ import org.geotools.feature.SchemaException;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import lombok.NonNull;
 
 public class RevFeatureTypeBuilder {
 
@@ -42,11 +45,8 @@ public class RevFeatureTypeBuilder {
      * {@link ObjectId id} without verifying the SHA-1 matches the contents of the
      * {@link RevFeatureType}
      */
-    public static RevFeatureType create(ObjectId id, FeatureType ftype) {
-        checkNotNull(id);
-        checkNotNull(ftype);
-
-        return new RevFeatureTypeImpl(id, ftype);
+    public static RevFeatureType create(@NonNull ObjectId id, @NonNull FeatureType ftype) {
+        return RevObjectFactory.defaultInstance().createFeatureType(id, ftype);
     }
 
     // GeoTools treats DefaultGeographic.WGS84 as a special case when calling the

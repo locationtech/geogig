@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.BooleanSupplier;
 
@@ -30,6 +31,7 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
@@ -37,6 +39,7 @@ import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +55,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import org.locationtech.jts.geom.Envelope;
+
+import lombok.NonNull;
 
 /**
  * 
@@ -376,16 +380,17 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
 
         final ObjectId id = HashObject.hashTree(treesList, featuresList, null);
 
-        return RevTreeBuilder.create(id, size, trees.size(), treesList, featuresList, null);
+        return RevObjectFactory.defaultInstance().createTree(id, size, treesList, featuresList);
     }
 
-    private RevTree createNodeTree(long size, int numTrees, TreeMap<Integer, Bucket> buckets) {
+    private RevTree createNodeTree(long size, int numTrees,
+            @NonNull SortedMap<Integer, Bucket> buckets) {
 
         ImmutableSortedMap<Integer, Bucket> innerTrees = ImmutableSortedMap.copyOf(buckets);
 
         final ObjectId id = HashObject.hashTree(null, null, innerTrees);
 
-        return RevTreeBuilder.create(id, size, numTrees, null, null, innerTrees);
+        return RevObjectFactory.defaultInstance().createTree(id, size, numTrees, innerTrees);
     }
 
     private long sizeOf(Node node) {
@@ -644,7 +649,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     public void dispose() {
         //
     }
-    
+
     /**
      * Deletes all nodes that represent subtrees
      * 

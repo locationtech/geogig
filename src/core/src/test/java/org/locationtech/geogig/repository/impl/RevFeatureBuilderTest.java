@@ -34,9 +34,10 @@ public class RevFeatureBuilderTest extends RepositoryTestCase {
     public void testNullFeature() throws Exception {
         try {
             RevFeatureBuilder.build((Feature) null);
-            fail("expected IllegalStateException on null feature");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("No feature set"));
+            fail("expected NullPointerException on null feature");
+        } catch (NullPointerException e) {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains("feature is marked @NonNull but is null"));
         }
     }
 

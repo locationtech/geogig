@@ -41,6 +41,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
@@ -49,11 +50,11 @@ import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
-import org.locationtech.geogig.model.impl.RevTagBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -74,8 +75,6 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 /**
  * An {@link ObjectSerialisingFactory} for the {@link RevObject}s text format.
@@ -832,10 +831,11 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
                 }
 
             }
-
-            RevTree tree = RevTreeBuilder.create(id, size, numTrees, trees.build(),
-                    features.build(), subtrees);
-            return tree;
+            if (subtrees.isEmpty()) {
+                return RevObjectFactory.defaultInstance().createTree(id, size, trees.build(),
+                        features.build());
+            }
+            return RevObjectFactory.defaultInstance().createTree(id, size, numTrees, subtrees);
         }
     };
 
@@ -862,12 +862,11 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String message = parseLine(requireLine(reader), "message");
             String commitId = parseLine(requireLine(reader), "commitid");
             RevPerson tagger = parsePerson(requireLine(reader));
-            RevTag tag = RevTagBuilder.create(id, name, ObjectId.valueOf(commitId), message,
-                    tagger);
-            return tag;
+            return RevObjectFactory.defaultInstance().createTag(id, name,
+                    ObjectId.valueOf(commitId), message, tagger);
         }
 
-        private RevPerson parsePerson(String line) throws IOException {
+        private RevPerson parsePerson(String line) {
             String[] tokens = line.split("\t");
             String header = "tagger";
             Preconditions.checkArgument(header.equals(tokens[0]), "Expected field %s, got '%s'",

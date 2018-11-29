@@ -20,6 +20,8 @@ import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
+
 /**
  * Base object type accessed during revision walking.
  * 
@@ -37,8 +39,7 @@ public abstract class AbstractRevObject implements RevObject {
 
     private final long h3;
 
-    public AbstractRevObject(final ObjectId id) {
-        Preconditions.checkNotNull(id);
+    public AbstractRevObject(final @NonNull ObjectId id) {
         this.h1 = RevObjects.h1(id);
         this.h2 = RevObjects.h2(id);
         this.h3 = RevObjects.h3(id);
@@ -59,14 +60,11 @@ public abstract class AbstractRevObject implements RevObject {
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public @Override final boolean equals(Object o) {
-        if (!(o instanceof RevObject)) {
-            return false;
-        }
-        return getId().equals(((RevObject) o).getId());
+    public final @Override boolean equals(Object o) {
+        return (o instanceof RevObject) && getId().equals(((RevObject) o).getId());
     }
 
-    public @Override final int hashCode() {
+    public final @Override int hashCode() {
         return h1;
     }
 }

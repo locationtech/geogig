@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import lombok.NonNull;
@@ -48,9 +49,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServiceFinder {
 
-    private @Setter String systemProperty;
+    private @Setter @Nullable String systemProperty;
 
-    private @Setter String environmentVariable;
+    private @Setter @Nullable String environmentVariable;
 
     /**
      * Implements lookup mechanism
@@ -143,7 +144,7 @@ public class ServiceFinder {
         log.debug("Looking up implementation of {} as System property parameter {}", type.getName(),
                 systemPropertyName);
         String className = System.getProperty(systemPropertyName);
-        if (className == null) {
+        if (Strings.isNullOrEmpty(className)) {
             log.debug("{} not provided as System property.", systemPropertyName);
             return null;
         }
@@ -157,8 +158,8 @@ public class ServiceFinder {
                     type.getName(), service.getClass().getName(), systemPropertyName);
             return service;
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new IllegalArgumentException("Unable to instantiate " + className
-                    + " provided as System property" + systemPropertyName, e);
+            throw new IllegalArgumentException("Unable to instantiate '" + className
+                    + "' provided as System property " + systemPropertyName, e);
         }
     }
 
@@ -168,7 +169,7 @@ public class ServiceFinder {
         log.debug("Looking up implementation of {} as environment variable {}", type.getName(),
                 environmentVariable);
         String className = System.getenv(environmentVariable);
-        if (className == null) {
+        if (Strings.isNullOrEmpty(className)) {
             log.debug("{} not provided as environment variable {}.", type.getName(),
                     environmentVariable);
             return null;
@@ -183,8 +184,8 @@ public class ServiceFinder {
                     type.getName(), service.getClass().getName(), environmentVariable);
             return service;
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new IllegalArgumentException("Unable to instantiate " + className
-                    + " provided as environment variable " + environmentVariable, e);
+            throw new IllegalArgumentException("Unable to instantiate '" + className
+                    + "' provided as environment variable " + environmentVariable, e);
         }
     }
 }

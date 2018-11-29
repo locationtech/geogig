@@ -17,8 +17,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /**
  * A {@link RevObject} cache to be used by multiple {@link ObjectStore} instances operating upon a
  * single internal cache, discriminating specific {@link ObjectStore} entries by means of the
@@ -61,10 +59,9 @@ public interface SharedCache {
      * @throws IllegalArgumentException if {@code maxCacheSizeBytes} is lower than zero, with zero
      *         meaning no caching at all.
      */
-//    public static SharedCache build(final long maxCacheSizeBytes) {
-//        return SharedCache.build(L1_CACHE_SIZE, maxCacheSizeBytes);
-//    }
-
+    // public static SharedCache build(final long maxCacheSizeBytes) {
+    // return SharedCache.build(L1_CACHE_SIZE, maxCacheSizeBytes);
+    // }
 
     default boolean contains(CacheKey id) {
         return false;

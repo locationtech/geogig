@@ -16,14 +16,14 @@ import org.locationtech.geogig.model.ObjectId;
  * {@link #prefix} that's valid during the lifetime of the JVM.
  * <p>
  * The {@code CacheIdentifier} is given to the {@link ObjectCache} and acts as a factory for
- * {@link Key keys} specific to that object cache to then be used as keys on the
+ * {@link CacheKey keys} specific to that object cache to then be used as keys on the
  * {@link SharedCache}.
  */
-class CacheIdentifier {
+public class CacheIdentifier {
 
     private final int prefix;
 
-    CacheIdentifier(int prefix) {
+    public CacheIdentifier(int prefix) {
         this.prefix = prefix;
     }
 
@@ -31,8 +31,8 @@ class CacheIdentifier {
      * Creates a Key for an {@link ObjectId} to uniquely identify an object in the
      * {@link SharedCache} belonging to one {@link ObjectCache}
      */
-    public Key create(ObjectId id) {
-        return Key.create(prefix, id);
+    public CacheKey create(ObjectId id) {
+        return CacheKey.create(prefix, id);
     }
 
     /**

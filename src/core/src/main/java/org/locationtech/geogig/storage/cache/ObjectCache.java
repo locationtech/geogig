@@ -35,7 +35,7 @@ public class ObjectCache {
 
     private final Supplier<SharedCache> sharedCache;
 
-    ObjectCache(Supplier<SharedCache> cache, CacheIdentifier prefix) {
+    public ObjectCache(Supplier<SharedCache> cache, CacheIdentifier prefix) {
         this.sharedCache = cache;
         this.keyPrefix = prefix;
     }
@@ -62,7 +62,9 @@ public class ObjectCache {
     }
 
     public void put(RevObject obj) {
-        sharedCache.get().put(keyPrefix.create(obj.getId()), obj);
+        SharedCache cache = sharedCache.get();
+        CacheKey key = keyPrefix.create(obj.getId());
+        cache.put(key, obj);
     }
 
     /**

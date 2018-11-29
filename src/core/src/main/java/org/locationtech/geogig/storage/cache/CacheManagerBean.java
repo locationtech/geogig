@@ -154,6 +154,9 @@ public interface CacheManagerBean {
     @Nullable
     String getMaximumSizeEnvVariable();
 
+    @Nullable
+    String getCacheImplementationName();
+
     /**
      * @return the approximate size of the cache entries in bytes
      */

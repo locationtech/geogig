@@ -22,6 +22,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
@@ -32,8 +33,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
-import com.google.common.cache.CacheStats;
+import lombok.Getter;
+import lombok.Setter;
 
 public class CacheManagerTest {
 
@@ -43,11 +47,34 @@ public class CacheManagerTest {
     private CacheManager cacheManager;
 
     public @Before void before() {
+        System.setProperty(CacheManager.ENV_VAR,
+                CacheManagerTest.class.getName() + "$TestCacheBuilder");
         this.cacheManager = spy(new CacheManager());
     }
 
     public @After void after() {
         cacheManager.clear();
+        System.setProperty(CacheManager.ENV_VAR, "");
+    }
+
+    public static class TestCacheBuilder implements SharedCacheBuilder {
+        private @Getter int priority = 0;
+
+        private @Getter @Setter long maxSizeBytes;
+
+        public @Override SharedCache build() {
+            // TODO Auto-generated method stub
+            return new TestCache();
+        }
+
+        public static class TestCache implements SharedCache {
+            private ConcurrentHashMap<CacheKey, RevObject> map = new ConcurrentHashMap<>();
+
+            public @Override void setEncoder(ObjectSerializingFactory encoder) {
+                // do nothing
+            }
+
+        }
     }
 
     public @Test void testMBean() throws Exception {
@@ -344,7 +371,13 @@ public class CacheManagerTest {
 
     public @Test void testStats() {
         SharedCache sharedCache = mock(SharedCache.class);
-        CacheStats stats = new CacheStats(1, 1, 1, 1, 1, 1);
+        CacheStats stats = mock(CacheStats.class);
+        when(stats.evictionCount()).thenReturn(1L);
+        when(stats.missCount()).thenReturn(1L);
+        when(stats.hitCount()).thenReturn(1L);
+        when(stats.missRate()).thenReturn(0.5);
+        when(stats.hitRate()).thenReturn(0.5);
+
         when(sharedCache.getStats()).thenReturn(stats);
         when(sharedCache.sizeBytes()).thenReturn(1000L);
         when(sharedCache.objectCount()).thenReturn(100L);

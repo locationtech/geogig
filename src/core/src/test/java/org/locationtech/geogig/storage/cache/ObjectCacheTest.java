@@ -34,9 +34,9 @@ public class ObjectCacheTest {
 
     private RevObject o1, o2;
 
-    private Key k11, k12;
+    private CacheKey k11, k12;
 
-    private Key k21, k22;
+    private CacheKey k21, k22;
 
     public @Before void before() {
         mockSharedCache = mock(SharedCache.class);

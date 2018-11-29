@@ -44,9 +44,9 @@ import org.locationtech.jts.io.WKTReader;
 
 public class ObjectCacheStressTest {
 
-    final int featureCount = 100_000;
+    final int featureCount = 1_000;
 
-    final int treeCount = 10_000;
+    final int treeCount = 1_000;
 
     private ObjectCache cache;
 

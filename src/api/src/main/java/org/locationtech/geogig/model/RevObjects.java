@@ -11,19 +11,12 @@ package org.locationtech.geogig.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,75 +46,13 @@ public class RevObjects {
      */
     static RevObjectFactory lookupDefaultFactory() {
         if (DEFAULT_FACTORY_INSTANCE == null) {
-            RevObjectFactory defaultInstance = loadFromEnvironmentParam();
-            if (defaultInstance == null) {
-                defaultInstance = loadDefaultInstanceSPI();
-            }
-            if (defaultInstance == null) {
-                String msg = String.format(
-                        "No implementation of %s found through System property, "
-                                + "environment variable, nor ServiceLoader.",
-                        RevObjectFactory.class.getName());
-                log.error(msg);
-                throw new IllegalStateException(msg);
-            }
+            RevObjectFactory defaultInstance = new ServiceFinder()
+                    .systemProperty(DEFAULT_INSTANCE_ENV_ARG)
+                    .environmentVariable(DEFAULT_INSTANCE_ENV_ARG)
+                    .lookupDefaultService(RevObjectFactory.class);
             DEFAULT_FACTORY_INSTANCE = defaultInstance;
         }
         return DEFAULT_FACTORY_INSTANCE;
-    }
-
-    private static @Nullable RevObjectFactory loadDefaultInstanceSPI() {
-        ServiceLoader<RevObjectFactory> loader = ServiceLoader.load(RevObjectFactory.class);
-        List<RevObjectFactory> spiImpls = Lists.newArrayList(loader.iterator());
-        if (spiImpls.isEmpty()) {
-            return null;
-        }
-        // sort in descending priority order
-        Collections.sort(spiImpls, (i1, i2) -> Integer.compare(i2.getPriority(), i1.getPriority()));
-        RevObjectFactory instance = spiImpls.get(0);
-        if (spiImpls.size() > 1 && spiImpls.get(1).getPriority() == instance.getPriority()) {
-            log.warn("More than one implementation of {} found using ServiceLoader "
-                    + "with the same priority of {}"
-                    + "defaulting to the first one found of type {}. All additional factories: {}.",
-                    RevObjectFactory.class.getName(), instance.getClass().getName(),
-                    instance.getPriority(), spiImpls.subList(1, spiImpls.size()).stream()
-                            .map(i -> i.getClass().getName()).collect(Collectors.toList()));
-        } else {
-            log.debug("Implementation of {} of type {} found using ServiceLoader",
-                    RevObjectFactory.class.getName(), instance.getClass().getName());
-        }
-        return instance;
-    }
-
-    private static @Nullable RevObjectFactory loadFromEnvironmentParam() {
-        log.debug("Looking up implementation of {} as System property parameter {}",
-                RevObjectFactory.class.getName(), DEFAULT_INSTANCE_ENV_ARG);
-        String className = System.getProperty(DEFAULT_INSTANCE_ENV_ARG);
-        if (className == null) {
-            log.debug("Looking up implementation of RevObjectFactory as environment variable {}",
-                    DEFAULT_INSTANCE_ENV_ARG);
-            className = System.getenv(DEFAULT_INSTANCE_ENV_ARG);
-        }
-        if (className == null) {
-            log.debug("{} not provided as System property nor environment variable.",
-                    DEFAULT_INSTANCE_ENV_ARG);
-            return null;
-        }
-        log.debug("Found {} implementation as system or environment variable {}={}",
-                RevObjectFactory.class.getName(), DEFAULT_INSTANCE_ENV_ARG, className);
-
-        try {
-            Object newInstance = Class.forName(className).newInstance();
-            RevObjectFactory factory = RevObjectFactory.class.cast(newInstance);
-            log.debug(
-                    "Created default {} of type {} given as system property or environment variable",
-                    RevObjectFactory.class.getName(), factory.getClass().getName());
-            return factory;
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new IllegalArgumentException("Unable to instantiate " + className
-                    + " provided as System property or environment variable "
-                    + DEFAULT_INSTANCE_ENV_ARG, e);
-        }
     }
 
     /**

@@ -15,6 +15,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.lang.management.ManagementFactory;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,6 +27,7 @@ import javax.management.ObjectName;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.ServiceFinder;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.slf4j.Logger;
@@ -72,6 +74,12 @@ public class CacheManager implements CacheManagerBean {
     private static final Logger LOG = LoggerFactory.getLogger(CacheManager.class);
 
     public static final CacheManager INSTANCE = new CacheManager();
+
+    /**
+     * The name of the variable used as a system property or environment variable to provide the
+     * fully qualified name of the {@link SharedCacheBuilder} at runtime.
+     */
+    public static final String ENV_VAR = "SHARED_CACHE_BUILDER";
 
     static {
         registerMBeanServer();
@@ -408,7 +416,7 @@ public class CacheManager implements CacheManagerBean {
     @Override
     public double getMaximumSizeMB() {
         long maxCacheSizeBytes = currentMaxCacheSize;
-        return maxCacheSizeBytes / (1024 * 1024);
+        return maxCacheSizeBytes / (1024d * 1024d);
     }
 
     @Override
@@ -417,7 +425,27 @@ public class CacheManager implements CacheManagerBean {
         checkArgument(maxSizeBytes >= 0 && maxSizeBytes <= absoluteMaximumSize,
                 "Cache max size must be between 0 and %s, got %s", absoluteMaximumSize,
                 maxSizeBytes);
-        SharedCache cache = SharedCache.build(maxSizeBytes);
+
+        SharedCache cache;
+        if (maxSizeBytes == 0) {
+            cache = SharedCache.NO_CACHE;
+        } else {
+            SharedCacheBuilder builder;
+            try {
+                builder = new ServiceFinder().environmentVariable(ENV_VAR).systemProperty(ENV_VAR)
+                        .lookupDefaultService(SharedCacheBuilder.class);
+                LOG.info("Obtained cache builder {}", builder.getClass().getName());
+                builder.setMaxSizeBytes(maxSizeBytes);
+                cache = builder.build();
+                LOG.info("Initialized shared cache {}", cache.getClass().getName());
+            } catch (NoSuchElementException noBuilderPresent) {
+                LOG.warn("No implementation of {} found in the classpath, "
+                        + "nor one was provided through the {} system property or environment variable. Cache is disabled.",
+                        SharedCacheBuilder.class.getName(), ENV_VAR);
+                cache = SharedCache.NO_CACHE;
+            }
+        }
+
         SharedCache old = _SHARED_CACHE;
         _SHARED_CACHE = cache;
         if (old != null) {
@@ -459,5 +487,11 @@ public class CacheManager implements CacheManagerBean {
     @Nullable
     public String getMaximumSizeEnvVariable() {
         return System.getenv(GEOGIG_CACHE_MAX_SIZE);
+    }
+
+    @Override
+    @Nullable
+    public String getCacheImplementationName() {
+        return sharedCache().getClass().getName();
     }
 }

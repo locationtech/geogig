@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +24,12 @@ public class ObjectFunnels {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObjectFunnels.class);
 
-    public static ObjectFunnel newFunnel(OutputStream out, ObjectSerializingFactory serializer) {
+    public static ObjectFunnel newFunnel(OutputStream out, RevObjectSerializer serializer) {
         return new DirectFunnel(out, serializer);
     }
 
     public static ObjectFunnel newFunnel(final Supplier<OutputStream> outputFactory,
-            final ObjectSerializingFactory serializer, final int byteSoftLimit) {
+            final RevObjectSerializer serializer, final int byteSoftLimit) {
 
         return new SizeLimitingFunnel(outputFactory, serializer, byteSoftLimit);
     }
@@ -38,9 +38,9 @@ public class ObjectFunnels {
 
         private OutputStream out;
 
-        private ObjectSerializingFactory serializer;
+        private RevObjectSerializer serializer;
 
-        public DirectFunnel(OutputStream out, ObjectSerializingFactory serializer) {
+        public DirectFunnel(OutputStream out, RevObjectSerializer serializer) {
             this.out = out;
             this.serializer = serializer;
         }
@@ -65,14 +65,14 @@ public class ObjectFunnels {
 
         private Supplier<OutputStream> outputFactory;
 
-        private final ObjectSerializingFactory serializer;
+        private final RevObjectSerializer serializer;
 
         private final int byteSoftLimit;
 
         private CountingOutputStream currentTarget;
 
         public SizeLimitingFunnel(Supplier<OutputStream> outputFactory,
-                ObjectSerializingFactory serializer, final int byteSoftLimit) {
+                RevObjectSerializer serializer, final int byteSoftLimit) {
             this.outputFactory = outputFactory;
             this.serializer = serializer;
             this.byteSoftLimit = byteSoftLimit;

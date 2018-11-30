@@ -27,9 +27,9 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.datastream.FormatCommonV1;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -133,9 +133,9 @@ public class FilteredChangesControllerTest extends AbstractControllerTest {
         private final ByteArrayInputStream in;
         private final DataInput data;
         private boolean filtered;
-        private final ObjectSerializingFactory serializer;
+        private final RevObjectSerializer serializer;
 
-        private FilteredChangesReader(byte[] bytes, ObjectSerializingFactory serializer) {
+        private FilteredChangesReader(byte[] bytes, RevObjectSerializer serializer) {
             this.in = new ByteArrayInputStream(bytes);
             this.data = new DataInputStream(in);
             this.serializer = serializer;

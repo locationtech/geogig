@@ -41,13 +41,13 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.cache.CacheIdentifier;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.cache.SharedCache;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_2;
 import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
 import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -79,7 +79,7 @@ public class ObjectCacheStressTest {
 
     private SharedCache sharedCache;
 
-    private static final List<ObjectSerializingFactory> encoders = ImmutableList.of(//
+    private static final List<RevObjectSerializer> encoders = ImmutableList.of(//
             // raw encoders
             // DataStreamSerializationFactoryV1.INSTANCE //
             // , DataStreamSerializationFactoryV2.INSTANCE //
@@ -208,7 +208,7 @@ public class ObjectCacheStressTest {
 
     public List<TestResult> runTest(List<? extends RevObject> objects) {
         List<TestResult> results = new ArrayList<>();
-        for (ObjectSerializingFactory encoder : encoders) {
+        for (RevObjectSerializer encoder : encoders) {
             cache.invalidateAll();
             TestResult result = run(encoder, objects);
             results.add(result);
@@ -230,7 +230,7 @@ public class ObjectCacheStressTest {
         private final long sizeBytes;
     }
 
-    public TestResult run(ObjectSerializingFactory encoder, List<? extends RevObject> objects) {
+    public TestResult run(RevObjectSerializer encoder, List<? extends RevObject> objects) {
         sharedCache.setEncoder(encoder);
         final Stopwatch put = put(objects);
         Collections.shuffle(objects);

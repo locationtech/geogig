@@ -17,16 +17,15 @@ import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
-
 import org.locationtech.jts.geom.Envelope;
 
 
 public class DataStreamSerializationFactoryV2_2Test  extends ObjectSerializationFactoryTest {
 
     @Override
-    protected ObjectSerializingFactory getObjectSerializingFactory() {
+    protected RevObjectSerializer getObjectSerializingFactory() {
         return DataStreamSerializationFactoryV2_2.INSTANCE;
     }
 

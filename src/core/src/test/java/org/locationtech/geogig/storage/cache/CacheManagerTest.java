@@ -34,7 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -70,7 +70,7 @@ public class CacheManagerTest {
         public static class TestCache implements SharedCache {
             private ConcurrentHashMap<CacheKey, RevObject> map = new ConcurrentHashMap<>();
 
-            public @Override void setEncoder(ObjectSerializingFactory encoder) {
+            public @Override void setEncoder(RevObjectSerializer encoder) {
                 // do nothing
             }
 

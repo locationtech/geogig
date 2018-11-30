@@ -27,8 +27,8 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 
 import com.google.common.base.Preconditions;
@@ -37,7 +37,7 @@ import com.google.common.io.ByteStreams;
 /**
  * Serialization factory for serial version 2
  */
-public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactory {
+public class DataStreamSerializationFactoryV2 implements RevObjectSerializer {
 
     public static final DataStreamSerializationFactoryV2 INSTANCE = new DataStreamSerializationFactoryV2();
 

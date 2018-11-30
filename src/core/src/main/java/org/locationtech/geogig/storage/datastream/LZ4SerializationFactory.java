@@ -18,7 +18,7 @@ import java.util.zip.Checksum;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
@@ -38,7 +38,7 @@ import net.jpountz.xxhash.XXHashFactory;
  * <a href="https://github.com/lz4/lz4-java/issues/48">lz-java issue #48</a>.
  */
 @Beta
-public class LZ4SerializationFactory implements ObjectSerializingFactory {
+public class LZ4SerializationFactory implements RevObjectSerializer {
 
     // cache factory to avoid thread contention when looking up for the fastest instance on some LZ4
     // lib synchronized blocks
@@ -50,9 +50,9 @@ public class LZ4SerializationFactory implements ObjectSerializingFactory {
 
     private static final int DEFAULT_SEED = 0x9747b28c;
 
-    private final ObjectSerializingFactory factory;
+    private final RevObjectSerializer factory;
 
-    public LZ4SerializationFactory(final ObjectSerializingFactory factory) {
+    public LZ4SerializationFactory(final RevObjectSerializer factory) {
         Preconditions.checkNotNull(factory);
         this.factory = factory;
     }

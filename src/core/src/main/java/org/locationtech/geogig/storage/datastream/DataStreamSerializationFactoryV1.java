@@ -49,8 +49,8 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.Name;
@@ -65,7 +65,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import org.locationtech.jts.geom.Envelope;
 
-public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactory {
+public class DataStreamSerializationFactoryV1 implements RevObjectSerializer {
 
     /**
      * factory singleton

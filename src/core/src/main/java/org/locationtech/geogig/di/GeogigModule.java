@@ -24,9 +24,9 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
@@ -47,7 +47,7 @@ import com.google.inject.util.Providers;
  * @see ObjectDatabase
  * @see StagingDatabase
  * @see RefDatabase
- * @see ObjectSerializingFactory
+ * @see RevObjectSerializer
  */
 
 public class GeogigModule extends AbstractModule {

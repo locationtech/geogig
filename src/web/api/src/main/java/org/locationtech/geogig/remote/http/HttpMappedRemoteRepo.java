@@ -44,8 +44,8 @@ import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.locationtech.geogig.repository.impl.RepositoryFilter.FilterDescription;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
-import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -368,7 +368,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     connection.setDoInput(true);
                     out = connection.getOutputStream();
                     // pack the commit object
-                    final ObjectSerializingFactory writer = DataStreamSerializationFactoryV1.INSTANCE;
+                    final RevObjectSerializer writer = DataStreamSerializationFactoryV1.INSTANCE;
                     writer.write(commit, out);
 
                     // write the new parents

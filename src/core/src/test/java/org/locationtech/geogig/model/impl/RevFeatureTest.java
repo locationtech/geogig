@@ -40,8 +40,7 @@ public class RevFeatureTest {
         RevFeature feature = RevFeatureBuilder.builder().addAll(values).build();
 
         String featureString = feature.toString();
-
-        assertEquals("Feature[" + feature.getId().toString() + "; StringProp, 1000, POINT(1 1)]",
+        assertEquals("RevFeatureImpl(d0b8deaed093f20b)[StringProp, 1000, POINT(1 1)]",
                 featureString);
     }
 }

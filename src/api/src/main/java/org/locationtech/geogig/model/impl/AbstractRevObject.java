@@ -53,7 +53,7 @@ public abstract class AbstractRevObject implements RevObject {
     }
 
     public final @Override boolean equals(Object o) {
-        return (o instanceof RevObject) && getId().equals(((RevObject) o).getId());
+        return RevObjects.equals(this, o);
     }
 
     public final @Override int hashCode() {

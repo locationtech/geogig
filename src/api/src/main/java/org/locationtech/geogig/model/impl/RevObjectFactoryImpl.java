@@ -28,6 +28,7 @@ import org.locationtech.geogig.model.impl.RevTreeImpl.LeafTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.NodeTree;
 import org.opengis.feature.type.FeatureType;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
@@ -49,7 +50,8 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
 
     public @Override @NonNull RevPerson createPerson(@Nullable String name, @Nullable String email,
             long timeStamp, int timeZoneOffset) {
-        return new RevPersonImpl(name, email, timeStamp, timeZoneOffset);
+        return new RevPersonImpl(Optional.fromNullable(name), Optional.fromNullable(email),
+                timeStamp, timeZoneOffset);
     }
 
     public @Override @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,

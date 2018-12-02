@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObjects;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -38,50 +39,29 @@ class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureType {
         this.featureType = featureType;
     }
 
-    @Override
-    public TYPE getType() {
+    public @Override TYPE getType() {
         return TYPE.FEATURETYPE;
     }
 
-    @Override
-    public FeatureType type() {
+    public @Override FeatureType type() {
         return featureType;
     }
 
     /**
      * @return the list of {@link PropertyDescriptor}s of the feature type
      */
-    @Override
-    public ImmutableList<PropertyDescriptor> descriptors() {
+    public @Override ImmutableList<PropertyDescriptor> descriptors() {
         return ImmutableList.copyOf(featureType.getDescriptors());
     }
 
     /**
      * @return the name of the feature type
      */
-    @Override
-    public Name getName() {
+    public @Override Name getName() {
         return type().getName();
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("FeatureType[");
-        builder.append(getId().toString());
-        builder.append("; ");
-        boolean first = true;
-        for (PropertyDescriptor desc : descriptors()) {
-            if (first) {
-                first = false;
-            } else {
-                builder.append(", ");
-            }
-            builder.append(desc.getName().getLocalPart());
-            builder.append(": ");
-            builder.append(desc.getType().getBinding().getSimpleName());
-        }
-        builder.append(']');
-        return builder.toString();
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 }

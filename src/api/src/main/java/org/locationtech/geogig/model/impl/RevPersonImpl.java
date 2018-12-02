@@ -9,98 +9,35 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Objects.equal;
-
-import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+
+import lombok.Value;
 
 /**
  * The GeoGig identity of a single individual, composed of a name and email address.
  */
-class RevPersonImpl implements RevPerson {
+final @Value class RevPersonImpl implements RevPerson {
 
-    private String name;
+    private final Optional<String> name;
 
-    private String email;
+    private final Optional<String> email;
 
-    private long timeStamp;
+    private final long timestamp;
 
-    private int timeZoneOffset;
+    private final int timeZoneOffset;
 
-    /**
-     * Constructs a new {@code RevPerson} from a name, email address, timestamp, and time zone
-     * offset.
-     * 
-     * @param name
-     * @param email
-     * @param timestamp milliseconds since January 1, 1970, 00:00:00 GMT
-     * @param timeZoneOffset milliseconds to add to the GMT timestamp
-     */
-    RevPersonImpl(@Nullable String name, @Nullable String email, long timeStamp,
-            int timeZoneOffset) {
-        this.name = name;
-        this.email = email;
-        this.timeStamp = timeStamp;
-        this.timeZoneOffset = timeZoneOffset;
+    public @Override boolean equals(Object o) {
+        return (o instanceof RevPerson) && RevObjects.equals(this, ((RevPerson) o));
     }
 
-    /**
-     * @return the name
-     */
-    @Override
-    public Optional<String> getName() {
-        return Optional.fromNullable(name);
+    public @Override int hashCode() {
+        return RevObjects.hashCode(this);
     }
 
-    /**
-     * @return the email
-     */
-    @Override
-    public Optional<String> getEmail() {
-        return Optional.fromNullable(email);
-    }
-
-    /**
-     * @return this person's timestamp, as milliseconds since January 1, 1970, 00:00:00 GMT
-     */
-    @Override
-    public long getTimestamp() {
-        return timeStamp;
-    }
-
-    /**
-     * @return the time zone offset from UTC, in milliseconds
-     */
-    @Override
-    public int getTimeZoneOffset() {
-        return timeZoneOffset;
-    }
-
-    /**
-     * @see Object#equals(Object)
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof RevPerson)) {
-            return false;
-        }
-        RevPerson person = (RevPerson) o;
-        return equal(getName(), person.getName()) && equal(getEmail(), person.getEmail())
-                && getTimestamp() == person.getTimestamp()
-                && getTimeZoneOffset() == person.getTimeZoneOffset();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getName(), getEmail(), getTimestamp(), getTimeZoneOffset());
-    }
-
-    @Override
-    public String toString() {
-        return Optional.fromNullable(name).or("<>") + " <" + Optional.fromNullable(email).or("")
-                + "> " + timeStamp + "/" + timeZoneOffset;
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 }

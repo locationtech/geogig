@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -59,22 +60,7 @@ class ValueArrayImpl implements ValueArray {
     }
 
     public @Override String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Values[");
-        builder.append("; ");
-        boolean first = true;
-        for (Object value : values) {
-            if (first) {
-                first = false;
-            } else {
-                builder.append(", ");
-            }
-
-            String valueString = String.valueOf(value);
-            builder.append(valueString.substring(0, Math.min(10, valueString.length())));
-        }
-        builder.append(']');
-        return builder.toString();
+        return RevObjects.toString(this);
     }
 
 }

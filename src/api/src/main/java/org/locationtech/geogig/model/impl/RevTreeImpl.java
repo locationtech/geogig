@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.collect.ImmutableList;
@@ -28,9 +29,6 @@ import com.google.common.collect.ImmutableSortedMap.Builder;
 
 import lombok.NonNull;
 
-/**
- *
- */
 abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
     static final class LeafTree extends RevTreeImpl {
@@ -146,14 +144,6 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
                     (b1, b2) -> Integer.compare(b1.index, b2.index));
 
             return index < 0 ? Optional.empty() : Optional.of(ibuckets[index].bucket);
-            //
-            // for (int i = 0; i < ibuckets.length; i++) {
-            // IndexedBucket indexedBucket = ibuckets[i];
-            // if (bucketIndex == indexedBucket.index) {
-            // return Optional.of(indexedBucket.bucket);
-            // }
-            // }
-            // return Optional.empty();
         }
     }
 
@@ -164,44 +154,23 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         this.size = size;
     }
 
-    @Override
-    public final long size() {
+    public final @Override long size() {
         return size;
     }
 
-    @Override
-    public ImmutableList<Node> features() {
+    public @Override ImmutableList<Node> features() {
         return ImmutableList.of();
     }
 
-    @Override
-    public ImmutableList<Node> trees() {
+    public @Override ImmutableList<Node> trees() {
         return ImmutableList.of();
     }
 
-    @Override
-    public ImmutableSortedMap<Integer, Bucket> buckets() {
+    public @Override ImmutableSortedMap<Integer, Bucket> buckets() {
         return ImmutableSortedMap.of();
     }
 
-    @Override
-    public String toString() {
-        final int nSubtrees = treesSize();
-        final int nBuckets = bucketsSize();
-        final int nFeatures = featuresSize();
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("Tree[");
-        builder.append(getId().toString());
-        builder.append("; size=");
-        builder.append(String.format("%,d", size));
-        builder.append("; subtrees=");
-        builder.append(nSubtrees);
-        builder.append(", buckets=");
-        builder.append(nBuckets);
-        builder.append(", features=");
-        builder.append(nFeatures);
-        builder.append(']');
-        return builder.toString();
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 }

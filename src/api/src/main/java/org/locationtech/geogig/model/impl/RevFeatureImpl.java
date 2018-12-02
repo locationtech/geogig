@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -42,8 +43,7 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
         this.values = values;
     }
 
-    @Override
-    public ImmutableList<Optional<Object>> getValues() {
+    public @Override ImmutableList<Optional<Object>> getValues() {
         final int size = size();
         Builder<Optional<Object>> builder = ImmutableList.builder();
         for (int i = 0; i < size; i++) {
@@ -52,18 +52,15 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
         return builder.build();
     }
 
-    @Override
-    public int size() {
+    public @Override int size() {
         return values.length;
     }
 
-    @Override
-    public Optional<Object> get(final int index) {
+    public @Override Optional<Object> get(final int index) {
         return Optional.fromNullable(ValueArray.safeCopy(values[index]));
     }
 
-    @Override
-    public Optional<Geometry> get(int index, GeometryFactory gf) {
+    public @Override Optional<Geometry> get(int index, GeometryFactory gf) {
         Geometry g = (Geometry) values[index];
         Geometry g2 = null;
         if (g != null) {
@@ -72,37 +69,18 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
         return Optional.fromNullable(g2);
     }
 
-    @Override
-    public void forEach(final Consumer<Object> consumer) {
+    public @Override void forEach(final Consumer<Object> consumer) {
         for (Object v : values) {
             consumer.accept(ValueArray.safeCopy(v));
         }
     }
 
-    @Override
-    public TYPE getType() {
+    public @Override TYPE getType() {
         return TYPE.FEATURE;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Feature[");
-        builder.append(getId().toString());
-        builder.append("; ");
-        boolean first = true;
-        for (Object value : values) {
-            if (first) {
-                first = false;
-            } else {
-                builder.append(", ");
-            }
-
-            String valueString = String.valueOf(value);
-            builder.append(valueString.substring(0, Math.min(10, valueString.length())));
-        }
-        builder.append(']');
-        return builder.toString();
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 
 }

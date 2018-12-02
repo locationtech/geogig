@@ -9,15 +9,24 @@
  */
 package org.locationtech.geogig.model;
 
+import static com.google.common.base.Objects.equal;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Comparator;
 import java.util.Iterator;
 
+import javax.annotation.Nullable;
+
+import org.opengis.feature.type.PropertyDescriptor;
+
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -52,6 +61,16 @@ public @UtilityClass class RevObjects {
             DEFAULT_FACTORY_INSTANCE = defaultInstance;
         }
         return DEFAULT_FACTORY_INSTANCE;
+    }
+
+    public static String toString(@NonNull ObjectId id) {
+        return RevObjects
+                .toString(id, ObjectId.NUM_BYTES, new StringBuilder(2 * ObjectId.NUM_BYTES))
+                .toString();
+    }
+
+    public static String toShortString(@NonNull ObjectId id) {
+        return RevObjects.toString(id, 8, new StringBuilder(16)).toString();
     }
 
     /**
@@ -233,4 +252,109 @@ public @UtilityClass class RevObjects {
         }
     }
 
+    public static boolean equals(@NonNull RevPerson p1, @NonNull RevPerson person) {
+        return equal(p1.getName(), person.getName()) && equal(p1.getEmail(), person.getEmail())
+                && p1.getTimestamp() == person.getTimestamp()
+                && p1.getTimeZoneOffset() == person.getTimeZoneOffset();
+    }
+
+    public static int hashCode(@NonNull RevPerson p) {
+        return Objects.hashCode(p.getName(), p.getEmail(), p.getTimestamp(), p.getTimeZoneOffset());
+    }
+
+    public static String toString(@NonNull RevPerson p) {
+        return String.format("%s[%s]", p.getClass().getSimpleName(), toShortString(p));
+    }
+
+    public static String toShortString(@NonNull RevPerson p) {
+        return String.format("\"%s\" <%s>, time: %d, tz: %d", p.getName().orNull(),
+                p.getEmail().orNull(), p.getTimestamp(), p.getTimeZoneOffset());
+    }
+
+    public static boolean equals(@NonNull RevObject object, @Nullable Object o) {
+        return (o instanceof RevObject) && object.getId().equals(((RevObject) o).getId());
+    }
+
+    public static int hashCode(@NonNull RevObject o) {
+        return RevObjects.h1(o.getId());
+    }
+
+    public static String toString(@NonNull RevCommit c) {
+        return String.format("%s(%s)[tree:%s, parents:%s, msg:%s, author:%s, committer:%s]",
+                c.getClass().getSimpleName(), //
+                toShortString(c.getId()), //
+                toShortString(c.getTreeId()), //
+                Lists.transform(c.getParentIds(), RevObjects::toShortString), //
+                c.getMessage(), //
+                toShortString(c.getAuthor()), //
+                toShortString(c.getCommitter()));
+    }
+
+    public static String toString(@NonNull ValueArray v) {
+        StringBuilder builder = new StringBuilder("[");
+        boolean first = true;
+        for (int i = 0; i < v.size(); i++) {
+            Optional<Object> value = v.get(i);
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            String valueString = String.valueOf(value.orNull());
+            builder.append(valueString.substring(0, Math.min(10, valueString.length())));
+        }
+        builder.append(']');
+        return builder.toString();
+    }
+
+    public static String toString(@NonNull RevFeature f) {
+        return String.format("%s(%s)%s", //
+                f.getClass().getSimpleName(), //
+                toShortString(f.getId()), //
+                toString(((ValueArray) f)));
+    }
+
+    public static String toString(@NonNull RevFeatureType ft) {
+        StringBuilder builder = new StringBuilder(ft.getClass().getSimpleName());
+        builder.append('(').append(toShortString(ft.getId())).append(")[");
+        boolean first = true;
+        for (PropertyDescriptor desc : ft.descriptors()) {
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            builder.append(desc.getName().getLocalPart());
+            builder.append(": ");
+            Class<?> binding = desc.getType().getBinding();
+            FieldType fieldType = FieldType.forBinding(binding);
+            builder.append(binding.getSimpleName());
+            builder.append("->");
+            builder.append(fieldType);
+        }
+        builder.append(']');
+        return builder.toString();
+    }
+
+    public static String toString(@NonNull RevTag t) {
+        return String.format("%s(%s)[commit:%s, message:%s, tagger:%s]",
+                t.getClass().getSimpleName(), //
+                toShortString(t.getId()), //
+                toShortString(t.getCommitId()), //
+                t.getMessage(), //
+                toShortString(t.getTagger()));
+    }
+
+    public static String toString(@NonNull RevTree tree) {
+        return String.format(
+                "%s(%s)[size:%,d, tree nodes:%,d, feature nodes:%,d, subtrees:%,d, buckets: %,d]",
+                tree.getClass().getSimpleName(), //
+                toShortString(tree.getId()), //
+                tree.size(), //
+                tree.treesSize(), //
+                tree.featuresSize(), //
+                tree.numTrees(), //
+                tree.bucketsSize());
+
+    }
 }

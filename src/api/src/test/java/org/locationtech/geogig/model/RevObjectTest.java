@@ -9,8 +9,10 @@
  */
 package org.locationtech.geogig.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.junit.Assert.fail;
+
+import java.util.Collections;
 
 import org.junit.Test;
 
@@ -35,7 +37,15 @@ public class RevObjectTest {
 
     @Test
     public void testNaturalOrder() {
-        assertEquals(0, RevObject.NATURAL_ORDER.compare(RevTree.EMPTY, RevTree.EMPTY));
+        assertEquals(0, RevTree.EMPTY.compareTo(RevTree.EMPTY));
+        ObjectId oId1 = ObjectId.valueOf("abc123000000000000001234567890abcdef0001");
+        ObjectId oId2 = ObjectId.valueOf("abc123000000000000001234567890abcdef0002");
+        RevFeature f1 = RevObjectFactory.defaultInstance().createFeature(oId1,
+                Collections.singletonList("1"));
+        RevFeature f2 = RevObjectFactory.defaultInstance().createFeature(oId2,
+                Collections.singletonList("2"));
+        assertTrue(f1.compareTo(f2) < 0);
+        assertTrue(f2.compareTo(f1) > 0);
     }
 
     @Test

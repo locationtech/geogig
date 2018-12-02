@@ -18,7 +18,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
 /**
  * A set of utility methods to work with revision objects
@@ -26,8 +26,7 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * @since 1.0
  */
-@Slf4j
-public class RevObjects {
+public @UtilityClass class RevObjects {
 
     /**
      * An identifier for a null coordinate reference system.

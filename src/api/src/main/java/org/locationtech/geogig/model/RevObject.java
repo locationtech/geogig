@@ -11,8 +11,9 @@ package org.locationtech.geogig.model;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Ordering;
 import com.google.common.hash.HashFunction;
+
+import lombok.NonNull;
 
 /**
  * Base interface for the closed set of revision objects that are stored in a GeoGig repository.
@@ -39,17 +40,7 @@ import com.google.common.hash.HashFunction;
  * 
  * @since 1.0
  */
-public interface RevObject {
-    /**
-     * A "natural order" {@link Ordering comparator} for revobject instances based on the
-     * {@link ObjectId}
-     */
-    public static final Ordering<RevObject> NATURAL_ORDER = new Ordering<RevObject>() {
-        @Override
-        public int compare(RevObject o1, RevObject o2) {
-            return o1.getId().compareTo(o2.getId());
-        }
-    };
+public interface RevObject extends Comparable<RevObject> {
 
     /**
      * {@code RevObject} types enumeration.
@@ -58,7 +49,7 @@ public interface RevObject {
      * method must return the enum value corresponding to it's kind of object in the closed set of
      * revision objects that comprise GeoGig's repository's object model
      */
-    public static enum TYPE {
+    public enum TYPE {
         /**
          * Enum value for objects of type {@link RevCommit}
          */
@@ -190,11 +181,22 @@ public interface RevObject {
     public ObjectId getId();
 
     /**
+     * Equality is based on id, since to revision objects that hashed out to the same
+     * {@link ObjectId} are guaranteed to be equal (as far as SHA-1 collision probabilities go).
+     * 
      * @implNote Given any two objects of the same type with the same exact contents shall hash out
      *           to the same {@link ObjectId}, {@link #equals(Object) equality} checks can merely
      *           compare the two {@link ObjectId}s for equality.
      * 
      */
-    @Override
-    public boolean equals(Object o);
+    public @Override boolean equals(Object o);
+
+    /**
+     * Comparison is made according the to natural order of {@link RevObject#getId()}.
+     * <p>
+     * {@inheritDoc}
+     */
+    public default @Override int compareTo(@NonNull RevObject other) {
+        return getId().compareTo(other.getId());
+    }
 }

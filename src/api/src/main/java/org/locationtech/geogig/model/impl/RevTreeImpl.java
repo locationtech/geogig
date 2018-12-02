@@ -11,7 +11,6 @@ package org.locationtech.geogig.model.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.function.BiConsumer;
@@ -21,7 +20,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.collect.ImmutableList;
@@ -184,16 +182,6 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
     @Override
     public ImmutableSortedMap<Integer, Bucket> buckets() {
         return ImmutableSortedMap.of();
-    }
-
-    /**
-     * @deprecated user {@link RevObjectFactory#createTree}
-     */
-    @Deprecated
-    public static RevTree create(final ObjectId id, final long size, final int childTreeCount,
-            @Nullable List<Node> trees, @Nullable List<Node> features,
-            @Nullable SortedMap<Integer, Bucket> buckets) {
-        return RevTreeBuilder.create(id, size, childTreeCount, trees, features, buckets);
     }
 
     @Override

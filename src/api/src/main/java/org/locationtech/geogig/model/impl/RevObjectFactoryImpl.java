@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.SortedMap;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -44,6 +45,11 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
      */
     public @Override int getPriority() {
         return 0;
+    }
+
+    public @Override @NonNull RevPerson createPerson(@Nullable String name, @Nullable String email,
+            long timeStamp, int timeZoneOffset) {
+        return new RevPersonImpl(name, email, timeStamp, timeZoneOffset);
     }
 
     public @Override @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,

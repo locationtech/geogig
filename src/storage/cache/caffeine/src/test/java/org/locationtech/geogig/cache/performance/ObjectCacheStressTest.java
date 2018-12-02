@@ -37,6 +37,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
@@ -104,8 +105,8 @@ public class ObjectCacheStressTest {
         int L1Capacity = 0;// test.treeCount;
         long maxSizeBytes = 32L * 1024 * 1024 * 1024;
         SharedCache sharedCache;
-         sharedCache = new CaffeineSharedCache(L1Capacity, maxSizeBytes);
-//        sharedCache = new GuavaSharedCache(L1Capacity, maxSizeBytes);
+        sharedCache = new CaffeineSharedCache(L1Capacity, maxSizeBytes);
+        // sharedCache = new GuavaSharedCache(L1Capacity, maxSizeBytes);
         System.err.println("set up...");
         try {
             test.setUp(() -> sharedCache);
@@ -297,7 +298,7 @@ public class ObjectCacheStressTest {
             buckets.put(b, bucket);
         }
         final ObjectId fakeId = RevObjectTestSupport.hashString(String.valueOf(i));
-        RevTree tree = RevTreeBuilder.create(fakeId, 1024, 0, null, null, buckets);
+        RevTree tree = RevObjectFactory.defaultInstance().createTree(fakeId, 1024, 0, buckets);
         return tree;
     }
 
@@ -306,8 +307,8 @@ public class ObjectCacheStressTest {
         List<Node> nodes = IntStream.range(0, numNodes).mapToObj(this::createNode)
                 .collect(Collectors.toList());
         ObjectId id = ObjectId.create(i, i * i, i * i * i);
-        RevTree tree = RevTreeBuilder.create(id, numNodes, 0, null, ImmutableList.copyOf(nodes),
-                null);
+        RevTree tree = RevObjectFactory.defaultInstance().createTree(id, numNodes,
+                Collections.emptyList(), ImmutableList.copyOf(nodes));
         return tree;
     }
 

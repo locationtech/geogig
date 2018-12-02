@@ -18,8 +18,6 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 
-import com.google.common.base.Preconditions;
-
 import lombok.NonNull;
 
 /**
@@ -54,12 +52,6 @@ public abstract class AbstractRevObject implements RevObject {
         return ObjectId.create(h1, h2, h3);
     }
 
-    /**
-     * Equality is based on id, since to revision objects that hashed out to the same
-     * {@link ObjectId} are guaranteed to be equal (as far as SHA-1 collision probabilities go)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     public final @Override boolean equals(Object o) {
         return (o instanceof RevObject) && getId().equals(((RevObject) o).getId());
     }

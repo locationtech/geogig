@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 
@@ -72,13 +72,13 @@ enum Quadrant {
         }
 
         target.init(x1, x2, y1, y2);
-        Envelope precise = Node.makePrecise(target);
+        Envelope precise = RevObjects.makePrecise(target);
         target.init(precise);
     }
 
     public static int findMaxDepth(Envelope maxBounds, final int absoluteMaxDepth) {
         // choose the quad that tends to the biggest abs value
-        maxBounds = Node.makePrecise(maxBounds);
+        maxBounds = RevObjects.makePrecise(maxBounds);
         final Quadrant testQuad = findBiggestMagnitudeQuad(maxBounds);
 
         Envelope parent = new Envelope(maxBounds);

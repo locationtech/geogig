@@ -13,12 +13,12 @@ import static com.google.common.base.Preconditions.checkState;
 
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
@@ -32,12 +32,12 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 /**
  * Web interface to resolve a single feature conflict
@@ -93,11 +93,11 @@ public class ResolveConflict extends AbstractWebAPICommand {
 
         Optional<RevFeature> object = geogig.command(RevObjectParse.class)
                 .setObjectId(featureObjectId).call(RevFeature.class);
-        
+
         if (!object.isPresent()) {
             throw new CommandSpecException("Object ID could not be resolved to a feature.");
         }
-        
+
         RevFeature revFeature = object.get();
 
         CoordinateReferenceSystem crs = revFeatureType.type().getCoordinateReferenceSystem();
@@ -116,9 +116,10 @@ public class ResolveConflict extends AbstractWebAPICommand {
             }
         }
 
-        NodeRef newFeatureNode = new NodeRef(Node.create(NodeRef.nodeFromPath(path),
-                featureObjectId, ObjectId.NULL, TYPE.FEATURE, bounds), NodeRef.parentPath(path),
-                ObjectId.NULL);
+        NodeRef newFeatureNode = new NodeRef(
+                RevObjectFactory.defaultInstance().createNode(NodeRef.nodeFromPath(path),
+                        featureObjectId, ObjectId.NULL, TYPE.FEATURE, bounds, null),
+                NodeRef.parentPath(path), ObjectId.NULL);
 
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class)
                 .setParent(geogig.workingTree().getTree())

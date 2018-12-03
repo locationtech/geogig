@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.internal.QuadTreeTestSupport;
 import org.locationtech.jts.geom.Envelope;
 
@@ -17,7 +17,7 @@ public class QuadTreeBuilderTestPseudoMercator extends QuadTreeBuilderTest {
 
     @Override
     protected Envelope createMaxBounds() {
-        return Node.makePrecise(QuadTreeTestSupport.epsg3857Bounds());
+        return RevObjects.makePrecise(QuadTreeTestSupport.epsg3857Bounds());
     }
 
 }

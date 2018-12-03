@@ -40,7 +40,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.cache.CacheIdentifier;
@@ -294,7 +293,7 @@ public class ObjectCacheStressTest {
         for (int b = 0; b < bucketCount; b++) {
             ObjectId bucketTree = RevObjectTestSupport.hashString("b" + b);
             Envelope bounds = new Envelope(0, b, 0, b);
-            Bucket bucket = Bucket.create(bucketTree, bounds);
+            Bucket bucket = RevObjectFactory.defaultInstance().createBucket(bucketTree, bounds);
             buckets.put(b, bucket);
         }
         final ObjectId fakeId = RevObjectTestSupport.hashString(String.valueOf(i));
@@ -316,7 +315,8 @@ public class ObjectCacheStressTest {
         String name = "Node-" + n;
         ObjectId oid = RevObjectTestSupport.hashString(name);
         Envelope bounds = new Envelope(-1 * n, n, -1 * n, n);
-        return Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
+        return RevObjectFactory.defaultInstance().createNode(name, oid, ObjectId.NULL, TYPE.FEATURE,
+                bounds, null);
     }
 
     private Node createNodeWithMetadata(int n) {
@@ -331,7 +331,8 @@ public class ObjectCacheStressTest {
         String name = "Node-" + n;
         ObjectId oid = RevObjectTestSupport.hashString(name);
         Envelope bounds = new Envelope(-1 * n, n, -1 * n, n);
-        return Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
+        return RevObjectFactory.defaultInstance().createNode(name, oid, ObjectId.NULL, TYPE.FEATURE,
+                bounds, null);
     }
 
     private List<RevFeature> createFeatures(final int count) {

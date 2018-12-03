@@ -19,7 +19,7 @@ import static org.locationtech.geogig.model.internal.Quadrant.SW;
 
 import org.geotools.geometry.jts.JTS;
 import org.junit.Test;
-import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -141,12 +141,12 @@ public class QuadrantTest {
     private void testSliceMaxDepth(final Envelope maxBounds) {
         final int maxDepth = Quadrant.findMaxDepth(maxBounds, ABSOLUTE_MAX_DEPTH);
 
-        Envelope parent = Node.makePrecise(maxBounds);
+        Envelope parent = RevObjects.makePrecise(maxBounds);
         Envelope[] qbounds;
         for (int d = 0; d < maxDepth; d++) {
             qbounds = assertSlice(parent);
             Envelope sw = qbounds[0];
-            Envelope minimalEnv = Node.makePrecise(new Envelope(sw.centre()));
+            Envelope minimalEnv = RevObjects.makePrecise(new Envelope(sw.centre()));
             assertTrue("at index " + d, sw.contains(minimalEnv));
             parent = sw;
         }

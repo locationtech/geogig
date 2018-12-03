@@ -22,6 +22,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -76,7 +77,8 @@ public class MultiFeatureTypeBuilderTest {
         WKTReader2 wkt = new WKTReader2();
         RevFeature feat = RevObjectTestSupport.feature(wkt.read("POINT(0 0)"), "abc", "def");
 
-        Node n1 = Node.create("name1", getOID(2), meta1, TYPE.FEATURE, new Envelope());
+        Node n1 = RevObjectFactory.defaultInstance().createNode("name1", getOID(2), meta1,
+                TYPE.FEATURE, new Envelope(), null);
         NodeRef nr1 = new NodeRef(n1, "testcase", meta1);
 
         ObjectInfo<RevFeature> fi = ObjectInfo.of(nr1, feat);

@@ -38,6 +38,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.LegacyTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -425,8 +426,8 @@ public abstract class CanonicalClusteringStrategyTest {
             }
             for (Node n : original) {
                 ObjectId oid = RevObjectTestSupport.hashString(n.toString());
-                Node edit = Node.create(n.getName(), oid, ObjectId.NULL, TYPE.FEATURE,
-                        n.bounds().orNull());
+                Node edit = RevObjectFactory.defaultInstance().createNode(n.getName(), oid,
+                        ObjectId.NULL, TYPE.FEATURE, n.bounds().orNull(), null);
                 edited.add(edit);
 
             }
@@ -478,7 +479,8 @@ public abstract class CanonicalClusteringStrategyTest {
             Collection<Node> nodes = nodesByBucketIndex.get(bucketIndex);
             RevTree leaf = createLeafTree(nodes);
             store.put(leaf);
-            Bucket bucket = Bucket.create(leaf.getId(), SpatialOps.boundsOf(leaf));
+            Bucket bucket = RevObjectFactory.defaultInstance().createBucket(leaf.getId(),
+                    SpatialOps.boundsOf(leaf));
             bucketsByIndex.put(bucketIndex, bucket);
         }
 

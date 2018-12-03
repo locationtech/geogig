@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.lang.reflect.InvocationTargetException;
 
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
@@ -150,7 +151,7 @@ public abstract class ClusteringStrategyBuilder {
         @Override
         protected ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider) {
             checkState(maxBounds != null, "QuadTree max bounds was not set");
-            Envelope preciseBounds = Node.makePrecise(maxBounds);
+            Envelope preciseBounds = RevObjects.makePrecise(maxBounds);
             int maxDepth;
             if (this.maxDepth > -1) {
                 maxDepth = this.maxDepth;

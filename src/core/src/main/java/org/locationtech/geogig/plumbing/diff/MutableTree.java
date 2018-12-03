@@ -28,6 +28,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.repository.impl.SpatialOps;
@@ -70,7 +71,8 @@ public class MutableTree implements Cloneable {
             .reverse();
 
     private MutableTree(String name) {
-        this(Node.tree(name, RevTree.EMPTY_TREE_ID, ObjectId.NULL));
+        this(RevObjectFactory.defaultInstance().createNode(name, RevTree.EMPTY_TREE_ID,
+                ObjectId.NULL, TYPE.TREE, null, null));
     }
 
     private MutableTree(Node node) {
@@ -141,7 +143,8 @@ public class MutableTree implements Cloneable {
         List<NodeRef> refsByDepth = Lists.newArrayList(entries.values());
         Collections.sort(refsByDepth, DEEPEST_LAST_COMPARATOR);
 
-        Node rootNode = Node.create(ROOT, rootId, ObjectId.NULL, TYPE.TREE, null);
+        Node rootNode = RevObjectFactory.defaultInstance().createNode(ROOT, rootId, ObjectId.NULL,
+                TYPE.TREE, null, null);
         MutableTree root = new MutableTree(rootNode);
 
         Envelope bounds = new Envelope();
@@ -153,7 +156,8 @@ public class MutableTree implements Cloneable {
             root.setChild(parentPath, node);
         }
         // recreate root node with the appropriate bounds
-        rootNode = Node.create(ROOT, rootId, ObjectId.NULL, TYPE.TREE, bounds);
+        rootNode = RevObjectFactory.defaultInstance().createNode(ROOT, rootId, ObjectId.NULL,
+                TYPE.TREE, bounds, null);
         root.setNode(rootNode);
 
         return root;

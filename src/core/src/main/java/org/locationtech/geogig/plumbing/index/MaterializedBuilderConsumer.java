@@ -28,6 +28,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.AbstractConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
@@ -176,7 +177,8 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
             ObjectId metadataId = node.getMetadataId().or(ObjectId.NULL);
             TYPE type = node.getType();
             Envelope orNull = node.bounds().orNull();
-            materialized = Node.create(name, objectId, metadataId, type, orNull, extraData);
+            materialized = RevObjectFactory.defaultInstance().createNode(name, objectId, metadataId,
+                    type, orNull, extraData);
         }
         return materialized;
     }

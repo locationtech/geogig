@@ -22,6 +22,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
@@ -182,7 +183,8 @@ public class MutableTreeTest extends Assert {
     }
 
     private Node treeNode(String name, ObjectId treeId, ObjectId metadataId) {
-        Node node = Node.create(name, treeId, metadataId, TYPE.TREE, null);
+        Node node = RevObjectFactory.defaultInstance().createNode(name, treeId, metadataId,
+                TYPE.TREE, null, null);
         return node;
     }
 

@@ -464,7 +464,8 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
                             newLeafTreesToSave.add(modifiedBucketTree);
                         }
                         Envelope bucketBounds = SpatialOps.boundsOf(modifiedBucketTree);
-                        Bucket bucket = Bucket.create(modifiedBucketTree.getId(), bucketBounds);
+                        Bucket bucket = RevObjectFactory.defaultInstance()
+                                .createBucket(modifiedBucketTree.getId(), bucketBounds);
                         bucketTreesByBucket.put(bucketIndex, bucket);
                     }
                 }
@@ -546,7 +547,8 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         if (!deletes.isEmpty()) {
             for (String delete : deletes) {
                 Integer bucketIndex = computeBucket(delete);
-                Node node = Node.create(delete, ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE, null);
+                Node node = RevObjectFactory.defaultInstance().createNode(delete, ObjectId.NULL,
+                        ObjectId.NULL, TYPE.FEATURE, null, null);
                 changesByBucket.put(bucketIndex, node);
             }
             deletes.clear();

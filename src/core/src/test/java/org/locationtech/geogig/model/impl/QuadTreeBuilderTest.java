@@ -35,6 +35,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
@@ -425,7 +426,8 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         checkState(bounds == null || (!bounds.isNull() && maxBounds.contains(bounds)));
 
-        Node node = Node.create(nodeName, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
+        Node node = RevObjectFactory.defaultInstance().createNode(nodeName, oid, ObjectId.NULL,
+                TYPE.FEATURE, bounds, null);
 
         Envelope nodeBounds = node.bounds().orNull();
         if (bounds != null) {
@@ -459,7 +461,8 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
             Envelope bounds = new Envelope(x1, x2, y1, y2);
 
             Map<String, Object> extraData = null;
-            Node node = Node.create(fid, oid, ObjectId.NULL, TYPE.FEATURE, bounds, extraData);
+            Node node = RevObjectFactory.defaultInstance().createNode(fid, oid, ObjectId.NULL,
+                    TYPE.FEATURE, bounds, extraData);
             nodes.add(node);
         }
         return nodes;

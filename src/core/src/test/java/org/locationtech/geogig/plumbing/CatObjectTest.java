@@ -16,6 +16,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
@@ -72,7 +73,8 @@ public class CatObjectTest extends RepositoryTestCase {
         RevTreeBuilder rtb = CanonicalTreeBuilder.create(odb);
         for (int i = 0; i < numChildren; i++) {
             String key = FEATURE_PREFIX + i;
-            Node ref = Node.create(key, FAKE_ID, FAKE_ID, TYPE.FEATURE, null);
+            Node ref = RevObjectFactory.defaultInstance().createNode(key, FAKE_ID, FAKE_ID,
+                    TYPE.FEATURE, null, null);
             rtb.put(ref);
         }
         return rtb.build();

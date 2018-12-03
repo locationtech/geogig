@@ -30,6 +30,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
@@ -249,8 +250,9 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             final RevTree currentTypeTree;
             if (typeTreeRef == null) {
                 ObjectId metadataId = featureRef.getMetadataId();
-                Node parentNode = Node.tree(NodeRef.nodeFromPath(typeTreePath), EMPTY_TREE_ID,
-                        metadataId);
+                Node parentNode = RevObjectFactory.defaultInstance().createNode(
+                        NodeRef.nodeFromPath(typeTreePath), EMPTY_TREE_ID, metadataId, TYPE.TREE,
+                        null, null);
                 typeTreeRef = NodeRef.create(NodeRef.parentPath(typeTreePath), parentNode);
                 currentTypeTree = EMPTY;
             } else {
@@ -289,8 +291,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                     targetCommitId = Optional.of(commit.getId());
                     targetRef = Optional.absent();
                 } else {
-//                    Remote remote = command(remotere);
-//                    command(MapRef.class).setRemote(remote).add(targetRef.get()).call().get(0);
+                    // Remote remote = command(remotere);
+                    // command(MapRef.class).setRemote(remote).add(targetRef.get()).call().get(0);
 
                     Ref branch = command(BranchCreateOp.class).setName(targetRef.get().localName())
                             .setSource(commitId.toString())//

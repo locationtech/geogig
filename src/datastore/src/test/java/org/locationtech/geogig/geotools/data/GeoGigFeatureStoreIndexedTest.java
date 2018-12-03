@@ -31,6 +31,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.internal.QuadTreeTestSupport;
@@ -42,14 +43,14 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 /**
  * Run all {@link GeoGigFeatureStoreTest} test cases and make sure the {@link IndexInfo index} is
@@ -372,7 +373,8 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
             Envelope env = SpatialOps.boundsOf(feature);
 
             ObjectId oid = feature.getId();
-            Node node = Node.create(fid, oid, ObjectId.NULL, TYPE.FEATURE, env);
+            Node node = RevObjectFactory.defaultInstance().createNode(fid, oid, ObjectId.NULL,
+                    TYPE.FEATURE, env, null);
             store.put(feature);
             builder.put(node);
         }

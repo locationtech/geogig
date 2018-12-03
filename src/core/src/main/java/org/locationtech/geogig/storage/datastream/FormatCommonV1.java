@@ -241,7 +241,8 @@ public class FormatCommonV1 {
         final Envelope bbox = readBBox(in);
         Map<String, Object> extraData = DataStreamValueSerializerV1.INSTANCE.readMap(in);
         final Node node;
-        node = Node.create(name, objectId, metadataId, contentType, bbox, extraData);
+        node = RevObjectFactory.defaultInstance().createNode(name, objectId, metadataId,
+                contentType, bbox, extraData);
         return node;
     }
 
@@ -270,7 +271,7 @@ public class FormatCommonV1 {
     public static final Bucket readBucket(DataInput in) throws IOException {
         ObjectId objectId = ObjectId.readFrom(in);
         Envelope bounds = readBBox(in);
-        return Bucket.create(objectId, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(objectId, bounds);
     }
 
     @Nullable

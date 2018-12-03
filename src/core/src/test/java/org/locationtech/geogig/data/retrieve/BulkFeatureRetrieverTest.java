@@ -27,6 +27,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -61,10 +62,12 @@ public class BulkFeatureRetrieverTest {
         Iterator<RevObject> iterator = (Arrays.asList((RevObject) f1, (RevObject) f2)).iterator();
         when(odb.getAll(anyObject(), anyObject(), anyObject())).thenReturn(iterator);
 
-        Node n1 = Node.create("name1", getOID(2), meta1, TYPE.FEATURE, new Envelope());
+        Node n1 = RevObjectFactory.defaultInstance().createNode("name1", getOID(2), meta1,
+                TYPE.FEATURE, new Envelope(), null);
         NodeRef nr1 = new NodeRef(n1, "testcase", meta1);
 
-        Node n2 = Node.create("name1", getOID(3), meta1, TYPE.FEATURE, new Envelope());
+        Node n2 = RevObjectFactory.defaultInstance().createNode("name1", getOID(3), meta1,
+                TYPE.FEATURE, new Envelope(), null);
         NodeRef nr2 = new NodeRef(n2, "testcase", meta1);
 
         List<ObjectInfo<RevObject>> objs = Lists.newArrayList(ObjectInfo.of(nr1, f1),

@@ -32,6 +32,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
@@ -301,8 +302,8 @@ public class WorkingTreeImpl implements WorkingTree {
         final String parentPath = NodeRef.parentPath(treePath);
         final String treeName = NodeRef.nodeFromPath(treePath);
 
-        final NodeRef newTreeRef = NodeRef.create(parentPath,
-                Node.tree(treeName, EMPTY_TREE_ID, metadataId));
+        final NodeRef newTreeRef = NodeRef.create(parentPath, RevObjectFactory.defaultInstance()
+                .createNode(treeName, EMPTY_TREE_ID, metadataId, TYPE.TREE, null, null));
 
         final RevTree newWorkHead = context.command(UpdateTree.class).setRoot(workHead)
                 .setChild(newTreeRef).call();
@@ -359,7 +360,8 @@ public class WorkingTreeImpl implements WorkingTree {
 
             ObjectId oid = feature.getId();
             Envelope bounds = SpatialOps.boundsOf(feature);
-            Node featureNode = Node.create(fid, oid, metadataId, TYPE.FEATURE, bounds);
+            Node featureNode = RevObjectFactory.defaultInstance().createNode(fid, oid, metadataId,
+                    TYPE.FEATURE, bounds, null);
 
             parentBuilder.put(featureNode);
 
@@ -414,8 +416,8 @@ public class WorkingTreeImpl implements WorkingTree {
                 }
                 String parentPath = NodeRef.parentPath(treePath);
                 String name = NodeRef.nodeFromPath(treePath);
-                Node treeNode = Node.create(name, EMPTY_TREE_ID, featureMetadataId, TYPE.TREE,
-                        null);
+                Node treeNode = RevObjectFactory.defaultInstance().createNode(name, EMPTY_TREE_ID,
+                        featureMetadataId, TYPE.TREE, null, null);
                 treeRef = new NodeRef(treeNode, parentPath, featureMetadataId);
                 currentTrees.put(treePath, treeRef);
             }
@@ -556,8 +558,8 @@ public class WorkingTreeImpl implements WorkingTree {
                 // neither the old nor the new
                 newMetadataId = nodesMetadataId;
             }
-            Node newNode = Node.create(node.getName(), node.getObjectId(), newMetadataId,
-                    TYPE.FEATURE, node.bounds().orNull());
+            Node newNode = RevObjectFactory.defaultInstance().createNode(node.getName(),
+                    node.getObjectId(), newMetadataId, TYPE.FEATURE, node.bounds().orNull(), null);
             newTreeBuilder.put(newNode);
         }
 
@@ -565,8 +567,9 @@ public class WorkingTreeImpl implements WorkingTree {
 
         final ObjectId overridingMetadataId = newRevType.getId();
 
-        final Node overridingTreeNode = Node.tree(typeTreeRef.name(), newTypeTree.getId(),
-                overridingMetadataId);
+        final Node overridingTreeNode = RevObjectFactory.defaultInstance().createNode(
+                typeTreeRef.name(), newTypeTree.getId(), overridingMetadataId, TYPE.TREE, null,
+                null);
 
         final NodeRef newTreeRef = NodeRef.create(typeTreeRef.getParentPath(), overridingTreeNode);
 

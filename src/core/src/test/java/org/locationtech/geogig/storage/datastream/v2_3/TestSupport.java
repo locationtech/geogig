@@ -90,7 +90,8 @@ public class TestSupport {
 
             extraData = withExtraData ? extraData(i) : null;
 
-            Node node = Node.create(name, oid, metadataId, type, bounds, extraData);
+            Node node = RevObjectFactory.defaultInstance().createNode(name, oid, metadataId, type,
+                    bounds, extraData);
             nodes.add(node);
         }
         return nodes;

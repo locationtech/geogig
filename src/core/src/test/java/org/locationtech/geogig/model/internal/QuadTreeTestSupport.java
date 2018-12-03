@@ -30,6 +30,8 @@ import org.junit.rules.ExternalResource;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjectFactory;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -144,7 +146,8 @@ public class QuadTreeTestSupport extends ExternalResource {
 
     public Node createNode(String name, @Nullable Envelope bounds) {
         ObjectId id = RevObjectTestSupport.hashString(name);
-        Node n = Node.create(name, id, ObjectId.NULL, RevObject.TYPE.FEATURE, bounds);
+        Node n = RevObjectFactory.defaultInstance().createNode(name, id, ObjectId.NULL,
+                RevObject.TYPE.FEATURE, bounds, null);
 
         if (bounds != null && !bounds.isNull()) {
             Envelope float32Bounds = n.bounds().get();
@@ -199,7 +202,7 @@ public class QuadTreeTestSupport extends ExternalResource {
         }
 
         Coordinate center = quadBounds.centre();
-        Envelope nodeBounds = Node.makePrecise(new Envelope(center));
+        Envelope nodeBounds = RevObjects.makePrecise(new Envelope(center));
 
         if (!quadBounds.contains(nodeBounds)) {
             GeometryFactory gf = new GeometryFactory();
@@ -215,7 +218,7 @@ public class QuadTreeTestSupport extends ExternalResource {
     }
 
     private Envelope getMaxBounds() {
-        return Node.makePrecise(maxBoundsFloat64);
+        return RevObjects.makePrecise(maxBoundsFloat64);
     }
 
     public Node createNode(String name, List<Quadrant> quadrants) {
@@ -286,7 +289,7 @@ public class QuadTreeTestSupport extends ExternalResource {
         double y1 = quadBounds.getMinY() + deltaY;
         double y2 = quadBounds.getMaxY() - deltaY;
 
-        nodeBounds = Node.makePrecise(new Envelope(x1, x2, y1, y2));
+        nodeBounds = RevObjects.makePrecise(new Envelope(x1, x2, y1, y2));
 
         if (!quadBounds.contains(nodeBounds)) {
             nodeBounds = new Envelope(quadBounds);

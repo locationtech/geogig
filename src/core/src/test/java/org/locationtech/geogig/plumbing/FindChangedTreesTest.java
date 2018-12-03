@@ -34,6 +34,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
@@ -364,7 +365,8 @@ public class FindChangedTreesTest extends Assert {
 
         types.forEach((treePath, featureType) -> {
             ObjectId mdId = RevFeatureTypeBuilder.build(featureType).getId();
-            Node node = Node.create(treePath, RevTree.EMPTY_TREE_ID, mdId, TYPE.TREE, null);
+            Node node = RevObjectFactory.defaultInstance().createNode(treePath,
+                    RevTree.EMPTY_TREE_ID, mdId, TYPE.TREE, null, null);
             newWorkHeadBuilder.put(node);
             NodeRef nodeRef = NodeRef.create(NodeRef.ROOT, node);
             layers.add(nodeRef);

@@ -17,6 +17,8 @@ import java.util.Iterator;
 
 import javax.annotation.Nullable;
 
+import org.locationtech.geogig.model.impl.Float32Bounds;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Objects;
@@ -275,6 +277,52 @@ public @UtilityClass class RevObjects {
         return (o instanceof RevObject) && object.getId().equals(((RevObject) o).getId());
     }
 
+    public static boolean equals(@NonNull Bucket bucket, @Nullable Object o) {
+        return (o instanceof Bucket) && bucket.getObjectId().equals(((Bucket) o).getObjectId());
+    }
+
+    public static int hashCode(@NonNull Bucket bucket) {
+        return 31 * bucket.getObjectId().hashCode();
+    }
+
+    public static String toString(@NonNull Bucket bucket) {
+        Envelope env = bucket.bounds().orNull();
+        String bounds = env == null ? null : env.toString();
+        return String.format("%s[tree:%s, bounds: %s]", //
+                bucket.getClass().getSimpleName(), //
+                toShortString(bucket.getObjectId()), //
+                bounds);
+    }
+
+    public static int hashCode(@NonNull Node node) {
+        return 17 ^ node.getType().hashCode() * node.getName().hashCode()
+                * node.getObjectId().hashCode();
+    }
+
+    /**
+     * Equality check based on {@link #getName() name}, {@link #getType() type}, and
+     * {@link #getObjectId() objectId}; {@link #getMetadataId()} is NOT part of the equality check.
+     */
+    public static boolean equals(@NonNull Node node, @Nullable Object o) {
+        if (o instanceof Node) {
+            Node r = (Node) o;
+            return node.getType().equals(r.getType()) && node.getName().equals(r.getName())
+                    && node.getObjectId().equals(r.getObjectId());
+        }
+        return false;
+    }
+
+    public static String toString(@NonNull Node node) {
+        Envelope env = node.bounds().orNull();
+        String bounds = env == null ? null : env.toString();
+        return String.format("%s[%s -> %s, type: %s, bounds: %s]", //
+                node.getClass().getSimpleName(), //
+                node.getName(), //
+                toShortString(node.getObjectId()), //
+                node.getType(), //
+                bounds);
+    }
+
     public static int hashCode(@NonNull RevObject o) {
         return RevObjects.h1(o.getId());
     }
@@ -356,5 +404,10 @@ public @UtilityClass class RevObjects {
                 tree.numTrees(), //
                 tree.bucketsSize());
 
+    }
+
+    public static @Nullable Envelope makePrecise(@Nullable Envelope bounds) {
+        Envelope float32Bounds = Float32Bounds.valueOf(bounds).asEnvelope();
+        return float32Bounds.isNull() ? null : float32Bounds;
     }
 }

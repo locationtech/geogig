@@ -28,7 +28,11 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.WKTReader;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
@@ -55,9 +59,6 @@ import org.opengis.filter.temporal.After;
 import org.opengis.filter.temporal.AnyInteracts;
 
 import com.google.common.collect.ImmutableMap;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.WKTReader;
 
 public class PreFilterTest {
 
@@ -92,12 +93,13 @@ public class PreFilterTest {
         Map<String, Object> extraData = ImmutableMap.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
                 materializedAttributes);
 
-        testNode = Node.create("testFid", oid, metadataId, TYPE.FEATURE, bounds, extraData);
+        testNode = RevObjectFactory.defaultInstance().createNode("testFid", oid, metadataId,
+                TYPE.FEATURE, bounds, extraData);
 
         testNodeRef = new NodeRef(testNode, "fakeLayerName", metadataId);
 
         ObjectId bucketId = hashString("bucketId");
-        testBucket = Bucket.create(bucketId, bounds);
+        testBucket = RevObjectFactory.defaultInstance().createBucket(bucketId, bounds);
 
     }
 

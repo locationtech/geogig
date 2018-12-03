@@ -16,6 +16,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.repository.Context;
@@ -222,7 +223,8 @@ public class UpdateTreeTest extends RepositoryTestCase {
     }
 
     private Node blob(String path) {
-        return Node.create(path, hashString(path), ObjectId.NULL, TYPE.FEATURE, null);
+        return RevObjectFactory.defaultInstance().createNode(path, hashString(path), ObjectId.NULL,
+                TYPE.FEATURE, null, null);
     }
 
 }

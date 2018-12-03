@@ -24,9 +24,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.ImmutableList;
-import org.locationtech.jts.geom.Envelope;
 
 public class NodeRefTest {
 
@@ -166,9 +166,9 @@ public class NodeRefTest {
 
     @Test
     public void testAccessorsAndConstructors() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
         assertEquals(ObjectId.NULL, nodeRef.getMetadataId());
         assertEquals(ObjectId.NULL, nodeRef.getDefaultMetadataId());
@@ -185,14 +185,14 @@ public class NodeRefTest {
 
     @Test
     public void testIsEqual() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
         assertFalse(nodeRef.equals(node));
-        Node node2 = Node.create("Lines.1",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
         NodeRef nodeRef3 = new NodeRef(node2, "Lines",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"));
@@ -203,9 +203,9 @@ public class NodeRefTest {
 
     @Test
     public void testNodeAndNodeRefToString() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
 
         String readableNode = nodeRef.toString();
@@ -216,14 +216,14 @@ public class NodeRefTest {
 
     @Test
     public void testCompareTo() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef = NodeRef.create("Points", node);
         assertFalse(nodeRef.equals(node));
-        Node node2 = Node.create("Lines.1",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
         assertTrue(nodeRef.compareTo(nodeRef2) > 0);
         assertTrue(nodeRef2.compareTo(nodeRef) < 0);
@@ -232,9 +232,9 @@ public class NodeRefTest {
 
     @Test
     public void testUpdate() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
         NodeRef updated = nodeRef.update(
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
@@ -248,15 +248,15 @@ public class NodeRefTest {
 
     @Test
     public void testCreateRoot() {
-        Node node = Node.create(NodeRef.ROOT,
+        Node node = RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT,
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef root = NodeRef.createRoot(node);
         assertEquals(node, root.getNode());
 
-        Node node2 = Node.create("nonRootPath",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("nonRootPath",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         exception.expect(IllegalArgumentException.class);
         NodeRef.createRoot(node2);
 
@@ -300,28 +300,28 @@ public class NodeRefTest {
 
     @Test
     public void testHashCode() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef = NodeRef.create("Points", node);
-        Node node2 = Node.create("Lines.1",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
         assertNotSame(nodeRef.hashCode(), nodeRef2.hashCode());
 
-        Node node3 = Node.create(NodeRef.ROOT,
+        Node node3 = RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT,
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
         NodeRef root = NodeRef.createRoot(node3);
         root.hashCode();
     }
 
     @Test
     public void testIntersects() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, new Envelope(0, 1, 2, 3));
+                TYPE.FEATURE, new Envelope(0, 1, 2, 3), null);
         NodeRef nodeRef = NodeRef.create("Points", node);
         assertTrue(nodeRef.intersects(new Envelope(0, 0.5, 2, 2.5)));
         assertFalse(nodeRef.intersects(new Envelope(2, 3, 2, 3)));
@@ -329,9 +329,9 @@ public class NodeRefTest {
 
     @Test
     public void testExpand() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, new Envelope(0, 1, 2, 3));
+                TYPE.FEATURE, new Envelope(0, 1, 2, 3), null);
         NodeRef nodeRef = NodeRef.create("Points", node);
         Envelope env = new Envelope(1, 3, 1, 2);
         nodeRef.expand(env);

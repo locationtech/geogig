@@ -29,7 +29,13 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Or;
@@ -50,11 +56,6 @@ import org.opengis.filter.spatial.Touches;
 import org.opengis.filter.spatial.Within;
 
 import com.google.common.collect.ImmutableMap;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
 
 public class PrePostFilterSplitterTest {
 
@@ -83,7 +84,8 @@ public class PrePostFilterSplitterTest {
         Map<String, Object> extraData = ImmutableMap.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
                 materializedAttributes);
 
-        testNode = Node.create("testFid", oid, metadataId, TYPE.FEATURE, bounds, extraData);
+        testNode = RevObjectFactory.defaultInstance().createNode("testFid", oid, metadataId,
+                TYPE.FEATURE, bounds, extraData);
 
         builder = new PrePostFilterSplitter().extraAttributes(materializedAttributes.keySet());
     }

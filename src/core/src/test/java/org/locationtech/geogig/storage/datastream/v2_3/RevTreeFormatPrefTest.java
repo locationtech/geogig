@@ -35,6 +35,7 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
@@ -129,7 +130,8 @@ public class RevTreeFormatPrefTest {
         RevTree tree;
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
         for (int i = 0; i < 32; i++) {
-            buckets.put(i, Bucket.create(hashString("b" + i), new Envelope(-i, -i, i, i)));
+            buckets.put(i, RevObjectFactory.defaultInstance().createBucket(hashString("b" + i),
+                    new Envelope(-i, -i, i, i)));
         }
         tree = tree(1024, null, null, buckets);
         encodeDecode(tree);

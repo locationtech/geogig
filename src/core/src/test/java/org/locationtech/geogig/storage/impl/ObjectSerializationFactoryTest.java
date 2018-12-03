@@ -50,8 +50,8 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
@@ -162,26 +162,29 @@ public abstract class ObjectSerializationFactoryTest {
                 UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"));
         featureType = DataUtilities.createType(namespace, typeName, typeSpec);
 
-        ImmutableList<Node> features = ImmutableList.of(Node.create("foo",
-                RevObjectTestSupport.hashString("nodeid"),
-                RevObjectTestSupport.hashString("metadataid"), RevObject.TYPE.FEATURE, null));
-        ImmutableList<Node> spatialFeatures = ImmutableList
-                .of(Node.create("foo", RevObjectTestSupport.hashString("nodeid"),
+        ImmutableList<Node> features = ImmutableList.of(RevObjectFactory.defaultInstance()
+                .createNode("foo", RevObjectTestSupport.hashString("nodeid"),
+                        RevObjectTestSupport.hashString("metadataid"), RevObject.TYPE.FEATURE, null,
+                        null));
+        ImmutableList<Node> spatialFeatures = ImmutableList.of(RevObjectFactory.defaultInstance()
+                .createNode("foo", RevObjectTestSupport.hashString("nodeid"),
                         RevObjectTestSupport.hashString("metadataid"), RevObject.TYPE.FEATURE,
-                        new Envelope(0.0000001, 0.0000002, 0.0000001, 0.0000002)));
-        ImmutableList<Node> trees = ImmutableList.of(Node.create("bar",
-                RevObjectTestSupport.hashString("barnodeid"),
-                RevObjectTestSupport.hashString("barmetadataid"), RevObject.TYPE.TREE, null));
-        ImmutableList<Node> spatialTrees = ImmutableList
-                .of(Node.create("bar", RevObjectTestSupport.hashString("barnodeid"),
+                        new Envelope(0.0000001, 0.0000002, 0.0000001, 0.0000002), null));
+        ImmutableList<Node> trees = ImmutableList.of(RevObjectFactory.defaultInstance().createNode(
+                "bar", RevObjectTestSupport.hashString("barnodeid"),
+                RevObjectTestSupport.hashString("barmetadataid"), RevObject.TYPE.TREE, null, null));
+        ImmutableList<Node> spatialTrees = ImmutableList.of(RevObjectFactory.defaultInstance()
+                .createNode("bar", RevObjectTestSupport.hashString("barnodeid"),
                         RevObjectTestSupport.hashString("barmetadataid"), RevObject.TYPE.TREE,
-                        new Envelope(1, 2, 1, 2)));
+                        new Envelope(1, 2, 1, 2), null));
 
         ImmutableSortedMap<Integer, Bucket> spatialBuckets = ImmutableSortedMap.of(1,
-                Bucket.create(RevObjectTestSupport.hashString("buckettree"), new Envelope()));
+                RevObjectFactory.defaultInstance().createBucket(
+                        RevObjectTestSupport.hashString("buckettree"), new Envelope()));
 
-        ImmutableSortedMap<Integer, Bucket> buckets = ImmutableSortedMap.of(1, Bucket
-                .create(RevObjectTestSupport.hashString("buckettree"), new Envelope(1, 2, 1, 2)));
+        ImmutableSortedMap<Integer, Bucket> buckets = ImmutableSortedMap.of(1,
+                RevObjectFactory.defaultInstance().createBucket(
+                        RevObjectTestSupport.hashString("buckettree"), new Envelope(1, 2, 1, 2)));
 
         tree1_leaves = RevTreeBuilder.build(1L, 0, null, features, null);
         tree2_internal = RevTreeBuilder.build(0, trees.size(), trees, null, null);
@@ -474,8 +477,9 @@ public abstract class ObjectSerializationFactoryTest {
         extraData = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
                 (Object) map1, "and", (Object) map2);
 
-        Node n = Node.create("fid", RevObjectTestSupport.hashString("id"), ObjectId.NULL,
-                TYPE.FEATURE, null, extraData);
+        Node n = RevObjectFactory.defaultInstance().createNode("fid",
+                RevObjectTestSupport.hashString("id"), ObjectId.NULL, TYPE.FEATURE, null,
+                extraData);
 
         RevTree tree = RevTreeBuilder.build(1, 0, null, ImmutableList.of(n), null);
 
@@ -582,8 +586,8 @@ public abstract class ObjectSerializationFactoryTest {
     private SortedMap<Integer, Bucket> createBuckets(int count) {
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
         for (int i = 0; i < count; i++) {
-            Bucket bucket = Bucket.create(RevObjectTestSupport.hashString("b" + i),
-                    new Envelope(i, i * 2, i, i * 2));
+            Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
+                    RevObjectTestSupport.hashString("b" + i), new Envelope(i, i * 2, i, i * 2));
             buckets.put(i, bucket);
         }
         return buckets;

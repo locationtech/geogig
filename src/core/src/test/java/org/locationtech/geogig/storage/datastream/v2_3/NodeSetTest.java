@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -103,8 +104,8 @@ public class NodeSetTest {
     public void testLazyNodeGetExtaData() throws IOException {
         final Map<String, Object> expected = extraData(0);
 
-        final Node originalNode = Node.create("feature-0", RevObjectTestSupport.hashString("1"),
-                ObjectId.NULL, TYPE.FEATURE, null, expected);
+        final Node originalNode = RevObjectFactory.defaultInstance().createNode("feature-0",
+                RevObjectTestSupport.hashString("1"), ObjectId.NULL, TYPE.FEATURE, null, expected);
 
         NodeSet nodeset = encodedDecode(Collections.singletonList(originalNode), TYPE.FEATURE);
 
@@ -117,12 +118,12 @@ public class NodeSetTest {
     public void testLazyNodeGetExtaDataValue() throws IOException {
         final Map<String, Object> expected = extraData(0);
 
-        final Node originalNode = Node.create("feature-0", RevObjectTestSupport.hashString("1"),
-                ObjectId.NULL, TYPE.FEATURE, null, expected);
+        final Node originalNode = RevObjectFactory.defaultInstance().createNode("feature-0",
+                RevObjectTestSupport.hashString("1"), ObjectId.NULL, TYPE.FEATURE, null, expected);
 
         assertEquals(expected.size(), originalNode.getExtraData().size());
         assertEquals(expected, originalNode.getExtraData());
-        
+
         NodeSet nodeset = encodedDecode(Collections.singletonList(originalNode), TYPE.FEATURE);
 
         Node lazyNode = nodeset.build().get(0);
@@ -183,7 +184,8 @@ public class NodeSetTest {
 
             extraData = withExtraData ? extraData(i) : null;
 
-            Node node = Node.create(name, oid, metadataId, type, bounds, extraData);
+            Node node = RevObjectFactory.defaultInstance().createNode(name, oid, metadataId, type,
+                    bounds, extraData);
             nodes.add(node);
         }
         return nodes;

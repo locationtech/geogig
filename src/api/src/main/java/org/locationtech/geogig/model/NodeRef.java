@@ -16,13 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * A reference to a {@link Node} with extra data to fully address it on a revision tree, including
@@ -476,7 +477,8 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         checkNotNull(metadataId);
         String parentPath = NodeRef.parentPath(treePath);
         String treeName = NodeRef.nodeFromPath(treePath);
-        Node treeNode = Node.tree(treeName, id, metadataId);
+        Node treeNode = RevObjectFactory.defaultInstance().createNode(treeName, id, metadataId,
+                TYPE.TREE, null, null);
         return NodeRef.create(parentPath, treeNode);
     }
 }

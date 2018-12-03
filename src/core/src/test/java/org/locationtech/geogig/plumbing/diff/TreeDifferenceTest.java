@@ -21,6 +21,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 
 import com.google.common.base.Strings;
 
@@ -188,7 +189,8 @@ public class TreeDifferenceTest extends Assert {
         if (metadataId == null) {
             metadataId = ObjectId.NULL;
         }
-        Node node = Node.create(name, treeId, metadataId, TYPE.TREE, null);
+        Node node = RevObjectFactory.defaultInstance().createNode(name, treeId, metadataId,
+                TYPE.TREE, null, null);
         return node;
     }
 

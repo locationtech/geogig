@@ -24,10 +24,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
-import org.locationtech.jts.geom.Envelope;
 
 public class RevTreeTest {
     @Rule
@@ -54,13 +54,14 @@ public class RevTreeTest {
         SortedMap<Integer, Bucket> buckets = new TreeMap<Integer, Bucket>();
         List<Node> trees = new LinkedList<Node>();
         List<Node> features = new LinkedList<Node>();
-        
-        final Node testNode = Node.create("Points", ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL, TYPE.TREE, null);
-        final Bucket testBucket = Bucket.create(
+
+        final Node testNode = RevObjectFactory.defaultInstance().createNode("Points",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
+                TYPE.TREE, null, null);
+        final Bucket testBucket = RevObjectFactory.defaultInstance().createBucket(
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0002"),
                 new Envelope(0, 0, 1, 1));
-        
-        
+
         RevTree testTree = new RevTree() {
             @Override
             public ObjectId getId() {
@@ -91,9 +92,9 @@ public class RevTreeTest {
             public ImmutableSortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.copyOf(buckets);
             }
-            
+
         };
-        
+
         assertTrue(testTree.isEmpty());
         trees.add(testNode);
         assertFalse(testTree.isEmpty());
@@ -192,12 +193,12 @@ public class RevTreeTest {
         List<Node> trees = new LinkedList<Node>();
         List<Node> features = new LinkedList<Node>();
 
-        final Node testNode1 = Node.create("Points",
+        final Node testNode1 = RevObjectFactory.defaultInstance().createNode("Points",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.TREE, null);
-        final Node testNode2 = Node.create("Points.1",
+                TYPE.TREE, null, null);
+        final Node testNode2 = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
 
         Comparator<Node> comparator = new Comparator<Node>() {
             @Override

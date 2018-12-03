@@ -9,19 +9,15 @@
  */
 package org.locationtech.geogig.model;
 
-import static com.google.common.base.Optional.fromNullable;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
 
 /**
  * An identifier->object id mapping for an object
@@ -63,8 +59,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
     /**
      * Provides for natural ordering of {@code Node}, based on {@link #getName() name}
      */
-    @Override
-    public final int compareTo(Node o) {
+    public final @Override int compareTo(Node o) {
         int c = getName().compareTo(o.getName());
         if (c == 0) {
             c = getType().compareTo(o.getType());
@@ -78,133 +73,23 @@ public abstract class Node implements Bounded, Comparable<Node> {
     /**
      * Hash code is based on name and object id
      */
-    @Override
-    public final int hashCode() {
-        return 17 ^ getType().hashCode() * getName().hashCode() * getObjectId().hashCode();
+    public final @Override int hashCode() {
+        return RevObjects.hashCode(this);
     }
 
     /**
      * Equality check based on {@link #getName() name}, {@link #getType() type}, and
      * {@link #getObjectId() objectId}; {@link #getMetadataId()} is NOT part of the equality check.
      */
-    @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof Node)) {
-            return false;
-        }
-        Node r = (Node) o;
-        return getType().equals(r.getType()) && getName().equals(r.getName())
-                && getObjectId().equals(r.getObjectId());
+    public final @Override boolean equals(Object o) {
+        return RevObjects.equals(this, o);
     }
 
     /**
      * @return the Node represented as a readable string.
      */
-    @Override
-    public String toString() {
-        return new StringBuilder(getClass().getSimpleName()).append('[').append(getName())
-                .append(" -> ").append(getObjectId()).append(']').toString();
-    }
-
-    private abstract static class BaseNode extends Node {
-
-        /*
-         * The name of the element
-         */
-        private final String name;
-
-        /**
-         * Optional ID corresponding to metadata for the element
-         */
-        @Nullable
-        private final ObjectId metadataId;
-
-        /**
-         * Id of the object this ref points to
-         */
-        private final int objectId_h1;
-
-        private final long objectId_h2, objectId_h3;
-
-        private final ExtraData extraData;
-
-        private final float bounds_x1, bounds_x2, bounds_y1, bounds_y2;
-
-        private BaseNode(final String name, final ObjectId oid, final ObjectId metadataId,
-                @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
-            checkNotNull(name);
-            checkNotNull(oid);
-            checkNotNull(metadataId);
-            this.name = name;
-            this.objectId_h1 = RevObjects.h1(oid);
-            this.objectId_h2 = RevObjects.h2(oid);
-            this.objectId_h3 = RevObjects.h3(oid);
-            this.metadataId = metadataId.isNull() ? null : metadataId;
-            this.extraData = ExtraData.of(extraData);
-
-            Float32Bounds bbox = Float32Bounds.valueOf(bounds);
-            bounds_x1 = bbox.xmin;
-            bounds_x2 = bbox.xmax;
-            bounds_y1 = bbox.ymin;
-            bounds_y2 = bbox.ymax;
-        }
-
-        @Override
-        public Optional<ObjectId> getMetadataId() {
-            return Optional.fromNullable(metadataId);
-        }
-
-        /**
-         * @return the name of the {@link RevObject} this node points to
-         */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * @return the id of the {@link RevObject} this Node points to
-         */
-        public ObjectId getObjectId() {
-            return ObjectId.create(objectId_h1, objectId_h2, objectId_h3);
-        }
-
-        @Override
-        public boolean intersects(Envelope env) {
-            if (isBoundsNull() || env.isNull()) {
-                return false;
-            }
-            return boundsInternal().intersects(env);
-        }
-
-        @Override
-        public void expand(Envelope env) {
-            if (!isBoundsNull()) {
-                boundsInternal().expand(env);
-            }
-        }
-
-        @Override
-        public Optional<Envelope> bounds() {
-            return fromNullable(boundsInternal().isNull() ? null : boundsInternal().asEnvelope());
-        }
-
-        private Float32Bounds boundsInternal() {
-            return Float32Bounds.valueOf(bounds_x1, bounds_x2, bounds_y1, bounds_y2);
-        }
-
-        private final boolean isBoundsNull() {
-            return bounds_x1 > bounds_x2;
-        }
-
-        @Override
-        public Map<String, Object> getExtraData() {
-            return extraData.asMap();
-        }
-
-        public @Override @Nullable Object getExtraData(String key) {
-            return extraData.get(key);
-        }
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 
     public Node update(final ObjectId newId) {
@@ -213,130 +98,35 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
     public Node update(final ObjectId newId, final @Nullable Envelope newBounds) {
         ObjectId mdId = getMetadataId().or(ObjectId.NULL);
-        return Node.create(getName(), newId, mdId, getType(), newBounds, getExtraData());
+
+        return RevObjectFactory.defaultInstance().createNode(getName(), newId, mdId, getType(),
+                newBounds, getExtraData());
     }
 
+    /**
+     * @deprecated use {@link RevObjectFactory#createNode}
+     */
     public static Node tree(final String name, final ObjectId oid, final ObjectId metadataId) {
         return create(name, oid, metadataId, TYPE.TREE, null);
     }
 
+    /**
+     * @deprecated use {@link RevObjectFactory#createNode}
+     */
     public static Node create(final String name, final ObjectId oid, final ObjectId metadataId,
             final TYPE type, @Nullable final Envelope bounds) {
 
         return create(name, oid, metadataId, type, bounds, null);
     }
 
-    public static Node create(final String name, final ObjectId oid, final ObjectId metadataId,
-            final TYPE type, @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
-        checkNotNull(name, "name");
-        checkNotNull(oid, "oid");
-        checkNotNull(metadataId, "metadataId");
-        checkNotNull(type, "type");
-
-        bounds = bounds == null || bounds.isNull() ? null : bounds;
-
-        switch (type) {
-        case FEATURE:
-            return new FeatureNode(name, oid, metadataId, bounds, extraData);
-        case TREE:
-            return new TreeNode(name, oid, metadataId, bounds, extraData);
-        default:
-            throw new IllegalArgumentException(
-                    "Only FEATURE and TREE nodes can be created, got type " + type);
-        }
-    }
-
-    public static @Nullable Envelope makePrecise(@Nullable Envelope bounds) {
-        Envelope float32Bounds = Float32Bounds.valueOf(bounds).asEnvelope();
-        return float32Bounds.isNull() ? null : float32Bounds;
-    }
-
-    private static final class TreeNode extends BaseNode {
-
-        // dim0(0),dim0(1),dim1(0),dim1(1)
-        public TreeNode(String name, ObjectId oid, ObjectId mdid, @Nullable Envelope env,
-                @Nullable Map<String, Object> extraData) {
-            super(name, oid, mdid, env, extraData);
-        }
-
-        @Override
-        public final TYPE getType() {
-            return TYPE.TREE;
-        }
-
-    }
-
-    private static final class FeatureNode extends BaseNode {
-
-        // dim0(0),dim1(0),dim0(1),dim1(1)
-        public FeatureNode(String name, ObjectId oid, ObjectId mdid, @Nullable Envelope env,
-                @Nullable Map<String, Object> extraData) {
-            super(name, oid, mdid, env, extraData);
-        }
-
-        @Override
-        public final TYPE getType() {
-            return TYPE.FEATURE;
-        }
-
-    }
-
     /**
-     * Holds on the node's extra data as an array of objects to lower the memory impact of HashMap,
-     * and makes sure the returned map is a recursive safe copy in order to preserve the node's
-     * immutability
-     *
+     * @deprecated use {@link RevObjectFactory#createNode}
      */
-    private static class ExtraData {
-        private static ExtraData EMPTY = new ExtraData(new Object[0]);
+    public static Node create(final @NonNull String name, final @NonNull ObjectId oid,
+            final @NonNull ObjectId metadataId, final @NonNull TYPE type, @Nullable Envelope bounds,
+            @Nullable Map<String, Object> extraData) {
 
-        private Object[] kvp;
-
-        ExtraData(Object[] kvp) {
-            this.kvp = kvp;
-        }
-
-        public @Nullable Object get(String key) {
-            for (int i = 0; i < kvp.length; i += 2) {
-                if (Objects.equals(kvp[i], key)) {
-                    return safeCopy(kvp[i + 1]);
-                }
-            }
-            return null;
-        }
-
-        public Map<String, Object> asMap() {
-            final int size = kvp.length;
-            if (0 == size) {
-                return ImmutableMap.of();
-            }
-            Map<String, Object> map = new HashMap<>(size);
-            for (int i = 0; i < size; i += 2) {
-                String k = (String) kvp[i];
-                Object v = safeCopy(kvp[i + 1]);
-                map.put(k, v);
-            }
-            return map;
-        }
-
-        static ExtraData of(@Nullable Map<String, Object> map) {
-            if (null == map || map.isEmpty()) {
-                return EMPTY;
-            }
-            final int size = map.size();
-            Object[] kvp = new Object[2 * size];
-            int i = 0;
-            for (Map.Entry<String, Object> e : map.entrySet()) {
-                kvp[i] = e.getKey();
-                kvp[i + 1] = safeCopy(e.getValue());
-                i += 2;
-            }
-            return new ExtraData(kvp);
-        }
-
-        private static Object safeCopy(Object v) {
-            Object safeCopy = FieldType.forValue(v).safeCopy(v);
-            return safeCopy;
-        }
+        return RevObjectFactory.defaultInstance().createNode(name, oid, metadataId, type, bounds,
+                extraData);
     }
 }

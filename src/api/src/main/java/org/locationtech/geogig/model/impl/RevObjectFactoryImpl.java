@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.SortedMap;
 
@@ -20,15 +21,18 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.LeafTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.NodeTree;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
@@ -74,6 +78,30 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
             final int childTreeCount, @NonNull SortedMap<Integer, Bucket> buckets) {
 
         return new NodeTree(id, size, childTreeCount, buckets);
+    }
+
+    public @Override Bucket createBucket(final @NonNull ObjectId bucketTree,
+            final @Nullable Envelope bounds) {
+        Preconditions.checkNotNull(bucketTree);
+        Float32Bounds b32 = Float32Bounds.valueOf(bounds);
+        return new BucketImpl(bucketTree, b32);
+    }
+
+    public @Override Node createNode(final @NonNull String name, final @NonNull ObjectId oid,
+            final @NonNull ObjectId metadataId, final @NonNull TYPE type, @Nullable Envelope bounds,
+            @Nullable Map<String, Object> extraData) {
+
+        bounds = bounds == null || bounds.isNull() ? null : bounds;
+
+        switch (type) {
+        case FEATURE:
+            return new FeatureNode(name, oid, metadataId, bounds, extraData);
+        case TREE:
+            return new TreeNode(name, oid, metadataId, bounds, extraData);
+        default:
+            throw new IllegalArgumentException(
+                    "Only FEATURE and TREE nodes can be created, got type " + type);
+        }
     }
 
     public @Override @NonNull RevTag createTag(@NonNull ObjectId id, @NonNull String name,

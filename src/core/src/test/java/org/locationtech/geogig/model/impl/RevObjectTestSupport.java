@@ -26,6 +26,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
@@ -88,8 +89,8 @@ public class RevObjectTestSupport {
             RevTree subtree = createFeaturesTreeBuilder(source, "subtree" + treeN,
                     featuresPerSubtre).build();
             source.put(subtree);
-            builder.put(
-                    Node.create("subtree" + treeN, subtree.getId(), metadataId, TYPE.TREE, null));
+            builder.put(RevObjectFactory.defaultInstance().createNode("subtree" + treeN,
+                    subtree.getId(), metadataId, TYPE.TREE, null, null));
         }
         return builder;
     }
@@ -185,8 +186,8 @@ public class RevObjectTestSupport {
         } else {// predictable id
             oid = RevObjectTestSupport.hashString(name);
         }
-        Node ref = Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE,
-                new Envelope(index, index + 1, index, index + 1));
+        Node ref = RevObjectFactory.defaultInstance().createNode(name, oid, ObjectId.NULL,
+                TYPE.FEATURE, new Envelope(index, index + 1, index, index + 1), null);
         return ref;
     }
 

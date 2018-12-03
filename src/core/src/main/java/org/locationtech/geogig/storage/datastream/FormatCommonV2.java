@@ -453,7 +453,7 @@ public class FormatCommonV2 {
         } else {
             bounds = null;
         }
-        return Bucket.create(objectId, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(objectId, bounds);
     }
 
     public void writeNode(Node node, DataOutput data) throws IOException {
@@ -576,7 +576,8 @@ public class FormatCommonV2 {
         }
 
         final Node node;
-        node = Node.create(name, objectId, metadataId, contentType, bbox, extraData);
+        node = RevObjectFactory.defaultInstance().createNode(name, objectId, metadataId,
+                contentType, bbox, extraData);
         return node;
     }
 

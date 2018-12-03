@@ -204,7 +204,7 @@ public class ObjectCacheStressTest {
         for (int b = 0; b < bucketCount; b++) {
             ObjectId bucketTree = RevObjectTestSupport.hashString("b" + b);
             Envelope bounds = new Envelope(0, b, 0, b);
-            Bucket bucket = Bucket.create(bucketTree, bounds);
+            Bucket bucket = RevObjectFactory.defaultInstance().createBucket(bucketTree, bounds);
             buckets.put(b, bucket);
         }
         final ObjectId fakeId = RevObjectTestSupport.hashString(String.valueOf(i));
@@ -238,7 +238,8 @@ public class ObjectCacheStressTest {
         String name = "Node-" + n;
         ObjectId oid = RevObjectTestSupport.hashString(name);
         Envelope bounds = new Envelope(-1 * n, n, -1 * n, n);
-        return Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
+        return RevObjectFactory.defaultInstance().createNode(name, oid, ObjectId.NULL, TYPE.FEATURE,
+                bounds, null);
     }
 
     private List<RevFeature> createFeatures(int count) {

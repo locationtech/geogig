@@ -28,6 +28,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
@@ -77,10 +78,11 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
     @Test
     public void testFullEntryNullParentPath() throws IOException {
         // null parent path is only allowed for NodeRef.ROOT named nodes
-        Node ln = Node.create(NodeRef.ROOT, RevTree.EMPTY_TREE_ID, ObjectId.NULL, TYPE.TREE,
-                new Envelope(0, 0, 0, 0));
-        Node rn = Node.create(NodeRef.ROOT, RevObjectTestSupport.hashString("rnd"), ObjectId.NULL,
-                TYPE.TREE, new Envelope(0, 1, 0, 1));
+        Node ln = RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT, RevTree.EMPTY_TREE_ID,
+                ObjectId.NULL, TYPE.TREE, new Envelope(0, 0, 0, 0), null);
+        Node rn = RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT,
+                RevObjectTestSupport.hashString("rnd"), ObjectId.NULL, TYPE.TREE,
+                new Envelope(0, 1, 0, 1), null);
 
         ObjectId metadataId = RevObjectTestSupport.hashString("test");
 
@@ -100,10 +102,11 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
     @Test
     public void testNoDefaultMetadataId() throws IOException {
         // null parent path is only allowed for NodeRef.ROOT named nodes
-        Node ln = Node.create(NodeRef.ROOT, RevTree.EMPTY_TREE_ID, ObjectId.NULL, TYPE.TREE,
-                new Envelope(0, 0, 0, 0));
-        Node rn = Node.create(NodeRef.ROOT, RevObjectTestSupport.hashString("rnd"), ObjectId.NULL,
-                TYPE.TREE, new Envelope(0, 1, 0, 1));
+        Node ln = RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT, RevTree.EMPTY_TREE_ID,
+                ObjectId.NULL, TYPE.TREE, new Envelope(0, 0, 0, 0), null);
+        Node rn = RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT,
+                RevObjectTestSupport.hashString("rnd"), ObjectId.NULL, TYPE.TREE,
+                new Envelope(0, 1, 0, 1), null);
 
         ObjectId metadataId = ObjectId.NULL;
 

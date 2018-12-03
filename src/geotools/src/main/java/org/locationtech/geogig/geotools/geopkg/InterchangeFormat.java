@@ -39,6 +39,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.geom.GeoPkgGeomReader;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -46,8 +47,8 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
@@ -222,7 +223,7 @@ public class InterchangeFormat {
             metadata.createChangeLog(targetTableName);
             metadata.populateChangeLog(targetTableName, changedNodes);
         } finally {
-        	geopackage.close();
+            geopackage.close();
         }
 
     }
@@ -390,9 +391,10 @@ public class InterchangeFormat {
                     final RevTree newFeatureTree = importAuditLog(store, currentFeatureTree,
                             changes, fidMappings, tableReport);
 
-                    Node featureTreeNode = Node.create(featureTreeRef.name(),
-                            newFeatureTree.getId(), featureTreeRef.getMetadataId(), TYPE.TREE,
-                            SpatialOps.boundsOf(newFeatureTree));
+                    Node featureTreeNode = RevObjectFactory.defaultInstance().createNode(
+                            featureTreeRef.name(), newFeatureTree.getId(),
+                            featureTreeRef.getMetadataId(), TYPE.TREE,
+                            SpatialOps.boundsOf(newFeatureTree), null);
 
                     newTreeBuilder.put(featureTreeNode);
                 }
@@ -444,8 +446,9 @@ public class InterchangeFormat {
                     break;
                 case ADDED:
                 case MODIFIED:
-                    Node node = Node.create(featureId, feature.getId(), ObjectId.NULL, TYPE.FEATURE,
-                            SpatialOps.boundsOf(feature));
+                    Node node = RevObjectFactory.defaultInstance().createNode(featureId,
+                            feature.getId(), ObjectId.NULL, TYPE.FEATURE,
+                            SpatialOps.boundsOf(feature), null);
                     builder.put(node);
                     return feature;
                 default:

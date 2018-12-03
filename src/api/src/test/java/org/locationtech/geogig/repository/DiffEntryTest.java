@@ -20,12 +20,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevObject.TYPE;
-
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.jts.geom.Envelope;
 
 public class DiffEntryTest {
@@ -43,17 +43,20 @@ public class DiffEntryTest {
 
     @Test
     public void testConstructorAndAccessors() {
-        Node node = Node.create("Points.1",
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.valueOf("abc123000000000000001234567890abcdef0010"),
-                TYPE.FEATURE, null);
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"),
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0010"), TYPE.FEATURE, null,
+                null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
-        Node node2 = Node.create("Lines.1",
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.valueOf("abc123000000000000001234567890abcdef0011"),
-                TYPE.FEATURE, null);
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0011"), TYPE.FEATURE, null,
+                null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
-        Node node3 = Node.create("Lines",
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), ObjectId.valueOf("abc123000000000000001234567890abcdef0012"),
-                TYPE.TREE, null);
+        Node node3 = RevObjectFactory.defaultInstance().createNode("Lines",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"),
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0012"), TYPE.TREE, null,
+                null);
         NodeRef nodeRef3 = new NodeRef(node3, NodeRef.ROOT, ObjectId.NULL);
 
         try {
@@ -143,13 +146,15 @@ public class DiffEntryTest {
 
     @Test
     public void testToString() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"),
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0010"), TYPE.FEATURE, null);
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0010"), TYPE.FEATURE, null,
+                null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
-        Node node2 = Node.create("Lines.1",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0011"), TYPE.FEATURE, null);
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0011"), TYPE.FEATURE, null,
+                null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
 
         DiffEntry entry = new DiffEntry(nodeRef, null);
@@ -171,13 +176,15 @@ public class DiffEntryTest {
 
     @Test
     public void testEquals() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"),
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0010"), TYPE.FEATURE, null);
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0010"), TYPE.FEATURE, null,
+                null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
-        Node node2 = Node.create("Lines.1",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0011"), TYPE.FEATURE, null);
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0011"), TYPE.FEATURE, null,
+                null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
 
         DiffEntry entry1 = new DiffEntry(nodeRef, null);
@@ -200,15 +207,15 @@ public class DiffEntryTest {
 
     @Test
     public void testExpand() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"),
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0010"), TYPE.FEATURE,
-                new Envelope(0, 1, 0, 1));
+                new Envelope(0, 1, 0, 1), null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
-        Node node2 = Node.create("Lines.1",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0011"), TYPE.FEATURE,
-                new Envelope(1, 2, 1, 2));
+                new Envelope(1, 2, 1, 2), null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
 
         DiffEntry entry1 = new DiffEntry(nodeRef, null);
@@ -228,15 +235,15 @@ public class DiffEntryTest {
 
     @Test
     public void testHashCode() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"),
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0010"), TYPE.FEATURE,
-                new Envelope(0, 1, 0, 1));
+                new Envelope(0, 1, 0, 1), null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
-        Node node2 = Node.create("Lines.1",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0011"), TYPE.FEATURE,
-                new Envelope(1, 2, 1, 2));
+                new Envelope(1, 2, 1, 2), null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
 
         DiffEntry entry1 = new DiffEntry(nodeRef, null);
@@ -250,19 +257,20 @@ public class DiffEntryTest {
 
     @Test
     public void testComparator() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"),
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0010"), TYPE.FEATURE,
-                new Envelope(0, 1, 0, 1));
+                new Envelope(0, 1, 0, 1), null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
-        Node node2 = Node.create("Lines.1",
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0011"), TYPE.FEATURE,
-                new Envelope(1, 2, 1, 2));
+                new Envelope(1, 2, 1, 2), null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
-        Node node3 = Node.create("Lines",
+        Node node3 = RevObjectFactory.defaultInstance().createNode("Lines",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0002"),
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0012"), TYPE.TREE, null);
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0012"), TYPE.TREE, null,
+                null);
         NodeRef nodeRef3 = new NodeRef(node3, NodeRef.ROOT, ObjectId.NULL);
 
         DiffEntry entry1 = new DiffEntry(null, nodeRef);

@@ -26,6 +26,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
@@ -203,7 +204,8 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
                 if (filterApplies(path, treeDifference.getRightTree())) {
                     // can't optimize
                     RevTree newTree = applyChanges(ref, null);
-                    Node newNode = Node.tree(ref.name(), newTree.getId(), ref.getMetadataId());
+                    Node newNode = RevObjectFactory.defaultInstance().createNode(ref.name(),
+                            newTree.getId(), ref.getMetadataId(), TYPE.TREE, null, null);
                     MutableTree leftTree = treeDifference.getLeftTree();
                     leftTree.forceChild(ref.getParentPath(), newNode);
                 }
@@ -228,7 +230,8 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
                 if (filterApplies(path, rightTree)) {
                     // can't optimize
                     RevTree newTree = applyChanges(null, ref);
-                    Node newNode = Node.tree(ref.name(), newTree.getId(), ref.getMetadataId());
+                    Node newNode = RevObjectFactory.defaultInstance().createNode(ref.name(),
+                            newTree.getId(), ref.getMetadataId(), TYPE.TREE, null, null);
                     MutableTree leftTree = treeDifference.getLeftTree();
                     leftTree.forceChild(ref.getParentPath(), newNode);
                 }
@@ -294,8 +297,8 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
             RevTree tree = applyChanges(leftTreeRef, rightTreeRef);
 
             Envelope bounds = SpatialOps.boundsOf(tree);
-            Node newTreeNode = Node.create(rightTreeRef.name(), tree.getId(),
-                    rightTreeRef.getMetadataId(), TYPE.TREE, bounds);
+            Node newTreeNode = RevObjectFactory.defaultInstance().createNode(rightTreeRef.name(),
+                    tree.getId(), rightTreeRef.getMetadataId(), TYPE.TREE, bounds, null);
 
             MutableTree leftRoot = treeDifference.getLeftTree();
             String parentPath = rightTreeRef.getParentPath();

@@ -40,7 +40,8 @@ public class NodeTest {
         ObjectId oid = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
         Map<String, Object> extraData = new HashMap<String, Object>();
         extraData.put("key", "value");
-        Node node = Node.create("Points", oid, ObjectId.NULL, TYPE.TREE, null, extraData);
+        Node node = RevObjectFactory.defaultInstance().createNode("Points", oid, ObjectId.NULL,
+                TYPE.TREE, null, extraData);
         assertEquals(Optional.absent(), node.getMetadataId());
         assertEquals("Points", node.getName());
         assertEquals(oid, node.getObjectId());
@@ -50,18 +51,19 @@ public class NodeTest {
 
     @Test
     public void testIsEqual() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
-        Node node2 = Node.create("Lines.1",
+                TYPE.FEATURE, null, null);
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.FEATURE, null);
-        Node node3 = Node.create("Lines.1",
+                TYPE.FEATURE, null, null);
+        Node node3 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), TYPE.TREE, null);
-        Node node4 = Node.create("Lines.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), TYPE.TREE, null,
+                null);
+        Node node4 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0003"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
 
         assertFalse(node.equals("NotANode"));
         assertFalse(node.equals(node2));
@@ -72,23 +74,23 @@ public class NodeTest {
 
     @Test
     public void testToString() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
 
         String readableNode = node.toString();
-        String expected = "FeatureNode[Points.1 -> " + node.getObjectId() + "]";
+        String expected = "FeatureNode[Points.1 -> abc1230000000000, type: FEATURE, bounds: null]";
         assertEquals(expected, readableNode.toString());
     }
 
     @Test
     public void testCompareTo() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
-        Node node2 = Node.create("Lines.1",
+                TYPE.FEATURE, null, null);
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
 
         assertTrue(node.compareTo(node2) > 0);
         assertTrue(node2.compareTo(node) < 0);
@@ -100,7 +102,8 @@ public class NodeTest {
         ObjectId oId1 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
         ObjectId oId2 = ObjectId.valueOf("abc123000000000000001234567890abcdef0001");
         ObjectId mId = ObjectId.valueOf("abc123000000000000001234567890abcdef0002");
-        Node node = Node.create("Points.1", oId1, ObjectId.NULL, TYPE.FEATURE, null);
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1", oId1, ObjectId.NULL,
+                TYPE.FEATURE, null, null);
 
         Node updated = node.update(oId2);
         assertEquals(oId1, node.getObjectId());
@@ -112,7 +115,8 @@ public class NodeTest {
         assertEquals(node.getType(), updated.getType());
 
         // try a node with bounds
-        node = Node.create("Points.1", oId1, ObjectId.NULL, TYPE.FEATURE, new Envelope(0, 1, 2, 3));
+        node = RevObjectFactory.defaultInstance().createNode("Points.1", oId1, ObjectId.NULL,
+                TYPE.FEATURE, new Envelope(0, 1, 2, 3), null);
         updated = node.update(oId2);
         assertEquals(oId1, node.getObjectId());
         assertEquals(oId2, updated.getObjectId());
@@ -122,7 +126,8 @@ public class NodeTest {
         assertEquals(node.getType(), updated.getType());
 
         // try with a non-null metadata id
-        node = Node.create("Points.1", oId1, mId, TYPE.FEATURE, null);
+        node = RevObjectFactory.defaultInstance().createNode("Points.1", oId1, mId, TYPE.FEATURE,
+                null, null);
 
         updated = node.update(oId2);
         assertEquals(oId1, node.getObjectId());
@@ -137,12 +142,12 @@ public class NodeTest {
     @Test
     public void testCreateFeatureBoundedAndUnbounded() {
         // Create unbounded feature nodes
-        Node unbounded1 = Node.create("Points.1",
+        Node unbounded1 = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
-        Node unbounded2 = Node.create("Points.1",
+                TYPE.FEATURE, null, null);
+        Node unbounded2 = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, new Envelope());
+                TYPE.FEATURE, new Envelope(), null);
         Envelope testEnvelope = new Envelope(0, 0, 100, 100);
         assertFalse(unbounded1.bounds().isPresent());
         assertFalse(unbounded2.bounds().isPresent());
@@ -156,12 +161,12 @@ public class NodeTest {
         assertEquals(new Envelope(0, 0, 100, 100), testEnvelope);
 
         // Create bounded feature nodes
-        Node bounded1 = Node.create("Points.1",
+        Node bounded1 = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, new Envelope(0, 1, 2, 3));
-        Node bounded2 = Node.create("Points.1",
+                TYPE.FEATURE, new Envelope(0, 1, 2, 3), null);
+        Node bounded2 = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, new Envelope(0, 0, 1, 1));
+                TYPE.FEATURE, new Envelope(0, 0, 1, 1), null);
         Envelope testEnvelope2 = new Envelope(0, 0, 2, 5);
         assertTrue(bounded1.bounds().isPresent());
         assertEquals(new Envelope(0, 1, 2, 3), bounded1.bounds().get());
@@ -188,11 +193,12 @@ public class NodeTest {
     @Test
     public void testCreateTreeBoundedAndUnbounded() {
         // Create unbounded feature nodes
-        Node unbounded1 = Node.tree("Points",
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL);
-        Node unbounded2 = Node.create("Points",
+        Node unbounded1 = RevObjectFactory.defaultInstance().createNode("Points",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.TREE, new Envelope());
+                TYPE.TREE, null, null);
+        Node unbounded2 = RevObjectFactory.defaultInstance().createNode("Points",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.TREE, new Envelope(), null);
         Envelope testEnvelope = new Envelope(0, 0, 100, 100);
         assertFalse(unbounded1.bounds().isPresent());
         assertFalse(unbounded2.bounds().isPresent());
@@ -206,12 +212,12 @@ public class NodeTest {
         assertEquals(new Envelope(0, 0, 100, 100), testEnvelope);
 
         // Create bounded feature node
-        Node bounded1 = Node.create("Points",
+        Node bounded1 = RevObjectFactory.defaultInstance().createNode("Points",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.TREE, new Envelope(0, 1, 2, 3));
-        Node bounded2 = Node.create("Points",
+                TYPE.TREE, new Envelope(0, 1, 2, 3), null);
+        Node bounded2 = RevObjectFactory.defaultInstance().createNode("Points",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.TREE, new Envelope(0, 0, 1, 1));
+                TYPE.TREE, new Envelope(0, 0, 1, 1), null);
         Envelope testEnvelope2 = new Envelope(0, 0, 2, 5);
         assertTrue(bounded1.bounds().isPresent());
         assertEquals(new Envelope(0, 1, 2, 3), bounded1.bounds().get());
@@ -239,18 +245,19 @@ public class NodeTest {
     public void testCreateInvalidType() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Only FEATURE and TREE nodes can be created");
-        Node.create("Points", ObjectId.valueOf("abc123000000000000001234567890abcdef0000"),
-                ObjectId.NULL, TYPE.FEATURETYPE, null);
+        RevObjectFactory.defaultInstance().createNode("Points",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.FEATURETYPE, null, null);
     }
 
     @Test
     public void testHashCode() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
-        Node node2 = Node.create("Lines.1",
+                TYPE.FEATURE, null, null);
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+                TYPE.FEATURE, null, null);
 
         assertNotSame(node.hashCode(), node2.hashCode());
     }
@@ -275,8 +282,8 @@ public class NodeTest {
         extraData = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
                 (Object) map1, "and", (Object) map2);
 
-        Node n = Node.create("fid", RevTree.EMPTY_TREE_ID, ObjectId.NULL, TYPE.FEATURE, null,
-                extraData);
+        Node n = RevObjectFactory.defaultInstance().createNode("fid", RevTree.EMPTY_TREE_ID,
+                ObjectId.NULL, TYPE.FEATURE, null, extraData);
 
         Map<String, Object> actual = n.getExtraData();
         assertEqualsFully(extraData, actual);

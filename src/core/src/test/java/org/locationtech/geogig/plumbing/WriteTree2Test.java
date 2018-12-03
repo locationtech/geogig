@@ -681,7 +681,8 @@ public class WriteTree2Test extends RepositoryTestCase {
         String parent = NodeRef.parentPath(path);
 
         Envelope bounds = SpatialOps.boundsOf(fakenId);
-        Node node = Node.create(name, treeId, metadataId, TYPE.TREE, bounds);
+        Node node = RevObjectFactory.defaultInstance().createNode(name, treeId, metadataId,
+                TYPE.TREE, bounds, null);
         return new NodeRef(node, parent, ObjectId.NULL);
     }
 
@@ -714,7 +715,8 @@ public class WriteTree2Test extends RepositoryTestCase {
         RevFeature revFeature = RevFeatureBuilder.build(feature);
         db.put(revFeature);
         Envelope bounds = (Envelope) feature.getBounds();
-        return Node.create(id, revFeature.getId(), ObjectId.NULL, TYPE.FEATURE, bounds);
+        return RevObjectFactory.defaultInstance().createNode(id, revFeature.getId(), ObjectId.NULL,
+                TYPE.FEATURE, bounds, null);
     }
 
     private static ObjectId id(@Nullable String partialHash) {

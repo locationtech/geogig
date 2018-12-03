@@ -47,6 +47,7 @@ import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.impl.SpatialOps;
@@ -365,10 +366,12 @@ public class PreOrderDiffWalk {
 
         final ObjectId metadataId = this.metadataId == null ? ObjectId.NULL : this.metadataId;
 
-        Node lnode = Node.create(NodeRef.ROOT, left.getId(), metadataId, TYPE.TREE, lbounds);
+        Node lnode = RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT, left.getId(),
+                metadataId, TYPE.TREE, lbounds, null);
 
         Envelope rbounds = SpatialOps.boundsOf(right);
-        Node rnode = Node.create(NodeRef.ROOT, right.getId(), metadataId, TYPE.TREE, rbounds);
+        Node rnode = RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT, right.getId(),
+                metadataId, TYPE.TREE, rbounds, null);
 
         NodeRef leftRef = NodeRef.createRoot(lnode);
         NodeRef rightRef = NodeRef.createRoot(rnode);

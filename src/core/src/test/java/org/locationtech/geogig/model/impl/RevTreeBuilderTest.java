@@ -33,6 +33,8 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
@@ -148,7 +150,8 @@ public abstract class RevTreeBuilderTest {
                 }
                 String name = "Feature." + random;
                 ObjectId newid = RevObjectTestSupport.hashString(name + "changed");
-                Node ref = Node.create(name, newid, ObjectId.NULL, TYPE.FEATURE, null);
+                Node ref = RevObjectFactory.defaultInstance().createNode(name, newid, ObjectId.NULL,
+                        TYPE.FEATURE, null, null);
                 randomEdits.put(random, ref);
             }
             RevTreeBuilder mutable = createBuiler(tree);
@@ -304,8 +307,8 @@ public abstract class RevTreeBuilderTest {
         // ObjectId metadataId = ObjectId.forString("FeatureType");
         // Node ref = new Node(key, oid, metadataId, TYPE.FEATURE);
 
-        Node ref = Node.create(key, FAKE_ID, FAKE_ID, TYPE.FEATURE,
-                new Envelope(i, i + 1, i, i + 1));
+        Node ref = RevObjectFactory.defaultInstance().createNode(key, FAKE_ID, FAKE_ID,
+                TYPE.FEATURE, new Envelope(i, i + 1, i, i + 1), null);
         return ref;
     }
 
@@ -327,12 +330,12 @@ public abstract class RevTreeBuilderTest {
             b.put(n);
             n.expand(expectedBounds);
         }
-        expectedBounds = Node.makePrecise(expectedBounds);
+        expectedBounds = RevObjects.makePrecise(expectedBounds);
 
         RevTree tree = b.build();
         assertEquals(size, tree.size());
         Envelope bounds = SpatialOps.boundsOf(tree);
-        bounds = Node.makePrecise(bounds);
+        bounds = RevObjects.makePrecise(bounds);
         assertEquals(expectedBounds, bounds);
     }
 

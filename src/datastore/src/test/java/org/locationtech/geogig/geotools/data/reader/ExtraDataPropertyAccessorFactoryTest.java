@@ -37,10 +37,11 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.ImmutableMap;
-import org.locationtech.jts.geom.Envelope;
 
 public class ExtraDataPropertyAccessorFactoryTest {
 
@@ -64,12 +65,13 @@ public class ExtraDataPropertyAccessorFactoryTest {
         Map<String, Object> extraData = ImmutableMap.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
                 materializedAttributes);
 
-        testNode = Node.create("test", oid, metadataId, TYPE.FEATURE, bounds, extraData);
+        testNode = RevObjectFactory.defaultInstance().createNode("test", oid, metadataId,
+                TYPE.FEATURE, bounds, extraData);
 
         testNodeRef = new NodeRef(testNode, "fakeLayerName", metadataId);
 
         ObjectId bucketId = hashString("bucketId");
-        testBucket = Bucket.create(bucketId, bounds);
+        testBucket = RevObjectFactory.defaultInstance().createBucket(bucketId, bounds);
     }
 
     @Test

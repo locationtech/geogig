@@ -17,6 +17,7 @@ import java.io.IOException;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.jts.geom.Envelope;
 
@@ -107,7 +108,7 @@ class BucketSet {
                     maxy = in.readDouble();
                     bounds = new Envelope(minx, maxx, miny, maxy);
                 }
-                Bucket bucket = Bucket.create(id, bounds);
+                Bucket bucket = RevObjectFactory.defaultInstance().createBucket(id, bounds);
                 builder.put(Integer.valueOf(index), bucket);
             }
         } catch (IOException e) {

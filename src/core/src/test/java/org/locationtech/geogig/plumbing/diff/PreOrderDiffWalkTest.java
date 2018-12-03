@@ -46,6 +46,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -95,8 +96,8 @@ public class PreOrderDiffWalkTest {
      */
     private NodeRef nodeFor(RevTree root) {
         Envelope bounds = SpatialOps.boundsOf(root);
-        return NodeRef.createRoot(
-                Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE, bounds));
+        return NodeRef.createRoot(RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT,
+                root.getId(), ObjectId.NULL, TYPE.TREE, bounds, null));
     }
 
     @Test
@@ -361,10 +362,12 @@ public class PreOrderDiffWalkTest {
         // two leaf trees
         final RevTree left;
         final RevTree right;
-        final Node nodeChange1 = Node.create("f2", RevObjectTestSupport.hashString("forcechange"),
-                ObjectId.NULL, TYPE.FEATURE, null);
-        final Node nodeChange2 = Node.create("f3", RevObjectTestSupport.hashString("fakefake"),
-                ObjectId.NULL, TYPE.FEATURE, null);
+        final Node nodeChange1 = RevObjectFactory.defaultInstance().createNode("f2",
+                RevObjectTestSupport.hashString("forcechange"), ObjectId.NULL, TYPE.FEATURE, null,
+                null);
+        final Node nodeChange2 = RevObjectFactory.defaultInstance().createNode("f3",
+                RevObjectTestSupport.hashString("fakefake"), ObjectId.NULL, TYPE.FEATURE, null,
+                null);
         {
             left = RevObjectTestSupport.INSTANCE.createFeaturesTree(leftSource, "f", 5);
             // change two nodes
@@ -841,8 +844,10 @@ public class PreOrderDiffWalkTest {
             Node node = nr.getNode();
             if (i++ < 100) {
                 // make a change
-                node = Node.create(node.getName(), RevObjectTestSupport.hashString("changed-" + i),
-                        node.getMetadataId().or(ObjectId.NULL), TYPE.FEATURE, (Envelope) null);
+                node = RevObjectFactory.defaultInstance().createNode(node.getName(),
+                        RevObjectTestSupport.hashString("changed-" + i),
+                        node.getMetadataId().or(ObjectId.NULL), TYPE.FEATURE, (Envelope) null,
+                        null);
                 rightChanges.put(node.getName(), node);
             }
             rightBuilder.put(node);

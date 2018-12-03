@@ -27,6 +27,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.LsTreeOp;
@@ -205,8 +206,9 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
                 (treeRef) -> new DiffEntry(treeRef, null));
 
         Iterator<DiffEntry> featureDeletes = Iterators.transform(features, (featurePath) -> {
-            Node node = Node.create(NodeRef.nodeFromPath(featurePath), ObjectId.NULL, ObjectId.NULL,
-                    TYPE.FEATURE, null);
+            Node node = RevObjectFactory.defaultInstance().createNode(
+                    NodeRef.nodeFromPath(featurePath), ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE,
+                    null, null);
             String parentPath = NodeRef.parentPath(featurePath);
             NodeRef oldFeature = new NodeRef(node, parentPath, ObjectId.NULL);
             return new DiffEntry(oldFeature, null);

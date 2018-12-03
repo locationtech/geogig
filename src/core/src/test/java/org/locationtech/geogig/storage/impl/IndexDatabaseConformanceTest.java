@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -503,7 +504,8 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
                 bounds.init(x, x, y, y);
                 String name = String.format("%d_%d", x, y);
                 ObjectId oid = RevObjectTestSupport.hashString(name);
-                Node node = Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds);
+                Node node = RevObjectFactory.defaultInstance().createNode(name, oid, ObjectId.NULL,
+                        TYPE.FEATURE, bounds, null);
                 builder.put(node);
             }
             tree = builder.build();

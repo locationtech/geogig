@@ -25,6 +25,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
@@ -55,8 +56,8 @@ public class IndexTestSupport {
     public static void verifyIndex(Context context, ObjectId indexTreeId, ObjectId canonicalTreeId,
             String... extraAttributes) {
         Iterator<NodeRef> canonicalFeatures = context.command(LsTreeOp.class)
-                .setReference(canonicalTreeId.toString()).setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES)
-                .call();
+                .setReference(canonicalTreeId.toString())
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
 
         Iterator<NodeRef> indexFeatures = context.command(LsTreeOp.class)
                 .setReference(indexTreeId.toString()).setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES)
@@ -125,7 +126,8 @@ public class IndexTestSupport {
                 Envelope env = SpatialOps.boundsOf(feature);
 
                 ObjectId oid = feature.getId();
-                Node node = Node.create(fid, oid, ObjectId.NULL, TYPE.FEATURE, env);
+                Node node = RevObjectFactory.defaultInstance().createNode(fid, oid, ObjectId.NULL,
+                        TYPE.FEATURE, env, null);
                 store.put(feature);
                 builder.put(node);
             }
@@ -142,7 +144,8 @@ public class IndexTestSupport {
                 String fid = getPointFid(x, y);
                 Envelope env = new Envelope(new Coordinate(x, y));
                 ObjectId oid = RevObjectTestSupport.hashString(fid);
-                Node node = Node.create(fid, oid, ObjectId.NULL, TYPE.FEATURE, env);
+                Node node = RevObjectFactory.defaultInstance().createNode(fid, oid, ObjectId.NULL,
+                        TYPE.FEATURE, env, null);
                 nodes.add(node);
             }
         }

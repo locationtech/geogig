@@ -36,6 +36,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
@@ -200,8 +201,9 @@ public class StagingAreaImpl implements StagingArea {
             final RevTree currentTypeTree;
             if (typeTreeRef == null) {
                 ObjectId metadataId = featureRef.getMetadataId();
-                Node parentNode = Node.tree(NodeRef.nodeFromPath(typeTreePath), EMPTY_TREE_ID,
-                        metadataId);
+                Node parentNode = RevObjectFactory.defaultInstance().createNode(
+                        NodeRef.nodeFromPath(typeTreePath), EMPTY_TREE_ID, metadataId, TYPE.TREE,
+                        null, null);
                 typeTreeRef = NodeRef.create(NodeRef.parentPath(typeTreePath), parentNode);
                 currentTypeTree = EMPTY;
             } else {
@@ -319,7 +321,7 @@ public class StagingAreaImpl implements StagingArea {
             } else {
                 progress.setDescription("Done.");
             }
-        }finally {
+        } finally {
             progress.setProgressIndicator(null);
         }
         progress.complete();

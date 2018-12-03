@@ -40,6 +40,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -56,6 +57,8 @@ import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.performance.EnablePerformanceTestRule;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
@@ -63,8 +66,6 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.WKTReader;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PGObjectDatabaseStressTest {
@@ -189,8 +190,8 @@ public class PGObjectDatabaseStressTest {
 
         MemoryUsage getIfPresentTraversedMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
-        Iterable<Node> nodes = Iterables.transform(ids,
-                (id) -> Node.create(id.toString(), id, ObjectId.NULL, TYPE.FEATURE, null));
+        Iterable<Node> nodes = Iterables.transform(ids, (id) -> RevObjectFactory.defaultInstance()
+                .createNode(id.toString(), id, ObjectId.NULL, TYPE.FEATURE, null, null));
 
         // testGetAll(ids, count);
         // testGetAll(ids, count);

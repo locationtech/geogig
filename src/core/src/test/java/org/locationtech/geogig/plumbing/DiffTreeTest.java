@@ -32,6 +32,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
@@ -314,10 +315,10 @@ public class DiffTreeTest extends Assert {
 
     private RevTree createRoot(ObjectDatabase db, final RevTree tree1, final RevTree tree2) {
         RevTreeBuilder rootBuilder = CanonicalTreeBuilder.create(db);
-        rootBuilder.put(Node.create("tree1", tree1.getId(), metadataId, TYPE.TREE,
-                SpatialOps.boundsOf(tree1)));
-        rootBuilder.put(Node.create("tree2", tree2.getId(), metadataId, TYPE.TREE,
-                SpatialOps.boundsOf(tree2)));
+        rootBuilder.put(RevObjectFactory.defaultInstance().createNode("tree1", tree1.getId(),
+                metadataId, TYPE.TREE, SpatialOps.boundsOf(tree1), null));
+        rootBuilder.put(RevObjectFactory.defaultInstance().createNode("tree2", tree2.getId(),
+                metadataId, TYPE.TREE, SpatialOps.boundsOf(tree2), null));
         RevTree root = rootBuilder.build();
         db.put(root);
         return root;
@@ -341,6 +342,7 @@ public class DiffTreeTest extends Assert {
         String name = String.valueOf(i);
         TYPE type = TYPE.FEATURE;
         Envelope bounds = new Envelope(i, i, i, i);
-        return Node.create(name, oid, metadataId, type, bounds);
+        return RevObjectFactory.defaultInstance().createNode(name, oid, metadataId, type, bounds,
+                null);
     }
 }

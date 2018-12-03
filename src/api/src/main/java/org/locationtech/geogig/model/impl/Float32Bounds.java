@@ -7,7 +7,7 @@
  * Contributors:
  * David Blasby (Boundless) - initial implementation
  */
-package org.locationtech.geogig.model;
+package org.locationtech.geogig.model.impl;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.Envelope;
  * always contain (or be equal to) the original envelope * for every Float32 number, there is an
  * exact Float64 representation
  */
-class Float32Bounds {
+public class Float32Bounds {
 
     /**
      * The "null object" to represent an empty node

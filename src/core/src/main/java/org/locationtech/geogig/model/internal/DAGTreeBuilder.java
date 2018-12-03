@@ -35,6 +35,7 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
@@ -306,8 +307,8 @@ public class DAGTreeBuilder {
                     size += bucketTree.size();
                     childTreeCount += bucketTree.numTrees();
 
-                    Bucket bucket = Bucket.create(bucketTree.getId(),
-                            SpatialOps.boundsOf(bucketTree));
+                    Bucket bucket = RevObjectFactory.defaultInstance()
+                            .createBucket(bucketTree.getId(), SpatialOps.boundsOf(bucketTree));
 
                     bucketsByIndex.put(bucketIndex, bucket);
                 }

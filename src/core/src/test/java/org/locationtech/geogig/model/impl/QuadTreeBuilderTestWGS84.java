@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.QuadTreeTestSupport;
 import org.locationtech.geogig.plumbing.index.IndexTestSupport;
@@ -26,7 +27,7 @@ public class QuadTreeBuilderTestWGS84 extends QuadTreeBuilderTest {
 
     @Override
     protected Envelope createMaxBounds() {
-        return Node.makePrecise(QuadTreeTestSupport.wgs84Bounds());
+        return RevObjects.makePrecise(QuadTreeTestSupport.wgs84Bounds());
     }
 
     public @Test void testRemoveWorldPoints() {

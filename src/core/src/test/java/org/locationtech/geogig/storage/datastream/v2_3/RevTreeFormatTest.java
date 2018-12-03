@@ -32,6 +32,7 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.HashObject;
@@ -102,7 +103,7 @@ public class RevTreeFormatTest {
     public void testBucketsTree() throws IOException {
         RevTree tree;
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
-        buckets.put(1, Bucket.create(hashString("b1"), null));
+        buckets.put(1, RevObjectFactory.defaultInstance().createBucket(hashString("b1"), null));
         tree = tree(1024, null, null, buckets);
         encodeDecode(tree);
     }
@@ -152,8 +153,8 @@ public class RevTreeFormatTest {
     private static final ObjectId FAKE_ID = RevObjectTestSupport.hashString("fake");
 
     private Node node(int i) {
-        return Node.create("name", FAKE_ID, FAKE_ID, TYPE.FEATURE,
-                new Envelope(i, i + 1, i, i + 1));
+        return RevObjectFactory.defaultInstance().createNode("name", FAKE_ID, FAKE_ID, TYPE.FEATURE,
+                new Envelope(i, i + 1, i, i + 1), null);
     }
 
     public void testConsistentHashing(boolean withMetadataId, boolean withBounds,

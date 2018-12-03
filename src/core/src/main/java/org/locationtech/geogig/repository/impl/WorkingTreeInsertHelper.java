@@ -23,6 +23,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
@@ -114,7 +115,8 @@ class WorkingTreeInsertHelper {
         ObjectId defaultMetadataId = revFeatureType.getId();
         ObjectId metadataId = revFeatureType.getId().equals(defaultMetadataId) ? ObjectId.NULL
                 : revFeatureType.getId();
-        Node node = Node.create(name, id, metadataId, TYPE.FEATURE, bbox);
+        Node node = RevObjectFactory.defaultInstance().createNode(name, id, metadataId,
+                TYPE.FEATURE, bbox, null);
         return node;
     }
 
@@ -190,8 +192,8 @@ class WorkingTreeInsertHelper {
             metadataId = revFeatureType.getId();
         }
         Envelope bounds = SpatialOps.boundsOf(tree);
-        Node node = Node.create(NodeRef.nodeFromPath(treePath), tree.getId(), metadataId, TYPE.TREE,
-                bounds);
+        Node node = RevObjectFactory.defaultInstance().createNode(NodeRef.nodeFromPath(treePath),
+                tree.getId(), metadataId, TYPE.TREE, bounds, null);
 
         String parentPath = NodeRef.parentPath(treePath);
         return new NodeRef(node, parentPath, ObjectId.NULL);
@@ -254,7 +256,8 @@ class WorkingTreeInsertHelper {
                 String name = NodeRef.nodeFromPath(treePath);
                 ObjectId oid = tree.getId();
                 Envelope bounds = SpatialOps.boundsOf(tree);
-                treeNode = Node.create(name, oid, treeMetadataId, RevObject.TYPE.TREE, bounds);
+                treeNode = RevObjectFactory.defaultInstance().createNode(name, oid, treeMetadataId,
+                        RevObject.TYPE.TREE, bounds, null);
             }
 
             final String parentPath = NodeRef.parentPath(treePath);

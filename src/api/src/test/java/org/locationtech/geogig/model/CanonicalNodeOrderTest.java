@@ -27,15 +27,16 @@ public class CanonicalNodeOrderTest {
 
     @Test
     public void testNodeOrder() {
-        Node node = Node.create("Points.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURE, null);
-        Node node2 = Node.create("Lines.1",
+                TYPE.FEATURE, null, null);
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.FEATURE, null);
-        Node node3 = Node.create("Lines.1",
+                TYPE.FEATURE, null, null);
+        Node node3 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), TYPE.TREE, null);
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), TYPE.TREE, null,
+                null);
         assertFalse(0 == CanonicalNodeOrder.INSTANCE.compare(node, node2));
         assertFalse(0 == CanonicalNodeOrder.INSTANCE.compare(node, node3));
         assertEquals(0, CanonicalNodeOrder.INSTANCE.compare(node2, node3));
@@ -43,12 +44,13 @@ public class CanonicalNodeOrderTest {
 
     @Test
     public void testBucket() {
-        Node node = Node.create("Lines.1",
+        Node node = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.FEATURE, null);
-        Node node2 = Node.create("Lines.1",
+                TYPE.FEATURE, null, null);
+        Node node2 = RevObjectFactory.defaultInstance().createNode("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), TYPE.TREE, null);
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), TYPE.TREE, null,
+                null);
 
         for (int i = 0; i < 8; i++) {
             assertEquals(CanonicalNodeOrder.INSTANCE.bucket(node, i),
@@ -83,14 +85,19 @@ public class CanonicalNodeOrderTest {
 
     @Test
     public void testHash() {
-        assertEquals(590701660006484765L, CanonicalNodeNameOrder.INSTANCE.hashCodeLong("0").longValue());
-        assertEquals(590700560494856554L, CanonicalNodeNameOrder.INSTANCE.hashCodeLong("1").longValue());
-        assertEquals(590699460983228343L, CanonicalNodeNameOrder.INSTANCE.hashCodeLong("2").longValue());
-        assertEquals(590698361471600132L, CanonicalNodeNameOrder.INSTANCE.hashCodeLong("3").longValue());
-        assertEquals(287424979109030320L, CanonicalNodeNameOrder.INSTANCE.hashCodeLong("f1").longValue());
-        assertEquals(1791227333405493115L,
-                CanonicalNodeNameOrder.INSTANCE.hashCodeLong("some-rather-large-feature-identifier").longValue());
-        
+        assertEquals(590701660006484765L,
+                CanonicalNodeNameOrder.INSTANCE.hashCodeLong("0").longValue());
+        assertEquals(590700560494856554L,
+                CanonicalNodeNameOrder.INSTANCE.hashCodeLong("1").longValue());
+        assertEquals(590699460983228343L,
+                CanonicalNodeNameOrder.INSTANCE.hashCodeLong("2").longValue());
+        assertEquals(590698361471600132L,
+                CanonicalNodeNameOrder.INSTANCE.hashCodeLong("3").longValue());
+        assertEquals(287424979109030320L,
+                CanonicalNodeNameOrder.INSTANCE.hashCodeLong("f1").longValue());
+        assertEquals(1791227333405493115L, CanonicalNodeNameOrder.INSTANCE
+                .hashCodeLong("some-rather-large-feature-identifier").longValue());
+
         String node1Name = "Lines.1";
         String node2Name = "Points.1";
 
@@ -106,7 +113,7 @@ public class CanonicalNodeOrderTest {
         int nameCompare = node1Name.compareTo(node2Name);
         assertEquals(nameCompare,
                 CanonicalNodeNameOrder.INSTANCE.compare(1L, node1Name, 1L, node2Name));
-        
+
         for (int i = 0; i < 8; i++) {
             assertTrue(CanonicalNodeNameOrder.bucket(node1Name, i) == CanonicalNodeNameOrder
                     .bucket(node1Hash.longValue(), i));

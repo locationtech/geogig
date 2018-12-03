@@ -28,6 +28,7 @@ import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -212,7 +213,8 @@ public class RevTreeBuilderPerformanceTest {
     private Node createNode(int i, ObjectId fakeId) {
         String name = "Feature." + i;
         Envelope env = new Envelope(0, 0, i, i);
-        Node ref = Node.create(name, fakeId, ObjectId.NULL, TYPE.FEATURE, env);
+        Node ref = RevObjectFactory.defaultInstance().createNode(name, fakeId, ObjectId.NULL,
+                TYPE.FEATURE, env, null);
         return ref;
     }
 

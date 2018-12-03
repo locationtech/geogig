@@ -49,6 +49,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
@@ -681,8 +682,8 @@ public abstract class ObjectStoreConformanceTest {
 
     private DiffEntry entry(String name, RevFeature l, RevFeature r) {
         //@formatter:off
-        Node lnode = l == null? null: Node.create(name, l.getId(), ObjectId.NULL, TYPE.FEATURE, SpatialOps.boundsOf(l));
-        Node rnode = r == null? null: Node.create(name, r.getId(), ObjectId.NULL, TYPE.FEATURE, SpatialOps.boundsOf(r));
+        Node lnode = l == null? null: RevObjectFactory.defaultInstance().createNode(name, l.getId(), ObjectId.NULL, TYPE.FEATURE, SpatialOps.boundsOf(l), null);
+        Node rnode = r == null? null: RevObjectFactory.defaultInstance().createNode(name, r.getId(), ObjectId.NULL, TYPE.FEATURE, SpatialOps.boundsOf(r), null);
         //@formatter:on
         NodeRef oldObject = lnode == null ? null : NodeRef.create(NodeRef.ROOT, lnode);
         NodeRef newObject = rnode == null ? null : NodeRef.create(NodeRef.ROOT, rnode);

@@ -525,8 +525,8 @@ public class TextSerializationFactory implements RevObjectSerializer {
                 extraData = Converters.convert(extraDataAsString, Map.class);
             }
 
-            return org.locationtech.geogig.model.Node.create(name, id, metadataId, type, bbox,
-                    extraData);
+            return org.locationtech.geogig.model.RevObjectFactory.defaultInstance().createNode(name,
+                    id, metadataId, type, bbox, extraData);
         }
 
         protected Envelope parseBBox(String s) {
@@ -823,7 +823,8 @@ public class TextSerializationFactory implements RevObjectSerializer {
                     Integer idx = Integer.parseInt(tokens.get(1));
                     ObjectId bucketId = ObjectId.valueOf(tokens.get(2));
                     Envelope bounds = parseBBox(tokens.get(3));
-                    Bucket bucket = Bucket.create(bucketId, bounds);
+                    Bucket bucket = RevObjectFactory.defaultInstance().createBucket(bucketId,
+                            bounds);
                     subtrees.put(idx, bucket);
                 } else {
                     throw new IllegalArgumentException("Wrong tree element definition: " + line);

@@ -31,6 +31,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -42,11 +47,6 @@ import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
 
 @SuppressWarnings("deprecation")
 public class HashObjectFunnelsTest {
@@ -166,10 +166,10 @@ public class HashObjectFunnelsTest {
         List<Node> trees = new LinkedList<Node>();
         List<Node> features = new LinkedList<Node>();
 
-        final Node testNode = Node.create("Points",
+        final Node testNode = RevObjectFactory.defaultInstance().createNode("Points",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
-                TYPE.TREE, null);
-        final Bucket testBucket = Bucket.create(
+                TYPE.TREE, null, null);
+        final Bucket testBucket = RevObjectFactory.defaultInstance().createBucket(
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0002"),
                 new Envelope(0, 0, 1, 1));
 

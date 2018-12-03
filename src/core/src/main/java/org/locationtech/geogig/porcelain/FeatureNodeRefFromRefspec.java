@@ -17,6 +17,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
@@ -101,17 +102,11 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
             RevFeatureType featureType = getFeatureTypeFromRefSpec();
             RevFeature feat = feature.get();
             Envelope bounds = SpatialOps.boundsOf(feat);
-            Node node = Node.create(NodeRef.nodeFromPath(ref), feat.getId(), featureType.getId(),
-                    TYPE.FEATURE, bounds);
+            Node node = RevObjectFactory.defaultInstance().createNode(NodeRef.nodeFromPath(ref),
+                    feat.getId(), featureType.getId(), TYPE.FEATURE, bounds, null);
             return Optional.of(new NodeRef(node, NodeRef.parentPath(ref), featureType.getId()));
 
-        } else {
-            return Optional.absent();
-            /*
-             * new NodeRef(Node.create("", ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE), "",
-             * ObjectId.NULL);
-             */
         }
-
+        return Optional.absent();
     }
 }

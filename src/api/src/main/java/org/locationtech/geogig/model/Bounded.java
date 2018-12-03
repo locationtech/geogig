@@ -9,8 +9,11 @@
  */
 package org.locationtech.geogig.model;
 
-import com.google.common.base.Optional;
 import org.locationtech.jts.geom.Envelope;
+
+import com.google.common.base.Optional;
+
+import lombok.NonNull;
 
 /**
  * Super-interface for objects pointing to another object (nodes or buckets) in a {@link RevTree}.
@@ -25,7 +28,7 @@ public interface Bounded {
     /**
      * @return the id of the {@link RevObject} this object points to.
      */
-    public ObjectId getObjectId();
+    public @NonNull ObjectId getObjectId();
 
     /**
      * TODO: move to {@link RevObjects} to keep the model objects clear of implementation details

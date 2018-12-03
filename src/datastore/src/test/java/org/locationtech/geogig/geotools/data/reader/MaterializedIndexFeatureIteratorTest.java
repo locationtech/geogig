@@ -19,10 +19,13 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -30,8 +33,6 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.GeometryFactory;
 
 public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
 
@@ -136,7 +137,8 @@ public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
 
         ObjectId id = RevFeatureBuilder.build(f).getId();
         Envelope bounds = (Envelope) f.getBounds();
-        Node node = Node.create(f.getID(), id, ObjectId.NULL, TYPE.FEATURE, bounds, extraData);
+        Node node = RevObjectFactory.defaultInstance().createNode(f.getID(), id, ObjectId.NULL,
+                TYPE.FEATURE, bounds, extraData);
 
         String typeName = f.getType().getTypeName();
         NodeRef nodeRef = NodeRef.create(typeName, node);

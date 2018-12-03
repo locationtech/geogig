@@ -18,6 +18,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -77,7 +78,8 @@ public class DiffCountConsumerTest extends Assert {
     private void createFeatureTypesTree(RevTreeBuilder rootBuilder, String treePath,
             RevTree childTree) {
         odb.put(childTree);
-        Node childRef = Node.create(treePath, childTree.getId(), ObjectId.NULL, TYPE.TREE, null);
+        Node childRef = RevObjectFactory.defaultInstance().createNode(treePath, childTree.getId(),
+                ObjectId.NULL, TYPE.TREE, null, null);
         rootBuilder.put(childRef);
     }
 
@@ -113,14 +115,16 @@ public class DiffCountConsumerTest extends Assert {
         assertEquals(1, count(changed, childrenFeatureTree).featureCount());
 
         builder = CanonicalTreeBuilder.create(odb, changed);
-        builder.put(Node.create("new", FAKE_FEATURE_ID, ObjectId.NULL, TYPE.FEATURE, null));
+        builder.put(RevObjectFactory.defaultInstance().createNode("new", FAKE_FEATURE_ID,
+                ObjectId.NULL, TYPE.FEATURE, null, null));
         changed = builder.build();
 
         assertEquals(2, count(childrenFeatureTree, changed).featureCount());
         assertEquals(2, count(changed, childrenFeatureTree).featureCount());
 
         builder = CanonicalTreeBuilder.create(odb, changed);
-        builder.put(Node.create("1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null));
+        builder.put(RevObjectFactory.defaultInstance().createNode("1", FAKE_FEATURE_ID_CHANGED,
+                ObjectId.NULL, TYPE.FEATURE, null, null));
         changed = builder.build();
 
         assertEquals(3, count(childrenFeatureTree, changed).featureCount());
@@ -164,8 +168,8 @@ public class DiffCountConsumerTest extends Assert {
         odb.put(newRoot);
         assertEquals(2, count(childrenFeatureTypesTree, newRoot).featureCount());
 
-        childTree2.put(
-                Node.create("tree2/1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null));
+        childTree2.put(RevObjectFactory.defaultInstance().createNode("tree2/1",
+                FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null, null));
         createFeatureTypesTree(rootBuilder, "tree2", childTree2.build());
         newRoot = rootBuilder.build();
         odb.put(newRoot);
@@ -239,8 +243,8 @@ public class DiffCountConsumerTest extends Assert {
 
         builder = CanonicalTreeBuilder.create(odb, bucketsFeatureTree);
 
-        builder.put(
-                Node.create("1023", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null));
+        builder.put(RevObjectFactory.defaultInstance().createNode("1023", FAKE_FEATURE_ID_CHANGED,
+                ObjectId.NULL, TYPE.FEATURE, null, null));
         changed = builder.build();
         odb.put(changed);
 
@@ -254,8 +258,8 @@ public class DiffCountConsumerTest extends Assert {
         builder = CanonicalTreeBuilder.create(odb, bucketsFeatureTree);
         int expected = 0;
         for (int i = 0; i < bucketsFeatureTree.size(); i += 2) {
-            builder.put(Node.create(String.valueOf(i), FAKE_FEATURE_ID_CHANGED, ObjectId.NULL,
-                    TYPE.FEATURE, null));
+            builder.put(RevObjectFactory.defaultInstance().createNode(String.valueOf(i),
+                    FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null, null));
             expected++;
         }
         changed = builder.build();
@@ -349,7 +353,8 @@ public class DiffCountConsumerTest extends Assert {
 
     private Node featureRef(String parentPath, int i) {
         String path = NodeRef.appendChild(parentPath, String.valueOf(i));
-        Node ref = Node.create(path, FAKE_FEATURE_ID, ObjectId.NULL, TYPE.FEATURE, null);
+        Node ref = RevObjectFactory.defaultInstance().createNode(path, FAKE_FEATURE_ID,
+                ObjectId.NULL, TYPE.FEATURE, null, null);
         return ref;
     }
 

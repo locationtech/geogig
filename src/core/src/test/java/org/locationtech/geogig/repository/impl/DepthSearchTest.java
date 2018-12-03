@@ -28,10 +28,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -100,8 +100,8 @@ public class DepthSearchTest {
                 String nodePath = NodeRef.appendChild(treePath, singleNodeName);
                 ObjectId fakeFeatureOId = RevObjectTestSupport.hashString(nodePath);
                 ObjectId fakeTypeOId = ObjectId.NULL;// forString(treePath);
-                subTreeBuilder.put(Node.create(singleNodeName, fakeFeatureOId, fakeTypeOId,
-                        TYPE.FEATURE, null));
+                subTreeBuilder.put(RevObjectFactory.defaultInstance().createNode(singleNodeName,
+                        fakeFeatureOId, fakeTypeOId, TYPE.FEATURE, null, null));
             }
         }
 

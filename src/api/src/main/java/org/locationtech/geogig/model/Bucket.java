@@ -9,13 +9,10 @@
  */
 package org.locationtech.geogig.model;
 
-import static com.google.common.base.Optional.fromNullable;
-
 import org.eclipse.jdt.annotation.Nullable;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import org.locationtech.jts.geom.Envelope;
+
+import lombok.NonNull;
 
 /**
  * A Bucket is merely a bounded pointer to another tree in a {@link RevTree} data structure.
@@ -29,70 +26,22 @@ import org.locationtech.jts.geom.Envelope;
  */
 public abstract class Bucket implements Bounded {
 
-    public static Bucket create(final ObjectId bucketTree, final @Nullable Envelope bounds) {
-        Preconditions.checkNotNull(bucketTree);
-        Float32Bounds b32 = Float32Bounds.valueOf(bounds);
-        return new BucketImpl(bucketTree, b32);
-    }
-
     /**
-     * @return the {@link ObjectId} of the tree this bucket points to
+     * @deprecated use {@link RevObjectFactory#createBucket(ObjectId, Envelope)}
      */
-    @Override
-    public abstract ObjectId getObjectId();
+    public static Bucket create(final @NonNull ObjectId bucketTree,
+            final @Nullable Envelope bounds) {
+        return RevObjectFactory.defaultInstance().createBucket(bucketTree, bounds);
+    }
 
     /**
      * Equality check based purely on {@link #getObjectId() ObjectId}
      */
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Bucket)) {
-            return false;
-        }
-        return getObjectId().equals(((Bucket) o).getObjectId());
+    public final @Override boolean equals(Object o) {
+        return RevObjects.equals(this, o);
     }
 
-    private static class BucketImpl extends Bucket {
-        private final int bucketTree_h1;
-
-        private final long bucketTree_h2;
-
-        private final long bucketTree_h3;
-
-        private final Float32Bounds bounds;
-
-        private BucketImpl(ObjectId id, Float32Bounds bounds) {
-            this.bucketTree_h1 = RevObjects.h1(id);
-            this.bucketTree_h2 = RevObjects.h2(id);
-            this.bucketTree_h3 = RevObjects.h3(id);
-            this.bounds = bounds;
-        }
-
-        @Override
-        public ObjectId getObjectId() {
-            return ObjectId.create(bucketTree_h1, bucketTree_h2, bucketTree_h3);
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + getObjectId() + "] "
-                    + (bounds.isNull() ? "" : bounds.toString());
-        }
-
-        @Override
-        public boolean intersects(Envelope env) {
-            return bounds.intersects(env);
-        }
-
-        @Override
-        public void expand(Envelope env) {
-            bounds.expand(env);
-        }
-
-        @Override
-        public Optional<Envelope> bounds() {
-            return fromNullable(bounds.isNull() ? null : bounds.asEnvelope());
-        }
-
+    public final @Override int hashCode() {
+        return RevObjects.hashCode(this);
     }
 }

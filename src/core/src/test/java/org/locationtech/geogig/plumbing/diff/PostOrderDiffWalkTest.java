@@ -31,6 +31,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk.Consumer;
@@ -90,8 +91,8 @@ public class PostOrderDiffWalkTest {
      */
     private static NodeRef nodeFor(RevTree root) {
         Envelope bounds = SpatialOps.boundsOf(root);
-        return NodeRef.createRoot(
-                Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE, bounds));
+        return NodeRef.createRoot(RevObjectFactory.defaultInstance().createNode(NodeRef.ROOT,
+                root.getId(), ObjectId.NULL, TYPE.TREE, bounds, null));
     }
 
     @Test

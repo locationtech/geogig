@@ -7,14 +7,14 @@
  * Contributors:
  * David Blasby (Boundless) - initial implementation
  */
-package org.locationtech.geogig.model;
+package org.locationtech.geogig.model.impl;
 
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-
+import org.locationtech.geogig.model.impl.Float32Bounds;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 

@@ -16,6 +16,7 @@ import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
 import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
@@ -53,7 +54,8 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
     public final CanonicalTreeBuilder remove(final String featureId) {
         checkNotNull(featureId, "Argument featureId is null");
         checkState(!disposed.get(), "TreeBuilder is already disposed");
-        Node removeNode = Node.create(featureId, ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE, null);
+        Node removeNode = RevObjectFactory.defaultInstance().createNode(featureId, ObjectId.NULL,
+                ObjectId.NULL, TYPE.FEATURE, null, null);
         clusteringStrategy().remove(removeNode);
         return this;
     }

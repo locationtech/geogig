@@ -24,6 +24,7 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
@@ -49,7 +50,7 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
         ObjectId objectId = readObjectId(in);
         @Nullable
         final Envelope bounds = readBounds(in);
-        return Bucket.create(objectId, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(objectId, bounds);
     }
 
     @SuppressWarnings("unchecked")
@@ -79,7 +80,8 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
         }
 
         final Node node;
-        node = Node.create(name, objectId, metadataId, contentType, bbox, extraData);
+        node = RevObjectFactory.defaultInstance().createNode(name, objectId, metadataId,
+                contentType, bbox, extraData);
         return node;
     }
 

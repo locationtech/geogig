@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.impl;
 
 public class LegacyTreeBuilderTest extends CanonicalTreeBuilderTest {
 
+    @SuppressWarnings("deprecation")
     @Override
     protected RevTreeBuilder createBuiler() {
         return new LegacyTreeBuilder(objectStore);

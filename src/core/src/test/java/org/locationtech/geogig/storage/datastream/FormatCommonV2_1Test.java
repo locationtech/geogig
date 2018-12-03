@@ -26,13 +26,13 @@ import org.junit.Test;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2_1.LazyRevFeature;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.io.WKTReader;
 
 public class FormatCommonV2_1Test {
 

@@ -25,7 +25,7 @@ public class RemoteTest {
         assertEquals("name", remote.getName());
         assertEquals("fetchurl", remote.getFetchURL());
         assertEquals("pushurl", remote.getPushURL());
-        assertEquals("fetch", remote.getFetch());
+        assertEquals("fetch", remote.getFetchSpec());
         assertEquals(true, remote.getMapped());
         assertEquals("mappedBranch", remote.getMappedBranch());
         assertEquals("username", remote.getUserName());
@@ -36,15 +36,14 @@ public class RemoteTest {
         assertEquals("name", remote2.getName());
         assertEquals("fetchurl", remote2.getFetchURL());
         assertEquals("pushurl", remote2.getPushURL());
-        assertEquals("fetch", remote2.getFetch());
+        assertEquals("fetch", remote2.getFetchSpec());
         assertEquals(false, remote2.getMapped());
         assertEquals("*", remote2.getMappedBranch());
         assertEquals(null, remote2.getUserName());
         assertEquals(null, remote2.getPassword());
 
         try {
-            new Remote("name", "validuri", "fi:\\invalidURI", "fetch", false, null, null,
-                    null);
+            new Remote("name", "validuri", "fi:\\invalidURI", "fetch", false, null, null, null);
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals("Invalid remote URL.", e.getMessage());
@@ -56,7 +55,7 @@ public class RemoteTest {
         } catch (IllegalArgumentException e) {
             assertEquals("Invalid remote URL.", e.getMessage());
         }
-        
+
         try {
             new Remote("name", "validuri", null, "fetch", false, null, null, null);
             fail();
@@ -92,8 +91,7 @@ public class RemoteTest {
         Remote remote2 = new Remote("remote2", "fetchurl", "pushurl", "fetch", false, null, null,
                 null);
         Remote remote2_identical = new Remote("remote2", "fetchurl", "pushurl", "fetch", false,
-                null, null,
-                null);
+                null, null, null);
 
         assertTrue(remote1.equals(remote1));
         assertFalse(remote1.equals("remote1"));

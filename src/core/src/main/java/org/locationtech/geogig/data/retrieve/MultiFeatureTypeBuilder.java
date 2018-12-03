@@ -20,10 +20,10 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Function;
-import org.locationtech.jts.geom.GeometryFactory;
 
 class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, SimpleFeature> {
 

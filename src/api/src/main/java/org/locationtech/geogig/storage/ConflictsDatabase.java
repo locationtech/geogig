@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage;
 
 import java.io.Closeable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -49,17 +48,6 @@ public interface ConflictsDatabase extends Closeable {
      * @return the conflict, or {@link Optional#absent()} if it was not found
      */
     public Optional<Conflict> getConflict(@Nullable String namespace, String path);
-
-    /**
-     * Gets all conflicts that match the specified path filter.
-     * 
-     * @param namespace the namespace of the conflict
-     * @param pathFilter the path filter, if this is not defined, all conflicts will be returned
-     * @return the list of conflicts
-     * @deprecated at 1.0-RC3
-     */
-    @Deprecated
-    public List<Conflict> getConflicts(@Nullable String namespace, @Nullable String pathFilter);
 
     /**
      * Retrieves all conflicts that match the specified path filter.

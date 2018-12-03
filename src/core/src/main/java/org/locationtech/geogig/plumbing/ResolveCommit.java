@@ -15,7 +15,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectDatabase;
 

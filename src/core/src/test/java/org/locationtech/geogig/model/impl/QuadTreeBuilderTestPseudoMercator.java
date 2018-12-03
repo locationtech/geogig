@@ -11,7 +11,6 @@ package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.internal.QuadTreeTestSupport;
-
 import org.locationtech.jts.geom.Envelope;
 
 public class QuadTreeBuilderTestPseudoMercator extends QuadTreeBuilderTest {

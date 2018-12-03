@@ -48,6 +48,8 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.test.TestPlatform;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
@@ -55,8 +57,6 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.WKTReader;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class AbstractObjectStoreStressTest {
@@ -193,8 +193,8 @@ public abstract class AbstractObjectStoreStressTest {
 
         final int queryCount = count / 10;
 
-//        testGettIfPresent(count, queryCount);
-//
+        // testGettIfPresent(count, queryCount);
+        //
         MemoryUsage getIfPresentTraversedMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
         Iterable<ObjectId> ids = randomIds(queryCount, count);
@@ -220,23 +220,6 @@ public abstract class AbstractObjectStoreStressTest {
                 afterGCMem);
         reportRepoSize();
         Assert.assertEquals(getAllListener.toString(), queryCount, getAllListener.found());
-    }
-
-    private void testGettIfPresent(final int count, final int queryCount) {
-        Stopwatch s = Stopwatch.createStarted();
-        int found = 0;
-        for (Iterator<ObjectId> it = randomIds(queryCount, count).iterator(); it.hasNext();) {
-            ObjectId id = it.next();
-            RevObject o = db.getIfPresent(id);
-            if (o != null) {
-                found++;
-            }
-            // Assert.assertNotNull(o);
-        }
-        System.err.printf("----- %,d out of %,d random objects queried with getIfPresent() in %s\n",
-                found, queryCount, s.stop());
-
-        Assert.assertEquals(queryCount, found);
     }
 
     private void reportRepoSize() throws IOException {

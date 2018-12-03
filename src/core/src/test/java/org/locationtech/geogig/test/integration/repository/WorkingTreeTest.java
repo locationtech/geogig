@@ -29,7 +29,6 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.FeatureToDelete;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -46,8 +45,6 @@ import com.google.common.collect.Iterators;
  */
 public class WorkingTreeTest extends RepositoryTestCase {
 
-    private static final ProgressListener LISTENER = new DefaultProgressListener();
-
     private WorkingTree workTree;
 
     @Rule
@@ -55,6 +52,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
     @Override
     protected Platform createPlatform() {
+        @SuppressWarnings("serial")
         Platform testPlatform = new TestPlatform(repositoryDirectory) {
             @Override
             public int availableProcessors() {

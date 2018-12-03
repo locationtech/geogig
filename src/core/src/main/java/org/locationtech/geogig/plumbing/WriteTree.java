@@ -14,13 +14,13 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -266,10 +266,6 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
             treeCache.put(treePath, treeBuilder);
         }
         return treeBuilder;
-    }
-
-    private RevTree getTree(ObjectId treeId) {
-        return objectDatabase().getTree(treeId);
     }
 
     private void deepCopy(Node ref) {

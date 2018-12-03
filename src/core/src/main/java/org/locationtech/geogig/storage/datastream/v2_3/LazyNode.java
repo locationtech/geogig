@@ -17,9 +17,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
-import org.locationtech.jts.geom.Envelope;
 
 class LazyNode extends Node {
 

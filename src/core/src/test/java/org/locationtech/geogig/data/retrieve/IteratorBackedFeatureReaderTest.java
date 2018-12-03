@@ -15,11 +15,10 @@ import org.geotools.data.DataUtilities;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.util.Assert;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 public class IteratorBackedFeatureReaderTest {
 
@@ -35,13 +34,15 @@ public class IteratorBackedFeatureReaderTest {
         list.add(SimpleFeatureBuilder.build(TYPE,
                 new Object[] { (Point) wkt.read("POINT(1 1)"), "abc2" }, "id2"));
 
-        IteratorBackedFeatureReader reader = new IteratorBackedFeatureReader(TYPE, list.iterator());
-        SimpleFeature f1 = reader.next();
-        SimpleFeature f2 = reader.next();
+        try (IteratorBackedFeatureReader reader = new IteratorBackedFeatureReader(TYPE,
+                list.iterator())) {
+            SimpleFeature f1 = reader.next();
+            SimpleFeature f2 = reader.next();
 
-        Assert.isTrue(!reader.hasNext());
-        Assert.isTrue(f1.getID() == "id1");
-        Assert.isTrue(f2.getID() == "id2");
+            Assert.isTrue(!reader.hasNext());
+            Assert.isTrue(f1.getID() == "id1");
+            Assert.isTrue(f2.getID() == "id2");
+        }
     }
 
 }

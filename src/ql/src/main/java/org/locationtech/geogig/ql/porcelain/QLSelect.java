@@ -11,7 +11,6 @@ package org.locationtech.geogig.ql.porcelain;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -105,8 +104,7 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
                     "minx:double,miny:double,maxx:double,maxy:double,crs:string");
             COUNT_TYPE = DataUtilities.createType("@count", "count:Integer");
         } catch (SchemaException e) {
-            e.printStackTrace();
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

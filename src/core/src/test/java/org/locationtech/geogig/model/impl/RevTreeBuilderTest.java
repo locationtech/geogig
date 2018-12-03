@@ -42,13 +42,13 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.locationtech.jts.geom.Envelope;
 
 public abstract class RevTreeBuilderTest {
 
@@ -58,6 +58,7 @@ public abstract class RevTreeBuilderTest {
 
     protected abstract RevTreeBuilder createBuiler(RevTree original);
 
+    @SuppressWarnings("deprecation")
     protected LegacyTreeBuilder createLegacyBuilder(RevTree original) {
         return new LegacyTreeBuilder(objectStore, original);
     }

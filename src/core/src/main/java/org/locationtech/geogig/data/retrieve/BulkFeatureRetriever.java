@@ -9,7 +9,8 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -213,7 +214,7 @@ public class BulkFeatureRetriever {
         boolean flattenedType = !isDiffFeatureType(diffType);
         Function<DiffObjectInfo<RevFeature>, SimpleFeature> builder;
         if (flattenedType) {
-            builder = new DiffFeatureFlattenedBuilder(diffType, nativeType, geometryFactory);
+            builder = new DiffFeatureFlattenedBuilder(diffType, nativeType);
         } else {
 
             // builder for the "old" and "new" versions of each feature

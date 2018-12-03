@@ -12,13 +12,13 @@ package org.locationtech.geogig.porcelain;
 import java.util.Map;
 
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.plumbing.DiffFeature;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;

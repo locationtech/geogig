@@ -18,10 +18,10 @@ import java.io.IOException;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
-import org.locationtech.jts.geom.Envelope;
 
 class BucketSet {
 
@@ -33,8 +33,6 @@ class BucketSet {
     };
 
     private static final int HEADER_SIZE = Integer.BYTES;
-
-    private static final int REC_SIZE = 1 + ObjectId.NUM_BYTES + 4 * 8;
 
     public static void encode(DataOutput out, RevTree tree, StringTable stringTable)
             throws IOException {

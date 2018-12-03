@@ -139,10 +139,6 @@ public enum FieldType {
     GEOMETRYCOLLECTION(0x17, GeometryCollection.class, v -> GeometryCloner.clone( (Geometry) v) ), //
     /**
      * a geometry object of an unspecified type
-     * 
-     * @deprecated should not be used since concrete instances will always be of one of the concrete
-     *             geometry types
-     * 
      */
     GEOMETRY(0x18, Geometry.class, v -> GeometryCloner.clone( (Geometry) v) ), //
     UUID(0x19, java.util.UUID.class), //

@@ -41,6 +41,7 @@ class NodeId {
         return name;
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     public <V> V value() {
         return (V) value;

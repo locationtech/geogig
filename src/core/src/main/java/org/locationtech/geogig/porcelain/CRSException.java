@@ -11,21 +11,22 @@
 
 package org.locationtech.geogig.porcelain;
 
-
 public class CRSException extends Exception {
-    public CRSException () {
+    private static final long serialVersionUID = -4668202156913417181L;
+
+    public CRSException() {
 
     }
 
-    public CRSException (String message) {
-        super (message);
+    public CRSException(String message) {
+        super(message);
     }
 
-    public CRSException (Throwable cause) {
-        super (cause);
+    public CRSException(Throwable cause) {
+        super(cause);
     }
 
     public CRSException(String message, Throwable cause) {
-        super (message, cause);
+        super(message, cause);
     }
 }

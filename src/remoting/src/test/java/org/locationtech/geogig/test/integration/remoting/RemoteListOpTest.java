@@ -55,7 +55,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteName1, remote.getName());
         assertEquals(remoteURL1, remote.getFetchURL());
         assertEquals(remoteURL1, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), remote.getFetchSpec());
 
         remote = remoteAdd.setName(remoteName2).setURL(remoteURL2).setBranch(branch).call();
 
@@ -63,7 +63,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteURL2, remote.getFetchURL());
         assertEquals(remoteURL2, remote.getPushURL());
         assertEquals("+refs/heads/" + branch + ":refs/remotes/" + remoteName2 + "/" + branch,
-                remote.getFetch());
+                remote.getFetchSpec());
 
         final RemoteListOp remoteList = geogig.command(RemoteListOp.class);
 
@@ -84,13 +84,13 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteName1, firstRemote.getName());
         assertEquals(remoteURL1, firstRemote.getFetchURL());
         assertEquals(remoteURL1, firstRemote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), firstRemote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), firstRemote.getFetchSpec());
 
         assertEquals(remoteName2, secondRemote.getName());
         assertEquals(remoteURL2, secondRemote.getFetchURL());
         assertEquals(remoteURL2, secondRemote.getPushURL());
         assertEquals("+refs/heads/" + branch + ":refs/remotes/" + remoteName2 + "/" + branch,
-                secondRemote.getFetch());
+                secondRemote.getFetchSpec());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         final ConfigOp config = geogig.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".url").call();
@@ -129,7 +129,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         final ConfigOp config = geogig.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".fetch")

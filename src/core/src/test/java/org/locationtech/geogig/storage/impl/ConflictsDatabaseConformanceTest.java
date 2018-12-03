@@ -46,25 +46,27 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
 
     protected T conflicts;
 
-    protected final Conflict c1 = new Conflict("Rivers/1", NULL, RevObjectTestSupport.hashString("ours"),
-            RevObjectTestSupport.hashString("theirs"));
+    protected final Conflict c1 = new Conflict("Rivers/1", NULL,
+            RevObjectTestSupport.hashString("ours"), RevObjectTestSupport.hashString("theirs"));
 
     protected final Conflict c2 = new Conflict("Rivers/2",
             RevObjectTestSupport.hashString("ancestor"), NULL,
             RevObjectTestSupport.hashString("theirs2"));
 
-    protected final Conflict c3 = new Conflict("Rivers/3", RevObjectTestSupport.hashString("ancestor"),
-            RevObjectTestSupport.hashString("ours3"), RevObjectTestSupport.hashString("theirs3"));
+    protected final Conflict c3 = new Conflict("Rivers/3",
+            RevObjectTestSupport.hashString("ancestor"), RevObjectTestSupport.hashString("ours3"),
+            RevObjectTestSupport.hashString("theirs3"));
 
-    protected final Conflict b1 = new Conflict("buildings/1", NULL, RevObjectTestSupport.hashString("ours"),
-            RevObjectTestSupport.hashString("theirs"));
+    protected final Conflict b1 = new Conflict("buildings/1", NULL,
+            RevObjectTestSupport.hashString("ours"), RevObjectTestSupport.hashString("theirs"));
 
     protected final Conflict b2 = new Conflict("buildings/2",
             RevObjectTestSupport.hashString("ancestor"), RevObjectTestSupport.hashString("ours2"),
             NULL);
 
-    protected final Conflict b3 = new Conflict("buildings/3", RevObjectTestSupport.hashString("ancestor"),
-            RevObjectTestSupport.hashString("ours3"), RevObjectTestSupport.hashString("theirs3"));
+    protected final Conflict b3 = new Conflict("buildings/3",
+            RevObjectTestSupport.hashString("ancestor"), RevObjectTestSupport.hashString("ours3"),
+            RevObjectTestSupport.hashString("theirs3"));
 
     @Before
     public void before() throws Exception {
@@ -169,37 +171,6 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
         assertTrue(conflicts.hasConflicts(null));
         assertTrue(conflicts.hasConflicts(ns));
         assertFalse(conflicts.hasConflicts(UUID.randomUUID().toString()));
-    }
-
-    @Test
-    public void testGetConflictsDeprecated() {
-        final String ns = UUID.randomUUID().toString();
-        add(null, c1, c3);
-
-        List<Conflict> res;
-        res = conflicts.getConflicts(null, null);
-        assertTrue(res.contains(c1));
-        assertTrue(res.contains(c3));
-
-        res = conflicts.getConflicts(null, c3.getPath());
-        assertFalse(res.contains(c1));
-        assertTrue(res.contains(c3));
-
-        res = conflicts.getConflicts(null, "Rivers");
-        assertTrue(res.contains(c1));
-        assertTrue(res.contains(c3));
-
-        add(ns, c1, c2, c3);
-
-        res = conflicts.getConflicts(ns, "Rivers");
-        assertTrue(res.contains(c1));
-        assertTrue(res.contains(c2));
-        assertTrue(res.contains(c3));
-
-        res = conflicts.getConflicts(ns, "Rivers/2");
-        assertFalse(res.contains(c1));
-        assertTrue(res.contains(c2));
-        assertFalse(res.contains(c3));
     }
 
     @Test

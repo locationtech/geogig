@@ -320,6 +320,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points1_modified);
         RevCommit modifiedCommit = geogig.command(CommitOp.class).setMessage("Commit2").call();
+        assertNotNull(modifiedCommit);
         GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
         try {
             tx.command(MergeOp.class).addCommit(mainCommit.getId()).call();

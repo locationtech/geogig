@@ -39,16 +39,12 @@ public class DAGNodeTest {
 
     private RevTree featuresTree;
 
-    private RevTree treesTree;
-
     @Before
     public void before() {
         ObjectStore store = new HeapObjectStore();
         store.open();
         cache = mock(TreeCache.class);
         featuresTree = RevObjectTestSupport.INSTANCE.createFeaturesTree(store, "f", 512);
-        treesTree = RevObjectTestSupport.INSTANCE.createTreesTree(store, 2, 200,
-                RevObjectTestSupport.hashString("test"));
     }
 
     @Test

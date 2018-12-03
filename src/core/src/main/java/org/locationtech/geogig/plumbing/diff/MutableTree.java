@@ -32,6 +32,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -41,7 +42,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * A mutable data structure representing the state of a tree and its subtrees

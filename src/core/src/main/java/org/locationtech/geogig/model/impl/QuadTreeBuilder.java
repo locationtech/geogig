@@ -15,9 +15,9 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
 import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
-import org.locationtech.jts.geom.Envelope;
 
 public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuilder {
 

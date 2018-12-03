@@ -54,6 +54,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Function;
@@ -65,7 +66,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * A working tree is the collection of Features for a single FeatureType in GeoServer that has a

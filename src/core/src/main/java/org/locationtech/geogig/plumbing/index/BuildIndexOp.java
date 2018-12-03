@@ -29,6 +29,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Builds an index tree for the given canonical tree.

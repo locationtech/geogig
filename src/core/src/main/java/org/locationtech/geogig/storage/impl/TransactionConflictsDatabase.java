@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage.impl;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -77,15 +76,6 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
     @Override
     public Optional<Conflict> getConflict(@Nullable String namespace, String path) {
         return database.getConflict(txNamespace, path);
-    }
-
-    /**
-     * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
-     * namespace.
-     */
-    @Override
-    public List<Conflict> getConflicts(@Nullable String namespace, @Nullable String pathFilter) {
-        return database.getConflicts(txNamespace, pathFilter);
     }
 
     /**

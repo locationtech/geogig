@@ -221,7 +221,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
 
                 while (it.isValid()) {
                     byte[] key = it.key();
-                    batch.remove(key);
+                    batch.delete(key);
                     it.next();
                 }
             }
@@ -239,12 +239,12 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
      * @return the iterator
      */
     public AutoCloseableIterator<Entry<K, V>> entryIterator() {
-        
+
         putAll();
 
         final RocksIterator it = db.newIterator();
         it.seekToFirst();
-        
+
         return new AutoCloseableIterator<Entry<K, V>>() {
 
             @Override
@@ -256,10 +256,12 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
             @Override
             public java.util.Map.Entry<K, V> next() {
                 try {
-                    ObjectInputStream keyBytes = new ObjectInputStream(new ByteArrayInputStream(it.key()));
+                    ObjectInputStream keyBytes = new ObjectInputStream(
+                            new ByteArrayInputStream(it.key()));
                     final K key = (K) keyBytes.readObject();
-                    
-                    ObjectInputStream valueBytes = new ObjectInputStream(new ByteArrayInputStream(it.value()));
+
+                    ObjectInputStream valueBytes = new ObjectInputStream(
+                            new ByteArrayInputStream(it.value()));
                     final V value = (V) valueBytes.readObject();
                     it.next();
                     return new Entry<K, V>() {
@@ -278,7 +280,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
                         public V setValue(V value) {
                             throw new UnsupportedOperationException();
                         }
-                        
+
                     };
                 } catch (IOException | ClassNotFoundException e) {
                     throw new RuntimeException(e);

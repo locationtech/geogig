@@ -11,7 +11,6 @@ package org.locationtech.geogig.plumbing.remotes;
 
 import java.util.List;
 
-import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.CheckRefFormat;
 import org.locationtech.geogig.plumbing.remotes.RemoteException.StatusCode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;

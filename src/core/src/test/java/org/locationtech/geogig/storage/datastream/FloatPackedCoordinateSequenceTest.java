@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.junit.Test;
 import org.locationtech.geogig.storage.datastream.v2_3.FloatPackedCoordinateSequence;
-
 import org.locationtech.jts.geom.Coordinate;
 
 public class FloatPackedCoordinateSequenceTest {

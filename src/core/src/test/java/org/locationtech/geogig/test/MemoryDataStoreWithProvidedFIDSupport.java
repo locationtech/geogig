@@ -69,6 +69,7 @@ public class MemoryDataStoreWithProvidedFIDSupport extends MemoryDataStore {
 
     private static class MemoryFeatureWriterWithProvidedFIDSupport
             implements FeatureWriter<SimpleFeatureType, SimpleFeature> {
+        @SuppressWarnings("unused")
         ContentState state;
 
         SimpleFeatureType featureType;

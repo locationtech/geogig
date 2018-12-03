@@ -320,10 +320,10 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             dag.setTotalChildCount(dag.getTotalChildCount() + deltaSize);
             long post = dag.getTotalChildCount();
             Preconditions.checkState(pre + deltaSize == post);
-//            if (remove && dag.getId().equals(failingDag)) {
-//                Set<NodeId> childrenRecursive = getChildrenRecursive(dag);
-//                Preconditions.checkState(post == childrenRecursive.size());
-//            }
+            // if (remove && dag.getId().equals(failingDag)) {
+            // Set<NodeId> childrenRecursive = getChildrenRecursive(dag);
+            // Preconditions.checkState(post == childrenRecursive.size());
+            // }
             try {
                 shrinkIfUnderflow(dag);
             } catch (IllegalStateException e) {
@@ -401,30 +401,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         return children;
     }
 
-    private Set<NodeId> getChildrenRecursive(final DAG dag) {
-
-        Set<NodeId> children = new HashSet<>();
-        dag.forEachChild((id) -> children.add(id));
-
-        if (!children.isEmpty()) {
-            return children;
-        }
-        final List<TreeId> bucketIds = dag.bucketList();
-        for (TreeId bucketId : bucketIds) {
-            DAG bucket = getOrCreateDAG(bucketId);
-            if (bucket.getState() == STATE.INITIALIZED) {
-                mergeRoot(bucket);
-            }
-            Set<NodeId> bucketChildren = getChildrenRecursive(bucket);
-            int pre = children.size();
-            children.addAll(bucketChildren);
-            int post = children.size();
-            Preconditions.checkState(pre + bucketChildren.size() == post);
-        }
-
-        return children;
-    }
-
     /**
      * Makes sure the DAG has the same structure than the original tree following the path to the
      * node (i.e.) loading only the {@link RevTree trees} necessary to reach the node being added.
@@ -464,7 +440,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                         TreeId dagBucketId = root.getId().newChild(bucketIndex.intValue());
                         ObjectId bucketId = bucket.getObjectId();
                         // make sure the DAG exists and is initialized
-                        DAG dag = getOrCreateDAG(dagBucketId, bucketId);
+                        getOrCreateDAG(dagBucketId, bucketId);
                         root.addBucket(dagBucketId);
                     });
                 }

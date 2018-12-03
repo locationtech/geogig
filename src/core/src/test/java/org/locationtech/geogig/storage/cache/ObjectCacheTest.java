@@ -34,7 +34,7 @@ public class ObjectCacheTest {
 
     private RevObject o1, o2;
 
-    private CacheKey k11, k12;
+    private CacheKey k11;
 
     private CacheKey k21, k22;
 
@@ -48,7 +48,6 @@ public class ObjectCacheTest {
         o2 = RevFeatureBuilder.builder().addValue(1L).addValue("one").build();
 
         k11 = cacheId1.create(o1.getId());
-        k12 = cacheId1.create(o2.getId());
 
         k21 = cacheId2.create(o1.getId());
         k22 = cacheId2.create(o2.getId());

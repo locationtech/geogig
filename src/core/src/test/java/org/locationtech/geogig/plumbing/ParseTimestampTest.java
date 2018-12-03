@@ -63,6 +63,7 @@ public class ParseTimestampTest extends Assert {
     public void setUp() throws IOException {
 
         File workingDirectory = tempFolder.newFolder("mockWorkingDir");
+        @SuppressWarnings("serial")
         Platform testPlatform = new TestPlatform(workingDirectory) {
             @Override
             public long currentTimeMillis() {

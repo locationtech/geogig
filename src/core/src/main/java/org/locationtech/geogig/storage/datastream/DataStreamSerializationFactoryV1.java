@@ -52,6 +52,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -63,7 +64,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
-import org.locationtech.jts.geom.Envelope;
 
 public class DataStreamSerializationFactoryV1 implements RevObjectSerializer {
 

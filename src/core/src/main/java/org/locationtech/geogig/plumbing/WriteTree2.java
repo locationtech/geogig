@@ -36,6 +36,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Creates a new root tree in the {@link ObjectDatabase object database} from the current index,

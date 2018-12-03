@@ -32,12 +32,12 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import org.locationtech.jts.geom.Envelope;
 
 public class BuildIndexOpTest extends RepositoryTestCase {
 
@@ -145,7 +145,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
 
     @Test
     public void testSupportsDuplicatedData() throws Exception {
-        testSupportsDuplicatedData(null);
+        testSupportsDuplicatedData((String[]) null);
     }
 
     @Test
@@ -153,7 +153,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         testSupportsDuplicatedData("sp", "ip");
     }
 
-    public void testSupportsDuplicatedData(String... extraAttributes) throws Exception {
+    public void testSupportsDuplicatedData(@Nullable String... extraAttributes) throws Exception {
         insertAndAdd(points1, points2, points3);
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(pointsType);
         featureBuilder.addAll(((SimpleFeature) points1).getAttributes());

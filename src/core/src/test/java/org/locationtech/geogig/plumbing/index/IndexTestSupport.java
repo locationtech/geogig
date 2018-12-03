@@ -38,12 +38,12 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.opengis.feature.simple.SimpleFeatureType;
-
-import com.google.common.collect.Lists;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.opengis.feature.simple.SimpleFeatureType;
+
+import com.google.common.collect.Lists;
 
 public class IndexTestSupport {
 

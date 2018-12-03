@@ -17,10 +17,10 @@ import java.util.Map;
 
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.DiffOp;

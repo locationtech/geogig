@@ -16,11 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import org.locationtech.jts.geom.Envelope;
 
 public class NodeIdTest {
 

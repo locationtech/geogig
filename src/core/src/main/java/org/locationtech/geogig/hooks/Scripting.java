@@ -86,10 +86,16 @@ public class Scripting {
             // TODO: improve this hack to check exception type
             if (cause != e) {
                 String msg = cause.getMessage();
+                if (null == msg) {
+                    msg = e.getMessage();
+                }
+                if (null == msg) {
+                    msg = "";
+                }
                 // JS rhino engine (JDK7) throws a
                 // sun.org.mozilla.javascript.internal.JavaScriptException instead of the original
                 // one
-                String rhinoPrefix = CannotRunGeogigOperationException.class.getName() + ": ";
+                String rhinoPrefix = CannotRunGeogigOperationException.class.getName();
                 if (msg.startsWith(rhinoPrefix)) {
                     msg = msg.substring(rhinoPrefix.length());
                     if (-1 != msg.lastIndexOf('(')) {

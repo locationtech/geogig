@@ -26,13 +26,13 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -46,6 +46,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -53,7 +54,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  *

@@ -183,6 +183,7 @@ public class FindChangedTreesTest extends Assert {
         final RevTree initialRoot = workingTree.getTree();
 
         final List<NodeRef> addedLayers = createLayers(numlayers, numlayers + numAdded);
+        assertEquals(numAdded, addedLayers.size());
         final List<NodeRef> deletedLayers = new ArrayList<>(initialLayers.subList(0, numDeleted));
 
         final List<NodeRef> changedLayers = new ArrayList<>(

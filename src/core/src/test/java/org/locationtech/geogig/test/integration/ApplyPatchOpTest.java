@@ -153,7 +153,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         assertTrue(feature.isPresent());
         ImmutableList<Optional<Object>> values = feature.get().getValues();
         assertEquals(points1.getProperties().size(), values.size());
-        assertFalse(values.contains("ExtraString"));
+        assertFalse(values.contains(Optional.of("ExtraString")));
 
     }
 

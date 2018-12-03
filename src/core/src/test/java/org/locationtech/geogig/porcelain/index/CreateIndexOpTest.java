@@ -36,9 +36,9 @@ import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
-import org.locationtech.jts.geom.Envelope;
 
 public class CreateIndexOpTest extends RepositoryTestCase {
 

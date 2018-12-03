@@ -10,10 +10,10 @@
 package org.locationtech.geogig.model.internal;
 
 import org.locationtech.geogig.model.Node;
-
-import com.google.common.annotations.VisibleForTesting;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+
+import com.google.common.annotations.VisibleForTesting;
 
 enum Quadrant {
     SW(0, 0), NW(0, 1), NE(1, 1), SE(1, 0);

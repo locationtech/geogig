@@ -11,8 +11,6 @@ package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.DataOutput;
-
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;

@@ -40,6 +40,7 @@ import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ContiguousSet;
@@ -48,7 +49,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import org.locationtech.jts.geom.Envelope;
 
 public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 

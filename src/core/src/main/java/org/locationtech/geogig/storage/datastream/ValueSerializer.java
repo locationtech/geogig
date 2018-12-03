@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.locationtech.geogig.model.FieldType;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -164,6 +163,7 @@ public interface ValueSerializer {
         encode(type, value, out);
     }
 
+    @SuppressWarnings("unchecked")
     default public void encode(final FieldType type, Object field, DataOutput data)
             throws IOException {
         switch (type) {

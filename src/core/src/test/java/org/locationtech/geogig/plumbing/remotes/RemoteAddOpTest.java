@@ -13,8 +13,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
-import org.locationtech.geogig.plumbing.remotes.RemoteException;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
@@ -80,7 +78,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
     }
 
     @Test
@@ -96,7 +94,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
 
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
     }
 
     @Test
@@ -113,7 +111,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
         assertEquals("+refs/heads/" + branch + ":refs/remotes/" + remoteName + "/" + branch,
-                remote.getFetch());
+                remote.getFetchSpec());
     }
 
     @Test
@@ -128,7 +126,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         exception.expect(RemoteException.class);
         remoteAdd.setName(remoteName).setURL("someotherurl.com").call();
@@ -149,7 +147,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteName1, remote.getName());
         assertEquals(remoteURL1, remote.getFetchURL());
         assertEquals(remoteURL1, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName1), remote.getFetchSpec());
 
         remote = remoteAdd.setName(remoteName2).setURL(remoteURL2).call();
 

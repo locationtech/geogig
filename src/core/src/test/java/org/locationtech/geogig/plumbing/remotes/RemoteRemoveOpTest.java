@@ -17,9 +17,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
-import org.locationtech.geogig.plumbing.remotes.RemoteException;
-import org.locationtech.geogig.plumbing.remotes.RemoteRemoveOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.repository.Remote;
@@ -72,7 +69,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
 
@@ -92,7 +89,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
 
@@ -101,7 +98,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, deletedRemote.getName());
         assertEquals(remoteURL, deletedRemote.getFetchURL());
         assertEquals(remoteURL, deletedRemote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetchSpec());
     }
 
     @Test
@@ -116,7 +113,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         String refName = Ref.REMOTES_PREFIX + remoteName + "/branch1";
         geogig.command(UpdateRef.class).setName(refName).setNewValue(ObjectId.NULL).call();
@@ -132,7 +129,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, deletedRemote.getName());
         assertEquals(remoteURL, deletedRemote.getFetchURL());
         assertEquals(remoteURL, deletedRemote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetchSpec());
     }
 
     @Test
@@ -147,7 +144,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         final ConfigOp config = geogig.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".url").call();
@@ -159,7 +156,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, deletedRemote.getName());
         assertEquals("", deletedRemote.getFetchURL());
         assertEquals("", deletedRemote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), deletedRemote.getFetchSpec());
     }
 
     @Test
@@ -174,7 +171,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, remote.getName());
         assertEquals(remoteURL, remote.getFetchURL());
         assertEquals(remoteURL, remote.getPushURL());
-        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetch());
+        assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         final ConfigOp config = geogig.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".fetch")
@@ -187,6 +184,6 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteName, deletedRemote.getName());
         assertEquals(remoteURL, deletedRemote.getFetchURL());
         assertEquals(remoteURL, deletedRemote.getPushURL());
-        assertEquals("", deletedRemote.getFetch());
+        assertEquals("", deletedRemote.getFetchSpec());
     }
 }

@@ -33,6 +33,7 @@ public class UpdateSymRef extends AbstractGeoGigOp<Optional<Ref>> {
 
     private boolean delete;
 
+    @SuppressWarnings("unused")
     private String reason;
 
     /**

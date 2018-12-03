@@ -13,7 +13,6 @@ package org.locationtech.geogig.storage.datastream;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-
 import org.locationtech.jts.geom.Envelope;
 
 public class Float32BoundsSerializationTest {

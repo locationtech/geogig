@@ -25,13 +25,13 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * This class determines how the quadtree clustering strategy puts features in the tree.
@@ -278,9 +278,9 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
                 }
             }
         }
-        if (true) {
-            return targetId;
-        }
+        return targetId;
+        //@formatter:off
+        /* the following code block is commented out cause tree shrinking needs to be revisited
         if (original.buckets().isEmpty()) {
             return dagId;
         }
@@ -309,6 +309,8 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
             }
         }
         return originalPathToRoot;
+        */
+        //@formatter:on
     }
 
     /**
@@ -494,32 +496,32 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
 
     boolean startedRemoving = false;
 
-//    protected @Override synchronized int put(final DAG dag, final NodeId nodeId,
-//            final boolean remove) {
-//        mergeRoot(dag);
-//
-//        long prechildcount = dag.getTotalChildCount();
-//        if (remove && 129 == prechildcount && dag.getId().equals(failingDag)) {
-//            System.out.printf("### Removing %s\t from %s. pre: %,d, thread: %s\n", nodeId.name,
-//                    dag.getId(), prechildcount, Thread.currentThread().getName());
-//        }
-//        int delta = super.put(dag, nodeId, remove);
-//        if (dag.getId().equals(failingDag)) {
-//            if (remove) {
-//                startedRemoving = true;
-//                long childcount = dag.getTotalChildCount();
-//                System.out.printf(
-//                        "<<< Removed %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
-//                        nodeId.name, dag.getId(), prechildcount, childcount, delta,
-//                        Thread.currentThread().getName());
-//            } else if (startedRemoving) {
-//                long childcount = dag.getTotalChildCount();
-//                System.out.printf(
-//                        ">>> Added   %s\t to   %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
-//                        nodeId.name, dag.getId(), prechildcount, childcount, delta,
-//                        Thread.currentThread().getName());
-//            }
-//        }
-//        return delta;
-//    }
+    // protected @Override synchronized int put(final DAG dag, final NodeId nodeId,
+    // final boolean remove) {
+    // mergeRoot(dag);
+    //
+    // long prechildcount = dag.getTotalChildCount();
+    // if (remove && 129 == prechildcount && dag.getId().equals(failingDag)) {
+    // System.out.printf("### Removing %s\t from %s. pre: %,d, thread: %s\n", nodeId.name,
+    // dag.getId(), prechildcount, Thread.currentThread().getName());
+    // }
+    // int delta = super.put(dag, nodeId, remove);
+    // if (dag.getId().equals(failingDag)) {
+    // if (remove) {
+    // startedRemoving = true;
+    // long childcount = dag.getTotalChildCount();
+    // System.out.printf(
+    // "<<< Removed %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
+    // nodeId.name, dag.getId(), prechildcount, childcount, delta,
+    // Thread.currentThread().getName());
+    // } else if (startedRemoving) {
+    // long childcount = dag.getTotalChildCount();
+    // System.out.printf(
+    // ">>> Added %s\t to %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
+    // nodeId.name, dag.getId(), prechildcount, childcount, delta,
+    // Thread.currentThread().getName());
+    // }
+    // }
+    // return delta;
+    // }
 }

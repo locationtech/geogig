@@ -23,6 +23,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.IndexDatabase;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -33,7 +34,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Utility functions that are shared between indexing commands.

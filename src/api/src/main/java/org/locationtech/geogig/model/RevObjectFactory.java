@@ -42,6 +42,9 @@ public interface RevObjectFactory extends PriorityService {
         return RevObjects.lookupDefaultFactory();
     }
 
+    public RevPerson createPerson(String name, String email, long timeStamp,
+            int timeZoneOffset);
+
     public @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,
             @NonNull List<ObjectId> parents, @NonNull RevPerson author,
             @NonNull RevPerson committer, @NonNull String message);
@@ -61,4 +64,5 @@ public interface RevObjectFactory extends PriorityService {
     public @NonNull RevFeature createFeature(@NonNull ObjectId id, @NonNull List<Object> values);
 
     public @NonNull RevFeature createFeature(@NonNull ObjectId id, @NonNull Object... values);
+
 }

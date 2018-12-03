@@ -10,8 +10,11 @@
 package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
+
+import lombok.Getter;
 
 /**
  * An annotated tag.
@@ -19,13 +22,13 @@ import org.locationtech.geogig.model.RevTag;
  */
 class RevTagImpl extends AbstractRevObject implements RevTag {
 
-    private String name;
+    private final @Getter String name;
 
-    private ObjectId commit;
+    private final @Getter ObjectId commitId;
 
-    private String message;
+    private final @Getter String message;
 
-    private RevPerson tagger;
+    private final @Getter RevPerson tagger;
 
     /**
      * Constructs a new {@code RevTag} with the given {@link ObjectId}, name, commit id and message.
@@ -39,45 +42,16 @@ class RevTagImpl extends AbstractRevObject implements RevTag {
             RevPerson tagger) {
         super(id);
         this.name = name;
-        this.commit = commitId;
+        this.commitId = commitId;
         this.message = message;
         this.tagger = tagger;
     }
 
-    @Override
-    public TYPE getType() {
+    public @Override TYPE getType() {
         return TYPE.TAG;
     }
-
-    /**
-     * @return the name
-     */
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @return the message
-     */
-    @Override
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * @return the tagger
-     */
-    @Override
-    public RevPerson getTagger() {
-        return tagger;
-    }
-
-    /**
-     * @return the {@code ObjectId} of the commit that this tag points to
-     */
-    @Override
-    public ObjectId getCommitId() {
-        return commit;
+    
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 }

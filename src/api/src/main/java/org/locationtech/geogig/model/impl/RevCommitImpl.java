@@ -11,10 +11,13 @@ package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+
+import lombok.Getter;
 
 /**
  * A reference to a commit in the DAG.
@@ -22,18 +25,17 @@ import com.google.common.collect.ImmutableList;
  */
 class RevCommitImpl extends AbstractRevObject implements RevCommit {
 
-    private ObjectId treeId;
+    private @Getter ObjectId treeId;
 
-    private ImmutableList<ObjectId> parentIds;
+    private @Getter ImmutableList<ObjectId> parentIds;
 
-    private RevPerson author;
+    private @Getter RevPerson author;
 
-    private RevPerson committer;
+    private @Getter RevPerson committer;
 
-    private String message;
+    private @Getter String message;
 
-    @Override
-    public TYPE getType() {
+    public @Override TYPE getType() {
         return TYPE.COMMIT;
     }
 
@@ -57,18 +59,7 @@ class RevCommitImpl extends AbstractRevObject implements RevCommit {
         this.message = message;
     }
 
-    @Override
-    public ObjectId getTreeId() {
-        return treeId;
-    }
-
-    @Override
-    public ImmutableList<ObjectId> getParentIds() {
-        return this.parentIds;
-    }
-
-    @Override
-    public Optional<ObjectId> parentN(int parentIndex) {
+    public @Override Optional<ObjectId> parentN(int parentIndex) {
         Optional<ObjectId> parent = Optional.absent();
         if (parentIds.size() > parentIndex) {
             parent = Optional.of(parentIds.get(parentIndex));
@@ -76,26 +67,7 @@ class RevCommitImpl extends AbstractRevObject implements RevCommit {
         return parent;
     }
 
-    @Override
-    public RevPerson getAuthor() {
-        return author;
-    }
-
-    @Override
-    public RevPerson getCommitter() {
-        return committer;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * @return the {@code RevCommit} as a readable string
-     */
-    @Override
-    public String toString() {
-        return "Commit[" + getId() + ", '" + message + "']";
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 }

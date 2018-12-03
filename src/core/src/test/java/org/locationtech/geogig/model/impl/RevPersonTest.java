@@ -34,7 +34,8 @@ public class RevPersonTest {
 
         String nameAndEmail = person.toString();
 
-        assertEquals("test name <test.email@test.com> 12345/54321", nameAndEmail);
+        assertEquals("RevPersonImpl[\"test name\" <test.email@test.com>, time: 12345, tz: 54321]",
+                nameAndEmail);
     }
 
     @Test

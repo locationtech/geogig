@@ -107,37 +107,5 @@ public interface RevTreeBuilder {
         return RevObjectFactory.defaultInstance().createTree(id, size, childTreeCount, buckets);
     }
 
-    /**
-     * Creates a tree with the given id and contents, no questions asked.
-     * <p>
-     * Be careful when using this method instead of {@link #build()}. {@link #build()} will compute
-     * the appropriate id for the tree given its contents as mandated by {@link HashObject}, whilst
-     * this method will create the tree as given, even if the id is not the one that would result
-     * from properly computing it.
-     * 
-     * @param id
-     * @param size
-     * @param childTreeCount
-     * @param trees
-     * @param features
-     * @param buckets
-     * @return
-     * @deprecated use {@link RevObjectFactory#createTree} (
-     *             {@link RevObjectFactory#defaultInstance()})
-     */
-    static RevTree create(final ObjectId id, final long size, final int childTreeCount,
-            @Nullable List<Node> trees, @Nullable List<Node> features,
-            @Nullable SortedMap<Integer, Bucket> buckets) {
-
-        trees = trees == null ? Collections.emptyList() : trees;
-        features = features == null ? Collections.emptyList() : features;
-        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
-
-        if (buckets.isEmpty()) {
-            return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);
-        }
-        return RevObjectFactory.defaultInstance().createTree(id, size, childTreeCount, buckets);
-    }
-
     public int getDepth();
 }

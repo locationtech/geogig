@@ -10,12 +10,16 @@
 package org.locationtech.geogig.model.impl;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.RevObjectFactory;
+import org.locationtech.geogig.model.RevPerson;
 
 public class RevPersonBuilder {
 
-    public static RevPersonImpl build(@Nullable String name, @Nullable String email, long timeStamp,
+    public static RevPerson build(@Nullable String name, @Nullable String email, long timeStamp,
             int timeZoneOffset) {
-        return new RevPersonImpl(name, email, timeStamp, timeZoneOffset);
+        return RevObjectFactory.defaultInstance().createPerson(name, email, timeStamp,
+                timeZoneOffset);
+
     }
 
 }

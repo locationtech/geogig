@@ -6,7 +6,9 @@
  *
  * Contributors:
  * Gabriel Roldan - initial implementation
- *
+ */
+
+/**
  * This package encloses the GeoGig revision graph object model, comprised of a set of abstractions
  * that denote everything that's stored in a GeoGig repository in order to implement a
  * <a href="https://en.wikipedia.org/wiki/Distributed_version_control"> distributed revision control

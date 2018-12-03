@@ -71,7 +71,9 @@ public class RevCommitImplTest {
 
         String commitString = commit.toString();
 
-        assertEquals("Commit[" + commit.getId().toString() + ", '" + message + "']", commitString);
+        assertEquals(
+                "RevCommitImpl(8f37080cd889f0d0)[tree:d78ed2d560ef178c, parents:[51f21bbf9f1e33ed], msg:This is a test commit, author:\"test\" <test@email.com>, time: 12345, tz: 12345, committer:\"ksishmael\" <kelsey.ishmael@lmnsolutions.com>, time: 12345, tz: 12345]",
+                commitString);
 
         RevCommit commit2 = CommitBuilder.build(treeId, parentId, author, committer, message);
 

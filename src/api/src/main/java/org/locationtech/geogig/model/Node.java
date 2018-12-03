@@ -18,10 +18,10 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * An identifier->object id mapping for an object
@@ -40,11 +40,6 @@ public abstract class Node implements Bounded, Comparable<Node> {
      * @return the name of the {@link RevObject} this node points to
      */
     public abstract String getName();
-
-    /**
-     * @return the id of the {@link RevObject} this Node points to
-     */
-    public abstract ObjectId getObjectId();
 
     public abstract Optional<ObjectId> getMetadataId();
 
@@ -111,7 +106,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
                 .append(" -> ").append(getObjectId()).append(']').toString();
     }
 
-    private static abstract class BaseNode extends Node {
+    private abstract static class BaseNode extends Node {
 
         /*
          * The name of the element

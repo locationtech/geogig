@@ -170,7 +170,7 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      */
     @Override
     public String toString() {
-        return RevObjects.toString(this, NUM_BYTES, new StringBuilder(2 * NUM_BYTES)).toString();
+        return RevObjects.toString(this);
     }
 
     /**

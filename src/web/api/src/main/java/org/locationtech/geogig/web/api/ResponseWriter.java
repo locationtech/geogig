@@ -26,6 +26,7 @@ import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.DiffEntry;
+import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.plumbing.DiffIndex;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
@@ -69,6 +69,8 @@ import org.locationtech.geogig.web.api.commands.RemoteManagement;
 import org.locationtech.geogig.web.api.commands.Statistics;
 import org.locationtech.geogig.web.api.commands.Tag;
 import org.locationtech.geogig.web.api.commands.UpdateRef;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -83,8 +85,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 /**
  * Provides a wrapper for writing common GeoGig objects to a provided {@link XMLStreamWriter}.
@@ -355,9 +355,9 @@ public class ResponseWriter {
         out.writeEndArray();
 
         out.writeStartArray("bucket");
-        tree.forEachBucket((bucketIndex, bucket) -> {
+        tree.forEachBucket(bucket -> {
             out.writeStartArrayElement("bucket");
-            writeElement("bucketindex", bucketIndex.toString());
+            writeElement("bucketindex", String.valueOf(bucket.getIndex()));
             writeElement("bucketid", bucket.getObjectId().toString());
             Envelope env = new Envelope();
             env.setToNull();

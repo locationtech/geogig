@@ -293,7 +293,7 @@ public interface RevTree extends RevObject {
      *        itself
      */
     public default void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
-        buckets().forEach(consumer);
+        getBuckets().forEach(b -> consumer.accept(Integer.valueOf(b.getIndex()), b));
     }
 
     public default void forEachBucket(Consumer<Bucket> consumer) {
@@ -301,6 +301,11 @@ public interface RevTree extends RevObject {
     }
 
     public default Optional<Bucket> getBucket(int bucketIndex) {
-        return Optional.ofNullable(buckets().get(Integer.valueOf(bucketIndex)));
+        for (Bucket b : getBuckets()) {
+            if (bucketIndex == b.getIndex()) {
+                return Optional.of(b);
+            }
+        }
+        return Optional.empty();
     }
 }

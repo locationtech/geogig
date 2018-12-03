@@ -34,10 +34,10 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
     public static final FormatCommonV2_2 INSTANCE = new FormatCommonV2_2();
 
     @Override
-    public void writeBucket(final int index, final Bucket bucket, DataOutput data, Envelope envBuff)
+    protected void writeBucket(final Bucket bucket, DataOutput data, Envelope envBuff)
             throws IOException {
 
-        writeUnsignedVarInt(index, data);
+        writeUnsignedVarInt(bucket.getIndex(), data);
 
         bucket.getObjectId().writeTo(data);
         envBuff.setToNull();

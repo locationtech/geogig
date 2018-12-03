@@ -588,7 +588,7 @@ public abstract class ObjectSerializationFactoryTest {
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
         for (int i = 0; i < count; i++) {
             Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
-                    RevObjectTestSupport.hashString("b" + i), 0, new Envelope(i, i * 2, i, i * 2));
+                    RevObjectTestSupport.hashString("b" + i), i, new Envelope(i, i * 2, i, i * 2));
             buckets.put(i, bucket);
         }
         return buckets;

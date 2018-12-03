@@ -213,17 +213,17 @@ public class FormatCommonV2 {
 
         final int nFeatures = tree.featuresSize();
         writeUnsignedVarInt(nFeatures, data);
-        tree.forEachFeature((n) -> writeNodeQuiet(n, data, envBuff));
+        tree.forEachFeature(n -> writeNodeQuiet(n, data, envBuff));
 
         final int nTrees = tree.treesSize();
         writeUnsignedVarInt(nTrees, data);
-        tree.forEachTree((n) -> writeNodeQuiet(n, data, envBuff));
+        tree.forEachTree(n -> writeNodeQuiet(n, data, envBuff));
 
         final int nBuckets = tree.bucketsSize();
         writeUnsignedVarInt(nBuckets, data);
-        tree.forEachBucket((index, bucket) -> {
+        tree.forEachBucket(bucket -> {
             try {
-                writeBucket(index.intValue(), bucket, data, envBuff);
+                writeBucket(bucket, data, envBuff);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -234,8 +234,8 @@ public class FormatCommonV2 {
         final long size = readUnsignedVarLong(in);
         final int treeCount = readUnsignedVarInt(in);
 
-        final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<Node>();
-        final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<Node>();
+        final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<>();
+        final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<>();
 
         final int nFeatures = readUnsignedVarInt(in);
         for (int i = 0; i < nFeatures; i++) {
@@ -418,10 +418,10 @@ public class FormatCommonV2 {
         return ordinate;
     }
 
-    public void writeBucket(final int index, final Bucket bucket, DataOutput data, Envelope envBuff)
+    protected void writeBucket(final Bucket bucket, DataOutput data, Envelope envBuff)
             throws IOException {
 
-        writeUnsignedVarInt(index, data);
+        writeUnsignedVarInt(bucket.getIndex(), data);
 
         bucket.getObjectId().writeTo(data);
         envBuff.setToNull();

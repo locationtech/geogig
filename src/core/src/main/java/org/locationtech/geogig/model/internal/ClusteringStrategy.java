@@ -436,8 +436,8 @@ public abstract class ClusteringStrategy extends NodeOrdering {
 
                     // initialize buckets
                     preloadBuckets(original);
-                    original.forEachBucket((bucketIndex, bucket) -> {
-                        TreeId dagBucketId = root.getId().newChild(bucketIndex.intValue());
+                    original.forEachBucket(bucket -> {
+                        TreeId dagBucketId = root.getId().newChild(bucket.getIndex());
                         ObjectId bucketId = bucket.getObjectId();
                         // make sure the DAG exists and is initialized
                         getOrCreateDAG(dagBucketId, bucketId);
@@ -453,7 +453,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
     private void preloadBuckets(RevTree tree) {
         if (tree.bucketsSize() > 0) {
             List<ObjectId> ids = new ArrayList<>(tree.bucketsSize());
-            tree.forEachBucket((i, b) -> ids.add(b.getObjectId()));
+            tree.forEachBucket(bucket -> ids.add(bucket.getObjectId()));
             this.storageProvider.getTreeCache().preload(ids);
         }
     }

@@ -44,12 +44,12 @@ class BucketSet {
             return;
         }
 
-        tree.forEachBucket((bucketIndex, bucket) -> {
-            checkArgument(128 >= bucketIndex.intValue(), "bucket index can't exceed 127");
+        tree.forEachBucket(bucket -> {
+            checkArgument(128 >= bucket.getIndex(), "bucket index can't exceed 127");
 
             ObjectId objectId = bucket.getObjectId();
             try {
-                out.writeByte(bucketIndex.intValue());
+                out.writeByte(bucket.getIndex());
                 objectId.writeTo(out);
 
                 Envelope bounds = bucket.bounds().orNull();

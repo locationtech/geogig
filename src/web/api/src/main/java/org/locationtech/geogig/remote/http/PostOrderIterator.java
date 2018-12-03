@@ -417,9 +417,9 @@ class PostOrderIterator extends AbstractIterator<RevObject> {
                 final RevTree tree = (RevTree) object;
                 if (tree.bucketsSize() > 0) {
                     List<ObjectId> ids = new ArrayList<>(tree.bucketsSize());
-                    tree.forEachBucket((i, b) -> ids.add(b.getObjectId()));
+                    tree.forEachBucket(bucket -> ids.add(bucket.getObjectId()));
                     Iterator<RevTree> buckets = database.getAll(ids, NOOP_LISTENER, RevTree.class);
-                    buckets.forEachRemaining((b) -> successors.add(b));
+                    buckets.forEachRemaining(successors::add);
                 }
             }
         }

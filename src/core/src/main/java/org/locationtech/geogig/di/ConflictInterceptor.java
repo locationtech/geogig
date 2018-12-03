@@ -33,6 +33,7 @@ class ConflictInterceptor implements Decorator {
         return !(clazz.getPackage().getName().contains("plumbing") || canRunDuringConflict);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public AbstractGeoGigOp<?> decorate(Object subject) {
         Preconditions.checkNotNull(subject);

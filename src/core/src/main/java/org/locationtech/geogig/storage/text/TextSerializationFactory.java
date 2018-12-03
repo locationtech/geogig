@@ -41,8 +41,8 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
@@ -507,6 +507,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
 
         protected abstract T read(ObjectId id, BufferedReader reader, TYPE type) throws IOException;
 
+        @SuppressWarnings("unchecked")
         protected Node parseNodeLine(String line) {
             List<String> tokens = newArrayList(Splitter.on('\t').split(line));
             final int numTokens = tokens.size();
@@ -524,11 +525,8 @@ public class TextSerializationFactory implements RevObjectSerializer {
                 extraData = Converters.convert(extraDataAsString, Map.class);
             }
 
-            org.locationtech.geogig.model.Node ref = org.locationtech.geogig.model.Node.create(name,
-                    id, metadataId, type, bbox, extraData);
-
-            return ref;
-
+            return org.locationtech.geogig.model.Node.create(name, id, metadataId, type, bbox,
+                    extraData);
         }
 
         protected Envelope parseBBox(String s) {

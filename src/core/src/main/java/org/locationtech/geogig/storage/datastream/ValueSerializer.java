@@ -163,6 +163,7 @@ public interface ValueSerializer {
         encode(type, value, out);
     }
 
+    @SuppressWarnings("unchecked")
     default public void encode(final FieldType type, Object field, DataOutput data)
             throws IOException {
         switch (type) {

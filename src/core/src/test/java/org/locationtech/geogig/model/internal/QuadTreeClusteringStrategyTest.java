@@ -250,7 +250,6 @@ public class QuadTreeClusteringStrategyTest {
         final List<Node> l7Nodes = support.createNodes(130, "L7-", level7Bounds);
 
         final RevTree tree;
-        final RevTree updatedTree;
         {
             QuadTreeClusteringStrategy strategy = support.newStrategy();
 
@@ -541,9 +540,6 @@ public class QuadTreeClusteringStrategyTest {
                 SW);
 
         final int splitSize = 1 + orig.normalizedSizeLimit();
-        List<Node> level4Nodes = support.putNodes(splitSize, orig, level4Path);
-        // print(orig, orig.root);
-        List<Node> level7Nodes = support.putNodes(splitSize, orig, level7Path);
         // print(orig, orig.root);
         List<Node> level11Nodes = support.putNodes(splitSize, orig, level11Path);
         // print(orig, orig.root);
@@ -552,14 +548,6 @@ public class QuadTreeClusteringStrategyTest {
             List<Quadrant> quadrantsByDepth = orig.quadrantsByDepth(nid, maxDepth);
             assertEquals(level11Path, quadrantsByDepth);
         }
-
-        // final int totalCount = level4Nodes.size() + level7Nodes.size() + level11Nodes.size();
-        Envelope env1 = level4Nodes.get(0).bounds().get();
-        Envelope env2 = level7Nodes.get(0).bounds().get();
-        Envelope env3 = level11Nodes.get(0).bounds().get();
-
-        System.err.println("DAG before buildRoot");
-        // print(orig, orig.root);
 
         verify(orig, level4Path, 3 * splitSize);
         verify(orig, level7Path, 2 * splitSize);
@@ -574,51 +562,10 @@ public class QuadTreeClusteringStrategyTest {
                 expectedDepth, orig.depth(orig.root));
 
         orig.buildRoot();
-        System.err.println("DAG after buildRoot");
-        // print(orig, orig.root);
-
-        // assertEquals(129, orig.root.getChildCount());
-        // assertEquals("DAG should have been collapsed", 1, orig.depth(orig.root));
-        //
-        // RevTree originalCollapsedTree = DAGTreeBuilder.build(orig, support.store());
-        // assertEquals(1, RevObjectTestSupport.depth(support.store(), originalCollapsedTree));
-        // assertEquals(orig.root.getChildCount(), originalCollapsedTree.size());
-        //
-        // // we know originalCollapsedTree has been collapsed to be shallower, make sure a new tree
-        // // based on it would preserve its structure
-        //
-        // QuadTreeClusteringStrategy update = support.create(originalCollapsedTree);
-        //
-        // Node node1 = support.createNode("node # 1", SHARED_ENVELOPE);
-        // Node node2 = support.createNode("node # 2", SHARED_ENVELOPE);
-        // Node node3 = support.createNode("node # 3", SHARED_ENVELOPE);
-        //
-        // // update the DAG with the changed nodes
-        // // print(update, update.root);
-        // assertTrue(update.remove(node1));
-        // // print(update, update.root);
-        // assertTrue(update.remove(node2));
-        // assertTrue(update.remove(node3));
-        //
-        // // print(update, update.root);
-        // // print(update, update.buildRoot());
-        //
-        // RevTree updatedTree = DAGTreeBuilder.build(update, support.store());
-        //
-        // List<Node> node11 = findNode(node1.getName(), updatedTree, support.store());
-        // List<Node> node12 = findNode(node2.getName(), updatedTree, support.store());
-        // List<Node> node13 = findNode(node3.getName(), updatedTree, support.store());
-        // assertEquals(0, node11.size());
-        // assertEquals(0, node12.size());
-        // assertEquals(0, node13.size());
-        //
-        // assertEquals(originalCollapsedTree.size() - 3, updatedTree.size());
     }
 
     private void verify(QuadTreeClusteringStrategy quadStrategy, List<Quadrant> dagPath,
             int expectedSize) {
-        final int splitSize = quadStrategy.normalizedSizeLimit();
-
         DAG dag = support.findDAG(quadStrategy, dagPath);
         assertNotNull("Expected dag at location " + dagPath, dag);
         assertEquals(expectedSize, dag.getTotalChildCount());

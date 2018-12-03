@@ -132,14 +132,6 @@ public class Remote {
         return pushurl;
     }
 
-    /**
-     * @return the fetch string of the remote
-     * @deprecated use {@link #getFetchSpec()}
-     */
-    public String getFetch() {
-        return fetch;
-    }
-
     public String getFetchSpec() {
         return fetch;
     }

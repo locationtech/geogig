@@ -26,7 +26,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -201,19 +200,15 @@ public abstract class AbstractObjectStore implements ObjectStore {
         return get(id, RevTag.class);
     }
 
-    private RevObject.TYPE getType(Class<? extends RevObject> clazz) {
-        return TYPE.valueOf(clazz);
-    }
-
     @Nullable
-    private InputStream getRaw(final ObjectId id, boolean failIfNotFound)
-            throws IllegalArgumentException {
-        InputStream in = getRawInternal(id, failIfNotFound);
-        return in;
+    private InputStream getRaw(final ObjectId id, boolean failIfNotFound) {
+        return getRawInternal(id, failIfNotFound);
     }
 
-    protected abstract InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
-            throws IllegalArgumentException;
+    /**
+     * @throws IllegalArgumentException
+     */
+    protected abstract InputStream getRawInternal(ObjectId id, boolean failIfNotFound);
 
     @Override
     public boolean put(final RevObject object) {

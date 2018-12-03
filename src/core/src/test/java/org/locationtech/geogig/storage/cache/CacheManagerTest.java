@@ -22,7 +22,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.lang.management.ManagementFactory;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
@@ -33,7 +32,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 
 import lombok.Getter;
@@ -68,19 +66,15 @@ public class CacheManagerTest {
         }
 
         public static class TestCache implements SharedCache {
-            private ConcurrentHashMap<CacheKey, RevObject> map = new ConcurrentHashMap<>();
-
             public @Override void setEncoder(RevObjectSerializer encoder) {
                 // do nothing
             }
-
         }
     }
 
     public @Test void testMBean() throws Exception {
         MBeanServer mbeanserver = ManagementFactory.getPlatformMBeanServer();
         // force class loading to force mbean regisration
-        double defaultCacheSizePercent = CacheManager.DEFAULT_CACHE_SIZE_PERCENT;
 
         ObjectName beanName = new ObjectName("org.geogig:type=shared-cache");
         assertTrue(mbeanserver.isRegistered(beanName));

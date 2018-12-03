@@ -202,13 +202,11 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
         final String refsKey = "storage.refs";
         final String objectsKey = "storage.objects";
-        final String graphKey = "storage.graph";
 
         final Map<String, String> providedConfig = configDB.getAll();
 
         Optional<VersionedFormat> refs;
         Optional<VersionedFormat> objects;
-        Optional<VersionedFormat> graph;
 
         refs = providedConfig.containsKey(refsKey) ? absent() : defaults.getRefs();
         objects = providedConfig.containsKey(objectsKey) ? absent() : defaults.getObjects();

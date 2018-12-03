@@ -66,5 +66,6 @@ public class MergeFeaturesOpTest extends RepositoryTestCase {
                 .setFirstFeature(masterChangeRef)//
                 .setSecondFeature(branchChangeRef)//
                 .call();
+        assertNotNull(merged);
     }
 }

@@ -213,6 +213,8 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                                     }
                                 }
                             }
+                        default:
+                            // no-op
                         }
                     }
                     if (ok) {

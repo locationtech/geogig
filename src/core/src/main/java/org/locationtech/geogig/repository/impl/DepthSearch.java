@@ -160,6 +160,8 @@ public class DepthSearch {
             return Optional.absent();
         }
 
+        // TODO revisit, shouldn't be using NodeOrder.bucket (a non static method) to respect the
+        // ordering of the tree layout being used?
         Integer bucket = refOrder.bucket(directChildName, subtreesDepth);
         Bucket subtreeBucket = parent.getBucket(bucket.intValue()).orElse(null);
         if (subtreeBucket == null) {

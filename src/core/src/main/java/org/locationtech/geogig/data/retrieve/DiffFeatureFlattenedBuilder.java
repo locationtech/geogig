@@ -19,7 +19,6 @@ import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.DiffObjectInfo;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -27,23 +26,14 @@ import com.google.common.base.Function;
 
 class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleFeature> {
 
-    private SimpleFeatureType diffType;
-
     private SimpleFeatureBuilder diffFeatureBuilder;
-
-    private GeometryFactory geometryFactory;
-
-    private RevFeatureType nativeType;
 
     private List<String> nativeAttNames;
 
     private List<String> flattenedAttNames;
 
-    public DiffFeatureFlattenedBuilder(SimpleFeatureType diffType, RevFeatureType nativeType,
-            GeometryFactory geometryFactory) {
-        this.diffType = diffType;
-        this.nativeType = nativeType;
-        this.geometryFactory = geometryFactory;
+    public DiffFeatureFlattenedBuilder(SimpleFeatureType diffType, RevFeatureType nativeType) {
+
         this.diffFeatureBuilder = new SimpleFeatureBuilder(diffType);
 
         nativeAttNames = nativeType.type().getDescriptors().stream()

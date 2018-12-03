@@ -74,7 +74,6 @@ public class MergeOpTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        System.err.println(testName.getMethodName());
         // These values should be used during a commit to set author/committer
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.

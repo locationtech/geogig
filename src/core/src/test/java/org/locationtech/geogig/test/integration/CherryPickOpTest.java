@@ -78,6 +78,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
         final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        assertNotNull(c4);
         insertAndAdd(lines2);
         final RevCommit c5 = geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
 

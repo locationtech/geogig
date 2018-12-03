@@ -196,6 +196,7 @@ public class RebaseOpTest extends RepositoryTestCase {
                 .setName("branch2").call();
         insertAndAdd(points3);
         final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        assertNotNull(c3);
         insertAndAdd(lines1);
         final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
@@ -369,7 +370,7 @@ public class RebaseOpTest extends RepositoryTestCase {
 
         insertAndAdd(points1);
         final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
-
+        assertNotNull(c1);
         // create branch1 and checkout
         geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points1_modified);

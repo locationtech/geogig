@@ -214,7 +214,7 @@ public class BulkFeatureRetriever {
         boolean flattenedType = !isDiffFeatureType(diffType);
         Function<DiffObjectInfo<RevFeature>, SimpleFeature> builder;
         if (flattenedType) {
-            builder = new DiffFeatureFlattenedBuilder(diffType, nativeType, geometryFactory);
+            builder = new DiffFeatureFlattenedBuilder(diffType, nativeType);
         } else {
 
             // builder for the "old" and "new" versions of each feature

@@ -98,6 +98,7 @@ public class RemoveOpTest extends RepositoryTestCase {
         assertFalse(id.isPresent());
         id = geogig.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + pointsName).call();
         List<DiffEntry> list = toList(repo.index().getStaged(null));
+        assertEquals(4, list.size());
         assertFalse(id.isPresent());
         id = geogig.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + linesName).call();
         assertTrue(id.isPresent());

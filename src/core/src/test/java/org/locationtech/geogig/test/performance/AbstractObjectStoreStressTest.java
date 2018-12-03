@@ -193,8 +193,8 @@ public abstract class AbstractObjectStoreStressTest {
 
         final int queryCount = count / 10;
 
-//        testGettIfPresent(count, queryCount);
-//
+        // testGettIfPresent(count, queryCount);
+        //
         MemoryUsage getIfPresentTraversedMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
         Iterable<ObjectId> ids = randomIds(queryCount, count);
@@ -220,23 +220,6 @@ public abstract class AbstractObjectStoreStressTest {
                 afterGCMem);
         reportRepoSize();
         Assert.assertEquals(getAllListener.toString(), queryCount, getAllListener.found());
-    }
-
-    private void testGettIfPresent(final int count, final int queryCount) {
-        Stopwatch s = Stopwatch.createStarted();
-        int found = 0;
-        for (Iterator<ObjectId> it = randomIds(queryCount, count).iterator(); it.hasNext();) {
-            ObjectId id = it.next();
-            RevObject o = db.getIfPresent(id);
-            if (o != null) {
-                found++;
-            }
-            // Assert.assertNotNull(o);
-        }
-        System.err.printf("----- %,d out of %,d random objects queried with getIfPresent() in %s\n",
-                found, queryCount, s.stop());
-
-        Assert.assertEquals(queryCount, found);
     }
 
     private void reportRepoSize() throws IOException {

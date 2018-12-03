@@ -359,6 +359,7 @@ class NodeSet {
 
         private int boundsSize;
 
+        @SuppressWarnings("unused")
         private int extraDataSize;
 
         private int headerSize;

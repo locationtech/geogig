@@ -278,14 +278,6 @@ public class TransactionRefDatabase implements RefDatabase {
         return changes;
     }
 
-    private @Nullable Ref toRef(String name, @Nullable String value) {
-        if (null == value) {
-            return null;
-        }
-        final boolean sym = value.contains("/");
-        return null;
-    }
-
     /**
      * The names of the refs that either have changed from their original value or didn't exist at
      * the time this method is called

@@ -268,10 +268,6 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         return treeBuilder;
     }
 
-    private RevTree getTree(ObjectId treeId) {
-        return objectDatabase().getTree(treeId);
-    }
-
     private void deepCopy(Node ref) {
         Supplier<Node> objectRef = Suppliers.ofInstance(ref);
         command(DeepCopy.class).setObjectRef(objectRef).setFrom(fromDb).call();

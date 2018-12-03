@@ -525,19 +525,6 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         return bucketTrees;
     }
 
-    /**
-     * @return the bucket tree or {@link RevTree#EMPTY} if this tree does not have a bucket for the
-     *         given bucket index
-     */
-    private RevTree getBucketTree(Integer bucketIndex) {
-        final Bucket bucket = bucketTreesByBucket.get(bucketIndex);
-        if (bucket == null) {
-            return RevTree.EMPTY;
-        } else {
-            return loadTree(bucket.getObjectId());
-        }
-    }
-
     private Multimap<Integer, Node> getChangesByBucket() {
         Multimap<Integer, Node> changesByBucket = ArrayListMultimap.create();
         if (!featureChanges.isEmpty()) {
@@ -568,7 +555,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     }
 
     protected final Integer computeBucket(final String path) {
-        return this.storageOrder.bucket(path, this.depth);
+        return CanonicalNodeNameOrder.bucket(path, this.depth);
     }
 
     /**

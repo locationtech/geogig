@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
-
 import static org.locationtech.geogig.storage.datastream.Varint.readSignedVarInt;
 import static org.locationtech.geogig.storage.datastream.Varint.writeSignedVarInt;
 import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVarInt;
@@ -29,7 +28,7 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 
-public class FormatCommonV2_2  extends FormatCommonV2_1 {
+public class FormatCommonV2_2 extends FormatCommonV2_1 {
 
     public static final FormatCommonV2_2 INSTANCE = new FormatCommonV2_2();
 
@@ -42,9 +41,8 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
         bucket.getObjectId().writeTo(data);
         envBuff.setToNull();
         bucket.expand(envBuff);
-        writeBounds(envBuff,data);
+        writeBounds(envBuff, data);
     }
-
 
     @Override
     protected final Bucket readBucketBody(DataInput in) throws IOException {
@@ -59,7 +57,7 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
     public Node readNode(DataInput in) throws IOException {
         final int typeAndMasks = in.readByte() & 0xFF;
         final int nodeType = typeAndMasks & TYPE_READ_MASK;
-        final int boundsMask = typeAndMasks & BOUNDS_READ_MASK; //unused
+        // final int boundsMask = typeAndMasks & BOUNDS_READ_MASK; //unused
         final int metadataMask = typeAndMasks & METADATA_READ_MASK;
         final int extraDataMask = typeAndMasks & EXTRA_DATA_READ_MASK;
 
@@ -104,7 +102,6 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
 
         boundsMask = BOUNDS_NULL_MASK; // we don't need this anymore, set to 0
 
-
         final Map<String, Object> extraData = node.getExtraData();
 
         metadataMask = node.getMetadataId().isPresent() ? METADATA_PRESENT_MASK
@@ -121,7 +118,7 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
         if (metadataMask == METADATA_PRESENT_MASK) {
             node.getMetadataId().or(ObjectId.NULL).writeTo(data);
         }
-        writeBounds(env,data);
+        writeBounds(env, data);
 
         if (extraDataMask == EXTRA_DATA_PRESENT_MASK) {
             valueEncoder.encode(extraData, data);
@@ -130,22 +127,24 @@ public class FormatCommonV2_2  extends FormatCommonV2_1 {
 
     /**
      * This assumes that envelope is on the float32 grid (should be the case with Bounded objects)
+     * 
      * @param envelope
      * @param data
      * @throws IOException
      */
     private static void writeBounds(Envelope envelope, DataOutput data) throws IOException {
-        //directly use the default encoding
+        // directly use the default encoding
         int[] serializedForm = Float32BoundsSerializer.serialize(envelope);
-        writeSignedVarInt(serializedForm[0],data);
-        writeSignedVarInt(serializedForm[1],data);
-        writeSignedVarInt(serializedForm[2],data);
-        writeSignedVarInt(serializedForm[3],data);
+        writeSignedVarInt(serializedForm[0], data);
+        writeSignedVarInt(serializedForm[1], data);
+        writeSignedVarInt(serializedForm[2], data);
+        writeSignedVarInt(serializedForm[3], data);
     }
 
     private static Envelope readBounds(DataInput in) throws IOException {
-        //directly use the default encoding
-        int[] serializedForm = new int[] { readSignedVarInt(in),readSignedVarInt(in),readSignedVarInt(in),readSignedVarInt(in)};
+        // directly use the default encoding
+        int[] serializedForm = new int[] { readSignedVarInt(in), readSignedVarInt(in),
+                readSignedVarInt(in), readSignedVarInt(in) };
         return Float32BoundsSerializer.deserialize(serializedForm);
     }
 

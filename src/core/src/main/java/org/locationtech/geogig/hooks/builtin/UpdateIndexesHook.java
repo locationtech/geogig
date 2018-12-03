@@ -37,15 +37,15 @@ public class UpdateIndexesHook implements CommandHook {
         return command;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
             @Nullable RuntimeException exception) throws Exception {
 
         final UpdateRef op = (UpdateRef) command;
-        @SuppressWarnings("unchecked")
         final Optional<Ref> updatedRef = (Optional<Ref>) retVal;
 
-        if (!op.isDelete() && exception == null && updatedRef.isPresent()) {
+        if (!op.isDelete() && exception == null && updatedRef != null && updatedRef.isPresent()) {
             final Ref ref = updatedRef.get();
             final String refName = ref.getName();
             // update indexes only for branch updates
@@ -61,7 +61,7 @@ public class UpdateIndexesHook implements CommandHook {
                             .setProgressListener(listener)//
                             .call();
                     if (!listener.isCanceled() && !updates.isEmpty()) {
-                        listener.setDescription(String.format("updated indexes: %s\n", updates));
+                        listener.setDescription("updated indexes: %s", updates);
                     }
                 } catch (ConflictsException conflictsEx) {
                     // expected, we don't update indexes if there are merge conflicts

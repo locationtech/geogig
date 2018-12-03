@@ -24,12 +24,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 
 public class NodeTest {
     @Rule
@@ -291,7 +291,7 @@ public class NodeTest {
             Object v2 = actual.get(k);
             assertEquals(k, v, v2);
             if (v instanceof Map) {
-                assertEqualsFully((Map) v, (Map) v2);
+                assertEqualsFully((Map<?, ?>) v, (Map<?, ?>) v2);
             } else if (v instanceof Geometry) {
                 assertNotSame("geometry is mutable, should have been safe copied", v, v2);
             }

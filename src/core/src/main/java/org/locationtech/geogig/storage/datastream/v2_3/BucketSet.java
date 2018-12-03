@@ -34,8 +34,6 @@ class BucketSet {
 
     private static final int HEADER_SIZE = Integer.BYTES;
 
-    private static final int REC_SIZE = 1 + ObjectId.NUM_BYTES + 4 * 8;
-
     public static void encode(DataOutput out, RevTree tree, StringTable stringTable)
             throws IOException {
 

@@ -21,27 +21,26 @@ import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
 import org.locationtech.jts.geom.Envelope;
 
-
-public class DataStreamSerializationFactoryV2_2Test  extends ObjectSerializationFactoryTest {
+public class DataStreamSerializationFactoryV2_2Test extends ObjectSerializationFactoryTest {
 
     @Override
     protected RevObjectSerializer getObjectSerializingFactory() {
         return DataStreamSerializationFactoryV2_2.INSTANCE;
     }
 
-    //exact bounds check
+    // exact bounds check
     @Override
     public void assertTreesAreEqual(RevTree a, RevTree b) {
-        super.assertTreesAreEqual(a,b); // do the original impl checks
+        super.assertTreesAreEqual(a, b); // do the original impl checks
 
         Iterator<? extends Bounded> ia;
         Iterator<? extends Bounded> ib;
-        if (a.buckets().isEmpty()) {
+        if (a.bucketsSize() == 0) {
             ia = RevObjects.children(a, CanonicalNodeOrder.INSTANCE);
             ib = RevObjects.children(b, CanonicalNodeOrder.INSTANCE);
         } else {
-            ia = a.buckets().values().iterator();
-            ib = b.buckets().values().iterator();
+            ia = a.getBuckets().iterator();
+            ib = b.getBuckets().iterator();
         }
 
         // bounds are not part of the Bounded.equals(Object) contract since it's auxiliary

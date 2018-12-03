@@ -18,7 +18,7 @@ import lombok.NonNull;
  * a pointer to the {@link RevTree}s it's parent tree is split into when the builder's imposed split
  * threshold is surpassed.
  * 
- * @see RevTree#buckets()
+ * @see RevTree#getBuckets()
  * @since 1.0
  */
 public abstract class Bucket implements Bounded, Comparable<Bucket> {

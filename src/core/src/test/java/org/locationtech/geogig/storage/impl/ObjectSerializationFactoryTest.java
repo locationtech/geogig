@@ -25,9 +25,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -77,7 +78,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 
 public abstract class ObjectSerializationFactoryTest {
@@ -178,21 +179,21 @@ public abstract class ObjectSerializationFactoryTest {
                         RevObjectTestSupport.hashString("barmetadataid"), RevObject.TYPE.TREE,
                         new Envelope(1, 2, 1, 2), null));
 
-        ImmutableSortedMap<Integer, Bucket> spatialBuckets = ImmutableSortedMap.of(1,
-                RevObjectFactory.defaultInstance().createBucket(
-                        RevObjectTestSupport.hashString("buckettree"), 0, new Envelope()));
+        SortedSet<Bucket> spatialBuckets = ImmutableSortedSet.of(RevObjectFactory.defaultInstance()
+                .createBucket(RevObjectTestSupport.hashString("buckettree"), 1, new Envelope()));
 
-        ImmutableSortedMap<Integer, Bucket> buckets = ImmutableSortedMap.of(1,
-                RevObjectFactory.defaultInstance().createBucket(
-                        RevObjectTestSupport.hashString("buckettree"), 0,
+        SortedSet<Bucket> buckets = ImmutableSortedSet.of(RevObjectFactory.defaultInstance()
+                .createBucket(RevObjectTestSupport.hashString("buckettree"), 1,
                         new Envelope(1, 2, 1, 2)));
 
-        tree1_leaves = RevTreeBuilder.build(1L, 0, null, features, null);
-        tree2_internal = RevTreeBuilder.build(0, trees.size(), trees, null, null);
+        tree1_leaves = RevTreeBuilder.build(1L, 0, null, features, (SortedSet<Bucket>) null);
+        tree2_internal = RevTreeBuilder.build(0, trees.size(), trees, null,
+                (SortedSet<Bucket>) null);
         tree3_buckets = RevTreeBuilder.build(1L, 1, null, null, buckets);
-        tree4_spatial_leaves = RevTreeBuilder.build(1L, 0, null, spatialFeatures, null);
+        tree4_spatial_leaves = RevTreeBuilder.build(1L, 0, null, spatialFeatures,
+                (SortedSet<Bucket>) null);
         tree5_spatial_internal = RevTreeBuilder.build(1L, spatialTrees.size(), spatialTrees, null,
-                null);
+                (SortedSet<Bucket>) null);
         tree6_spatial_buckets = RevTreeBuilder.build(1L, 1, null, null, spatialBuckets);
 
     }
@@ -482,7 +483,8 @@ public abstract class ObjectSerializationFactoryTest {
                 RevObjectTestSupport.hashString("id"), ObjectId.NULL, TYPE.FEATURE, null,
                 extraData);
 
-        RevTree tree = RevTreeBuilder.build(1, 0, null, ImmutableList.of(n), null);
+        RevTree tree = RevTreeBuilder.build(1, 0, null, ImmutableList.of(n),
+                (SortedSet<Bucket>) null);
 
         RevObject roundTripped = read(tree.getId(), write(tree));
 
@@ -574,7 +576,7 @@ public abstract class ObjectSerializationFactoryTest {
         ObjectId id = RevObjectTestSupport.hashString("fake");
         long size = 100000000;
         int childTreeCount = 0;
-        SortedMap<Integer, Bucket> bucketTrees = createBuckets(32);
+        SortedSet<Bucket> bucketTrees = createBuckets(32);
 
         final RevTree tree = RevObjectFactory.defaultInstance().createTree(id, size, childTreeCount,
                 bucketTrees);
@@ -584,12 +586,12 @@ public abstract class ObjectSerializationFactoryTest {
 
     }
 
-    private SortedMap<Integer, Bucket> createBuckets(int count) {
-        SortedMap<Integer, Bucket> buckets = new TreeMap<>();
+    private SortedSet<Bucket> createBuckets(int count) {
+        SortedSet<Bucket> buckets = new TreeSet<>();
         for (int i = 0; i < count; i++) {
             Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
                     RevObjectTestSupport.hashString("b" + i), i, new Envelope(i, i * 2, i, i * 2));
-            buckets.put(i, bucket);
+            buckets.add(bucket);
         }
         return buckets;
     }
@@ -754,7 +756,7 @@ public abstract class ObjectSerializationFactoryTest {
         assertEquals(o1.numTrees(), o2.numTrees());
         assertNodesEqual(o1.features(), o2.features());
         assertNodesEqual(o1.trees(), o2.trees());
-        assertEquals(o1.buckets(), o2.buckets());
+        assertEquals(Lists.newArrayList(o1.getBuckets()), Lists.newArrayList(o2.getBuckets()));
     }
 
     private void assertNodesEqual(List<Node> l1, List<Node> l2) {
@@ -770,7 +772,7 @@ public abstract class ObjectSerializationFactoryTest {
 
     public void assertTreesAreEqual(RevTree a, RevTree b) {
         assertEquals(a.getId(), b.getId());
-        assertEquals(a.buckets(), b.buckets());
+        assertEquals(Lists.newArrayList(a.getBuckets()), Lists.newArrayList(b.getBuckets()));
         assertEquals(a.features(), b.features());
         assertEquals(a.trees(), b.trees());
         assertEquals(a.numTrees(), b.numTrees());
@@ -778,12 +780,12 @@ public abstract class ObjectSerializationFactoryTest {
 
         Iterator<? extends Bounded> ia;
         Iterator<? extends Bounded> ib;
-        if (a.buckets().isEmpty()) {
+        if (a.bucketsSize() == 0) {
             ia = RevObjects.children(a, CanonicalNodeOrder.INSTANCE);
             ib = RevObjects.children(b, CanonicalNodeOrder.INSTANCE);
         } else {
-            ia = a.buckets().values().iterator();
-            ib = b.buckets().values().iterator();
+            ia = a.getBuckets().iterator();
+            ib = b.getBuckets().iterator();
         }
 
         // bounds are not part of the Bounded.equals(Object) contract since it's auxiliary

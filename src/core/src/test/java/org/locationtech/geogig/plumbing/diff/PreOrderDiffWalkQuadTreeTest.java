@@ -492,7 +492,7 @@ public class PreOrderDiffWalkQuadTreeTest {
 
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
-        final int leftBucketCount = left.buckets().size();
+        final int leftBucketCount = left.bucketsSize();
         final int expectedBucketCalls = leftBucketCount;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
@@ -524,7 +524,7 @@ public class PreOrderDiffWalkQuadTreeTest {
 
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
-        final int leftBucketCount = right.buckets().size();
+        final int leftBucketCount = right.bucketsSize();
         final int expectedBucketCalls = leftBucketCount;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
@@ -773,7 +773,7 @@ public class PreOrderDiffWalkQuadTreeTest {
 
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
-        final int leftBucketCount = left.buckets().size();
+        final int leftBucketCount = left.bucketsSize();
         final int expectedBucketCalls = leftBucketCount;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
@@ -881,7 +881,7 @@ public class PreOrderDiffWalkQuadTreeTest {
         // modified
         final RevTree right;
         // the bucket from left who's tree nodes will be modified on "right"
-        final Bucket leftBucket = left.buckets().get(0);
+        final Bucket leftBucket = left.getBuckets().iterator().next();
         // the bucket tree from left that's used to create the modified nodes
         final RevTree leftBucketTree;
         {// create "right", same as left, except all nodes in the first bucket are changes
@@ -909,7 +909,7 @@ public class PreOrderDiffWalkQuadTreeTest {
         testIsPreorderTraversal(expectedRight, RevTree.EMPTY, right, false, true);
 
         // check a bucket-bucket traversal is done in pre-order
-        final Bucket rightBucket = right.buckets().get(0);
+        final Bucket rightBucket = right.getBuckets().iterator().next();
         final RevTree rightBucketTree = store.getTree(rightBucket.getObjectId());
 
         List<Bounded> expectedChanges;
@@ -980,10 +980,10 @@ public class PreOrderDiffWalkQuadTreeTest {
 
     private List<Bounded> preorder(ObjectStore source, RevTree tree) {
         List<Bounded> res = new ArrayList<>();
-        if (tree.buckets().isEmpty()) {
+        if (tree.bucketsSize() == 0) {
             res.addAll(tree.features());
         } else {
-            tree.buckets().values().forEach((b) -> {
+            tree.getBuckets().forEach((b) -> {
                 res.add(b);
                 RevTree bucketTree = source.getTree(b.getObjectId());
                 res.addAll(preorder(source, bucketTree));

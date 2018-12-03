@@ -12,6 +12,7 @@ package org.locationtech.geogig.model.impl;
 import static com.google.common.base.Preconditions.checkState;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.findNode;
 
@@ -151,10 +152,10 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
             assertEquals(RevTree.EMPTY, tree);
         } else {
             if (size < 129) {
-                assertTrue(tree.buckets().isEmpty());
+                assertEquals(0, tree.bucketsSize());
                 assertFalse(tree.features().isEmpty());
             } else {
-                assertFalse(tree.buckets().isEmpty());
+                assertNotEquals(0, tree.bucketsSize());
                 assertTrue(tree.features().isEmpty());
             }
         }
@@ -164,10 +165,10 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     private Set<Node> getNodes(RevTree t) {
         Set<Node> nodes = new TreeSet<>();
-        if (t.buckets().isEmpty()) {
+        if (t.bucketsSize() == 0) {
             nodes.addAll(t.features());
         } else {
-            for (Bucket b : t.buckets().values()) {
+            for (Bucket b : t.getBuckets()) {
                 RevTree subtree = objectStore.getTree(b.getObjectId());
                 nodes.addAll(getNodes(subtree));
             }
@@ -347,15 +348,15 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
         Node nullEnvNode = createNode(10000, null);
         builder.put(nullEnvNode);
         RevTree tree = builder.build();
-        assertFalse(tree.buckets().isEmpty());
+        assertNotEquals(0, tree.bucketsSize());
         List<Node> matches = findNode(nullEnvNode.getName(), tree, objectStore);
         assertEquals(1, matches.size());
 
         Integer unpromotablesBucketIndex = Integer.valueOf(4);
-        assertTrue(tree.buckets().keySet().contains(unpromotablesBucketIndex));
+        assertTrue(tree.getBucket(unpromotablesBucketIndex).isPresent());
 
         RevTree unpromotables = objectStore
-                .getTree(tree.buckets().get(unpromotablesBucketIndex).getObjectId());
+                .getTree(tree.getBucket(unpromotablesBucketIndex).get().getObjectId());
         matches = findNode(nullEnvNode.getName(), unpromotables, objectStore);
         assertEquals(1, matches.size());
     }

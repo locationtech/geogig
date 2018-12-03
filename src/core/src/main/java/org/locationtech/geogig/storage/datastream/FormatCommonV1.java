@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
@@ -192,9 +192,9 @@ public class FormatCommonV1 {
     public static RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
         final long size = in.readLong();
         final int treeCount = in.readInt();
-        final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<Node>();
-        final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<Node>();
-        final SortedMap<Integer, Bucket> buckets = new TreeMap<Integer, Bucket>();
+        final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<>();
+        final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<>();
+        final SortedSet<Bucket> buckets = new TreeSet<>();
 
         final int nFeatures = in.readInt();
         for (int i = 0; i < nFeatures; i++) {
@@ -218,7 +218,7 @@ public class FormatCommonV1 {
         for (int i = 0; i < nBuckets; i++) {
             int index = in.readInt();
             Bucket bucket = readBucket(index, in);
-            buckets.put(index, bucket);
+            buckets.add(bucket);
         }
 
         ImmutableList<Node> trees = treesBuilder.build();

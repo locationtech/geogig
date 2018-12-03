@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
@@ -76,7 +76,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.math.DoubleMath;
 
 public class FormatCommonV2 {
@@ -255,16 +254,12 @@ public class FormatCommonV2 {
         }
 
         final int nBuckets = readUnsignedVarInt(in);
-        final SortedMap<Integer, Bucket> buckets;
-        buckets = nBuckets > 0 ? new TreeMap<>() : ImmutableSortedMap.of();
+        final SortedSet<Bucket> buckets;
+        buckets = nBuckets > 0 ? new TreeSet<>() : Collections.emptySortedSet();
         for (int i = 0; i < nBuckets; i++) {
             int bucketIndex = readUnsignedVarInt(in);
-            {
-                Integer idx = Integer.valueOf(bucketIndex);
-                checkState(!buckets.containsKey(idx), "duplicate bucket index: %s", idx);
-            }
             Bucket bucket = readBucketBody(bucketIndex, in);
-            buckets.put(Integer.valueOf(bucketIndex), bucket);
+            buckets.add(bucket);
         }
         checkState(nBuckets == buckets.size(), "expected %s buckets, got %s", nBuckets,
                 buckets.size());
@@ -272,7 +267,7 @@ public class FormatCommonV2 {
         ImmutableList<Node> features = featuresBuilder.build();
 
         if (id == null) {
-            id = HashObject.hashTree(trees, features, ImmutableSortedMap.copyOf(buckets));
+            id = HashObject.hashTree(trees, features, buckets);
         }
         if (buckets.isEmpty()) {
             return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);

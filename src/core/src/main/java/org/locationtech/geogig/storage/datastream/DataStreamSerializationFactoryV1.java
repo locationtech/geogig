@@ -333,9 +333,9 @@ public class DataStreamSerializationFactoryV1 implements RevObjectSerializer {
                 data.writeInt(tree.trees().size());
                 tree.trees().forEach((subTree) -> writeNode(subTree, data, envBuff));
 
-                data.writeInt(tree.buckets().size());
-                tree.buckets()
-                        .forEach((index, bucket) -> writeBucket(index, bucket, data, envBuff));
+                data.writeInt(tree.bucketsSize());
+                tree.getBuckets()
+                        .forEach(bucket -> writeBucket(bucket.getIndex(), bucket, data, envBuff));
             } finally {
                 data.flush();
             }

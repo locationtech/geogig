@@ -32,7 +32,7 @@ import com.google.common.collect.Iterables;
  * capacity of it's feature or tree lists has been surpased.
  * <p>
  * The {@link #getId() id} of a {@code RevTree} is computed out of its directly contained
- * {@link RevTree#trees() tree}, {@link RevTree#features() feature}, and {@link RevTree#buckets()
+ * {@link RevTree#trees() tree}, {@link RevTree#features() feature}, and {@link RevTree#getBuckets()
  * bucket} pointers as mandated by {@link HashObjectFunnels}.
  * <p>
  * Two trees that contain the same values hash out to the same {@link ObjectId}, as long as they
@@ -80,7 +80,7 @@ public interface RevTree extends RevObject {
      * The empty tree object id, as results from calling {@link HashObjectFunnels#hashTree
      * HashObjectFunnels.hashTree} with empty arguments.
      */
-    ObjectId EMPTY_TREE_ID = HashObjectFunnels.hashTree(null, null, null);
+    ObjectId EMPTY_TREE_ID = HashObjectFunnels.hashTree(null, null, (Iterable<Bucket>) null);
 
     /**
      * A "null object" to represent the empty tree
@@ -177,7 +177,7 @@ public interface RevTree extends RevObject {
      *         nodes)
      */
     public default boolean isEmpty() {
-        boolean empty = trees().isEmpty() && features().isEmpty() && buckets().isEmpty();
+        boolean empty = treesSize() == 0 && featuresSize() == 0 && bucketsSize() == 0;
         if (empty) {
             Preconditions.checkState(size() == 0L);
             Preconditions.checkState(EMPTY_TREE_ID.equals(getId()));

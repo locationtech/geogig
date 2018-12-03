@@ -21,6 +21,7 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.RecursiveAction;
 
+import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.IndexInfo;
@@ -156,7 +157,7 @@ public class IndexDuplicator {
             if (tree.bucketsSize() > 0) {
                 Iterable<ObjectId> bucketIds;
                 Iterator<RevTree> buckets;
-                bucketIds = Iterables.transform(tree.buckets().values(), b -> b.getObjectId());
+                bucketIds = Iterables.transform(tree.getBuckets(), Bucket::getObjectId);
                 buckets = src.getAll(bucketIds, BulkOpListener.NOOP_LISTENER, RevTree.class);
                 while (buckets.hasNext()) {
                     RevTree bucket = buckets.next();

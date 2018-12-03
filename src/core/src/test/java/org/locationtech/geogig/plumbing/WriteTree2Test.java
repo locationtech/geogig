@@ -12,7 +12,7 @@ package org.locationtech.geogig.plumbing;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.SortedMap;
+import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
@@ -47,10 +47,10 @@ import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
@@ -571,9 +571,8 @@ public class WriteTree2Test extends RepositoryTestCase {
             }
             verifyMetadata(node);
         }
-        if (!tree.buckets().isEmpty()) {
-            ImmutableCollection<Bucket> buckets = tree.buckets().values();
-            for (Bucket b : buckets) {
+        if (tree.bucketsSize() > 0) {
+            for (Bucket b : tree.getBuckets()) {
                 ObjectId bucketTreeId = b.getObjectId();
                 verifyRepositoryTree(path + "/" + bucketTreeId.toString().substring(0, 8),
                         bucketTreeId);
@@ -692,7 +691,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         int childTreeCount = tree.numTrees();
         ImmutableList<Node> trees = tree.trees();
         ImmutableList<Node> features = tree.features();
-        SortedMap<Integer, Bucket> buckets = tree.buckets();
+        SortedSet<Bucket> buckets = ImmutableSortedSet.copyOf(tree.getBuckets());
         RevObjectFactory factory = RevObjectFactory.defaultInstance();
         RevTree fakenId;
         if (buckets.isEmpty()) {

@@ -213,7 +213,7 @@ public class HashObjectFunnelsTest {
 
             @Override
             public Iterable<Bucket> getBuckets() {
-                return Collections.emptySet();
+                return buckets.values();
             }
         };
 
@@ -244,7 +244,7 @@ public class HashObjectFunnelsTest {
 
         assertEquals(treeHash, id2);
 
-        ObjectId treeHash2 = HashObjectFunnels.hashTree(null, null, null);
+        ObjectId treeHash2 = HashObjectFunnels.hashTree(null, null, (Iterable<Bucket>) null);
 
         assertEquals(treeHash2, id1);
 

@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -28,6 +28,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 
 /**
  * 
@@ -84,8 +85,8 @@ public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
             subtrees.addAll(toNodeRef(tree.trees(), parentPath));
         }
         if (tree.bucketsSize() > 0) {
-            List<ObjectId> bucketIds = tree.buckets().values().stream().map(b -> b.getObjectId())
-                    .collect(Collectors.toList());
+            Iterable<ObjectId> bucketIds = Iterables.transform(tree.getBuckets(),
+                    Bucket::getObjectId);
             Iterator<RevTree> bucketTrees = source.getAll(bucketIds, BulkOpListener.NOOP_LISTENER,
                     RevTree.class);
             bucketTrees

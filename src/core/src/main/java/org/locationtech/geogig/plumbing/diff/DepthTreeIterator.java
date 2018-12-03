@@ -298,7 +298,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
 
         public Buckets(RevTree tree) {
             Preconditions.checkArgument(tree.bucketsSize() > 0);
-            buckets = Iterators.filter(tree.buckets().values().iterator(), boundsFilter);
+            buckets = Iterators.filter(tree.getBuckets().iterator(), boundsFilter);
             bucketEntries = Collections.emptyIterator();
             // may it be a mixed tree (having both direct children and buckets)
             bucketEntries = RevObjects.children(tree, CanonicalNodeOrder.INSTANCE);

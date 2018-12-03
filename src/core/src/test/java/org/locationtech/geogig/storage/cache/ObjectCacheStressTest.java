@@ -16,8 +16,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
@@ -200,12 +200,12 @@ public class ObjectCacheStressTest {
 
     private RevTree createBucketTree(int i) {
         final int bucketCount = 32;
-        SortedMap<Integer, Bucket> buckets = new TreeMap<>();
+        SortedSet<Bucket> buckets = new TreeSet<>();
         for (int b = 0; b < bucketCount; b++) {
             ObjectId bucketTree = RevObjectTestSupport.hashString("b" + b);
             Envelope bounds = new Envelope(0, b, 0, b);
             Bucket bucket = RevObjectFactory.defaultInstance().createBucket(bucketTree, 0, bounds);
-            buckets.put(b, bucket);
+            buckets.add(bucket);
         }
         final ObjectId fakeId = RevObjectTestSupport.hashString(String.valueOf(i));
         RevTree tree = RevObjectFactory.defaultInstance().createTree(fakeId, 1024, 0, buckets);

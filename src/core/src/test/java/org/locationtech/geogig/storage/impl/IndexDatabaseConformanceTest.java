@@ -530,8 +530,8 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         tree.trees()
                 .forEach(node -> allIds.addAll(verifyAllReachableTrees(store, node.getObjectId())));
 
-        tree.buckets()
-                .forEach((i, b) -> allIds.addAll(verifyAllReachableTrees(store, b.getObjectId())));
+        tree.getBuckets()
+                .forEach(b -> allIds.addAll(verifyAllReachableTrees(store, b.getObjectId())));
 
         return allIds;
     }

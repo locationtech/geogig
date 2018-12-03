@@ -70,7 +70,7 @@ public class DiffCountConsumerTest extends Assert {
             RevTreeBuilder builder = createFeaturesTree("",
                     2 * CanonicalNodeNameOrder.normalizedSizeLimit(0));
             this.bucketsFeatureTree = builder.build();
-            assertFalse(bucketsFeatureTree.buckets().isEmpty());
+            assertNotEquals(0, bucketsFeatureTree.bucketsSize());
             odb.put(bucketsFeatureTree);
         }
     }
@@ -220,7 +220,7 @@ public class DiffCountConsumerTest extends Assert {
         changed = builder.build();
         odb.put(changed);
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1, changed.size());
-        assertFalse(changed.buckets().isEmpty());
+        assertNotEquals(0, changed.bucketsSize());
 
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0) - 1,
                 count(bucketsFeatureTree, changed).featureCount());
@@ -233,7 +233,7 @@ public class DiffCountConsumerTest extends Assert {
         changed = builder.build();
         odb.put(changed);
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), changed.size());
-        assertTrue(changed.buckets().isEmpty());
+        assertEquals(0, changed.bucketsSize());
     }
 
     @Test
@@ -284,7 +284,7 @@ public class DiffCountConsumerTest extends Assert {
         changed = builder.build();
         odb.put(changed);
         assertEquals(normalizedSizeLimit, changed.size());
-        assertTrue(changed.buckets().isEmpty());
+        assertEquals(0, changed.bucketsSize());
 
         assertEquals(normalizedSizeLimit, count(bucketsFeatureTree, changed).getFeaturesRemoved());
         assertEquals(normalizedSizeLimit, count(bucketsFeatureTree, changed).featureCount());
@@ -298,7 +298,7 @@ public class DiffCountConsumerTest extends Assert {
                 20000 + CanonicalNodeNameOrder.normalizedSizeLimit(0)).build();
         odb.put(deepTree);
         // sanity check
-        assertFalse(deepTree.buckets().isEmpty());
+        assertNotEquals(0, deepTree.bucketsSize());
 
         {// sanity check to ensure we're testing with a tree with depth > 1 (i.e. at least two
          // levels of buckets)
@@ -321,7 +321,7 @@ public class DiffCountConsumerTest extends Assert {
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), changed.size());
         // sanity check
         assertFalse(changed.features().isEmpty());
-        assertTrue(changed.buckets().isEmpty());
+        assertEquals(0, changed.bucketsSize());
 
         final long expected = deepTree.size() - changed.size();
 
@@ -330,11 +330,11 @@ public class DiffCountConsumerTest extends Assert {
     }
 
     private int depth(RevTree deepTree, int currDepth) {
-        if (deepTree.buckets().isEmpty()) {
+        if (deepTree.bucketsSize() == 0) {
             return currDepth;
         }
         int depth = currDepth;
-        for (Bucket bucket : deepTree.buckets().values()) {
+        for (Bucket bucket : deepTree.getBuckets()) {
             RevTree bucketTree = odb.get(bucket.getObjectId(), RevTree.class);
             int d = depth(bucketTree, currDepth + 1);
             depth = Math.max(depth, d);

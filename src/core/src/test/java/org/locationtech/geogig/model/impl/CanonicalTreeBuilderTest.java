@@ -9,8 +9,10 @@
  */
 package org.locationtech.geogig.model.impl;
 
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
@@ -165,7 +167,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         final RevTree legacyResult = legacy.build();
         final RevTree result = builder.build();
         assertEquals(resultSize, result.size());
-        assertTrue(result.buckets().isEmpty());
+        assertEquals(0, result.bucketsSize());
         assertEquals(legacyResult, result);
     }
 
@@ -185,7 +187,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             legacyFull = legacy.build();
         }
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), leafFull.size());
-        assertTrue(leafFull.buckets().isEmpty());
+        assertEquals(0, leafFull.bucketsSize());
         assertEquals(legacyFull, leafFull);
 
         final RevTree legacyExpanded;
@@ -205,7 +207,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
         assertEquals(2 * CanonicalNodeNameOrder.normalizedSizeLimit(0), expanded.size());
         assertTrue(expanded.features().isEmpty());
-        assertFalse(expanded.buckets().isEmpty());
+        assertNotEquals(0, expanded.bucketsSize());
         List<Node> lstree = lstree(expanded);
         assertEquals(2 * CanonicalNodeNameOrder.normalizedSizeLimit(0), lstree.size());
         assertEquals(legacyExpanded, expanded);
@@ -228,8 +230,8 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         bucketTreeBuilder.put(expectedOrder.get(expectedOrder.size() - 1));
         RevTree flatTree = flatTreeBuilder.build();
         RevTree bucketTree = bucketTreeBuilder.build();
-        assertTrue(flatTree.buckets().isEmpty());
-        assertFalse(bucketTree.buckets().isEmpty());
+        assertEquals(0, flatTree.bucketsSize());
+        assertNotEquals(0, bucketTree.bucketsSize());
         objectStore.put(flatTree);
         objectStore.put(bucketTree);
 

@@ -96,7 +96,7 @@ public class RevTreeTest {
 
             @Override
             public Iterable<Bucket> getBuckets() {
-                return Collections.emptySet();
+                return buckets.values();
             }
         };
 

@@ -11,7 +11,6 @@ package org.locationtech.geogig.model;
 
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -55,10 +54,6 @@ public interface RevObjectFactory extends PriorityService {
 
     public @NonNull RevTree createTree(@NonNull ObjectId id, long size, @NonNull List<Node> trees,
             @NonNull List<Node> features);
-
-    @Deprecated
-    public @NonNull RevTree createTree(@NonNull ObjectId id, long size, int childTreeCount,
-            @NonNull SortedMap<Integer, Bucket> buckets);
 
     public @NonNull RevTree createTree(@NonNull ObjectId id, long size, int childTreeCount,
             @NonNull SortedSet<Bucket> buckets);

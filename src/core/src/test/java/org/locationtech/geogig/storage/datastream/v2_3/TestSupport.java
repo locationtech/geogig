@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -39,6 +39,7 @@ import org.locationtech.jts.io.WKTReader;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 public class TestSupport {
 
@@ -142,7 +143,7 @@ public class TestSupport {
     }
 
     public static RevTree tree(int treeSize, List<Node> treeNodes, List<Node> featureNodes,
-            SortedMap<Integer, Bucket> buckets) {
+            SortedSet<Bucket> buckets) {
 
         ObjectId id = HashObject.hashTree(treeNodes, featureNodes, buckets);
 
@@ -150,7 +151,7 @@ public class TestSupport {
                 : ImmutableList.copyOf(treeNodes);
         ImmutableList<Node> features = featureNodes == null ? ImmutableList.of()
                 : ImmutableList.copyOf(featureNodes);
-        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
+        buckets = buckets == null ? Collections.emptySortedSet() : buckets;
         int childTreeCount = treeNodes == null ? 0 : treeNodes.size();
         if (buckets.isEmpty()) {
             return RevObjectFactory.defaultInstance().createTree(id, treeSize, childTreeCount,
@@ -164,7 +165,7 @@ public class TestSupport {
         assertEquals(o1.numTrees(), o2.numTrees());
         assertEqualsFully(o1.features(), o2.features());
         assertEqualsFully(o1.trees(), o2.trees());
-        assertEquals(o1.buckets(), o2.buckets());
+        assertEquals(Lists.newArrayList(o1.getBuckets()), Lists.newArrayList(o2.getBuckets()));
     }
 
     public static void assertEqualsFully(List<Node> expected, List<Node> actual) {

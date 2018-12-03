@@ -270,55 +270,6 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         return hasConflicts;
     }
 
-    @Deprecated
-    @Override
-    public List<Conflict> getConflicts(final @Nullable String ns,
-            final @Nullable String pathFilter) {
-
-        final String namespace = namespace(ns);
-
-        final String sql;
-        if (pathFilter == null) {
-            sql = format(
-                    "SELECT path,ancestor,ours,theirs FROM %s WHERE repository = ? AND namespace = ?",
-                    conflictsTable);
-        } else {
-            sql = format(
-                    "SELECT path,ancestor,ours,theirs FROM %s WHERE repository = ? AND namespace = ? AND path LIKE ?",
-                    conflictsTable);
-        }
-        List<Conflict> conflicts = new ArrayList<>();
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
-            try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setInt(1, repositoryId);
-                ps.setString(2, namespace);
-                if (pathFilter != null) {
-                    ps.setString(3, pathFilter + "%");
-                }
-                log(sql, LOG, repositoryId, namespace);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        String path = rs.getString(1);
-                        @Nullable
-                        byte[] ancestorb = rs.getBytes(2);
-                        ObjectId ancestor;
-                        if (ancestorb == null) {
-                            ancestor = ObjectId.NULL;
-                        } else {
-                            ancestor = ObjectId.create(ancestorb);
-                        }
-                        ObjectId ours = ObjectId.create(rs.getBytes(3));
-                        ObjectId theirs = ObjectId.create(rs.getBytes(4));
-                        conflicts.add(new Conflict(path, ancestor, ours, theirs));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return conflicts;
-    }
-
     @Override
     public Iterator<Conflict> getByPrefix(@Nullable String namespace, @Nullable String treePath) {
         return new ConflictsIterator(this, namespace, treePath);

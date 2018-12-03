@@ -52,7 +52,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
@@ -223,12 +222,6 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
             }
         }
         return Optional.fromNullable(c);
-    }
-
-    @Deprecated
-    @Override
-    public List<Conflict> getConflicts(@Nullable String txId, @Nullable String pathFilter) {
-        return Lists.newArrayList(getByPrefix(txId, pathFilter));
     }
 
     @Override

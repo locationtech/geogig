@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +24,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 /**
@@ -62,25 +60,6 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
             this.conflicts.put(namespace, nsmap);
         }
         return nsmap;
-    }
-
-    /**
-     * Gets all conflicts that match the specified path filter.
-     * 
-     * @param namespace the namespace of the conflict
-     * @param pathFilter the path filter, if this is not defined, all conflicts will be returned
-     * @return the list of conflicts
-     */
-    @Override
-    public List<Conflict> getConflicts(@Nullable String namespace,
-            @Nullable final String pathFilter) {
-
-        ConcurrentHashMap<String, Conflict> map = get(namespace);
-
-        Predicate<String> filter;
-        filter = pathFilter == null ? Predicates.alwaysTrue() : new PathFilter(pathFilter);
-
-        return ImmutableList.copyOf(Maps.filterKeys(map, filter).values());
     }
 
     /**

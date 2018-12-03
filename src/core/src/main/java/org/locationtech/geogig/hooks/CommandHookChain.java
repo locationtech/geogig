@@ -63,6 +63,8 @@ public class CommandHookChain {
         for (CommandHook hook : hooks) {
             try {
                 retVal = hook.post(command, retVal, exception);
+            }catch(CannotRunGeogigOperationException rethrow) {
+                throw rethrow;
             } catch (Exception e) {
                 // this exception should not be thrown in a post-execution hook, but just in case,
                 // we swallow it and ignore it

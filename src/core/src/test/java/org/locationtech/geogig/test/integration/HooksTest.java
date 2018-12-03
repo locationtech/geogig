@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ServiceLoader;
 
 import org.junit.Test;
@@ -20,7 +21,7 @@ import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.hooks.CommandHook;
 import org.locationtech.geogig.hooks.Scripting;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -30,10 +31,16 @@ import com.google.common.io.Files;
 
 public class HooksTest extends RepositoryTestCase {
 
+    private File resolveHooksFolder() {
+        URI repoURI = ResolveGeogigURI.lookup(geogig.getPlatform().pwd()).orNull();
+        File hooksFolder = new File(new File(repoURI), "hooks");
+        assertTrue(hooksFolder.exists());
+        assertTrue(hooksFolder.isDirectory());
+        return hooksFolder;
+    }
     @Override
     protected void setUpInternal() throws Exception {
-        File hooksFolder = new File(new ResolveGeogigDir(geogig.getPlatform()).getFile().get(),
-                "hooks");
+        File hooksFolder = resolveHooksFolder();
         File[] files = hooksFolder.listFiles();
         for (File file : files) {
             file.delete();
@@ -44,8 +51,7 @@ public class HooksTest extends RepositoryTestCase {
     @Test
     public void testHookWithError() throws Exception {
         CharSequence wrongHookCode = "this is a syntactically wrong sentence";
-        File hooksFolder = new File(new ResolveGeogigDir(geogig.getPlatform()).getFile().get(),
-                "hooks");
+        File hooksFolder = resolveHooksFolder();
         File commitPreHookFile = new File(hooksFolder, "pre_commit.js");
 
         Files.asCharSink(commitPreHookFile, Charsets.UTF_8).write(wrongHookCode);
@@ -68,8 +74,7 @@ public class HooksTest extends RepositoryTestCase {
                 + "\tthrow new exception(\"Commit messages must have at least 30 characters\");\n}"
                 + "params.put(\"message\", msg.toLowerCase());";
 
-        File hooksFolder = new File(new ResolveGeogigDir(geogig.getPlatform()).getFile().get(),
-                "hooks");
+        File hooksFolder = resolveHooksFolder();
         File commitPreHookFile = new File(hooksFolder, "pre_commit.js");
 
         Files.asCharSink(commitPreHookFile, Charsets.UTF_8).write(commitPreHookCode);
@@ -98,8 +103,7 @@ public class HooksTest extends RepositoryTestCase {
 
     @Test
     public void testExecutableScriptFileHook() throws Exception {
-        File hooksFolder = new File(new ResolveGeogigDir(geogig.getPlatform()).getFile().get(),
-                "hooks");
+        File hooksFolder = resolveHooksFolder();
         File commitPreHookFile;
         String commitPreHookCode;
         // a hook that returns non-zero
@@ -134,12 +138,11 @@ public class HooksTest extends RepositoryTestCase {
 
     }
 
-    @Test
+    @Test(expected=CannotRunGeogigOperationException.class)
     public void testFailingPostPostProcessHook() throws Exception {
         CharSequence postHookCode = "exception = Packages.org.locationtech.geogig.hooks.CannotRunGeogigOperationException;\n"
                 + "throw new exception();";
-        File hooksFolder = new File(new ResolveGeogigDir(geogig.getPlatform()).getFile().get(),
-                "hooks");
+        File hooksFolder = resolveHooksFolder();
         File commitPostHookFile = new File(hooksFolder, "post_commit.js");
 
         Files.asCharSink(commitPostHookFile, Charsets.UTF_8).write(postHookCode);

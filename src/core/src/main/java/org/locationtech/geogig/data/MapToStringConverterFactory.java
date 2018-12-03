@@ -93,7 +93,7 @@ public class MapToStringConverterFactory implements ConverterFactory {
                 }
             }
 
-            return (T) sb.toString();
+            return target.cast(sb.toString());
         }
     };
 
@@ -137,7 +137,7 @@ public class MapToStringConverterFactory implements ConverterFactory {
 
                 map.put(key, finalValue);
             }
-            return (T) map;
+            return target.cast(map);
         }
 
     };

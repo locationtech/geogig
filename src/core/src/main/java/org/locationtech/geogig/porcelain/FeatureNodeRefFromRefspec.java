@@ -23,10 +23,10 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Returns the NodeRef corresponding to a given refspec, if available.

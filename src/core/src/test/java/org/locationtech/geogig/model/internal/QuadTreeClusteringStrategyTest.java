@@ -32,13 +32,13 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.WKTReader;
 
 /**
  * Test suite for {@link QuadTreeClusteringStrategy} own methods
@@ -231,7 +231,6 @@ public class QuadTreeClusteringStrategyTest {
         assertTreeContents(updatedTree, unpromotables);
     }
 
-    @SuppressWarnings("unchecked")
     public @Test void testCollapseAndExpandsMoreComplexStructure() {
         // unpromotable at root because it overlaps the 4 quadrants
         final Envelope unpromotableBounds = new Envelope(-1, 1, -1, 1);

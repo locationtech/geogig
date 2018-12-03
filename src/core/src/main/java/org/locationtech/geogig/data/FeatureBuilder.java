@@ -17,13 +17,13 @@ import org.geotools.filter.identity.FeatureIdVersionedImpl;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.base.Preconditions;
-import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Provides a method of building features from {@link RevFeature} objects that have the type

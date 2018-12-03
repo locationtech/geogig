@@ -74,7 +74,7 @@ public class PrimitiveArrayToStringConverterFactory implements ConverterFactory 
                 sb.append(Array.get(source, length - 1));
             }
 
-            return (T) sb.append(']').toString();
+            return target.cast(sb.append(']').toString());
 
         }
     };
@@ -132,7 +132,7 @@ public class PrimitiveArrayToStringConverterFactory implements ConverterFactory 
                     throw new IllegalArgumentException();
                 }
             }
-            return (T) array;
+            return target.cast(array);
         }
     };
 

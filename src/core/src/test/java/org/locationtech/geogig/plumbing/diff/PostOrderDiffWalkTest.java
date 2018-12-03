@@ -38,7 +38,6 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
-
 import org.locationtech.jts.geom.Envelope;
 
 public class PostOrderDiffWalkTest {

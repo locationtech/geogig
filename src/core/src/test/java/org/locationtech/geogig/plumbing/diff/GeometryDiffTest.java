@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
+
+import com.google.common.collect.Lists;
 
 public class GeometryDiffTest {
 

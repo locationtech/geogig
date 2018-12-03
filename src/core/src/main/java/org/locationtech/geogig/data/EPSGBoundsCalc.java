@@ -21,6 +21,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.porcelain.CRSException;
 import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -31,8 +32,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.TransformException;
-
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Given a code string (EPSG:####) or {@link RevFeatureType} , find the CRS bounds and return as an

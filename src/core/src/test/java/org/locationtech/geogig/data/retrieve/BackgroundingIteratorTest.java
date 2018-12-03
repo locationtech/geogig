@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
+
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -18,9 +20,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.junit.Test;
-
 import org.locationtech.jts.util.Assert;
 
+@SuppressWarnings({ "resource", "rawtypes", "unchecked" })
 public class BackgroundingIteratorTest {
 
     @Test
@@ -70,9 +72,9 @@ public class BackgroundingIteratorTest {
         Iterator it = (Arrays.asList(1, 2)).iterator();
         BackgroundingIterator<Integer> bit = new BackgroundingIterator<Integer>(it, 100);
 
-        Integer i = bit.next();
-        i = bit.next();
-        i = bit.next(); // fails
+        assertNotNull(bit.next());
+        assertNotNull(bit.next());
+        bit.next(); // fails
     }
 
     @Test
@@ -95,7 +97,7 @@ public class BackgroundingIteratorTest {
 
         BackgroundingIterator<Integer> bit = new BackgroundingIterator<Integer>(it, 100);
         try {
-            Integer i = bit.next(); // should throw
+            bit.next(); // should throw
         } catch (Exception e) {
             Assert.isTrue(e.getCause() == except);
             return; // done
@@ -142,7 +144,7 @@ public class BackgroundingIteratorTest {
     }
 
     @Test
-    public void testIteratorHasError2ndElement_hasNext() throws InterruptedException{
+    public void testIteratorHasError2ndElement_hasNext() throws InterruptedException {
         Exception except = new RuntimeException("test case error: 2nd element gets error");
         Iterator it = mock(Iterator.class);
         when(it.hasNext()).thenReturn(Boolean.TRUE);

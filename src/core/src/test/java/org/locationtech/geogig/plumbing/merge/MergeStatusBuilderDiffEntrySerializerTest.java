@@ -31,9 +31,9 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Unit test suite for {@link ConflictsUtils.DiffEntrySerializer}

@@ -20,7 +20,6 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.QuadTreeTestSupport;
 import org.locationtech.geogig.plumbing.index.IndexTestSupport;
-
 import org.locationtech.jts.geom.Envelope;
 
 public class QuadTreeBuilderTestWGS84 extends QuadTreeBuilderTest {

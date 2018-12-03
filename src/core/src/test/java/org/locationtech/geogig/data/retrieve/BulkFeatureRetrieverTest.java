@@ -32,12 +32,12 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.util.Assert;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.util.Assert;
 
 public class BulkFeatureRetrieverTest {
 
@@ -92,8 +92,6 @@ public class BulkFeatureRetrieverTest {
 
         Assert.isTrue(feat1.getAttribute("name") == "abc");
         Assert.isTrue(feat2.getAttribute("name") == "rrr");
-
-        int tt = 0;
     }
 
     public ObjectId getOID(int b) {

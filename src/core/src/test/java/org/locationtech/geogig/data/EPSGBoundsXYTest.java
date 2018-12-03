@@ -22,9 +22,9 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
-import org.locationtech.jts.geom.Envelope;
 
 // This test case is ignored because system properties were
 // not being properly set during the Travis CI build,

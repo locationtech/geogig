@@ -29,16 +29,16 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.locationtech.geogig.model.FieldType;
-
-import com.google.common.base.Splitter;
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.InStream;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKBWriter;
+
+import com.google.common.base.Splitter;
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
 
 /**
  * A class to serializer/deserialize attribute values to/from a data stream

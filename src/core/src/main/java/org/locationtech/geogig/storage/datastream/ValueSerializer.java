@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.locationtech.geogig.model.FieldType;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;

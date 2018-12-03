@@ -11,9 +11,9 @@ package org.locationtech.geogig.plumbing.diff;
 
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
+import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Preconditions;
-import org.locationtech.jts.geom.Geometry;
 
 public class AttributeDiffFactory {
 

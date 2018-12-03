@@ -32,12 +32,12 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import org.locationtech.jts.geom.Envelope;
 
 public class BuildIndexOpTest extends RepositoryTestCase {
 

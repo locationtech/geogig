@@ -15,11 +15,11 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.storage.DiffObjectInfo;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import org.locationtech.jts.geom.GeometryFactory;
 
 class DiffFeatureBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleFeature> {
 

@@ -49,9 +49,10 @@ public class ResolveObjectType extends AbstractGeoGigOp<RevObject.TYPE> {
      * @throws IllegalArgumentException if the object doesn't exist
      */
     @Override
-    protected TYPE _call() throws IllegalArgumentException {
-        ObjectStore source = this.source == null ? objectDatabase() : this.source;
-        RevObject o = source.get(oid);
+    protected TYPE _call() {
+        @SuppressWarnings("resource")
+        ObjectStore store = this.source == null ? objectDatabase() : this.source;
+        RevObject o = store.get(oid);
         return o.getType();
     }
 }

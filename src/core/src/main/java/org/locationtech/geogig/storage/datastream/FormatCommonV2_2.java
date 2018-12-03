@@ -25,9 +25,9 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
-import org.locationtech.jts.geom.Envelope;
 
 public class FormatCommonV2_2  extends FormatCommonV2_1 {
 

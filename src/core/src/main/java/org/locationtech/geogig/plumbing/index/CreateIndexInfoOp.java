@@ -10,7 +10,6 @@
 package org.locationtech.geogig.plumbing.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.HashMap;
 import java.util.Map;

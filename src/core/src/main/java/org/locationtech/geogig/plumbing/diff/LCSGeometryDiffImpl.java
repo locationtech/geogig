@@ -23,15 +23,15 @@ import org.locationtech.geogig.plumbing.diff.DiffMatchPatch.LinesToCharsResult;
 import org.locationtech.geogig.plumbing.diff.DiffMatchPatch.Operation;
 import org.locationtech.geogig.plumbing.diff.DiffMatchPatch.Patch;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
 
 /**
  * An class that computes differences between geometries using a Longest-Common-Subsequence

@@ -35,6 +35,7 @@ import org.locationtech.geogig.plumbing.merge.DiffMergeFeaturesOp.DiffMergeFeatu
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 
@@ -43,7 +44,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.locationtech.jts.geom.Geometry;
 
 /**
  * Takes a feature reference to a common ancestor and the two ends of a feature merge and produces a

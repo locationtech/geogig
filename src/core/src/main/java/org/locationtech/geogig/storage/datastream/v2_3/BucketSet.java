@@ -18,10 +18,10 @@ import java.io.IOException;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
-import org.locationtech.jts.geom.Envelope;
 
 class BucketSet {
 

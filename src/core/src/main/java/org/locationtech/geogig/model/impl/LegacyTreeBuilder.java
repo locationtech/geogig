@@ -464,8 +464,8 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
                             newLeafTreesToSave.add(modifiedBucketTree);
                         }
                         Envelope bucketBounds = SpatialOps.boundsOf(modifiedBucketTree);
-                        Bucket bucket = RevObjectFactory.defaultInstance()
-                                .createBucket(modifiedBucketTree.getId(), bucketBounds);
+                        Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
+                                modifiedBucketTree.getId(), bucketIndex.intValue(), bucketBounds);
                         bucketTreesByBucket.put(bucketIndex, bucket);
                     }
                 }

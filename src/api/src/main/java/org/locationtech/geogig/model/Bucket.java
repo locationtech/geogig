@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.model;
 
-import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.jts.geom.Envelope;
-
 import lombok.NonNull;
 
 /**
@@ -24,15 +21,9 @@ import lombok.NonNull;
  * @see RevTree#buckets()
  * @since 1.0
  */
-public abstract class Bucket implements Bounded {
+public abstract class Bucket implements Bounded, Comparable<Bucket> {
 
-    /**
-     * @deprecated use {@link RevObjectFactory#createBucket(ObjectId, Envelope)}
-     */
-    public static Bucket create(final @NonNull ObjectId bucketTree,
-            final @Nullable Envelope bounds) {
-        return RevObjectFactory.defaultInstance().createBucket(bucketTree, bounds);
-    }
+    public abstract int getIndex();
 
     /**
      * Equality check based purely on {@link #getObjectId() ObjectId}
@@ -43,5 +34,13 @@ public abstract class Bucket implements Bounded {
 
     public final @Override int hashCode() {
         return RevObjects.hashCode(this);
+    }
+
+    public final @Override int compareTo(@NonNull Bucket b) {
+        int c = Integer.compare(getIndex(), b.getIndex());
+        if (c == 0) {
+            c = getObjectId().compareTo(b.getObjectId());
+        }
+        return c;
     }
 }

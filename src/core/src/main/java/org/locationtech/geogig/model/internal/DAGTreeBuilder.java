@@ -308,7 +308,7 @@ public class DAGTreeBuilder {
                     childTreeCount += bucketTree.numTrees();
 
                     Bucket bucket = RevObjectFactory.defaultInstance()
-                            .createBucket(bucketTree.getId(), SpatialOps.boundsOf(bucketTree));
+                            .createBucket(bucketTree.getId(), bucketIndex, SpatialOps.boundsOf(bucketTree));
 
                     bucketsByIndex.put(bucketIndex, bucket);
                 }

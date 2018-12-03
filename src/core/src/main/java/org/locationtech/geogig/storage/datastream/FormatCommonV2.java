@@ -263,7 +263,7 @@ public class FormatCommonV2 {
                 Integer idx = Integer.valueOf(bucketIndex);
                 checkState(!buckets.containsKey(idx), "duplicate bucket index: %s", idx);
             }
-            Bucket bucket = readBucketBody(in);
+            Bucket bucket = readBucketBody(bucketIndex, in);
             buckets.put(Integer.valueOf(bucketIndex), bucket);
         }
         checkState(nBuckets == buckets.size(), "expected %s buckets, got %s", nBuckets,
@@ -440,8 +440,10 @@ public class FormatCommonV2 {
 
     /**
      * Reads a bucket body (i.e assumes the head unsigned int "index" has been read already)
+     * 
+     * @param bucketIndex
      */
-    protected Bucket readBucketBody(DataInput in) throws IOException {
+    protected Bucket readBucketBody(int bucketIndex, DataInput in) throws IOException {
         ObjectId objectId = readObjectId(in);
         final int boundsMask = in.readByte() & 0xFF;
         @Nullable
@@ -453,7 +455,7 @@ public class FormatCommonV2 {
         } else {
             bounds = null;
         }
-        return RevObjectFactory.defaultInstance().createBucket(objectId, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(objectId, bucketIndex, bounds);
     }
 
     public void writeNode(Node node, DataOutput data) throws IOException {

@@ -12,6 +12,7 @@ package org.locationtech.geogig.model;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -55,14 +56,18 @@ public interface RevObjectFactory extends PriorityService {
     public @NonNull RevTree createTree(@NonNull ObjectId id, long size, @NonNull List<Node> trees,
             @NonNull List<Node> features);
 
+    @Deprecated
     public @NonNull RevTree createTree(@NonNull ObjectId id, long size, int childTreeCount,
             @NonNull SortedMap<Integer, Bucket> buckets);
+
+    public @NonNull RevTree createTree(@NonNull ObjectId id, long size, int childTreeCount,
+            @NonNull SortedSet<Bucket> buckets);
 
     public @NonNull Node createNode(final @NonNull String name, final @NonNull ObjectId oid,
             final @NonNull ObjectId metadataId, final @NonNull TYPE type, @Nullable Envelope bounds,
             @Nullable Map<String, Object> extraData);
 
-    public Bucket createBucket(ObjectId bucketTree, Envelope bounds);
+    public Bucket createBucket(ObjectId bucketTree, int bucketIndex, Envelope bounds);
 
     public @NonNull RevTag createTag(@NonNull ObjectId id, @NonNull String name,
             @NonNull ObjectId commitId, @NonNull String message, @NonNull RevPerson tagger);

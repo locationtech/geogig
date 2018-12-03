@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -74,17 +76,24 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
         return new LeafTree(id, size, f, t);
     }
 
+    @Deprecated
     public @Override @NonNull RevTree createTree(final @NonNull ObjectId id, final long size,
             final int childTreeCount, @NonNull SortedMap<Integer, Bucket> buckets) {
+
+        return new NodeTree(id, size, childTreeCount, new TreeSet<>(buckets.values()));
+    }
+
+    public @Override @NonNull RevTree createTree(final @NonNull ObjectId id, final long size,
+            final int childTreeCount, @NonNull SortedSet<Bucket> buckets) {
 
         return new NodeTree(id, size, childTreeCount, buckets);
     }
 
-    public @Override Bucket createBucket(final @NonNull ObjectId bucketTree,
+    public @Override Bucket createBucket(final @NonNull ObjectId bucketTree, int bucketIndex,
             final @Nullable Envelope bounds) {
         Preconditions.checkNotNull(bucketTree);
         Float32Bounds b32 = Float32Bounds.valueOf(bounds);
-        return new BucketImpl(bucketTree, b32);
+        return new BucketImpl(bucketTree, bucketIndex, b32);
     }
 
     public @Override Node createNode(final @NonNull String name, final @NonNull ObjectId oid,

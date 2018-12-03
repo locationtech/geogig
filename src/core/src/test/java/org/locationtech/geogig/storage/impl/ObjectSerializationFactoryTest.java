@@ -180,11 +180,12 @@ public abstract class ObjectSerializationFactoryTest {
 
         ImmutableSortedMap<Integer, Bucket> spatialBuckets = ImmutableSortedMap.of(1,
                 RevObjectFactory.defaultInstance().createBucket(
-                        RevObjectTestSupport.hashString("buckettree"), new Envelope()));
+                        RevObjectTestSupport.hashString("buckettree"), 0, new Envelope()));
 
         ImmutableSortedMap<Integer, Bucket> buckets = ImmutableSortedMap.of(1,
                 RevObjectFactory.defaultInstance().createBucket(
-                        RevObjectTestSupport.hashString("buckettree"), new Envelope(1, 2, 1, 2)));
+                        RevObjectTestSupport.hashString("buckettree"), 0,
+                        new Envelope(1, 2, 1, 2)));
 
         tree1_leaves = RevTreeBuilder.build(1L, 0, null, features, null);
         tree2_internal = RevTreeBuilder.build(0, trees.size(), trees, null, null);
@@ -587,7 +588,7 @@ public abstract class ObjectSerializationFactoryTest {
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
         for (int i = 0; i < count; i++) {
             Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
-                    RevObjectTestSupport.hashString("b" + i), new Envelope(i, i * 2, i, i * 2));
+                    RevObjectTestSupport.hashString("b" + i), 0, new Envelope(i, i * 2, i, i * 2));
             buckets.put(i, bucket);
         }
         return buckets;

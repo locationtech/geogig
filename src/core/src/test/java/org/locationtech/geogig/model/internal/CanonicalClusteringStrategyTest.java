@@ -480,7 +480,7 @@ public abstract class CanonicalClusteringStrategyTest {
             RevTree leaf = createLeafTree(nodes);
             store.put(leaf);
             Bucket bucket = RevObjectFactory.defaultInstance().createBucket(leaf.getId(),
-                    SpatialOps.boundsOf(leaf));
+                    bucketIndex.intValue(), SpatialOps.boundsOf(leaf));
             bucketsByIndex.put(bucketIndex, bucket);
         }
 

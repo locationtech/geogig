@@ -9,8 +9,10 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -19,6 +21,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 
 /**
  * A GeoGig revision tree is an immutable data structure that represents a
@@ -130,6 +133,11 @@ public interface RevTree extends RevObject {
         @Override
         public String toString() {
             return "EMPTY TREE[" + getId() + "]";
+        }
+
+        @Override
+        public SortedSet<Bucket> getBuckets() {
+            return Collections.emptySortedSet();
         }
     };
 
@@ -263,25 +271,33 @@ public interface RevTree extends RevObject {
      * a quad-tree would always be split into four subtrees to represent the next set of quadrants.
      * 
      * @apiNote the returned map does not contain {@code null} keys nor values
+     * @deprecated
      */
     public ImmutableSortedMap<Integer, Bucket> buckets();
+
+    public Iterable<Bucket> getBuckets();
 
     /**
      * @return the number of buckets in the {@link #buckets} property
      */
     public default int bucketsSize() {
-        return buckets().size();
+        return Iterables.size(getBuckets());
     }
 
     /**
      * Performs the given action for each element of the {@link #buckets} collection respecting its
      * iteration order, which is the order of the bucket index.
      * 
+     * @deprecated
      * @param consumer a consumer that accepts a tuple given by the bucket index and the bucket
      *        itself
      */
     public default void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
         buckets().forEach(consumer);
+    }
+
+    public default void forEachBucket(Consumer<Bucket> consumer) {
+        getBuckets().forEach(consumer);
     }
 
     public default Optional<Bucket> getBucket(int bucketIndex) {

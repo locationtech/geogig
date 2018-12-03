@@ -108,7 +108,7 @@ class BucketSet {
                     maxy = in.readDouble();
                     bounds = new Envelope(minx, maxx, miny, maxy);
                 }
-                Bucket bucket = RevObjectFactory.defaultInstance().createBucket(id, bounds);
+                Bucket bucket = RevObjectFactory.defaultInstance().createBucket(id, index, bounds);
                 builder.put(Integer.valueOf(index), bucket);
             }
         } catch (IOException e) {

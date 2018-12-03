@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -40,7 +41,7 @@ public class RevTreeTest {
         assertEquals(RevTree.EMPTY_TREE_ID, emptyTree.getId());
         assertEquals(0, emptyTree.trees().size());
         assertEquals(0, emptyTree.features().size());
-        assertEquals(0, emptyTree.buckets().size());
+        assertEquals(0, emptyTree.bucketsSize());
         assertEquals(0, emptyTree.size());
         assertEquals(0, emptyTree.numTrees());
         assertTrue(emptyTree.isEmpty());
@@ -59,7 +60,7 @@ public class RevTreeTest {
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
                 TYPE.TREE, null, null);
         final Bucket testBucket = RevObjectFactory.defaultInstance().createBucket(
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"),
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), 0,
                 new Envelope(0, 0, 1, 1));
 
         RevTree testTree = new RevTree() {
@@ -93,6 +94,10 @@ public class RevTreeTest {
                 return ImmutableSortedMap.copyOf(buckets);
             }
 
+            @Override
+            public Iterable<Bucket> getBuckets() {
+                return Collections.emptySet();
+            }
         };
 
         assertTrue(testTree.isEmpty());
@@ -141,6 +146,10 @@ public class RevTreeTest {
                 return ImmutableSortedMap.of();
             }
 
+            @Override
+            public Iterable<Bucket> getBuckets() {
+                return Collections.emptySet();
+            }
         };
 
         // Empty tree, but not the empty tree object id.
@@ -181,6 +190,10 @@ public class RevTreeTest {
                 return ImmutableSortedMap.of();
             }
 
+            @Override
+            public Iterable<Bucket> getBuckets() {
+                return Collections.emptySet();
+            }
         };
 
         // Empty tree, but not the empty tree object id.
@@ -236,6 +249,11 @@ public class RevTreeTest {
             @Override
             public ImmutableSortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.of();
+            }
+
+            @Override
+            public Iterable<Bucket> getBuckets() {
+                return Collections.emptySet();
             }
         };
 

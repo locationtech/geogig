@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
-import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -94,32 +94,19 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
         private final int childTreeCount;
 
-        private final IndexedBucket[] ibuckets;
+        private final Bucket[] buckets;
 
         public NodeTree(final ObjectId id, final long size, final int childTreeCount,
-                final @NonNull SortedMap<Integer, Bucket> innerTrees) {
+                final @NonNull SortedSet<Bucket> innerTrees) {
             super(id, size);
             this.childTreeCount = childTreeCount;
-            ArrayList<IndexedBucket> ibucketl = new ArrayList<>(innerTrees.size());
-            innerTrees.forEach((i, b) -> ibucketl.add(new IndexedBucket(i, b)));
-            this.ibuckets = ibucketl.toArray(new IndexedBucket[ibucketl.size()]);
-        }
-
-        private static class IndexedBucket {
-            final int index;
-
-            final Bucket bucket;
-
-            IndexedBucket(int index, Bucket b) {
-                this.index = index;
-                this.bucket = b;
-            }
+            this.buckets = innerTrees.toArray(new Bucket[innerTrees.size()]);
         }
 
         public @Override ImmutableSortedMap<Integer, Bucket> buckets() {
             Builder<Integer, Bucket> builder = ImmutableSortedMap.naturalOrder();
-            for (IndexedBucket ib : this.ibuckets) {
-                builder.put(Integer.valueOf(ib.index), ib.bucket);
+            for (Bucket ib : this.buckets) {
+                builder.put(Integer.valueOf(ib.getIndex()), ib);
             }
             return builder.build();
         }
@@ -129,21 +116,31 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         }
 
         public @Override int bucketsSize() {
-            return ibuckets.length;
+            return buckets.length;
         }
 
-        public @Override void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
-            for (int i = 0; i < ibuckets.length; i++) {
-                IndexedBucket indexedBucket = ibuckets[i];
-                consumer.accept(Integer.valueOf(indexedBucket.index), indexedBucket.bucket);
+        public @Override @Deprecated void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
+            for (int i = 0; i < buckets.length; i++) {
+                consumer.accept(Integer.valueOf(buckets[i].getIndex()), buckets[i]);
+            }
+        }
+
+        public @Override void forEachBucket(Consumer<Bucket> consumer) {
+            for (Bucket b : buckets) {
+                consumer.accept(b);
             }
         }
 
         public @Override Optional<Bucket> getBucket(int bucketIndex) {
-            int index = Arrays.binarySearch(ibuckets, new IndexedBucket(bucketIndex, null),
-                    (b1, b2) -> Integer.compare(b1.index, b2.index));
+            Bucket searchKey = new BucketImpl(ObjectId.NULL, bucketIndex, null);
+            int index = Arrays.binarySearch(buckets, searchKey,
+                    (b1, b2) -> Integer.compare(b1.getIndex(), b2.getIndex()));
 
-            return index < 0 ? Optional.empty() : Optional.of(ibuckets[index].bucket);
+            return index < 0 ? Optional.empty() : Optional.of(buckets[index]);
+        }
+
+        public @Override Iterable<Bucket> getBuckets() {
+            return Arrays.asList(buckets);
         }
     }
 
@@ -168,6 +165,10 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
     public @Override ImmutableSortedMap<Integer, Bucket> buckets() {
         return ImmutableSortedMap.of();
+    }
+
+    public @Override Iterable<Bucket> getBuckets() {
+        return Collections.emptySortedSet();
     }
 
     public @Override String toString() {

@@ -216,9 +216,9 @@ public class FormatCommonV1 {
 
         final int nBuckets = in.readInt();
         for (int i = 0; i < nBuckets; i++) {
-            int key = in.readInt();
-            Bucket bucket = readBucket(in);
-            buckets.put(key, bucket);
+            int index = in.readInt();
+            Bucket bucket = readBucket(index, in);
+            buckets.put(index, bucket);
         }
 
         ImmutableList<Node> trees = treesBuilder.build();
@@ -268,10 +268,10 @@ public class FormatCommonV1 {
         return new NodeRef(node, parentPath, metadataId);
     }
 
-    public static final Bucket readBucket(DataInput in) throws IOException {
+    public static final Bucket readBucket(int index, DataInput in) throws IOException {
         ObjectId objectId = ObjectId.readFrom(in);
         Envelope bounds = readBBox(in);
-        return RevObjectFactory.defaultInstance().createBucket(objectId, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(objectId, index, bounds);
     }
 
     @Nullable

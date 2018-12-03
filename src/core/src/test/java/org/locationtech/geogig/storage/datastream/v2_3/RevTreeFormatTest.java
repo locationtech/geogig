@@ -103,7 +103,7 @@ public class RevTreeFormatTest {
     public void testBucketsTree() throws IOException {
         RevTree tree;
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
-        buckets.put(1, RevObjectFactory.defaultInstance().createBucket(hashString("b1"), null));
+        buckets.put(1, RevObjectFactory.defaultInstance().createBucket(hashString("b1"), 0, null));
         tree = tree(1024, null, null, buckets);
         encodeDecode(tree);
     }

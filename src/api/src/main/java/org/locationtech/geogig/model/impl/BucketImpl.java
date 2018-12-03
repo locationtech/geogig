@@ -27,15 +27,22 @@ class BucketImpl extends Bucket {
 
     private final Float32Bounds bounds;
 
-    BucketImpl(ObjectId id, Float32Bounds bounds) {
+    private final int index;
+
+    BucketImpl(ObjectId id, int index, Float32Bounds bounds) {
         this.bucketTreeH1 = RevObjects.h1(id);
         this.bucketTreeH2 = RevObjects.h2(id);
         this.bucketTreeH3 = RevObjects.h3(id);
+        this.index = index;
         this.bounds = bounds;
     }
 
     public @Override ObjectId getObjectId() {
         return ObjectId.create(bucketTreeH1, bucketTreeH2, bucketTreeH3);
+    }
+
+    public @Override int getIndex() {
+        return index;
     }
 
     public @Override String toString() {

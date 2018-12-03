@@ -130,7 +130,7 @@ public class RevTreeFormatPrefTest {
         RevTree tree;
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
         for (int i = 0; i < 32; i++) {
-            buckets.put(i, RevObjectFactory.defaultInstance().createBucket(hashString("b" + i),
+            buckets.put(i, RevObjectFactory.defaultInstance().createBucket(hashString("b" + i), 0,
                     new Envelope(-i, -i, i, i)));
         }
         tree = tree(1024, null, null, buckets);

@@ -71,8 +71,14 @@ class RevTreeImpl implements RevTree {
         return RevTreeFormat.features(data);
     }
 
+    @Deprecated
     @Override
     public ImmutableSortedMap<Integer, Bucket> buckets() {
         return RevTreeFormat.buckets(data);
+    }
+
+    @Override
+    public Iterable<Bucket> getBuckets() {
+        return buckets().values();
     }
 }

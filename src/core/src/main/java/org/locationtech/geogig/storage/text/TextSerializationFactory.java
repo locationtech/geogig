@@ -824,7 +824,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
                     ObjectId bucketId = ObjectId.valueOf(tokens.get(2));
                     Envelope bounds = parseBBox(tokens.get(3));
                     Bucket bucket = RevObjectFactory.defaultInstance().createBucket(bucketId,
-                            bounds);
+                            idx.intValue(), bounds);
                     subtrees.put(idx, bucket);
                 } else {
                     throw new IllegalArgumentException("Wrong tree element definition: " + line);

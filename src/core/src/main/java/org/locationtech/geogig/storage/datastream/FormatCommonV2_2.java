@@ -46,11 +46,11 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
     }
 
     @Override
-    protected final Bucket readBucketBody(DataInput in) throws IOException {
+    protected final Bucket readBucketBody(int bucketIndex, DataInput in) throws IOException {
         ObjectId objectId = readObjectId(in);
         @Nullable
         final Envelope bounds = readBounds(in);
-        return RevObjectFactory.defaultInstance().createBucket(objectId, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(objectId, bucketIndex, bounds);
     }
 
     @SuppressWarnings("unchecked")

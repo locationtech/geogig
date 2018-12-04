@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.junit.After;
 import org.junit.Before;
@@ -54,7 +55,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -473,22 +473,22 @@ public abstract class CanonicalClusteringStrategyTest {
             nodesByBucketIndex.put(bucket, node);
         }
 
-        Map<Integer, Bucket> bucketsByIndex = new TreeMap<>();
+        SortedSet<Bucket> buckets = new TreeSet<>();
 
         for (Integer bucketIndex : new HashSet<>(nodesByBucketIndex.keySet())) {
             Collection<Node> nodes = nodesByBucketIndex.get(bucketIndex);
             RevTree leaf = createLeafTree(nodes);
             store.put(leaf);
             Bucket bucket = RevObjectFactory.defaultInstance().createBucket(leaf.getId(),
-                    SpatialOps.boundsOf(leaf));
-            bucketsByIndex.put(bucketIndex, bucket);
+                    bucketIndex.intValue(), SpatialOps.boundsOf(leaf));
+            buckets.add(bucket);
         }
 
         long size = numNodes;
         int childTreeCount = 0;
         ImmutableList<Node> trees = null;
         ImmutableList<Node> features = null;
-        ImmutableSortedMap<Integer, Bucket> buckets = ImmutableSortedMap.copyOf(bucketsByIndex);
+
         RevTree tree = RevTreeBuilder.build(size, childTreeCount, trees, features, buckets);
         return tree;
     }
@@ -509,7 +509,7 @@ public abstract class CanonicalClusteringStrategyTest {
         List<Node> sorted = new ArrayList<Node>(featureNodes);
         Collections.sort(sorted, CanonicalNodeOrder.INSTANCE);
         ImmutableList<Node> features = ImmutableList.copyOf(sorted);
-        ImmutableSortedMap<Integer, Bucket> buckets = null;
+        SortedSet<Bucket> buckets = null;
         int size = features.size();
         RevTree tree = RevTreeBuilder.build(size, childTreeCount, trees, features, buckets);
         return tree;

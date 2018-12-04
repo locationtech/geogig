@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
@@ -192,9 +192,9 @@ public class FormatCommonV1 {
     public static RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
         final long size = in.readLong();
         final int treeCount = in.readInt();
-        final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<Node>();
-        final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<Node>();
-        final SortedMap<Integer, Bucket> buckets = new TreeMap<Integer, Bucket>();
+        final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<>();
+        final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<>();
+        final SortedSet<Bucket> buckets = new TreeSet<>();
 
         final int nFeatures = in.readInt();
         for (int i = 0; i < nFeatures; i++) {
@@ -216,9 +216,9 @@ public class FormatCommonV1 {
 
         final int nBuckets = in.readInt();
         for (int i = 0; i < nBuckets; i++) {
-            int key = in.readInt();
-            Bucket bucket = readBucket(in);
-            buckets.put(key, bucket);
+            int index = in.readInt();
+            Bucket bucket = readBucket(index, in);
+            buckets.add(bucket);
         }
 
         ImmutableList<Node> trees = treesBuilder.build();
@@ -268,10 +268,10 @@ public class FormatCommonV1 {
         return new NodeRef(node, parentPath, metadataId);
     }
 
-    public static final Bucket readBucket(DataInput in) throws IOException {
+    public static final Bucket readBucket(int index, DataInput in) throws IOException {
         ObjectId objectId = ObjectId.readFrom(in);
         Envelope bounds = readBBox(in);
-        return RevObjectFactory.defaultInstance().createBucket(objectId, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(objectId, index, bounds);
     }
 
     @Nullable

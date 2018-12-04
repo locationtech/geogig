@@ -278,18 +278,20 @@ public @UtilityClass class RevObjects {
     }
 
     public static boolean equals(@NonNull Bucket bucket, @Nullable Object o) {
-        return (o instanceof Bucket) && bucket.getObjectId().equals(((Bucket) o).getObjectId());
+        return (o instanceof Bucket) && bucket.getIndex() == ((Bucket) o).getIndex()
+                && bucket.getObjectId().equals(((Bucket) o).getObjectId());
     }
 
     public static int hashCode(@NonNull Bucket bucket) {
-        return 31 * bucket.getObjectId().hashCode();
+        return 31 * bucket.getIndex() + bucket.getObjectId().hashCode();
     }
 
     public static String toString(@NonNull Bucket bucket) {
         Envelope env = bucket.bounds().orNull();
         String bounds = env == null ? null : env.toString();
-        return String.format("%s[tree:%s, bounds: %s]", //
+        return String.format("%s[index: %d, tree:%s, bounds: %s]", //
                 bucket.getClass().getSimpleName(), //
+                bucket.getIndex(), //
                 toShortString(bucket.getObjectId()), //
                 bounds);
     }

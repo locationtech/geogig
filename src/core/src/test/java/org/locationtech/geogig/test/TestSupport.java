@@ -51,7 +51,7 @@ public class TestSupport {
         sourceRefs.remove(Ref.WORK_HEAD);
         copyRefs.remove(Ref.STAGE_HEAD);
         copyRefs.remove(Ref.WORK_HEAD);
-        
+
         assertEquals(sourceRefs.keySet(), copyRefs.keySet());
         assertEquals(sourceRefs, copyRefs);
     }
@@ -167,8 +167,8 @@ public class TestSupport {
             pathToObject.pop();
         }
 
-        tree.buckets().forEach((index, bucket) -> {
-            pathToObject.push("bucket[" + index + "]");
+        tree.getBuckets().forEach(bucket -> {
+            pathToObject.push("bucket[" + bucket.getIndex() + "]");
             verifyAllReachableContents(repo, bucket.getObjectId(), pathToObject, allIds);
             pathToObject.pop();
         });

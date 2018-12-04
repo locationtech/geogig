@@ -12,6 +12,8 @@ package org.locationtech.geogig.model.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -93,13 +95,22 @@ public interface RevTreeBuilder {
 
     public void dispose();
 
+    @Deprecated
     static RevTree build(final long size, final int childTreeCount, @Nullable List<Node> trees,
             @Nullable List<Node> features, @Nullable SortedMap<Integer, Bucket> buckets) {
 
-        ObjectId id = HashObject.hashTree(trees, features, buckets);
+        SortedSet<Bucket> b = buckets == null ? Collections.emptySortedSet()
+                : new TreeSet<>(buckets.values());
+        return build(size, childTreeCount, trees, features, b);
+    }
+
+    static RevTree build(final long size, final int childTreeCount, @Nullable List<Node> trees,
+            @Nullable List<Node> features, @Nullable SortedSet<Bucket> buckets) {
+
         trees = trees == null ? Collections.emptyList() : trees;
         features = features == null ? Collections.emptyList() : features;
-        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
+        buckets = buckets == null ? Collections.emptySortedSet() : buckets;
+        ObjectId id = HashObject.hashTree(trees, features, buckets);
 
         if (buckets.isEmpty()) {
             return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);

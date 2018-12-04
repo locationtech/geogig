@@ -16,6 +16,7 @@ import static org.locationtech.geogig.model.RevObject.TYPE.FEATURETYPE;
 import static org.locationtech.geogig.model.RevObject.TYPE.TAG;
 import static org.locationtech.geogig.model.RevObject.TYPE.TREE;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.function.Consumer;
@@ -32,7 +33,6 @@ import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.PrimitiveSink;
@@ -87,34 +87,47 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
     }
 
     public static ObjectId hashFeature(List<Object> values) {
-        return hash((h) -> HashObjectFunnels.feature(h, values));
+        return hash(h -> HashObjectFunnels.feature(h, values));
     }
 
+    @Deprecated
     public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
             @Nullable SortedMap<Integer, Bucket> buckets) {
 
         final List<Node> t = trees == null ? ImmutableList.of() : trees;
         final List<Node> f = features == null ? ImmutableList.of() : features;
-        final SortedMap<Integer, Bucket> b = buckets == null ? ImmutableSortedMap.of() : buckets;
+        final Iterable<Bucket> b = buckets == null ? Collections.emptySet() : buckets.values();
 
-        return hash((h) -> HashObjectFunnels.tree(h, t, f, b));
+        return hash(h -> HashObjectFunnels.tree(h, t, f, b));
+
+    }
+
+    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
+            @Nullable Iterable<Bucket> buckets) {
+
+        final List<Node> t = trees == null ? ImmutableList.of() : trees;
+        final List<Node> f = features == null ? ImmutableList.of() : features;
+        final Iterable<Bucket> b = buckets == null ? Collections.emptySet() : buckets;
+
+        return hash(h -> HashObjectFunnels.tree(h, t, f, b));
 
     }
 
     public static ObjectId hashTag(String name, ObjectId commitId, String message,
             RevPerson tagger) {
-        return hash((h) -> HashObjectFunnels.tag(h, name, commitId, message, tagger));
+        return hash(h -> HashObjectFunnels.tag(h, name, commitId, message, tagger));
     }
 
     public static ObjectId hashFeatureType(FeatureType featureType) {
         checkNotNull(featureType);
-        return hash((h) -> HashObjectFunnels.featureType(h, featureType));
+        return hash(h -> HashObjectFunnels.featureType(h, featureType));
     }
 
-    public static ObjectId hashCommit(ObjectId treeId, List<ObjectId> parentIds,
-            RevPerson author, RevPerson committer, String commitMessage) {
+    public static ObjectId hashCommit(ObjectId treeId, List<ObjectId> parentIds, RevPerson author,
+            RevPerson committer, String commitMessage) {
 
-        return hash((h)->HashObjectFunnels.commit(h, treeId, parentIds, author, committer, commitMessage));
+        return hash(h -> HashObjectFunnels.commit(h, treeId, parentIds, author, committer,
+                commitMessage));
     }
 
     private static ObjectId hash(Consumer<PrimitiveSink> funnel) {

@@ -224,12 +224,11 @@ public class RevObjectTestSupport {
 
     public static Set<Node> getTreeNodes(RevTree tree, ObjectStore source) {
         Set<Node> nodes = new HashSet<>();
-        if (tree.buckets().isEmpty()) {
+        if (tree.bucketsSize() == 0) {
             nodes.addAll(tree.features());
             nodes.addAll(tree.trees());
         } else {
-            Iterable<ObjectId> ids = Iterables.transform(tree.buckets().values(),
-                    (b) -> b.getObjectId());
+            Iterable<ObjectId> ids = Iterables.transform(tree.getBuckets(), Bucket::getObjectId);
             Iterator<RevTree> buckets = source.getAll(ids, BulkOpListener.NOOP_LISTENER,
                     RevTree.class);
             while (buckets.hasNext()) {
@@ -248,9 +247,8 @@ public class RevObjectTestSupport {
     public static Set<RevTree> getAllTrees(ObjectStore source, RevTree tree) {
         Set<RevTree> trees = new HashSet<>();
         trees.add(tree);
-        if (!tree.buckets().isEmpty()) {
-            Iterable<ObjectId> ids = Iterables.transform(tree.buckets().values(),
-                    (b) -> b.getObjectId());
+        if (tree.bucketsSize() > 0) {
+            Iterable<ObjectId> ids = Iterables.transform(tree.getBuckets(), Bucket::getObjectId);
 
             List<RevTree> buckets = Lists
                     .newArrayList(source.getAll(ids, BulkOpListener.NOOP_LISTENER, RevTree.class));
@@ -277,7 +275,7 @@ public class RevObjectTestSupport {
                 matches.add(node);
             }
         }
-        for (Bucket b : tree.buckets().values()) {
+        for (Bucket b : tree.getBuckets()) {
             RevTree bt = store.getTree(b.getObjectId());
             matches.addAll(findNode(nodeName, bt, store));
         }
@@ -288,7 +286,7 @@ public class RevObjectTestSupport {
 
         int depth = 0;
 
-        for (Bucket b : tree.buckets().values()) {
+        for (Bucket b : tree.getBuckets()) {
             RevTree btree = store.getTree(b.getObjectId());
             depth = Math.max(depth, 1 + depth(store, btree));
         }

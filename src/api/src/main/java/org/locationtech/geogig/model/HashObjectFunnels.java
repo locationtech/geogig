@@ -15,6 +15,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,6 +26,10 @@ import java.util.UUID;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateFilter;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
@@ -38,10 +43,6 @@ import com.google.common.hash.Funnel;
 import com.google.common.hash.Funnels;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.PrimitiveSink;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateFilter;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 /**
  * Hashes a RevObject and returns the ObjectId.
@@ -100,7 +101,7 @@ public class HashObjectFunnels {
      * @param buckets the tree's {@link RevTree#trees() contained bucket pointers}
      */
     public static void tree(PrimitiveSink into, List<Node> trees, List<Node> features,
-            SortedMap<Integer, Bucket> buckets) {
+            Iterable<Bucket> buckets) {
         checkNotNull(into);
         checkNotNull(trees);
         checkNotNull(features);
@@ -108,6 +109,7 @@ public class HashObjectFunnels {
         TreeFunnel.INSTANCE.funnel(into, trees, features, buckets);
     }
 
+    @Deprecated
     public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
             @Nullable SortedMap<Integer, Bucket> buckets) {
 
@@ -115,6 +117,21 @@ public class HashObjectFunnels {
         trees = trees == null ? ImmutableList.of() : trees;
         features = features == null ? ImmutableList.of() : features;
         buckets = buckets == null ? ImmutableSortedMap.of() : buckets;
+        HashObjectFunnels.tree(hasher, trees, features, buckets.values());
+
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.create(rawKey);
+
+        return id;
+    }
+
+    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
+            @Nullable Iterable<Bucket> buckets) {
+
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        trees = trees == null ? ImmutableList.of() : trees;
+        features = features == null ? ImmutableList.of() : features;
+        buckets = buckets == null ? Collections.emptySet() : buckets;
         HashObjectFunnels.tree(hasher, trees, features, buckets);
 
         final byte[] rawKey = hasher.hash().asBytes();
@@ -228,28 +245,41 @@ public class HashObjectFunnels {
         @Override
         public void funnel(RevTree from, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.TREE, into);
-            from.forEachTree((n) -> NodeFunnel.funnel(n, into));
-            from.forEachFeature((n) -> NodeFunnel.funnel(n, into));
+            from.forEachTree(n -> NodeFunnel.funnel(n, into));
+            from.forEachFeature(n -> NodeFunnel.funnel(n, into));
 
-            from.forEachBucket((index, bucket) -> {
-                Funnels.integerFunnel().funnel(index, into);
+            from.forEachBucket(bucket -> {
+                Funnels.integerFunnel().funnel(bucket.getIndex(), into);
                 ObjectIdFunnel.funnel(bucket.getObjectId(), into);
             });
         }
 
+        @Deprecated
         public void funnel(PrimitiveSink into, List<Node> trees, List<Node> features,
                 SortedMap<Integer, Bucket> buckets) {
 
             RevObjectTypeFunnel.funnel(TYPE.TREE, into);
-            trees.forEach((n) -> NodeFunnel.funnel(n, into));
-            features.forEach((n) -> NodeFunnel.funnel(n, into));
+            trees.forEach(n -> NodeFunnel.funnel(n, into));
+            features.forEach(n -> NodeFunnel.funnel(n, into));
 
             for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
                 Funnels.integerFunnel().funnel(entry.getKey(), into);
                 ObjectIdFunnel.funnel(entry.getValue().getObjectId(), into);
             }
         }
-    };
+
+        public void funnel(PrimitiveSink into, List<Node> trees, List<Node> features,
+                Iterable<Bucket> buckets) {
+
+            RevObjectTypeFunnel.funnel(TYPE.TREE, into);
+            trees.forEach(n -> NodeFunnel.funnel(n, into));
+            features.forEach(n -> NodeFunnel.funnel(n, into));
+            buckets.forEach(b -> {
+                Funnels.integerFunnel().funnel(b.getIndex(), into);
+                ObjectIdFunnel.funnel(b.getObjectId(), into);
+            });
+        }
+    }
 
     private static final class FeatureFunnel implements Funnel<RevFeature> {
 
@@ -566,9 +596,8 @@ public class HashObjectFunnels {
         FeatureTypeFunnel.INSTANCE.funnel(into, featureType);
     }
 
-    public static void commit(PrimitiveSink into, ObjectId treeId,
-            List<ObjectId> parentIds, RevPerson author, RevPerson committer,
-            String commitMessage) {
+    public static void commit(PrimitiveSink into, ObjectId treeId, List<ObjectId> parentIds,
+            RevPerson author, RevPerson committer, String commitMessage) {
         checkNotNull(into);
         checkNotNull(treeId);
         checkNotNull(parentIds);

@@ -19,7 +19,7 @@ import org.locationtech.jts.geom.Envelope;
 public class BucketTest {
 
     private Bucket create(ObjectId id, Envelope bounds) {
-        return RevObjectFactory.defaultInstance().createBucket(id, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(id, 0, bounds);
     }
 
     @Test

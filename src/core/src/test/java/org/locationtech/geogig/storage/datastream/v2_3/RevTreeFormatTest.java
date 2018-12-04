@@ -22,8 +22,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.junit.After;
 import org.junit.Before;
@@ -41,6 +41,7 @@ import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 public class RevTreeFormatTest {
 
@@ -102,8 +103,8 @@ public class RevTreeFormatTest {
     @Test
     public void testBucketsTree() throws IOException {
         RevTree tree;
-        SortedMap<Integer, Bucket> buckets = new TreeMap<>();
-        buckets.put(1, RevObjectFactory.defaultInstance().createBucket(hashString("b1"), null));
+        SortedSet<Bucket> buckets = new TreeSet<>();
+        buckets.add(RevObjectFactory.defaultInstance().createBucket(hashString("b1"), 1, null));
         tree = tree(1024, null, null, buckets);
         encodeDecode(tree);
     }
@@ -195,7 +196,8 @@ public class RevTreeFormatTest {
         assertEquals(orig.numTrees(), decoded.numTrees());
         assertEqualsFully(orig.trees(), decoded.trees());
         assertEqualsFully(orig.features(), decoded.features());
-        assertEquals(orig.buckets(), decoded.buckets());
+        assertEquals(Lists.newArrayList(orig.getBuckets()),
+                Lists.newArrayList(decoded.getBuckets()));
 
         return decoded;
     }

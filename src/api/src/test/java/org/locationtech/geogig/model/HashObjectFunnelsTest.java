@@ -15,6 +15,7 @@ import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -170,7 +171,7 @@ public class HashObjectFunnelsTest {
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
                 TYPE.TREE, null, null);
         final Bucket testBucket = RevObjectFactory.defaultInstance().createBucket(
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"),
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), 0,
                 new Envelope(0, 0, 1, 1));
 
         RevTree testTree = new RevTree() {
@@ -209,6 +210,11 @@ public class HashObjectFunnelsTest {
             public ImmutableSortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.copyOf(buckets);
             }
+
+            @Override
+            public Iterable<Bucket> getBuckets() {
+                return buckets.values();
+            }
         };
 
         Funnel<RevTree> treeFunnel = HashObjectFunnels.treeFunnel();
@@ -238,7 +244,7 @@ public class HashObjectFunnelsTest {
 
         assertEquals(treeHash, id2);
 
-        ObjectId treeHash2 = HashObjectFunnels.hashTree(null, null, null);
+        ObjectId treeHash2 = HashObjectFunnels.hashTree(null, null, (Iterable<Bucket>) null);
 
         assertEquals(treeHash2, id1);
 

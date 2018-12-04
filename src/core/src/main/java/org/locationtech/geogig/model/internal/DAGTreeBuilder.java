@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -44,7 +45,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -260,7 +261,7 @@ public class DAGTreeBuilder {
             final List<DAG> mutableBuckets;
             {
                 final Set<TreeId> dagBuckets = new HashSet<>();
-                root.forEachBucket((b) -> dagBuckets.add(b));
+                root.forEachBucket(dagBuckets::add);
                 checkNotNull(dagBuckets);
                 mutableBuckets = this.state.clusteringStrategy.getDagTrees(dagBuckets);
                 checkState(dagBuckets.size() == mutableBuckets.size());
@@ -288,8 +289,8 @@ public class DAGTreeBuilder {
             long size = 0;
             int childTreeCount = 0;
 
-            ImmutableSortedMap.Builder<Integer, Bucket> bucketsByIndex;
-            bucketsByIndex = ImmutableSortedMap.naturalOrder();
+            ImmutableSortedSet.Builder<Bucket> bucketsByIndex;
+            bucketsByIndex = ImmutableSortedSet.naturalOrder();
 
             for (Entry<Integer, ForkJoinTask<RevTree>> e : subtasks.entrySet()) {
 
@@ -307,14 +308,14 @@ public class DAGTreeBuilder {
                     size += bucketTree.size();
                     childTreeCount += bucketTree.numTrees();
 
-                    Bucket bucket = RevObjectFactory.defaultInstance()
-                            .createBucket(bucketTree.getId(), SpatialOps.boundsOf(bucketTree));
+                    Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
+                            bucketTree.getId(), bucketIndex, SpatialOps.boundsOf(bucketTree));
 
-                    bucketsByIndex.put(bucketIndex, bucket);
+                    bucketsByIndex.add(bucket);
                 }
             }
 
-            ImmutableSortedMap<Integer, Bucket> buckets = bucketsByIndex.build();
+            ImmutableSortedSet<Bucket> buckets = bucketsByIndex.build();
             ImmutableList<Node> treeNodes = null;
             ImmutableList<Node> featureNodes = null;
 
@@ -332,7 +333,7 @@ public class DAGTreeBuilder {
             final ImmutableList<Node> children;
             {
                 Set<NodeId> childrenIds = new HashSet<>();
-                root.forEachChild((id) -> childrenIds.add(id));
+                root.forEachChild(childrenIds::add);
                 children = toNodes(childrenIds);
             }
 
@@ -346,16 +347,12 @@ public class DAGTreeBuilder {
 
             final int childTreeCount = treesList.size();
 
-            ImmutableSortedMap<Integer, Bucket> buckets = null;
+            SortedSet<Bucket> buckets = null;
 
             if (state.isCancelled()) {
                 return null;
             }
-            RevTree tree = RevTreeBuilder.build(size, childTreeCount, treesList, featuresList,
-                    buckets);
-
-            return tree;
-
+            return RevTreeBuilder.build(size, childTreeCount, treesList, featuresList, buckets);
         }
 
         private ImmutableList<Node> toNodes(Set<NodeId> nodeIds) {

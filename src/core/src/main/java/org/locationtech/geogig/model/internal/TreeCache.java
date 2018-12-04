@@ -61,7 +61,7 @@ class TreeCache {
             getTreeId(tree);
             if (tree.bucketsSize() > 0) {
                 List<ObjectId> bucketIds = new ArrayList<>(tree.bucketsSize());
-                tree.forEachBucket((i, b) -> bucketIds.add(b.getObjectId()));
+                tree.forEachBucket(bucket -> bucketIds.add(bucket.getObjectId()));
                 preload(bucketIds);
             }
         } else {

@@ -481,15 +481,15 @@ public class PreOrderDiffWalk {
                 Set<ObjectId> lbucketIds = new HashSet<>();
                 Set<ObjectId> rbucketIds = new HashSet<>();
 
-                left.forEachBucket((i, b) -> {
-                    lbucketIds.add(b.getObjectId());
-                    indices.computeIfAbsent(i,
-                            (index) -> this.bucketIndex.append(index, left, right));
+                left.forEachBucket(bucket -> {
+                    lbucketIds.add(bucket.getObjectId());
+                    indices.computeIfAbsent(Integer.valueOf(bucket.getIndex()),
+                            index -> this.bucketIndex.append(index, left, right));
                 });
-                right.forEachBucket((i, b) -> {
-                    rbucketIds.add(b.getObjectId());
-                    indices.computeIfAbsent(i,
-                            (index) -> this.bucketIndex.append(index, left, right));
+                right.forEachBucket(bucket -> {
+                    rbucketIds.add(bucket.getObjectId());
+                    indices.computeIfAbsent(Integer.valueOf(bucket.getIndex()),
+                            index -> this.bucketIndex.append(index, left, right));
                 });
                 childBucketIndexes = newTreeSet(indices.values());
 
@@ -572,7 +572,8 @@ public class PreOrderDiffWalk {
         protected List<WalkAction> leafBucket(Iterator<Node> leftc, RevTree left, RevTree right) {
             checkArgument(right.bucketsSize() > 0);
 
-            final SortedMap<Integer, Bucket> rightBuckets = right.buckets();
+            final SortedMap<Integer, Bucket> rightBuckets = new TreeMap<>();
+            right.forEachBucket(b -> rightBuckets.put(Integer.valueOf(b.getIndex()), b));
 
             final ListMultimap<Integer, Node> nodesByBucket = splitNodesToBucketsAtDepth(leftc,
                     bucketIndex);
@@ -626,7 +627,8 @@ public class PreOrderDiffWalk {
                 Iterator<Node> rightc) {
             checkArgument(left.bucketsSize() > 0);
 
-            final SortedMap<Integer, Bucket> leftBuckets = left.buckets();
+            final SortedMap<Integer, Bucket> leftBuckets = new TreeMap<>();
+            left.forEachBucket(b -> leftBuckets.put(Integer.valueOf(b.getIndex()), b));
 
             final ListMultimap<Integer, Node> nodesByBucket = splitNodesToBucketsAtDepth(rightc,
                     bucketIndex);

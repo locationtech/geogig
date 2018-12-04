@@ -26,8 +26,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
@@ -73,9 +72,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * An {@link ObjectSerialisingFactory} for the {@link RevObject}s text format.
@@ -406,7 +403,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
             writeChildren(w, revTree.trees());
             writeChildren(w, revTree.features());
 
-            writeBuckets(w, revTree.buckets());
+            writeBuckets(w, revTree.getBuckets());
         }
 
         private void writeChildren(Writer w, ImmutableCollection<Node> children)
@@ -416,15 +413,12 @@ public class TextSerializationFactory implements RevObjectSerializer {
             }
         }
 
-        private void writeBuckets(Writer w, ImmutableSortedMap<Integer, Bucket> buckets)
-                throws IOException {
+        private void writeBuckets(Writer w, Iterable<Bucket> buckets) throws IOException {
 
-            for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
-                Integer bucketIndex = entry.getKey();
-                Bucket bucket = entry.getValue();
+            for (Bucket bucket : buckets) {
                 print(w, TreeNode.BUCKET.name());
                 print(w, "\t");
-                print(w, bucketIndex.toString());
+                print(w, String.valueOf(bucket.getIndex()));
                 print(w, "\t");
                 print(w, bucket.getObjectId().toString());
                 print(w, "\t");
@@ -802,7 +796,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
             Preconditions.checkArgument(TYPE.TREE.equals(type), "Wrong type: %s", type.name());
             Builder<Node> features = ImmutableList.builder();
             Builder<Node> trees = ImmutableList.builder();
-            TreeMap<Integer, Bucket> subtrees = Maps.newTreeMap();
+            TreeSet<Bucket> subtrees = new TreeSet<>();
             long size = Long.parseLong(parseLine(requireLine(reader), "size"));
             int numTrees = Integer.parseInt(parseLine(requireLine(reader), "numtrees"));
             String line;
@@ -824,8 +818,8 @@ public class TextSerializationFactory implements RevObjectSerializer {
                     ObjectId bucketId = ObjectId.valueOf(tokens.get(2));
                     Envelope bounds = parseBBox(tokens.get(3));
                     Bucket bucket = RevObjectFactory.defaultInstance().createBucket(bucketId,
-                            bounds);
-                    subtrees.put(idx, bucket);
+                            idx.intValue(), bounds);
+                    subtrees.add(bucket);
                 } else {
                     throw new IllegalArgumentException("Wrong tree element definition: " + line);
                 }

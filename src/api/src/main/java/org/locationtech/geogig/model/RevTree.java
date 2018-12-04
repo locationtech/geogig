@@ -9,8 +9,10 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -19,6 +21,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 
 /**
  * A GeoGig revision tree is an immutable data structure that represents a
@@ -29,7 +32,7 @@ import com.google.common.collect.ImmutableSortedMap;
  * capacity of it's feature or tree lists has been surpased.
  * <p>
  * The {@link #getId() id} of a {@code RevTree} is computed out of its directly contained
- * {@link RevTree#trees() tree}, {@link RevTree#features() feature}, and {@link RevTree#buckets()
+ * {@link RevTree#trees() tree}, {@link RevTree#features() feature}, and {@link RevTree#getBuckets()
  * bucket} pointers as mandated by {@link HashObjectFunnels}.
  * <p>
  * Two trees that contain the same values hash out to the same {@link ObjectId}, as long as they
@@ -77,7 +80,7 @@ public interface RevTree extends RevObject {
      * The empty tree object id, as results from calling {@link HashObjectFunnels#hashTree
      * HashObjectFunnels.hashTree} with empty arguments.
      */
-    ObjectId EMPTY_TREE_ID = HashObjectFunnels.hashTree(null, null, null);
+    ObjectId EMPTY_TREE_ID = HashObjectFunnels.hashTree(null, null, (Iterable<Bucket>) null);
 
     /**
      * A "null object" to represent the empty tree
@@ -131,6 +134,11 @@ public interface RevTree extends RevObject {
         public String toString() {
             return "EMPTY TREE[" + getId() + "]";
         }
+
+        @Override
+        public SortedSet<Bucket> getBuckets() {
+            return Collections.emptySortedSet();
+        }
     };
 
     /**
@@ -169,7 +177,7 @@ public interface RevTree extends RevObject {
      *         nodes)
      */
     public default boolean isEmpty() {
-        boolean empty = trees().isEmpty() && features().isEmpty() && buckets().isEmpty();
+        boolean empty = treesSize() == 0 && featuresSize() == 0 && bucketsSize() == 0;
         if (empty) {
             Preconditions.checkState(size() == 0L);
             Preconditions.checkState(EMPTY_TREE_ID.equals(getId()));
@@ -263,28 +271,41 @@ public interface RevTree extends RevObject {
      * a quad-tree would always be split into four subtrees to represent the next set of quadrants.
      * 
      * @apiNote the returned map does not contain {@code null} keys nor values
+     * @deprecated
      */
     public ImmutableSortedMap<Integer, Bucket> buckets();
+
+    public Iterable<Bucket> getBuckets();
 
     /**
      * @return the number of buckets in the {@link #buckets} property
      */
     public default int bucketsSize() {
-        return buckets().size();
+        return Iterables.size(getBuckets());
     }
 
     /**
      * Performs the given action for each element of the {@link #buckets} collection respecting its
      * iteration order, which is the order of the bucket index.
      * 
+     * @deprecated
      * @param consumer a consumer that accepts a tuple given by the bucket index and the bucket
      *        itself
      */
     public default void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
-        buckets().forEach(consumer);
+        getBuckets().forEach(b -> consumer.accept(Integer.valueOf(b.getIndex()), b));
+    }
+
+    public default void forEachBucket(Consumer<Bucket> consumer) {
+        getBuckets().forEach(consumer);
     }
 
     public default Optional<Bucket> getBucket(int bucketIndex) {
-        return Optional.ofNullable(buckets().get(Integer.valueOf(bucketIndex)));
+        for (Bucket b : getBuckets()) {
+            if (bucketIndex == b.getIndex()) {
+                return Optional.of(b);
+            }
+        }
+        return Optional.empty();
     }
 }

@@ -71,7 +71,7 @@ public class ExtraDataPropertyAccessorFactoryTest {
         testNodeRef = new NodeRef(testNode, "fakeLayerName", metadataId);
 
         ObjectId bucketId = hashString("bucketId");
-        testBucket = RevObjectFactory.defaultInstance().createBucket(bucketId, bounds);
+        testBucket = RevObjectFactory.defaultInstance().createBucket(bucketId, 0, bounds);
     }
 
     @Test

@@ -34,10 +34,10 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
     public static final FormatCommonV2_2 INSTANCE = new FormatCommonV2_2();
 
     @Override
-    public void writeBucket(final int index, final Bucket bucket, DataOutput data, Envelope envBuff)
+    protected void writeBucket(final Bucket bucket, DataOutput data, Envelope envBuff)
             throws IOException {
 
-        writeUnsignedVarInt(index, data);
+        writeUnsignedVarInt(bucket.getIndex(), data);
 
         bucket.getObjectId().writeTo(data);
         envBuff.setToNull();
@@ -46,11 +46,11 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
     }
 
     @Override
-    protected final Bucket readBucketBody(DataInput in) throws IOException {
+    protected final Bucket readBucketBody(int bucketIndex, DataInput in) throws IOException {
         ObjectId objectId = readObjectId(in);
         @Nullable
         final Envelope bounds = readBounds(in);
-        return RevObjectFactory.defaultInstance().createBucket(objectId, bounds);
+        return RevObjectFactory.defaultInstance().createBucket(objectId, bucketIndex, bounds);
     }
 
     @SuppressWarnings("unchecked")

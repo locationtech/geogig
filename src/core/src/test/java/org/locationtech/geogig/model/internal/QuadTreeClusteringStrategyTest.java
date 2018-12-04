@@ -38,7 +38,6 @@ import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Test suite for {@link QuadTreeClusteringStrategy} own methods
@@ -308,7 +307,9 @@ public class QuadTreeClusteringStrategyTest {
             support.assertDag(strategy, "[2, 0, 3, 1]", l7Nodes);
 
             tree = DAGTreeBuilder.build(strategy, support.store());
-            assertEquals(ImmutableSet.of(2, 4), tree.buckets().keySet());
+            assertEquals(2, tree.bucketsSize());
+            assertTrue(tree.getBucket(2).isPresent());
+            assertTrue(tree.getBucket(4).isPresent());
 
             strategy = support.newStrategy(tree);
             assertExpandsTo(strategy, "[4]", "[4]", tree);

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -50,7 +51,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -172,18 +172,18 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
             this.initialNumTrees = copy.numTrees();
 
             if (!copy.trees().isEmpty()) {
-                checkArgument(copy.buckets().isEmpty());
+                checkArgument(0 == copy.bucketsSize());
                 for (Node node : copy.trees()) {
                     putInternal(node);
                 }
             }
             if (!copy.features().isEmpty()) {
-                checkArgument(copy.buckets().isEmpty());
+                checkArgument(0 == copy.bucketsSize());
                 for (Node node : copy.features()) {
                     putInternal(node);
                 }
             }
-            if (!copy.buckets().isEmpty()) {
+            if (copy.bucketsSize() > 0) {
                 checkArgument(copy.features().isEmpty());
                 bucketTreesByBucket.putAll(copy.buckets());
             }
@@ -378,7 +378,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
             treesList = NODE_STORAGE_ORDER.immutableSortedCopy(trees);
         }
 
-        final ObjectId id = HashObject.hashTree(treesList, featuresList, null);
+        final ObjectId id = HashObject.hashTree(treesList, featuresList, (Iterable<Bucket>) null);
 
         return RevObjectFactory.defaultInstance().createTree(id, size, treesList, featuresList);
     }
@@ -386,11 +386,10 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     private RevTree createNodeTree(long size, int numTrees,
             @NonNull SortedMap<Integer, Bucket> buckets) {
 
-        ImmutableSortedMap<Integer, Bucket> innerTrees = ImmutableSortedMap.copyOf(buckets);
+        final ObjectId id = HashObject.hashTree(null, null, buckets.values());
 
-        final ObjectId id = HashObject.hashTree(null, null, innerTrees);
-
-        return RevObjectFactory.defaultInstance().createTree(id, size, numTrees, innerTrees);
+        return RevObjectFactory.defaultInstance().createTree(id, size, numTrees,
+                new TreeSet<>(buckets.values()));
     }
 
     private long sizeOf(Node node) {
@@ -464,8 +463,8 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
                             newLeafTreesToSave.add(modifiedBucketTree);
                         }
                         Envelope bucketBounds = SpatialOps.boundsOf(modifiedBucketTree);
-                        Bucket bucket = RevObjectFactory.defaultInstance()
-                                .createBucket(modifiedBucketTree.getId(), bucketBounds);
+                        Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
+                                modifiedBucketTree.getId(), bucketIndex.intValue(), bucketBounds);
                         bucketTreesByBucket.put(bucketIndex, bucket);
                     }
                 }
@@ -629,8 +628,8 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         }
 
         ObjectId oldid = HashObject.hashTree(original.trees(), original.features(),
-                original.buckets());
-        ObjectId newid = HashObject.hashTree(tree.trees(), tree.features(), tree.buckets());
+                original.getBuckets());
+        ObjectId newid = HashObject.hashTree(tree.trees(), tree.features(), tree.getBuckets());
 
         return oldid.equals(newid) ? original : tree;
     }

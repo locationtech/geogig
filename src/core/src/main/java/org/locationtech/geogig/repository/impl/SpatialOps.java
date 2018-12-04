@@ -81,7 +81,7 @@ public class SpatialOps {
 
     public static Envelope boundsOf(RevTree tree) {
         Envelope env = new Envelope();
-        tree.forEachBucket((i, b) -> b.expand(env));
+        tree.forEachBucket(bucket -> bucket.expand(env));
         tree.forEachTree(n -> n.expand(env));
         tree.forEachFeature(n -> n.expand(env));
         return env;

@@ -45,6 +45,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-flatbuffers</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>

@@ -36,7 +36,7 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
             .allocateDirect(capacity).order(ByteOrder.LITTLE_ENDIAN);
 
     static final ThreadLocal<FlatBufferBuilder> WRITE_BUFFERS = ThreadLocal
-            .withInitial(() -> new FlatBufferBuilder(32 * 1024 * 1024, BYTE_BUFFER_FACTORY));
+            .withInitial(() -> new FlatBufferBuilder(32 * 1024, BYTE_BUFFER_FACTORY));
 
     private final FlatBuffers flatBuffers = new FlatBuffers();
 

@@ -11,13 +11,16 @@ package org.locationtech.geogig.flatbuffers;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.ObjectType;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -28,10 +31,12 @@ import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.model.impl.RevObjectFactoryImpl;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
@@ -65,15 +70,18 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
         return DEFAULT_IMPL.createPerson(name, email, timeStamp, timeZoneOffset);
     }
 
-    public @Override Node createNode(String name, ObjectId oid, ObjectId metadataId, TYPE type,
+    public @Override Node createNode(String name, ObjectId objectId, ObjectId metadataId, TYPE type,
             @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
 
-        return DEFAULT_IMPL.createNode(name, oid, metadataId, type, bounds, extraData);
+        return DEFAULT_IMPL.createNode(name, objectId, metadataId, type, bounds, extraData);
     }
 
     public @Override @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,
             @NonNull List<ObjectId> parents, @NonNull RevPerson author,
             @NonNull RevPerson committer, @NonNull String message) {
+        if (parents.indexOf(null) > -1) {
+            throw new NullPointerException("null parent at index " + parents.indexOf(null));
+        }
 
         FlatBufferBuilder fbb = newBuilder();
         int objOffset = encoder.writeCommit(fbb, treeId, parents, author, committer, message);
@@ -92,6 +100,13 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
 
     public @Override @NonNull RevTree createTree(final @NonNull ObjectId id, final long size,
             final int childTreeCount, @NonNull SortedSet<Bucket> buckets) {
+        if (size < 0L) {
+            throw new IllegalArgumentException("Cannot create a tree with negative size: " + size);
+        }
+        if (childTreeCount < 0L) {
+            throw new IllegalArgumentException(
+                    "Cannot create a tree with negative child tree count: " + childTreeCount);
+        }
 
         FlatBufferBuilder fbb = newBuilder();
         int objOffset = encoder.writeNodeTree(fbb, size, childTreeCount, buckets);
@@ -101,6 +116,10 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
 
     public @Override Bucket createBucket(@NonNull ObjectId bucketTree, int bucketIndex,
             @Nullable Envelope bounds) {
+        if (bucketIndex < 0) {
+            throw new IllegalArgumentException(
+                    "Bucket cannot have a negative index: " + bucketIndex);
+        }
         return DEFAULT_IMPL.createBucket(bucketTree, bucketIndex, bounds);
     }
 
@@ -115,6 +134,20 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
 
     public @Override @NonNull RevFeatureType createFeatureType(@NonNull ObjectId id,
             @NonNull FeatureType ftype) {
+        Collection<PropertyDescriptor> descriptors = ftype.getDescriptors();
+        descriptors.forEach(d -> {
+            Class<?> binding = d.getType().getBinding();
+            Objects.requireNonNull(binding,
+                    "got null binding for attribute " + d.getName().getLocalPart());
+            FieldType fieldType = FieldType.forBinding(binding);
+            if (FieldType.NULL == fieldType || FieldType.UNKNOWN == fieldType) {
+                String msg = String.format(
+                        "Attribute %s of FeatureType %s is of an unsupported type: %s",
+                        d.getName().getLocalPart(), ftype.getName().getLocalPart(),
+                        binding.getName());
+                throw new IllegalArgumentException(msg);
+            }
+        });
 
         FlatBufferBuilder fbb = newBuilder();
         int objOffset = encoder.writeSimpleFeatureType(fbb, (SimpleFeatureType) ftype);
@@ -134,6 +167,16 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
     public @Override @NonNull RevFeature createFeature(@NonNull ObjectId id,
             @NonNull Object... values) {
         return createFeature(id, Arrays.asList(values));
+    }
+
+    public @Override @NonNull ValueArray createValueArray(@NonNull List<Object> values) {
+        FlatBufferBuilder fbb = newBuilder();
+        encoder.writeValueArray(fbb, values);
+        return encoder.decodeValueArray(copy(fbb.dataBuffer()));
+    }
+
+    public @Override @NonNull ValueArray createValueArray(@NonNull Object... values) {
+        return createValueArray(Arrays.asList(values));
     }
 
 }

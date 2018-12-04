@@ -15,6 +15,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.Feature;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
@@ -31,6 +32,10 @@ final class FBFeature extends FBRevObject<Feature> implements RevFeature {
 
     public @Override TYPE getType() {
         return TYPE.FEATURE;
+    }
+
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 
     public @Override ImmutableList<Optional<Object>> getValues() {

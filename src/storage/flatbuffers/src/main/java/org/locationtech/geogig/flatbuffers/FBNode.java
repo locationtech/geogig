@@ -34,14 +34,25 @@ abstract @RequiredArgsConstructor class FBNode extends org.locationtech.geogig.m
 
     private final int nodeIndex;
 
-    //@formatter:off
     private static class TreeNode extends FBNode {
-        public TreeNode(LeafTree tree, int nodeIndex) {super(tree,nodeIndex);} public @Override TYPE getType() {return TYPE.TREE;}
+        public TreeNode(LeafTree tree, int nodeIndex) {
+            super(tree, nodeIndex);
+        }
+
+        public @Override TYPE getType() {
+            return TYPE.TREE;
+        }
     }
+
     private static class FeatureNode extends FBNode {
-        public FeatureNode(LeafTree tree, int nodeIndex) {super(tree, nodeIndex);} public @Override TYPE getType() {return TYPE.FEATURE;}
+        public FeatureNode(LeafTree tree, int nodeIndex) {
+            super(tree, nodeIndex);
+        }
+
+        public @Override TYPE getType() {
+            return TYPE.FEATURE;
+        }
     }
-    //@formatter:on
 
     public static FBNode treeNode(LeafTree tree, int nodeIndex) {
         return new TreeNode(tree, nodeIndex);
@@ -76,8 +87,15 @@ abstract @RequiredArgsConstructor class FBNode extends org.locationtech.geogig.m
     }
 
     public @Override Optional<ObjectId> getMetadataId() {
-        SHA mdid = tree.nodesMetadataIds(nodeIndex);
-        return Optional.fromNullable(mdid == null ? null : FBAdapters.toId(mdid));
+        final SHA mdid = tree.nodesMetadataIds(nodeIndex);
+        ObjectId id = ObjectId.NULL;
+        if (mdid != null) {
+            id = FBAdapters.toId(mdid);
+        }
+        if (id.isNull()) {
+            return Optional.absent();
+        }
+        return Optional.of(id);
     }
 
     public @Override Map<String, Object> getExtraData() {

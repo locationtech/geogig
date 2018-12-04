@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,49 +20,43 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.values.BIG_DECIMAL;
 import org.locationtech.geogig.flatbuffers.generated.values.BIG_INTEGER;
 import org.locationtech.geogig.flatbuffers.generated.values.BOOLEAN;
+import org.locationtech.geogig.flatbuffers.generated.values.BOOLEAN_ARRAY;
 import org.locationtech.geogig.flatbuffers.generated.values.BYTE;
+import org.locationtech.geogig.flatbuffers.generated.values.BYTE_ARRAY;
 import org.locationtech.geogig.flatbuffers.generated.values.Bounds;
 import org.locationtech.geogig.flatbuffers.generated.values.CHAR;
+import org.locationtech.geogig.flatbuffers.generated.values.CHAR_ARRAY;
+import org.locationtech.geogig.flatbuffers.generated.values.DATETIME;
 import org.locationtech.geogig.flatbuffers.generated.values.DOUBLE;
+import org.locationtech.geogig.flatbuffers.generated.values.DOUBLE_ARRAY;
 import org.locationtech.geogig.flatbuffers.generated.values.Dictionary;
-import org.locationtech.geogig.flatbuffers.generated.values.ENCODEDGEOMETRY;
-import org.locationtech.geogig.flatbuffers.generated.values.FLATGEOMETRY;
+import org.locationtech.geogig.flatbuffers.generated.values.ENVELOPE_2D;
 import org.locationtech.geogig.flatbuffers.generated.values.FLOAT;
+import org.locationtech.geogig.flatbuffers.generated.values.FLOAT_ARRAY;
 import org.locationtech.geogig.flatbuffers.generated.values.GEOMETRY;
-import org.locationtech.geogig.flatbuffers.generated.values.GeometryType;
 import org.locationtech.geogig.flatbuffers.generated.values.INTEGER;
+import org.locationtech.geogig.flatbuffers.generated.values.INTEGER_ARRAY;
 import org.locationtech.geogig.flatbuffers.generated.values.LONG;
+import org.locationtech.geogig.flatbuffers.generated.values.LONG_ARRAY;
 import org.locationtech.geogig.flatbuffers.generated.values.MapEntry;
 import org.locationtech.geogig.flatbuffers.generated.values.SHORT;
+import org.locationtech.geogig.flatbuffers.generated.values.SHORT_ARRAY;
 import org.locationtech.geogig.flatbuffers.generated.values.STRING;
+import org.locationtech.geogig.flatbuffers.generated.values.STRING_ARRAY;
+import org.locationtech.geogig.flatbuffers.generated.values.TIMESTAMP;
 import org.locationtech.geogig.flatbuffers.generated.values.UUID;
 import org.locationtech.geogig.flatbuffers.generated.values.Value;
 import org.locationtech.geogig.flatbuffers.generated.values.ValueUnion;
-import org.locationtech.geogig.flatbuffers.generated.values.WKBGEOMETRY;
 import org.locationtech.geogig.model.FieldType;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateFilter;
-import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
-import org.locationtech.jts.io.InStream;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKBReader;
-import org.locationtech.jts.io.WKBWriter;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 final class ValueSerializer {
-
-    private static final GeometryFactory defaultGF = new GeometryFactory(
-            new PackedCoordinateSequenceFactory(PackedCoordinateSequenceFactory.FLOAT));
 
     public static int encode(@Nullable Object val, @NonNull FlatBufferBuilder builder) {
 
@@ -102,69 +96,56 @@ final class ValueSerializer {
                 break;
             }
             case ValueUnion.BOOLEAN_ARRAY:
-                valueOffset = 0;
+                valueOffset = BOOLEAN_ARRAY.createBOOLEAN_ARRAY(builder,
+                        BOOLEAN_ARRAY.createValueVector(builder, (boolean[]) val));
                 break;
             case ValueUnion.BYTE_ARRAY:
-                valueOffset = 0;
+                valueOffset = BYTE_ARRAY.createBYTE_ARRAY(builder,
+                        BYTE_ARRAY.createValueVector(builder, (byte[]) val));
                 break;
             case ValueUnion.SHORT_ARRAY:
-                valueOffset = 0;
+                valueOffset = SHORT_ARRAY.createSHORT_ARRAY(builder,
+                        SHORT_ARRAY.createValueVector(builder, (short[]) val));
                 break;
             case ValueUnion.INTEGER_ARRAY:
-                valueOffset = 0;
+                valueOffset = INTEGER_ARRAY.createINTEGER_ARRAY(builder,
+                        INTEGER_ARRAY.createValueVector(builder, (int[]) val));
                 break;
             case ValueUnion.LONG_ARRAY:
-                valueOffset = 0;
+                valueOffset = LONG_ARRAY.createLONG_ARRAY(builder,
+                        LONG_ARRAY.createValueVector(builder, (long[]) val));
                 break;
             case ValueUnion.FLOAT_ARRAY:
-                valueOffset = 0;
+                valueOffset = FLOAT_ARRAY.createFLOAT_ARRAY(builder,
+                        FLOAT_ARRAY.createValueVector(builder, (float[]) val));
                 break;
             case ValueUnion.DOUBLE_ARRAY:
-                valueOffset = 0;
+                valueOffset = DOUBLE_ARRAY.createDOUBLE_ARRAY(builder,
+                        DOUBLE_ARRAY.createValueVector(builder, (double[]) val));
                 break;
             case ValueUnion.CHAR_ARRAY:
-                valueOffset = 0;
+                char[] charData = (char[]) val;
+                short[] shortData = new short[charData.length];
+                for (int i = 0; i < charData.length; i++) {
+                    shortData[i] = (short) charData[i];
+                }
+                valueOffset = CHAR_ARRAY.createCHAR_ARRAY(builder,
+                        CHAR_ARRAY.createValueVector(builder, shortData));
                 break;
             case ValueUnion.STRING_ARRAY:
-                valueOffset = 0;
-                break;
-            case ValueUnion.GEOMETRY: {
-                Geometry geom = (Geometry) val;
-                byte geomType;
-                int geomOffset;
-                if (geom instanceof GeometryCollection || geom instanceof Polygon) {
-                    geomType = ENCODEDGEOMETRY.WKBGEOMETRY;
-                    byte[] data = new WKBWriter().write(geom);
-                    int valueVector = WKBGEOMETRY.createValueVector(builder, data);
-                    geomOffset = WKBGEOMETRY.createWKBGEOMETRY(builder, valueVector);
-                } else {
-                    geomType = ENCODEDGEOMETRY.FLATGEOMETRY;
-                    final byte type;
-                    switch (geom.getGeometryType()) {
-                    case "Point":
-                        type = GeometryType.Point;
-                        break;
-                    case "LineString":
-                        type = GeometryType.LineString;
-                        break;
-                    default:
-                        throw new IllegalArgumentException(geom.getGeometryType());
+                String[] sdata = (String[]) val;
+                int[] strVector = new int[sdata.length];
+                for (int i = 0; i < sdata.length; i++) {
+                    String s = sdata[i];
+                    if (s != null) {
+                        strVector[i] = builder.createString(s);
                     }
-
-                    final int dimension = 2;
-                    final int numOrdinates = geom.getNumPoints() * dimension;
-                    FLATGEOMETRY.startOrdinatesVector(builder, numOrdinates);
-                    geom.apply((CoordinateFilter) c -> {
-                        builder.addDouble(c.getX());
-                        builder.addDouble(c.getY());
-                    });
-                    int ordinatesOffset = builder.endVector();
-
-                    geomOffset = FLATGEOMETRY.createFLATGEOMETRY(builder, dimension, type,
-                            ordinatesOffset);
                 }
-                valueOffset = GEOMETRY.createGEOMETRY(builder, geomType, geomOffset);
-            }
+                valueOffset = STRING_ARRAY.createSTRING_ARRAY(builder,
+                        STRING_ARRAY.createValueVector(builder, strVector));
+                break;
+            case ValueUnion.GEOMETRY:
+                valueOffset = GeometrySerializer.encode((Geometry) val, builder);
                 break;
             case ValueUnion.BIG_INTEGER: {
                 BigInteger d = (BigInteger) val;
@@ -181,30 +162,214 @@ final class ValueSerializer {
             }
                 break;
             case ValueUnion.DATETIME:
-                valueOffset = 0;
+                valueOffset = DATETIME.createDATETIME(builder, ((java.util.Date) val).getTime());
                 break;
             case ValueUnion.TIMESTAMP:
-                valueOffset = 0;
+                valueOffset = TIMESTAMP.createTIMESTAMP(builder,
+                        ((java.sql.Timestamp) val).getTime(),
+                        ((java.sql.Timestamp) val).getNanos());
                 break;
             case ValueUnion.UUID:
                 valueOffset = UUID.createUUID(builder,
                         ((java.util.UUID) val).getLeastSignificantBits(),
                         ((java.util.UUID) val).getMostSignificantBits());
                 break;
-            case ValueUnion.ENVELOPE_2D: {
+            case ValueUnion.ENVELOPE_2D:
                 Envelope env = (Envelope) val;
-                Bounds.createBounds(builder, (float) env.getMinX(), (float) env.getMinY(),
-                        (float) env.getMaxX(), (float) env.getMaxY());
-                valueOffset = 0;
-            }
+                valueOffset = Bounds.createBounds(builder, (float) env.getMinX(),
+                        (float) env.getMinY(), (float) env.getMaxX(), (float) env.getMaxY());
+                ENVELOPE_2D.startENVELOPE_2D(builder);
+                ENVELOPE_2D.addValue(builder, valueOffset);
+                valueOffset = ENVELOPE_2D.endENVELOPE_2D(builder);
                 break;
             case ValueUnion.Dictionary:
                 valueOffset = writeDictionary(builder, (Map<String, Object>) val);
                 break;
+            default:
+                throw new IllegalArgumentException("Unknown ValueUnion value: " + valueType);
             }
         }
 
         return Value.createValue(builder, valueType, valueOffset);
+    }
+
+    public static @Nullable Object decodeValue(@NonNull Value v) {
+        return decodeValue(v, null);
+    }
+
+    public static @Nullable Object decodeValue(@NonNull Value v, @Nullable GeometryFactory gf) {
+        final byte valueType = v.valueType();
+        if (ValueUnion.NONE == valueType) {
+            return null;
+        }
+        switch (valueType) {
+        case ValueUnion.BOOLEAN:
+            return ((BOOLEAN) v.value(new BOOLEAN())).value();
+        case ValueUnion.BYTE:
+            return ((BYTE) v.value(new BYTE())).value();
+        case ValueUnion.SHORT:
+            return ((SHORT) v.value(new SHORT())).value();
+        case ValueUnion.INTEGER:
+            return ((INTEGER) v.value(new INTEGER())).value();
+        case ValueUnion.LONG:
+            return ((LONG) v.value(new LONG())).value();
+        case ValueUnion.FLOAT:
+            return ((FLOAT) v.value(new FLOAT())).value();
+        case ValueUnion.DOUBLE:
+            return ((DOUBLE) v.value(new DOUBLE())).value();
+        case ValueUnion.CHAR:
+            return Character.valueOf((char) ((CHAR) v.value(new CHAR())).value());
+        case ValueUnion.STRING:
+            return ((STRING) v.value(new STRING())).value();
+        case ValueUnion.BOOLEAN_ARRAY: {
+            BOOLEAN_ARRAY value = (BOOLEAN_ARRAY) v.value(new BOOLEAN_ARRAY());
+            int valueLength = value.valueLength();
+            boolean[] ret = new boolean[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.BYTE_ARRAY: {
+            BYTE_ARRAY value = (BYTE_ARRAY) v.value(new BYTE_ARRAY());
+            int valueLength = value.valueLength();
+            byte[] ret = new byte[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.SHORT_ARRAY: {
+            SHORT_ARRAY value = (SHORT_ARRAY) v.value(new SHORT_ARRAY());
+            int valueLength = value.valueLength();
+            short[] ret = new short[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.INTEGER_ARRAY: {
+            INTEGER_ARRAY value = (INTEGER_ARRAY) v.value(new INTEGER_ARRAY());
+            int valueLength = value.valueLength();
+            int[] ret = new int[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.LONG_ARRAY: {
+            LONG_ARRAY value = (LONG_ARRAY) v.value(new LONG_ARRAY());
+            int valueLength = value.valueLength();
+            long[] ret = new long[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.FLOAT_ARRAY: {
+            FLOAT_ARRAY value = (FLOAT_ARRAY) v.value(new FLOAT_ARRAY());
+            int valueLength = value.valueLength();
+            float[] ret = new float[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.DOUBLE_ARRAY: {
+            DOUBLE_ARRAY value = (DOUBLE_ARRAY) v.value(new DOUBLE_ARRAY());
+            int valueLength = value.valueLength();
+            double[] ret = new double[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.CHAR_ARRAY: {
+            CHAR_ARRAY value = (CHAR_ARRAY) v.value(new CHAR_ARRAY());
+            int valueLength = value.valueLength();
+            char[] ret = new char[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = (char) value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.STRING_ARRAY: {
+            STRING_ARRAY value = (STRING_ARRAY) v.value(new STRING_ARRAY());
+            int valueLength = value.valueLength();
+            String[] ret = new String[valueLength];
+            for (int i = 0; i < valueLength; i++) {
+                ret[i] = value.value(i);
+            }
+            return ret;
+        }
+        case ValueUnion.GEOMETRY:
+            return GeometrySerializer.decode((GEOMETRY) v.value(new GEOMETRY()), gf);
+
+        case ValueUnion.BIG_INTEGER: {
+            ByteBuffer bb = ((BIG_INTEGER) v.value(new BIG_INTEGER())).valueAsByteBuffer();
+            byte[] val = new byte[bb.remaining()];
+            bb.get(val);
+            return new BigInteger(val);
+        }
+        case ValueUnion.BIG_DECIMAL: {
+            BIG_DECIMAL bd = (BIG_DECIMAL) v.value(new BIG_DECIMAL());
+            int scale = bd.scale();
+            ByteBuffer bb = bd.valueAsByteBuffer();
+            byte[] val = new byte[bb.remaining()];
+            bb.get(val);
+            return new BigDecimal(new BigInteger(val), scale);
+        }
+        case ValueUnion.Dictionary: {
+            Dictionary dict = (Dictionary) v.value(new Dictionary());
+            return decode(dict);
+        }
+        case ValueUnion.DATETIME:
+            DATETIME dtime = (DATETIME) v.value(new DATETIME());
+            return new java.util.Date(dtime.millis());
+        case ValueUnion.TIMESTAMP:
+            TIMESTAMP ts = (TIMESTAMP) v.value(new TIMESTAMP());
+            Timestamp jts = new java.sql.Timestamp(ts.millis());
+            jts.setNanos(ts.nanos());
+            return jts;
+        case ValueUnion.UUID:
+            UUID uuid = (UUID) v.value(new UUID());
+            return new java.util.UUID(uuid.msb(), uuid.lsb());
+        case ValueUnion.ENVELOPE_2D:
+            ENVELOPE_2D e2d = (ENVELOPE_2D) v.value(new ENVELOPE_2D());
+            Bounds bounds = e2d.value();
+            return new Envelope(bounds.x1(), bounds.x2(), bounds.y1(), bounds.y2());
+        default:
+            throw new IllegalArgumentException("Unknown ValueUnion value: " + valueType);
+        }
+    }
+
+    public static int writeDictionary(FlatBufferBuilder builder, Map<String, Object> data) {
+        int[] entriesOffsets = new int[data.size()];
+        int i = 0;
+        for (Map.Entry<String, Object> e : data.entrySet()) {
+            String key = e.getKey();
+            Object value = e.getValue();
+            int keyOffset = builder.createString(key);
+            int valueOffset = encode(value, builder);
+            int entryOffset = MapEntry.createMapEntry(builder, keyOffset, valueOffset);
+            entriesOffsets[i++] = entryOffset;
+        }
+        int entriesOffset = Dictionary.createEntriesVector(builder, entriesOffsets);
+        return Dictionary.createDictionary(builder, entriesOffset);
+    }
+
+    public static Map<String, Object> decode(@NonNull Dictionary dict) {
+        final int numEntries = dict.entriesLength();
+        Map<String, Object> map = new HashMap<>();
+        MapEntry buff = new MapEntry();
+        for (int i = 0; i < numEntries; i++) {
+            buff = dict.entries(buff, i);
+            String key = buff.key();
+            Value value = buff.value();
+            Object decodedValue = decodeValue(value);
+            map.put(key, decodedValue);
+        }
+        return map;
     }
 
     private static byte getValueType(@NonNull Object val) {
@@ -255,215 +420,4 @@ final class ValueSerializer {
         //@formatter:on
     }
 
-    public static @Nullable Object decodeValue(@NonNull Value v) {
-        return decodeValue(v, null);
-    }
-
-    public static @Nullable Object decodeValue(@NonNull Value v, @Nullable GeometryFactory gf) {
-        final byte valueType = v.valueType();
-        if (ValueUnion.NONE == valueType) {
-            return null;
-        }
-        switch (valueType) {
-        case ValueUnion.BOOLEAN:
-            return ((BOOLEAN) v.value(new BOOLEAN())).value();
-        case ValueUnion.BYTE:
-            return ((BYTE) v.value(new BYTE())).value();
-        case ValueUnion.SHORT:
-            return ((SHORT) v.value(new SHORT())).value();
-        case ValueUnion.INTEGER:
-            return ((INTEGER) v.value(new INTEGER())).value();
-        case ValueUnion.LONG:
-            return ((LONG) v.value(new LONG())).value();
-        case ValueUnion.FLOAT:
-            return ((FLOAT) v.value(new FLOAT())).value();
-        case ValueUnion.DOUBLE:
-            return ((DOUBLE) v.value(new DOUBLE())).value();
-        case ValueUnion.CHAR:
-            return ((CHAR) v.value(new CHAR())).value();
-        case ValueUnion.STRING:
-            return ((STRING) v.value(new STRING())).value();
-        // case ValueUnion.BOOLEAN_ARRAY: valueOffset = 0; break;
-        // case ValueUnion.BYTE_ARRAY: valueOffset = 0; break;
-        // case ValueUnion.SHORT_ARRAY: valueOffset = 0; break;
-        // case ValueUnion.INTEGER_ARRAY: valueOffset = 0; break;
-        // case ValueUnion.LONG_ARRAY: valueOffset = 0; break;
-        // case ValueUnion.FLOAT_ARRAY: valueOffset = 0; break;
-        // case ValueUnion.DOUBLE_ARRAY: valueOffset = 0; break;
-        // case ValueUnion.CHAR_ARRAY: valueOffset = 0; break;
-        // case ValueUnion.STRING_ARRAY: valueOffset = 0; break;
-        case ValueUnion.GEOMETRY: {
-            GEOMETRY gval = (GEOMETRY) v.value(new GEOMETRY());
-            final byte gtype = gval.valueType();
-            final GeometryFactory geomFac = gf == null ? defaultGF : gf;
-            if (ENCODEDGEOMETRY.WKBGEOMETRY == gtype) {
-                WKBGEOMETRY wkb = (WKBGEOMETRY) gval.value(new WKBGEOMETRY());
-                ByteBuffer bb = wkb.valueAsByteBuffer();
-                WKBReader reader = new WKBReader(geomFac);
-                try {
-                    return reader.read(new ByteBufferInStream(bb));
-                } catch (IOException | ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (ENCODEDGEOMETRY.FLATGEOMETRY == gtype) {
-                FLATGEOMETRY fg = (FLATGEOMETRY) gval.value(new FLATGEOMETRY());
-                final int dimension = fg.dimension();
-                final byte geometryType = fg.type();
-                final int numOrdinates = fg.ordinatesLength();
-                final int numCoordinates = numOrdinates / dimension;
-                CoordinateSequence coordSeq = new FlatGeomCoordSequence(fg, dimension,
-                        numCoordinates);
-                Geometry geom;
-                switch (geometryType) {
-                case GeometryType.Point:
-                    geom = geomFac.createPoint(coordSeq);
-                    break;
-                case GeometryType.LineString:
-                    geom = geomFac.createLineString(coordSeq);
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            "Unrecognized encoded GeometryType enum: " + geometryType);
-                }
-                return geom;
-            }
-            throw new IllegalArgumentException("Unrecognized encoded geometry type: " + gtype);
-        }
-        case ValueUnion.BIG_INTEGER: {
-            ByteBuffer bb = ((BIG_INTEGER) v.value(new BIG_INTEGER())).valueAsByteBuffer();
-            byte[] val = new byte[bb.remaining()];
-            bb.get(val);
-            return new BigInteger(val);
-        }
-        case ValueUnion.BIG_DECIMAL: {
-            BIG_DECIMAL bd = (BIG_DECIMAL) v.value(new BIG_DECIMAL());
-            int scale = bd.scale();
-            ByteBuffer bb = bd.valueAsByteBuffer();
-            byte[] val = new byte[bb.remaining()];
-            bb.get(val);
-            return new BigDecimal(new BigInteger(val), scale);
-        }
-        case ValueUnion.Dictionary: {
-            Dictionary dict = (Dictionary) v.value(new Dictionary());
-            return decode(dict);
-        }
-        // case ValueUnion.DATETIME: valueOffset = 0; break;
-        // case ValueUnion.TIMESTAMP: valueOffset = 0; break;
-        // case ValueUnion.UUID: valueOffset = 0; break;
-        // case ValueUnion.Bounds: valueOffset = 0; break;
-        // case ValueUnion.ENCODEDMAP: valueOffset = 0; break;
-        }
-        return null;
-    }
-
-    public static int writeDictionary(FlatBufferBuilder builder, Map<String, Object> data) {
-        int[] entriesOffsets = new int[data.size()];
-        int i = 0;
-        for (Map.Entry<String, Object> e : data.entrySet()) {
-            String key = e.getKey();
-            Object value = e.getValue();
-            int keyOffset = builder.createString(key);
-            int valueOffset = encode(value, builder);
-            int entryOffset = MapEntry.createMapEntry(builder, keyOffset, valueOffset);
-            entriesOffsets[i++] = entryOffset;
-        }
-        int entriesOffset = Dictionary.createEntriesVector(builder, entriesOffsets);
-        return Dictionary.createDictionary(builder, entriesOffset);
-    }
-
-    private @RequiredArgsConstructor static class ByteBufferInStream implements InStream {
-        private final ByteBuffer bb;
-
-        public @Override void read(byte[] buf) throws IOException {
-            bb.get(buf);
-        }
-    }
-
-    private static @RequiredArgsConstructor class FlatGeomCoordSequence
-            implements CoordinateSequence {
-
-        private final FLATGEOMETRY fg;
-
-        private final int dimension;
-
-        private final int numCoordinates;
-
-        public @Override int getDimension() {
-            return dimension;
-        }
-
-        public @Override Coordinate getCoordinate(int i) {
-            return getCoordinateCopy(i);
-        }
-
-        public @Override Coordinate getCoordinateCopy(int i) {
-            Coordinate c = new Coordinate();
-            getCoordinate(i, c);
-            return c;
-        }
-
-        public @Override void getCoordinate(int index, Coordinate coord) {
-            coord.setX(getX(index));
-            coord.setY(getY(index));
-        }
-
-        public @Override double getX(int index) {
-            return getOrdinate(index, 0);
-        }
-
-        public @Override double getY(int index) {
-            return getOrdinate(index, 1);
-        }
-
-        public @Override double getOrdinate(int index, int ordinateIndex) {
-            int idx = index * dimension + ordinateIndex;
-            return fg.ordinates(idx);
-        }
-
-        public @Override int size() {
-            return numCoordinates;
-        }
-
-        public @Override void setOrdinate(int index, int ordinateIndex, double value) {
-            throw new UnsupportedOperationException();
-        }
-
-        public @Override Coordinate[] toCoordinateArray() {
-            int size = size();
-            Coordinate[] coords = new Coordinate[size];
-            for (int i = 0; i < size; i++) {
-                coords[i] = getCoordinate(i);
-            }
-            return coords;
-        }
-
-        public @Override Envelope expandEnvelope(Envelope env) {
-            for (int i = 0; i < size(); i++) {
-                env.expandToInclude(getOrdinate(i, 0), getOrdinate(i, 1));
-            }
-            return env;
-        }
-
-        public @Override CoordinateSequence copy() {
-            return new FlatGeomCoordSequence(fg, dimension, numCoordinates);
-        }
-
-        public @Override Object clone() {
-            return copy();
-        }
-    }
-
-    public static Map<String, Object> decode(@NonNull Dictionary dict) {
-        final int numEntries = dict.entriesLength();
-        Map<String, Object> map = new HashMap<>();
-        MapEntry buff = new MapEntry();
-        for (int i = 0; i < numEntries; i++) {
-            buff = dict.entries(buff, i);
-            String key = buff.key();
-            Value value = buff.value();
-            Object decodedValue = decodeValue(value);
-            map.put(key, decodedValue);
-        }
-        return map;
-    }
 }

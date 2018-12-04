@@ -39,14 +39,13 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevObjectFactoryImpl;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.cache.CacheIdentifier;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.cache.SharedCache;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_2;
-import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
 import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -61,6 +60,9 @@ import lombok.Value;
 
 public class ObjectCacheStressTest {
 
+//     private final RevObjectFactory objectFactory = new FlatBuffersRevObjectFactory();
+    private final RevObjectFactory objectFactory = new RevObjectFactoryImpl();
+
     final int numPutAndGetThreads = 16;
 
     final ForkJoinPool forkJoinPool = new ForkJoinPool(numPutAndGetThreads);
@@ -68,6 +70,8 @@ public class ObjectCacheStressTest {
     final int featureCount = 100_000;
 
     final int treeCount = 100_000;
+
+    final int bucketTreeCount = 100_000;
 
     private ObjectCache cache;
 
@@ -94,9 +98,10 @@ public class ObjectCacheStressTest {
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
-            new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
-            , DataStreamSerializationFactoryV2_2.INSTANCE//
-            , DataStreamSerializationFactoryV2_3.INSTANCE//
+            // new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
+            // DataStreamSerializationFactoryV2_2.INSTANCE//
+             DataStreamSerializationFactoryV2_3.INSTANCE//
+//            new FlatBuffersRevObjectSerializer()//
     );
 
     public static void main(String[] args) {
@@ -106,7 +111,7 @@ public class ObjectCacheStressTest {
         SharedCache sharedCache;
         sharedCache = new CaffeineSharedCache(L1Capacity, maxSizeBytes);
         // sharedCache = new GuavaSharedCache(L1Capacity, maxSizeBytes);
-        System.err.println("set up...");
+        System.err.println("set up: object factory: " + test.objectFactory.getClass().getName());
         try {
             test.setUp(() -> sharedCache);
         } catch (Exception e) {
@@ -114,28 +119,32 @@ public class ObjectCacheStressTest {
             System.exit(-1);
         }
         final String cacheImplName = sharedCache.getClass().getSimpleName();
-        final int runCount = 1;
+        final int runCount = 10;
 
-        for (int i = 1; i <= runCount; i++) {
-            List<TestResult> leafTreesResults = test.runTest(test.leafTrees);
-            printResults(String.format("Leaf Trees run %d/%d", i, runCount), cacheImplName,
-                    test.numPutAndGetThreads, leafTreesResults);
+        if (test.treeCount > 0) {
+            for (int i = 1; i <= runCount; i++) {
+                List<TestResult> leafTreesResults = test.runTest(test.leafTrees);
+                printResults(String.format("Leaf Trees run %d/%d", i, runCount), cacheImplName,
+                        test.numPutAndGetThreads, leafTreesResults);
+            }
+            test.tearDown();
         }
-        test.tearDown();
-
-        for (int i = 1; i <= runCount; i++) {
-            List<TestResult> leafTreesResults = test.runTest(test.bucketTrees);
-            printResults(String.format("Bucket Trees run %d/%d", i, runCount), cacheImplName,
-                    test.numPutAndGetThreads, leafTreesResults);
+        if (test.bucketTreeCount > 0) {
+            for (int i = 1; i <= runCount; i++) {
+                List<TestResult> bucketTreesResults = test.runTest(test.bucketTrees);
+                printResults(String.format("Bucket Trees run %d/%d", i, runCount), cacheImplName,
+                        test.numPutAndGetThreads, bucketTreesResults);
+            }
+            test.tearDown();
         }
-        test.tearDown();
-
-        for (int i = 1; i <= runCount; i++) {
-            List<TestResult> results = test.runTest(test.features);
-            printResults(String.format("Features run %d/%d", i, runCount), cacheImplName,
-                    test.numPutAndGetThreads, results);
+        if (test.featureCount > 0) {
+            for (int i = 1; i <= runCount; i++) {
+                List<TestResult> results = test.runTest(test.features);
+                printResults(String.format("Features run %d/%d", i, runCount), cacheImplName,
+                        test.numPutAndGetThreads, results);
+            }
+            test.tearDown();
         }
-        test.tearDown();
     }
 
     private static void printResults(String testName, String cacheImpl, int putAndGetThreads,
@@ -147,7 +156,7 @@ public class ObjectCacheStressTest {
         writeColumn(w, testName, cacheImpl, String.format("Threads: %d", putAndGetThreads));
         w.nextLine(' ');
         w.nextLine(TableWriter.DOUBLE_HORIZONTAL_LINE);
-        writeColumn(w, "Format", "Object count", "Hits", "Insert time", "Query time", "Size");
+        writeColumn(w, "Cache Format", "Object count", "Hits", "Insert time", "Query time", "Size");
         w.nextLine();
         w.writeHorizontalSeparator();
         results.forEach(i -> {
@@ -193,7 +202,7 @@ public class ObjectCacheStressTest {
         leafTrees = createLeafTrees(treeCount);
         long mem2 = runtime.totalMemory() - Runtime.getRuntime().freeMemory();
         System.err.printf("leaf tree mem: %,d\n", mem2 - mem);
-        bucketTrees = createBucketTrees(treeCount);
+        bucketTrees = createBucketTrees(bucketTreeCount);
         features = createFeatures(featureCount);
         sw.stop();
         System.err.printf("Created %,d features, %,d trees, %,d buckets in %s\n", featureCount,
@@ -293,11 +302,11 @@ public class ObjectCacheStressTest {
         for (int b = 0; b < bucketCount; b++) {
             ObjectId bucketTree = RevObjectTestSupport.hashString("b" + b);
             Envelope bounds = new Envelope(0, b, 0, b);
-            Bucket bucket = RevObjectFactory.defaultInstance().createBucket(bucketTree, b, bounds);
+            Bucket bucket = objectFactory.createBucket(bucketTree, b, bounds);
             buckets.add(bucket);
         }
         final ObjectId fakeId = RevObjectTestSupport.hashString(String.valueOf(i));
-        RevTree tree = RevObjectFactory.defaultInstance().createTree(fakeId, 1024, 0, buckets);
+        RevTree tree = objectFactory.createTree(fakeId, 1024, 0, buckets);
         return tree;
     }
 
@@ -306,8 +315,8 @@ public class ObjectCacheStressTest {
         List<Node> nodes = IntStream.range(0, numNodes).mapToObj(this::createNode)
                 .collect(Collectors.toList());
         ObjectId id = ObjectId.create(i, i * i, i * i * i);
-        RevTree tree = RevObjectFactory.defaultInstance().createTree(id, numNodes,
-                Collections.emptyList(), ImmutableList.copyOf(nodes));
+        RevTree tree = objectFactory.createTree(id, numNodes, Collections.emptyList(),
+                ImmutableList.copyOf(nodes));
         return tree;
     }
 
@@ -315,8 +324,7 @@ public class ObjectCacheStressTest {
         String name = "Node-" + n;
         ObjectId oid = RevObjectTestSupport.hashString(name);
         Envelope bounds = new Envelope(-1 * n, n, -1 * n, n);
-        return RevObjectFactory.defaultInstance().createNode(name, oid, ObjectId.NULL, TYPE.FEATURE,
-                bounds, null);
+        return objectFactory.createNode(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
     }
 
     private Node createNodeWithMetadata(int n) {
@@ -331,8 +339,7 @@ public class ObjectCacheStressTest {
         String name = "Node-" + n;
         ObjectId oid = RevObjectTestSupport.hashString(name);
         Envelope bounds = new Envelope(-1 * n, n, -1 * n, n);
-        return RevObjectFactory.defaultInstance().createNode(name, oid, ObjectId.NULL, TYPE.FEATURE,
-                bounds, null);
+        return objectFactory.createNode(name, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
     }
 
     private List<RevFeature> createFeatures(final int count) {

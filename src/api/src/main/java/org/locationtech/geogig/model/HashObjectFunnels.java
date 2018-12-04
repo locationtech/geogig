@@ -210,6 +210,14 @@ public class HashObjectFunnels {
         }
     };
 
+    public static ObjectId hashValue(@Nullable Object value) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        PropertyValueFunnel.funnel(value, hasher);
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.create(rawKey);
+        return id;
+    }
+
     public static ObjectId hashObject(@NonNull RevObject o) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         switch (o.getType()) {

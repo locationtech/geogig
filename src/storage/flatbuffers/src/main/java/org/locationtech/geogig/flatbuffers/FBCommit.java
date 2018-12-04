@@ -12,6 +12,7 @@ package org.locationtech.geogig.flatbuffers;
 import org.locationtech.geogig.flatbuffers.generated.Commit;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
 import com.google.common.base.Optional;
@@ -61,5 +62,9 @@ final class FBCommit extends FBRevObject<Commit> implements RevCommit {
 
     public @Override String getMessage() {
         return getTable().message();
+    }
+
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 }

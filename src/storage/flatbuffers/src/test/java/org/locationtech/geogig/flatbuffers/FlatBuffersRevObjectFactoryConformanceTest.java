@@ -10,8 +10,9 @@
 package org.locationtech.geogig.flatbuffers;
 
 import org.locationtech.geogig.model.RevObjectFactory;
+import org.locationtech.geogig.model.RevObjectFactoryConformanceTest;
 
-public class FlatBuffersRevObjectFactoryTest extends RevObjectFactoryConformanceTest {
+public class FlatBuffersRevObjectFactoryConformanceTest extends RevObjectFactoryConformanceTest {
 
     protected @Override RevObjectFactory newFactory() {
         return new FlatBuffersRevObjectFactory();

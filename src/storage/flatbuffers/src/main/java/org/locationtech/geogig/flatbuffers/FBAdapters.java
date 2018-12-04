@@ -12,21 +12,25 @@ package org.locationtech.geogig.flatbuffers;
 import javax.annotation.Nullable;
 
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.referencing.crs.DefaultEngineeringCRS;
+import org.locationtech.geogig.flatbuffers.generated.QualifiedName;
 import org.locationtech.geogig.flatbuffers.generated.SHA;
 import org.locationtech.geogig.flatbuffers.generated.SimpleAttributeDescriptor;
-import org.locationtech.geogig.flatbuffers.generated.SimpleFeatureType;
 import org.locationtech.geogig.flatbuffers.generated.values.Bounds;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.FeatureTypeFactory;
+import org.opengis.feature.type.GeometryType;
+import org.opengis.feature.type.Name;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -69,43 +73,75 @@ final @UtilityClass class FBAdapters {
                 env.getMaxY() < bounds.y1());
     }
 
-    public static FeatureType toFeatureType(@NonNull SimpleFeatureType t) {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder(ftfactory);
-        b.setName(t.name());
+    public static org.opengis.feature.type.FeatureType toFeatureType(
+            @NonNull org.locationtech.geogig.flatbuffers.generated.SimpleFeatureType t) {
+
+        SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder(ftfactory);
+        featureTypeBuilder.setName(toName(t.name()));
         final @Nullable String defaultGeometryName = t.defaultGeometryName();
-        b.setDefaultGeometry(defaultGeometryName);
+        featureTypeBuilder.setDefaultGeometry(defaultGeometryName);
 
         final int size = t.attributesLength();
         for (int i = 0; i < size; i++) {
-            String name;
-            Class<?> binding;
-
             SimpleAttributeDescriptor descriptor = t.attributes(i);
-            name = descriptor.name();
-            int bindingOrdinal = descriptor.binding() & 0xFF;
-            FieldType fieldType = FieldType.valueOf(bindingOrdinal);
-            binding = fieldType.getBinding();
-            final boolean geometric = descriptor.geometric();
+            final org.locationtech.geogig.flatbuffers.generated.AttributeType type = descriptor
+                    .type();
+            final int minOccurs = descriptor.minOccurs();
+            final int maxOccurs = descriptor.maxOccurs();
+            final boolean nillable = descriptor.nillable();
+
+            final boolean geometric = type.geometric();
+            final int bindingOrdinal = type.binding() & 0xFF;
+            final FieldType fieldType = FieldType.valueOf(bindingOrdinal);
+            final Class<?> binding = fieldType.getBinding();
+
+            final Name descriptorName = toName(descriptor.name());
+            final Name attributeTypeName = toName(type.name());
+            final AttributeDescriptor attributeDescriptor;
             if (geometric) {
-                String authorityCode = descriptor.crsAuthorityCode();
-                String wkt = descriptor.crsWkt();
-                CoordinateReferenceSystem coordSys;
-                try {
-                    if (authorityCode != null) {
-                        coordSys = org.geotools.referencing.CRS.decode(authorityCode);
-                    } else if (wkt != null) {
-                        coordSys = org.geotools.referencing.CRS.parseWKT(wkt);
-                    } else {
-                        coordSys = DefaultEngineeringCRS.CARTESIAN_2D;
-                    }
-                } catch (FactoryException e) {
-                    throw new RuntimeException(e);
-                }
-                b.add(name, binding, coordSys);
+                final @Nullable CoordinateReferenceSystem crs = resolveCrs(type);
+                GeometryType attributeType = ftfactory.createGeometryType(attributeTypeName,
+                        binding, crs, type.identified(), false, null, null, null);
+                Object defaultValue = null;
+                attributeDescriptor = ftfactory.createGeometryDescriptor(attributeType,
+                        descriptorName, minOccurs, maxOccurs, nillable, defaultValue);
             } else {
-                b.add(name, binding);
+                AttributeType attributeType = ftfactory.createAttributeType(attributeTypeName,
+                        binding, type.identified(), false, null, null, null);
+                Object defaultValue = null;
+                attributeDescriptor = ftfactory.createAttributeDescriptor(attributeType,
+                        descriptorName, minOccurs, maxOccurs, nillable, defaultValue);
             }
+            featureTypeBuilder.add(attributeDescriptor);
         }
-        return b.buildFeatureType();
+        return featureTypeBuilder.buildFeatureType();
+    }
+
+    private static CoordinateReferenceSystem resolveCrs(
+            final org.locationtech.geogig.flatbuffers.generated.AttributeType type) {
+        String authorityCode = type.crsAuthorityCode();
+        String wkt = type.crsWkt();
+        CoordinateReferenceSystem coordSys;
+        try {
+            if (authorityCode != null) {
+                coordSys = org.geotools.referencing.CRS.decode(authorityCode);
+            } else if (wkt != null) {
+                coordSys = org.geotools.referencing.CRS.parseWKT(wkt);
+            } else {
+                coordSys = null;
+            }
+        } catch (FactoryException e) {
+            throw new RuntimeException(e);
+        }
+        return coordSys;
+    }
+
+    public static org.opengis.feature.type.Name toName(@NonNull QualifiedName qname) {
+        String namespaceUri = qname.namespaceUri();
+        String localName = qname.localName();
+        if (Strings.isNullOrEmpty(namespaceUri)) {
+            return new NameImpl(localName);
+        }
+        return new NameImpl(namespaceUri, localName);
     }
 }

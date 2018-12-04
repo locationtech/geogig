@@ -11,6 +11,7 @@ package org.locationtech.geogig.flatbuffers;
 
 import org.locationtech.geogig.flatbuffers.generated.Tag;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 
@@ -20,6 +21,10 @@ final class FBTag extends FBRevObject<Tag> implements RevTag {
 
     public FBTag(@NonNull Tag t) {
         super(t);
+    }
+
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 
     public @Override TYPE getType() {

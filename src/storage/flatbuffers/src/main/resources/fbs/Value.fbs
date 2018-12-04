@@ -75,7 +75,7 @@ table INTEGER_ARRAY{value: [int];}
 table LONG_ARRAY{value: [long];}
 table FLOAT_ARRAY{value: [float];}
 table DOUBLE_ARRAY{value: [double];}
-table CHAR_ARRAY{value: [double];}
+table CHAR_ARRAY{value: [ushort];}
 table STRING_ARRAY{value: [string];}
 table ENVELOPE_2D{value: Bounds;}
 

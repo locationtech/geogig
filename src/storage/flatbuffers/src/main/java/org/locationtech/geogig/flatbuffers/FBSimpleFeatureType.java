@@ -9,9 +9,12 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
-import org.geotools.feature.NameImpl;
+import java.lang.ref.WeakReference;
+
+import org.locationtech.geogig.flatbuffers.generated.QualifiedName;
 import org.locationtech.geogig.flatbuffers.generated.SimpleFeatureType;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObjects;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -22,12 +25,19 @@ import lombok.NonNull;
 
 final class FBSimpleFeatureType extends FBRevObject<SimpleFeatureType> implements RevFeatureType {
 
+    private WeakReference<FeatureType> parsedObject = new WeakReference<>(null);
+
     public FBSimpleFeatureType(@NonNull SimpleFeatureType t) {
         super(t);
     }
 
+    public @Override String toString() {
+        return RevObjects.toString(this);
+    }
+
     public @Override Name getName() {
-        return new NameImpl(getTable().name());
+        QualifiedName qname = getTable().name();
+        return FBAdapters.toName(qname);
     }
 
     public @Override TYPE getType() {
@@ -35,7 +45,12 @@ final class FBSimpleFeatureType extends FBRevObject<SimpleFeatureType> implement
     }
 
     public @Override FeatureType type() {
-        return FBAdapters.toFeatureType(getTable());
+        FeatureType type = parsedObject.get();
+        if (type == null) {
+            type = FBAdapters.toFeatureType(getTable());
+            parsedObject = new WeakReference<>(type);
+        }
+        return type;
     }
 
     public @Override ImmutableList<PropertyDescriptor> descriptors() {

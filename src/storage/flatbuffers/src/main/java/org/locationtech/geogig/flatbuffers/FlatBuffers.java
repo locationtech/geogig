@@ -31,6 +31,7 @@ import org.locationtech.geogig.flatbuffers.generated.LeafTree;
 import org.locationtech.geogig.flatbuffers.generated.NodeTree;
 import org.locationtech.geogig.flatbuffers.generated.ObjectType;
 import org.locationtech.geogig.flatbuffers.generated.Person;
+import org.locationtech.geogig.flatbuffers.generated.QualifiedName;
 import org.locationtech.geogig.flatbuffers.generated.RevisionObject;
 import org.locationtech.geogig.flatbuffers.generated.SHA;
 import org.locationtech.geogig.flatbuffers.generated.SimpleAttributeDescriptor;
@@ -46,19 +47,25 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.feature.type.GeometryType;
+import org.opengis.feature.type.Name;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import lombok.NonNull;
@@ -193,6 +200,11 @@ final class FlatBuffers {
         return ret;
     }
 
+    public ValueArray decodeValueArray(ByteBuffer buffer) {
+        Feature feature = Feature.getRootAsFeature(buffer);
+        return new FBValueArray(feature);
+    }
+
     private int write(@NonNull ObjectId id, FlatBufferBuilder builder) {
         return SHA.createSHA(builder, RevObjects.h1(id), RevObjects.h2(id), RevObjects.h3(id));
     }
@@ -264,8 +276,8 @@ final class FlatBuffers {
         return writeLeafTree(builder, tree.size(), tree.trees(), tree.features());
     }
 
-    public int writeLeafTree(FlatBufferBuilder builder, final long size, final List<Node> trees,
-            final List<Node> features) {
+    public int writeLeafTree(@NonNull FlatBufferBuilder builder, final long size,
+            final @NonNull List<Node> trees, final @NonNull List<Node> features) {
 
         final int numNodes = trees.size() + features.size();
         final int[] offsets = new int[numNodes];
@@ -273,14 +285,28 @@ final class FlatBuffers {
         forEachNode(trees, features, offsets, n -> builder.createString(n.getName()));
         final int nodeNamesOffset = LeafTree.createNodesNamesVector(builder, offsets);
 
-        LeafTree.startNodesBoundsVector(builder, numNodes);
+        LeafTree.startNodesIdsVector(builder, numNodes);
         forEachNodeReverseOrder(trees, features, n -> write(n.getObjectId(), builder));
         final int nodeIdsOffset = builder.endVector();
+        final int nodesMetadataIdsOffset;
         final int nodeBoundsOffset;
         final int nodesExtraDataOffset;
         final Envelope buff = new Envelope();
         final boolean[] hasBoundsOrExtraData = hasBoundsOrExtraData(trees, features, buff);
-        if (hasBoundsOrExtraData[0]) {
+        final boolean hasBounds = hasBoundsOrExtraData[0];
+        final boolean hasExtraDataMap = hasBoundsOrExtraData[1];
+        final boolean hasMetadataIds = hasBoundsOrExtraData[2];
+
+        if (hasMetadataIds) {
+            LeafTree.startNodesMetadataIdsVector(builder, numNodes);
+            forEachNodeReverseOrder(trees, features,
+                    n -> write(n.getMetadataId().or(ObjectId.NULL), builder));
+            nodesMetadataIdsOffset = builder.endVector();
+        } else {
+            nodesMetadataIdsOffset = 0;
+        }
+
+        if (hasBounds) {
             LeafTree.startNodesBoundsVector(builder, numNodes);
             forEachNodeReverseOrder(trees, features, n -> {
                 buff.setToNull();
@@ -291,8 +317,8 @@ final class FlatBuffers {
         } else {
             nodeBoundsOffset = 0;
         }
-        if (hasBoundsOrExtraData[1]) {
-            forEachNodeReverseOrder(trees, features, offsets,
+        if (hasExtraDataMap) {
+            forEachNode(trees, features, offsets,
                     n -> ValueSerializer.writeDictionary(builder, n.getExtraData()));
             nodesExtraDataOffset = LeafTree.createNodesExtraDataVector(builder, offsets);
         } else {
@@ -304,6 +330,7 @@ final class FlatBuffers {
         LeafTree.addNumDirectTreeNodes(builder, trees.size());
         LeafTree.addNodesNames(builder, nodeNamesOffset);
         LeafTree.addNodesIds(builder, nodeIdsOffset);
+        LeafTree.addNodesMetadataIds(builder, nodesMetadataIdsOffset);
         if (nodeBoundsOffset > 0) {
             LeafTree.addNodesBounds(builder, nodeBoundsOffset);
         }
@@ -341,21 +368,31 @@ final class FlatBuffers {
         return NodeTree.endNodeTree(builder);
     }
 
+    /**
+     * @return a 3-elements boolean array where the first one indicates if at least one node has
+     *         bounds, the seconds if it has extradata map, and the third if it has a metadataId
+     */
     private boolean[] hasBoundsOrExtraData(List<Node> trees, List<Node> features, Envelope buff) {
         boolean[] flags = hasBoundsOrExtraData(trees, buff);
-        if (!flags[0] || !flags[1]) {
+        if (!flags[0] || !flags[1] || flags[2]) {
             boolean[] featuresFlags = hasBoundsOrExtraData(features, buff);
             flags[0] = flags[0] || featuresFlags[0];
             flags[1] = flags[1] || featuresFlags[1];
+            flags[2] = flags[2] || featuresFlags[2];
         }
         return flags;
     }
 
+    /**
+     * @return a 3-elements boolean array where the first one indicates if at least one node has
+     *         bounds, the seconds if it has extradata map, and the third if it has a metadataId
+     */
     private boolean[] hasBoundsOrExtraData(List<Node> nodes, Envelope buff) {
         boolean hasBounds = false;
         boolean hasExtraData = false;
-        final int features = nodes.size();
-        for (int i = 0; i < features; i++) {
+        boolean hasMetadataId = false;
+        final int size = nodes.size();
+        for (int i = 0; i < size; i++) {
             buff.setToNull();
             Node node = nodes.get(i);
             node.expand(buff);
@@ -366,11 +403,14 @@ final class FlatBuffers {
             if (!extraData.isEmpty()) {
                 hasExtraData = true;
             }
-            if (hasBounds && hasExtraData) {
-                return new boolean[] { true, true };
+            if (node.getMetadataId().isPresent()) {
+                hasMetadataId = true;
+            }
+            if (hasBounds && hasExtraData && hasMetadataId) {
+                return new boolean[] { true, true, true };
             }
         }
-        return new boolean[] { hasBounds, hasExtraData };
+        return new boolean[] { hasBounds, hasExtraData, hasMetadataId };
     }
 
     private void forEachNodeReverseOrder(List<Node> treeNodes, List<Node> featureNodes,
@@ -392,23 +432,25 @@ final class FlatBuffers {
 
         int j = 0;
         for (int i = 0; i < trees; i++, j++) {
-            offsets[j] = nodeToOffset.applyAsInt(treeNodes.get(i));
+            Node node = treeNodes.get(i);
+            checkNode(node, TYPE.TREE, i);
+            offsets[j] = nodeToOffset.applyAsInt(node);
         }
         for (int i = 0; i < features; i++, j++) {
-            offsets[j] = nodeToOffset.applyAsInt(featureNodes.get(i));
+            Node node = featureNodes.get(i);
+            checkNode(node, TYPE.FEATURE, i);
+            offsets[j] = nodeToOffset.applyAsInt(node);
         }
     }
 
-    private void forEachNodeReverseOrder(List<Node> treeNodes, List<Node> featureNodes,
-            int[] offsets, ToIntFunction<Node> nodeToOffset) {
-        final int trees = treeNodes.size();
-        final int features = featureNodes.size();
-        int j = 0;
-        for (int i = features - 1; i >= 0; i--, j++) {
-            offsets[j] = nodeToOffset.applyAsInt(featureNodes.get(i));
+    private void checkNode(Node node, TYPE type, int index) {
+        if (node == null) {
+            throw new NullPointerException(
+                    "null node in " + type.toString().toLowerCase() + "s at index " + index);
         }
-        for (int i = trees - 1; i >= 0; i--, j++) {
-            offsets[j] = nodeToOffset.applyAsInt(treeNodes.get(i));
+        if (node.getType() != type) {
+            throw new IllegalArgumentException(type.toString().toLowerCase() + "s contains "
+                    + node.getType() + " node at index " + index);
         }
     }
 
@@ -453,6 +495,12 @@ final class FlatBuffers {
         return Feature.createFeature(builder, valuesOffset);
     }
 
+    public int writeValueArray(FlatBufferBuilder builder, List<Object> values) {
+        int foffset = writeFeature(builder, values);
+        builder.finish(foffset);
+        return foffset;
+    }
+
     private @Nullable int[] writeBuckets(RevTree tree, FlatBufferBuilder builder) {
         return writeBuckets(tree.bucketsSize(), tree.getBuckets(), builder);
     }
@@ -465,10 +513,13 @@ final class FlatBuffers {
         final int[] offsets = new int[bucketsSize];
         final Envelope envBuff = new Envelope();
         final AtomicInteger i = new AtomicInteger();
-        buckets.forEach(bucket -> {
+        for (Bucket bucket : buckets) {
+            if (bucket == null) {
+                throw new NullPointerException("There's a null bucket in the buckets set");
+            }
             int off = writeBucket(builder, bucket, envBuff);
             offsets[i.getAndIncrement()] = off;
-        });
+        }
         return offsets;
     }
 
@@ -509,7 +560,7 @@ final class FlatBuffers {
 
         GeometryDescriptor defgeom = type.getGeometryDescriptor();
 
-        int nameOffset = builder.createString(type.getName().getLocalPart());
+        int nameOffset = writeQualifiedName(type.getName(), builder);
         int defaultGeometryNameOffset = defgeom == null ? 0
                 : builder.createString(defgeom.getLocalName());
 
@@ -531,21 +582,36 @@ final class FlatBuffers {
         return offsets;
     }
 
-    private int writeAttributeDescriptor(AttributeDescriptor att, FlatBufferBuilder builder) {
+    private int writeAttributeDescriptor(AttributeDescriptor attDescriptor,
+            FlatBufferBuilder builder) {
 
-        int nameOffset;
-        byte bindingCode;
-        String srsName = null;
-        String wkt = null;
+        final int nameOffset = writeQualifiedName(attDescriptor.getName(), builder);
+        final int typeOffset = writeAttributeType(attDescriptor.getType(), builder);
+        final int minOccurs = attDescriptor.getMinOccurs();
+        final int maxOccurs = attDescriptor.getMaxOccurs();
+        final boolean nillable = attDescriptor.isNillable();
+        return SimpleAttributeDescriptor.createSimpleAttributeDescriptor(builder, nameOffset,
+                typeOffset, minOccurs, maxOccurs, nillable);
+    }
 
-        nameOffset = builder.createString(att.getLocalName());
-        Class<?> binding = att.getType().getBinding();
-        FieldType fieldType = FieldType.forBinding(binding);
-        Preconditions.checkArgument(fieldType != FieldType.UNKNOWN);
-        bindingCode = fieldType.getTag();// just because they do match
-        boolean geometric = att instanceof GeometryDescriptor;
+    private int writeAttributeType(AttributeType att, FlatBufferBuilder builder) {
+
+        final int nameOffset = writeQualifiedName(att.getName(), builder);
+        final byte bindingCode;
+        {
+            Class<?> binding = att.getBinding();
+            FieldType fieldType = FieldType.forBinding(binding);
+            Preconditions.checkArgument(fieldType != FieldType.UNKNOWN);
+            bindingCode = fieldType.getTag();// just because they do match
+        }
+        final boolean identifiable = att.isIdentified();
+        final boolean geometric = att instanceof GeometryType;
+        final int crs_authority_codeOffset;
+        final int crs_wktOffset;
         if (geometric) {
-            GeometryDescriptor gd = (GeometryDescriptor) att;
+            String srsName = null;
+            String wkt = null;
+            GeometryType gd = (GeometryType) att;
             CoordinateReferenceSystem crs = gd.getCoordinateReferenceSystem();
             if (crs != null && !DefaultEngineeringCRS.CARTESIAN_2D.equals(crs)) {
                 boolean codeOnly = true;
@@ -571,11 +637,26 @@ final class FlatBuffers {
                     }
                 }
             }
+            crs_authority_codeOffset = srsName == null ? 0 : builder.createString(srsName);
+            crs_wktOffset = wkt == null ? 0 : builder.createString(wkt);
+        } else {
+            crs_authority_codeOffset = 0;
+            crs_wktOffset = 0;
         }
-        int authCodeOffset = srsName == null ? 0 : builder.createString(srsName);
-        int wktOffset = wkt == null ? 0 : builder.createString(wkt);
-        return SimpleAttributeDescriptor.createSimpleAttributeDescriptor(builder, nameOffset,
-                bindingCode, geometric, authCodeOffset, wktOffset);
+
+        return org.locationtech.geogig.flatbuffers.generated.AttributeType.createAttributeType(
+                builder, nameOffset, bindingCode, identifiable, geometric, crs_authority_codeOffset,
+                crs_wktOffset);
+    }
+
+    private int writeQualifiedName(Name name, FlatBufferBuilder builder) {
+        String namespaceURI = name.getNamespaceURI();
+        String localPart = name.getLocalPart();
+        int namespaceUriOffset = Strings.isNullOrEmpty(namespaceURI) ? 0
+                : builder.createString(namespaceURI);
+        int localNameOffset = Strings.isNullOrEmpty(localPart) ? 0
+                : builder.createString(localPart);
+        return QualifiedName.createQualifiedName(builder, namespaceUriOffset, localNameOffset);
     }
 
 }

@@ -17,6 +17,7 @@ import java.util.stream.IntStream;
 import org.locationtech.geogig.flatbuffers.generated.NodeTree;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.collect.ImmutableList;
@@ -32,6 +33,10 @@ final class FBNodeTree extends FBRevObject<NodeTree> implements RevTree {
 
     public @Override TYPE getType() {
         return TYPE.TREE;
+    }
+
+    public @Override String toString() {
+        return RevObjects.toString(this);
     }
 
     public @Override long size() {
@@ -67,7 +72,7 @@ final class FBNodeTree extends FBRevObject<NodeTree> implements RevTree {
             return ImmutableSortedMap.of();
         }
         ImmutableSortedMap.Builder<Integer, Bucket> builder = ImmutableSortedMap.naturalOrder();
-        forEachBucket(builder::put);
+        forEachBucket(bucket -> builder.put(bucket.getIndex(), bucket));
         return builder.build();
     }
 

@@ -64,16 +64,30 @@ table Tag{
 	tagger:	Person (required);
 }
 
-table SimpleAttributeDescriptor{
-	name: string (required);
+table QualifiedName{
+	namespace_uri: string;
+	local_name: string;
+}
+
+table AttributeType{
+	name: QualifiedName (required);
 	binding: org.locationtech.geogig.flatbuffers.generated.values.ValueType;
+	identified: bool;
 	geometric: bool;
 	crs_authority_code: string;
 	crs_wkt: string;
 }
 
+table SimpleAttributeDescriptor{
+	name: QualifiedName (required);
+	type: AttributeType;
+	min_occurs: int;
+	max_occurs: int;
+	nillable: bool;
+}
+
 table SimpleFeatureType{
-	name: string (required);
+	name: QualifiedName (required);
 	defaultGeometryName: string;
 	attributes: [SimpleAttributeDescriptor];
 }

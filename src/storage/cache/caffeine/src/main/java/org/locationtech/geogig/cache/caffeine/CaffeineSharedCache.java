@@ -66,8 +66,7 @@ public class CaffeineSharedCache implements SharedCache {
                 new ArrayBlockingQueue<Runnable>(nThreads), tf, sameThreadHandler);
     }
 
-    private static final RevObjectSerializer ENCODER = //
-            DataStreamSerializationFactoryV2_3.INSTANCE;
+    private static final RevObjectSerializer ENCODER = DataStreamSerializationFactoryV2_3.INSTANCE;// new FlatBuffersRevObjectSerializer();
 
     /**
      * Size of the L1 cache {@link CacheKey} -> {@link RevTree}

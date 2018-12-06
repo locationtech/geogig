@@ -65,7 +65,6 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.cache.CacheManager;
 import org.locationtech.geogig.storage.cache.ObjectCache;
-import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
@@ -94,9 +93,9 @@ public class PGObjectStore implements ObjectStore {
 
     static final Logger LOG = LoggerFactory.getLogger(PGObjectStore.class);
 
-    private static final int DEFAULT_PUT_ALL_PARTITION_SIZE = 10_000;
+    private static final int DEFAULT_PUT_ALL_PARTITION_SIZE = 100;
 
-    private static final int DEFAULT_GET_ALL_PARTITION_SIZE = 100;
+    private static final int DEFAULT_GET_ALL_PARTITION_SIZE = 10_000;
 
     private static final ObjectStoreSharedResources SHARED_RESOURCES = new ObjectStoreSharedResources();
 
@@ -104,7 +103,7 @@ public class PGObjectStore implements ObjectStore {
 
     protected final ConfigDatabase configdb;
 
-    static final SerializationFactoryProxy encoder = new SerializationFactoryProxy();
+    static final PGSerializationProxy encoder = new PGSerializationProxy();
 
     protected DataSource dataSource;
 

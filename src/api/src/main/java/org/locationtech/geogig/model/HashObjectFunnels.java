@@ -245,41 +245,6 @@ public class HashObjectFunnels {
         return id;
     }
 
-    public static ObjectId hashValue(@Nullable Object value) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        PropertyValueFunnel.funnel(value, hasher);
-        final byte[] rawKey = hasher.hash().asBytes();
-        final ObjectId id = ObjectId.create(rawKey);
-        return id;
-    }
-
-    public static ObjectId hashObject(@NonNull RevObject o) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        switch (o.getType()) {
-        case COMMIT:
-            commitFunnel().funnel((RevCommit) o, hasher);
-            break;
-        case FEATURE:
-            featureFunnel().funnel((RevFeature) o, hasher);
-            break;
-        case FEATURETYPE:
-            featureTypeFunnel().funnel((RevFeatureType) o, hasher);
-            break;
-        case TAG:
-            tagFunnel().funnel((RevTag) o, hasher);
-            break;
-        case TREE:
-            treeFunnel().funnel((RevTree) o, hasher);
-            break;
-        default:
-            throw new IllegalArgumentException("Unknown revision object type: " + o.getType());
-        }
-
-        final byte[] rawKey = hasher.hash().asBytes();
-        final ObjectId id = ObjectId.create(rawKey);
-        return id;
-    }
-
     private static final class CommitFunnel implements Funnel<RevCommit> {
         private static final long serialVersionUID = -1L;
 

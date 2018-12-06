@@ -112,8 +112,6 @@ public class PGObjectDatabaseStressTest {
         if (db != null) {
             db.close();
         }
-        System.err.println(sharedCache.toString());
-
     }
 
     @Ignore

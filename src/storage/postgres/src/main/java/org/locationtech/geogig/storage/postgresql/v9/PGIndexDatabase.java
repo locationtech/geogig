@@ -165,7 +165,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(
-                    log(sql, LOG, repositoryId, treeName, attributeName, strategy, metadata));
+                    log(sql, log, repositoryId, treeName, attributeName, strategy, metadata));
                     ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, treeName);
@@ -207,13 +207,13 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement ps = cx.prepareStatement(
-                        log(deleteSql, LOG, repositoryId, treeName, attributeName))) {
+                        log(deleteSql, log, repositoryId, treeName, attributeName))) {
                     ps.setInt(1, repositoryId);
                     ps.setString(2, treeName);
                     ps.setString(3, attributeName);
                     ps.executeUpdate();
                 }
-                try (PreparedStatement ps = cx.prepareStatement(log(insertSql, LOG, repositoryId,
+                try (PreparedStatement ps = cx.prepareStatement(log(insertSql, log, repositoryId,
                         treeName, attributeName, strategy, metadata));
                         ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
                     ps.setInt(1, repositoryId);
@@ -254,7 +254,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx
-                    .prepareStatement(log(sql, LOG, repositoryId, treeName, attributeName))) {
+                    .prepareStatement(log(sql, log, repositoryId, treeName, attributeName))) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, treeName);
                 ps.setString(3, attributeName);
@@ -291,7 +291,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx
-                    .prepareStatement(log(sql, LOG, repositoryId, treeName))) {
+                    .prepareStatement(log(sql, log, repositoryId, treeName))) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, treeName);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -327,7 +327,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         List<IndexInfo> indexes = Lists.newArrayList();
 
         try (Connection cx = PGStorage.newConnection(dataSource)) {
-            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId))) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, log, repositoryId))) {
                 ps.setInt(1, repositoryId);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -362,7 +362,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         int deletedRows = 0;
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
-            try (PreparedStatement ps = cx.prepareStatement(log(deleteSql, LOG, repositoryId,
+            try (PreparedStatement ps = cx.prepareStatement(log(deleteSql, log, repositoryId,
                     index.getTreeName(), index.getAttributeName()))) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, index.getTreeName());
@@ -393,7 +393,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx
-                    .prepareStatement(log(deleteSql, LOG, repositoryId, pgIndexId))) {
+                    .prepareStatement(log(deleteSql, log, repositoryId, pgIndexId))) {
                 ps.setInt(1, repositoryId);
                 ps.setInt(2, pgIndexId.hash1());
                 pgIndexId.setArgs(ps, 3);
@@ -425,7 +425,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement ps = cx
-                        .prepareStatement(log(deleteSql, LOG, repositoryId, pgIndexId, pgTreeId))) {
+                        .prepareStatement(log(deleteSql, log, repositoryId, pgIndexId, pgTreeId))) {
                     ps.setInt(1, repositoryId);
                     ps.setInt(2, pgIndexId.hash1());
                     pgIndexId.setArgs(ps, 3);
@@ -434,7 +434,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                     ps.executeUpdate();
                 }
                 try (PreparedStatement ps = cx.prepareStatement(
-                        log(insertSql, LOG, repositoryId, pgIndexId, pgTreeId, pgIndexedTreeId))) {
+                        log(insertSql, log, repositoryId, pgIndexId, pgTreeId, pgIndexedTreeId))) {
                     ps.setInt(1, repositoryId);
                     pgIndexId.setArgs(ps, 2);
                     pgTreeId.setArgs(ps, 5);
@@ -466,7 +466,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx
-                    .prepareStatement(log(sql, LOG, repositoryId, pgIndexId, pgTreeId))) {
+                    .prepareStatement(log(sql, log, repositoryId, pgIndexId, pgTreeId))) {
                 ps.setInt(1, repositoryId);
                 ps.setInt(2, pgIndexId.hash1());
                 pgIndexId.setArgs(ps, 3);
@@ -497,7 +497,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         List<IndexTreeMapping> mappings = new ArrayList<>();
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx
-                    .prepareStatement(log(sql, LOG, repositoryId, pgIndexId))) {
+                    .prepareStatement(log(sql, log, repositoryId, pgIndexId))) {
                 ps.setInt(1, repositoryId);
                 ps.setInt(2, pgIndexId.hash1());
                 pgIndexId.setArgs(ps, 3);

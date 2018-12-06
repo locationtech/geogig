@@ -36,6 +36,10 @@ public abstract class Bucket implements Bounded, Comparable<Bucket> {
         return RevObjects.hashCode(this);
     }
 
+    public @Override String toString() {
+        return RevObjects.toString(this);
+    }
+
     public final @Override int compareTo(@NonNull Bucket b) {
         int c = Integer.compare(getIndex(), b.getIndex());
         if (c == 0) {

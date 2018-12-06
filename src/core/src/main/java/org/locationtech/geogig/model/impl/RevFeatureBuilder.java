@@ -14,11 +14,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObjectFactory;
-import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -75,14 +73,9 @@ public final class RevFeatureBuilder {
     /**
      * Adds the provided value to the tail of the sequence of attribute values that compose the
      * {@link RevFeature} being built.
-     * <p>
-     * In order to preserve the {@link RevFeature}'s immutability, a safe copy of the value will be
-     * assigned if it's a mutable type.
-     * 
-     * @see FieldType#safeCopy(Object)
      */
     public RevFeatureBuilder addValue(@Nullable Object value) {
-        return addValueNoCopy(ValueArray.safeCopy(value));
+        return addValueNoCopy(value);
     }
 
     /**

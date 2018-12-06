@@ -35,6 +35,7 @@ import org.geotools.feature.DecoratingFeature;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.NameImpl;
+import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
@@ -57,6 +58,7 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.CRSException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -72,6 +74,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.identity.FeatureId;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -296,17 +299,24 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     }
 
     private SimpleFeatureType tryForceKnownCRS(SimpleFeatureType orig) {
-        SimpleFeatureType override = orig;
-
         GeometryDescriptor geometryDescriptor = orig.getGeometryDescriptor();
-        CoordinateReferenceSystem crs = null;
+        if (geometryDescriptor == null) {
+            return orig;
+        }
+        CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
+        if (crs == null) {
+            return orig;
+        }
         try {
             crs = findIdentifier(geometryDescriptor);
-            override = DataUtilities.createSubType(orig, null, crs);
-        } catch (Exception e) {
+            return DataUtilities.createSubType(orig, null, crs);
+        } catch (CRSException e) {
+            LOG.warn(e.getMessage());
+            return orig;
+        } catch (FactoryException | SchemaException e) {
             LOG.warn("Error looking for known identifier for CRS " + crs, e);
+            return orig;
         }
-        return override;
     }
 
     private SimpleFeatureType overrideGeometryName(SimpleFeatureType featureType) {

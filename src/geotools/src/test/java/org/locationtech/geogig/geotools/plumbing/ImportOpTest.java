@@ -43,6 +43,9 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
@@ -54,9 +57,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 
 public class ImportOpTest extends RepositoryTestCase {
 
@@ -525,7 +525,6 @@ public class ImportOpTest extends RepositoryTestCase {
                 .getCoordinateReferenceSystem();
 
         assertNotEquals(origCrs, storedCrs);
-        assertTrue(CRS.equalsIgnoreMetadata(origCrs, storedCrs));
         assertEquals(expectedSRS, CRS.toSRS(storedCrs));
     }
 

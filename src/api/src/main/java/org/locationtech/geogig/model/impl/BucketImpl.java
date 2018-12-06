@@ -45,10 +45,6 @@ class BucketImpl extends Bucket {
         return index;
     }
 
-    public @Override String toString() {
-        return RevObjects.toString(this);
-    }
-
     public @Override boolean intersects(Envelope env) {
         return bounds.intersects(env);
     }

@@ -13,7 +13,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -24,6 +23,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevObjectTestUtil;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.internal.DAGNode.FeatureDAGNode;
@@ -72,7 +72,8 @@ public class DAGNodeTest {
         when(cache.resolve(eq(5))).thenReturn(featuresTree);
         Node resolved = node.resolve(cache);
         assertNotNull(resolved);
-        assertSame(featuresTree.features().get(511), resolved);
+        Node expected = featuresTree.features().get(511);
+        RevObjectTestUtil.deepEquals(expected, resolved);
     }
 
     @Test

@@ -23,6 +23,8 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObjectTestUtil;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
@@ -386,10 +388,10 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertEquals("points2", treeRef.path());
         assertEquals("", treeRef.getParentPath());
         assertTrue(treeRef.getNode().getMetadataId().isPresent());
-        assertSame(treeRef.getMetadataId(), treeRef.getNode().getMetadataId().get());
+        assertEquals(treeRef.getMetadataId(), treeRef.getNode().getMetadataId().get());
 
         RevFeatureType featureType = repo.objectDatabase().getFeatureType(treeRef.getMetadataId());
-        assertEquals(pointsType, featureType.type());
+        RevObjectTestUtil.deepEquals(RevFeatureTypeBuilder.build(pointsType), featureType);
     }
 
     @Test
@@ -399,10 +401,10 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertEquals("path/to/nested/type", treeRef.path());
         assertEquals("path/to/nested", treeRef.getParentPath());
         assertTrue(treeRef.getNode().getMetadataId().isPresent());
-        assertSame(treeRef.getMetadataId(), treeRef.getNode().getMetadataId().get());
+        assertEquals(treeRef.getMetadataId(), treeRef.getNode().getMetadataId().get());
 
         RevFeatureType featureType = repo.objectDatabase().getFeatureType(treeRef.getMetadataId());
-        assertEquals(pointsType, featureType.type());
+        RevObjectTestUtil.deepEquals(RevFeatureTypeBuilder.build(pointsType), featureType);
     }
 
     @Test
@@ -418,7 +420,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
         RevFeatureType featureType = repo.objectDatabase()
                 .getFeatureType(treeRef.get().getMetadataId());
-        assertEquals(pointsType, featureType.type());
+        RevObjectTestUtil.deepEquals(RevFeatureTypeBuilder.build(pointsType), featureType);
 
     }
 

@@ -16,6 +16,7 @@ import java.util.List;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -40,7 +41,7 @@ public class RevFeatureTest {
         RevFeature feature = RevFeatureBuilder.builder().addAll(values).build();
 
         String featureString = feature.toString();
-        assertEquals("RevFeatureImpl(d0b8deaed093f20b)[StringProp, 1000, POINT(1 1)]",
-                featureString);
+        String expected = RevObjects.toString(feature);
+        assertEquals(expected, featureString);
     }
 }

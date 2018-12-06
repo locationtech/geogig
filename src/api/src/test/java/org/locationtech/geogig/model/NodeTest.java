@@ -79,7 +79,7 @@ public class NodeTest {
                 TYPE.FEATURE, null, null);
 
         String readableNode = node.toString();
-        String expected = "FeatureNode[Points.1 -> abc1230000000000, type: FEATURE, bounds: null]";
+        String expected = RevObjects.toString(node);
         assertEquals(expected, readableNode.toString());
     }
 
@@ -244,7 +244,7 @@ public class NodeTest {
     @Test
     public void testCreateInvalidType() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Only FEATURE and TREE nodes can be created");
+        exception.expectMessage("only FEATURE and TREE nodes can be created");
         RevObjectFactory.defaultInstance().createNode("Points",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
                 TYPE.FEATURETYPE, null, null);

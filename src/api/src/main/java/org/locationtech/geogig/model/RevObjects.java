@@ -317,11 +317,13 @@ public @UtilityClass class RevObjects {
     public static String toString(@NonNull Node node) {
         Envelope env = node.bounds().orNull();
         String bounds = env == null ? null : env.toString();
-        return String.format("%s[%s -> %s, type: %s, bounds: %s]", //
+        return String.format("%s[%s -> %s, type: %s, md id: %s, bounds: %s]", //
                 node.getClass().getSimpleName(), //
                 node.getName(), //
                 toShortString(node.getObjectId()), //
                 node.getType(), //
+                (node.getMetadataId().isPresent() ? toShortString(node.getMetadataId().get())
+                        : "NULL"), //
                 bounds);
     }
 
@@ -397,7 +399,7 @@ public @UtilityClass class RevObjects {
     }
 
     public static String toString(@NonNull RevTree tree) {
-        return String.format(
+        String stree = String.format(
                 "%s(%s)[size:%,d, tree nodes:%,d, feature nodes:%,d, subtrees:%,d, buckets: %,d]",
                 tree.getClass().getSimpleName(), //
                 toShortString(tree.getId()), //
@@ -407,6 +409,15 @@ public @UtilityClass class RevObjects {
                 tree.numTrees(), //
                 tree.bucketsSize());
 
+        StringBuilder sb = new StringBuilder(stree);
+        sb.append("\n[\ntrees:");
+        tree.forEachTree(n -> sb.append('\n').append(n));
+        sb.append("\nfeatures:");
+        tree.forEachFeature(n -> sb.append('\n').append(n));
+        sb.append("\nbuckets:");
+        tree.forEachBucket(b -> sb.append("\n").append(b));
+        sb.append("\n]");
+        return sb.toString();
     }
 
     public static @Nullable Envelope makePrecise(@Nullable Envelope bounds) {

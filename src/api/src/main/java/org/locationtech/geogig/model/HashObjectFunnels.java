@@ -44,6 +44,8 @@ import com.google.common.hash.Funnels;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.PrimitiveSink;
 
+import lombok.NonNull;
+
 /**
  * Hashes a RevObject and returns the ObjectId.
  * 
@@ -66,6 +68,10 @@ public class HashObjectFunnels {
 
     public static Funnel<RevTree> treeFunnel() {
         return TreeFunnel.INSTANCE;
+    }
+
+    public static Funnel<Object> valueFunnel() {
+        return PropertyValueFunnel;
     }
 
     public static Funnel<RevFeature> featureFunnel() {
@@ -204,6 +210,41 @@ public class HashObjectFunnels {
         }
     };
 
+    public static ObjectId hashValue(@Nullable Object value) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        PropertyValueFunnel.funnel(value, hasher);
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.create(rawKey);
+        return id;
+    }
+
+    public static ObjectId hashObject(@NonNull RevObject o) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        switch (o.getType()) {
+        case COMMIT:
+            commitFunnel().funnel((RevCommit) o, hasher);
+            break;
+        case FEATURE:
+            featureFunnel().funnel((RevFeature) o, hasher);
+            break;
+        case FEATURETYPE:
+            featureTypeFunnel().funnel((RevFeatureType) o, hasher);
+            break;
+        case TAG:
+            tagFunnel().funnel((RevTag) o, hasher);
+            break;
+        case TREE:
+            treeFunnel().funnel((RevTree) o, hasher);
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown revision object type: " + o.getType());
+        }
+
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.create(rawKey);
+        return id;
+    }
+
     private static final class CommitFunnel implements Funnel<RevCommit> {
         private static final long serialVersionUID = -1L;
 
@@ -290,12 +331,12 @@ public class HashObjectFunnels {
         @Override
         public void funnel(RevFeature from, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
-            from.forEach((v) -> PropertyValueFunnel.funnel(v, into));
+            from.forEach(v -> PropertyValueFunnel.funnel(v, into));
         }
 
         public void funnelValues(List<Object> values, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
-            values.forEach((v) -> PropertyValueFunnel.funnel(v, into));
+            values.forEach(v -> PropertyValueFunnel.funnel(v, into));
         }
     };
 
@@ -501,12 +542,12 @@ public class HashObjectFunnels {
 
             CoordinateFilter filter = new CoordinateFilter() {
 
-                final double scale = 1E9D;
+                static final double SCALE = 1E9D;
 
                 @Override
                 public void filter(Coordinate coord) {
-                    double x = Math.round(coord.x * scale) / scale;
-                    double y = Math.round(coord.y * scale) / scale;
+                    double x = Math.round(coord.x * SCALE) / SCALE;
+                    double y = Math.round(coord.y * SCALE) / SCALE;
                     into.putDouble(x);
                     into.putDouble(y);
                 }

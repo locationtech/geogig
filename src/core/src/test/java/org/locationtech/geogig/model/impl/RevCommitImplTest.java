@@ -20,6 +20,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
 import com.google.common.base.Optional;
@@ -69,11 +70,10 @@ public class RevCommitImplTest {
         ImmutableList<ObjectId> emptyParentIds = ImmutableList.of();
         final RevCommit commit = CommitBuilder.build(treeId, parentId, author, committer, message);
 
+        String expectedString = RevObjects.toString(commit);
         String commitString = commit.toString();
 
-        assertEquals(
-                "RevCommitImpl(8f37080cd889f0d0)[tree:d78ed2d560ef178c, parents:[51f21bbf9f1e33ed], msg:This is a test commit, author:\"test\" <test@email.com>, time: 12345, tz: 12345, committer:\"ksishmael\" <kelsey.ishmael@lmnsolutions.com>, time: 12345, tz: 12345]",
-                commitString);
+        assertEquals(expectedString, commitString);
 
         RevCommit commit2 = CommitBuilder.build(treeId, parentId, author, committer, message);
 

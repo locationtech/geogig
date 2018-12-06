@@ -12,7 +12,6 @@ package org.locationtech.geogig.model.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.SortedSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -97,10 +96,10 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         private final Bucket[] buckets;
 
         public NodeTree(final ObjectId id, final long size, final int childTreeCount,
-                final @NonNull SortedSet<Bucket> innerTrees) {
+                final @NonNull Bucket[] buckets) {
             super(id, size);
             this.childTreeCount = childTreeCount;
-            this.buckets = innerTrees.toArray(new Bucket[innerTrees.size()]);
+            this.buckets = buckets;
         }
 
         public @Override ImmutableSortedMap<Integer, Bucket> buckets() {

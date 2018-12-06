@@ -13,21 +13,21 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
 
 import org.geotools.data.DataUtilities;
 import org.junit.Test;
+import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjectTestUtil;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.impl.CommitBuilder;
@@ -41,6 +41,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -114,34 +115,32 @@ public class HashObjectTest extends RepositoryTestCase {
 
         commit2 = b.build();
 
-        Object boolArray = new boolean[] { true, false, true, true, false };
-        Object byteArray = new byte[] { 100, 127, -110, 26, 42 };
-        Object charArray = new char[] { 'a', 'b', 'c', 'd', 'e' };
-        Object doubleArray = new double[] { 1.5, 1.6, 1.7, 1.8 };
-        Object floatArray = new float[] { 1.1f, 3.14f, 6.0f, 0.0f };
-        Object intArray = new int[] { 5, 7, 9, 11, 32 };
-        Object longArray = new long[] { 100, 200, 300, 400 };
+        final SimpleFeatureType coverageFeatureType;
+        final Feature coverageFeature;
+        {
+            List<String> attributeDescriptorSpecs = new ArrayList<>();
+            List<Object> attributeSampleValues = new ArrayList<>();
 
-        SimpleFeatureType coverageFeatureType = DataUtilities.createType(
-                "http://geoserver.org/test", "TestType",
-                "str:String," + "str2:String," + "bool:Boolean," + "byte:java.lang.Byte,"
-                        + "doub:Double," + "bdec:java.math.BigDecimal," + "flt:Float,"
-                        + "int:Integer," + "bint:java.math.BigInteger,"
-                        + "boolArray:java.lang.Object," + "byteArray:java.lang.Object,"
-                        + "charArray:java.lang.Object," + "doubleArray:java.lang.Object,"
-                        + "floatArray:java.lang.Object," + "intArray:java.lang.Object,"
-                        + "longArray:java.lang.Object," + "serialized:java.io.Serializable,"
-                        + "randomClass:java.lang.Object," + "pp:Point:srid=4326,"
-                        + "lng:java.lang.Long," + "uuid:java.util.UUID");
+            final FieldType[] fieldTypes = FieldType.values();
+            for (FieldType ft : fieldTypes) {
+                if (ft == FieldType.NULL) {
+                    attributeDescriptorSpecs.add("expected_null:String");
+                    attributeSampleValues.add(null);
+                } else if (ft != FieldType.UNKNOWN) {
+                    attributeDescriptorSpecs
+                            .add(String.format("%s_type:%s", ft, ft.getBinding().getName()));
+                    attributeSampleValues.add(RevObjectTestUtil.sampleValue(ft));
+                }
+            }
+            final String spec = Joiner.on(',').join(attributeDescriptorSpecs);
+            coverageFeatureType = DataUtilities.createType("http://geoserver.org/test", "TestType",
+                    spec);
 
+            coverageFeature = feature(coverageFeatureType, "TestType.Coverage.1",
+                    attributeSampleValues.toArray());
+
+        }
         coverageRevFeatureType = RevFeatureTypeBuilder.build(coverageFeatureType);
-
-        Feature coverageFeature = feature(coverageFeatureType, "TestType.Coverage.1",
-                "StringProp1_1", null, Boolean.TRUE, Byte.valueOf("18"), new Double(100.01),
-                new BigDecimal("1.89e1021"), new Float(12.5), new Integer(1000),
-                new BigInteger("90000000"), boolArray, byteArray, charArray, doubleArray,
-                floatArray, intArray, longArray, "POINT(1 1)", new Long(800000),
-                UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"));
 
         coverageRevFeature = RevFeatureBuilder.build(coverageFeature);
 
@@ -247,9 +246,11 @@ public class HashObjectTest extends RepositoryTestCase {
                     .build();
             fail("Expected IAE");
         } catch (IllegalArgumentException iae) {
-            String expected = "Objects of class " + serializableObject.getClass().getName()
-                    + " are not supported as RevFeature attributes";
-            assertTrue(iae.getMessage(), iae.getMessage().startsWith(expected));
+            String expected = String.format(
+                    "Objects of type %s are not supported as property values (%s)",
+                    serializableObject.getClass().getName(), serializableObject);
+
+            assertEquals(expected, iae.getMessage());
         }
     }
 

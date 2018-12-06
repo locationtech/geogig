@@ -100,7 +100,7 @@ import com.google.common.collect.Maps;
  * zero, bound to {@link java.sql.Time} class
  * <li>{@link #TIMESTAMP} a Unix timestamp plus nanoseconds precision, bound to the
  * {@link java.sql.Timestamp} class
- * <li>{@link #MAP}(0x20, java.util.Map.class, (v) -> new HashMap<>((Map) v)), //
+ * <li>{@link #MAP}(0x20, java.util.Map.class, v -> new HashMap<>((Map) v)), //
  * <li>{@link #CHAR} a single 16-bit Unicode characted, bount to the {@link Character} Java type;
  * <li>{@link #CHAR_ARRAY} an array of {@link #CHAR}, essentially equivalent to {@link #STRING}, but
  * present for completeness as the client application may define a field to be of a fixed size, for
@@ -122,25 +122,25 @@ public enum FieldType {
     FLOAT(0x06, Float.class), //
     DOUBLE(0x07, Double.class), //
     STRING(0x08, String.class), //
-    BOOLEAN_ARRAY(0x09, boolean[].class, (v) -> ((boolean[]) v).clone()), //
-    BYTE_ARRAY(0x0A, byte[].class, (v) -> ((byte[]) v).clone()), //
-    SHORT_ARRAY(0x0B, short[].class, (v) -> ((short[]) v).clone()), //
-    INTEGER_ARRAY(0x0C, int[].class, (v) -> ((int[]) v).clone()), //
-    LONG_ARRAY(0x0D, long[].class, (v) -> ((long[]) v).clone()), //
-    FLOAT_ARRAY(0x0E, float[].class, (v) -> ((float[]) v).clone()), //
-    DOUBLE_ARRAY(0x0F, double[].class, (v) -> ((double[]) v).clone()), //
-    STRING_ARRAY(0x10, String[].class, (v) -> ((String[]) v).clone()), //
-    POINT(0x11, Point.class, v -> GeometryCloner.clone( (Geometry) v) ), //
-    LINESTRING(0x12, LineString.class, v -> GeometryCloner.clone( (Geometry) v) ), //
-    POLYGON(0x13, Polygon.class, v ->GeometryCloner.clone( (Geometry) v) ), //
-    MULTIPOINT(0x14, MultiPoint.class, v -> GeometryCloner.clone( (Geometry) v) ), //
-    MULTILINESTRING(0x15, MultiLineString.class, v -> GeometryCloner.clone( (Geometry) v) ), //
-    MULTIPOLYGON(0x16, MultiPolygon.class, v -> GeometryCloner.clone( (Geometry) v) ), //
-    GEOMETRYCOLLECTION(0x17, GeometryCollection.class, v -> GeometryCloner.clone( (Geometry) v) ), //
+    BOOLEAN_ARRAY(0x09, boolean[].class, v -> ((boolean[]) v).clone()), //
+    BYTE_ARRAY(0x0A, byte[].class, v -> ((byte[]) v).clone()), //
+    SHORT_ARRAY(0x0B, short[].class, v -> ((short[]) v).clone()), //
+    INTEGER_ARRAY(0x0C, int[].class, v -> ((int[]) v).clone()), //
+    LONG_ARRAY(0x0D, long[].class, v -> ((long[]) v).clone()), //
+    FLOAT_ARRAY(0x0E, float[].class, v -> ((float[]) v).clone()), //
+    DOUBLE_ARRAY(0x0F, double[].class, v -> ((double[]) v).clone()), //
+    STRING_ARRAY(0x10, String[].class, v -> ((String[]) v).clone()), //
+    POINT(0x11, Point.class, v -> GeometryCloner.clone((Geometry) v)), //
+    LINESTRING(0x12, LineString.class, v -> GeometryCloner.clone((Geometry) v)), //
+    POLYGON(0x13, Polygon.class, v -> GeometryCloner.clone((Geometry) v)), //
+    MULTIPOINT(0x14, MultiPoint.class, v -> GeometryCloner.clone((Geometry) v)), //
+    MULTILINESTRING(0x15, MultiLineString.class, v -> GeometryCloner.clone((Geometry) v)), //
+    MULTIPOLYGON(0x16, MultiPolygon.class, v -> GeometryCloner.clone((Geometry) v)), //
+    GEOMETRYCOLLECTION(0x17, GeometryCollection.class, v -> GeometryCloner.clone((Geometry) v)), //
     /**
      * a geometry object of an unspecified type
      */
-    GEOMETRY(0x18, Geometry.class, v -> GeometryCloner.clone( (Geometry) v) ), //
+    GEOMETRY(0x18, Geometry.class, v -> GeometryCloner.clone((Geometry) v)), //
     UUID(0x19, java.util.UUID.class), //
     BIG_INTEGER(0x1A, BigInteger.class), //
     BIG_DECIMAL(0x1B, BigDecimal.class), //
@@ -148,10 +148,10 @@ public enum FieldType {
     DATE(0x1D, java.sql.Date.class), //
     TIME(0x1E, java.sql.Time.class), //
     TIMESTAMP(0x1F, java.sql.Timestamp.class), //
-    MAP(0x20, java.util.Map.class, (v) -> recursiveSafeCopy((Map<?, ?>) v)), //
+    MAP(0x20, java.util.Map.class, v -> recursiveSafeCopy((Map<?, ?>) v)), //
     CHAR(0x21, Character.class), //
     CHAR_ARRAY(0x22, char[].class), //
-    ENVELOPE_2D(0x23, Envelope.class, (v) -> new Envelope((Envelope) v)), //
+    ENVELOPE_2D(0x23, Envelope.class, v -> new Envelope((Envelope) v)), //
     UNKNOWN(-1, null);
 
     private final byte tagValue;
@@ -172,7 +172,7 @@ public enum FieldType {
     }
 
     private FieldType(int tagValue, Class<?> binding) {
-        this(tagValue, binding, (val) -> val);
+        this(tagValue, binding, val -> val);
     }
 
     private static Map<Object, Object> recursiveSafeCopy(Map<?, ?> m) {
@@ -212,8 +212,7 @@ public enum FieldType {
         }
         // NOTE: we're using the tagValue as the ordinal index because they match, the moment they
         // don't we need to reimplement this method accordingly.
-        FieldType fieldType = VALUES_CACHE[tagValue];
-        return fieldType;
+        return VALUES_CACHE[tagValue];
     }
 
     /**
@@ -255,7 +254,8 @@ public enum FieldType {
         // beware for this to work properly FieldTypes for super classes must be defined _after_
         // any subclass (i.e. Point before Geometry)
         for (FieldType t : values()) {
-            if (t.getBinding() != null && t.getBinding().isAssignableFrom(binding)) {
+            Class<?> fieldTypeBinding = t.getBinding();
+            if (null != fieldTypeBinding && fieldTypeBinding.isAssignableFrom(binding)) {
                 return t;
             }
         }

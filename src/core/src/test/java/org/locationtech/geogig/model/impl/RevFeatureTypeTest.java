@@ -9,16 +9,13 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import java.util.ArrayList;
-
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestUtil;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.type.PropertyDescriptor;
-
-import com.google.common.collect.Lists;
 
 public class RevFeatureTypeTest extends RepositoryTestCase {
 
@@ -34,22 +31,15 @@ public class RevFeatureTypeTest extends RepositoryTestCase {
 
         assertEquals(RevObject.TYPE.FEATURETYPE, featureType.getType());
 
-        assertEquals(linesType, featureType.type());
-
-        assertEquals(linesType.getName(), featureType.getName());
-
-        ArrayList<PropertyDescriptor> descriptors = Lists.newArrayList(linesType.getDescriptors());
-        // Collections.sort(descriptors, RevFeatureType.PROPERTY_ORDER);
-        assertEquals(descriptors, featureType.descriptors());
+        RevObjectTestUtil.deepEquals(RevFeatureTypeBuilder.build(linesType), featureType);
     }
 
     @Test
     public void testToString() {
         RevFeatureType featureType = RevFeatureTypeBuilder.build(linesType);
 
+        String actual = featureType.toString();
         String expected = RevObjects.toString(featureType);
-        String featureTypeString = featureType.toString();
-
-        assertEquals(expected, featureTypeString);
+        assertEquals(expected, actual);
     }
 }

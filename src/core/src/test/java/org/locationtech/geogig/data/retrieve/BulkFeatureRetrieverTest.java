@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.util.Assert;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -84,17 +84,17 @@ public class BulkFeatureRetrieverTest {
 
         Iterator<SimpleFeature> results = getter.getGeoToolsFeatures(input);
 
-        List<SimpleFeature> feats = Arrays.asList(results.next(), results.next());
+        List<SimpleFeature> feats = Lists.newArrayList(results);
 
-        Assert.isTrue(feats.size() == 2);
+        assertEquals(2, feats.size());
 
-        SimpleFeature feat1 = feats.get(0).getAttribute("name") == "abc" ? feats.get(0)
+        SimpleFeature feat1 = "abc".equals(feats.get(0).getAttribute("name")) ? feats.get(0)
                 : feats.get(1);
-        SimpleFeature feat2 = feats.get(0).getAttribute("name") == "rrr" ? feats.get(0)
+        SimpleFeature feat2 = "rrr".equals(feats.get(0).getAttribute("name")) ? feats.get(0)
                 : feats.get(1);
 
-        Assert.isTrue(feat1.getAttribute("name") == "abc");
-        Assert.isTrue(feat2.getAttribute("name") == "rrr");
+        assertEquals("abc", feat1.getAttribute("name"));
+        assertEquals("rrr", feat2.getAttribute("name"));
     }
 
     public ObjectId getOID(int b) {

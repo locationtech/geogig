@@ -154,10 +154,9 @@ public class TestSupport {
         buckets = buckets == null ? Collections.emptySortedSet() : buckets;
         int childTreeCount = treeNodes == null ? 0 : treeNodes.size();
         if (buckets.isEmpty()) {
-            return RevObjectFactory.defaultInstance().createTree(id, treeSize, childTreeCount,
-                    buckets);
+            return RevObjectFactory.defaultInstance().createTree(id, treeSize, trees, features);
         }
-        return RevObjectFactory.defaultInstance().createTree(id, treeSize, trees, features);
+        return RevObjectFactory.defaultInstance().createTree(id, treeSize, childTreeCount, buckets);
     }
 
     public static void assertEqualsFully(RevTree o1, RevTree o2) {

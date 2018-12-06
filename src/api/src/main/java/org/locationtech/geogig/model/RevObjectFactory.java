@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+import javax.annotation.Nonnegative;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
@@ -52,17 +54,23 @@ public interface RevObjectFactory extends PriorityService {
             @NonNull List<ObjectId> parents, @NonNull RevPerson author,
             @NonNull RevPerson committer, @NonNull String message);
 
-    public @NonNull RevTree createTree(@NonNull ObjectId id, long size, @NonNull List<Node> trees,
-            @NonNull List<Node> features);
+    /**
+     * @throws NullPointerException if any argument or argument element is null
+     * @throws IllegalArgumentException if any element in {@code trees} or {@code features} is not
+     *         of the expected {@link TYPE type}
+     */
+    public @NonNull RevTree createTree(@NonNull ObjectId id, @Nonnegative long size,
+            @NonNull List<Node> trees, @NonNull List<Node> features);
 
-    public @NonNull RevTree createTree(@NonNull ObjectId id, long size, int childTreeCount,
-            @NonNull SortedSet<Bucket> buckets);
+    public @NonNull RevTree createTree(@NonNull ObjectId id, @Nonnegative long size,
+            @Nonnegative int childTreeCount, @NonNull SortedSet<Bucket> buckets);
 
-    public @NonNull Node createNode(final @NonNull String name, final @NonNull ObjectId oid,
+    public @NonNull Node createNode(final @NonNull String name, final @NonNull ObjectId objectId,
             final @NonNull ObjectId metadataId, final @NonNull TYPE type, @Nullable Envelope bounds,
             @Nullable Map<String, Object> extraData);
 
-    public Bucket createBucket(ObjectId bucketTree, int bucketIndex, Envelope bounds);
+    public Bucket createBucket(@NonNull ObjectId bucketTree, int bucketIndex,
+            @Nullable Envelope bounds);
 
     public @NonNull RevTag createTag(@NonNull ObjectId id, @NonNull String name,
             @NonNull ObjectId commitId, @NonNull String message, @NonNull RevPerson tagger);
@@ -74,4 +82,7 @@ public interface RevObjectFactory extends PriorityService {
 
     public @NonNull RevFeature createFeature(@NonNull ObjectId id, @NonNull Object... values);
 
+    public @NonNull ValueArray createValueArray(@NonNull List<Object> values);
+
+    public @NonNull ValueArray createValueArray(@NonNull Object... values);
 }

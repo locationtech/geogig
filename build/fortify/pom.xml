@@ -81,7 +81,7 @@
     <module>storage</module>
     <module>geotools</module>
     <module>pullrequests</module>
-    <module>cli</module>
+    <!-- module>cli</module -->
     <!--module>web</module -->
   </modules>
 </project>

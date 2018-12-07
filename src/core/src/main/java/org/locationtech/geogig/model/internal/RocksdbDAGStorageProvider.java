@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.internal;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.rocksdb.RocksDB;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 
 class RocksdbDAGStorageProvider implements DAGStorageProvider {
 
@@ -124,7 +124,9 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     @Override
     public Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
         Map<NodeId, DAGNode> dagNodes = nodeStore.getAll(nodeIds);
-        return Maps.transformValues(dagNodes, (dn) -> dn.resolve(treeCache));
+        Map<NodeId, Node> res = new HashMap<>();
+        dagNodes.forEach((id, node) -> res.put(id, node.resolve(treeCache)));
+        return res;
     }
 
     @Override

@@ -173,7 +173,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES);
 
         Supplier<Iterator<Node>> nodes = Suppliers.compose(//
-                (it) -> Iterators.transform(it, (ref) -> ref.getNode())//
+                it -> Iterators.transform(it, NodeRef::getNode)//
                 , refs);
 
         // move all features, recursively as given by the LsTreeOp strategy
@@ -202,7 +202,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
             this.tree = from.getTree(id);
             this.trees = tree.trees().iterator();
             buckets = tree.getBuckets().iterator();
-            
+
             bucketTrees = Collections.emptyIterator();
         }
 

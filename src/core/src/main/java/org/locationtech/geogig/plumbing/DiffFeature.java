@@ -87,7 +87,7 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
                 oldNodeRef.getMetadataId(), newNodeRef.getMetadataId());
 
         Map<ObjectId, RevObject> objects = Maps.uniqueIndex(objectDatabase().getAll(ids),
-                (o) -> o.getId());
+                RevObject::getId);
 
         RevFeature oldFeature = (RevFeature) objects.get(oldNodeRef.getObjectId());
         checkArgument(oldFeature != null, "Invalid reference: %s", oldNodeRef);
@@ -106,8 +106,9 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
     }
 
     private String removeRef(String path) {
-        if (path.contains(":")) {
-            return path.substring(path.indexOf(":") + 1);
+        final int separatorIndex = path.indexOf(':');
+        if (separatorIndex > -1) {
+            return path.substring(separatorIndex + 1);
         } else {
             return path;
         }

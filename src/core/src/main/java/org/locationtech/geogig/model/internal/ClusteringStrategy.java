@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,8 +39,6 @@ import org.locationtech.geogig.model.internal.DAG.STATE;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 /**
@@ -126,18 +125,16 @@ public abstract class ClusteringStrategy extends NodeOrdering {
      * doesn't exist and setting it's original {@link RevTree} identifier as {@code originalTreeId}
      */
     protected DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
-        DAG dag = dagCache.getOrCreate(treeId, originalTreeId);
-        return dag;
+        return dagCache.getOrCreate(treeId, originalTreeId);
     }
 
     public List<DAG> getDagTrees(Set<TreeId> ids) {
-        List<DAG> trees = dagCache.getAll(ids);
-        return trees;
+        return dagCache.getAll(ids);
     }
 
     @VisibleForTesting
     Node getNode(NodeId nodeId) {
-        SortedMap<NodeId, Node> nodes = getNodes(ImmutableSet.of(nodeId));
+        SortedMap<NodeId, Node> nodes = getNodes(Collections.singleton(nodeId));
         return nodes.get(nodeId);
     }
 
@@ -153,8 +150,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
      */
     public SortedMap<NodeId, Node> getNodes(Set<NodeId> nodeIds) {
         Map<NodeId, Node> nodes = storageProvider.getNodes(nodeIds);
-        Comparator<NodeId> nodeOrdering = getNodeOrdering();
-        TreeMap<NodeId, Node> sorted = new TreeMap<>(nodeOrdering);
+        TreeMap<NodeId, Node> sorted = new TreeMap<>(getNodeOrdering());
         sorted.putAll(nodes);
         return sorted;
     }
@@ -269,9 +265,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
 
         if (dag.numBuckets() > 0) {
             final @Nullable TreeId bucketId = computeBucketId(nodeId, dagDepth + 1);
-            // if (remove && dag.getId().equals(failingDag)) {
-            // System.err.printf("Removing %s\t from %s\n", nodeId.name, dag.getId());
-            // }
             if (bucketId != null) {
                 final DAG bucketDAG = getOrCreateDAG(bucketId);
                 dag.addBucket(bucketId);
@@ -503,7 +496,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
 
     private Map<NodeId, DAGNode> lazyNodes(final RevTree tree) {
         if (tree.isEmpty()) {
-            return ImmutableMap.of();
+            return Collections.emptyMap();
         }
 
         final TreeCache treeCache = storageProvider.getTreeCache();

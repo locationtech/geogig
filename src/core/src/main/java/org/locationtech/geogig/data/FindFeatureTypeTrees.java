@@ -28,7 +28,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Streams;
 
 /**
  * 
@@ -70,9 +70,8 @@ public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
             source = objectDatabase();
         }
 
-        final RevTree rootTree = resolveRootTree();
-        List<NodeRef> featureTypeRefs = getSubTrees(rootTree, NodeRef.ROOT);
-        return featureTypeRefs;
+        final RevTree resolvedRootTree = resolveRootTree();
+        return getSubTrees(resolvedRootTree, NodeRef.ROOT);
     }
 
     private List<NodeRef> getSubTrees(RevTree tree, String parentPath) {
@@ -85,8 +84,8 @@ public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
             subtrees.addAll(toNodeRef(tree.trees(), parentPath));
         }
         if (tree.bucketsSize() > 0) {
-            Iterable<ObjectId> bucketIds = Iterables.transform(tree.getBuckets(),
-                    Bucket::getObjectId);
+            Iterable<ObjectId> bucketIds = () -> Streams.stream(tree.getBuckets())
+                    .map(Bucket::getObjectId).iterator();
             Iterator<RevTree> bucketTrees = source.getAll(bucketIds, BulkOpListener.NOOP_LISTENER,
                     RevTree.class);
             bucketTrees

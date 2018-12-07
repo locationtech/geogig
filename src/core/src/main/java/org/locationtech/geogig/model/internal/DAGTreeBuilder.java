@@ -13,6 +13,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -44,9 +47,10 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
+
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Builds a {@link RevTree} (immutable data structure) out of a {@link DAG} (mutable data
@@ -57,7 +61,7 @@ import com.google.common.collect.Iterables;
  * <p>
  * {@link ClusteringStrategy} is responsible of creating the appropriate structure.
  */
-public class DAGTreeBuilder {
+public @Slf4j @UtilityClass class DAGTreeBuilder {
 
     private static final ForkJoinPool FORK_JOIN_POOL;
 
@@ -70,10 +74,8 @@ public class DAGTreeBuilder {
         };
 
         int parallelism = Math.max(2, Runtime.getRuntime().availableProcessors());
-        UncaughtExceptionHandler eh = (t, e) -> {
-            System.err.println("Uncaught ForkJoinPool exception at thread " + t.getName());
-            e.printStackTrace();
-        };
+        UncaughtExceptionHandler eh = (t, e) -> log
+                .error("Uncaught ForkJoinPool exception at thread " + t.getName(), e);
         FORK_JOIN_POOL = new ForkJoinPool(parallelism, threadFactoryShared, eh, false);
     }
 
@@ -119,11 +121,9 @@ public class DAGTreeBuilder {
         public SharedState saveTrees(final int minSize) {
             cacheLock.writeLock().lock();
             try {
-                if (!isCancelled()) {
-                    if (newTrees.size() >= minSize) {
-                        targetStore.putAll(newTrees.values().iterator());
-                        newTrees.clear();
-                    }
+                if (!isCancelled() && newTrees.size() >= minSize) {
+                    targetStore.putAll(newTrees.values().iterator());
+                    newTrees.clear();
                 }
             } finally {
                 cacheLock.writeLock().unlock();
@@ -227,17 +227,17 @@ public class DAGTreeBuilder {
                 return null;
             }
             try {
-                final DAG root = this.root;
-                final STATE rootState = root.getState();
+                final DAG currentRoot = this.root;
+                final STATE rootState = currentRoot.getState();
                 if (rootState.equals(STATE.CHANGED)) {
-                    if (0 == root.numBuckets()) {
-                        result = buildLeafTree(root);
+                    if (0 == currentRoot.numBuckets()) {
+                        result = buildLeafTree(currentRoot);
                     } else {
-                        result = buildBucketsTree(root);
+                        result = buildBucketsTree(currentRoot);
                     }
                 } else {
                     checkState(rootState == STATE.INITIALIZED || rootState == STATE.MIRRORED);
-                    ObjectId treeId = root.originalTreeId();
+                    ObjectId treeId = currentRoot.originalTreeId();
                     if (state.isCancelled()) {
                         result = null;
                     } else {
@@ -315,9 +315,9 @@ public class DAGTreeBuilder {
                 }
             }
 
-            ImmutableSortedSet<Bucket> buckets = bucketsByIndex.build();
-            ImmutableList<Node> treeNodes = null;
-            ImmutableList<Node> featureNodes = null;
+            SortedSet<Bucket> buckets = bucketsByIndex.build();
+            List<Node> treeNodes = null;
+            List<Node> featureNodes = null;
 
             RevTree result = RevTreeBuilder.build(size, childTreeCount, treeNodes, featureNodes,
                     buckets);
@@ -330,18 +330,20 @@ public class DAGTreeBuilder {
             }
             checkState(root.numBuckets() == 0);
 
-            final ImmutableList<Node> children;
+            final List<Node> children;
             {
                 Set<NodeId> childrenIds = new HashSet<>();
                 root.forEachChild(childrenIds::add);
                 children = toNodes(childrenIds);
             }
 
-            ImmutableList<Node> treesList = ImmutableList.copyOf(Iterables.filter(children,
-                    n -> n.getType().equals(TYPE.TREE) && !n.getObjectId().isNull()));
+            List<Node> treesList = children.stream()
+                    .filter(n -> n.getType().equals(TYPE.TREE) && !n.getObjectId().isNull())
+                    .collect(Collectors.toList());
 
-            ImmutableList<Node> featuresList = ImmutableList.copyOf(Iterables.filter(children,
-                    n -> n.getType().equals(TYPE.FEATURE) && !n.getObjectId().isNull()));
+            List<Node> featuresList = children.stream()
+                    .filter(n -> n.getType().equals(TYPE.FEATURE) && !n.getObjectId().isNull())
+                    .collect(Collectors.toList());
 
             final long size = sumTreeSizes(treesList) + featuresList.size();
 
@@ -355,14 +357,13 @@ public class DAGTreeBuilder {
             return RevTreeBuilder.build(size, childTreeCount, treesList, featuresList, buckets);
         }
 
-        private ImmutableList<Node> toNodes(Set<NodeId> nodeIds) {
+        private List<Node> toNodes(Set<NodeId> nodeIds) {
             if (null == nodeIds) {
-                return ImmutableList.of();
+                return Collections.emptyList();
             }
 
             SortedMap<NodeId, Node> nodes = state.clusteringStrategy.getNodes(nodeIds);
-            ImmutableList<Node> list = ImmutableList.copyOf(nodes.values());
-            return list;
+            return new ArrayList<>(nodes.values());
         }
 
         private long sumTreeSizes(Iterable<Node> trees) {

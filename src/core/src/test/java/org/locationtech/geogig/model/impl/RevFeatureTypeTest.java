@@ -49,7 +49,7 @@ public class RevFeatureTypeTest extends RepositoryTestCase {
 
         String expected = RevObjects.toString(featureType);
         String featureTypeString = featureType.toString();
-
+        String expected = RevObjects.toString(featureType);
         assertEquals(expected, featureTypeString);
     }
 }

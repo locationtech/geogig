@@ -20,6 +20,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.RecursiveAction;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
@@ -27,15 +28,17 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Helper class to copy all the spatial indexes from one {@link IndexDatabase} to another.
  * 
  * @see IndexDatabase#copyIndexesTo(IndexDatabase)
  */
-public class IndexDuplicator {
+public @Slf4j class IndexDuplicator {
 
     private static final ForkJoinPool FORK_JOIN_POOL;
 
@@ -48,10 +51,9 @@ public class IndexDuplicator {
         };
 
         int parallelism = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
-        UncaughtExceptionHandler eh = (t, e) -> {
-            System.err.println("Uncaught ForkJoinPool exception at thread " + t.getName());
-            e.printStackTrace();
-        };
+        UncaughtExceptionHandler eh = (t, e) -> log
+                .error("Uncaught ForkJoinPool exception at thread " + t.getName(), e);
+
         FORK_JOIN_POOL = new ForkJoinPool(parallelism, threadFactoryShared, eh, false);
     }
 
@@ -157,7 +159,8 @@ public class IndexDuplicator {
             if (tree.bucketsSize() > 0) {
                 Iterable<ObjectId> bucketIds;
                 Iterator<RevTree> buckets;
-                bucketIds = Iterables.transform(tree.getBuckets(), Bucket::getObjectId);
+                bucketIds = Streams.stream(tree.getBuckets()).map(Bucket::getObjectId)
+                        .collect(Collectors.toList());
                 buckets = src.getAll(bucketIds, BulkOpListener.NOOP_LISTENER, RevTree.class);
                 while (buckets.hasNext()) {
                     RevTree bucket = buckets.next();

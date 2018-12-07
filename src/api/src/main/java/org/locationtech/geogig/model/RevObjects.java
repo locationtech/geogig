@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -334,7 +335,8 @@ public @UtilityClass class RevObjects {
                 c.getClass().getSimpleName(), //
                 toShortString(c.getId()), //
                 toShortString(c.getTreeId()), //
-                Lists.transform(c.getParentIds(), RevObjects::toShortString), //
+                c.getParentIds().stream().map(RevObjects::toShortString)
+                        .collect(Collectors.toList()), //
                 c.getMessage(), //
                 toShortString(c.getAuthor()), //
                 toShortString(c.getCommitter()));

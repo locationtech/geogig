@@ -113,7 +113,7 @@ public class ObjectStoreDiffObjectIterator<T extends RevObject>
         Set<ObjectId> rightEntriesIds = this.leftStore == this.rightStore ? leftEntriesIds
                 : new HashSet<>();
 
-        nextEntries.forEach((e) -> {
+        nextEntries.forEach(e -> {
             ObjectId oldId = e.oldObjectId();
             ObjectId newId = e.newObjectId();
             if (!oldId.isNull()) {
@@ -130,7 +130,7 @@ public class ObjectStoreDiffObjectIterator<T extends RevObject>
                     rightStore.getAll(rightEntriesIds, NOOP_LISTENER, this.type));
         }
         Map<ObjectId, T> objectsById = new HashMap<>();
-        objects.forEachRemaining((o) -> objectsById.putIfAbsent(o.getId(), o));
+        objects.forEachRemaining(o -> objectsById.putIfAbsent(o.getId(), o));
         nextBatch = createBatch(nextEntries, objectsById);
         return computeNext();
     }
@@ -138,13 +138,12 @@ public class ObjectStoreDiffObjectIterator<T extends RevObject>
     private Iterator<DiffObjectInfo<T>> createBatch(List<DiffEntry> entries,
             Map<ObjectId, T> values) {
 
-        return Iterators.transform(entries.iterator(), e -> toDiffObject(e, values));
+        return entries.stream().map(e -> toDiffObject(e, values)).iterator();
     }
 
     private DiffObjectInfo<T> toDiffObject(DiffEntry e, Map<ObjectId, T> values) {
         T oldValue = values.get(e.oldObjectId());
         T newValue = values.get(e.newObjectId());
-        DiffObjectInfo<T> diffObject = new DiffObjectInfo<T>(e, oldValue, newValue);
-        return diffObject;
+        return new DiffObjectInfo<>(e, oldValue, newValue);
     }
 }

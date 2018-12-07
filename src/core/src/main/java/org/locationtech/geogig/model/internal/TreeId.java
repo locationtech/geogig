@@ -14,11 +14,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedBytes;
 
 /**
@@ -68,7 +68,8 @@ final class TreeId implements Comparable<TreeId>, Serializable {
     public boolean equals(Object o) {
         // don't bother checking for instanceof TreeId, this is private and will never be
         // compared to something else
-        return Arrays.equals(bucketIndicesByDepth, ((TreeId) o).bucketIndicesByDepth);
+        return (o instanceof TreeId)
+                && Arrays.equals(bucketIndicesByDepth, ((TreeId) o).bucketIndicesByDepth);
     }
 
     @Override
@@ -126,10 +127,11 @@ final class TreeId implements Comparable<TreeId>, Serializable {
 
         List<String> stringBucketList = Splitter.on(',').trimResults().omitEmptyStrings()
                 .splitToList(stringRepresentation);
-        List<Integer> bucketList = Lists.transform(stringBucketList, (s) -> Integer.parseInt(s));
+        List<Integer> bucketList = stringBucketList.stream().map(Integer::parseInt)
+                .collect(Collectors.toList());
         byte[] id = new byte[bucketList.size()];
         for (int i = 0; i < bucketList.size(); i++) {
-            id[i] = (byte) bucketList.get(i).byteValue();
+            id[i] = bucketList.get(i).byteValue();
             Preconditions.checkArgument(id[i] >= 0);
         }
         return new TreeId(id);
@@ -143,14 +145,12 @@ final class TreeId implements Comparable<TreeId>, Serializable {
         return new TreeId(quadpath);
     }
 
-    public LinkedList<TreeId> deglose() {
+    public List<TreeId> deglose() {
         LinkedList<TreeId> path = new LinkedList<>();
-        {
-            TreeId child = this;
-            while (child.depthLength() > 0) {
-                path.addFirst(child);
-                child = child.parent();
-            }
+        TreeId child = this;
+        while (child.depthLength() > 0) {
+            path.addFirst(child);
+            child = child.parent();
         }
         return path;
     }

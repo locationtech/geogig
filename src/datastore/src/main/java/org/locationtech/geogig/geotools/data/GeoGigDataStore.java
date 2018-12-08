@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.Transaction;
@@ -292,8 +293,16 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     @Override
     protected ImmutableList<Name> createTypeNames() throws IOException {
         List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT);
+
+        //(ref) -> getDescriptorName(ref)
+        Function<NodeRef, Name> fn =  new Function<NodeRef, Name>() {
+            @Override
+            public Name apply(NodeRef ref) {
+                return getDescriptorName(ref);
+            }};
+
         return ImmutableList
-                .copyOf(Collections2.transform(typeTrees, (ref) -> getDescriptorName(ref)));
+                .copyOf(Collections2.transform(typeTrees, fn));
     }
 
     private List<NodeRef> findTypeRefs(@Nullable Transaction tx) {

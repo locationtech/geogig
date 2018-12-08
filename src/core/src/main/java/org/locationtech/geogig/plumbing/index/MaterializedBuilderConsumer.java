@@ -21,6 +21,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
@@ -119,7 +120,15 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
         final Map<ObjectId, RevFeature> objects = new HashMap<>();
         {
             Iterable<Node> allNodes = Iterables.concat(list);
-            Iterable<ObjectId> nodeIds = Iterables.transform(allNodes, (n) -> n.getObjectId());
+
+            //Node::getObjectId, but friendly for Fortify
+            Function<Node, ObjectId> fn_Node_getObjectId =  new Function<Node, ObjectId>() {
+                @Override
+                public ObjectId apply(Node node) {
+                    return node.getObjectId();
+                }};
+
+            Iterable<ObjectId> nodeIds = Iterables.transform(allNodes, fn_Node_getObjectId);
             Iterator<RevFeature> objectsIt = featureSource.getAll(nodeIds,
                     BulkOpListener.NOOP_LISTENER, RevFeature.class);
             objectsIt.forEachRemaining((o) -> objects.put(o.getId(), o));

@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -246,13 +247,26 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         ObjectId head = squashedId;
         for (RevCommit commit : commits) {
             CommitBuilder builder = new CommitBuilder(commit);
-            Collection<ObjectId> parents = Collections2.transform(commit.getParentIds(), (id) -> {
-                if (replacedCommits.containsKey(id)) {
-                    return replacedCommits.get(id);
-                } else {
-                    return id;
-                }
-            });
+
+//            (id) -> {
+//                if (replacedCommits.containsKey(id)) {
+//                    return replacedCommits.get(id);
+//                } else {
+//                    return id;
+//                }
+//            }
+            Function<ObjectId, ObjectId> fn =  new Function<ObjectId, ObjectId>() {
+                @Override
+                public ObjectId apply(ObjectId id) {
+                        if (replacedCommits.containsKey(id)) {
+                            return replacedCommits.get(id);
+                        } else {
+                            return id;
+                        }
+                }};
+
+
+            Collection<ObjectId> parents = Collections2.transform(commit.getParentIds(), fn);
             builder.setParentIds(Lists.newArrayList(parents));
             builder.setTreeId(commit.getTreeId());
             long timestamp = platform.currentTimeMillis();

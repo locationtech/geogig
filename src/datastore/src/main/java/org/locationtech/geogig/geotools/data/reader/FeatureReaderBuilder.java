@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureReader;
@@ -172,8 +173,16 @@ public class FeatureReaderBuilder {
         this.nativeType = nativeType;
         this.nativeSchema = (SimpleFeatureType) nativeType.type();
         this.typeRef = typeRef;
+
+        //(a) -> a.getLocalName()
+        Function<AttributeDescriptor, String> fn =  new Function<AttributeDescriptor, String>() {
+            @Override
+            public String apply(AttributeDescriptor a) {
+               return a.getLocalName();
+            }};
+
         this.nativeSchemaAttributeNames = Sets.newHashSet(
-                Lists.transform(nativeSchema.getAttributeDescriptors(), (a) -> a.getLocalName()));
+                Lists.transform(nativeSchema.getAttributeDescriptors(),fn));
     }
 
     /**
@@ -530,7 +539,14 @@ public class FeatureReaderBuilder {
     }
 
     private List<String> simpleNames(SimpleFeatureType type) {
-        return Lists.transform(type.getAttributeDescriptors(), (ad) -> ad.getLocalName());
+        //(ad) -> ad.getLocalName()
+        Function<AttributeDescriptor, String> fn =  new Function<AttributeDescriptor, String>() {
+            @Override
+            public String apply(AttributeDescriptor ad) {
+                return  ad.getLocalName();
+            }};
+
+        return Lists.transform(type.getAttributeDescriptors(), fn);
     }
 
     private AutoCloseableIterator<? extends SimpleFeature> applyPostFilter(Filter postFilter,
@@ -715,15 +731,20 @@ public class FeatureReaderBuilder {
     public static AutoCloseableIterator<NodeRef> toFeatureRefs(
             final AutoCloseableIterator<DiffEntry> diffs, final ChangeType changeType) {
 
-        return AutoCloseableIterator.transform(diffs, (e) -> {
-            if (e.isAdd()) {
-                return e.getNewObject();
-            }
-            if (e.isDelete()) {
-                return e.getOldObject();
-            }
-            return ChangeType.CHANGED_OLD.equals(changeType) ? e.getOldObject() : e.getNewObject();
-        });
+
+        Function<DiffEntry, NodeRef> fn =  new Function<DiffEntry, NodeRef>() {
+            @Override
+            public NodeRef apply(DiffEntry e) {
+                if (e.isAdd()) {
+                    return e.getNewObject();
+                }
+                if (e.isDelete()) {
+                    return e.getOldObject();
+                }
+                return ChangeType.CHANGED_OLD.equals(changeType) ? e.getOldObject() : e.getNewObject();
+            }};
+
+        return AutoCloseableIterator.transform(diffs,fn);
     }
 
     private Filter resolveNativeFilter() {
@@ -908,7 +929,14 @@ public class FeatureReaderBuilder {
                     .filter(Iterators.filter(identifiers.iterator(), FeatureId.class), notNull());
             Preconditions.checkArgument(featureIds.hasNext(), "Empty Id filter");
 
-            pathFilters = Lists.newArrayList(Iterators.transform(featureIds, (fid) -> fid.getID()));
+            // (fid) -> fid.getID()
+            Function<FeatureId, String> fn =  new Function<FeatureId, String>() {
+                @Override
+                public String apply(FeatureId fid) {
+                    return fid.getID();
+                }};
+
+            pathFilters = Lists.newArrayList(Iterators.transform(featureIds, fn));
         }
 
         return pathFilters;

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
@@ -546,11 +547,20 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             Iterator<Feature> features, final ProgressListener taskProgress,
             ObjectId featureTypeId) {
         try {
-            Iterator<FeatureInfo> infos = Iterators.transform(features, (f) -> {
-                RevFeature rf = RevFeatureBuilder.build(f);
-                String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
-                return FeatureInfo.insert(rf, featureTypeId, path);
-            });
+
+
+//            RevFeature rf = RevFeatureBuilder.build(f);
+//            String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+//            return FeatureInfo.insert(rf, featureTypeId, path);
+            Function<Feature, FeatureInfo> fn =  new Function<Feature, FeatureInfo>() {
+                @Override
+                public FeatureInfo apply(Feature f) {
+                    RevFeature rf = RevFeatureBuilder.build(f);
+                    String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+                    return FeatureInfo.insert(rf, featureTypeId, path);
+                }};
+
+            Iterator<FeatureInfo> infos = Iterators.transform(features, fn);
             workTree.insert(infos, taskProgress);
         } catch (Exception e) {
             LOG.warn("Unable to insert into " + treePath, e);
@@ -561,8 +571,15 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     private Iterator<Feature> transformIterator(Iterator<NodeRef> nodeIterator,
             final RevFeatureType newFeatureType) {
 
+        //   (node) -> alter(node, newFeatureType)
+        Function<NodeRef, Feature> fn =  new Function<NodeRef, Feature>() {
+            @Override
+            public Feature apply(NodeRef node) {
+                return  alter(node, newFeatureType);
+            }};
+
         Iterator<Feature> iterator = Iterators.transform(nodeIterator,
-                (node) -> alter(node, newFeatureType));
+                fn);
 
         return iterator;
 

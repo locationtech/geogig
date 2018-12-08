@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -600,7 +601,15 @@ public class TextSerializationFactory implements RevObjectSerializer {
             builder.setCommitterTimestamp(committer.getTimestamp());
             builder.setCommitterTimeZoneOffset(committer.getTimeZoneOffset());
             builder.setMessage(message);
-            List<ObjectId> parentIds = Lists.transform(parents, (str) -> ObjectId.valueOf(str));
+
+            // (str) -> ObjectId.valueOf(str)
+            Function<String, ObjectId> fn =  new Function<String, ObjectId>() {
+                @Override
+                public ObjectId apply(String str) {
+                    return ObjectId.valueOf(str);
+                }};
+
+            List<ObjectId> parentIds = Lists.transform(parents, fn);
             builder.setParentIds(parentIds);
             builder.setTreeId(ObjectId.valueOf(tree));
             RevCommit commit = builder.build();

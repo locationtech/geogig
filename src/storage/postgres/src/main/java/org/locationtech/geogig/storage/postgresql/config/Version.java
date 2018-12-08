@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.postgresql.config;
 import java.util.List;
 import java.util.Objects;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -103,8 +104,15 @@ public class Version implements Comparable<Version> {
             // no throw away everything starting with XXX
             marked = marked.substring(0, marked.indexOf("XXX"));
         }
+        // (s) -> Integer.parseInt(s)
+        Function<String, Integer> fn =  new Function<String, Integer>() {
+            @Override
+            public Integer apply(String s) {
+                return Integer.parseInt(s);
+            }};
+
         final List<Integer> versions = Lists.transform(Splitter.on('.').splitToList(marked),
-                (s) -> Integer.parseInt(s));
+                fn);
         // version string can be either
         // {major}.{minor}.{patch}
         // or (since PostgreSQL 10)

@@ -15,6 +15,7 @@ import static com.google.common.collect.Lists.transform;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Function;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
@@ -35,7 +36,14 @@ public class TagListOp extends AbstractGeoGigOp<ImmutableList<RevTag>> {
         List<Ref> refs = newArrayList(
                 command(ForEachRef.class).setPrefixFilter(Ref.TAGS_PREFIX).call());
 
-        List<ObjectId> tagIds = transform(refs, (r) -> r.getObjectId());
+        // (r) -> r.getObjectId()
+        Function<Ref, ObjectId> fn  =  new Function<Ref, ObjectId>() {
+            @Override
+            public ObjectId apply(Ref ref) {
+                return ref.getObjectId();
+            }};
+
+        List<ObjectId> tagIds = transform(refs, fn);
 
         Iterator<RevTag> alltags;
         alltags = objectDatabase().getAll(tagIds, BulkOpListener.NOOP_LISTENER, RevTag.class);

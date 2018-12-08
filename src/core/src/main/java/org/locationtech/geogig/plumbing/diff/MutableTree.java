@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -132,7 +133,15 @@ public class MutableTree implements Cloneable {
     public static MutableTree createFromRefs(final ObjectId rootId,
             final Iterator<NodeRef> treeRefs) {
 
-        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(treeRefs, (n) -> n.path());
+
+        //NodeRef::path, but friendly for Fortify
+        Function<NodeRef, String> fn_path =  new Function<NodeRef, String>() {
+            @Override
+            public String apply(NodeRef noderef) {
+                return noderef.path();
+            }};
+
+        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(treeRefs, fn_path);
 
         return createFromPaths(rootId, treesByPath);
     }

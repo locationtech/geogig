@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.google.common.base.Function;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.rocksdb.RocksDBException;
@@ -110,7 +111,15 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
     @Override
     public Optional<InputStream> getBlobAsStream(String namespace, String path) {
         Optional<byte[]> blob = getBlob(namespace, path);
-        return blob.transform((b) -> new ByteArrayInputStream(b));
+
+        // (b) -> new ByteArrayInputStream(b)
+        Function<byte[], InputStream> fn =  new Function<byte[], InputStream>() {
+            @Override
+            public InputStream apply(byte[] b) {
+                return new ByteArrayInputStream(b);
+            }};
+
+        return blob.transform(fn);
     }
 
     @Override

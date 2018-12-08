@@ -22,6 +22,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -144,10 +146,19 @@ class PackImpl implements Pack {
                 Iterator<RevObject> missingContents;
                 Iterator<RevCommit> commitsIterator;
                 missingContents = sourceStore.getAll(() -> missingContentIds);
-                commitsIterator = Iterators.filter(commits.iterator(), (c) -> {
-                    objectReport.addCommit();
-                    return true;
-                });
+
+//                (c) -> {
+//                    objectReport.addCommit();
+//                    return true;
+//                }
+                Predicate<RevCommit> fn =  new Predicate<RevCommit>() {
+                    @Override
+                    public boolean apply(RevCommit c) {
+                        objectReport.addCommit();
+                        return true;
+                    }};
+
+                commitsIterator = Iterators.filter(commits.iterator(), fn);
 
                 allObjects = Iterators.concat(missingContents, commitsIterator);
             }
@@ -177,8 +188,15 @@ class PackImpl implements Pack {
     private List<ObjectId[]> collectMissingRootTreeIdPairs(List<RevCommit> commits,
             ObjectDatabase sourceStore) {
 
+        //RevObject::getId, but friendly for Fortify
+        com.google.common.base.Function<RevCommit, ObjectId> fn_getId =  new com.google.common.base.Function<RevCommit, ObjectId>() {
+            @Override
+            public ObjectId apply(RevCommit revobj) {
+                return revobj.getId();
+            }};
+
         final Map<ObjectId, RevCommit> rootsById = new HashMap<>(
-                Maps.uniqueIndex(commits, (c) -> c.getId()));
+                Maps.uniqueIndex(commits,fn_getId));
 
         List<ObjectId[]> diffRootTreeIds = new ArrayList<>();
 
@@ -191,9 +209,17 @@ class PackImpl implements Pack {
                 continue;
             }
             for (ObjectId parentId : parentIds) {
+
+                //() -> source.getCommit(parentId)
+                Supplier<RevCommit> fn = new Supplier<RevCommit>() {
+                    @Override public RevCommit get() {
+                        return source.getCommit(parentId);
+                    }
+                };
+
                 final @Nullable RevCommit parent = parentId.isNull() ? null
                         : Optional.fromNullable((RevCommit) rootsById.get(parentId))
-                                .or(() -> source.getCommit(parentId));
+                                .or(fn);
 
                 ObjectId oldRootTreeId = parent == null ? RevTree.EMPTY_TREE_ID
                         : parent.getTreeId();

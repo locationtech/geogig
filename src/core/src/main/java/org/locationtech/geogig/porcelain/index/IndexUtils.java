@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
@@ -61,7 +62,15 @@ public class IndexUtils {
         }
         List<NodeRef> treeRefs = context.command(FindFeatureTypeTrees.class).setRootTreeRef(rootRef)
                 .call();
-        ImmutableMap<String, NodeRef> map = Maps.uniqueIndex(treeRefs, (r) -> r.path());
+
+        //  (r) -> r.path()
+        Function<NodeRef, String> fn =  new Function<NodeRef, String>() {
+            @Override
+            public String apply(NodeRef r) {
+                return r.path();
+            }};
+
+        ImmutableMap<String, NodeRef> map = Maps.uniqueIndex(treeRefs, fn);
         NodeRef treeRef = map.get(treePath);
         return treeRef;
     }

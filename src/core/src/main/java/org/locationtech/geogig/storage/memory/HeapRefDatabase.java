@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeoutException;
 
+import com.google.common.base.Function;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
@@ -176,7 +177,14 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     private Map<String, String> getAll(Predicate<String> keyFilter) {
         Map<String, String> all = new HashMap<>(Maps.filterKeys(this.refs, keyFilter));
 
-        all = Maps.transformValues(all, (v) -> unmask(v));
+        // (v) -> unmask(v)
+        Function<String, String> fn =  new Function<String, String>() {
+            @Override
+            public String apply(String v) {
+                return  unmask(v);
+            }};
+
+        all = Maps.transformValues(all, fn);
         return all;
     }
 

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.rocksdb.BlockBasedTableConfig;
@@ -72,8 +73,15 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         final String path = dbconfig.getDbPath();
         final List<String> colFamilyNames;
         try {
+            // (ba) -> new String(ba, Charsets.UTF_8))
+            Function<byte[], String> fn =  new Function<byte[], String>() {
+                @Override
+                public String apply(byte[] ba) {
+                    return new String(ba, Charsets.UTF_8);
+                }};
+
             colFamilyNames = Lists.transform(RocksDB.listColumnFamilies(new Options(), path),
-                    (ba) -> new String(ba, Charsets.UTF_8));
+                   fn);
         } catch (RocksDBException e) {
             dbOptions.close();
             throw new RuntimeException(e);

@@ -330,7 +330,15 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                 while (partitions.hasNext()) {
 
                     List<DiffEntry> partition = partitions.next();
-                    branchDiffCommand.setPathFilter(Lists.transform(partition, e -> e.path()));
+
+                    // e -> e.path()
+                    com.google.common.base.Function<DiffEntry,String> fn = new com.google.common.base.Function<DiffEntry, String>() {
+                        @Override
+                        public String apply(DiffEntry e) {
+                           return e.path();
+                        }};
+
+                    branchDiffCommand.setPathFilter(Lists.transform(partition, fn));
 
                     try (AutoCloseableIterator<DiffEntry> headToCommitDiff = branchDiffCommand
                             .call()) {

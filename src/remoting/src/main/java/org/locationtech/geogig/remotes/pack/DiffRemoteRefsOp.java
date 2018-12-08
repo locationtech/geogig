@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.plumbing.MapRef;
@@ -78,8 +80,16 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
                         .call();
             }
             if (this.getTags) {
+
+                //RevTag::getName, but friendly for Fortify
+                Function<RevTag, String> fn_revTag_getName =  new Function<RevTag, String>() {
+                    @Override
+                    public String apply(RevTag revTag) {
+                        return revTag.getName();
+                    }};
+
                 Map<String, RevTag> tags = Maps.uniqueIndex(command(TagListOp.class).call(),
-                        (t) -> t.getName());
+                        fn_revTag_getName);
                 for (Ref rf : remoteRefs) {
                     if (rf.getName().startsWith(Ref.TAGS_PREFIX)
                             && tags.containsKey(rf.localName())) {
@@ -88,8 +98,16 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
                     }
                 }
             }
-            remotes = Maps.uniqueIndex(remoteRefs, (r) -> r.getName());
-            locals = Maps.uniqueIndex(remoteLocalRefs, (r) -> r.getName());
+
+            //Ref::getName, but friendly for Fortify
+            Function<Ref, String> fn_ref_getName =  new Function<Ref, String>() {
+                @Override
+                public String apply(Ref ref) {
+                    return ref.getName();
+                }};
+
+            remotes = Maps.uniqueIndex(remoteRefs, fn_ref_getName);
+            locals = Maps.uniqueIndex(remoteLocalRefs, fn_ref_getName);
         }
         final boolean mapped = remote.getInfo().getMapped();
         if (mapped) {
@@ -97,10 +115,18 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
             final String mappedBranch = remote.getInfo().getMappedBranch();
             checkNotNull(mappedBranch);
             final String mappedBranchName = Ref.localName(mappedBranch);
+
+            // (name) -> Ref.localName(name).equals(mappedBranchName)
+            Predicate<String> fn =  new Predicate<String>() {
+                @Override
+                public boolean apply(String name) {
+                    return Ref.localName(name).equals(mappedBranchName);
+                }};
+
             remotes = Maps.filterKeys(remotes,
-                    (name) -> Ref.localName(name).equals(mappedBranchName));
+                    fn);
             locals = Maps.filterKeys(locals,
-                    (name) -> Ref.localName(name).equals(mappedBranchName));
+                    fn);
         }
         MapDifference<String, Ref> difference = Maps.difference(remotes, locals);
 

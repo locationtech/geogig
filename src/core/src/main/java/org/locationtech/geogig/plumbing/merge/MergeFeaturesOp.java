@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.model.NodeRef;
@@ -94,7 +95,14 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
                 featureBId);
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
 
-        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, (o) -> o.getId());
+        //RevObject::getId, but friendly for Fortify
+        Function<RevObject, ObjectId> fn_getId =  new Function<RevObject, ObjectId>() {
+            @Override
+            public ObjectId apply(RevObject revobj) {
+                return revobj.getId();
+            }};
+
+        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, fn_getId);
         checkState(map.containsKey(metadataId), "Invalid reference: %s", metadataId);
         checkState(map.containsKey(ancestorFeatureId), "Invalid reference: %s", ancestorFeatureId);
         checkState(map.containsKey(featureAId), "Invalid reference: %s", featureAId);

@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -142,13 +143,29 @@ public class PGGraphDatabase implements GraphDatabase {
     @Override
     public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         final PGId node = PGId.valueOf(commitId);
-        return ImmutableList.copyOf(Iterables.transform(outgoing(node), (p) -> p.toObjectId()));
+
+        // (p) -> p.toObjectId()
+        Function<PGId, ObjectId> fn =  new Function<PGId, ObjectId>() {
+            @Override
+            public ObjectId apply(PGId p) {
+                return p.toObjectId();
+            }};
+
+        return ImmutableList.copyOf(Iterables.transform(outgoing(node),fn));
     }
 
     @Override
     public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+
+        // (p) -> p.toObjectId()
+        Function<PGId, ObjectId> fn =  new Function<PGId, ObjectId>() {
+            @Override
+            public ObjectId apply(PGId p) {
+                return p.toObjectId();
+            }};
+
         return ImmutableList.copyOf(
-                Iterables.transform(incoming(PGId.valueOf(commitId)), (p) -> p.toObjectId()));
+                Iterables.transform(incoming(PGId.valueOf(commitId)), fn));
     }
 
     @Override

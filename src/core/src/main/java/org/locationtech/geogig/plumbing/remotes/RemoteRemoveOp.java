@@ -11,6 +11,8 @@ package org.locationtech.geogig.plumbing.remotes;
 
 import java.util.stream.Stream;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.UpdateRef;
@@ -59,8 +61,16 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
 
         // Remove refs
         final String remotePrefix = Ref.append(Ref.REMOTES_PREFIX, name);
+
+        // r -> Ref.isChild(remotePrefix, r.getName())
+        Predicate<Ref> fn =  new Predicate<Ref>() {
+            @Override
+            public boolean apply(Ref r) {
+                return Ref.isChild(remotePrefix, r.getName());
+            }};
+
         ImmutableSet<Ref> localRemoteRefs = command(ForEachRef.class)
-                .setFilter(r -> Ref.isChild(remotePrefix, r.getName())).call();
+                .setFilter(fn).call();
         for (Ref localRef : localRemoteRefs) {
             command(UpdateRef.class).setDelete(true).setName(localRef.getName()).call();
         }

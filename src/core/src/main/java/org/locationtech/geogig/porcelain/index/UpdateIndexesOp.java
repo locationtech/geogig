@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.JTS;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
@@ -73,8 +74,15 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
         final List<NodeRef> previousVersionTrees = command(FindFeatureTypeTrees.class)
                 .setRootTreeRef(previousRefSpec).call();
 
+        //NodeRef::path, but friendly for Fortify
+        Function<NodeRef, String> fn_path =  new Function<NodeRef, String>() {
+            @Override
+            public String apply(NodeRef noderef) {
+                return noderef.path();
+            }};
+
         final Map<String, NodeRef> previousTreeRefs = Maps.uniqueIndex(previousVersionTrees,
-                (r) -> r.path());
+                fn_path);
 
         final IndexDatabase indexDatabase = indexDatabase();
 

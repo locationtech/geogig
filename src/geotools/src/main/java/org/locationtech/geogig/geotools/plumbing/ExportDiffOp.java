@@ -112,9 +112,16 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                     Iterator<Optional<Feature>> transformed = Iterators.transform(plainFeatures,
                             ExportDiffOp.this.function);
 
+                    // (f) -> (SimpleFeature) (f.isPresent() ? f.get() : null)
+                    Function<Optional<Feature>, SimpleFeature> fn =  new Function<Optional<Feature>, SimpleFeature>() {
+                        @Override
+                        public SimpleFeature apply(Optional<Feature> f) {
+                            return (SimpleFeature) (f.isPresent() ? f.get() : null);
+                        }};
+
                     Iterator<SimpleFeature> filtered = Iterators.filter(
                             Iterators.transform(transformed,
-                                    (f) -> (SimpleFeature) (f.isPresent() ? f.get() : null)),
+                                   fn),
                             Predicates.notNull());
 
                     return new DelegateFeatureIterator<SimpleFeature>(filtered);

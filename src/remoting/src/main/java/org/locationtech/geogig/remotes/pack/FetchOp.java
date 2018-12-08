@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -213,9 +214,18 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         {
             LsRemoteOp lsRemote = command(LsRemoteOp.class).setRemote(remoteRepo);
-            remoteRemoteRefs = new HashMap<>(Maps.uniqueIndex(lsRemote.call(), r -> r.getName()));
+
+
+            //Ref::getName, but friendly for Fortify
+            Function<Ref, String> fn_ref_getName =  new Function<Ref, String>() {
+                @Override
+                public String apply(Ref ref) {
+                    return ref.getName();
+                }};
+
+            remoteRemoteRefs = new HashMap<>(Maps.uniqueIndex(lsRemote.call(), fn_ref_getName));
             localRemoteRefs = new HashMap<>(
-                    Maps.uniqueIndex(lsRemote.retrieveLocalRefs(true).call(), r -> r.getName()));
+                    Maps.uniqueIndex(lsRemote.retrieveLocalRefs(true).call(), fn_ref_getName));
         }
 
         List<LocalRemoteRef> refsToFectch = new ArrayList<>();
@@ -491,7 +501,15 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public List<String> getRemoteNames() {
-        return Lists.transform(argsBuilder.remotes, (remote) -> remote.getName());
+
+        //(remote) -> remote.getName()
+        Function<Remote, String> fn =  new Function<Remote, String>() {
+            @Override
+            public String apply(Remote remote) {
+                return remote.getName();
+            }};
+
+        return Lists.transform(argsBuilder.remotes, fn);
     }
 
     /**

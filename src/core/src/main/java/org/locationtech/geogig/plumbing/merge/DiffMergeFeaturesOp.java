@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -185,7 +186,14 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
 
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
 
-        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, (o) -> o.getId());
+        //RevObject::getId, but friendly for Fortify
+        Function<RevObject, ObjectId> fn_getId =  new Function<RevObject, ObjectId>() {
+            @Override
+            public ObjectId apply(RevObject revobj) {
+                return revobj.getId();
+            }};
+
+        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, fn_getId);
 
         if (ids.size() != map.size()) {
             ids.forEach((id) -> checkState(map.containsKey(id), "Invalid reference: %s", id));

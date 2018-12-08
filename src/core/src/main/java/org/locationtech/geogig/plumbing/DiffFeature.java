@@ -14,7 +14,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Streams;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -86,8 +89,11 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
         Set<ObjectId> ids = Sets.newHashSet(oldNodeRef.getObjectId(), newNodeRef.getObjectId(),
                 oldNodeRef.getMetadataId(), newNodeRef.getMetadataId());
 
-        Map<ObjectId, RevObject> objects = Maps.uniqueIndex(objectDatabase().getAll(ids),
-                RevObject::getId);
+//        Map<ObjectId, RevObject> objects = Maps.uniqueIndex(objectDatabase().getAll(ids),
+//                RevObject::getId);
+
+        Map<ObjectId, RevObject> objects = Streams.stream(objectDatabase().getAll(ids))
+                    .collect(Collectors.toMap( RevObject::getId, revobj->revobj ));
 
         RevFeature oldFeature = (RevFeature) objects.get(oldNodeRef.getObjectId());
         checkArgument(oldFeature != null, "Invalid reference: %s", oldNodeRef);

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
@@ -185,8 +186,21 @@ public @Builder class DiffSummaryOp extends AbstractGeoGigOp<List<LayerDiffSumma
         Set<NodeRef> leftnodes = l.join();
         Set<NodeRef> rightnodes = r.join();
 
-        final MapDifference<String, NodeRef> difference = difference(
-                uniqueIndex(leftnodes, NodeRef::path), uniqueIndex(rightnodes, NodeRef::path));
+//        final MapDifference<String, NodeRef> difference = difference(
+//                uniqueIndex(leftnodes, NodeRef::path), uniqueIndex(rightnodes, NodeRef::path));
+
+        //NodeRef::path, but friendly for Fortify
+        Function<NodeRef, String> fn_path =  new Function<NodeRef, String>() {
+            @Override
+            public String apply(NodeRef noderef) {
+                return noderef.path();
+            }};
+
+
+        final MapDifference<String, NodeRef> difference =  difference(
+                        uniqueIndex(leftnodes, fn_path),
+                        uniqueIndex(rightnodes, fn_path)
+                );
 
         Map<String, NodeRef[]> result = new HashMap<>();
 

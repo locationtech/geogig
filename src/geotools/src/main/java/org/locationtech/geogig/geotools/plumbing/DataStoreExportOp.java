@@ -197,8 +197,15 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
 
         final Set<String> exportLayers;
 
+        // (n) -> n.name()
+        Function<NodeRef, String> fn =  new Function<NodeRef, String>() {
+            @Override
+            public String apply(NodeRef n) {
+                return  n.name();
+            }};
+
         final Set<String> repoLayers = Sets
-                .newHashSet(Iterables.transform(featureTreeRefs, (n) -> n.name()));
+                .newHashSet(Iterables.transform(featureTreeRefs, fn));
 
         if (treePaths == null || treePaths.isEmpty()) {
             exportLayers = repoLayers;
@@ -214,7 +221,15 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
         }
 
         final String commitId = commit.get().getId().toString() + ":";
-        return Sets.newHashSet(Iterables.transform(exportLayers, (s) -> commitId + s));
+
+        //  (s) -> commitId + s
+        Function<String, String> fn2 =  new Function<String, String>() {
+            @Override
+            public String apply(String s) {
+                return  commitId + s;
+            }};
+
+        return Sets.newHashSet(Iterables.transform(exportLayers,fn2));
     }
 
     /**

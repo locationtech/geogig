@@ -14,6 +14,7 @@ import static com.google.common.collect.Iterators.transform;
 
 import java.util.Iterator;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
@@ -67,7 +68,14 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
                 }
             });
 
-            workingTree().delete(transform(added, (de) -> de.newPath()), getProgressListener());
+            //(de) -> de.newPath(), but friendly for Fortify
+            Function<DiffEntry, String> fn_DiffEntry_newPath =  new Function<DiffEntry, String>() {
+                @Override
+                public String apply(DiffEntry node) {
+                    return node.newPath();
+                }};
+
+            workingTree().delete(transform(added,fn_DiffEntry_newPath), getProgressListener());
         }
 
         return workingTree();

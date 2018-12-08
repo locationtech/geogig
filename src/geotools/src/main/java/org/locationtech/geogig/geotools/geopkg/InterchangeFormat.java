@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.sql.DataSource;
 
+import com.google.common.base.Predicate;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.FeatureEntry;
@@ -264,9 +265,24 @@ public class InterchangeFormat {
         try (Connection connection = dataSource.getConnection();
                 GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
 
+
+            //Ref::getName, but friendly for Fortify
+            Function<AuditTable, String> fn_getTableName =  new Function<AuditTable, String>() {
+                @Override
+                public String apply(AuditTable at) {
+                    return at.getTableName();
+                }};
+
+            // k -> importTables.isEmpty() || importTables.contains(k)
+            Predicate<String> fn =  new Predicate<String>() {
+                @Override
+                public boolean apply(String k) {
+                    return importTables.isEmpty() || importTables.contains(k);
+                }};
+
             final Map<String, AuditTable> tables = Maps.filterKeys(
-                    Maps.uniqueIndex(metadata.getAuditTables(), t -> t.getTableName()),
-                    k -> importTables.isEmpty() || importTables.contains(k));
+                    Maps.uniqueIndex(metadata.getAuditTables(), fn_getTableName),
+                    fn);
 
             checkState(tables.size() > 0, "No table to import.");
             Iterator<AuditTable> iter = tables.values().iterator();
@@ -552,7 +568,15 @@ public class InterchangeFormat {
             this.builder = new SimpleFeatureBuilder(type);
             this.builder.setValidating(false);
             List<AttributeDescriptor> descriptors = type.getAttributeDescriptors();
-            this.attNames = Lists.transform(descriptors, at -> at.getLocalName());
+
+            // at -> at.getLocalName()
+            Function<AttributeDescriptor, String> fn =  new Function<AttributeDescriptor, String>() {
+                @Override
+                public String apply(AttributeDescriptor at) {
+                    return  at.getLocalName();
+                }};
+
+            this.attNames = Lists.transform(descriptors, fn);
             GeometryDescriptor geometryDescriptor = type.getGeometryDescriptor();
             this.geometryAttribute = geometryDescriptor == null ? null
                     : geometryDescriptor.getLocalName();

@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.NodeRef;
@@ -296,7 +297,14 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
     private void setUpRemoteTrackingBranches(Repository clone, Remote remote,
             Iterable<RefDiff> refdifss, Optional<Ref> remoteHeadRef) {
 
-        final Iterable<Ref> remoteRefs = Iterables.transform(refdifss, (cr) -> cr.getNewRef());
+        // (cr) -> cr.getNewRef()
+        Function<RefDiff, Ref> fn =  new Function<RefDiff, Ref>() {
+            @Override
+            public Ref apply(RefDiff cr) {
+                return cr.getNewRef();
+            }};
+
+        final Iterable<Ref> remoteRefs = Iterables.transform(refdifss,fn);
         final Iterable<Ref> localRefs = command(MapRef.class)//
                 .setRemote(remote)//
                 .addAll(remoteRefs)//

@@ -275,16 +275,22 @@ public class GeogigFeatureStore extends ContentFeatureStore {
             features = Iterators.transform(features, new SchemaInforcer(nativeSchema));
             // the returned list is expected to be in the order provided by the argument feature
             // collection, so lets add the fids in the transformer here
-            Iterator<FeatureInfo> featureInfos = Iterators.transform(features, (f) -> {
-                RevFeature feature = RevFeatureBuilder.build(f);
-                String fid = f.getID();
-                String path = NodeRef.appendChild(treePath, fid);
-                String version = feature.getId().toString();
-                if (returnFidsOnInsert) {
-                    insertedFids.add(new FeatureIdVersionedImpl(fid, version));
-                }
-                return FeatureInfo.insert(feature, featureTypeId, path);
-            });
+
+
+            Function<SimpleFeature, FeatureInfo> fn =  new Function<SimpleFeature, FeatureInfo>() {
+                @Override
+                public FeatureInfo apply(SimpleFeature f) {
+                    RevFeature feature = RevFeatureBuilder.build(f);
+                    String fid = f.getID();
+                    String path = NodeRef.appendChild(treePath, fid);
+                    String version = feature.getId().toString();
+                    if (returnFidsOnInsert) {
+                        insertedFids.add(new FeatureIdVersionedImpl(fid, version));
+                    }
+                    return FeatureInfo.insert(feature, featureTypeId, path);
+                }};
+
+            Iterator<FeatureInfo> featureInfos = Iterators.transform(features, fn);
 
             workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
@@ -377,9 +383,16 @@ public class GeogigFeatureStore extends ContentFeatureStore {
 
             ProgressListener listener = new DefaultProgressListener();
 
+            // (p) -> p.getLocalName()
+            Function<SimpleFeature, FeatureInfo> fn =  new Function<SimpleFeature, FeatureInfo>() {
+                @Override
+                public FeatureInfo apply(SimpleFeature f) {
+                    return FeatureInfo.insert(RevFeatureBuilder.build(f), featureTypeId,
+                            NodeRef.appendChild(treePath, f.getID()));
+                }};
+
             Iterator<FeatureInfo> featureInfos = Iterators.transform(schemaEnforced,
-                    (f) -> FeatureInfo.insert(RevFeatureBuilder.build(f), featureTypeId,
-                            NodeRef.appendChild(treePath, f.getID())));
+                    fn);
 
             workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
@@ -434,8 +447,15 @@ public class GeogigFeatureStore extends ContentFeatureStore {
 
         Iterator<SimpleFeature> featureIterator = featureIterator(filter);
 
+        //  (f) -> NodeRef.appendChild(typeTreePath, f.getID()
+        Function<SimpleFeature, String> fn =  new Function<SimpleFeature, String>() {
+            @Override
+            public String apply(SimpleFeature f) {
+                return NodeRef.appendChild(typeTreePath, f.getID());
+            }};
+
         Iterator<String> affectedFeaturePaths = Iterators.transform(featureIterator,
-                (f) -> NodeRef.appendChild(typeTreePath, f.getID()));
+               fn);
         workingTree.delete(affectedFeaturePaths, DefaultProgressListener.NULL);
     }
 

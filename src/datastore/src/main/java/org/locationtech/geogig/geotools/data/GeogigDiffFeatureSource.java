@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
@@ -53,6 +54,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -325,8 +327,15 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
             return false;
         }
 
+        // (p) -> p.getLocalName()
+        Function<AttributeDescriptor, String> fn =  new Function<AttributeDescriptor, String>() {
+            @Override
+            public String apply(AttributeDescriptor p) {
+                return p.getLocalName();
+            }};
+
         List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(),
-                (p) -> p.getLocalName());
+               fn);
 
         boolean retypeRequired = !Arrays.asList(queryProps).equals(resultNames);
         return retypeRequired;

@@ -153,8 +153,15 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             Iterator<Optional<Feature>> transformed = Iterators.transform(adaptedFeatures,
                     ExportOp.this.function);
 
+            // (f) -> (SimpleFeature) f.orNull()
+            Function<Optional<Feature>, SimpleFeature> fn =  new Function<Optional<Feature>, SimpleFeature>() {
+                @Override
+                public SimpleFeature apply(Optional<Feature> f) {
+                    return (SimpleFeature) f.orNull();
+                }};
+
             Iterator<SimpleFeature> result = Iterators.filter(
-                    Iterators.transform(transformed, (f) -> (SimpleFeature) f.orNull()),
+                    Iterators.transform(transformed, fn),
                     Predicates.notNull());
 
             // check the resulting schema has something to contribute

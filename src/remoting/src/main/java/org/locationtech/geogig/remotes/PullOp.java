@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.remotes.RemoteResolve;
@@ -259,7 +260,15 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
             final Ref localRemoteRef = localRemoteRefOpt.get();
             if (rebase) {
                 getProgressListener().setDescription("Pull: rebasing...");
-                command(RebaseOp.class).setUpstream(() -> localRemoteRef.getObjectId()).call();
+
+
+                //() -> localRemoteRef.getObjectId()
+                Supplier<ObjectId> fn = new Supplier<ObjectId>() {
+                    @Override public ObjectId get() {
+                        return localRemoteRef.getObjectId();
+                    }
+                };
+                command(RebaseOp.class).setUpstream(fn).call();
             } else {
                 getProgressListener().setDescription("Pull: merging...");
                 String message = this.message;

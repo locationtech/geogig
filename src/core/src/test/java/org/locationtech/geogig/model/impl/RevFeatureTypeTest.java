@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.type.PropertyDescriptor;
 
@@ -46,9 +47,9 @@ public class RevFeatureTypeTest extends RepositoryTestCase {
     public void testToString() {
         RevFeatureType featureType = RevFeatureTypeBuilder.build(linesType);
 
+        String expected = RevObjects.toString(featureType);
         String featureTypeString = featureType.toString();
 
-        assertEquals("FeatureType[" + featureType.getId().toString() + "; "
-                + "sp: String, ip: Integer, pp: LineString]", featureTypeString);
+        assertEquals(expected, featureTypeString);
     }
 }

@@ -13,6 +13,10 @@
   <packaging>jar</packaging>
   <name>RocksDB storage backend</name>
 
+  <properties>
+    <project.relativePath>storage/rocksdb</project.relativePath>
+  </properties>
+
   <build>
     <plugins>
       <plugin>

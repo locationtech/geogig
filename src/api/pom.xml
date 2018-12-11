@@ -7,14 +7,15 @@
     <groupId>org.locationtech.geogig</groupId>
     <artifactId>geogig</artifactId>
     <version>1.4-SNAPSHOT</version>
-    <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>geogig-api</artifactId>
   <packaging>jar</packaging>
   <name>GeoGig Core API</name>
-  <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests available using: 
-    mvn -Ponline Corertura is configured for a test coverage report: mvn cobertura:cobertura open target/site/cobertura/index.html -->
+
+  <properties>
+    <project.relativePath>api</project.relativePath>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>

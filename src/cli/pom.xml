@@ -6,12 +6,15 @@
     <groupId>org.locationtech.geogig</groupId>
     <artifactId>geogig</artifactId>
     <version>1.4-SNAPSHOT</version>
-    <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>geogig-cli-parent</artifactId>
   <packaging>pom</packaging>
   <name>GeoGig Command Line Interface</name>
+
+  <properties>
+    <project.relativePath>cli</project.relativePath>
+  </properties>
 
   <modules>
     <module>core</module>

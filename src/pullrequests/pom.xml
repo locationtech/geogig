@@ -7,12 +7,15 @@
     <groupId>org.locationtech.geogig</groupId>
     <artifactId>geogig</artifactId>
     <version>1.4-SNAPSHOT</version>
-    <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>geogig-pullrequests</artifactId>
   <packaging>jar</packaging>
   <name>GeoGig Pull Requests Support Commands</name>
+
+  <properties>
+    <project.relativePath>pullrequests</project.relativePath>
+  </properties>
 
   <build>
     <plugins>

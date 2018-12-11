@@ -4,10 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.locationtech.geogig</groupId>
-  <artifactId>geogig</artifactId>
+  <artifactId>geogig-dependencies</artifactId>
   <version>1.4-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>GeoGig</name>
+  <name>GeoGig Dependencies Root Pom</name>
+  <description>GeoGig dependencies only root pom</description>
 
   <scm>
     <connection>scm:git:git@github.com:locationtech/geogig.git</connection>
@@ -15,8 +16,6 @@
     <url>https://github.com/locationtech/geogigeogig</url>
   </scm>
 
-  <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests avaialble using: 
-    mvn -Ponline -->
   <organization>
     <name>Boundless</name>
     <url>http://boundlessgeo.com</url>
@@ -49,10 +48,26 @@
       </snapshots>
     </repository>
   </repositories>
+  <distributionManagement>
+    <repository>
+      <id>boundless</id>
+      <name>Boundless Release Repository</name>
+      <url>https://repo.boundlessgeo.com/release/</url>
+    </repository>
+    <snapshotRepository>
+      <id>boundless</id>
+      <name>Boundless Snapshot Repository</name>
+      <url>https://repo.boundlessgeo.com/snapshot/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
 
   <properties>
+    <delombok.outputDirectoryBase>${root.directory}/../src-delombok</delombok.outputDirectoryBase>
+    <delombok-targetdir>${delombok.outputDirectoryBase}</delombok-targetdir>
     <lombok.version>1.18.2</lombok.version>
     <lz4.version>1.3.0</lz4.version>
+    <caffeine-version>2.6.2</caffeine-version>
     <compress-lzf.version>1.0.3</compress-lzf.version>
     <cucumber-java.version>1.2.4</cucumber-java.version>
     <gson.version>2.4</gson.version>
@@ -81,15 +96,13 @@
     <dependency.plugin.version>2.2</dependency.plugin.version>
     <surefire.plugin.version>2.17</surefire.plugin.version>
     <assembly.plugin.version>2.2-beta-5</assembly.plugin.version>
-
-    <test.maxHeapSize>512M</test.maxHeapSize>
-    <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
-    <build.timestamp>${maven.build.timestamp}</build.timestamp>
-    <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
-    <postgresOnline.skip.pattern>org/locationtech/geogig/storage/postgresql/**</postgresOnline.skip.pattern>
-    <postgresWebFunctional.skip.pattern>org/geogig/web/postgresql/functional/**</postgresWebFunctional.skip.pattern>
-    <allow.test.skip>true</allow.test.skip>
-    <argLine>-Xms256m -Xmx512m</argLine>
+    <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
+    <git-commit-id-plugin-version>2.2.2</git-commit-id-plugin-version>
+    <maven-compiler-plugin-version>3.7.0</maven-compiler-plugin-version>
+    <maven-resources-plugin-version>3.0.1</maven-resources-plugin-version>
+    <maven-source-plugin-version>3.0.1</maven-source-plugin-version>
+    <maven-surefire-report-plugin-version>2.20.1</maven-surefire-report-plugin-version>
+    <maven-javadoc-plugin-vesion>3.0.0</maven-javadoc-plugin-vesion>
   </properties>
 
   <dependencyManagement>
@@ -360,29 +373,10 @@
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
         <artifactId>caffeine</artifactId>
-        <version>2.6.2</version>
+        <version>${caffeine-version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-    </dependency>
-  </dependencies>
-  <distributionManagement>
-    <repository>
-      <id>boundless</id>
-      <name>Boundless Release Repository</name>
-      <url>https://repo.boundlessgeo.com/release/</url>
-    </repository>
-    <snapshotRepository>
-      <id>boundless</id>
-      <name>Boundless Snapshot Repository</name>
-      <url>https://repo.boundlessgeo.com/snapshot/</url>
-    </snapshotRepository>
-  </distributionManagement>
 
   <build>
     <extensions>
@@ -396,6 +390,31 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${maven-source-plugin-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven-resources-plugin-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>${maven-surefire-report-plugin-version}</version>
+        </plugin>
+        <plugin>
           <!-- generates OS specific scripts for starting java applications see http://mojo.codehaus.org/appassembler/appassembler-maven-plugin/index.html -->
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>appassembler-maven-plugin</artifactId>
@@ -403,8 +422,18 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin-vesion}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
           <version>${war.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>pl.project13.maven</groupId>
+          <artifactId>git-commit-id-plugin</artifactId>
+          <version>${git-commit-id-plugin-version}</version>
         </plugin>
         <plugin>
           <groupId>org.mortbay.jetty</groupId>
@@ -432,24 +461,7 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <includes>
-            <include>**/*Test.java</include>
-          </includes>
-          <excludes>
-            <exclude>${online.skip.pattern}</exclude>
-            <exclude>${postgresOnline.skip.pattern}</exclude>
-            <exclude>${postgresWebFunctional.skip.pattern}</exclude>
-          </excludes>
-          <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
-          <reuseForks>true</reuseForks>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
         <configuration>
           <archive>
             <manifest>
@@ -470,7 +482,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.7.0</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
@@ -481,7 +492,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.0.1</version>
         <configuration>
           <encoding>UTF-8</encoding>
         </configuration>
@@ -490,7 +500,6 @@
         <inherited>true</inherited>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
         <configuration>
           <attach>true</attach>
         </configuration>
@@ -507,7 +516,6 @@
       <plugin>
         <groupId>pl.project13.maven</groupId>
         <artifactId>git-commit-id-plugin</artifactId>
-        <version>2.2.2</version>
         <executions>
           <execution>
             <goals>
@@ -529,160 +537,12 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>online</id>
-      <properties>
-        <online.skip.pattern>disabled</online.skip.pattern>
-      </properties>
-    </profile>
-    <profile>
-      <id>postgres</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <includes>
-                <include>**/*Test.java</include>
-              </includes>
-              <excludes>
-                <exclude>${online.skip.pattern}</exclude>
-                <!--exclude>${postgresOnline.skip.pattern}</exclude -->
-                <!--exclude>${postgresWebFunctional.skip.pattern}</exclude -->
-              </excludes>
-              <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
-              <reuseForks>true</reuseForks>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>performance</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <systemPropertyVariables>
-                <geogig.runPerformanceTests>true</geogig.runPerformanceTests>
-              </systemPropertyVariables>
-              <!--excludes> <exclude>${online.skip.pattern}</exclude> <exclude>${postgresOnline.skip.pattern}</exclude> <exclude>${postgresWebFunctional.skip.pattern}</exclude> 
-                </excludes -->
-              <includes>
-                <include>**/*StressTest.java</include>
-                <include>**/*PerformanceTest.java</include>
-              </includes>
-              <forkCount>1</forkCount>
-              <reuseForks>false</reuseForks>
-              <argLine>${argLine}</argLine>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>jacoco</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.2</version>
-            <configuration>
-              <excludes>
-                <exclude>**/*Exception.class</exclude>
-              </excludes>
-            </configuration>
-            <executions>
-              <execution>
-                <id>pre-unit-test</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>post-unit-test</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>experimental</id>
-      <modules>
-        <module>../ql</module>
-        <module>../gui</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>locationtech</id>
-      <distributionManagement>
-        <repository>
-          <id>repo.locationtech.org</id>
-          <name>GeoGig Repository - Releases</name>
-          <url>https://repo.locationtech.org/content/repositories/geogig-releases/</url>
-        </repository>
-        <snapshotRepository>
-          <id>repo.locationtech.org</id>
-          <name>GeoGig Repository - Snapshots</name>
-          <url>https://repo.locationtech.org/content/repositories/geogig-snapshots/</url>
-        </snapshotRepository>
-      </distributionManagement>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>eclipse-cbi</id>
-          <name>Eclipse CBI</name>
-          <url>https://repo.eclipse.org/content/repositories/cbi-releases/</url>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.eclipse.cbi.maven.plugins</groupId>
-              <artifactId>eclipse-jarsigner-plugin</artifactId>
-              <version>1.1.3</version>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-        <plugins>
-          <plugin>
-            <groupId>org.eclipse.cbi.maven.plugins</groupId>
-            <artifactId>eclipse-jarsigner-plugin</artifactId>
-            <version>1.1.3</version>
-            <executions>
-              <execution>
-                <id>sign</id>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-                <phase>verify</phase>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
   <reporting>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.20.1</version>
         <configuration>
           <aggregate>true</aggregate>
         </configuration>
@@ -690,7 +550,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0</version>
         <configuration>
           <show>public</show>
           <tags>
@@ -730,15 +589,4 @@
     </plugins>
   </reporting>
 
-  <modules>
-    <module>../api</module>
-    <module>../core</module>
-    <module>../remoting</module>
-    <module>../datastore</module>
-    <module>../storage</module>
-    <module>../geotools</module>
-    <module>../pullrequests</module>
-    <module>../web</module>
-    <module>../cli</module>
-  </modules>
 </project>

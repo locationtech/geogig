@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +26,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.StreamSupport;
 
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.geotools.io.TableWriter;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -51,6 +49,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 @RequiresRepository(false)
 @Parameters(commandNames = "ls-repos", commandDescription = "List repositories under a base URI")
@@ -217,8 +216,8 @@ public class LsRepos extends AbstractCommand implements CLICommand {
         info.name = name;
         ImmutableList<Ref> branches = repo.command(BranchListOp.class).call();
         info.numBranches = branches.size();
-        final Set<ObjectId> uniqueCommits = new ConcurrentHashSet<>();
-        final Set<String> layerNames = new ConcurrentHashSet<>();
+        final Set<ObjectId> uniqueCommits = Sets.newConcurrentHashSet();
+        final Set<String> layerNames = Sets.newConcurrentHashSet();
         final AtomicLong totalCommits = new AtomicLong();
         final AtomicLong totalFeatures = new AtomicLong();
         branches.forEach(ref -> {

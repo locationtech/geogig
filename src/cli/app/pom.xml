@@ -7,12 +7,15 @@
     <groupId>org.locationtech.geogig</groupId>
     <artifactId>geogig-cli-parent</artifactId>
     <version>1.4-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>geogig-cli-app</artifactId>
   <packaging>jar</packaging>
   <name>GeoGig CLI App</name>
+
+  <properties>
+    <project.relativePath>cli/app</project.relativePath>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -68,11 +71,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-web-app</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
@@ -115,7 +113,8 @@
         <artifactId>appassembler-maven-plugin</artifactId>
         <configuration>
           <!-- Extra JVM arguments that will be included in the bin scripts -->
-          <extraJvmArguments>-Dorg.geotools.referencing.forceXY=true -XX:-HeapDumpOnOutOfMemoryError -XX:+UseNUMA -XX:+UseG1GC</extraJvmArguments>
+          <extraJvmArguments>-Dorg.geotools.referencing.forceXY=true -XX:-HeapDumpOnOutOfMemoryError -XX:+UseNUMA
+            -XX:+UseG1GC</extraJvmArguments>
           <!-- set alternative assemble directory -->
           <assembleDirectory>${project.build.directory}/geogig-build</assembleDirectory>
           <repositoryLayout>flat</repositoryLayout>
@@ -131,10 +130,7 @@
               <mainClass>org.locationtech.geogig.cli.app.CLI</mainClass>
               <name>geogig</name>
             </program>
-            <!--program>
-              <mainClass>org.locationtech.geogig.cli.GeogigConsole</mainClass>
-              <name>geogig-console</name>
-            </program-->
+            <!--program> <mainClass>org.locationtech.geogig.cli.GeogigConsole</mainClass> <name>geogig-console</name> </program -->
           </programs>
         </configuration>
         <executions>
@@ -146,48 +142,48 @@
           </execution>
         </executions>
       </plugin>
-        <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <finalName>geogig</finalName>
+          <archive>
+            <manifest>
+              <mainClass>org.locationtech.geogig.cli.app.CLI</mainClass>
+            </manifest>
+          </archive>
+          <descriptors>
+            <descriptor>cli-assembly-zip.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>assemble-dir</id>
             <configuration>
-                <finalName>geogig</finalName>
-                <archive>
-                    <manifest>
-                        <mainClass>org.locationtech.geogig.cli.app.CLI</mainClass>
-                    </manifest>
-                </archive>
-                <descriptors>
-                    <descriptor>cli-assembly-zip.xml</descriptor>
-                </descriptors>
+              <appendAssemblyId>false</appendAssemblyId>
+              <finalName>geogig</finalName>
+              <archive>
+                <manifest>
+                  <mainClass>org.locationtech.geogig.cli.app.CLI</mainClass>
+                </manifest>
+              </archive>
+              <descriptors>
+                <descriptor>cli-assembly-dir.xml</descriptor>
+              </descriptors>
             </configuration>
-            <executions>
-                <execution>
-                    <id>assemble-dir</id>
-                    <configuration>
-                        <appendAssemblyId>false</appendAssemblyId>
-                        <finalName>geogig</finalName>
-                        <archive>
-                            <manifest>
-                                <mainClass>org.locationtech.geogig.cli.app.CLI</mainClass>
-                            </manifest>
-                        </archive>
-                        <descriptors>
-                            <descriptor>cli-assembly-dir.xml</descriptor>
-                        </descriptors>
-                    </configuration>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>single</goal>
-                    </goals>
-                </execution>
-                <execution>
-                    <id>assemble-zip</id>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>single</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>assemble-zip</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -208,20 +204,30 @@
     </plugins>
   </build>
 
- <profiles>
+  <profiles>
+    <profile>
+      <id>web</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.locationtech.geogig</groupId>
+          <artifactId>geogig-web-app</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
     <profile>
       <id>experimental</id>
-        <dependencies>
-          <dependency>
-            <groupId>org.locationtech.geogig</groupId>
-            <artifactId>geogig-ql</artifactId>
-            <version>${project.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.locationtech.geogig</groupId>
-            <artifactId>geogig-gui</artifactId>
-            <version>${project.version}</version>
-          </dependency>
+      <dependencies>
+        <dependency>
+          <groupId>org.locationtech.geogig</groupId>
+          <artifactId>geogig-ql</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.locationtech.geogig</groupId>
+          <artifactId>geogig-gui</artifactId>
+          <version>${project.version}</version>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>

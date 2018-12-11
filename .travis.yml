@@ -11,7 +11,7 @@ install: mvn -B -U install -DskipTests=true -Ptravis,postgres
 before_script:
   - psql -c 'create database geogig_tests;' -U postgres
   - psql -c "create extension postgis" -U postgres -d geogig_tests
-  - psql -f ../geotools/src/test/resources/features/online/geogig_pg_test.sql -U postgres -d geogig_tests
+  - psql -f geotools/src/test/resources/features/online/geogig_pg_test.sql -U postgres -d geogig_tests
   - echo '[postgres]' > ~/.geogig-pg-backend-tests.properties
   - echo 'enabled = true' >> ~/.geogig-pg-backend-tests.properties
   - echo 'server = localhost' >> ~/.geogig-pg-backend-tests.properties

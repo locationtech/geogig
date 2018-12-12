@@ -20,12 +20,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
@@ -45,8 +45,10 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.geometry.BoundingBox;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.MapDifference;
+import com.google.common.collect.MapDifference.ValueDifference;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -85,19 +87,18 @@ public @Builder class DiffSummaryOp extends AbstractGeoGigOp<List<LayerDiffSumma
         final RevObject left = resolve(leftTreeish, leftTree, leftSource);
         final RevObject right = resolve(rightTreeish, rightTree, rightSource);
 
-        final RevTree leftTree = resolveTree(left, leftSource);
-        final RevTree rightTree = resolveTree(right, rightSource);
+        final RevTree resolvedLeftTree = resolveTree(left, leftSource);
+        final RevTree resolvedRightTree = resolveTree(right, rightSource);
 
-        List<LayerDiffSummary> result;
+        Map<String, NodeRef[]> changedPaths = resolveChangedPaths(resolvedLeftTree,
+                resolvedRightTree);
 
-        Map<String, NodeRef[]> changedPaths = resolveChangedPaths(leftTree, rightTree);
-
-        CompletableFuture<LayerDiffSummary> futures[] = run(leftTree, rightTree, changedPaths);
+        CompletableFuture<LayerDiffSummary>[] futures = run(resolvedLeftTree, resolvedRightTree,
+                changedPaths);
         CompletableFuture.allOf(futures).join();
 
-        result = newArrayList(futures).stream().map((f) -> f.join()).collect(Collectors.toList());
-
-        return result;
+        return newArrayList(futures).stream().map(CompletableFuture<LayerDiffSummary>::join)
+                .collect(Collectors.toList());
     }
 
     private ObjectStore resolveSource(ObjectStore source) {
@@ -186,30 +187,33 @@ public @Builder class DiffSummaryOp extends AbstractGeoGigOp<List<LayerDiffSumma
         Set<NodeRef> leftnodes = l.join();
         Set<NodeRef> rightnodes = r.join();
 
-//        final MapDifference<String, NodeRef> difference = difference(
-//                uniqueIndex(leftnodes, NodeRef::path), uniqueIndex(rightnodes, NodeRef::path));
-
-        //NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> fn_path =  new Function<NodeRef, String>() {
+        // NodeRef::path, but friendly for Fortify
+        Function<NodeRef, String> toPath = new Function<NodeRef, String>() {
             @Override
             public String apply(NodeRef noderef) {
                 return noderef.path();
-            }};
+            }
+        };
 
+        final MapDifference<String, NodeRef> difference = difference(uniqueIndex(leftnodes, toPath),
+                uniqueIndex(rightnodes, toPath));
 
-        final MapDifference<String, NodeRef> difference =  difference(
-                        uniqueIndex(leftnodes, fn_path),
-                        uniqueIndex(rightnodes, fn_path)
-                );
+        Map<String, NodeRef[]> resolvedChangedPaths = new HashMap<>();
 
-        Map<String, NodeRef[]> result = new HashMap<>();
-
-        difference.entriesOnlyOnLeft().forEach((k, v) -> result.put(k, new NodeRef[] { v, null }));
-        difference.entriesOnlyOnRight().forEach((k, v) -> result.put(k, new NodeRef[] { null, v }));
-        difference.entriesDiffering()
-                .forEach((k, v) -> result.put(k, new NodeRef[] { v.leftValue(), v.rightValue() }));
-
-        return result;
+        Map<String, NodeRef> entriesOnlyOnLeft = difference.entriesOnlyOnLeft();
+        for (Map.Entry<String, NodeRef> e : entriesOnlyOnLeft.entrySet()) {
+            resolvedChangedPaths.put(e.getKey(), new NodeRef[] { e.getValue(), null });
+        }
+        Map<String, NodeRef> entriesOnlyOnRight = difference.entriesOnlyOnRight();
+        for (Map.Entry<String, NodeRef> e : entriesOnlyOnRight.entrySet()) {
+            resolvedChangedPaths.put(e.getKey(), new NodeRef[] { null, e.getValue() });
+        }
+        Map<String, ValueDifference<NodeRef>> entriesDiffering = difference.entriesDiffering();
+        for (Entry<String, ValueDifference<NodeRef>> e : entriesDiffering.entrySet()) {
+            resolvedChangedPaths.put(e.getKey(),
+                    new NodeRef[] { e.getValue().leftValue(), e.getValue().rightValue() });
+        }
+        return resolvedChangedPaths;
     }
 
     private CompletableFuture<Set<NodeRef>> findTypeTrees(RevTree left, ObjectStore store) {

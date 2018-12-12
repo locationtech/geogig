@@ -388,8 +388,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                     .setNewValue(localRemoteRef.getObjectId())//
                     .call();
 
-            RefDiff result = new RefDiff(oldRef, remoteRef.get());
-            results.add(result);
+            RefDiff updateRemoteRef = new RefDiff(oldRef, remoteRef.get());
+            results.add(updateRemoteRef);
         }
         return results;
     }

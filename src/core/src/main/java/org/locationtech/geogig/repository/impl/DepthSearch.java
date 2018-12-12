@@ -118,13 +118,13 @@ public class DepthSearch {
         }
         final String childName = childSteps.get(childSteps.size() - 1);
         Optional<Node> node = getDirectChild(subTree, childName, 0);
-        NodeRef result = null;
+        NodeRef depthSearchResult = null;
         if (node.isPresent()) {
             String nodeParentPath = NodeRef.parentPath(childPath);
-            result = new NodeRef(node.get(), nodeParentPath,
+            depthSearchResult = new NodeRef(node.get(), nodeParentPath,
                     node.get().getMetadataId().or(metadataId));
         }
-        return Optional.fromNullable(result);
+        return Optional.fromNullable(depthSearchResult);
     }
 
     /**

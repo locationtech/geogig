@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -207,7 +208,7 @@ class WorkingTreeInsertHelper {
 
     public Map<NodeRef, RevTree> buildTrees() {
 
-        final Map<NodeRef, RevTree> result = Maps.newConcurrentMap();
+        final Map<NodeRef, RevTree> builtTrees = new ConcurrentHashMap<>();
 
         List<AsyncBuildTree> tasks = Lists.newArrayList();
 
@@ -216,15 +217,15 @@ class WorkingTreeInsertHelper {
             final RevTreeBuilder builder = builderEntry.getValue();
             final RevFeatureType revFeatureType = revFeatureTypes.get(treePath);
             final ObjectId metadataId = revFeatureType.getId();
-            tasks.add(new AsyncBuildTree(treePath, builder, metadataId, result));
+            tasks.add(new AsyncBuildTree(treePath, builder, metadataId, builtTrees));
         }
         try {
             executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        db.putAll(result.values().iterator());
-        return result;
+        db.putAll(builtTrees.values().iterator());
+        return builtTrees;
     }
 
     private class AsyncBuildTree implements Callable<Void> {

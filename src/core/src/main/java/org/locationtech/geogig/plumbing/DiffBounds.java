@@ -193,7 +193,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         }
 
         @Nullable
-        private DiffSummary<BoundingBox, BoundingBox> result;
+        private DiffSummary<BoundingBox, BoundingBox> diffBoundsResult;
 
         @NonNull
         private ThreadSafeReferencedEnvelope leftEnv;
@@ -263,7 +263,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
                     merged = new ReferencedEnvelope(lbounds);
                     merged.include(rbounds);
                 }
-                this.result = new DiffSummary<BoundingBox, BoundingBox>(lbounds, rbounds, merged);
+                this.diffBoundsResult = new DiffSummary<BoundingBox, BoundingBox>(lbounds, rbounds,
+                        merged);
             }
         }
 
@@ -347,7 +348,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         }
 
         public DiffSummary<BoundingBox, BoundingBox> getResult() {
-            DiffSummary<BoundingBox, BoundingBox> r = this.result;
+            DiffSummary<BoundingBox, BoundingBox> r = this.diffBoundsResult;
             if (r == null) {
                 BoundingBox empty = new ReferencedEnvelope(crs);
                 r = new DiffSummary<BoundingBox, BoundingBox>(empty, empty, empty);

@@ -121,8 +121,7 @@ public class BulkFeatureRetriever {
     public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(Iterator<NodeRef> refs) {
         AutoCloseableIterator<ObjectInfo<RevFeature>> fis = getGeoGIGFeatures(refs);
         MultiFeatureTypeBuilder builder = new MultiFeatureTypeBuilder(odb);
-        AutoCloseableIterator<SimpleFeature> result = AutoCloseableIterator.transform(fis, builder);
-        return result;
+        return AutoCloseableIterator.transform(fis, builder);
     }
 
     /**
@@ -151,10 +150,7 @@ public class BulkFeatureRetriever {
 
         AutoCloseableIterator<ObjectInfo<RevFeature>> fis = getGeoGIGFeatures(refs);
 
-        AutoCloseableIterator<SimpleFeature> result = AutoCloseableIterator.transform(fis,
-                funcBuildFeature);
-
-        return result;
+        return AutoCloseableIterator.transform(fis, funcBuildFeature);
     }
 
     public AutoCloseableIterator<DiffObjectInfo<RevFeature>> getDiffFeatures(
@@ -224,9 +220,7 @@ public class BulkFeatureRetriever {
         }
         AutoCloseableIterator<DiffObjectInfo<RevFeature>> fis = getDiffFeatures(refs);
 
-        AutoCloseableIterator<SimpleFeature> result = AutoCloseableIterator.transform(fis, builder);
-
-        return result;
+        return AutoCloseableIterator.transform(fis, builder);
     }
 
     private boolean isDiffFeatureType(SimpleFeatureType type) {

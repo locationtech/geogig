@@ -91,7 +91,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         ProgressListener progress = getProgressListener();
         progress.started();
 
-        TransferSummary result = new TransferSummary();
+        TransferSummary transferSummary = new TransferSummary();
 
         for (Remote remote : args.remotes) {
             if (args.fetchTags) {
@@ -125,7 +125,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 // refs/remotes/... namespace
                 remoteRemoteRefs = updateLocalRemoteRefs(remote, localToRemoteRemoteRefs,
                         args.prune);
-                result.addAll(remote.getFetchURL(), Lists.newArrayList(remoteRemoteRefs));
+                transferSummary.addAll(remote.getFetchURL(), Lists.newArrayList(remoteRemoteRefs));
                 progress.setDescription("Fetched " + remoteRepo.getInfo());
             }
         }
@@ -144,13 +144,13 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         progress.complete();
 
-        return result;
+        return transferSummary;
     }
 
     private Iterable<RefDiff> updateLocalRemoteRefs(Remote remote, List<LocalRemoteRef> fetchSpecs,
             final boolean prune) {
 
-        List<RefDiff> result = new ArrayList<>();
+        List<RefDiff> updatedLocalRemoteRefs = new ArrayList<>();
 
         for (LocalRemoteRef expected : fetchSpecs) {
             final boolean isNew = expected.isNew;
@@ -159,7 +159,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
             if (remoteDeleted) {
                 if (prune) {
-                    result.add(RefDiff.removed(expected.localRemoteRef));
+                    updatedLocalRemoteRefs.add(RefDiff.removed(expected.localRemoteRef));
                     command(UpdateRef.class).setName(localName)
                             .setOldValue(expected.localRemoteRef.getObjectId()).setDelete(true)
                             .call();
@@ -174,9 +174,9 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             command(UpdateRef.class).setName(localName).setNewValue(newRef.getObjectId()).call();
 
             localRefDiff = new RefDiff(oldRef, newRef);
-            result.add(localRefDiff);
+            updatedLocalRemoteRefs.add(localRefDiff);
         }
-        return result;
+        return updatedLocalRemoteRefs;
     }
 
     private static class LocalRemoteRef {
@@ -215,13 +215,13 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         {
             LsRemoteOp lsRemote = command(LsRemoteOp.class).setRemote(remoteRepo);
 
-
-            //Ref::getName, but friendly for Fortify
-            Function<Ref, String> fn_ref_getName =  new Function<Ref, String>() {
+            // Ref::getName, but friendly for Fortify
+            Function<Ref, String> fn_ref_getName = new Function<Ref, String>() {
                 @Override
                 public String apply(Ref ref) {
                     return ref.getName();
-                }};
+                }
+            };
 
             remoteRemoteRefs = new HashMap<>(Maps.uniqueIndex(lsRemote.call(), fn_ref_getName));
             localRemoteRefs = new HashMap<>(
@@ -502,12 +502,13 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
     public List<String> getRemoteNames() {
 
-        //(remote) -> remote.getName()
-        Function<Remote, String> fn =  new Function<Remote, String>() {
+        // (remote) -> remote.getName()
+        Function<Remote, String> fn = new Function<Remote, String>() {
             @Override
             public String apply(Remote remote) {
                 return remote.getName();
-            }};
+            }
+        };
 
         return Lists.transform(argsBuilder.remotes, fn);
     }

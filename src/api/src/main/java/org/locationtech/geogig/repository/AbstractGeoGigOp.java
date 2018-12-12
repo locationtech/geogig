@@ -166,9 +166,9 @@ public abstract class AbstractGeoGigOp<T> {
     public T call() {
         try {
             notifyPre();
-            T result = _call();
-            notifyPost(result, null);
-            return result;
+            T cmdResult = _call();
+            notifyPost(cmdResult, null);
+            return cmdResult;
         } catch (RuntimeException e) {
             notifyPost(null, e);
             throw e;

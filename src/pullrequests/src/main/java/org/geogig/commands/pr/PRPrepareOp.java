@@ -156,7 +156,7 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
 
         progress.setProgressIndicator(null);
         ckeckAborted();
-        PRStatus result = PRStatus.builder()//
+        PRStatus prPrepareResult = PRStatus.builder()//
                 .request(pr)//
                 .numConflicts(conflictCount)//
                 .commitsBehindTargetBranch(0)//
@@ -166,7 +166,7 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
                 .affectedLayers(preStatus.getAffectedLayers())//
                 .build();
 
-        return result;
+        return prPrepareResult;
     }
 
     private boolean isNothingToCommit(PullResult pullResult) {

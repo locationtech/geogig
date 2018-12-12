@@ -113,9 +113,9 @@ public class IniFileConfigDatabase implements ConfigDatabase {
     public Optional<String> get(String key) {
         try {
             String[] parsed = parse(key);
-            Optional<String> result = local().get(parsed[0], parsed[1]);
-            if (result.isPresent() && result.get().length() > 0) {
-                return result;
+            Optional<String> valueOpt = local().get(parsed[0], parsed[1]);
+            if (valueOpt.isPresent() && valueOpt.get().length() > 0) {
+                return valueOpt;
             } else {
                 return Optional.absent();
             }
@@ -140,9 +140,9 @@ public class IniFileConfigDatabase implements ConfigDatabase {
     public Optional<String> getGlobal(String key) {
         try {
             String[] parsed = parse(key);
-            Optional<String> result = global.get(parsed[0], parsed[1]);
-            if (result.isPresent() && result.get().length() > 0) {
-                return result;
+            Optional<String> globalValueOpt = global.get(parsed[0], parsed[1]);
+            if (globalValueOpt.isPresent() && globalValueOpt.get().length() > 0) {
+                return globalValueOpt;
             } else {
                 return Optional.absent();
             }

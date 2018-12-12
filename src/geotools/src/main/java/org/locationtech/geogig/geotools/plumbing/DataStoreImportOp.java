@@ -336,11 +336,11 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
                     "Root must be a local branch.");
             command(CheckoutOp.class).setSource(rootBranch.get().getName()).call();
         }
-        T result = callInternal();
+        T importOpResult = callInternal();
         if (originalHead != null) {
             command(CheckoutOp.class).setSource(originalHead.getTarget()).call();
         }
-        return result;
+        return importOpResult;
     }
 
     protected abstract T callInternal();

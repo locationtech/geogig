@@ -80,7 +80,7 @@ class PackImpl implements Pack {
 
         progress.started();
 
-        List<RefDiff> result = new ArrayList<>();
+        List<RefDiff> appliedDiffs = new ArrayList<>();
         List<RefRequest> reqs = Lists.newArrayList(missingCommits.keySet());
 
         Deduplicator deduplicator = DeduplicationService.create();
@@ -88,7 +88,7 @@ class PackImpl implements Pack {
             for (RefRequest req : reqs) {
                 RefDiff changedRef = applyToPreOrder(target, req, deduplicator, progress);
                 checkNotNull(changedRef);
-                result.add(changedRef);
+                appliedDiffs.add(changedRef);
             }
         } finally {
             deduplicator.release();
@@ -111,7 +111,7 @@ class PackImpl implements Pack {
         }
         progress.complete();
 
-        return result;
+        return appliedDiffs;
     }
 
     private RefDiff applyToPreOrder(PackProcessor target, RefRequest req, Deduplicator deduplicator,

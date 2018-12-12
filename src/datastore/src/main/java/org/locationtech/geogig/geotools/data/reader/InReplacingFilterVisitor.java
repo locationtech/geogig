@@ -52,19 +52,19 @@ public class InReplacingFilterVisitor extends DuplicatingFilterVisitor {
         // given a list of the "simple" items (ie. "property" = 'a')
         // simplify them to the IN function
         public List<Filter> simplify(List<Filter> filters, Object extraData) {
-                List<Filter> result = new ArrayList<>();
+                List<Filter> inMemmbers = new ArrayList<>();
                 Map<String, List<Object>> grouped = group(filters);
                 for (Map.Entry<String, List<Object>> entry : grouped.entrySet()) {
                         if (entry.getValue().size() == 1) {
-                                result.add(createEquals(entry.getKey(), entry.getValue().get(0),
+                                inMemmbers.add(createEquals(entry.getKey(), entry.getValue().get(0),
                                         extraData));
                         } else {
-                                result.add(createInFunction(entry.getKey(), entry.getValue(),
+                                inMemmbers.add(createInFunction(entry.getKey(), entry.getValue(),
                                         extraData));
                         }
 
                 }
-                return result;
+                return inMemmbers;
         }
 
         // given a property and values, create the

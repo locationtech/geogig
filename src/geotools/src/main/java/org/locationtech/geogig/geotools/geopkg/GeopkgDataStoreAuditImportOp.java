@@ -30,15 +30,15 @@ public class GeopkgDataStoreAuditImportOp extends DataStoreImportOp<GeopkgImport
 
     @Override
     protected GeopkgImportResult callInternal() {
-        GeopkgImportResult result;
+        GeopkgImportResult auditResult;
         try {
-            result = command(GeopkgAuditImport.class).setDatabase(geopackage)
+            auditResult = command(GeopkgAuditImport.class).setDatabase(geopackage)
                     .setAuthorName(authorName).setAuthorEmail(authorEmail)
                     .setCommitMessage(commitMessage).setTable(table).call();
 
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw e;
         }
-        return result;
+        return auditResult;
     }
 }

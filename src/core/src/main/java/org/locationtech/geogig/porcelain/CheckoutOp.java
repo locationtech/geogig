@@ -127,20 +127,20 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         checkArgument((ours == theirs) || branchOrCommit == null,
                 "--ours/--theirs is incompatible with switching branches.");
 
-        CheckoutResult result;
+        CheckoutResult checkoutResult;
 
         if (paths.isEmpty()) {
-            result = branchCheckout();
+            checkoutResult = branchCheckout();
         } else {
-            result = checkoutFiltered(ImmutableSet.copyOf(paths));
+            checkoutResult = checkoutFiltered(ImmutableSet.copyOf(paths));
         }
-        result.setNewTree(workingTree().getTree().getId());
-        return result;
+        checkoutResult.setNewTree(workingTree().getTree().getId());
+        return checkoutResult;
     }
 
     private CheckoutResult checkoutFiltered(final Set<String> paths) throws CheckoutException {
-        CheckoutResult result = new CheckoutResult();
-        result.setResult(CheckoutResult.Results.UPDATE_OBJECTS);
+        CheckoutResult checkoutResult = new CheckoutResult();
+        checkoutResult.setResult(CheckoutResult.Results.UPDATE_OBJECTS);
 
         final ConflictsDatabase conflictsDatabase = conflictsDatabase();
         final ObjectDatabase objectDatabase = objectDatabase();
@@ -232,7 +232,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
         final RevTree newWorkHead = updateTree.call();
         workingTree.updateWorkHead(newWorkHead.getId());
-        return result;
+        return checkoutResult;
     }
 
     private CanonicalTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
@@ -267,7 +267,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
     }
 
     private CheckoutResult branchCheckout() throws CheckoutException {
-        CheckoutResult result = new CheckoutResult();
+        CheckoutResult checkoutResult = new CheckoutResult();
         final ConflictsDatabase conflictsDatabase = conflictsDatabase();
         final boolean hasConflicts = conflictsDatabase.hasConflicts(null);
         if (hasConflicts && !force) {
@@ -304,8 +304,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                             .set();
 
                     targetRef = Optional.of(branch);
-                    result.setResult(CheckoutResult.Results.CHECKOUT_REMOTE_BRANCH);
-                    result.setRemoteName(remoteName);
+                    checkoutResult.setResult(CheckoutResult.Results.CHECKOUT_REMOTE_BRANCH);
+                    checkoutResult.setRemoteName(remoteName);
                 }
             }
 
@@ -343,29 +343,29 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             ObjectId treeId = targetTreeId.get();
             workingTree().updateWorkHead(treeId);
             stagingArea().updateStageHead(treeId);
-            result.setNewTree(treeId);
+            checkoutResult.setNewTree(treeId);
             if (targetRef.isPresent()) {
                 // update HEAD
                 Ref target = targetRef.get();
                 // beware of cyclic refs, peel symrefs
                 String refName = target.peel().getName();
                 command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(refName).call();
-                result.setNewRef(targetRef.get());
-                result.setOid(targetCommitId.get());
-                result.setResult(CheckoutResult.Results.CHECKOUT_LOCAL_BRANCH);
+                checkoutResult.setNewRef(targetRef.get());
+                checkoutResult.setOid(targetCommitId.get());
+                checkoutResult.setResult(CheckoutResult.Results.CHECKOUT_LOCAL_BRANCH);
             } else {
                 // set HEAD to a dettached state
                 ObjectId commitId = targetCommitId.get();
                 command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commitId).call();
-                result.setOid(commitId);
-                result.setResult(CheckoutResult.Results.DETACHED_HEAD);
+                checkoutResult.setOid(commitId);
+                checkoutResult.setResult(CheckoutResult.Results.DETACHED_HEAD);
             }
             Optional<Ref> ref = command(RefParse.class).setName(Ref.MERGE_HEAD).call();
             if (ref.isPresent()) {
                 command(UpdateRef.class).setName(Ref.MERGE_HEAD).setDelete(true).call();
             }
         }
-        return result;
+        return checkoutResult;
     }
 
     private CheckoutException buildConflictsException(final ConflictsDatabase conflictsDatabase) {

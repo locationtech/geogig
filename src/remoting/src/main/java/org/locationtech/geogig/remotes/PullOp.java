@@ -236,7 +236,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         getProgressListener().started();
         getProgressListener().setDescription("Pull: pulling " + remote);
 
-        PullResult result = new PullResult();
+        PullResult pullOpResult = new PullResult();
         TransferSummary fetchResult = command(FetchOp.class)//
                 .addRemote(remote)//
                 .setDepth(depth.or(0))//
@@ -246,9 +246,9 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
                 .setProgressListener(getProgressListener())//
                 .call();
 
-        result.setFetchResult(fetchResult);
-        result.setOldRef(currentBranch);
-        result.setRemote(suppliedRemote);
+        pullOpResult.setFetchResult(fetchResult);
+        pullOpResult.setOldRef(currentBranch);
+        pullOpResult.setRemote(suppliedRemote);
 
         for (LocalRemoteRefSpec fetchspec : remote.getFetchSpecs()) {
             final String localRemoteRefName = fetchspec.getLocal();
@@ -261,10 +261,10 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
             if (rebase) {
                 getProgressListener().setDescription("Pull: rebasing...");
 
-
-                //() -> localRemoteRef.getObjectId()
+                // () -> localRemoteRef.getObjectId()
                 Supplier<ObjectId> fn = new Supplier<ObjectId>() {
-                    @Override public ObjectId get() {
+                    @Override
+                    public ObjectId get() {
                         return localRemoteRef.getObjectId();
                     }
                 };
@@ -284,20 +284,20 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
                             .setMessage(message)//
                             .setProgressListener(getProgressListener())//
                             .call();
-                    result.setMergeReport(Optional.of(report));
+                    pullOpResult.setMergeReport(Optional.of(report));
                 } catch (NothingToCommitException e) {
                     // the branch that we are trying to pull has less history than the
                     // branch we are pulling into
                 }
             }
             final Ref currentBranchFinalState = resolveCurrentBranch();
-            result.setNewRef(currentBranchFinalState);
+            pullOpResult.setNewRef(currentBranchFinalState);
         }
 
         getProgressListener().setDescription("Pull: finished pulling " + remote);
         getProgressListener().complete();
 
-        return result;
+        return pullOpResult;
     }
 
     private Ref resolveCurrentBranch() {

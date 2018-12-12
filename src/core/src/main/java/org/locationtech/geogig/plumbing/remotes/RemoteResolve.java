@@ -49,7 +49,7 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
             throw new RemoteException(StatusCode.MISSING_NAME);
         }
 
-        Optional<Remote> result = Optional.absent();
+        Optional<Remote> remoteOpt = Optional.absent();
 
         ConfigDatabase config = configDatabase();
         List<String> allRemotes = config.getAllSubsections("remote");
@@ -70,9 +70,9 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
                     remotePushURL.or(remoteFetchURL).or(""), remoteFetch.or(""),
                     remoteMapped.or("false").equals("true"), remoteMappedBranch.orNull(),
                     remoteUserName.orNull(), remotePassword.orNull());
-            result = Optional.of(remote);
+            remoteOpt = Optional.of(remote);
         }
-        return result;
+        return remoteOpt;
     }
 
     @Override

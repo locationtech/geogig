@@ -202,18 +202,18 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
     }
 
     public static <T> AutoCloseableIterator<T> concat(AutoCloseableIterator<Iterator<T>> its) {
-        Iterator<T> result = Iterators.concat(its);
+        Iterator<T> concatenated = Iterators.concat(its);
 
         return new AutoCloseableIterator<T>() {
 
             @Override
             public boolean hasNext() {
-                return result.hasNext();
+                return concatenated.hasNext();
             }
 
             @Override
             public T next() {
-                return result.next();
+                return concatenated.next();
             }
 
             @Override

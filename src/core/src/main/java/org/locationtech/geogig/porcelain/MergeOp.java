@@ -203,7 +203,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         // capture original values in case the operation is cancelled
         origHead = currHead.get();
-        getProgressListener().setDescription(String.format("Merge: merging %s onto %s", commits, origHead));
+        getProgressListener()
+                .setDescription(String.format("Merge: merging %s onto %s", commits, origHead));
         if (origHead instanceof SymRef) {
             final String currentBranch = ((SymRef) origHead).getTarget();
             origCurrentBranch = command(RefParse.class).setName(currentBranch).call().get();
@@ -302,7 +303,6 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 progress.setDescription(String.format("Merging commit %s onto %s",
                         fmt(targetCommit), fmt(headCommit)));
 
-
                 Optional<ObjectId> ancestorCommit = command(FindCommonAncestor.class)
                         .setLeft(headCommit).setRight(targetCommit).call();
 
@@ -359,11 +359,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         RevCommit mergeCommit = commit(mergeStatusBuilder.isFastForward());
 
         progress.setDescription("Merge: created merge commit " + mergeCommit);
-        MergeReport result = new MergeReport(mergeCommit, Optional.fromNullable(mergeScenario),
-                oursId, pairs);
-
-        return result;
-
+        return new MergeReport(mergeCommit, Optional.fromNullable(mergeScenario), oursId, pairs);
     }
 
     private String fmt(RevCommit c) {

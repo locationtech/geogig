@@ -125,13 +125,13 @@ import org.locationtech.jts.geom.Point;
                 if (g instanceof Polygon) {
                         return createBBoxPolygon(e, geometryFactory);
                 } else if (g instanceof MultiPolygon) {
-                        Polygon[] result = new Polygon[] { createBBoxPolygon(e, geometryFactory) };
-                        return geometryFactory.createMultiPolygon(result);
+                        Polygon[] polyArray = new Polygon[] { createBBoxPolygon(e, geometryFactory) };
+                        return geometryFactory.createMultiPolygon(polyArray);
                 } else if (g instanceof Point) {
                         return createMidPoint(e, geometryFactory);
                 } else if (g instanceof MultiPoint) {
-                        Point[] result = new Point[] { createMidPoint(e, geometryFactory) };
-                        return geometryFactory.createMultiPoint(result);
+                        Point[] pointArray = new Point[] { createMidPoint(e, geometryFactory) };
+                        return geometryFactory.createMultiPoint(pointArray);
                 } else if (g instanceof LineString) {
                         return createDiagonalLine(e, geometryFactory);
                 } else if (g instanceof MultiLineString) {

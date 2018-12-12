@@ -301,13 +301,13 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         getProgressListener().started();
 
-        TransferSummary result = new TransferSummary();
+        TransferSummary transferSummary = new TransferSummary();
 
         for (Remote remote : args.remotes) {
             List<RefDiff> needUpdate = fetch(remote, args);
             if (!needUpdate.isEmpty()) {
                 String fetchURL = remote.getFetchURL();
-                result.addAll(fetchURL, needUpdate);
+                transferSummary.addAll(fetchURL, needUpdate);
             }
         }
 
@@ -322,7 +322,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         getProgressListener().complete();
 
-        return result;
+        return transferSummary;
     }
 
     private boolean isHttp(FetchArgs args) {

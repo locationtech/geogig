@@ -26,7 +26,7 @@ public class CheckoutResult {
 
     private ObjectId newTree = null;
 
-    private Results result = Results.NO_RESULT;
+    private Results resultEnumVal = Results.NO_RESULT;
 
     public ObjectId getOid() {
         return oid;
@@ -56,12 +56,12 @@ public class CheckoutResult {
     }
 
     public Results getResult() {
-        return result;
+        return resultEnumVal;
     }
 
     public CheckoutResult setResult(Results result) {
-        if (this.result == Results.NO_RESULT) {
-            this.result = result;
+        if (this.resultEnumVal == Results.NO_RESULT) {
+            this.resultEnumVal = result;
         }
         return this;
     }

@@ -249,17 +249,17 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                 break;
             }
 
-            DiffMergeFeatureResult result = command(DiffMergeFeaturesOp.class)//
+            DiffMergeFeatureResult diffMergeFeatureResult = command(DiffMergeFeaturesOp.class)//
                     .setCommonAncestor(theirsDiff.getOldObject())//
                     .setMergeInto(oursDiff.getNewObject())//
                     .setToMerge(theirsDiff.getNewObject())//
                     .call();
 
-            if (result.isConflict()) {
+            if (diffMergeFeatureResult.isConflict()) {
                 consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
                 report.addConflict(path);
-            } else if (result.isMerge()) {
-                RevFeature mergedFeature = result.mergedFeature();
+            } else if (diffMergeFeatureResult.isMerge()) {
+                RevFeature mergedFeature = diffMergeFeatureResult.mergedFeature();
                 if (mergedFeature.getId().equals(theirsDiff.newObjectId())) {
                     // the resulting merged feature equals the feature to merge from
                     // the branch, which means that it exists in the merge into tree and there

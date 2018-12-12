@@ -82,22 +82,22 @@ public class FloatPackedCoordinateSequence extends PackedCoordinateSequence.Floa
         int nCoords = serializedForm[0].length;
         int dims = serializedForm.length;
         boolean hasZ = dims > 2;
-        float[] result = new float[nCoords * 2];
+        float[] coordBuff = new float[nCoords * 2];
         if (nCoords == 0)
-            return result; // empty
+            return coordBuff; // empty
 
         int X = 0;
         int Y = 0;
         for (int t = 0; t < nCoords; t++) {
             X += serializedForm[0][t];
             Y += serializedForm[1][t];
-            result[t * dims] = java.lang.Float.intBitsToFloat(X);
-            result[t * dims + 1] = java.lang.Float.intBitsToFloat(Y);
+            coordBuff[t * dims] = java.lang.Float.intBitsToFloat(X);
+            coordBuff[t * dims + 1] = java.lang.Float.intBitsToFloat(Y);
             if (hasZ) {
-                result[t * dims + 2] = java.lang.Float.intBitsToFloat(Y);
+                coordBuff[t * dims + 2] = java.lang.Float.intBitsToFloat(Y);
             }
         }
-        return result;
+        return coordBuff;
     }
 
 }

@@ -57,11 +57,11 @@ public class SimplifyingGeometryReplacer implements Function<SimpleFeature, Simp
         }
 
         public MultiPolygon simplify(MultiPolygon mp) {
-                Polygon[] result = new Polygon[mp.getNumGeometries()];
+                Polygon[] polyBuff = new Polygon[mp.getNumGeometries()];
                 for (int idx = 0; idx < mp.getNumGeometries(); idx++) {
-                        result[idx] = simplify((Polygon) mp.getGeometryN(idx));
+                        polyBuff[idx] = simplify((Polygon) mp.getGeometryN(idx));
                 }
-                return geometryFactory.createMultiPolygon(result);
+                return geometryFactory.createMultiPolygon(polyBuff);
         }
 
         public Polygon simplify(Polygon p) {

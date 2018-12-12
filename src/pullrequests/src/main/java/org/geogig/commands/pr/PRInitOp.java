@@ -87,9 +87,9 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
             setRef(txContext, headRef, liveTargetBranch.getObjectId());
 
             // checkout the target branch inside the tx for the test merge to happen there.
-            Results result = txContext.command(CheckoutOp.class).setForce(true)
+            Results initCheckoutResult = txContext.command(CheckoutOp.class).setForce(true)
                     .setSource(prTargetBranch.getName()).call().getResult();
-            Preconditions.checkState(Results.CHECKOUT_LOCAL_BRANCH.equals(result));
+            Preconditions.checkState(Results.CHECKOUT_LOCAL_BRANCH.equals(initCheckoutResult));
             final Map<String, String> props = pr.toProperties();
             final String section = String.format("pr.%d", id);
             liveContext.configDatabase().putSection(section, props);

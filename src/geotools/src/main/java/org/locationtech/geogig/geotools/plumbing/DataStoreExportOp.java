@@ -121,7 +121,7 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
         final Set<String> layerRefSpecs = resolveExportLayerRefSpecs();
 
         final DataStore targetStore = dataStore.get();
-        final T result;
+        final T exportResult;
         try {
             for (String treeSpec : layerRefSpecs) {
                 String tableName = Splitter.on(':').splitToList(treeSpec).get(1);
@@ -130,12 +130,12 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
                     break;
                 }
             }
-            result = buildResult(targetStore);
+            exportResult = buildResult(targetStore);
         } finally {
             targetStore.dispose();
         }
 
-        return result;
+        return exportResult;
     }
 
     protected abstract T buildResult(DataStore targetStore);

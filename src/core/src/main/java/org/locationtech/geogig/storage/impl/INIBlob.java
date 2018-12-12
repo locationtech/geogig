@@ -52,9 +52,9 @@ public abstract class INIBlob {
         }
         checkReload();
         for (Entry e : data) {
-            Optional<String> result = e.get(section, key);
-            if (result.isPresent())
-                return result;
+            Optional<String> optVal = e.get(section, key);
+            if (optVal.isPresent())
+                return optVal;
         }
         return Optional.absent();
     }

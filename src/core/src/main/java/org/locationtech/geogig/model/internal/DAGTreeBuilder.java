@@ -222,7 +222,7 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
 
         @Override
         protected RevTree compute() {
-            final RevTree result;
+            final RevTree builtTree;
             if (state.isCancelled()) {
                 return null;
             }
@@ -231,17 +231,17 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
                 final STATE rootState = currentRoot.getState();
                 if (rootState.equals(STATE.CHANGED)) {
                     if (0 == currentRoot.numBuckets()) {
-                        result = buildLeafTree(currentRoot);
+                        builtTree = buildLeafTree(currentRoot);
                     } else {
-                        result = buildBucketsTree(currentRoot);
+                        builtTree = buildBucketsTree(currentRoot);
                     }
                 } else {
                     checkState(rootState == STATE.INITIALIZED || rootState == STATE.MIRRORED);
                     ObjectId treeId = currentRoot.originalTreeId();
                     if (state.isCancelled()) {
-                        result = null;
+                        builtTree = null;
                     } else {
-                        result = state.getTree(treeId);
+                        builtTree = state.getTree(treeId);
                     }
                 }
             } catch (RuntimeException | InterruptedException | ExecutionException e) {
@@ -250,9 +250,9 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
                 throw new RuntimeException(e);
             }
             if (!state.isCancelled()) {
-                state.addNewTree(result);
+                state.addNewTree(builtTree);
             }
-            return result;
+            return builtTree;
         }
 
         private RevTree buildBucketsTree(final DAG root)
@@ -319,9 +319,9 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
             List<Node> treeNodes = null;
             List<Node> featureNodes = null;
 
-            RevTree result = RevTreeBuilder.build(size, childTreeCount, treeNodes, featureNodes,
-                    buckets);
-            return state.isCancelled() ? null : result;
+            RevTree builtBucketsTree = RevTreeBuilder.build(size, childTreeCount, treeNodes,
+                    featureNodes, buckets);
+            return state.isCancelled() ? null : builtBucketsTree;
         }
 
         private RevTree buildLeafTree(DAG root) {

@@ -85,8 +85,8 @@ public abstract class AbstractObjectStore implements ObjectStore {
         if (partialId.length() % 2 != 0) {
             Iterator<ObjectId> listIterator = baseResults.iterator();
             while (listIterator.hasNext()) {
-                ObjectId result = listIterator.next();
-                if (!result.toString().startsWith(partialId)) {
+                ObjectId lookupMatchCandidate = listIterator.next();
+                if (!lookupMatchCandidate.toString().startsWith(partialId)) {
                     listIterator.remove();
                 }
             }

@@ -46,10 +46,10 @@ public class ConfigGet extends AbstractGeoGigOp<Optional<String>> {
     @Override
     protected Optional<String> _call() {
         ConfigScope scope = global ? ConfigScope.GLOBAL : ConfigScope.LOCAL;
-        Optional<Map<String, String>> result = command(ConfigOp.class)
+        Optional<Map<String, String>> configGetResult = command(ConfigOp.class)
                 .setAction(ConfigAction.CONFIG_GET).setName(name).setScope(scope).call();
-        if (result.isPresent()) {
-            return Optional.of(result.get().get(name));
+        if (configGetResult.isPresent()) {
+            return Optional.of(configGetResult.get().get(name));
         } else {
             return Optional.absent();
         }

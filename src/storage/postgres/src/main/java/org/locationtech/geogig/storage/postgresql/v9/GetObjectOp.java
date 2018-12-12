@@ -85,7 +85,7 @@ class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> 
             }
         }
 
-        List<ObjectInfo<T>> result = new ArrayList<>(queryCount);
+        List<ObjectInfo<T>> getObjectOpResult = new ArrayList<>(queryCount);
         for (NodeRef n : queryNodes) {
             ObjectId id = n.getObjectId();
             byte[] bytes = queryMatches.get(id);
@@ -96,7 +96,7 @@ class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> 
                 if (objType == null || objType.equals(obj.getType())) {
                     callback.found(id, null/* this arg should be deprecated */);
                     ObjectInfo<T> info = ObjectInfo.of(n, type.cast(obj));
-                    result.add(info);
+                    getObjectOpResult.add(info);
                     sharedCache.put(obj);
                 } else {
                     callback.notFound(n.getObjectId());
@@ -104,7 +104,7 @@ class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> 
             }
         }
 
-        return result;
+        return getObjectOpResult;
     }
 
     private Array toJDBCArray(Connection cx, final Collection<NodeRef> queryIds)

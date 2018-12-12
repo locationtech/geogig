@@ -128,9 +128,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         sendPack.setRemote(remote);
         sendPack.setRefs(refsToPush);
         sendPack.setProgressListener(getProgressListener());
-        TransferSummary result = sendPack.call();
-        System.err.println(result);
-        return result;
+        TransferSummary sendPackResult = sendPack.call();
+        return sendPackResult;
     }
 
     private boolean isHttp(Remote r) {

@@ -137,7 +137,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         String remoteRefSpec;
         boolean force;
 
-        TransferSummary result = new TransferSummary();
+        TransferSummary sendPackResult = new TransferSummary();
 
         for (TransferableRef ref : this.refsToPush) {
             localRefSpec = ref.getLocalRef();
@@ -148,7 +148,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
                 Optional<Ref> deleted = remoteRepo.deleteRef(remoteRefSpec);
                 if (deleted.isPresent()) {
                     RefDiff deleteResult = RefDiff.added(deleted.get());
-                    result.add(remote.getPushURL(), deleteResult);
+                    sendPackResult.add(remote.getPushURL(), deleteResult);
                 }
             } else {
                 Optional<Ref> localRef = refParse(localRefSpec);
@@ -158,11 +158,11 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
 
                 if (newRef.isPresent()) {
                     RefDiff deleteResult = new RefDiff(localRef.get(), newRef.get());
-                    result.add(remote.getPushURL(), deleteResult);
+                    sendPackResult.add(remote.getPushURL(), deleteResult);
                 }
             }
         }
-        return result;
+        return sendPackResult;
     }
 
     private Optional<Ref> push(IRemoteRepo remoteRepo, Remote remote, Ref localRef,

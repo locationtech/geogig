@@ -18,7 +18,7 @@ import org.locationtech.geogig.repository.DefaultProgressListener;
 
 public abstract class PRCommand<T> extends AbstractGeoGigOp<T> {
 
-    private T result;
+    private T prCommandResult;
 
     private RuntimeException error;
 
@@ -33,7 +33,7 @@ public abstract class PRCommand<T> extends AbstractGeoGigOp<T> {
             @Override
             public void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
                     @Nullable RuntimeException exception) {
-                PRCommand.this.result = (T) result;
+                PRCommand.this.prCommandResult = (T) result;
                 PRCommand.this.error = exception;
                 latch.countDown();
             }
@@ -57,7 +57,7 @@ public abstract class PRCommand<T> extends AbstractGeoGigOp<T> {
         if (error != null) {
             throw error;
         }
-        return result;
+        return prCommandResult;
     }
 
     protected String fmt(RevCommit c) {

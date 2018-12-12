@@ -160,12 +160,12 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                     return (SimpleFeature) f.orNull();
                 }};
 
-            Iterator<SimpleFeature> result = Iterators.filter(
+            Iterator<SimpleFeature> filteredIter = Iterators.filter(
                     Iterators.transform(transformed, fn),
                     Predicates.notNull());
 
             // check the resulting schema has something to contribute
-            PeekingIterator<SimpleFeature> peekingIt = Iterators.peekingIterator(result);
+            PeekingIterator<SimpleFeature> peekingIt = Iterators.peekingIterator(filteredIter);
             if (peekingIt.hasNext()) {
                 Function<AttributeDescriptor, String> toString = (at) -> at.getLocalName();
                 SimpleFeature peek = peekingIt.peek();
@@ -247,7 +247,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         BulkFeatureRetriever gf = new BulkFeatureRetriever(database);
         Iterator<SimpleFeature> feats = gf.getGeoToolsFeatures(nodes);
 
-        Iterator<SimpleFeature> result = Iterators.transform(feats,
+        Iterator<SimpleFeature> transformedIter = Iterators.transform(feats,
                 new Function<SimpleFeature, SimpleFeature>() {
 
                     private AtomicInteger count = new AtomicInteger();
@@ -259,7 +259,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                         return input;
                     }
                 });
-        return result;
+        return transformedIter;
     }
 
     private Iterator<SimpleFeature> adaptToArguments(final Iterator<SimpleFeature> plainFeatures,

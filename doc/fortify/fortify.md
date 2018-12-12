@@ -33,12 +33,125 @@ PS C:\Users\User> cd .\install.bat
 
 That will install the maven plugin in the local maven repository at `%HOME%\.m2\repository\com\hpe\security\fortify\maven\plugin\sca-maven-plugin\17.20\sca-maven-plugin-17.20.jar`
 
-### 3. Create the batch file
+### 3. Configure the fortify maven plugin
 
-- Open the Fortify "Scan Wizzard" application
-- Select "Add Project Root" and browse to the `build/fortify/geogig-1.4-SNAPSHOT` directory generated at step 1.
-- Click "Next" and under "Enable build integration" select the "Maven" checkbox.
+At the project's root pom:
 
+```
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.hpe.security.fortify.maven.plugin</groupId>
+            <artifactId>sca-maven-plugin</artifactId>
+            <version>17.20</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>clean</goal>
+                  <goal>translate</goal>
+                  <goal>scan</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+```
+
+### Run the scan
+
+We've added the `sca-maven-plugin` to a `fortify` maven profile on the delomboked source code base's root pom. So run:
+
+```
+PS C:\Users\User> cd <geogig>/buld/fortify/geogig-<version>/src
+PS C:\Users\User> mvn clean integration-test -Pfortify
+```
+
+You'll see sections like the following for each project module as the `sca-maven-plugin` runs the `clean`, `translate`, and `scan` goals:
+
+```
+[INFO] --- sca-maven-plugin:17.20:clean (default) @ geogig-core ---
+[INFO] Aggregate: true
+[INFO] Index of Project: 3/13
+[INFO] Packaging Type: jar
+[INFO] Base Dir: C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core
+[INFO] POM: C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core\pom.xml
+[INFO] Skipping to clean in aggregate mode
+[INFO]
+[INFO] --- maven-jar-plugin:3.0.2:jar (default-jar) @ geogig-core ---
+...
+[INFO] --- sca-maven-plugin:17.20:translate (default) @ geogig-core ---
+[INFO] Aggregate: true
+[INFO] Index of Project: 3/13
+[INFO] Packaging Type: jar
+[INFO] Base Dir: C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core
+[INFO] POM: C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core\pom.xml
+[INFO] Fail on Error: false
+[INFO] Translating pom.xml...
+[INFO] Build ID: geogig-1.4-SNAPSHOT
+[INFO] Executing Command: cmd.exe /X /C "sourceanalyzer @C:/Users/Developer/git/geogig/build/fortify/geogig-1.4-SNAPSHOT/src/core/target/fortify/sca-translate-geogig-core-pom.txt"
+
+Fortify Static Code Analyzer 17.20.0183 (using JRE 1.8.0_144)
+[INFO] Source File Path: C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core\src\main\java
+[INFO] Resources: C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core\src\main\resources
+[INFO] Translating main...
+[INFO] Build ID: geogig-1.4-SNAPSHOT
+[INFO] Source: 1.8
+[INFO] Executing Command: cmd.exe /X /C "sourceanalyzer @C:/Users/Developer/git/geogig/build/fortify/geogig-1.4-SNAPSHOT/src/core/target/fortify/sca-translate-geogig-core-main.txt"
+Fortify Static Code Analyzer 17.20.0183 (using JRE 1.8.0_144)
+[INFO]
+[INFO] --- sca-maven-plugin:17.20:scan (default) @ geogig-core ---
+[INFO] Aggregate: true
+[INFO] Index of Project: 3/13
+[INFO] Packaging Type: jar
+[INFO] Base Dir: C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core
+[INFO] POM: C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core\pom.xml
+[INFO] Skipping to scan in aggregate mode
+[INFO]
+```
+
+Once the build finishes, the following log files will be available at the root's `target/fortify` folder:
+
+```
+$ ls -l target/fortify/
+total 4989
+-rw-r--r-- 1 Developer 197121 4891410 Dec 12 04:54 geogig-1.4-SNAPSHOT.fpr
+-rw-r--r-- 1 Developer 197121     539 Dec 12 04:41 sca-clean.log
+-rw-r--r-- 1 Developer 197121     156 Dec 12 04:41 sca-clean-geogig.txt
+-rw-r--r-- 1 Developer 197121   14232 Dec 12 04:54 sca-scan.log
+-rw-r--r-- 1 Developer 197121     389 Dec 12 04:44 sca-scan-geogig.txt
+-rw-r--r-- 1 Developer 197121  188783 Dec 12 04:44 sca-translate.log
+-rw-r--r-- 1 Developer 197121     435 Dec 12 04:41 sca-translate-geogig-main.txt
+-rw-r--r-- 1 Developer 197121     332 Dec 12 04:41 sca-translate-geogig-pom.txt
+```
+
+The `.fpr` file is the Fortify project file you can open in the "Audit Workbench" Fortify application.
+
+Take a look at `sca-translate.log`. Most probably, Fortify will log several translation errors as it can't understand some Java constructs or method calls. Look for `SEVERE` log messages, they will mostly be of the type `Unable ro resolve function ....`.
+
+You need to resolve all of those because that means all those files and all its callers weren't analyzed, leading a lot of false positives and warnings when opening the `.fpr` in Audit Workbench.
+
+Our first run resulted in 41 log entries like the following:
+
+```
+$ grep "Unable to resolve function" sca-translate.log
+Unable to resolve function 'com.google.common.collect.Lists.transform' at (C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\api\src\main\java\org\locationtech\geogig\model\RevObjects.java:355:15)
+Unable to resolve function 'com.google.common.collect.Iterables.transform' at (C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\api\src\main\java\org\locationtech\geogig\storage\IndexDuplicator.java:160:39)
+Unable to resolve function 'com.google.common.collect.Iterators.transform' at (C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\api\src\main\java\org\locationtech\geogig\storage\internal\ObjectStoreDiffObjectIterator.java:141:26)
+Unable to resolve function 'com.google.common.collect.Iterables.transform' at (C:\Users\Developer\git\geogig\build\fortify\geogig-1.4-SNAPSHOT\src\core\src\main\java\org\locationtech\geogig\data\FindFeatureTypeTrees.java:88:54)
+...
+```
+
+In our case, most of these errors were resolved by replacing calls to guava utility classes by plain Java 8 constructs, mostly using the Streams API. 
+
+For example:
+```
+Lists.transform(commit.getParentIds(), RevObjects::toShortString);
+```
+was replaced by
+```
+commit.getParentIds().stream().map(RevObjects::toShortString).collect(Collectors.toList())
+```
 ---
 
 That's it for the quick start guide. Follow on with the detailed process section bellow for more information.

@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.rocksdb.BlockBasedTableConfig;
@@ -31,9 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
 
@@ -73,15 +73,14 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         final String path = dbconfig.getDbPath();
         final List<String> colFamilyNames;
         try {
-            // (ba) -> new String(ba, Charsets.UTF_8))
-            Function<byte[], String> fn =  new Function<byte[], String>() {
+            Function<byte[], String> fn = new Function<byte[], String>() {
                 @Override
                 public String apply(byte[] ba) {
                     return new String(ba, Charsets.UTF_8);
-                }};
-
-            colFamilyNames = Lists.transform(RocksDB.listColumnFamilies(new Options(), path),
-                   fn);
+                }
+            };
+            List<byte[]> columnFamilies = RocksDB.listColumnFamilies(new Options(), path);
+            colFamilyNames = columnFamilies.stream().map(fn).collect(Collectors.toList());
         } catch (RocksDBException e) {
             dbOptions.close();
             throw new RuntimeException(e);
@@ -136,15 +135,15 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
                     ColumnFamilyDescriptor mdd = newColDescriptor("metadata");
                     metadata = db.createColumnFamily(mdd);
                 }
-                //This usually happens only when creating a database -
-                //Column Family "default" is not handled correctly; this
-                //makes sure its put into the extraColumns so it will be correctly
-                //released when the DB is closed.
+                // This usually happens only when creating a database -
+                // Column Family "default" is not handled correctly; this
+                // makes sure its put into the extraColumns so it will be correctly
+                // released when the DB is closed.
                 if (!dbconfig.getColumnFamilyNames().contains("default")) {
                     int index = 0;
                     for (ColumnFamilyDescriptor descriptor : colDescriptors) {
                         if (new String(descriptor.columnFamilyName()).equals("default")) {
-                            extraColumns.put("default", colFamiliesTarget.get( index));
+                            extraColumns.put("default", colFamiliesTarget.get(index));
                         }
                         index++;
                     }
@@ -193,7 +192,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         BloomFilter bloomFilter = new BloomFilter();
         tableFormatConfig.setFilter(bloomFilter);
         colFamilyOptions.setTableFormatConfig(tableFormatConfig);
-        
+
         // cause the Windows jar doesn't come with
         // snappy and hence fails
         colFamilyOptions.setCompressionType(CompressionType.NO_COMPRESSION);

@@ -493,27 +493,27 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
     }
 
     private String resolveCommitter() {
-        final String key = "user.name";
+        final String namekey = "user.name";
 
-        String name = getClientData(key, String.class)
-                .or(command(ConfigGet.class).setName(key).call()).orNull();
+        String name = getClientData(namekey, String.class)
+                .or(command(ConfigGet.class).setName(namekey).call()).orNull();
 
         checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
-                key, key);
+                namekey, namekey);
 
         return name;
     }
 
     private String resolveCommitterEmail() {
-        final String key = "user.email";
+        final String emailkey = "user.email";
 
-        String email = getClientData(key, String.class)
-                .or(command(ConfigGet.class).setName(key).call()).orNull();
+        String email = getClientData(emailkey, String.class)
+                .or(command(ConfigGet.class).setName(emailkey).call()).orNull();
 
         checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",
-                key, key);
+                emailkey, emailkey);
 
         return email;
     }

@@ -72,7 +72,7 @@ public abstract class RepositoryResolver {
             }
         }
         throw new IllegalArgumentException(
-                "No repository initializer found capable of handling this kind of URI: " + repoURI);
+                "No repository initializer found capable of handling this kind of URI: " + repoURI.getScheme());
     }
 
     /**

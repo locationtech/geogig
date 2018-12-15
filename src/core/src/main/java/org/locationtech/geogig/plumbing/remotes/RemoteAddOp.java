@@ -63,7 +63,8 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
         }
 
         String configSection = "remote." + name;
-        final String fetch = "*".equals(branch)?Remote.defaultRemoteRefSpec(name):Remote.defaultMappedBranchRefSpec(name, branch);
+        final String fetch = "*".equals(branch) ? Remote.defaultRemoteRefSpec(name)
+                : Remote.defaultMappedBranchRefSpec(name, branch);
 
         config.put(configSection + ".url", url);
         config.put(configSection + ".fetch", fetch);
@@ -73,10 +74,6 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
         }
         if (username != null) {
             config.put(configSection + ".username", username);
-        }
-        if (password != null) {
-            password = Remote.encryptPassword(password);
-            config.put(configSection + ".password", password);
         }
 
         return new Remote(name, url, url, fetch, mapped, branch, username, password);

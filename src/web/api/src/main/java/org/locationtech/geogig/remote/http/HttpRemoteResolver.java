@@ -13,6 +13,13 @@ import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URI;
+import java.util.Base64;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.RemoteResolver;
@@ -42,7 +49,7 @@ public class HttpRemoteResolver implements RemoteResolver {
                     Authenticator.setDefault(new Authenticator() {
                         protected PasswordAuthentication getPasswordAuthentication() {
                             return new PasswordAuthentication(username,
-                                    Remote.decryptPassword(password).toCharArray());
+                                    decryptPassword(password).toCharArray());
                         }
                     });
                 } else {
@@ -60,4 +67,49 @@ public class HttpRemoteResolver implements RemoteResolver {
         }
         return Optional.fromNullable(remoteRepo);
     }
+
+    private static final char[] PASSWORD = "jd4nvds832lsn4apq".toCharArray();
+
+    private static final byte[] SALT = { (byte) 0xa2, (byte) 0x18, (byte) 0xd6, (byte) 0xd6,
+            (byte) 0xf1, (byte) 0x2e, (byte) 0x0a, (byte) 0x7b, };
+
+    /**
+     * Encrypts a text password so that it can be safely written to a database.
+     * 
+     * @param password the password to encrypt
+     * @return the encrypted password
+     */
+    public static String encryptPassword(String password) {
+        try {
+            String keyfacname = "PBEWithMD5AndDES";
+            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(keyfacname);
+            SecretKey key = keyFactory.generateSecret(new PBEKeySpec(PASSWORD));
+            Cipher pbeCipher = Cipher.getInstance(keyfacname);
+            pbeCipher.init(Cipher.ENCRYPT_MODE, key, new PBEParameterSpec(SALT, 20));
+            return Base64.getEncoder()
+                    .encodeToString(pbeCipher.doFinal(password.getBytes("UTF-8")));
+        } catch (Exception e) {
+            return password;
+        }
+    }
+
+    /**
+     * Decrypts an encrypted password.
+     * 
+     * @param password the encrypted password
+     * @return the decrypted password
+     */
+    public static String decryptPassword(String password) {
+        try {
+            final String keyfacname = "PBEWithMD5AndDES";
+            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(keyfacname);
+            SecretKey key = keyFactory.generateSecret(new PBEKeySpec(PASSWORD));
+            Cipher pbeCipher = Cipher.getInstance(keyfacname);
+            pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(SALT, 20));
+            return new String(pbeCipher.doFinal(Base64.getDecoder().decode(password)));
+        } catch (Exception e) {
+            return password;
+        }
+    }
+
 }

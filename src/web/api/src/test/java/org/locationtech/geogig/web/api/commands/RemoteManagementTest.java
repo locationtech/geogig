@@ -25,6 +25,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.plumbing.remotes.RemoteException;
 import org.locationtech.geogig.plumbing.remotes.RemoteResolve;
+import org.locationtech.geogig.remote.http.HttpRemoteResolver;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
@@ -208,6 +209,15 @@ public class RemoteManagementTest extends AbstractWebOpTest {
     }
 
     @Test
+    public void testEncryptDecryptPassword() {
+        String password = "password";
+        String encrypted = HttpRemoteResolver.encryptPassword(password);
+        assertFalse(password.equals(encrypted));
+        String decrypted = HttpRemoteResolver.decryptPassword(encrypted);
+        assertEquals(password, decrypted);
+    }
+
+    @Test
     public void updateRemote() throws Exception {
         setupRemotes(true, true);
 
@@ -221,7 +231,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("remote1_new", remote.getName());
         assertEquals("new/url", remote.getFetchURL());
         assertEquals("Tester", remote.getUserName());
-        assertEquals(Remote.encryptPassword("pass"), remote.getPassword());
+        assertEquals(HttpRemoteResolver.encryptPassword("pass"), remote.getPassword());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
@@ -242,7 +252,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("remote1", remote.getName());
         assertEquals("new/url", remote.getFetchURL());
         assertEquals("Tester", remote.getUserName());
-        assertEquals(Remote.encryptPassword("pass"), remote.getPassword());
+        assertEquals(HttpRemoteResolver.encryptPassword("pass"), remote.getPassword());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
@@ -263,7 +273,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("remote1", remote.getName());
         assertEquals("new/url", remote.getFetchURL());
         assertEquals("Tester", remote.getUserName());
-        assertEquals(Remote.encryptPassword("pass"), remote.getPassword());
+        assertEquals(HttpRemoteResolver.encryptPassword("pass"), remote.getPassword());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
@@ -284,7 +294,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("remote1", remote.getName());
         assertEquals("new/url", remote.getFetchURL());
         assertEquals("Tester", remote.getUserName());
-        assertEquals(Remote.encryptPassword("pass"), remote.getPassword());
+        assertEquals(HttpRemoteResolver.encryptPassword("pass"), remote.getPassword());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));

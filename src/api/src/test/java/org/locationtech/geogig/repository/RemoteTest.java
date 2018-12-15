@@ -72,15 +72,6 @@ public class RemoteTest {
     }
 
     @Test
-    public void testEncryptDecryptPassword() {
-        String password = "password";
-        String encrypted = Remote.encryptPassword(password);
-        assertFalse(password.equals(encrypted));
-        String decrypted = Remote.decryptPassword(encrypted);
-        assertEquals(password, decrypted);
-    }
-
-    @Test
     public void testEquals() {
         Remote remote1 = new Remote("remote1", "fetchurl", "pushurl", "fetch", true, "mappedBranch",
                 "username", "password");

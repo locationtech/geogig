@@ -26,11 +26,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
-import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.storage.impl.RocksdbMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Manages audit metadata.
@@ -53,8 +51,6 @@ import org.slf4j.LoggerFactory;
  * </ul>
  */
 public class GeopkgGeogigMetadata implements AutoCloseable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GeopkgGeogigMetadata.class);
 
     private static final String REPOSITORY_METADATA_TABLE = "geogig_metadata";
 
@@ -82,11 +78,6 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         fidMappings.clear();
     }
 
-    private String log(String sql) {
-        LOG.debug(sql);
-        return sql;
-    }
-
     public void init(URI repositoryURI) throws SQLException {
         cx.setAutoCommit(false);
         try {
@@ -94,18 +85,18 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
                 String sql = format("CREATE TABLE IF NOT EXISTS %s (repository_uri VARCHAR)",
                         REPOSITORY_METADATA_TABLE);
 
-                st.execute(log(sql));
+                st.execute(sql);
 
                 sql = format(
                         "CREATE TABLE IF NOT EXISTS %s (table_name VARCHAR, mapped_path VARCHAR, audit_table VARCHAR, commit_id VARCHAR)",
                         AUDIT_METADATA_TABLE);
 
-                st.execute(log(sql));
+                st.execute(sql);
             }
 
             String sql = format("INSERT OR REPLACE INTO %s VALUES(?)", REPOSITORY_METADATA_TABLE);
 
-            try (PreparedStatement st = cx.prepareStatement(log(sql))) {
+            try (PreparedStatement st = cx.prepareStatement(sql)) {
                 final String uri = repositoryURI.toString();
 
                 st.setString(1, uri);
@@ -178,7 +169,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
                     AUDIT_METADATA_TABLE);
             final String audit_table = createAuditTable(tableName);
 
-            try (PreparedStatement st = cx.prepareStatement(log(sql))) {
+            try (PreparedStatement st = cx.prepareStatement(sql)) {
 
                 st.setString(1, tableName);
                 st.setString(2, mappedPath);
@@ -201,7 +192,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
                 .append("\" (geogig_fid VARCHAR, audit_op INTEGER)");
 
         try (Statement st = cx.createStatement()) {
-            st.execute(log(sql.toString()));
+            st.execute(sql.toString());
         }
     }
 
@@ -212,7 +203,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         StringBuilder sql = new StringBuilder("INSERT INTO ").append(changeTable)
                 .append(" VALUES (?, ?)");
 
-        try (PreparedStatement st = cx.prepareStatement(log(sql.toString()))) {
+        try (PreparedStatement st = cx.prepareStatement(sql.toString())) {
             for (Entry<String, ChangeType> changedNode : changedNodes.entrySet()) {
                 st.setString(1, changedNode.getKey());
                 st.setInt(2, auditOpForChangeType(changedNode.getValue()));
@@ -254,7 +245,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
 
         try {
             Statement st = cx.createStatement();
-            st.execute(log(sql.toString()));
+            st.execute(sql.toString());
 
             PreparedStatement prepared = cx.prepareStatement(insertSql.toString());
             for (Entry<String, String> entry : fidMappings.entrySet()) {
@@ -290,7 +281,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         sql.append("audit_timestamp INTEGER DEFAULT CURRENT_TIMESTAMP, audit_op INTEGER)");
 
         try (Statement st = cx.createStatement()) {
-            st.execute(log(sql.toString()));
+            st.execute(sql.toString());
         }
 
         createInsertTrigger(tableName, auditTable, columnNames);
@@ -311,7 +302,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
 
         final String sql = format("PRAGMA table_info('%s')", tableName);
         try (Statement st = cx.createStatement()) {
-            try (ResultSet rs = st.executeQuery(log(sql))) {
+            try (ResultSet rs = st.executeQuery(sql)) {
                 while (rs.next()) {
                     cols.put(rs.getString(2), rs.getString(3));
                 }
@@ -339,7 +330,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         trigger.append("END\n");
 
         try (Statement st = cx.createStatement()) {
-            st.execute(log(trigger.toString()));
+            st.execute(trigger.toString());
         }
     }
 
@@ -362,7 +353,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         trigger.append("END\n");
 
         try (Statement st = cx.createStatement()) {
-            st.execute(log(trigger.toString()));
+            st.execute(trigger.toString());
         }
     }
 
@@ -380,7 +371,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         trigger.append("END\n");
 
         try (Statement st = cx.createStatement()) {
-            st.execute(log(trigger.toString()));
+            st.execute(trigger.toString());
         }
     }
 }

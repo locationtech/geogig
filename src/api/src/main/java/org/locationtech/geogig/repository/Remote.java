@@ -90,17 +90,6 @@ public class Remote {
                 throw new IllegalArgumentException("Invalid remote URL.");
             }
         }
-        //
-        // // we were just checking to see whether the url was already valid. if not, we'll try to
-        // // resolve it as a local file
-        //
-        // File file = new File(url);
-        // try {
-        // url = file.toURI().toURL().toString();
-        // } catch (MalformedURLException e) {
-        // // shouldn't reach here, since the file exists and the path should then be correct
-        // return url;
-        // }
         return url;
     }
 

@@ -313,10 +313,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             dag.setTotalChildCount(dag.getTotalChildCount() + deltaSize);
             long post = dag.getTotalChildCount();
             Preconditions.checkState(pre + deltaSize == post);
-            // if (remove && dag.getId().equals(failingDag)) {
-            // Set<NodeId> childrenRecursive = getChildrenRecursive(dag);
-            // Preconditions.checkState(post == childrenRecursive.size());
-            // }
             try {
                 shrinkIfUnderflow(dag);
             } catch (IllegalStateException e) {
@@ -456,7 +452,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         if (originalId == null || RevTree.EMPTY_TREE_ID.equals(originalId)) {
             original = RevTree.EMPTY;
         } else {
-            // System.err.println("Loading tree " + originalId);
             original = storageProvider.getTree(originalId);
         }
         return original;
@@ -593,7 +588,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                 return;
             }
 
-            // Stopwatch sw = Stopwatch.createStarted();
             Map<TreeId, DAG> toSave = new HashMap<>();
             for (TreeId id : dirty) {
                 DAG saveme = treeBuff.remove(id);
@@ -602,8 +596,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             }
             dirty.clear();
             store.save(toSave);
-            // System.err.printf("Saved %,d dirty DAGs in %s, remaining %,d\n", toSave.size(),
-            // sw.stop(), treeBuff.size());
         }
 
         @VisibleForTesting

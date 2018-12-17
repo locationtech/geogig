@@ -68,8 +68,6 @@ import com.google.inject.Guice;
 import com.google.inject.Key;
 import com.google.inject.Module;
 
-//import org.python.core.exceptions;
-
 /**
  * Command Line Interface for geogig.
  * <p>
@@ -261,12 +259,14 @@ public class GeogigCLI {
         return newGeoGIG(Hints.readWrite());
     }
 
+    /**
+     * try opening, if present, may return null Repository but the GeoGIG instance is still valid
+     * and may being used to init a repo;
+     */
     public GeoGIG newGeoGIG(Hints hints) {
         Context inj = newGeogigInjector(hints);
 
         GeoGIG geogig = new GeoGIG(inj);
-        // try opening, if present, may return null Repository but the GeoGIG instance is still
-        // valid (may being used to init a repo);
         geogig.getRepository();
 
         return geogig;
@@ -391,7 +391,6 @@ public class GeogigCLI {
             }
         } catch (RuntimeException e) {
             exception = e;
-            // e.printStackTrace();
             consoleMessage = String.format(
                     "An unhandled error occurred: %s. See the log for more details.",
                     e.getMessage());

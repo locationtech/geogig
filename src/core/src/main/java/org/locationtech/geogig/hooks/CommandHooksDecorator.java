@@ -20,19 +20,20 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp.CommandListener;
 public class CommandHooksDecorator implements Decorator {
 
     @SuppressWarnings("unchecked")
-    @Override
-    public boolean canDecorate(Object instance) {
+    public @Override boolean canDecorate(Object instance) {
         boolean canDecorate = instance instanceof AbstractGeoGigOp;
         if (canDecorate) {
             canDecorate &= instance.getClass().isAnnotationPresent(Hookable.class);
-            canDecorate |= Hookables
-                    .hasClasspathHooks((Class<? extends AbstractGeoGigOp<?>>) instance.getClass());
+            if (!canDecorate) {
+                Class<? extends AbstractGeoGigOp<?>> cmdClass;
+                cmdClass = (Class<? extends AbstractGeoGigOp<?>>) instance.getClass();
+                canDecorate = CommandHookChain.hasClasspathHooks(cmdClass);
+            }
         }
         return canDecorate;
     }
 
-    @Override
-    public <I> I decorate(I subject) {
+    public @Override <I> I decorate(I subject) {
         AbstractGeoGigOp<?> op = (AbstractGeoGigOp<?>) subject;
         CommandHookChain callChain = CommandHookChain.builder().command(op).build();
         if (!callChain.isEmpty()) {

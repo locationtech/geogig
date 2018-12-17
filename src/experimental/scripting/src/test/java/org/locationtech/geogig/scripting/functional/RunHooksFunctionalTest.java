@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional;
+package org.locationtech.geogig.scripting.functional;
 
 import org.junit.runner.RunWith;
 
@@ -22,6 +22,7 @@ import cucumber.api.junit.Cucumber;
 @CucumberOptions(//
         plugin = { "pretty", "html:cucumber-report-general" }//
         , strict = true//
+        , glue = { "org.locationtech.geogig.cli.test.functional" }//
         , features = { "src/test/resources/features/hooks" })
 @RunWith(Cucumber.class)
 public class RunHooksFunctionalTest {

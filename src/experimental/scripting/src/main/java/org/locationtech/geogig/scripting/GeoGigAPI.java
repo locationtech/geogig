@@ -7,7 +7,7 @@
  * Contributors:
  * Victor Olaya (Boundless) - initial implementation
  */
-package org.locationtech.geogig.hooks;
+package org.locationtech.geogig.scripting;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.NodeRef;

@@ -1,0 +1,2 @@
+org.locationtech.geogig.scripting.InitializeHooksHook
+org.locationtech.geogig.scripting.ScriptHookWrapper

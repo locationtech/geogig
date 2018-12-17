@@ -7,7 +7,7 @@
  * Contributors:
  * Victor Olaya (Boundless) - initial implementation
  */
-package org.locationtech.geogig.hooks;
+package org.locationtech.geogig.scripting;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -26,6 +26,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
+import org.locationtech.geogig.hooks.CommandHook;
 import org.locationtech.geogig.plumbing.ResolveRepository;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Repository;
@@ -41,7 +43,7 @@ import com.google.common.io.Files;
  * Utilities to execute scripts representing hooks for GeoGig operations
  * 
  */
-public class Scripting {
+class Scripting {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Scripting.class);
 
@@ -61,8 +63,7 @@ public class Scripting {
      * @throws CannotRunGeogigOperationException
      */
     @SuppressWarnings("unchecked")
-    public static void runJVMScript(AbstractGeoGigOp<?> operation, File scriptFile)
-            throws CannotRunGeogigOperationException {
+    public static void runJVMScript(AbstractGeoGigOp<?> operation, File scriptFile) {
 
         checkArgument(scriptFile.exists(), "Script file does not exist %s", scriptFile.getPath());
 
@@ -112,8 +113,10 @@ public class Scripting {
         }
     }
 
-    public static void runShellScript(final File scriptFile)
-            throws CannotRunGeogigOperationException {
+    /**
+     * @throws CannotRunGeogigOperationException
+     */
+    public static void runShellScript(final File scriptFile) {
 
         LOGGER.info("Running shell script {}", scriptFile.getAbsolutePath());
 
@@ -169,8 +172,9 @@ public class Scripting {
 
     /**
      * Method for getting values of parameters, including private fields. This is to be used from
-     * scripting languages to create hooks for available commands. TODO: Review this and maybe
-     * change this way of accessing values
+     * scripting languages to create hooks for available commands.
+     * <p>
+     * TODO: Review this and maybe change this way of accessing values
      * 
      * @param operation
      * 

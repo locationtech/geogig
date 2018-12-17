@@ -10,11 +10,8 @@
 package org.locationtech.geogig.repository.impl;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.locationtech.geogig.hooks.Hookables;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
@@ -41,7 +37,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
-import com.google.common.io.Resources;
 
 public class FileRepositoryResolver extends RepositoryResolver {
 
@@ -194,7 +189,6 @@ public class FileRepositoryResolver extends RepositoryResolver {
                 }
             }
         }
-        createSampleHooks(envHome);
     }
 
     @Override
@@ -202,27 +196,6 @@ public class FileRepositoryResolver extends RepositoryResolver {
         Hints hints = new Hints().uri(repoURI);
         Platform platform = repoContext.platform();
         return new IniFileConfigDatabase(platform, hints, rootUri);
-    }
-
-    private void createSampleHooks(File envHome) {
-        File hooks = new File(envHome, "hooks");
-        hooks.mkdirs();
-        if (!hooks.exists()) {
-            throw new RuntimeException();
-        }
-        try {
-            copyHookFile(hooks.getAbsolutePath(), "pre_commit.js.sample");
-            // TODO: add other example hooks
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
-    }
-
-    private void copyHookFile(String folder, String file) throws IOException {
-        URL url = Resources.getResource(Hookables.class, file);
-        OutputStream os = new FileOutputStream(new File(folder, file).getAbsolutePath());
-        Resources.copy(url, os);
-        os.close();
     }
 
     @Override

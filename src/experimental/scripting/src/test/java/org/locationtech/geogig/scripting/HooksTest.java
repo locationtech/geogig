@@ -7,7 +7,7 @@
  * Contributors:
  * Victor Olaya (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test.integration;
+package org.locationtech.geogig.scripting;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -19,12 +19,12 @@ import java.util.ServiceLoader;
 import org.junit.Test;
 import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.hooks.CommandHook;
-import org.locationtech.geogig.hooks.Scripting;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;

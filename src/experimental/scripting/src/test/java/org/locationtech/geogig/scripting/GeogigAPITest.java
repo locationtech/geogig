@@ -7,12 +7,12 @@
  * Contributors:
  * Victor Olaya (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test.integration;
+package org.locationtech.geogig.scripting;
 
 import org.junit.Test;
-import org.locationtech.geogig.hooks.GeoGigAPI;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 
 public class GeogigAPITest extends RepositoryTestCase {

@@ -7,11 +7,12 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.hooks;
+package org.locationtech.geogig.scripting;
 
 import java.io.File;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.hooks.CommandHook;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 class JVMScriptHook implements CommandHook {
@@ -25,10 +26,18 @@ class JVMScriptHook implements CommandHook {
         this.postScript = postScript;
     }
 
-    @Override
-    public <C extends AbstractGeoGigOp<?>> C pre(C command)
-            throws CannotRunGeogigOperationException {
+    /**
+     * {@inheritDoc}
+     * 
+     * @return {@code 1}, higher priority than pure java {@link CommandHook}s and lower than
+     *         {@link ShellScriptHook}
+     */
+    public @Override int getPriority() {
+        return 1;
+    }
 
+    @Override
+    public <C extends AbstractGeoGigOp<?>> C pre(C command) {
         if (preScript == null) {
             return command;
         }

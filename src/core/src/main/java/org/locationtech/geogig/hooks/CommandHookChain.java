@@ -11,29 +11,48 @@ package org.locationtech.geogig.hooks;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.PriorityQueue;
+import java.util.ServiceLoader;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-public class CommandHookChain {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CommandHookChain.class);
+final @Slf4j class CommandHookChain {
+
+    private static final ImmutableList<CommandHook> classPathHooks;
+    static {
+        classPathHooks = loadClasspathHooks();
+    }
 
     private AbstractGeoGigOp<?> target;
 
     private List<CommandHook> hooks;
 
+    static ImmutableList<CommandHook> loadClasspathHooks() {
+        ServiceLoader<CommandHook> loader = ServiceLoader.load(CommandHook.class,
+                CommandHook.class.getClassLoader());
+        return ImmutableList.copyOf(loader.iterator());
+    }
+
+    static boolean hasClasspathHooks(Class<? extends AbstractGeoGigOp<?>> commandClass) {
+        for (CommandHook hook : classPathHooks) {
+            if (hook.appliesTo(commandClass)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private CommandHookChain(final AbstractGeoGigOp<?> target) {
         this.target = target;
-        this.hooks = new LinkedList<CommandHook>();
+        this.hooks = new LinkedList<>();
     }
 
     public boolean isEmpty() {
@@ -44,31 +63,30 @@ public class CommandHookChain {
         this.hooks.add(next);
     }
 
-    public void runPreHooks() throws CannotRunGeogigOperationException {
+    /**
+     * @throws CannotRunGeogigOperationException
+     */
+    final void runPreHooks() {
         AbstractGeoGigOp<?> command = target;
         // run pre-hooks
         for (CommandHook hook : Lists.reverse(hooks)) {
-            try {
-                LOGGER.debug("Running pre command hook {}", hook);
-                command = hook.pre(command);
-            } catch (CannotRunGeogigOperationException e) {
-                throw e;
-            }
+            log.debug("Running pre command hook {}", hook);
+            command = hook.pre(command);
         }
     }
 
-    public Object runPostHooks(@Nullable Object retVal, @Nullable RuntimeException exception) {
+    final Object runPostHooks(@Nullable Object retVal, @Nullable RuntimeException exception) {
         AbstractGeoGigOp<?> command = target;
 
         for (CommandHook hook : hooks) {
             try {
                 retVal = hook.post(command, retVal, exception);
-            }catch(CannotRunGeogigOperationException rethrow) {
+            } catch (CannotRunGeogigOperationException rethrow) {
                 throw rethrow;
             } catch (Exception e) {
                 // this exception should not be thrown in a post-execution hook, but just in case,
                 // we swallow it and ignore it
-                LOGGER.warn(
+                log.warn(
                         "Post-command hook {} for command {} threw an exception that will not be propagated",
                         hook, command.getClass().getName(), e);
             }
@@ -83,21 +101,6 @@ public class CommandHookChain {
     }
 
     public static final class Builder {
-
-        /**
-         * Comparator that determines the priority of two hooks. In least to most important order:
-         * {@link ShellScriptHook}, {@link JVMScriptHook}, other {@link CommandHook}s (i.e. pure
-         * java ones)
-         */
-        private static final Comparator<CommandHook> HOOKS_PRIORITY = new Comparator<CommandHook>() {
-            @Override
-            public int compare(CommandHook o1, CommandHook o2) {
-                int p1 = o1 instanceof ShellScriptHook ? 1 : (o1 instanceof JVMScriptHook ? 0 : -1);
-                int p2 = o2 instanceof ShellScriptHook ? 1 : (o2 instanceof JVMScriptHook ? 0 : -1);
-                return p1 - p2;
-            }
-        };
-
         private AbstractGeoGigOp<?> command;
 
         public Builder command(AbstractGeoGigOp<?> command) {
@@ -110,17 +113,33 @@ public class CommandHookChain {
 
             CommandHookChain chain = new CommandHookChain(command);
 
-            List<CommandHook> commandHooks = Hookables.findHooksFor(command);
+            List<CommandHook> commandHooks = findHooksFor(command);
             if (!commandHooks.isEmpty()) {
-                PriorityQueue<CommandHook> queue = new PriorityQueue<CommandHook>(
-                        commandHooks.size(), HOOKS_PRIORITY);
-                queue.addAll(commandHooks);
-                for (CommandHook hook : queue) {
+                Collections.sort(commandHooks);
+                for (CommandHook hook : commandHooks) {
                     chain.setNext(hook);
                 }
             }
             return chain;
         }
+    }
 
+    static List<CommandHook> findHooksFor(AbstractGeoGigOp<?> command) {
+
+        @SuppressWarnings("unchecked")
+        final Class<? extends AbstractGeoGigOp<?>> clazz = (Class<? extends AbstractGeoGigOp<?>>) command
+                .getClass();
+
+        List<CommandHook> hooks = Collections.emptyList();
+
+        for (CommandHook hook : classPathHooks) {
+            if (hook.appliesTo(clazz)) {
+                if (hooks.isEmpty()) {
+                    hooks = new LinkedList<>();
+                }
+                hooks.addAll(hook.unwrap(command));
+            }
+        }
+        return hooks;
     }
 }

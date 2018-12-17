@@ -1,37 +1,47 @@
-/* Copyright (c) 2013-2016 Boundless and others.
+/* Copyright (c) 2018 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Victor Olaya (Boundless) - initial implementation
+ * Gabriel Roldan - initial implementation
  */
-package org.locationtech.geogig.hooks;
+package org.locationtech.geogig.scripting;
 
 import java.io.File;
 import java.net.URI;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.hooks.CommandHook;
+import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-/**
- * A class for managing GeoGig operations that can be hooked and the filenames of the corresponding
- * hooks. It also includes additional related utilities.
- * 
- */
-public class Hookables {
+import lombok.NonNull;
 
-    private static final ImmutableList<CommandHook> classPathHooks;
-    static {
-        classPathHooks = Hookables.loadClasspathHooks();
+public class ScriptHookWrapper implements CommandHook {
+
+    public @Override boolean appliesTo(Class<? extends AbstractGeoGigOp<?>> clazz) {
+        return clazz.isAnnotationPresent(Hookable.class);
+    }
+
+    public @Override @NonNull List<CommandHook> unwrap(@NonNull AbstractGeoGigOp<?> command) {
+        return findScriptHooksFor(command);
+    }
+
+    public @Override <C extends AbstractGeoGigOp<?>> C pre(C command) {
+        throw new UnsupportedOperationException();
+    }
+
+    public @Override <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
+            @Nullable RuntimeException exception) throws Exception {
+
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -42,7 +52,7 @@ public class Hookables {
      * @return the string to be used as filename for storing the script files for the corresponding
      *         hook
      */
-    public static Optional<String> getFilename(Class<? extends AbstractGeoGigOp<?>> clazz) {
+    static Optional<String> getFilename(Class<? extends AbstractGeoGigOp<?>> clazz) {
         Hookable annotation = clazz.getAnnotation(Hookable.class);
         if (annotation != null) {
             return Optional.of(annotation.name());
@@ -51,43 +61,18 @@ public class Hookables {
         }
     }
 
-    public static ImmutableList<CommandHook> loadClasspathHooks() {
-        ServiceLoader<CommandHook> loader = ServiceLoader.load(CommandHook.class,
-                CommandHook.class.getClassLoader());
-        ImmutableList<CommandHook> SPIHooks = ImmutableList.copyOf(loader.iterator());
-        return SPIHooks;
-    }
-
-    public static boolean hasClasspathHooks(Class<? extends AbstractGeoGigOp<?>> commandClass) {
-        for (CommandHook hook : classPathHooks) {
-            if (hook.appliesTo(commandClass)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static List<CommandHook> findHooksFor(AbstractGeoGigOp<?> operation) {
+    public static List<CommandHook> findScriptHooksFor(AbstractGeoGigOp<?> operation) {
 
         @SuppressWarnings("unchecked")
         final Class<? extends AbstractGeoGigOp<?>> clazz = (Class<? extends AbstractGeoGigOp<?>>) operation
                 .getClass();
 
         List<CommandHook> hooks = Lists.newLinkedList();
-        /*
-         * First add any classpath hook, as they can be added to any command, regardless of having
-         * the @Hookable annotation or not
-         */
-        for (CommandHook hook : classPathHooks) {
-            if (hook.appliesTo(clazz)) {
-                hooks.add(hook);
-            }
-        }
 
         /*
-         * Now add any script hook that's configured for the operation iif it's @Hookable
+         * add any script hook that's configured for the operation iif it's @Hookable
          */
-        final Optional<String> name = Hookables.getFilename(clazz);
+        final Optional<String> name = getFilename(clazz);
         if (!name.isPresent()) {
             return hooks;
         }

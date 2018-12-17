@@ -22,6 +22,7 @@
     <modules>
       <module>ql</module>
       <module>gui</module>
+      <module>scripting</module>
     </modules>
   </profile>
   </profiles>

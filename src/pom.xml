@@ -313,13 +313,6 @@
       </build>
     </profile>
     <profile>
-      <id>experimental</id>
-      <modules>
-        <module>ql</module>
-        <module>gui</module>
-      </modules>
-    </profile>
-    <profile>
       <id>locationtech</id>
       <distributionManagement>
         <repository>
@@ -388,5 +381,6 @@
     <module>geotools</module>
     <module>pullrequests</module>
     <module>cli</module>
+    <module>experimental</module>
   </modules>
 </project>

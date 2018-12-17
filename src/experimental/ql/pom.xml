@@ -5,7 +5,7 @@
 
   <parent>
     <groupId>org.locationtech.geogig</groupId>
-    <artifactId>geogig</artifactId>
+    <artifactId>geogig-experimental</artifactId>
     <version>1.4-SNAPSHOT</version>
   </parent>
 
@@ -14,7 +14,7 @@
   <name>GeoGig Query Language Extension</name>
 
   <properties>
-    <project.relativePath>ql</project.relativePath>
+    <project.relativePath>experimental/ql</project.relativePath>
   </properties>
 
   <build>

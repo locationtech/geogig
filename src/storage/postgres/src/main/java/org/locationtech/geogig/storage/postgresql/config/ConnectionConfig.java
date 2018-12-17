@@ -103,16 +103,20 @@ public class ConnectionConfig implements Cloneable {
         this.key = new Key(server, portNumber, databaseName, schema, user, password, tablePrefix);
     }
 
+    public URI toURIMaskPassword() {
+        return toURIInternal(null, true);
+    }
+
     public URI toURI() {
-        return toURIInternal(null);
+        return toURIInternal(null, false);
     }
 
     public URI toURI(final String repositoryName) {
         Preconditions.checkNotNull(repositoryName);
-        return toURIInternal(repositoryName);
+        return toURIInternal(repositoryName, false);
     }
 
-    private URI toURIInternal(final @Nullable String repositoryName) {
+    private URI toURIInternal(final @Nullable String repositoryName, final boolean maskPassword) {
 
         // postgresql://<server>:<port>/<database>/<schema>[/<repoid>]?user=<username>][&password=<pwd>][&tablePrefix=<prefix>]
         StringBuilder sb = new StringBuilder("postgresql://").append(key.server).append(":")
@@ -127,7 +131,8 @@ public class ConnectionConfig implements Cloneable {
             args.append("user=").append(key.user);
         }
         if (key.password != null) {
-            args.append(args.length() > 0 ? "&password=" : "password=").append(key.password);
+            String p = maskPassword ? "****" : key.password;
+            args.append(args.length() > 0 ? "&password=" : "password=").append(p);
         }
         if (key.tablePrefix != null) {
             args.append(args.length() > 0 ? "&tablePrefix=" : "tablePrefix=")

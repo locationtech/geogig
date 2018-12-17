@@ -21,6 +21,7 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
@@ -29,6 +30,8 @@ import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+
+import lombok.NonNull;
 
 public class PGRepositoryResolver extends RepositoryResolver {
 
@@ -112,17 +115,17 @@ public class PGRepositoryResolver extends RepositoryResolver {
             config = new EnvironmentBuilder(repoURI).build();
         } catch (RuntimeException e) {
             Throwables.throwIfInstanceOf(e, IllegalArgumentException.class);
-            throw new IllegalArgumentException("Error parsing URI " + repoURI, e);
+            throw new IllegalArgumentException("Error parsing URI", e);
         }
         Preconditions.checkArgument(config.getRepositoryName() != null,
-                "No repository id provided in repo URI: '" + repoURI + "'");
+                "No repository id provided in repo URI: '" + maskPassword(repoURI) + "'");
         return config;
     }
 
     @Override
     public Repository open(URI repositoryLocation) throws RepositoryConnectionException {
         Preconditions.checkArgument(canHandle(repositoryLocation), "Not a PostgreSQL URI: %s",
-                repositoryLocation);
+                maskPassword(repositoryLocation));
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, repositoryLocation.toString());
         Context context = GlobalContextBuilder.builder().build(hints);
@@ -131,8 +134,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
         // location
         if (repository == null) {
             throw new RepositoryConnectionException(
-                    "Could not connect to repository. Check that the URI is valid: "
-                            + repositoryLocation);
+                    "Could not connect to repository. Check that the URI is valid.");
         }
         repository.open();
         return repository;
@@ -151,4 +153,12 @@ public class PGRepositoryResolver extends RepositoryResolver {
         return PGStorage.deleteRepository(env);
     }
 
+    private static String maskPassword(@NonNull URI repoURI) {
+        try {
+            ConnectionConfig cc = EnvironmentBuilder.parse(repoURI);
+            return cc.toURIMaskPassword().toString();
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+    }
 }

@@ -64,15 +64,19 @@ public abstract class RepositoryResolver {
         Preconditions.checkNotNull(repoURI, "Repository URI is null");
 
         List<RepositoryResolver> resolvers = lookupResolvers();
+        RepositoryResolver resolver = null;
         for (RepositoryResolver resolverImpl : resolvers) {
             final String resolverClassName = resolverImpl.getClass().getName();
             if (!DISABLED_RESOLVERS.contains(resolverClassName)
                     && resolverImpl.canHandle(repoURI)) {
-                return resolverImpl;
+                resolver = resolverImpl;
+                break;
             }
         }
-        throw new IllegalArgumentException(
-                "No repository initializer found capable of handling this kind of URI: " + repoURI.getScheme());
+        Preconditions.checkArgument(resolver != null,
+                "No repository initializer found capable of handling this kind of URI: %s",
+                repoURI.getScheme());
+        return resolver;
     }
 
     /**

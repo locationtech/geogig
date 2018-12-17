@@ -228,11 +228,11 @@ public class FileRepositoryResolver extends RepositoryResolver {
     @Override
     public Repository open(URI repositoryLocation) throws RepositoryConnectionException {
         Preconditions.checkArgument(canHandle(repositoryLocation), "Not a file repository: %s",
-                repositoryLocation);
+                repositoryLocation.getScheme());
 
         if (!repoExists(repositoryLocation)) {
             throw new RepositoryConnectionException(
-                    repositoryLocation + " is not a geogig repository");
+                    "The provided location is not a geogig repository");
         }
 
         Context context = GlobalContextBuilder.builder().build(new Hints().uri(repositoryLocation));

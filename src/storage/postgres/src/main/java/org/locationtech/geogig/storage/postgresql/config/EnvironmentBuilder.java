@@ -93,8 +93,7 @@ public class EnvironmentBuilder {
 
         List<String> path = Splitter.on('/').omitEmptyStrings().splitToList(repoUrl.getPath());
         Preconditions.checkArgument(forceBaseURL || (path.size() >= 1 && path.size() <= 3),
-                "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>][/<repoid>]?user=<username>&password=<pwd>",
-                repoUrl);
+                "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>][/<repoid>]?user=<username>&password=<pwd>");
 
         dbName = path.get(0);
         if (forceBaseURL) {
@@ -139,7 +138,6 @@ public class EnvironmentBuilder {
         checkArgument(schema != null, "postgres.schema config is not set");
         checkArgument(userName != null, "postgres.user config is not set");
         checkArgument(password != null, "postgres.password config is not set");
-        // checkArgument(repoId != null, "repository.id config is not set");
 
         int port;
         try {
@@ -195,8 +193,7 @@ public class EnvironmentBuilder {
 
         List<String> path = Splitter.on('/').omitEmptyStrings().splitToList(rootRepoURI.getPath());
         Preconditions.checkArgument(path.size() >= 1 && path.size() <= 2,
-                "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>]?user=<username>&password=<pwd>",
-                rootRepoURI);
+                "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>]?user=<username>&password=<pwd>");
 
         dbName = path.get(0);
         schema = path.size() == 1 ? "public" : path.get(1);

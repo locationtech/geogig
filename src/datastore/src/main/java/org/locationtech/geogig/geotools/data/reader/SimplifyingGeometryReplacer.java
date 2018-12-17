@@ -9,18 +9,17 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import com.google.common.base.Function;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import org.opengis.feature.simple.SimpleFeature;
+
+import com.google.common.base.Function;
 
 public class SimplifyingGeometryReplacer implements Function<SimpleFeature, SimpleFeature> {
 

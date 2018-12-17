@@ -18,7 +18,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.FeatureIteratorIterator;
-import org.geotools.factory.CommonFactoryFinder;
 import org.junit.Test;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.DiffEntry;
@@ -33,7 +32,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
-import org.opengis.filter.FilterFactory2;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

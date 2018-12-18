@@ -22,6 +22,7 @@ import org.locationtech.geogig.geotools.geopkg.GeopkgDataStoreAuditImportOp;
 import org.locationtech.geogig.geotools.geopkg.GeopkgDataStoreImportOp;
 import org.locationtech.geogig.geotools.geopkg.GeopkgImportResult;
 import org.locationtech.geogig.geotools.geopkg.GeopkgMergeConflictsException;
+import org.locationtech.geogig.geotools.geopkg.RocksdbMap;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp.DataStoreSupplier;
 import org.locationtech.geogig.model.ObjectId;
@@ -37,7 +38,6 @@ import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
 import org.locationtech.geogig.spring.controller.RepositoryCommandController;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.storage.impl.RocksdbMap;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -163,15 +163,18 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             super(cmd, cleanup);
         }
 
-        @Override
-        protected void writeResultBody(StreamingWriter w, GeopkgImportResult result)
-                throws StreamWriterException {
+        /**
+         * @throws StreamWriterException
+         */
+        protected @Override void writeResultBody(StreamingWriter w, GeopkgImportResult result) {
             ResponseWriter out = new ResponseWriter(w, getMediaType());
             writeImportResult(result, w, out);
         }
 
-        @Override
-        protected void writeError(StreamingWriter w, Throwable cause) throws StreamWriterException {
+        /**
+         * @throws StreamWriterException
+         */
+        protected @Override void writeError(StreamingWriter w, Throwable cause) {
             if (cause instanceof GeopkgMergeConflictsException) {
                 Context context = cmd.getContext();
                 GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause;
@@ -197,16 +200,18 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             }
         }
 
+        /**
+         * @throws StreamWriterException
+         */
         private void writeImportResult(GeopkgImportResult result, StreamingWriter w,
-                ResponseWriter out) throws StreamWriterException {
-            if (result.newCommit != null) {
-                out.writeCommit(result.newCommit, "newCommit", null, null, null);
+                ResponseWriter out) {
+            if (result.getNewCommit() != null) {
+                out.writeCommit(result.getNewCommit(), "newCommit", null, null, null);
             }
-            out.writeCommit(result.importCommit, "importCommit", null, null, null);
+            out.writeCommit(result.getImportCommit(), "importCommit", null, null, null);
             w.writeStartElement("NewFeatures");
             w.writeStartArray("type");
-            for (Entry<String, RocksdbMap<String, String>> layerMappings : result.newMappings
-                    .entrySet()) {
+            for (Entry<String, RocksdbMap> layerMappings : result.getNewMappings().entrySet()) {
                 w.writeStartArrayElement("type");
                 w.writeAttribute("name", layerMappings.getKey());
                 w.writeStartArray("id");

@@ -24,11 +24,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.storage.impl.RocksdbMap;
+
+import lombok.NonNull;
 
 /**
  * Manages audit metadata.
@@ -62,23 +62,21 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
 
     public static final int AUDIT_OP_DELETE = 3;
 
-    private Map<String, RocksdbMap<String, String>> fidMappings = new HashMap<String, RocksdbMap<String, String>>();
+    private Map<String, RocksdbMap> fidMappings = new HashMap<>();
 
     private Connection cx;
 
-    public GeopkgGeogigMetadata(Connection connection) {
+    public GeopkgGeogigMetadata(@NonNull Connection connection) {
         this.cx = connection;
     }
 
     @Override
     public void close() {
-        for (RocksdbMap<String, String> map : fidMappings.values()) {
-            map.close();
-        }
+        fidMappings.values().forEach(RocksdbMap::close);
         fidMappings.clear();
     }
 
-    public void init(URI repositoryURI) throws SQLException {
+    public void init(@NonNull URI repositoryURI) throws SQLException {
         cx.setAutoCommit(false);
         try {
             try (Statement st = cx.createStatement()) {
@@ -133,12 +131,12 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         return tables;
     }
 
-    public Map<String, String> getFidMappings(String tableName) throws SQLException {
+    public Map<String, String> getFidMappings(@NonNull String tableName) throws SQLException {
         if (fidMappings.containsKey(tableName)) {
             return fidMappings.get(tableName);
         }
         String fidTable = tableName + "_fids";
-        RocksdbMap<String, String> mappings = new RocksdbMap<String, String>();
+        RocksdbMap mappings = new RocksdbMap();
         DatabaseMetaData dbm = cx.getMetaData();
         ResultSet tables = dbm.getTables(null, null, fidTable, null);
         while (tables.next()) {
@@ -148,9 +146,9 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
                 try (Statement st = cx.createStatement()) {
                     try (ResultSet rs = st.executeQuery(sql)) {
                         while (rs.next()) {
-                            String gpkg_fid = rs.getString(1);
-                            String geogig_fid = rs.getString(2);
-                            mappings.put(gpkg_fid, geogig_fid);
+                            String gpkgfid = rs.getString(1);
+                            String geogigfid = rs.getString(2);
+                            mappings.put(gpkgfid, geogigfid);
                         }
                     }
                 }
@@ -161,8 +159,8 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         return mappings;
     }
 
-    public void createAudit(final String tableName, final String mappedPath,
-            final ObjectId commitObjectId) throws SQLException {
+    public void createAudit(final @NonNull String tableName, final @NonNull String mappedPath,
+            final @NonNull ObjectId commitObjectId) throws SQLException {
         cx.setAutoCommit(false);
         try {
             String sql = format("INSERT OR REPLACE INTO %s VALUES(?, ?, ?, ?)",
@@ -185,25 +183,24 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         }
     }
 
-    public void createChangeLog(final String targetTableName) throws SQLException {
-        final String changeTable = targetTableName + "_changes";
+    public void createChangeLog(final @NonNull String targetTableName) throws SQLException {
 
-        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS \"").append(changeTable)
-                .append("\" (geogig_fid VARCHAR, audit_op INTEGER)");
+        final String changeTable = targetTableName + "_changes";
+        final String sql = format(
+                "CREATE TABLE IF NOT EXISTS \"%s\" (geogig_fid VARCHAR, audit_op INTEGER)",
+                changeTable);
 
         try (Statement st = cx.createStatement()) {
-            st.execute(sql.toString());
+            st.execute(sql);
         }
     }
 
-    public void populateChangeLog(final String targetTableName,
-            Map<String, ChangeType> changedNodes) throws SQLException {
-        final String changeTable = targetTableName + "_changes";
+    public void populateChangeLog(final @NonNull String targetTableName,
+            @NonNull Map<String, ChangeType> changedNodes) throws SQLException {
 
-        StringBuilder sql = new StringBuilder("INSERT INTO ").append(changeTable)
-                .append(" VALUES (?, ?)");
+        final String sql = format("INSERT INTO %s_changes  VALUES (?, ?)", targetTableName);
 
-        try (PreparedStatement st = cx.prepareStatement(sql.toString())) {
+        try (PreparedStatement st = cx.prepareStatement(sql)) {
             for (Entry<String, ChangeType> changedNode : changedNodes.entrySet()) {
                 st.setString(1, changedNode.getKey());
                 st.setInt(2, auditOpForChangeType(changedNode.getValue()));
@@ -230,30 +227,31 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         return op;
     }
 
-    public String createFidMappingTable(final String tableName,
-            ConcurrentMap<String, String> fidMappings) throws SQLException {
+    public String createFidMappingTable(final @NonNull String tableName,
+            @NonNull Map<String, String> fidMappings) throws SQLException {
         final String fidMappingTable = tableName + "_fids";
 
-        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS \"")
-                .append(fidMappingTable).append("\" ")
-                .append("(gpkg_fid VARCHAR, geogig_fid VARCHAR, PRIMARY KEY(gpkg_fid))");
+        final String createSql = format(
+                "CREATE TABLE IF NOT EXISTS \"%s\" (gpkg_fid VARCHAR, geogig_fid VARCHAR, PRIMARY KEY(gpkg_fid))",
+                fidMappingTable);
+
+        final String insertSql = format("INSERT OR REPLACE INTO \"%s\" VALUES(?,?);",
+                fidMappingTable);
 
         cx.setAutoCommit(false);
-
-        StringBuilder insertSql = new StringBuilder("INSERT OR REPLACE INTO \"")
-                .append(fidMappingTable).append("\" VALUES(?,?);");
-
         try {
-            Statement st = cx.createStatement();
-            st.execute(sql.toString());
-
-            PreparedStatement prepared = cx.prepareStatement(insertSql.toString());
-            for (Entry<String, String> entry : fidMappings.entrySet()) {
-                prepared.setString(1, entry.getKey());
-                prepared.setString(2, entry.getValue());
-                prepared.addBatch();
+            try (Statement st = cx.createStatement()) {
+                st.execute(createSql);
             }
-            prepared.executeBatch();
+
+            try (PreparedStatement prepared = cx.prepareStatement(insertSql)) {
+                for (Entry<String, String> entry : fidMappings.entrySet()) {
+                    prepared.setString(1, entry.getKey());
+                    prepared.setString(2, entry.getValue());
+                    prepared.addBatch();
+                }
+                prepared.executeBatch();
+            }
 
             cx.commit();
         } catch (SQLException e) {
@@ -279,14 +277,14 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
             sql.append(colDef);
         }
         sql.append("audit_timestamp INTEGER DEFAULT CURRENT_TIMESTAMP, audit_op INTEGER)");
-
+        final String statement = sql.toString();
         try (Statement st = cx.createStatement()) {
-            st.execute(sql.toString());
+            st.execute(statement);
         }
 
         createInsertTrigger(tableName, auditTable, columnNames);
         createUpdateTrigger(tableName, auditTable, columnNames);
-        createDeleteTrigger(tableName, auditTable, columnNames);
+        createDeleteTrigger(tableName, auditTable);
 
         return auditTable;
     }
@@ -315,7 +313,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
             final LinkedHashMap<String, String> columnNames) throws SQLException {
 
         StringBuilder trigger = new StringBuilder(
-                format("CREATE TRIGGER '%s_insert' AFTER INSERT ON '%s'\n", auditTable, tableName));
+                format("CREATE TRIGGER '%s_insert' AFTER INSERT ON '%s'%n", auditTable, tableName));
         trigger.append("BEGIN\n");
         trigger.append(format("  INSERT INTO '%s' (", auditTable));
         for (String colName : columnNames.keySet()) {
@@ -330,7 +328,8 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         trigger.append("END\n");
 
         try (Statement st = cx.createStatement()) {
-            st.execute(trigger.toString());
+            String statement = trigger.toString();
+            st.execute(statement);
         }
     }
 
@@ -338,7 +337,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
             final LinkedHashMap<String, String> columnNames) throws SQLException {
 
         StringBuilder trigger = new StringBuilder(
-                format("CREATE TRIGGER '%s_update' AFTER UPDATE ON '%s'\n", auditTable, tableName));
+                format("CREATE TRIGGER '%s_update' AFTER UPDATE ON '%s'%n", auditTable, tableName));
         trigger.append("BEGIN\n");
         trigger.append(format("  INSERT INTO '%s' (", auditTable));
         for (String colName : columnNames.keySet()) {
@@ -353,25 +352,27 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         trigger.append("END\n");
 
         try (Statement st = cx.createStatement()) {
-            st.execute(trigger.toString());
+            String statement = trigger.toString();
+            st.execute(statement);
         }
     }
 
-    private void createDeleteTrigger(final String tableName, final String auditTable,
-            final LinkedHashMap<String, String> columnNames) throws SQLException {
+    private void createDeleteTrigger(final String tableName, final String auditTable)
+            throws SQLException {
 
         StringBuilder trigger = new StringBuilder(
-                format("CREATE TRIGGER '%s_delete' AFTER DELETE ON '%s'\n", auditTable, tableName));
+                format("CREATE TRIGGER '%s_delete' AFTER DELETE ON '%s'%n", auditTable, tableName));
         trigger.append("BEGIN\n");
 
-        final String insert = format("  INSERT INTO '%s' ('fid', audit_op) VALUES (OLD.fid, %s);\n",
+        final String insert = format("  INSERT INTO '%s' ('fid', audit_op) VALUES (OLD.fid, %s);%n",
                 auditTable, AUDIT_OP_DELETE);
         trigger.append(insert);
 
         trigger.append("END\n");
 
         try (Statement st = cx.createStatement()) {
-            st.execute(trigger.toString());
+            String statement = trigger.toString();
+            st.execute(statement);
         }
     }
 }

@@ -405,13 +405,13 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         assertTrue(resultObject instanceof GeopkgImportResult);
         GeopkgImportResult importResult = (GeopkgImportResult) resultObject;
 
-        RevCommit mergeCommit = importResult.newCommit;
+        RevCommit mergeCommit = importResult.getNewCommit();
         assertEquals("Merge: Imported geopackage.", mergeCommit.getMessage());
         assertEquals(2, mergeCommit.getParentIds().size());
         assertEquals("Tester", mergeCommit.getAuthor().getName().get());
         assertEquals("tester@example.com", mergeCommit.getAuthor().getEmail().get());
 
-        RevCommit importCommit = importResult.importCommit;
+        RevCommit importCommit = importResult.getImportCommit();
         assertEquals("Imported geopackage.", importCommit.getMessage());
         assertEquals(1, importCommit.getParentIds().size());
         assertEquals("Tester", importCommit.getAuthor().getName().get());
@@ -497,13 +497,13 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         assertTrue(resultObject instanceof GeopkgImportResult);
         GeopkgImportResult importResult = (GeopkgImportResult) resultObject;
 
-        RevCommit mergeCommit = importResult.newCommit;
+        RevCommit mergeCommit = importResult.getNewCommit();
         assertEquals("Merge: Imported geopackage.", mergeCommit.getMessage());
         assertEquals(2, mergeCommit.getParentIds().size());
         assertEquals("Tester", mergeCommit.getAuthor().getName().get());
         assertEquals("tester@example.com", mergeCommit.getAuthor().getEmail().get());
 
-        RevCommit importCommit = importResult.importCommit;
+        RevCommit importCommit = importResult.getImportCommit();
         assertEquals("Imported geopackage.", importCommit.getMessage());
         assertEquals(1, importCommit.getParentIds().size());
         assertEquals("Tester", importCommit.getAuthor().getName().get());

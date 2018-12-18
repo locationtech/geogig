@@ -34,6 +34,10 @@
   </build>
   <dependencies>
     <dependency>
+      <groupId>org.rocksdb</groupId>
+      <artifactId>rocksdbjni</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
       <version>${project.version}</version>

@@ -66,7 +66,7 @@ public class GeopkgPull extends AbstractCommand {
                     .setProgressListener(listener).call();
 
             cli.getConsole().println("Import successful.");
-            cli.getConsole().println("Changes committed and merge at " + result.newCommit.getId());
+            cli.getConsole().println("Changes committed and merge at " + result.getNewCommit().getId());
 
             result.close();
 

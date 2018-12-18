@@ -11,7 +11,7 @@ package org.locationtech.geogig.geotools.geopkg;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.locationtech.geogig.storage.impl.RocksdbMap;
+import lombok.Getter;
 
 public class AuditReport {
 
@@ -20,7 +20,7 @@ public class AuditReport {
     public final AtomicLong added = new AtomicLong(), removed = new AtomicLong(),
             changed = new AtomicLong();
 
-    public RocksdbMap<String, String> newMappings = null;
+    private @Getter RocksdbMap newMappings;
 
     AuditReport(AuditTable table) {
         this.table = table;
@@ -28,7 +28,7 @@ public class AuditReport {
 
     public void addMapping(String key, String value) {
         if (newMappings == null) {
-            newMappings = new RocksdbMap<String, String>();
+            newMappings = new RocksdbMap();
         }
         newMappings.put(key, value);
     }

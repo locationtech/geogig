@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.sql.DataSource;
 
-import com.google.common.base.Predicate;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.FeatureEntry;
@@ -73,6 +72,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
@@ -265,24 +265,24 @@ public class InterchangeFormat {
         try (Connection connection = dataSource.getConnection();
                 GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
 
-
-            //Ref::getName, but friendly for Fortify
-            Function<AuditTable, String> fn_getTableName =  new Function<AuditTable, String>() {
+            // Ref::getName, but friendly for Fortify
+            Function<AuditTable, String> fn_getTableName = new Function<AuditTable, String>() {
                 @Override
                 public String apply(AuditTable at) {
                     return at.getTableName();
-                }};
+                }
+            };
 
             // k -> importTables.isEmpty() || importTables.contains(k)
-            Predicate<String> fn =  new Predicate<String>() {
+            Predicate<String> fn = new Predicate<String>() {
                 @Override
                 public boolean apply(String k) {
                     return importTables.isEmpty() || importTables.contains(k);
-                }};
+                }
+            };
 
-            final Map<String, AuditTable> tables = Maps.filterKeys(
-                    Maps.uniqueIndex(metadata.getAuditTables(), fn_getTableName),
-                    fn);
+            final Map<String, AuditTable> tables = Maps
+                    .filterKeys(Maps.uniqueIndex(metadata.getAuditTables(), fn_getTableName), fn);
 
             checkState(tables.size() > 0, "No table to import.");
             Iterator<AuditTable> iter = tables.values().iterator();
@@ -336,9 +336,9 @@ public class InterchangeFormat {
             importCommit = builder.build();
             importResult = new GeopkgImportResult(importCommit);
             for (AuditReport auditReport : reports) {
-                if (auditReport.newMappings != null) {
-                    importResult.newMappings.put(auditReport.table.getFeatureTreePath(),
-                            auditReport.newMappings);
+                if (auditReport.getNewMappings() != null) {
+                    importResult.getNewMappings().put(auditReport.table.getFeatureTreePath(),
+                            auditReport.getNewMappings());
                 }
             }
 
@@ -353,7 +353,7 @@ public class InterchangeFormat {
 
             MergeReport report = merge.call();
             RevCommit newCommit = report.getMergeCommit();
-            importResult.newCommit = newCommit;
+            importResult.setNewCommit(newCommit);
 
         } catch (MergeConflictsException e) {
             throw new GeopkgMergeConflictsException(e, importResult);
@@ -570,11 +570,12 @@ public class InterchangeFormat {
             List<AttributeDescriptor> descriptors = type.getAttributeDescriptors();
 
             // at -> at.getLocalName()
-            Function<AttributeDescriptor, String> fn =  new Function<AttributeDescriptor, String>() {
+            Function<AttributeDescriptor, String> fn = new Function<AttributeDescriptor, String>() {
                 @Override
                 public String apply(AttributeDescriptor at) {
-                    return  at.getLocalName();
-                }};
+                    return at.getLocalName();
+                }
+            };
 
             this.attNames = Lists.transform(descriptors, fn);
             GeometryDescriptor geometryDescriptor = type.getGeometryDescriptor();

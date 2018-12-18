@@ -56,7 +56,7 @@ Feature: "clone" command
   Scenario: Try to clone a remote repository that does not exist
     Given I am in an empty directory
      When I run the command "clone nonexistentrepo ${localrepo}"
-     Then the response should contain "nonexistentrepo is not a geogig repository"
+     Then the response should contain "is not a geogig repository"
       And the repository at "${localrepo}" shall not exist 
       
   Scenario: Try to make a shallow clone of a remote repository

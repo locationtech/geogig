@@ -29,13 +29,13 @@ public abstract class PGStorageTableManager {
     /**
      * @see PGStorageTableManager#createObjectChildTable
      */
-    static final String CHILD_TABLE_STMT = "CREATE TABLE %s ( ) INHERITS(%s)";
+    static final String CHILD_TABLE_STMT = "CREATE TABLE %s ( ) INHERITS(%s);";
 
     /**
      * @see PGStorage#partitionedObjectTableDDL
      */
     static final String PARTITIONED_CHILD_TABLE_STMT = "CREATE TABLE %s"
-            + " (id OBJECTID, object BYTEA, CHECK ( ((id).h1) >= %d AND ((id).h1) < %d) ) INHERITS (%s)";
+            + " (id OBJECTID, object BYTEA, CHECK ( ((id).h1) >= %d AND ((id).h1) < %d) ) INHERITS (%s);";
 
     public static PGStorageTableManager forVersion(Version serverVersion) {
         if (serverVersion.major < 10) {
@@ -66,7 +66,7 @@ public abstract class PGStorageTableManager {
         // }
 
         protected @Override void createObjectTableIndex(List<String> ddl, String tableName) {
-            String index = format("CREATE INDEX %s_objectid_h1_hash ON %s USING HASH (((id).h1))",
+            String index = format("CREATE INDEX %s_objectid_h1_hash ON %s USING HASH (((id).h1));",
                     stripSchema(tableName), tableName);
             ddl.add(index);
         }

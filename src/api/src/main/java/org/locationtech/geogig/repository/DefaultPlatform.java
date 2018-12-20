@@ -7,19 +7,12 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.model.impl;
+package org.locationtech.geogig.repository;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
-import java.net.URI;
 import java.util.TimeZone;
-
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.Platform;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 /**
  * Standard platform for GeoGig.
@@ -85,22 +78,6 @@ public class DefaultPlatform implements Platform {
     @Override
     public long nanoTime() {
         return System.nanoTime();
-    }
-
-    @Override
-    public synchronized File getTempDir() {
-        Optional<URI> url = new ResolveGeogigURI(this, null).call();
-        final File tmpDir;
-        if (url.isPresent()) {
-            URI uri = url.get();
-            tmpDir = new File(new File(uri), "tmp");
-            Preconditions.checkState(tmpDir.exists() || tmpDir.mkdir(),
-                    "unable to create directory %s", tmpDir.getAbsolutePath());
-        } else {
-            String systmplocation = System.getProperty("java.io.tmpdir");
-            tmpDir = new File(systmplocation);
-        }
-        return tmpDir;
     }
 
     @Override

@@ -98,11 +98,6 @@ public class HintsTest {
             public int availableProcessors() {
                 return 0;
             }
-
-            @Override
-            public File getTempDir() {
-                return null;
-            }
         };
 
         Hints hints = new Hints();

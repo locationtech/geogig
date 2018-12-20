@@ -63,10 +63,4 @@ public interface Platform extends Serializable{
      */
     public int availableProcessors();
 
-    /**
-     * @return a directory suitable to be used to store temporary files, may be inside the
-     *         repository's directory structure or the one provided by the system.
-     */
-    public File getTempDir();
-
 }

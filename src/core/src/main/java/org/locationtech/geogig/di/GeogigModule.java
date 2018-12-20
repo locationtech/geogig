@@ -10,8 +10,8 @@
 package org.locationtech.geogig.di;
 
 import org.locationtech.geogig.hooks.CommandHooksDecorator;
-import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;

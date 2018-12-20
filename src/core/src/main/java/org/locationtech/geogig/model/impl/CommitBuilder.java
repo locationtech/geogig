@@ -16,6 +16,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.plumbing.HashObject;
+import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Platform;
 
 import com.google.common.base.Preconditions;

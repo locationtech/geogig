@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import org.locationtech.geogig.model.impl.DefaultPlatform;
+import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.impl.ObjectDatabaseConformanceTest;

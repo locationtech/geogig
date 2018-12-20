@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.google.common.base.Function;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
@@ -41,6 +40,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;

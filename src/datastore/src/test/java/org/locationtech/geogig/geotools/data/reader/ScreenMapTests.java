@@ -21,13 +21,12 @@ import org.geotools.feature.SchemaException;
 import org.geotools.referencing.operation.transform.IdentityTransform;
 import org.geotools.renderer.ScreenMap;
 import org.junit.Test;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.operation.TransformException;
 
 public class ScreenMapTests {
 

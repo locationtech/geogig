@@ -22,7 +22,6 @@ import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
-import org.locationtech.geogig.storage.postgresql.v9.PGBlobStore;
 
 public class PGBlobStoreTest extends TransactionBlobStoreTest {
 

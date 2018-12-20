@@ -19,9 +19,8 @@ import java.util.Map;
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -44,10 +43,10 @@ public class PatchSerializationTest extends RepositoryTestCase {
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
-                RevFeatureTypeBuilder.build(modifiedPointsType),
-                RevFeatureTypeBuilder.build(pointsType));
+                RevFeatureType.builder().type(modifiedPointsType).build(),
+                RevFeatureType.builder().type(pointsType).build());
         patch.addModifiedFeature(featureDiff);
-        patch.addFeatureType(RevFeatureTypeBuilder.build(pointsType));
+        patch.addFeatureType(RevFeatureType.builder().type(pointsType).build());
         testPatch(patch);
     }
 
@@ -60,10 +59,10 @@ public class PatchSerializationTest extends RepositoryTestCase {
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
-                RevFeatureTypeBuilder.build(pointsType),
-                RevFeatureTypeBuilder.build(modifiedPointsType));
+                RevFeatureType.builder().type(pointsType).build(),
+                RevFeatureType.builder().type(modifiedPointsType).build());
         patch.addModifiedFeature(featureDiff);
-        patch.addFeatureType(RevFeatureTypeBuilder.build(modifiedPointsType));
+        patch.addFeatureType(RevFeatureType.builder().type(modifiedPointsType).build());
         testPatch(patch);
     }
 
@@ -79,8 +78,9 @@ public class PatchSerializationTest extends RepositoryTestCase {
         GeometryAttributeDiff geomDiff = new GeometryAttributeDiff(oldGeometry, newGeometry);
         map.put(pointsType.getDescriptor("sp"), diff);
         map.put(pointsType.getDescriptor("pp"), geomDiff);
-        FeatureDiff feaureDiff = new FeatureDiff(path, map, RevFeatureTypeBuilder.build(pointsType),
-                RevFeatureTypeBuilder.build(pointsType));
+        FeatureDiff feaureDiff = new FeatureDiff(path, map,
+                RevFeatureType.builder().type(pointsType).build(),
+                RevFeatureType.builder().type(pointsType).build());
         patch.addModifiedFeature(feaureDiff);
         testPatch(patch);
     }
@@ -89,8 +89,8 @@ public class PatchSerializationTest extends RepositoryTestCase {
     public void testAddFeaturePatch() throws Exception {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
-        patch.addAddedFeature(path, RevFeatureBuilder.build(points1),
-                RevFeatureTypeBuilder.build(pointsType));
+        patch.addAddedFeature(path, RevFeature.builder().build(points1),
+                RevFeatureType.builder().type(pointsType).build());
         testPatch(patch);
     }
 
@@ -98,16 +98,17 @@ public class PatchSerializationTest extends RepositoryTestCase {
     public void testRemoveFeaturePatch() throws Exception {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
-        patch.addRemovedFeature(path, RevFeatureBuilder.build(points1),
-                RevFeatureTypeBuilder.build(pointsType));
+        patch.addRemovedFeature(path, RevFeature.builder().build(points1),
+                RevFeatureType.builder().type(pointsType).build());
         testPatch(patch);
     }
 
     @Test
     public void testModifiedEmptyFeatureTypePatch() throws Exception {
         Patch patch = new Patch();
-        RevFeatureType featureType = RevFeatureTypeBuilder.build(pointsType);
-        RevFeatureType modifiedFeatureType = RevFeatureTypeBuilder.build(modifiedPointsType);
+        RevFeatureType featureType = RevFeatureType.builder().type(pointsType).build();
+        RevFeatureType modifiedFeatureType = RevFeatureType.builder().type(modifiedPointsType)
+                .build();
         patch.addFeatureType(featureType);
         patch.addFeatureType(modifiedFeatureType);
         patch.addAlteredTree(
@@ -118,7 +119,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
     @Test
     public void testAddEmptyFeatureTypePatch() throws Exception {
         Patch patch = new Patch();
-        RevFeatureType featureType = RevFeatureTypeBuilder.build(pointsType);
+        RevFeatureType featureType = RevFeatureType.builder().type(pointsType).build();
         patch.addFeatureType(featureType);
         patch.addAlteredTree(new FeatureTypeDiff(pointsName, null, featureType.getId()));
         testPatch(patch);
@@ -127,7 +128,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
     @Test
     public void testRemoveEmptyFeatureTypePatch() throws Exception {
         Patch patch = new Patch();
-        RevFeatureType featureType = RevFeatureTypeBuilder.build(pointsType);
+        RevFeatureType featureType = RevFeatureType.builder().type(pointsType).build();
         patch.addFeatureType(featureType);
         patch.addAlteredTree(new FeatureTypeDiff(pointsName, featureType.getId(), null));
         testPatch(patch);

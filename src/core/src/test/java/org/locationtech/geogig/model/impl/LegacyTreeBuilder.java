@@ -57,6 +57,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 /**
  * 
@@ -65,7 +67,7 @@ import lombok.NonNull;
  *             (still experimental) builder.
  */
 @Deprecated
-public class LegacyTreeBuilder implements RevTreeBuilder {
+public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RevTreeBuilder.class);
 
@@ -105,7 +107,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
 
     private Map<ObjectId, RevTree> pendingWritesCache;
 
-    private final RevTree original;
+    private @Setter RevTree original;
 
     /**
      * Empty tree constructor, used to create trees from scratch
@@ -655,11 +657,6 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     public static RevTree empty() {
         RevTree theEmptyTree = new LegacyTreeBuilder().build();
         return theEmptyTree;
-    }
-
-    @Override
-    public int getDepth() {
-        throw new UnsupportedOperationException();
     }
 
     @Override

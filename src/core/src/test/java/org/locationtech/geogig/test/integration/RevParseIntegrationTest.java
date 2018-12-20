@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
@@ -68,15 +68,15 @@ public class RevParseIntegrationTest extends RepositoryTestCase {
 
         // fake a merge until we have the merge op in place
 
-        CommitBuilder cb = new CommitBuilder();
-        cb.setParentIds(ImmutableList.of(masterCommit3.getId(), branchCommit2.getId()));
-        cb.setMessage("mergeCommit");
-        cb.setAuthor("groldan");
-        cb.setCommitter("groldan");
-        cb.setTreeId(masterCommit3.getTreeId());
+        RevCommitBuilder cb = RevCommit.builder();
+        cb.parentIds(ImmutableList.of(masterCommit3.getId(), branchCommit2.getId()));
+        cb.message("mergeCommit");
+        cb.author("groldan");
+        cb.committer("groldan");
+        cb.treeId(masterCommit3.getTreeId());
         long now = System.currentTimeMillis();
-        cb.setAuthorTimestamp(now);
-        cb.setCommitterTimestamp(now);
+        cb.authorTimestamp(now);
+        cb.committerTimestamp(now);
         mergeCommit = cb.build();
 
         getRepository().objectDatabase().put(mergeCommit);

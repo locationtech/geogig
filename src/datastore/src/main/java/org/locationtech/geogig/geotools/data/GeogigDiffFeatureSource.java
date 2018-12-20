@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
@@ -61,6 +60,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;

@@ -24,7 +24,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
@@ -170,7 +170,7 @@ public class MergeTest extends AbstractWebOpTest {
         testData.insert(TestData.point1_modified);
         testData.add();
         RevCommit ours = geogig.command(CommitOp.class).setMessage("modify point1").call();
-        ObjectId point1_id = RevFeatureBuilder.build(TestData.point1_modified).getId();
+        ObjectId point1_id = RevFeature.builder().build(TestData.point1_modified).getId();
         testData.checkout("branch1");
         testData.remove(TestData.point1);
         testData.add();
@@ -230,7 +230,7 @@ public class MergeTest extends AbstractWebOpTest {
         // commit the change to "master"
         RevCommit masterCommit = geogig.command(CommitOp.class).setMessage("master edit").call();
         // get the feature ID for poly1
-        ObjectId oursPoly1Id = RevFeatureBuilder.build(TestData.poly1_modified1).getId();
+        ObjectId oursPoly1Id = RevFeature.builder().build(TestData.poly1_modified1).getId();
         // checkout "branch1"
         testData.checkout("branch1");
         // add a feature, modify the same feature above, but differently, and delete a different
@@ -241,7 +241,7 @@ public class MergeTest extends AbstractWebOpTest {
         // commit the change to "branch1"
         RevCommit branch1Commit = geogig.command(CommitOp.class).setMessage("branch1 edit").call();
         // get the feature ID for poly1
-        ObjectId theirsPoly1Id = RevFeatureBuilder.build(TestData.poly1_modified2).getId();
+        ObjectId theirsPoly1Id = RevFeature.builder().build(TestData.poly1_modified2).getId();
         // checkout "master"
         testData.checkout("master");
         // now build the Merge command

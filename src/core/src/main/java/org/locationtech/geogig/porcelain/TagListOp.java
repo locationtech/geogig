@@ -15,7 +15,6 @@ import static com.google.common.collect.Lists.transform;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.base.Function;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
@@ -23,6 +22,7 @@ import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BulkOpListener;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 /**

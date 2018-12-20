@@ -33,8 +33,8 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.jts.geom.Coordinate;
@@ -135,13 +135,12 @@ public class QuadTreeTestSupport extends ExternalResource {
         }
     }
 
-    public QuadTreeBuilder newTreeBuilder() {
+    public RevTreeBuilder newTreeBuilder() {
         return newTreeBuilder(RevTree.EMPTY);
     }
 
-    public QuadTreeBuilder newTreeBuilder(RevTree original) {
-        QuadTreeBuilder builder = QuadTreeBuilder.create(store, store, original, maxBoundsFloat64);
-        return builder;
+    public RevTreeBuilder newTreeBuilder(RevTree original) {
+        return RevTreeBuilder.quadBuilder(store, store, original, maxBoundsFloat64);
     }
 
     public Node createNode(String name, @Nullable Envelope bounds) {

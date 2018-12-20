@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.common.base.Predicate;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.DiffEntry;
@@ -35,8 +34,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
@@ -62,6 +59,7 @@ import org.opengis.feature.type.FeatureType;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
@@ -207,14 +205,12 @@ public class WorkingTreeImpl implements WorkingTree {
         }
         final RevTree newWorkTree;
         if (TYPE.FEATURE.equals(childRef.getType())) {
-            final String featureId = childRef.name();
             final String parentTreePath = childRef.getParentPath();
             final NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
                     .setChildPath(parentTreePath).call().get();
             final RevTree currentParent = indexDatabase.getTree(typeTreeRef.getObjectId());
-            CanonicalTreeBuilder parentBuilder = CanonicalTreeBuilder.create(indexDatabase,
-                    currentParent);
-            parentBuilder.remove(featureId);
+            RevTreeBuilder parentBuilder = RevTreeBuilder.builder(indexDatabase, currentParent);
+            parentBuilder.remove(childRef.getNode());
 
             final RevTree newParent = parentBuilder.build();
             if (newParent.getId().equals(typeTreeRef.getObjectId())) {
@@ -295,7 +291,7 @@ public class WorkingTreeImpl implements WorkingTree {
             throw new IllegalArgumentException("Tree already exists at " + treePath);
         }
 
-        final RevFeatureType revType = RevFeatureTypeBuilder.build(featureType);
+        final RevFeatureType revType = RevFeatureType.builder().type(featureType).build();
         indexDatabase.put(revType);
 
         final ObjectId metadataId = revType.getId();
@@ -330,31 +326,33 @@ public class WorkingTreeImpl implements WorkingTree {
 
         final RevTree currentWorkHead = getTree();
 
-        //NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> fn_path =  new Function<NodeRef, String>() {
+        // NodeRef::path, but friendly for Fortify
+        Function<NodeRef, String> fn_path = new Function<NodeRef, String>() {
             @Override
             public String apply(NodeRef noderef) {
                 return noderef.path();
-            }};
+            }
+        };
 
         final Map<String, NodeRef> currentTrees = Maps
                 .newHashMap(Maps.uniqueIndex(getFeatureTypeTrees(), fn_path));
 
-        Map<String, CanonicalTreeBuilder> parentBuilders = new HashMap<>();
+        Map<String, RevTreeBuilder> parentBuilders = new HashMap<>();
 
         progress.setProgress(0);
         final AtomicLong p = new AtomicLong();
-        Function<FeatureInfo, RevFeature> treeBuildingTransformer = (fi) -> {
+        Function<FeatureInfo, RevFeature> treeBuildingTransformer = fi -> {
             final String parentPath = NodeRef.parentPath(fi.getPath());
             final String fid = NodeRef.nodeFromPath(fi.getPath());
             @Nullable
             ObjectId metadataId = fi.getFeatureTypeId();
-            CanonicalTreeBuilder parentBuilder = getTreeBuilder(currentTrees, parentBuilders,
-                    parentPath, metadataId);
+            RevTreeBuilder parentBuilder = getTreeBuilder(currentTrees, parentBuilders, parentPath,
+                    metadataId);
 
             if (fi.isDelete()) {
                 if (parentBuilder != null) {
-                    parentBuilder.remove(fid);
+                    parentBuilder.remove(RevObjectFactory.defaultInstance().createNode(fid,
+                            ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE, null, null));
                 }
                 return null;
             }
@@ -382,11 +380,12 @@ public class WorkingTreeImpl implements WorkingTree {
         features = Iterators.filter(features, Predicates.notNull());
 
         // (f) -> !progress.isCanceled()
-        Predicate<RevFeature> fn =  new Predicate<RevFeature>() {
+        Predicate<RevFeature> fn = new Predicate<RevFeature>() {
             @Override
             public boolean apply(RevFeature f) {
                 return !progress.isCanceled();
-            }};
+            }
+        };
 
         features = Iterators.filter(features, fn);
 
@@ -419,12 +418,12 @@ public class WorkingTreeImpl implements WorkingTree {
     }
 
     @Nullable
-    private CanonicalTreeBuilder getTreeBuilder(final Map<String, NodeRef> currentTrees,
-            final Map<String, CanonicalTreeBuilder> treeBuilders, final String treePath,
+    private RevTreeBuilder getTreeBuilder(final Map<String, NodeRef> currentTrees,
+            final Map<String, RevTreeBuilder> treeBuilders, final String treePath,
             final @Nullable ObjectId featureMetadataId) {
 
         checkNotNull(treePath);
-        CanonicalTreeBuilder builder = treeBuilders.get(treePath);
+        RevTreeBuilder builder = treeBuilders.get(treePath);
         if (builder == null) {
             NodeRef treeRef = currentTrees.get(treePath);
             if (treeRef == null) {
@@ -438,7 +437,7 @@ public class WorkingTreeImpl implements WorkingTree {
                 treeRef = new NodeRef(treeNode, parentPath, featureMetadataId);
                 currentTrees.put(treePath, treeRef);
             }
-            builder = CanonicalTreeBuilder.create(indexDatabase,
+            builder = RevTreeBuilder.builder(indexDatabase,
                     context.command(FindOrCreateSubtree.class).setParent(getTree())
                             .setChildPath(treePath).call());
             treeBuilders.put(treePath, builder);
@@ -542,7 +541,7 @@ public class WorkingTreeImpl implements WorkingTree {
                 .setChildPath(treePath).call().orNull();
         Preconditions.checkArgument(null != typeTreeRef, "Tree does not exist: %s", treePath);
 
-        final RevFeatureType newRevType = RevFeatureTypeBuilder.build(featureType);
+        final RevFeatureType newRevType = RevFeatureType.builder().type(featureType).build();
         if (newRevType.getId().equals(typeTreeRef.getMetadataId())) {
             return typeTreeRef;
         }
@@ -558,7 +557,7 @@ public class WorkingTreeImpl implements WorkingTree {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
 
         // rebuild the tree with nodes with updated metadata id as necessary
-        RevTreeBuilder newTreeBuilder = CanonicalTreeBuilder.create(indexDatabase);
+        RevTreeBuilder newTreeBuilder = RevTreeBuilder.builder(indexDatabase);
 
         while (oldFeatureRefs.hasNext()) {
             NodeRef ref = oldFeatureRefs.next();

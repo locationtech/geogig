@@ -21,8 +21,8 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 
 public class ObjectCacheTest {
 
@@ -44,8 +44,8 @@ public class ObjectCacheTest {
         cacheId2 = new CacheIdentifier(1000);
         cache1 = new ObjectCache(() -> mockSharedCache, cacheId1);
         cache2 = new ObjectCache(() -> mockSharedCache, cacheId2);
-        o1 = RevFeatureBuilder.builder().addValue(0L).addValue("zero").build();
-        o2 = RevFeatureBuilder.builder().addValue(1L).addValue("one").build();
+        o1 = RevFeature.builder().addValue(0L).addValue("zero").build();
+        o2 = RevFeature.builder().addValue(1L).addValue("one").build();
 
         k11 = cacheId1.create(o1.getId());
 

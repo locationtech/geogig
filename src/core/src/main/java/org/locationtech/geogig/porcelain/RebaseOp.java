@@ -24,8 +24,8 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.CatObject;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -313,9 +313,9 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                     .setMode(ResetMode.HARD).setClean(false).call();
 
             if (squashMessage != null) {
-                CommitBuilder builder = new CommitBuilder(commitsToRebase.get(0));
-                builder.setParentIds(Arrays.asList(ancestorCommit.get()));
-                builder.setMessage(squashMessage);
+                RevCommitBuilder builder = RevCommit.builder().init(commitsToRebase.get(0));
+                builder.parentIds(Arrays.asList(ancestorCommit.get()));
+                builder.message(squashMessage);
                 squashCommit = builder.build();
                 // save the commit, since it does not exist in the database, and might be needed if
                 // there is a conflict
@@ -501,11 +501,11 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
                 long timestamp = platform.currentTimeMillis();
                 // Create new commit
-                CommitBuilder builder = new CommitBuilder(commitToApply);
-                builder.setParentIds(Arrays.asList(rebaseHead));
-                builder.setTreeId(newTreeId);
-                builder.setCommitterTimestamp(timestamp);
-                builder.setCommitterTimeZoneOffset(platform.timeZoneOffset(timestamp));
+                RevCommitBuilder builder = RevCommit.builder().init(commitToApply);
+                builder.parentIds(Arrays.asList(rebaseHead));
+                builder.treeId(newTreeId);
+                builder.committerTimestamp(timestamp);
+                builder.committerTimeZoneOffset(platform.timeZoneOffset(timestamp));
 
                 RevCommit newCommit = builder.build();
                 repository.objectDatabase().put(newCommit);
@@ -537,11 +537,11 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
             long timestamp = platform.currentTimeMillis();
             // Create new commit
-            CommitBuilder builder = new CommitBuilder(commitToApply);
-            builder.setParentIds(Arrays.asList(rebaseHead));
-            builder.setTreeId(newTreeId);
-            builder.setCommitterTimestamp(timestamp);
-            builder.setCommitterTimeZoneOffset(platform.timeZoneOffset(timestamp));
+            RevCommitBuilder builder = RevCommit.builder().init(commitToApply);
+            builder.parentIds(Arrays.asList(rebaseHead));
+            builder.treeId(newTreeId);
+            builder.committerTimestamp(timestamp);
+            builder.committerTimeZoneOffset(platform.timeZoneOffset(timestamp));
 
             RevCommit newCommit = builder.build();
             repository.objectDatabase().put(newCommit);

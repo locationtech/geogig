@@ -49,7 +49,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
@@ -71,6 +70,7 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.slf4j.Logger;
@@ -83,7 +83,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.Files;
-import org.locationtech.jts.geom.Envelope;
 
 import cucumber.api.DataTable;
 import cucumber.api.Scenario;
@@ -91,7 +90,6 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
-
 
 /**
  *
@@ -164,10 +162,10 @@ public class DefaultStepDefinitions {
         contextProvider.before();
         this.localRepo = contextProvider.getOrCreateRepositoryContext("localrepo");
 
-        RevFeatureType rft = RevFeatureTypeBuilder.build(TestFeatures.pointsType);
+        RevFeatureType rft = RevFeatureType.builder().type(TestFeatures.pointsType).build();
         setVariable("@PointsTypeID", rft.getId().toString());
 
-        rft = RevFeatureTypeBuilder.build(TestFeatures.linesType);
+        rft = RevFeatureType.builder().type(TestFeatures.linesType).build();
         setVariable("@LinesTypeID", rft.getId().toString());
     }
 
@@ -264,7 +262,7 @@ public class DefaultStepDefinitions {
     }
 
     @Then("^the response should not contain variable \"([^\"]*)\"$")
-     public void checkResponseTextDoesNotContain(String substring) {
+    public void checkResponseTextDoesNotContain(String substring) {
         substring = replaceVariables(substring);
         String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
                 .replaceAll("\\\\", "/");
@@ -661,8 +659,9 @@ public class DefaultStepDefinitions {
         Object oldValue = points1.getProperty("sp").getValue();
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
-        FeatureDiff feaureDiff = new FeatureDiff(path, map, RevFeatureTypeBuilder.build(pointsType),
-                RevFeatureTypeBuilder.build(pointsType));
+        FeatureDiff feaureDiff = new FeatureDiff(path, map,
+                RevFeatureType.builder().type(pointsType).build(),
+                RevFeatureType.builder().type(pointsType).build());
         patch.addModifiedFeature(feaureDiff);
         File file = new File(localRepo.platform.pwd(), "test.patch");
         BufferedWriter writer = Files.newWriter(file, Charsets.UTF_8);
@@ -707,38 +706,41 @@ public class DefaultStepDefinitions {
     public void the_response_contains_indexID(String tree) throws Throwable {
         GeoGIG gig = localRepo.geogigCLI.getGeogig();
 
-        ObjectId canonicalTreeId = gig.command(ResolveTreeish.class).setTreeish("HEAD:" + tree).call().get();
-        Optional<IndexInfo> indexInfo = gig.getRepository().indexDatabase().getIndexInfo(tree,"pp");
+        ObjectId canonicalTreeId = gig.command(ResolveTreeish.class).setTreeish("HEAD:" + tree)
+                .call().get();
+        Optional<IndexInfo> indexInfo = gig.getRepository().indexDatabase().getIndexInfo(tree,
+                "pp");
 
-        Optional<ObjectId> indexedTree = gig.getRepository().indexDatabase().resolveIndexedTree(indexInfo.get(),canonicalTreeId);
+        Optional<ObjectId> indexedTree = gig.getRepository().indexDatabase()
+                .resolveIndexedTree(indexInfo.get(), canonicalTreeId);
 
         if (!indexedTree.isPresent()) {
             fail();
         }
         String indexId = indexedTree.get().toString();
         String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-            .replaceAll("\\\\", "/");
-        assertTrue("'" + actual + "' does not contain ID '" + indexId.substring(0,8),
-                actual.contains(indexId.toString().substring(0,8)));
+                .replaceAll("\\\\", "/");
+        assertTrue("'" + actual + "' does not contain ID '" + indexId.substring(0, 8),
+                actual.contains(indexId.toString().substring(0, 8)));
     }
 
     @Then("^the response should contain index info ID for tree \"([^\"]*)\"$")
     public void the_response_contains_indexInfoID(String tree) throws Throwable {
         Repository repo = localRepo.geogigCLI.getGeogig().getRepository();
 
-        Optional<IndexInfo> indexInfo = repo.indexDatabase().getIndexInfo(tree,"pp");
+        Optional<IndexInfo> indexInfo = repo.indexDatabase().getIndexInfo(tree, "pp");
         ObjectId oid = null;
         if (indexInfo.isPresent()) {
-           oid = indexInfo.get().getId();
+            oid = indexInfo.get().getId();
         }
 
         String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-            .replaceAll("\\\\", "/");
+                .replaceAll("\\\\", "/");
         if (oid == null) {
             fail();
         } else {
-            assertTrue("'" + actual + "' does not contain ID for '"  + oid.toString(),
-                actual.contains(oid.toString()));
+            assertTrue("'" + actual + "' does not contain ID for '" + oid.toString(),
+                    actual.contains(oid.toString()));
         }
     }
 
@@ -833,8 +835,7 @@ public class DefaultStepDefinitions {
     }
 
     @Then("^the repository's \"([^\"]*)\" index should have the following features:$")
-    public void verifyIndexContents(String headRef,
-            DataTable expectedFeatures) throws Throwable {
+    public void verifyIndexContents(String headRef, DataTable expectedFeatures) throws Throwable {
         verifyIndexContents(headRef, null, expectedFeatures);
     }
 
@@ -903,7 +904,7 @@ public class DefaultStepDefinitions {
     }
 
     public void setVariable(String name, String value) {
-                this.variables.put(name, value);
+        this.variables.put(name, value);
     }
 
     public String getVariable(String name) {
@@ -921,7 +922,7 @@ public class DefaultStepDefinitions {
     }
 
     public String replaceVariables(final String text, Map<String, String> variables,
-        DefaultStepDefinitions defaultStepDefinitions) {
+            DefaultStepDefinitions defaultStepDefinitions) {
         String resource = text;
         int varIndex = -1;
         while ((varIndex = resource.indexOf("{@")) > -1) {

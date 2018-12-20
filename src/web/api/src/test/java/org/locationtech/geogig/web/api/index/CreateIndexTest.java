@@ -24,9 +24,9 @@ import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Optional;
-import org.locationtech.jts.geom.Envelope;
 
 public class CreateIndexTest extends AbstractIndexWebOpTest {
 

@@ -43,4 +43,7 @@ public interface RevPerson {
      */
     public abstract int getTimeZoneOffset();
 
+    public static RevPersonBuilder builder() {
+        return new RevPersonBuilder();
+    }
 }

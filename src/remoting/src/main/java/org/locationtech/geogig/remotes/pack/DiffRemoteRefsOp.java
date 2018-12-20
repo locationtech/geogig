@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.plumbing.MapRef;
@@ -29,6 +27,8 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;

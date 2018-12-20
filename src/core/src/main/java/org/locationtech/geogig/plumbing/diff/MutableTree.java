@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -31,11 +30,12 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
@@ -133,13 +133,13 @@ public class MutableTree implements Cloneable {
     public static MutableTree createFromRefs(final ObjectId rootId,
             final Iterator<NodeRef> treeRefs) {
 
-
-        //NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> fn_path =  new Function<NodeRef, String>() {
+        // NodeRef::path, but friendly for Fortify
+        Function<NodeRef, String> fn_path = new Function<NodeRef, String>() {
             @Override
             public String apply(NodeRef noderef) {
                 return noderef.path();
-            }};
+            }
+        };
 
         ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(treeRefs, fn_path);
 
@@ -289,9 +289,9 @@ public class MutableTree implements Cloneable {
         final ObjectId treeId = this.node.getObjectId();
         final RevTree original = EMPTY_TREE_ID.equals(treeId) ? EMPTY : store.getTree(treeId);
 
-        CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(store, original);// .clearSubtrees();
+        RevTreeBuilder builder = RevTreeBuilder.builder(store, original);
         ImmutableList<Node> currentTrees = original.trees();
-        currentTrees.forEach((n) -> builder.remove(n.getName()));
+        currentTrees.forEach(builder::remove);
 
         for (MutableTree childTree : this.childTrees.values()) {
             childTree.build(store);

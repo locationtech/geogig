@@ -18,7 +18,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -56,7 +56,7 @@ public class UpdateTreeTest extends RepositoryTestCase {
     }
 
     private RevTree createTree(String... blobs) {
-        CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(odb);
+        RevTreeBuilder builder = RevTreeBuilder.builder(odb);
         for (String blob : blobs) {
             builder.put(blob(blob));
         }

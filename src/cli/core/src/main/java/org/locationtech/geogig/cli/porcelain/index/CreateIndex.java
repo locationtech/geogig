@@ -22,10 +22,10 @@ import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.locationtech.jts.geom.Envelope;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import org.locationtech.jts.geom.Envelope;
 
 @RequiresRepository(true)
 @Parameters(commandNames = {

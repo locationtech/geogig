@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.NodeRef;
@@ -42,6 +41,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;

@@ -19,11 +19,11 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.CheckSparsePath;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ForEachRef;
@@ -63,7 +63,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
     /**
      * @param remoteRepoLocation the directory of the remote repository
      */
-    public LocalMappedRemoteRepo(Remote remote,URI remoteRepoLocation) {
+    public LocalMappedRemoteRepo(Remote remote, URI remoteRepoLocation) {
         super(remote);
         this.remoteRepoLocation = remoteRepoLocation;
     }
@@ -256,9 +256,9 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                                 Suppliers.ofInstance((AutoCloseableIterator<DiffEntry>) changes))
                         .call();
 
-                CommitBuilder builder = new CommitBuilder(commit);
-                builder.setParentIds(newParents);
-                builder.setTreeId(newTreeId);
+                RevCommitBuilder builder = RevCommit.builder().init(commit);
+                builder.parentIds(newParents);
+                builder.treeId(newTreeId);
 
                 RevCommit mapped = builder.build();
                 to.objectDatabase().put(mapped);

@@ -20,7 +20,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.porcelain.AddOp;
@@ -91,7 +90,7 @@ public class AddOpTest extends RepositoryTestCase {
         assertEquals(ChangeType.ADDED, unstaged.get(0).changeType());
         assertEquals(RevObject.TYPE.TREE, unstaged.get(0).getNewObject().getType());
         assertEquals("Points", unstaged.get(0).newName());
-        RevFeatureType ft = RevFeatureTypeBuilder.build(pointsType);
+        RevFeatureType ft = RevFeatureType.builder().type(pointsType).build();
         ObjectId expectedTreeMdId = ft.getId();
         assertEquals(expectedTreeMdId, unstaged.get(0).getNewObject().getMetadataId());
 

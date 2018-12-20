@@ -39,8 +39,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
@@ -139,7 +137,6 @@ public abstract class RepositoryTestCase extends Assert {
     public Feature lines1;
 
     Feature lines1_modified;
-
 
     public Feature lines2;
 
@@ -248,7 +245,6 @@ public abstract class RepositoryTestCase extends Assert {
         poly3 = feature(polyType, idPG3, "StringProp3_3", new Integer(3000),
                 "POLYGON ((11 11, 12 12, 13 13, 14 14, 11 11))");
 
-
         points2_modified = feature(pointsType, idP2, "StringProp1_2a", new Integer(2001),
                 "POINT(2 3)");
 
@@ -312,16 +308,16 @@ public abstract class RepositoryTestCase extends Assert {
 
     public FeatureInfo featureInfo(String treePath, Feature f) {
         final String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
-        RevFeature feature = RevFeatureBuilder.build(f);
+        RevFeature feature = RevFeature.builder().build(f);
         FeatureType type = f.getType();
-        RevFeatureType ftype = RevFeatureTypeBuilder.build(type);
+        RevFeatureType ftype = RevFeatureType.builder().type(type).build();
         repo.objectDatabase().put(ftype);
         return FeatureInfo.insert(feature, ftype.getId(), path);
     }
 
     protected FeatureInfo featureInfo(SimpleFeatureType type, String id, Object... values) {
-        RevFeature feature = RevFeatureBuilder.build(feature(type, id, values));
-        RevFeatureType ftype = RevFeatureTypeBuilder.build(type);
+        RevFeature feature = RevFeature.builder().build(feature(type, id, values));
+        RevFeatureType ftype = RevFeatureType.builder().type(type).build();
         repo.objectDatabase().put(ftype);
         String path = NodeRef.appendChild(type.getName().getLocalPart(), id);
         return FeatureInfo.insert(feature, ftype.getId(), path);
@@ -429,11 +425,11 @@ public abstract class RepositoryTestCase extends Assert {
             } else {
                 RevFeatureType rft = types.get(f.getType());
                 if (rft == null) {
-                    rft = RevFeatureTypeBuilder.build(f.getType());
+                    rft = RevFeatureType.builder().type(f.getType()).build();
                     repo.objectDatabase().put(rft);
                     types.put(f.getType(), rft);
                 }
-                fi = FeatureInfo.insert(RevFeatureBuilder.build(f), rft.getId(), path);
+                fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(), path);
                 rfIds.add(fi);
             }
             return fi;
@@ -492,7 +488,8 @@ public abstract class RepositoryTestCase extends Assert {
      * @return
      * @throws Exception
      */
-    public boolean deleteAndAdd(@Nullable GeogigTransaction transaction, Feature f) throws Exception {
+    public boolean deleteAndAdd(@Nullable GeogigTransaction transaction, Feature f)
+            throws Exception {
         boolean existed = delete(transaction, f);
         if (existed) {
             if (transaction != null) {

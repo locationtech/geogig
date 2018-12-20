@@ -19,8 +19,8 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -325,8 +325,8 @@ public class RevertOpTest extends RepositoryTestCase {
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
         assertEquals(conflicts.get(0).getOurs(),
-                RevFeatureBuilder.build(points1_modifiedB).getId());
-        assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1).getId());
+                RevFeature.builder().build(points1_modifiedB).getId());
+        assertEquals(conflicts.get(0).getTheirs(), RevFeature.builder().build(points1).getId());
 
         // solve, and continue
         insert(points1);
@@ -388,8 +388,8 @@ public class RevertOpTest extends RepositoryTestCase {
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
         assertEquals(conflicts.get(0).getOurs(),
-                RevFeatureBuilder.build(points1_modifiedB).getId());
-        assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1).getId());
+                RevFeature.builder().build(points1_modifiedB).getId());
+        assertEquals(conflicts.get(0).getTheirs(), RevFeature.builder().build(points1).getId());
 
         geogig.command(RevertOp.class).setAbort(true).call();
 

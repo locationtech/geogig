@@ -27,12 +27,19 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -46,14 +53,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiLineString;
-import org.locationtech.jts.geom.MultiPoint;
-import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
 
 /**
  * Copy of the Restlet version of MergeFeatureResource code.
@@ -218,7 +217,7 @@ public class LegacyMergeFeatureService extends AbstractRepositoryService {
                 }
                 SimpleFeature feature = featureBuilder
                         .buildFeature(NodeRef.nodeFromPath(featureId));
-                RevFeature revFeature = RevFeatureBuilder.build(feature);
+                RevFeature revFeature = RevFeature.builder().build(feature);
                 repository.objectDatabase().put(revFeature);
 
                 return revFeature;

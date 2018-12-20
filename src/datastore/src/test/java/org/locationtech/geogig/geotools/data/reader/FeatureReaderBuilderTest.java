@@ -38,13 +38,14 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.mockito.Mockito;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -64,8 +65,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 
 public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
@@ -119,7 +118,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         commit("inital");
 
         SimpleFeatureType fullSchema = pointsType;
-        RevFeatureType nativeType = RevFeatureTypeBuilder.build(fullSchema);
+        RevFeatureType nativeType = RevFeatureType.builder().type(fullSchema).build();
         Context actualContext = repo.context();
         context = spy(actualContext);
 

@@ -27,6 +27,8 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Feature;
 import org.opengis.filter.And;
 import org.opengis.filter.BinaryComparisonOperator;
@@ -87,9 +89,6 @@ import org.opengis.filter.temporal.TEquals;
 import org.opengis.filter.temporal.TOverlaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
 
 /**
  * Utility class to decompose a {@link Filter} in two, complementary ones, the

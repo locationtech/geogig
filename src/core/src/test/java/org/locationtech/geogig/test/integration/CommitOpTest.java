@@ -32,7 +32,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
@@ -114,7 +113,7 @@ public class CommitOpTest extends RepositoryTestCase {
     @Test
     public void testCommitAddsFeatureTypeToObjectDatabase() throws Exception {
         insertAndAdd(points1);
-        ObjectId id = RevFeatureTypeBuilder.build(pointsType).getId();
+        ObjectId id = RevFeatureType.builder().type(pointsType).build().getId();
         geogig.command(AddOp.class).addPattern(".").call();
         RevCommit commit = geogig.command(CommitOp.class).call();
         assertNotNull(commit);

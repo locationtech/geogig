@@ -33,12 +33,12 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.LineString;
 import org.mockito.exceptions.base.MockitoException;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.LineString;
 
 public class GeoJsonImportTest extends RepositoryTestCase {
 

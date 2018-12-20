@@ -31,9 +31,8 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.repository.Context;
@@ -190,11 +189,12 @@ public class CLIContext {
             FeatureType newType = points1_FTmodified.getType();
             Name name = newType.getName();
             String parentPath = name.getLocalPart();
-            RevFeatureType rft = RevFeatureTypeBuilder.build(newType);
+            RevFeatureType rft = RevFeatureType.builder().type(newType).build();
             geogig.getRepository().objectDatabase().put(rft);
             String path = NodeRef.appendChild(parentPath,
                     points1_FTmodified.getIdentifier().getID());
-            FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(points1_FTmodified), rft.getId(), path);
+            FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(points1_FTmodified),
+                    rft.getId(), path);
             workTree.insert(fi);
         } finally {
             geogig.close();
@@ -234,7 +234,7 @@ public class CLIContext {
             FeatureType type = f.getType();
             RevFeatureType rft = types.get(type);
             if (rft == null) {
-                rft = RevFeatureTypeBuilder.build(type);
+                rft = RevFeatureType.builder().type(type).build();
                 geogig.getRepository().objectDatabase().put(rft);
                 types.put(type, rft);
             }
@@ -247,7 +247,8 @@ public class CLIContext {
                 RevFeatureType rft = types.get(ft);
                 String parentPath = ft.getName().getLocalPart();
                 String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
-                FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(f), rft.getId(), path);
+                FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(),
+                        path);
                 workTree.insert(fi);
                 ObjectId objectId = fi.getFeature().getId();
                 ids.add(objectId);

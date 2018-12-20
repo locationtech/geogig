@@ -10,7 +10,6 @@
 package org.locationtech.geogig.model.impl;
 
 import org.eclipse.jdt.annotation.Nullable;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 

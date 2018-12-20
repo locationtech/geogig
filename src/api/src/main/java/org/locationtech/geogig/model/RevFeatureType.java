@@ -74,4 +74,7 @@ public interface RevFeatureType extends RevObject {
      */
     public abstract Name getName();
 
+    public static RevFeatureTypeBuilder builder() {
+        return new RevFeatureTypeBuilder();
+    }
 }

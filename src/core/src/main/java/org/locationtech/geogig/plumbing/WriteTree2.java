@@ -28,7 +28,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
 import org.locationtech.geogig.plumbing.diff.TreeDifference;
@@ -326,8 +326,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         final RevTree currentLeftTree = repositoryDatabase.getTree(leftTreeId);
 
-        final CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(repositoryDatabase,
-                currentLeftTree);
+        final RevTreeBuilder builder = RevTreeBuilder.builder(repositoryDatabase, currentLeftTree);
 
         // create the new trees taking into account all the nodes
         DiffTree diffs = command(DiffTree.class).setRecursive(false).setReportTrees(false)
@@ -355,7 +354,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
             for (; updatedIterator.hasNext();) {
                 final DiffEntry diff = updatedIterator.next();
                 if (diff.isDelete()) {
-                    builder.remove(diff.oldName());
+                    builder.remove(diff.oldNode());
                 } else {
                     NodeRef newObject = diff.getNewObject();
                     Node node = newObject.getNode();

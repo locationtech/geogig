@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -38,7 +37,9 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -46,11 +47,6 @@ import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CommitBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
-import org.locationtech.geogig.model.impl.RevPersonBuilder;
-import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
@@ -67,6 +63,7 @@ import org.opengis.filter.Filter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.InternationalString;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -591,27 +588,28 @@ public class TextSerializationFactory implements RevObjectSerializer {
             RevPerson committer = parsePerson(requireLine(reader), "committer");
             String message = parseMessage(reader);
 
-            CommitBuilder builder = new CommitBuilder();
-            builder.setAuthor(author.getName().orNull());
-            builder.setAuthorEmail(author.getEmail().orNull());
-            builder.setAuthorTimestamp(author.getTimestamp());
-            builder.setAuthorTimeZoneOffset(author.getTimeZoneOffset());
-            builder.setCommitter(committer.getName().orNull());
-            builder.setCommitterEmail(committer.getEmail().orNull());
-            builder.setCommitterTimestamp(committer.getTimestamp());
-            builder.setCommitterTimeZoneOffset(committer.getTimeZoneOffset());
-            builder.setMessage(message);
+            RevCommitBuilder builder = RevCommit.builder();
+            builder.author(author.getName().orNull());
+            builder.authorEmail(author.getEmail().orNull());
+            builder.authorTimestamp(author.getTimestamp());
+            builder.authorTimeZoneOffset(author.getTimeZoneOffset());
+            builder.committer(committer.getName().orNull());
+            builder.committerEmail(committer.getEmail().orNull());
+            builder.committerTimestamp(committer.getTimestamp());
+            builder.committerTimeZoneOffset(committer.getTimeZoneOffset());
+            builder.message(message);
 
             // (str) -> ObjectId.valueOf(str)
-            Function<String, ObjectId> fn =  new Function<String, ObjectId>() {
+            Function<String, ObjectId> fn = new Function<String, ObjectId>() {
                 @Override
                 public ObjectId apply(String str) {
                     return ObjectId.valueOf(str);
-                }};
+                }
+            };
 
             List<ObjectId> parentIds = Lists.transform(parents, fn);
-            builder.setParentIds(parentIds);
-            builder.setTreeId(ObjectId.valueOf(tree));
+            builder.parentIds(parentIds);
+            builder.treeId(ObjectId.valueOf(tree));
             RevCommit commit = builder.build();
             return commit;
         }
@@ -624,7 +622,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
             String email = tokens[2].trim().isEmpty() ? null : tokens[2];
             long timestamp = Long.parseLong(tokens[3]);
             int offset = Integer.parseInt(tokens[4]);
-            return RevPersonBuilder.build(name, email, timestamp, offset);
+            return RevPerson.builder().build(name, email, timestamp, offset);
         }
 
         private String parseMessage(BufferedReader reader) throws IOException {
@@ -661,12 +659,12 @@ public class TextSerializationFactory implements RevObjectSerializer {
                 throws IOException {
             Preconditions.checkArgument(TYPE.FEATURE.equals(type), "Wrong type: %s", type.name());
 
-            RevFeatureBuilder builder = RevFeatureBuilder.builder();
+            RevFeatureBuilder builder = RevFeature.builder();
             String line;
             while ((line = reader.readLine()) != null) {
                 builder.addValue(parseAttribute(line));
             }
-            return builder.build();
+            return builder.id(id).build();
         }
 
         private Object parseAttribute(String line) {
@@ -710,7 +708,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
         private FeatureTypeFactory typeFactory;
 
         @Override
-        protected RevFeatureType read(ObjectId id, BufferedReader reader, TYPE type)
+        protected RevFeatureType read(@Nullable ObjectId id, BufferedReader reader, TYPE type)
                 throws IOException {
             Preconditions.checkArgument(TYPE.FEATURETYPE.equals(type), "Wrong type: %s",
                     type.name());
@@ -732,7 +730,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
                 builder.add(parseAttributeDescriptor(line));
             }
             SimpleFeatureType sft = builder.buildFeatureType();
-            return RevFeatureTypeBuilder.build(sft);
+            return RevFeatureType.builder().id(id).type(sft).build();
 
         }
 
@@ -866,11 +864,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
             String commitId = parseLine(requireLine(reader), "commitid");
             String message = parseLine(requireLine(reader), "message");
             RevPerson tagger = parsePerson(requireLine(reader));
-            if (id == null) {
-                return RevTagBuilder.build(name, ObjectId.valueOf(commitId), message, tagger);
-            }
-            return RevObjectFactory.defaultInstance().createTag(id, name,
-                    ObjectId.valueOf(commitId), message, tagger);
+            return RevTag.builder().build(id, name, ObjectId.valueOf(commitId), message, tagger);
         }
 
         private RevPerson parsePerson(String line) {
@@ -882,7 +876,7 @@ public class TextSerializationFactory implements RevObjectSerializer {
             String email = tokens[2].trim().isEmpty() ? null : tokens[2];
             long timestamp = Long.parseLong(tokens[3]);
             int offset = Integer.parseInt(tokens[4]);
-            return RevPersonBuilder.build(name, email, timestamp, offset);
+            return RevPerson.builder().build(name, email, timestamp, offset);
         }
 
     };

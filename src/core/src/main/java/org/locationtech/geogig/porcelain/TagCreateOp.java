@@ -16,8 +16,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.impl.RevPersonBuilder;
-import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.plumbing.CheckRefFormat;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
@@ -62,7 +60,8 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
         RevPerson tagger = resolveTagger();
         message = message == null ? "" : message;
 
-        RevTag tag = RevTagBuilder.build(name, commitId, message, tagger);
+        final RevTag tag = RevTag.builder().name(name).commitId(commitId).message(message)
+                .tagger(tagger).build();
 
         objectDatabase().put(tag);
         Optional<Ref> branchRef = command(UpdateRef.class).setName(tagRefPath)
@@ -105,7 +104,7 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
         Platform platform = platform();
         long taggerTimeStamp = platform.currentTimeMillis();
         int taggerTimeZoneOffset = platform.timeZoneOffset(taggerTimeStamp);
-        return RevPersonBuilder.build(taggerName, taggerEmail, taggerTimeStamp,
+        return RevPerson.builder().build(taggerName, taggerEmail, taggerTimeStamp,
                 taggerTimeZoneOffset);
     }
 

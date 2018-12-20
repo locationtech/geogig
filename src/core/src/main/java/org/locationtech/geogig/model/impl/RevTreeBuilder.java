@@ -11,9 +11,7 @@ package org.locationtech.geogig.model.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -25,6 +23,9 @@ import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
+
+import lombok.NonNull;
 
 /**
  * A builder for {@link RevTree} instances whose {@link Node nodes} are arranged following a
@@ -45,6 +46,8 @@ import org.locationtech.geogig.storage.ObjectStore;
  * @since 1.0
  */
 public interface RevTreeBuilder {
+
+    public RevTreeBuilder original(RevTree original);
 
     /**
      * Add a node to the mutable tree representation.
@@ -95,15 +98,6 @@ public interface RevTreeBuilder {
 
     public void dispose();
 
-    @Deprecated
-    static RevTree build(final long size, final int childTreeCount, @Nullable List<Node> trees,
-            @Nullable List<Node> features, @Nullable SortedMap<Integer, Bucket> buckets) {
-
-        SortedSet<Bucket> b = buckets == null ? Collections.emptySortedSet()
-                : new TreeSet<>(buckets.values());
-        return build(size, childTreeCount, trees, features, b);
-    }
-
     static RevTree build(final long size, final int childTreeCount, @Nullable List<Node> trees,
             @Nullable List<Node> features, @Nullable SortedSet<Bucket> buckets) {
 
@@ -118,5 +112,22 @@ public interface RevTreeBuilder {
         return RevObjectFactory.defaultInstance().createTree(id, size, childTreeCount, buckets);
     }
 
-    public int getDepth();
+    public static RevTreeBuilder builder(@NonNull ObjectStore store) {
+        return CanonicalTreeBuilder.create(store);
+    }
+
+    public static RevTreeBuilder builder(@NonNull ObjectStore store, @NonNull RevTree original) {
+        return CanonicalTreeBuilder.create(store, original);
+    }
+
+    public static RevTreeBuilder quadBuilder(@NonNull ObjectStore source,
+            @NonNull ObjectStore target, @NonNull Envelope maxBounds) {
+        return QuadTreeBuilder.create(source, target, RevTree.EMPTY, maxBounds);
+    }
+
+    public static RevTreeBuilder quadBuilder(@NonNull ObjectStore source,
+            @NonNull ObjectStore target, @NonNull RevTree original, @NonNull Envelope maxBounds) {
+        return QuadTreeBuilder.create(source, target, original, maxBounds);
+    }
+
 }

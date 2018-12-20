@@ -17,13 +17,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -35,6 +34,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.GraphDatabase;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -196,7 +196,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         parents.addAll(firstParents);
         parents.addAll(secondaryParents);
         ObjectId endTree = until.getTreeId();
-        CommitBuilder builder = new CommitBuilder(until);
+        RevCommitBuilder builder = RevCommit.builder().init(until);
         Collection<ObjectId> filteredParents = Collections2.filter(parents,
                 new Predicate<ObjectId>() {
                     @Override
@@ -206,18 +206,18 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
 
                 });
 
-        builder.setParentIds(Lists.newArrayList(filteredParents));
-        builder.setTreeId(endTree);
+        builder.parentIds(Lists.newArrayList(filteredParents));
+        builder.treeId(endTree);
         if (message == null) {
             message = since.getMessage();
         }
         long timestamp = platform.currentTimeMillis();
-        builder.setMessage(message);
-        builder.setCommitter(resolveCommitter());
-        builder.setCommitterEmail(resolveCommitterEmail());
-        builder.setCommitterTimestamp(timestamp);
-        builder.setCommitterTimeZoneOffset(platform.timeZoneOffset(timestamp));
-        builder.setAuthorTimestamp(until.getAuthor().getTimestamp());
+        builder.message(message);
+        builder.committer(resolveCommitter());
+        builder.committerEmail(resolveCommitterEmail());
+        builder.committerTimestamp(timestamp);
+        builder.committerTimeZoneOffset(platform.timeZoneOffset(timestamp));
+        builder.authorTimestamp(until.getAuthor().getTimestamp());
 
         RevCommit newCommit = builder.build();
         repository.objectDatabase().put(newCommit);
@@ -246,32 +246,24 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         replacedCommits.put(until.getId(), squashedId);
         ObjectId head = squashedId;
         for (RevCommit commit : commits) {
-            CommitBuilder builder = new CommitBuilder(commit);
-
-//            (id) -> {
-//                if (replacedCommits.containsKey(id)) {
-//                    return replacedCommits.get(id);
-//                } else {
-//                    return id;
-//                }
-//            }
-            Function<ObjectId, ObjectId> fn =  new Function<ObjectId, ObjectId>() {
+            RevCommitBuilder builder = RevCommit.builder().init(commit);
+            Function<ObjectId, ObjectId> fn = new Function<ObjectId, ObjectId>() {
                 @Override
                 public ObjectId apply(ObjectId id) {
-                        if (replacedCommits.containsKey(id)) {
-                            return replacedCommits.get(id);
-                        } else {
-                            return id;
-                        }
-                }};
-
+                    if (replacedCommits.containsKey(id)) {
+                        return replacedCommits.get(id);
+                    } else {
+                        return id;
+                    }
+                }
+            };
 
             Collection<ObjectId> parents = Collections2.transform(commit.getParentIds(), fn);
-            builder.setParentIds(Lists.newArrayList(parents));
-            builder.setTreeId(commit.getTreeId());
+            builder.parentIds(Lists.newArrayList(parents));
+            builder.treeId(commit.getTreeId());
             long timestamp = platform.currentTimeMillis();
-            builder.setCommitterTimestamp(timestamp);
-            builder.setCommitterTimeZoneOffset(platform.timeZoneOffset(timestamp));
+            builder.committerTimestamp(timestamp);
+            builder.committerTimeZoneOffset(platform.timeZoneOffset(timestamp));
 
             RevCommit newCommit = builder.build();
             replacedCommits.put(commit.getId(), newCommit.getId());

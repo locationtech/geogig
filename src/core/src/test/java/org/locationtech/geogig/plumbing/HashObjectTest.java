@@ -24,18 +24,14 @@ import org.junit.Test;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjectTestUtil;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.impl.CommitBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.model.impl.RevPersonBuilder;
-import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
@@ -77,41 +73,41 @@ public class HashObjectTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        featureType1 = RevFeatureTypeBuilder.build(pointsType);
-        featureType2 = RevFeatureTypeBuilder.build(linesType);
-        featureType1Duplicate = RevFeatureTypeBuilder.build(pointsType);
+        featureType1 = RevFeatureType.builder().type(pointsType).build();
+        featureType2 = RevFeatureType.builder().type(linesType).build();
+        featureType1Duplicate = RevFeatureType.builder().type(pointsType).build();
 
-        pointFeature1 = RevFeatureBuilder.build(points1);
-        pointFeature2 = RevFeatureBuilder.build(points2);
-        pointFeature1Duplicate = RevFeatureBuilder.build(points1);
+        pointFeature1 = RevFeature.builder().build(points1);
+        pointFeature2 = RevFeature.builder().build(points2);
+        pointFeature1Duplicate = RevFeature.builder().build(points1);
 
-        CommitBuilder b = new CommitBuilder();
-        b.setAuthor("groldan");
-        b.setAuthorEmail("groldan@boundlessgeo.com");
-        b.setCommitter("jdeolive");
-        b.setCommitterEmail("jdeolive@boundlessgeo.com");
-        b.setMessage("cool this works");
-        b.setCommitterTimestamp(1000);
-        b.setCommitterTimeZoneOffset(5);
+        RevCommitBuilder b = RevCommit.builder();
+        b.author("groldan");
+        b.authorEmail("groldan@boundlessgeo.com");
+        b.committer("jdeolive");
+        b.committerEmail("jdeolive@boundlessgeo.com");
+        b.message("cool this works");
+        b.committerTimestamp(1000L);
+        b.committerTimeZoneOffset(5);
 
         ObjectId treeId = RevObjectTestSupport.hashString("fake tree content");
 
-        b.setTreeId(treeId);
+        b.treeId(treeId);
 
         ObjectId parentId1 = RevObjectTestSupport.hashString("fake parent content 1");
         ObjectId parentId2 = RevObjectTestSupport.hashString("fake parent content 2");
         List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
-        b.setParentIds(parentIds);
+        b.parentIds(parentIds);
 
         commit1 = b.build();
         commit1Duplicate = b.build();
 
-        b.setMessage(null);
-        b.setAuthor(null);
-        b.setAuthorEmail(null);
-        b.setCommitterTimestamp(-1000);
-        b.setCommitterTimeZoneOffset(-5);
-        b.setParentIds(ImmutableList.of(parentId1, ObjectId.NULL));
+        b.message(null);
+        b.author(null);
+        b.authorEmail(null);
+        b.committerTimestamp(-1000L);
+        b.committerTimeZoneOffset(-5);
+        b.parentIds(ImmutableList.of(parentId1, ObjectId.NULL));
 
         commit2 = b.build();
 
@@ -140,9 +136,9 @@ public class HashObjectTest extends RepositoryTestCase {
                     attributeSampleValues.toArray());
 
         }
-        coverageRevFeatureType = RevFeatureTypeBuilder.build(coverageFeatureType);
+        coverageRevFeatureType = RevFeatureType.builder().type(coverageFeatureType).build();
 
-        coverageRevFeature = RevFeatureBuilder.build(coverageFeature);
+        coverageRevFeature = RevFeature.builder().build(coverageFeature);
 
         hashCommand = new HashObject();
 
@@ -151,11 +147,13 @@ public class HashObjectTest extends RepositoryTestCase {
         when(mockCommandLocator.command(eq(DescribeFeatureType.class)))
                 .thenReturn(new DescribeFeatureType());
 
-        RevPerson tagger = RevPersonBuilder.build("volaya", "volaya@boundlessgeo.com", -1000, -1);
-        RevPerson tagger2 = RevPersonBuilder.build("groldan", "groldan@boundlessgeo.com", 10000, 0);
-        tag1 = RevTagBuilder.build("tag1", RevObjectTestSupport.hashString("fake commit id"),
-                "message", tagger);
-        tag2 = RevTagBuilder.build("tag2",
+        RevPerson tagger = RevPerson.builder().build("volaya", "volaya@boundlessgeo.com", -1000,
+                -1);
+        RevPerson tagger2 = RevPerson.builder().build("groldan", "groldan@boundlessgeo.com", 10000,
+                0);
+        tag1 = RevTag.builder().build(null, "tag1",
+                RevObjectTestSupport.hashString("fake commit id"), "message", tagger);
+        tag2 = RevTag.builder().build(null, "tag2",
                 RevObjectTestSupport.hashString("another fake commit id"), "another message",
                 tagger2);
 
@@ -219,9 +217,9 @@ public class HashObjectTest extends RepositoryTestCase {
         Feature f2 = feature(featureType, "f2", "the name", map2);
         Feature f3 = feature(featureType, "f3", "the name", map3);
 
-        RevFeature revFeature1 = RevFeatureBuilder.build(f1);
-        RevFeature revFeature2 = RevFeatureBuilder.build(f2);
-        RevFeature revFeature3 = RevFeatureBuilder.build(f3);
+        RevFeature revFeature1 = RevFeature.builder().build(f1);
+        RevFeature revFeature2 = RevFeature.builder().build(f2);
+        RevFeature revFeature3 = RevFeature.builder().build(f3);
 
         ObjectId oid1 = hashCommand.setObject(revFeature1).call();
         ObjectId oid2 = hashCommand.setObject(revFeature2).call();
@@ -242,8 +240,7 @@ public class HashObjectTest extends RepositoryTestCase {
         serializableObject.words = "words to serialize";
 
         try {
-            RevFeatureBuilder.builder().addValue(1).addValue("s").addValue(serializableObject)
-                    .build();
+            RevFeature.builder().addValue(1).addValue("s").addValue(serializableObject).build();
             fail("Expected IAE");
         } catch (IllegalArgumentException iae) {
             String expected = String.format(

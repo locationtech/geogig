@@ -17,6 +17,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -26,8 +27,6 @@ import com.google.common.collect.Sets;
 import com.google.common.hash.Hasher;
 
 import lombok.ToString;
-
-import org.locationtech.jts.geom.Envelope;
 
 public @ToString final class IndexInfo {
     public static enum IndexType {

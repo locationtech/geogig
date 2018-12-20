@@ -11,7 +11,6 @@ package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObjectFactoryConformanceTest;
-import org.locationtech.geogig.model.impl.RevObjectFactoryImpl;
 
 public class RevObjectFactoryImplConformanceTest extends RevObjectFactoryConformanceTest {
 

@@ -18,7 +18,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.simple.SimpleFeature;
@@ -89,7 +88,7 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
     public void write() throws IOException {
         Preconditions.checkState(last != null, "next() hasn't been called");
         String parentTreePath = typePath;
-        RevFeature feature = RevFeatureBuilder.build(last);
+        RevFeature feature = RevFeature.builder().build(last);
         String path = NodeRef.appendChild(parentTreePath, last.getID());
         FeatureInfo fi = FeatureInfo.insert(feature, featureTypeId, path);
         workingTree.insert(fi);

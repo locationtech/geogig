@@ -24,6 +24,7 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
@@ -84,7 +85,7 @@ public class RevObjectTestSupport {
     public RevTreeBuilder createTreesTreeBuilder(ObjectStore source, int numSubTrees,
             int featuresPerSubtre, ObjectId metadataId) {
 
-        RevTreeBuilder builder = CanonicalTreeBuilder.create(source);
+        RevTreeBuilder builder = RevTreeBuilder.builder(source);
         for (int treeN = 0; treeN < numSubTrees; treeN++) {
             RevTree subtree = createFeaturesTreeBuilder(source, "subtree" + treeN,
                     featuresPerSubtre).build();
@@ -113,9 +114,9 @@ public class RevObjectTestSupport {
         RevTreeBuilder builder;
         if (spatialTrees) {
             Envelope maxBounds = getMaxBounds();
-            builder = QuadTreeBuilder.create(source, source, RevTree.EMPTY, maxBounds);
+            builder = RevTreeBuilder.quadBuilder(source, source, RevTree.EMPTY, maxBounds);
         } else {
-            builder = CanonicalTreeBuilder.create(source);
+            builder = RevTreeBuilder.builder(source);
         }
         for (int i = startIndex; i < startIndex + numEntries; i++) {
             builder.put(featureNode(namePrefix, i, randomIds));
@@ -139,9 +140,9 @@ public class RevObjectTestSupport {
         RevTreeBuilder builder;
         if (spatialTrees) {
             Envelope maxBounds = getMaxBounds();
-            builder = QuadTreeBuilder.create(source, source, RevTree.EMPTY, maxBounds);
+            builder = RevTreeBuilder.quadBuilder(source, source, RevTree.EMPTY, maxBounds);
         } else {
-            builder = CanonicalTreeBuilder.create(source);
+            builder = RevTreeBuilder.builder(source);
         }
 
         for (int i = startIndex; i < startIndex + numEntries; i++) {
@@ -196,14 +197,12 @@ public class RevObjectTestSupport {
      * one resulting from {@link HashObject}
      */
     public static RevFeature featureForceId(ObjectId forceId, Object... rawValues) {
-        RevFeatureBuilder builder = RevFeatureBuilder.builder().addAll(rawValues);
-        RevFeature revFeature = builder.build(forceId);
+        RevFeature revFeature = RevFeature.builder().addAll(rawValues).id(forceId).build();
         return revFeature;
     }
 
     public static RevFeature feature(Object... rawValues) {
-        RevFeatureBuilder builder = RevFeatureBuilder.builder().addAll(rawValues);
-        return builder.build();
+        return RevFeature.builder().addAll(rawValues).build();
     }
 
     /**
@@ -301,20 +300,19 @@ public class RevObjectTestSupport {
         LinkedList<RevCommit> commits = new LinkedList<>();
 
         // much faster way of creating several fake commits than running CommitOp N times
-        CommitBuilder builder = platform == null ? new CommitBuilder()
-                : new CommitBuilder(platform);
+        RevCommitBuilder builder = RevCommit.builder().platform(platform);
         long timeStamp = System.currentTimeMillis();
-        builder.setAuthor("gabe").setAuthorEmail("gabe@example.com").setCommitter("me")
-                .setCommitterEmail("me@too.com").setCommitterTimestamp(timeStamp)
-                .setCommitterTimeZoneOffset(-1).setAuthorTimestamp(timeStamp)
-                .setAuthorTimeZoneOffset(-3).setTreeId(RevTree.EMPTY_TREE_ID);
+        builder.author("gabe").authorEmail("gabe@example.com").committer("me")
+                .committerEmail("me@too.com").committerTimestamp(timeStamp)
+                .committerTimeZoneOffset(-1).authorTimestamp(timeStamp).authorTimeZoneOffset(-3)
+                .treeId(RevTree.EMPTY_TREE_ID);
 
         ObjectId parent = null;
         for (int i = 1; i <= numCommits; i++) {
             ++timeStamp;
-            builder.setAuthorTimestamp(timeStamp).setCommitterTimestamp(timeStamp);
+            builder.authorTimestamp(timeStamp).committerTimestamp(timeStamp);
             List<ObjectId> parents = parent == null ? null : ImmutableList.of(parent);
-            RevCommit commit = builder.setParentIds(parents).setMessage("commit " + i).build();
+            RevCommit commit = builder.parentIds(parents).message("commit " + i).build();
             commits.addFirst(commit);
             parent = commit.getId();
         }

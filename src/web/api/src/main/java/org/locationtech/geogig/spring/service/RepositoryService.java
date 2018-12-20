@@ -20,7 +20,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevObjectParse;
@@ -240,7 +239,7 @@ public class RepositoryService extends AbstractRepositoryService {
             // merge the feature
             SimpleFeature feature = featureBuilder
                     .buildFeature(NodeRef.nodeFromPath(request.getPath()));
-            RevFeature revFeature = RevFeatureBuilder.build(feature);
+            RevFeature revFeature = RevFeature.builder().build(feature);
             repository.objectDatabase().put(revFeature);
             return revFeature;
         }

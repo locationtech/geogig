@@ -13,14 +13,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.geotools.renderer.ScreenMap;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Predicate;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 class DiffFeatureScreenMapPredicate implements Predicate<SimpleFeature> {
 

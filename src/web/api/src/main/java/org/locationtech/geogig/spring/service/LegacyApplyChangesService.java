@@ -18,8 +18,8 @@ import java.util.List;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.WriteTree;
 import org.locationtech.geogig.remote.http.BinaryPackedChanges;
@@ -83,10 +83,10 @@ public class LegacyApplyChangesService extends AbstractRepositoryService {
                             .setOldRoot(Suppliers.ofInstance(rootTree))
                             .setDiffSupplier(Suppliers.ofInstance(changes)).call();
 
-                    CommitBuilder builder = new CommitBuilder(commit);
+                    RevCommitBuilder builder = RevCommit.builder().init(commit);
 
-                    builder.setParentIds(newParents);
-                    builder.setTreeId(newTreeId);
+                    builder.parentIds(newParents);
+                    builder.treeId(newTreeId);
 
                     RevCommit mapped = builder.build();
                     repository.objectDatabase().put(mapped);

@@ -33,6 +33,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjectFactory;
@@ -40,10 +41,6 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
-import org.locationtech.geogig.model.impl.RevPersonBuilder;
-import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -121,10 +118,7 @@ public class FormatCommonV1 {
         final String name = in.readUTF();
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
-        if (id == null) {
-            return RevTagBuilder.build(name, commitId, message, tagger);
-        }
-        return RevObjectFactory.defaultInstance().createTag(id, name, commitId, message, tagger);
+        return RevTag.builder().build(id, name, commitId, message, tagger);
     }
 
     public static void writeTag(RevTag tag, DataOutput out) throws IOException {
@@ -178,7 +172,7 @@ public class FormatCommonV1 {
         final String email = in.readUTF();
         final long timestamp = in.readLong();
         final int tzOffset = in.readInt();
-        return RevPersonBuilder.build(name.length() == 0 ? null : name,
+        return RevPerson.builder().build(name.length() == 0 ? null : name,
                 email.length() == 0 ? null : email, timestamp, tzOffset);
     }
 
@@ -288,7 +282,7 @@ public class FormatCommonV1 {
 
     public static RevFeature readFeature(ObjectId id, DataInput in) throws IOException {
         final int count = in.readInt();
-        final RevFeatureBuilder builder = RevFeatureBuilder.builder();
+        final RevFeatureBuilder builder = RevFeature.builder();
 
         for (int i = 0; i < count; i++) {
             final byte fieldTag = in.readByte();
@@ -315,7 +309,7 @@ public class FormatCommonV1 {
         }
         SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
                 Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
-        return RevFeatureTypeBuilder.create(id, ftype);
+        return RevFeatureType.builder().id(id).type(ftype).build();
     }
 
     private static Name readName(DataInput in) throws IOException {

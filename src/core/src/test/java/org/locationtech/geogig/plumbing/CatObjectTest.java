@@ -18,8 +18,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -70,7 +68,7 @@ public class CatObjectTest extends RepositoryTestCase {
     }
 
     private RevTree createTree(int numChildren) {
-        RevTreeBuilder rtb = CanonicalTreeBuilder.create(odb);
+        RevTreeBuilder rtb = RevTreeBuilder.builder(odb);
         for (int i = 0; i < numChildren; i++) {
             String key = FEATURE_PREFIX + i;
             Node ref = RevObjectFactory.defaultInstance().createNode(key, FAKE_ID, FAKE_ID,
@@ -82,7 +80,7 @@ public class CatObjectTest extends RepositoryTestCase {
 
     @Test
     public void TestCatFeatureObject() {
-        RevFeature feature = RevFeatureBuilder.build(points1);
+        RevFeature feature = RevFeature.builder().build(points1);
         CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(feature))
                 .call();
         String[] lines = desc.toString().split("\n");

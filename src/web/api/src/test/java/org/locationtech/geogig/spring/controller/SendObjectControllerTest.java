@@ -25,7 +25,7 @@ import java.util.zip.GZIPOutputStream;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.RevObjectSerializer;
@@ -34,9 +34,6 @@ import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-
-
 
 /**
  *
@@ -47,8 +44,8 @@ public class SendObjectControllerTest extends AbstractControllerTest {
     public void testNoObjectData() throws Exception {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/sendobject");
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/sendobject");
         perform(post).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));
@@ -59,14 +56,13 @@ public class SendObjectControllerTest extends AbstractControllerTest {
     public void testInvalidObjectData() throws Exception {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        String garbage =
-                "This is just a bunch of random data that should cause the Object parser to choke";
+        String garbage = "This is just a bunch of random data that should cause the Object parser to choke";
         // payload needs to end with byte value 0 for the serilaizer to know the data is finished
         byte[] content = new byte[garbage.length() + 1];
-        System.arraycopy(garbage.getBytes(), 0, content, 0, content.length-1);
-        content[content.length-1] = 0;
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/sendobject").content(content);
+        System.arraycopy(garbage.getBytes(), 0, content, 0, content.length - 1);
+        content[content.length - 1] = 0;
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/sendobject").content(content);
         perform(post).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString("Unrecognized object header:")));
@@ -92,9 +88,8 @@ public class SendObjectControllerTest extends AbstractControllerTest {
             baos.write(oidHeader);
             serialFac.write(next, baos);
             // build the API request
-            MockHttpServletRequestBuilder post =
-                    MockMvcRequestBuilders.post(
-                            "/repos/repo1/repo/sendobject").content(baos.toByteArray());
+            MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                    .post("/repos/repo1/repo/sendobject").content(baos.toByteArray());
             perform(post).andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                     .andExpect(content().string(""));
@@ -124,9 +119,8 @@ public class SendObjectControllerTest extends AbstractControllerTest {
             serialFac.write(next, baos);
         }
         // build the API request
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post(
-                        "/repos/repo1/repo/sendobject").content(baos.toByteArray());
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/sendobject").content(baos.toByteArray());
         perform(post).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));
@@ -146,9 +140,9 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         RevCommit headCommit = commitLogs.next();
         assertFalse(commitLogs.hasNext());
         // create a new commit that is basically a clone of the HEAD
-        CommitBuilder builder = new CommitBuilder(headCommit);
+        RevCommitBuilder builder = RevCommit.builder().init(headCommit);
         // alter the builder to make a distinct commit
-        builder.setMessage(headCommit.getMessage() + " MODIFIED FOR SEND OBJECT");
+        builder.message(headCommit.getMessage() + " MODIFIED FOR SEND OBJECT");
         RevCommit sendObjectCommit = builder.build();
         // ensure the new commit doesn't yet exist in the repo
         RevCommit preCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
@@ -163,13 +157,12 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         // serialize the commit
         serialFac.write(sendObjectCommit, baos);
         // build the API request
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post(
-                        "/repos/repo1/repo/sendobject").content(baos.toByteArray());
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/sendobject").content(baos.toByteArray());
         perform(post).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));
-        //now verify the commit is present in the repo
+        // now verify the commit is present in the repo
         RevCommit postCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
                 RevCommit.class);
         assertNotNull("Modified commit should be in the repository.", postCheck);
@@ -187,9 +180,9 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         RevCommit headCommit = commitLogs.next();
         assertFalse(commitLogs.hasNext());
         // create a new commit that is basically a clone of the HEAD
-        CommitBuilder builder = new CommitBuilder(headCommit);
+        RevCommitBuilder builder = RevCommit.builder().init(headCommit);
         // alter the builder to make a distinct commit
-        builder.setMessage(headCommit.getMessage() + " MODIFIED FOR SEND OBJECT");
+        builder.message(headCommit.getMessage() + " MODIFIED FOR SEND OBJECT");
         RevCommit sendObjectCommit = builder.build();
         // ensure the new commit doesn't yet exist in the repo
         RevCommit preCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
@@ -206,17 +199,15 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         // serialize the commit
         serialFac.write(sendObjectCommit, gzos);
         // flush and close
-        //gzos.close();
+        // gzos.close();
         // build the API request
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post(
-                        "/repos/repo1/repo/sendobject").content(baos.toByteArray())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-encoding", "gzip");
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/sendobject").content(baos.toByteArray())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM).header("Content-encoding", "gzip");
         perform(post).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));
-        //now verify the commit is present in the repo
+        // now verify the commit is present in the repo
         RevCommit postCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
                 RevCommit.class);
         assertNotNull("Modified commit should be in the repository.", postCheck);

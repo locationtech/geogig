@@ -26,7 +26,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Repository;
@@ -145,7 +145,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
         testData.insert(TestData.point1_modified);
-        ObjectId point1_modified_id = RevFeatureBuilder.build(TestData.point1_modified).getId();
+        ObjectId point1_modified_id = RevFeature.builder().build(TestData.point1_modified).getId();
         testData.add();
         RevCommit theirs = geogig.command(CommitOp.class).setMessage("Modified point1").call();
         testData.setTransaction(transaction);

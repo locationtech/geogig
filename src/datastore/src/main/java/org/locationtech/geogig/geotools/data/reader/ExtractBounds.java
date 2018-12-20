@@ -14,11 +14,10 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.filter.visitor.DefaultFilterVisitor;
-import org.opengis.filter.Filter;
-import org.opengis.filter.expression.Literal;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.opengis.filter.Filter;
+import org.opengis.filter.expression.Literal;
 
 /**
  *

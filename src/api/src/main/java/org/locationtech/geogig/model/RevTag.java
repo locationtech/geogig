@@ -56,4 +56,7 @@ public interface RevTag extends RevObject {
      */
     public abstract ObjectId getCommitId();
 
+    public static RevTagBuilder builder() {
+        return new RevTagBuilder();
+    }
 }

@@ -12,7 +12,6 @@ package org.locationtech.geogig.model.impl;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevObjectTestUtil;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -27,16 +26,16 @@ public class RevFeatureTypeTest extends RepositoryTestCase {
 
     @Test
     public void testConstructorAndAccessors() {
-        RevFeatureType featureType = RevFeatureTypeBuilder.build(linesType);
+        RevFeatureType featureType = RevFeatureType.builder().type(linesType).build();
 
         assertEquals(RevObject.TYPE.FEATURETYPE, featureType.getType());
 
-        RevObjectTestUtil.deepEquals(RevFeatureTypeBuilder.build(linesType), featureType);
+        RevObjectTestUtil.deepEquals(RevFeatureType.builder().type(linesType).build(), featureType);
     }
 
     @Test
     public void testToString() {
-        RevFeatureType featureType = RevFeatureTypeBuilder.build(linesType);
+        RevFeatureType featureType = RevFeatureType.builder().type(linesType).build();
 
         String actual = featureType.toString();
         String expected = RevObjects.toString(featureType);

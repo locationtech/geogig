@@ -143,4 +143,7 @@ public interface RevCommit extends RevObject {
      */
     public String getMessage();
 
+    public static RevCommitBuilder builder() {
+        return new RevCommitBuilder();
+    }
 }

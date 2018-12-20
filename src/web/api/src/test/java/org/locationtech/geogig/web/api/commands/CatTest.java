@@ -27,7 +27,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.porcelain.LogOp;
@@ -145,7 +144,7 @@ public class CatTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        RevFeature point = RevFeatureBuilder.build(TestData.point1);
+        RevFeature point = RevFeature.builder().build(TestData.point1);
         ParameterSet options = TestParams.of("objectid", point.getId().toString());
         buildCommand(options).run(testContext.get());
         JsonObject response = getJSONResponse().getJsonObject("response");

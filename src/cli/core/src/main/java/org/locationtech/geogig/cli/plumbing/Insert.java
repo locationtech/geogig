@@ -24,9 +24,8 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
@@ -90,12 +89,12 @@ public class Insert extends AbstractCommand implements CLICommand {
                 FeatureType ft = f.getType();
                 RevFeatureType rft = types.get(ft);
                 if (rft == null) {
-                    rft = RevFeatureTypeBuilder.build(ft);
+                    rft = RevFeatureType.builder().type(ft).build();
                     types.put(ft, rft);
                     repository.objectDatabase().put(rft);
                 }
                 String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
-                FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(f), rft.getId(), path);
+                FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(), path);
                 return fi;
             });
 

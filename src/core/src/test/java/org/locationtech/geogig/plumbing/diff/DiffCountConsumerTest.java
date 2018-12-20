@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
@@ -133,11 +132,11 @@ public class DiffCountConsumerTest extends Assert {
 
     @Test
     public void testChildrenChildrenNestedTrees() {
-        CanonicalTreeBuilder childTree1;
-        CanonicalTreeBuilder childTree2;
+        RevTreeBuilder childTree1;
+        RevTreeBuilder childTree2;
 
         {
-            RevTreeBuilder rootBuilder = CanonicalTreeBuilder.create(odb);
+            RevTreeBuilder rootBuilder = RevTreeBuilder.builder(odb);
             childTree1 = createFeaturesTree("tree1", 10);
             RevTree child = childTree1.build();
             childTree1 = CanonicalTreeBuilder.create(odb, child);
@@ -158,7 +157,7 @@ public class DiffCountConsumerTest extends Assert {
 
         assertEquals(1, count(childrenFeatureTypesTree, newRoot).featureCount());
 
-        childTree2.remove("tree2/2");
+        childTree2.remove(featureRef("tree2", 2));
         rootBuilder = CanonicalTreeBuilder.create(odb, newRoot);
         RevTree child2 = childTree2.build();
         childTree2 = CanonicalTreeBuilder.create(odb, child2);
@@ -342,9 +341,9 @@ public class DiffCountConsumerTest extends Assert {
         return depth;
     }
 
-    private CanonicalTreeBuilder createFeaturesTree(final String parentPath, final int numEntries) {
+    private RevTreeBuilder createFeaturesTree(final String parentPath, final int numEntries) {
 
-        CanonicalTreeBuilder tree = CanonicalTreeBuilder.create(odb);
+        RevTreeBuilder tree = RevTreeBuilder.builder(odb);
         for (int i = 0; i < numEntries; i++) {
             tree.put(featureRef(parentPath, i));
         }
@@ -352,10 +351,7 @@ public class DiffCountConsumerTest extends Assert {
     }
 
     private Node featureRef(String parentPath, int i) {
-        String path = NodeRef.appendChild(parentPath, String.valueOf(i));
-        Node ref = RevObjectFactory.defaultInstance().createNode(path, FAKE_FEATURE_ID,
-                ObjectId.NULL, TYPE.FEATURE, null, null);
-        return ref;
+        return RevObjectTestSupport.featureNode(parentPath, i);
     }
 
 }

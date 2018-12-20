@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -55,7 +54,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         final RevTree tree = objectStore.getTree(treeId);
 
         // collect some keys to remove
-        final Set<String> removedKeys = new HashSet<String>();
+        final Set<Node> removedKeys = new HashSet<>();
         {
             int i = 0;
             DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
@@ -63,7 +62,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             for (; it.hasNext(); i++) {
                 NodeRef entry = it.next();
                 if (i % 10 == 0) {
-                    removedKeys.add(entry.path());
+                    removedKeys.add(entry.getNode());
                 }
             }
             // assertEquals(100, removedKeys.size());
@@ -71,7 +70,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
         final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
         final CanonicalTreeBuilder builder = createBuiler(tree);
-        for (String key : removedKeys) {
+        for (Node key : removedKeys) {
             builder.remove(key);
             legacy.remove(key);
         }
@@ -88,8 +87,8 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         };
         HashSet<String> names = Sets.newHashSet(Iterators.transform(it, asName));
         assertEquals(numEntries - removedKeys.size(), names.size());
-        for (String key : removedKeys) {
-            assertFalse(names.contains(key));
+        for (Node key : removedKeys) {
+            assertFalse(names.contains(key.getName()));
         }
     }
 
@@ -100,7 +99,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         final RevTree tree = objectStore.getTree(treeId);
 
         // collect some keys to remove
-        final Set<String> removedKeys = new HashSet<String>();
+        final Set<Node> removedKeys = new HashSet<>();
         {
             int i = 0;
             DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
@@ -108,7 +107,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             for (; it.hasNext(); i++) {
                 NodeRef entry = it.next();
                 if (i % 10 == 0) {
-                    removedKeys.add(entry.path());
+                    removedKeys.add(entry.getNode());
                 }
             }
             assertTrue(removedKeys.size() > 0);
@@ -116,7 +115,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
         final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
         final CanonicalTreeBuilder builder = createBuiler(tree);
-        for (String key : removedKeys) {
+        for (Node key : removedKeys) {
             builder.remove(key);
             legacy.remove(key);
         }
@@ -132,8 +131,8 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         };
         HashSet<String> names = Sets.newHashSet(Iterators.transform(it, asName));
         assertEquals(numEntries - removedKeys.size(), names.size());
-        for (String key : removedKeys) {
-            assertFalse(names.contains(key));
+        for (Node key : removedKeys) {
+            assertFalse(names.contains(key.getName()));
         }
     }
 
@@ -147,19 +146,19 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
         // remove all but enough to have an unsplitted tree
         final long resultSize = 100;
-        final Set<String> removedKeys = new HashSet<String>();
+        final Set<Node> removedKeys = new HashSet<>();
         {
             DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
                     Strategy.CHILDREN);
             for (int i = 0; i < numEntries - resultSize; i++) {
                 NodeRef entry = it.next();
-                removedKeys.add(entry.path());
+                removedKeys.add(entry.getNode());
             }
         }
 
         final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
         final CanonicalTreeBuilder builder = createBuiler(tree);
-        for (String key : removedKeys) {
+        for (Node key : removedKeys) {
             builder.remove(key);
             legacy.remove(key);
         }

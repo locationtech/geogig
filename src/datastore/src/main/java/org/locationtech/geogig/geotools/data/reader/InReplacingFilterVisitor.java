@@ -10,6 +10,11 @@
 
 package org.locationtech.geogig.geotools.data.reader;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.geotools.filter.function.InFunction;
 import org.geotools.filter.visitor.DuplicatingFilterVisitor;
 import org.opengis.filter.Filter;
@@ -19,11 +24,6 @@ import org.opengis.filter.PropertyIsEqualTo;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Literal;
 import org.opengis.filter.expression.PropertyName;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /***
  * This speeds up filter evaluation by converting filters of the form;

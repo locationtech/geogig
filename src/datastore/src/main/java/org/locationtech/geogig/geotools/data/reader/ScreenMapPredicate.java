@@ -22,10 +22,10 @@ import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Predicate;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Filters out {@link Bounded} ({@link NodeRef node refs} and {@link Bucket buckets}) based on a

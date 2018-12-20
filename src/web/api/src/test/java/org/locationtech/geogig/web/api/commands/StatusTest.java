@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
@@ -62,14 +61,14 @@ public class StatusTest extends AbstractWebOpTest {
         TestData testData = new TestData(geogig);
         testData.init();
 
-        RevFeature point1 = RevFeatureBuilder.build(TestData.point1);
+        RevFeature point1 = RevFeature.builder().build(TestData.point1);
         String point1_path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point1.getID());
-        RevFeature point1_modified = RevFeatureBuilder.build(TestData.point1_modified);
-        RevFeature point2 = RevFeatureBuilder.build(TestData.point2);
+        RevFeature point1_modified = RevFeature.builder().build(TestData.point1_modified);
+        RevFeature point2 = RevFeature.builder().build(TestData.point2);
         String point2_path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point2.getID());
-        RevFeature point3 = RevFeatureBuilder.build(TestData.point3);
+        RevFeature point3 = RevFeature.builder().build(TestData.point3);
         String point3_path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point3.getID());
 

@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
@@ -204,7 +204,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
         testData.checkout("master");
         testData.insert(TestData.point1);
-        ObjectId point1_id = RevFeatureBuilder.build(TestData.point1).getId();
+        ObjectId point1_id = RevFeature.builder().build(TestData.point1).getId();
         testData.add();
         RevCommit commit1 = geogig.command(CommitOp.class).setMessage("point1").call();
         testData.insert(TestData.point1_modified);

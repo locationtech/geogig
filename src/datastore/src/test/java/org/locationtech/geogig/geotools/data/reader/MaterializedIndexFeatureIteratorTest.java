@@ -18,9 +18,9 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -135,7 +135,7 @@ public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
         }
         extraData.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA, extraAtts);
 
-        ObjectId id = RevFeatureBuilder.build(f).getId();
+        ObjectId id = RevFeature.builder().build(f).getId();
         Envelope bounds = (Envelope) f.getBounds();
         Node node = RevObjectFactory.defaultInstance().createNode(f.getID(), id, ObjectId.NULL,
                 TYPE.FEATURE, bounds, extraData);

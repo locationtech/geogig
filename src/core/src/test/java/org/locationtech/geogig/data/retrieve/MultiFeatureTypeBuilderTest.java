@@ -23,7 +23,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
@@ -41,11 +40,11 @@ public class MultiFeatureTypeBuilderTest {
 
         SimpleFeatureType fType1 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name:String,name2:String");
-        RevFeatureType revft1 = RevFeatureTypeBuilder.create(getOID(1), fType1);
+        RevFeatureType revft1 = RevFeatureType.builder().id(getOID(1)).type(fType1).build();
 
         SimpleFeatureType fType2 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name3:String,name4:String");
-        RevFeatureType revft2 = RevFeatureTypeBuilder.create(getOID(1), fType2);
+        RevFeatureType revft2 = RevFeatureType.builder().id(getOID(1)).type(fType2).build();
 
         ObjectDatabase odb = mock(ObjectDatabase.class);
         when(odb.getFeatureType(meta1)).thenReturn(revft1);
@@ -69,7 +68,7 @@ public class MultiFeatureTypeBuilderTest {
 
         SimpleFeatureType fType1 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name:String,name2:String");
-        RevFeatureType revft1 = RevFeatureTypeBuilder.create(getOID(1), fType1);
+        RevFeatureType revft1 = RevFeatureType.builder().id(getOID(1)).type(fType1).build();
 
         ObjectDatabase odb = mock(ObjectDatabase.class);
         when(odb.getFeatureType(meta1)).thenReturn(revft1);

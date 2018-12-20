@@ -29,7 +29,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -48,7 +47,7 @@ public class BulkFeatureRetrieverTest {
 
         SimpleFeatureType fType1 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name:String,name2:String");
-        RevFeatureType revft1 = RevFeatureTypeBuilder.create(meta1, fType1);
+        RevFeatureType revft1 = RevFeatureType.builder().id(meta1).type(fType1).build();
 
         WKTReader2 wkt = new WKTReader2();
         RevFeature f1 = RevObjectTestSupport.featureForceId(getOID(2), wkt.read("POINT(0 0)"),

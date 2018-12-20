@@ -30,9 +30,9 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
@@ -468,16 +468,16 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         String committerName = resolveCommitter();
         String committerEmail = resolveCommitterEmail();
         // Create new commit
-        CommitBuilder builder = new CommitBuilder();
-        builder.setParentIds(Arrays.asList(revertHead));
-        builder.setTreeId(newTreeId);
-        builder.setCommitterTimestamp(timestamp);
-        builder.setMessage(
+        RevCommitBuilder builder = RevCommit.builder();
+        builder.parentIds(Arrays.asList(revertHead));
+        builder.treeId(newTreeId);
+        builder.committerTimestamp(timestamp);
+        builder.message(
                 "Revert '" + commit.getMessage() + "'\nThis reverts " + commit.getId().toString());
-        builder.setCommitter(committerName);
-        builder.setCommitterEmail(committerEmail);
-        builder.setAuthor(committerName);
-        builder.setAuthorEmail(committerEmail);
+        builder.committer(committerName);
+        builder.committerEmail(committerEmail);
+        builder.author(committerName);
+        builder.authorEmail(committerEmail);
 
         RevCommit newCommit = builder.build();
         objectDatabase().put(newCommit);

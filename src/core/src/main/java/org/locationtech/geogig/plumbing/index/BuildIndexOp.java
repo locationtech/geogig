@@ -18,7 +18,6 @@ import java.util.Set;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
@@ -223,7 +222,7 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
 
             ObjectStore source = indexDatabase();
             ObjectStore target = source;
-            builder = QuadTreeBuilder.create(source, target, oldIndexTree, maxBounds);
+            builder = RevTreeBuilder.quadBuilder(source, target, oldIndexTree, maxBounds);
             break;
         default:
             throw new UnsupportedOperationException("Uknown index type: " + indexType);

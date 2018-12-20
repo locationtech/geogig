@@ -10,12 +10,12 @@
 package org.locationtech.geogig.geotools.data.reader;
 
 import org.geotools.renderer.ScreenMap;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Predicate;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 
 
 /**

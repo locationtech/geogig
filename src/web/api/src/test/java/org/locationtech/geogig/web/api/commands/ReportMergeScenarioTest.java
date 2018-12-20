@@ -20,7 +20,7 @@ import javax.json.JsonValue;
 import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.TestParams;
@@ -154,7 +154,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
         testData.insert(TestData.point1_modified);
         testData.add();
         geogig.command(CommitOp.class).setMessage("modify point1").call();
-        ObjectId point1_id = RevFeatureBuilder.build(TestData.point1_modified).getId();
+        ObjectId point1_id = RevFeature.builder().build(TestData.point1_modified).getId();
         testData.checkout("branch1");
         testData.remove(TestData.point1);
         testData.add();

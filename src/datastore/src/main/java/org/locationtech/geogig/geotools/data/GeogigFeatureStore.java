@@ -39,7 +39,6 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -280,7 +279,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
             Function<SimpleFeature, FeatureInfo> fn =  new Function<SimpleFeature, FeatureInfo>() {
                 @Override
                 public FeatureInfo apply(SimpleFeature f) {
-                    RevFeature feature = RevFeatureBuilder.build(f);
+                    RevFeature feature = RevFeature.builder().build(f);
                     String fid = f.getID();
                     String path = NodeRef.appendChild(treePath, fid);
                     String version = feature.getId().toString();
@@ -387,7 +386,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
             Function<SimpleFeature, FeatureInfo> fn =  new Function<SimpleFeature, FeatureInfo>() {
                 @Override
                 public FeatureInfo apply(SimpleFeature f) {
-                    return FeatureInfo.insert(RevFeatureBuilder.build(f), featureTypeId,
+                    return FeatureInfo.insert(RevFeature.builder().build(f), featureTypeId,
                             NodeRef.appendChild(treePath, f.getID()));
                 }};
 

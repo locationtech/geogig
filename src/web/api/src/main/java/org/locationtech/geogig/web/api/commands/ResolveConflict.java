@@ -132,7 +132,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
             treeBuilder = CanonicalTreeBuilder.create(geogig.objectDatabase(), parsed.get());
-            treeBuilder.remove(newFeatureNode.getNode().getName());
+            treeBuilder.remove(newFeatureNode.getNode());
         } else {
             treeBuilder = CanonicalTreeBuilder.create(geogig.objectDatabase());
         }

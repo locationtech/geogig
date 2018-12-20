@@ -21,8 +21,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE;
@@ -197,8 +195,9 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
             }
 
             SimpleFeature f = featureBuilder.buildFeature(NodeRef.nodeFromPath(path));
-            RevFeature featureToInsert = RevFeatureBuilder.build(f);
-            FeatureInfo featureInfo = FeatureInfo.insert(featureToInsert, newRevFeatureType.getId(), path);
+            RevFeature featureToInsert = RevFeature.builder().build(f);
+            FeatureInfo featureInfo = FeatureInfo.insert(featureToInsert, newRevFeatureType.getId(),
+                    path);
             workTree.insert(featureInfo);
 
         }
@@ -252,7 +251,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
         }
         SimpleFeatureType featureType = featureTypeBuilder.buildFeatureType();
 
-        return RevFeatureTypeBuilder.build(featureType);
+        return RevFeatureType.builder().type(featureType).build();
     }
 
 }

@@ -31,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-import org.locationtech.geogig.storage.postgresql.v9.PGConflictsDatabase;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;

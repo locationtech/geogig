@@ -55,4 +55,7 @@ public interface RevFeature extends RevObject, ValueArray {
      */
     public ImmutableList<Optional<Object>> getValues();
 
+    public static RevFeatureBuilder builder() {
+        return new RevFeatureBuilder();
+    }
 }

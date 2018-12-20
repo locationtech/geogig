@@ -40,11 +40,11 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
@@ -53,6 +53,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -75,7 +76,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Internal operation for creating a FeatureCollection from a tree content.
@@ -341,7 +341,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
             ImmutableList<PropertyDescriptor> newAttributes = targetType.descriptors();
 
-            RevFeatureBuilder builder = RevFeatureBuilder.builder();
+            RevFeatureBuilder builder = RevFeature.builder();
             for (int i = 0; i < newAttributes.size(); i++) {
                 int idx = oldAttributes.indexOf(newAttributes.get(i));
                 if (idx != -1) {

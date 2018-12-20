@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
@@ -50,10 +49,9 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
@@ -80,6 +78,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -271,7 +270,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                 // first we modify the feature type and the existing features, if needed
                 workTree.updateTypeTree(path, featureType);
                 Iterator<Feature> transformedIterator = transformFeatures(featureType, path);
-                RevFeatureType type = RevFeatureTypeBuilder.build(featureType);
+                RevFeatureType type = RevFeatureType.builder().type(featureType).build();
                 objectDatabase().put(type);
                 insert(workTree, path, transformedIterator, taskProgress, type.getId());
             }
@@ -369,7 +368,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         Iterator<NodeRef> oldFeatures = command(LsTreeOp.class).setReference(refspec)
                 .setStrategy(Strategy.FEATURES_ONLY).call();
 
-        RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
+        RevFeatureType revFeatureType = RevFeatureType.builder().type(featureType).build();
         Iterator<Feature> transformedIterator = transformIterator(oldFeatures, revFeatureType);
         return transformedIterator;
     }
@@ -539,7 +538,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
         try (FeatureIterator fit = featureSource.getFeatures(query).features()) {
             FeatureType schema = featureSource.getSchema();
-            RevFeatureType featureType = RevFeatureTypeBuilder.build(schema);
+            RevFeatureType featureType = RevFeatureType.builder().type(schema).build();
             objectDatabase().put(featureType);
             ObjectId featureTypeId = featureType.getId();
 
@@ -558,17 +557,17 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             ObjectId featureTypeId) {
         try {
 
-
-//            RevFeature rf = RevFeatureBuilder.build(f);
-//            String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
-//            return FeatureInfo.insert(rf, featureTypeId, path);
-            Function<Feature, FeatureInfo> fn =  new Function<Feature, FeatureInfo>() {
+            // RevFeature rf = RevFeature.builder().build(f);
+            // String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+            // return FeatureInfo.insert(rf, featureTypeId, path);
+            Function<Feature, FeatureInfo> fn = new Function<Feature, FeatureInfo>() {
                 @Override
                 public FeatureInfo apply(Feature f) {
-                    RevFeature rf = RevFeatureBuilder.build(f);
+                    RevFeature rf = RevFeature.builder().build(f);
                     String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
                     return FeatureInfo.insert(rf, featureTypeId, path);
-                }};
+                }
+            };
 
             Iterator<FeatureInfo> infos = Iterators.transform(features, fn);
             workTree.insert(infos, taskProgress);
@@ -581,15 +580,15 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     private Iterator<Feature> transformIterator(Iterator<NodeRef> nodeIterator,
             final RevFeatureType newFeatureType) {
 
-        //   (node) -> alter(node, newFeatureType)
-        Function<NodeRef, Feature> fn =  new Function<NodeRef, Feature>() {
+        // (node) -> alter(node, newFeatureType)
+        Function<NodeRef, Feature> fn = new Function<NodeRef, Feature>() {
             @Override
             public Feature apply(NodeRef node) {
-                return  alter(node, newFeatureType);
-            }};
+                return alter(node, newFeatureType);
+            }
+        };
 
-        Iterator<Feature> iterator = Iterators.transform(nodeIterator,
-                fn);
+        Iterator<Feature> iterator = Iterators.transform(nodeIterator, fn);
 
         return iterator;
 
@@ -613,7 +612,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                 .call(RevFeatureType.class).get();
         ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
         ImmutableList<PropertyDescriptor> newAttributes = featureType.descriptors();
-        RevFeatureBuilder builder = RevFeatureBuilder.builder();
+        RevFeatureBuilder builder = RevFeature.builder();
         for (int i = 0; i < newAttributes.size(); i++) {
             int idx = oldAttributes.indexOf(newAttributes.get(i));
             if (idx != -1) {

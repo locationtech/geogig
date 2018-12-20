@@ -44,6 +44,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -52,11 +53,6 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CommitBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
-import org.locationtech.geogig.model.impl.RevPersonBuilder;
-import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -134,13 +130,7 @@ public class FormatCommonV2 {
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
 
-        RevTag tag;
-        if (id == null) {
-            tag = RevTagBuilder.build(name, commitId, message, tagger);
-        } else {
-            tag = RevObjectFactory.defaultInstance().createTag(id, name, commitId, message, tagger);
-        }
-        return tag;
+        return RevTag.builder().build(id, name, commitId, message, tagger);
     }
 
     public void writeTag(RevTag tag, DataOutput out) throws IOException {
@@ -179,7 +169,7 @@ public class FormatCommonV2 {
         final List<ObjectId> parents = parentListBuilder.build();
         RevCommit commit;
         if (id == null) {
-            commit = CommitBuilder.build(treeId, parents, author, committer, message);
+            commit = RevCommit.builder().build(treeId, parents, author, committer, message);
         } else {
             commit = RevObjectFactory.defaultInstance().createCommit(id, treeId, parents, author,
                     committer, message);
@@ -192,7 +182,7 @@ public class FormatCommonV2 {
         final String email = in.readUTF();
         final long timestamp = readUnsignedVarLong(in);
         final int tzOffset = readUnsignedVarInt(in);
-        return RevPersonBuilder.build(name.length() == 0 ? null : name,
+        return RevPerson.builder().build(name.length() == 0 ? null : name,
                 email.length() == 0 ? null : email, timestamp, tzOffset);
     }
 
@@ -311,7 +301,7 @@ public class FormatCommonV2 {
 
     public RevFeature readFeature(@Nullable ObjectId id, DataInput in) throws IOException {
         final int count = readUnsignedVarInt(in);
-        final RevFeatureBuilder builder = RevFeatureBuilder.builder();
+        final RevFeatureBuilder builder = RevFeature.builder();
 
         for (int i = 0; i < count; i++) {
             final byte fieldTag = in.readByte();
@@ -320,7 +310,7 @@ public class FormatCommonV2 {
             builder.addValueNoCopy(value);
         }
 
-        RevFeature built = id == null ? builder.build() : builder.build(id);
+        RevFeature built = builder.id(id).build();
         return built;
     }
 
@@ -625,13 +615,8 @@ public class FormatCommonV2 {
         }
         SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
                 Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
-        RevFeatureType revtype;
-        if (id == null) {
-            revtype = RevFeatureTypeBuilder.build(ftype);
-        } else {
-            revtype = RevFeatureTypeBuilder.create(id, ftype);
-        }
-        return revtype;
+
+        return RevFeatureType.builder().id(id).type(ftype).build();
     }
 
     private static Name readName(DataInput in) throws IOException {

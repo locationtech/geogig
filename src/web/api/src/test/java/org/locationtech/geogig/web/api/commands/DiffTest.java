@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.TestParams;
 import org.locationtech.geogig.test.TestData;
@@ -94,7 +93,7 @@ public class DiffTest extends AbstractWebOpTest {
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point2.getID());
 
-        RevFeature point2 = RevFeatureBuilder.build(TestData.point2);
+        RevFeature point2 = RevFeature.builder().build(TestData.point2);
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));

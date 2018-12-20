@@ -33,12 +33,10 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.repository.Context;
@@ -192,7 +190,7 @@ public class FindChangedTreesTest extends Assert {
         {
             RevTree newWorkhead = workingTree.getTree();
 
-            RevTreeBuilder tb = CanonicalTreeBuilder.create(repo.objectDatabase(), newWorkhead);
+            RevTreeBuilder tb = RevTreeBuilder.builder(repo.objectDatabase(), newWorkhead);
             deletedLayers.forEach(n -> tb.remove(n.getNode()));
 
             newWorkhead = tb.build();
@@ -327,8 +325,8 @@ public class FindChangedTreesTest extends Assert {
 
         for (int i = 0; i < featureCount; i++) {
             String fid = String.valueOf(i);
-            RevFeature feature = RevFeatureBuilder.builder().addValue(fid).addValue(i)
-                    .addValue(null).build();
+            RevFeature feature = RevFeature.builder().addValue(fid).addValue(i).addValue(null)
+                    .build();
             String path = NodeRef.appendChild(layer.path(), fid);
             FeatureInfo featureInfo = FeatureInfo.insert(feature, featureTypeId, path);
             features.add(featureInfo);
@@ -358,13 +356,13 @@ public class FindChangedTreesTest extends Assert {
         WorkingTree workingTree = repo.workingTree();
 
         repo.objectDatabase().putAll(Iterators.transform(types.values().iterator(),
-                (t) -> RevFeatureTypeBuilder.build(t)));
+                (t) -> RevFeatureType.builder().type(t).build()));
 
         RevTree wt = workingTree.getTree();
-        RevTreeBuilder newWorkHeadBuilder = CanonicalTreeBuilder.create(repo.objectDatabase(), wt);
+        RevTreeBuilder newWorkHeadBuilder = RevTreeBuilder.builder(repo.objectDatabase(), wt);
 
         types.forEach((treePath, featureType) -> {
-            ObjectId mdId = RevFeatureTypeBuilder.build(featureType).getId();
+            ObjectId mdId = RevFeatureType.builder().type(featureType).build().getId();
             Node node = RevObjectFactory.defaultInstance().createNode(treePath,
                     RevTree.EMPTY_TREE_ID, mdId, TYPE.TREE, null, null);
             newWorkHeadBuilder.put(node);

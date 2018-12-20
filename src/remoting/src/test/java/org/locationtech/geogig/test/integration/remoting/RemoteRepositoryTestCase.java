@@ -45,8 +45,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.porcelain.AddOp;
@@ -456,10 +454,10 @@ public abstract class RemoteRepositoryTestCase {
         final WorkingTree workTree = repo.workingTree();
         Name name = f.getType().getName();
         String parentPath = name.getLocalPart();
-        RevFeatureType type = RevFeatureTypeBuilder.build(f.getType());
+        RevFeatureType type = RevFeatureType.builder().type(f.getType()).build();
         repo.objectDatabase().put(type);
         String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
-        FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(f), type.getId(), path);
+        FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), type.getId(), path);
         workTree.insert(fi);
         return fi.getFeature().getId();
     }
@@ -490,7 +488,7 @@ public abstract class RemoteRepositoryTestCase {
 
         FeatureType type = features.iterator().next().getType();
 
-        repo.objectDatabase().put(RevFeatureTypeBuilder.build(type));
+        repo.objectDatabase().put(RevFeatureType.builder().type(type).build());
 
         final String treePath = type.getName().getLocalPart();
 
@@ -514,9 +512,9 @@ public abstract class RemoteRepositoryTestCase {
 
     public FeatureInfo featureInfo(String treePath, Feature f) {
         final String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
-        RevFeature feature = RevFeatureBuilder.build(f);
+        RevFeature feature = RevFeature.builder().build(f);
         FeatureType type = f.getType();
-        RevFeatureType ftype = RevFeatureTypeBuilder.build(type);
+        RevFeatureType ftype = RevFeatureType.builder().type(type).build();
         return FeatureInfo.insert(feature, ftype.getId(), path);
     }
 

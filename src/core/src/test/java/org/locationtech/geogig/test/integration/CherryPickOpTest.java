@@ -19,8 +19,8 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.AddOp;
@@ -193,11 +193,11 @@ public class CherryPickOpTest extends RepositoryTestCase {
         Optional<RevObject> pts2 = geogig.command(RevObjectParse.class)
                 .setRefSpec(Ref.WORK_HEAD + ":" + NodeRef.appendChild(pointsName, idP2)).call();
         assertTrue(pts2.isPresent());
-        assertEquals(RevFeatureBuilder.build(points2), pts2.get());
+        assertEquals(RevFeature.builder().build(points2), pts2.get());
         pts2 = geogig.command(RevObjectParse.class)
                 .setRefSpec(Ref.STAGE_HEAD + ":" + NodeRef.appendChild(pointsName, idP2)).call();
         assertTrue(pts2.isPresent());
-        assertEquals(RevFeatureBuilder.build(points2), pts2.get());
+        assertEquals(RevFeature.builder().build(points2), pts2.get());
         // solve and commit
         Feature points1Solved = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
                 "POINT(1 1)");
@@ -207,7 +207,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         Optional<RevObject> ptsSolved = geogig.command(RevObjectParse.class)
                 .setRefSpec(Ref.WORK_HEAD + ":" + NodeRef.appendChild(pointsName, idP1)).call();
         assertTrue(pts2.isPresent());
-        assertEquals(RevFeatureBuilder.build(points1Solved), ptsSolved.get());
+        assertEquals(RevFeature.builder().build(points1Solved), ptsSolved.get());
 
         cherrypickHead = geogig.command(RefParse.class).setName(Ref.CHERRY_PICK_HEAD).call();
         assertFalse(cherrypickHead.isPresent());

@@ -13,7 +13,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.model.impl.RevFeatureBuilder.build;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,6 +47,7 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
@@ -57,12 +57,7 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CommitBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.model.impl.RevPersonBuilder;
-import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.jts.geom.Envelope;
@@ -85,7 +80,7 @@ public abstract class ObjectSerializationFactoryTest {
 
     protected RevObjectSerializer serializer;
 
-    private CommitBuilder testCommit;
+    private RevCommitBuilder testCommit;
 
     private String namespace = "http://geogig.org/test";
 
@@ -208,44 +203,44 @@ public abstract class ObjectSerializationFactoryTest {
 
     @Test
     public void testCommitSerializationMultipleLinesMessage() throws IOException {
-        testCommit.setMessage("this\n is a \n  multiple lines\n message");
+        testCommit.message("this\n is a \n  multiple lines\n message");
         RevCommit commit = testCommit.build();
         testCommit(commit);
     }
 
     @Test
     public void testCommitSerializationNoAuthor() throws IOException {
-        testCommit.setAuthor(null);
-        testCommit.setAuthorEmail(null);
+        testCommit.author(null);
+        testCommit.authorEmail(null);
         RevCommit commit = testCommit.build();
         testCommit(commit);
     }
 
     @Test
     public void testCommitSerializationNoCommitter() throws IOException {
-        testCommit.setCommitter(null);
-        testCommit.setCommitterEmail(null);
+        testCommit.committer(null);
+        testCommit.committerEmail(null);
         RevCommit commit = testCommit.build();
         testCommit(commit);
     }
 
     @Test
     public void testCommitSerializationNoMessage() throws IOException {
-        testCommit.setMessage(null);
+        testCommit.message(null);
         RevCommit commit = testCommit.build();
         testCommit(commit);
     }
 
     @Test
     public void testCommitSerializationNoParents() throws IOException {
-        testCommit.setParentIds(null);
+        testCommit.parentIds(null);
         RevCommit commit = testCommit.build();
         testCommit(commit);
     }
 
     @Test
     public void testCommitSerializationMultipleParents() throws IOException {
-        testCommit.setParentIds(ImmutableList.of(RevObjectTestSupport.hashString("parent1"),
+        testCommit.parentIds(ImmutableList.of(RevObjectTestSupport.hashString("parent1"),
                 RevObjectTestSupport.hashString("parent2"),
                 RevObjectTestSupport.hashString("parent3"),
                 RevObjectTestSupport.hashString("parent4")));
@@ -263,20 +258,20 @@ public abstract class ObjectSerializationFactoryTest {
         assertEquals(commit, read);
     }
 
-    private CommitBuilder testCommit(ObjectId treeId, String author, String authorEmail,
+    private RevCommitBuilder testCommit(ObjectId treeId, String author, String authorEmail,
             long authorTimestamp, String committer, String committerEmail, long committerTimestamp,
             String message, ObjectId... parentIds) {
-        CommitBuilder b = new CommitBuilder();
-        b.setTreeId(treeId);
-        b.setAuthor(author);
-        b.setAuthorEmail(authorEmail);
-        b.setCommitter(committer);
-        b.setCommitterEmail(committerEmail);
-        b.setMessage(message);
-        b.setAuthorTimestamp(authorTimestamp);
-        b.setCommitterTimestamp(committerTimestamp);
+        RevCommitBuilder b = RevCommit.builder();
+        b.treeId(treeId);
+        b.author(author);
+        b.authorEmail(authorEmail);
+        b.committer(committer);
+        b.committerEmail(committerEmail);
+        b.message(message);
+        b.authorTimestamp(authorTimestamp);
+        b.committerTimestamp(committerTimestamp);
         if (parentIds != null) {
-            b.setParentIds(Lists.newArrayList(parentIds));
+            b.parentIds(Lists.newArrayList(parentIds));
         }
         return b;
     }
@@ -285,27 +280,27 @@ public abstract class ObjectSerializationFactoryTest {
     public void testCommitRoundTrippin() throws Exception {
         long currentTime = System.currentTimeMillis();
         int timeZoneOffset = TimeZone.getDefault().getOffset(currentTime);
-        CommitBuilder builder = new CommitBuilder();
+        RevCommitBuilder builder = RevCommit.builder();
         String author = "groldan";
-        builder.setAuthor(author);
+        builder.author(author);
         String authorEmail = "groldan@boundlessgeo.com";
-        builder.setAuthorEmail(authorEmail);
-        builder.setAuthorTimestamp(currentTime);
-        builder.setAuthorTimeZoneOffset(timeZoneOffset);
+        builder.authorEmail(authorEmail);
+        builder.authorTimestamp(currentTime);
+        builder.authorTimeZoneOffset(timeZoneOffset);
         String committer = "mleslie";
-        builder.setCommitter(committer);
+        builder.committer(committer);
         String committerEmail = "mleslie@boundlessgeo.com";
-        builder.setCommitterEmail(committerEmail);
-        builder.setCommitterTimestamp(currentTime);
-        builder.setCommitterTimeZoneOffset(timeZoneOffset);
+        builder.committerEmail(committerEmail);
+        builder.committerTimestamp(currentTime);
+        builder.committerTimeZoneOffset(timeZoneOffset);
 
         ObjectId treeId = RevObjectTestSupport.hashString("Fake tree");
-        builder.setTreeId(treeId);
+        builder.treeId(treeId);
 
         ObjectId parent1 = RevObjectTestSupport.hashString("Parent 1 of fake commit");
         ObjectId parent2 = RevObjectTestSupport.hashString("Parent 2 of fake commit");
         List<ObjectId> parents = Arrays.asList(parent1, parent2);
-        builder.setParentIds(parents);
+        builder.parentIds(parents);
 
         RevCommit cmtIn = builder.build();
         assertNotNull(cmtIn);
@@ -338,7 +333,7 @@ public abstract class ObjectSerializationFactoryTest {
 
     protected void testFeatureReadWrite(Feature feature) throws Exception {
 
-        RevFeature newFeature = RevFeatureBuilder.build(feature);
+        RevFeature newFeature = RevFeature.builder().build(feature);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         serializer.write(newFeature, output);
@@ -392,7 +387,7 @@ public abstract class ObjectSerializationFactoryTest {
 
         Feature feature = feature(type, "fid1", largeString);
 
-        RevFeature revFeature = RevFeatureBuilder.build(feature);
+        RevFeature revFeature = RevFeature.builder().build(feature);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         serializer.write(revFeature, output);
@@ -437,9 +432,12 @@ public abstract class ObjectSerializationFactoryTest {
         map3 = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
                 (Object) map1, "and", (Object) map2);
 
-        RevFeature revFeature1 = build(feature(featureType, "f1", "the name", map1));
-        RevFeature revFeature2 = build(feature(featureType, "f2", "the name", map2));
-        RevFeature revFeature3 = build(feature(featureType, "f3", "the name", map3));
+        RevFeature revFeature1 = RevFeature.builder()
+                .build(feature(featureType, "f1", "the name", map1));
+        RevFeature revFeature2 = RevFeature.builder()
+                .build(feature(featureType, "f2", "the name", map2));
+        RevFeature revFeature3 = RevFeature.builder()
+                .build(feature(featureType, "f3", "the name", map3));
 
         assertEquals(revFeature1, revFeature2);
         assertEquals(revFeature1.getValues(), revFeature2.getValues());
@@ -501,7 +499,7 @@ public abstract class ObjectSerializationFactoryTest {
 
     @Test
     public void testFeatureTypeSerialization() throws Exception {
-        RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
+        RevFeatureType revFeatureType = RevFeatureType.builder().type(featureType).build();
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         serializer.write(revFeatureType, output);
@@ -533,7 +531,7 @@ public abstract class ObjectSerializationFactoryTest {
         ftb.add("geom", Polygon.class, DefaultGeographicCRS.WGS84);
         ftb.setName("type");
         SimpleFeatureType ftype = ftb.buildFeatureType();
-        RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(ftype);
+        RevFeatureType revFeatureType = RevFeatureType.builder().type(ftype).build();
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         serializer.write(revFeatureType, output);
@@ -697,10 +695,10 @@ public abstract class ObjectSerializationFactoryTest {
     }
 
     public @Test void testTag() throws IOException {
-        RevPerson tagger = RevPersonBuilder.build("Gabriel Roldan", "gabe@example.com", 12345678,
+        RevPerson tagger = RevPerson.builder().build("Gabriel Roldan", "gabe@example.com", 12345678,
                 -3);
         RevTag tag;
-        tag = RevTagBuilder.build("v1.0.0", RevObjectTestSupport.hashString("test"),
+        tag = RevTag.builder().build(null, "v1.0.0", RevObjectTestSupport.hashString("test"),
                 "Version 1.0.0", tagger);
         testTag(tag);
     }

@@ -16,7 +16,7 @@ import org.geotools.data.DataUtilities;
 import org.junit.Test;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.plumbing.merge.CheckMergeScenarioOp;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
@@ -129,7 +129,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.getMerged());
         Feature pointsMerged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
                 "POINT(1 1)");
-        assertEquals(RevFeatureBuilder.build(pointsMerged), consumer.merged.get(0).getFeature());
+        assertEquals(RevFeature.builder().build(pointsMerged), consumer.merged.get(0).getFeature());
         Boolean hasConflictsOrAutomerge = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflictsOrAutomerge.booleanValue());

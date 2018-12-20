@@ -73,7 +73,7 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     @Override
     protected RevTreeBuilder createBuiler(RevTree original) {
-        return QuadTreeBuilder.create(objectStore, objectStore, original, maxBounds);
+        return RevTreeBuilder.quadBuilder(objectStore, objectStore, original, maxBounds);
     }
 
     @Override
@@ -259,14 +259,14 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
     private void testRemove(final int ncount) {
         final Set<Node> nodes = new HashSet<>(createPointNodes(nodeRange(ncount)));
 
-        QuadTreeBuilder initialTreeBuilder = createQuadTree(maxBounds, nodes);
-        initialTreeBuilder.clusteringStrategy();
+        RevTreeBuilder initialTreeBuilder = createQuadTree(maxBounds, nodes);
 
         final RevTree tree = initialTreeBuilder.build();
 
         final Set<Node> removedNodes;
 
-        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree, maxBounds);
+        RevTreeBuilder builder = RevTreeBuilder.quadBuilder(objectStore, objectStore, tree,
+                maxBounds);
         // collect some keys to remove
         {
             Set<Node> treeNodes = RevObjectTestSupport.getTreeNodes(tree, objectStore);
@@ -300,7 +300,8 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         final RevTree tree = createQuadTree(maxBounds, origNodes).build();
 
-        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree, maxBounds);
+        RevTreeBuilder builder = RevTreeBuilder.quadBuilder(objectStore, objectStore, tree,
+                maxBounds);
 
         final Set<Node> removedNodes = new HashSet<>();
         final Set<Node> addedNodes = new HashSet<>();
@@ -469,14 +470,14 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
         return nodes;
     }
 
-    private QuadTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes) {
+    private RevTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes) {
         return createQuadTree(maxBounds, nodes, this.objectStore);
     }
 
-    private QuadTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes,
+    private RevTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes,
             final ObjectStore objectStore) {
 
-        QuadTreeBuilder qtree = QuadTreeBuilder.create(objectStore, objectStore, RevTree.EMPTY,
+        RevTreeBuilder qtree = RevTreeBuilder.quadBuilder(objectStore, objectStore, RevTree.EMPTY,
                 maxBounds);
 
         for (Node node : nodes) {

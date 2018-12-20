@@ -39,14 +39,14 @@ import org.geotools.styling.StyleFactory;
 import org.geotools.swing.JMapFrame;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.repository.Repository;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.FilterFactory;
-
-import com.beust.jcommander.internal.Lists;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.FilterFactory;
+
+import com.beust.jcommander.internal.Lists;
 
 public class MapPane {
     static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();

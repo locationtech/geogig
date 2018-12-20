@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
-import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class EnvironmentBuilderTest {

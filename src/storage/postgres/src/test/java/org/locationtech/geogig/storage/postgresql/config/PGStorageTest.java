@@ -31,10 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.config.Environment;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
-import org.locationtech.geogig.storage.postgresql.config.PGStorageTableManager;
-import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 public class PGStorageTest {

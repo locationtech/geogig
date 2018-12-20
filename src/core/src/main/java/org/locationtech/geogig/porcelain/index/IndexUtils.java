@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
@@ -31,6 +30,7 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;

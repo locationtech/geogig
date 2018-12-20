@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.JTS;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
@@ -24,6 +23,7 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 

@@ -36,8 +36,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -385,13 +383,13 @@ public class TestData {
             SimpleFeatureType ft = sf.getType();
             RevFeatureType rft = types.get(ft);
             if (null == rft) {
-                rft = RevFeatureTypeBuilder.build(ft);
+                rft = RevFeatureType.builder().type(ft).build();
                 types.put(ft, rft);
                 context.objectDatabase().put(rft);
             }
             String parentTreePath = ft.getName().getLocalPart();
             String path = NodeRef.appendChild(parentTreePath, sf.getID());
-            FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(sf), rft.getId(), path);
+            FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(sf), rft.getId(), path);
             workingTree.insert(fi);
         }
         return this;

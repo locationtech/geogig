@@ -31,6 +31,7 @@ import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -39,8 +40,6 @@ import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Id;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.ResourceId;
-
-import org.locationtech.jts.geom.Geometry;
 
 public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 

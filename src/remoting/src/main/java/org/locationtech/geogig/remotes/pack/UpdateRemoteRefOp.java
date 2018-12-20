@@ -15,7 +15,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Predicate;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -27,6 +26,7 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {

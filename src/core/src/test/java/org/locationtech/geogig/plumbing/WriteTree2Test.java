@@ -23,6 +23,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -30,10 +31,6 @@ import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.CommitBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
@@ -597,11 +594,11 @@ public class WriteTree2Test extends RepositoryTestCase {
     private RevTree createHeadTree(NodeRef... treeRefs) {
         RevTree root = createFromRefs(objectDb, treeRefs);
         objectDb.put(root);
-        CommitBuilder cb = new CommitBuilder(geogig.getPlatform());
+        RevCommitBuilder cb = RevCommit.builder().platform(geogig.getPlatform());
         ObjectId treeId = root.getId();
 
-        RevCommit commit = cb.setTreeId(treeId).setCommitter("Gabriel Roldan")
-                .setAuthor("Gabriel Roldan").build();
+        RevCommit commit = cb.treeId(treeId).committer("Gabriel Roldan").author("Gabriel Roldan")
+                .build();
         objectDb.put(commit);
 
         SymRef head = (SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get();
@@ -658,7 +655,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         final ObjectId treeId = id(id);
         final ObjectId metadataId = id(mdId);
         final String feturePrefix = NodeRef.nodeFromPath(path);
-        RevTreeBuilder b = CanonicalTreeBuilder.create(db);
+        RevTreeBuilder b = RevTreeBuilder.builder(db);
         if (numFeatures > 0) {
             for (int i = 0; i < numFeatures; i++) {
                 Node fn = feature(db, feturePrefix, i);
@@ -670,7 +667,8 @@ public class WriteTree2Test extends RepositoryTestCase {
             db.put(fakenId);
         }
         if (!metadataId.isNull()) {
-            RevFeatureType fakeType = RevFeatureTypeBuilder.create(metadataId, pointsType);
+            RevFeatureType fakeType = RevFeatureType.builder().id(metadataId).type(pointsType)
+                    .build();
             if (!db.exists(fakeType.getId())) {
                 db.put(fakeType);
             }
@@ -711,7 +709,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         final Feature feature;
         feature = super.feature(pointsType, id, id, index, point(index));
 
-        RevFeature revFeature = RevFeatureBuilder.build(feature);
+        RevFeature revFeature = RevFeature.builder().build(feature);
         db.put(revFeature);
         Envelope bounds = (Envelope) feature.getBounds();
         return RevObjectFactory.defaultInstance().createNode(id, revFeature.getId(), ObjectId.NULL,

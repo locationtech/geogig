@@ -22,7 +22,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
@@ -269,8 +269,8 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
-                .setAlter(true)
-                .setFilterFeatureTypeId(RevFeatureTypeBuilder.build(modifiedPointsType).getId())
+                .setAlter(true).setFilterFeatureTypeId(
+                        RevFeatureType.builder().type(modifiedPointsType).build().getId())
                 .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
@@ -296,7 +296,8 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
-                .setFilterFeatureTypeId(RevFeatureTypeBuilder.build(modifiedPointsType).getId())
+                .setFilterFeatureTypeId(
+                        RevFeatureType.builder().type(modifiedPointsType).build().getId())
                 .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;

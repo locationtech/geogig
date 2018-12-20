@@ -12,9 +12,9 @@ package org.locationtech.geogig.porcelain;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,10 +22,10 @@ import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.CleanRefsOp;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
@@ -79,7 +79,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
     private Integer authorTimeZoneOffset;
 
-    private List<ObjectId> parents = new LinkedList<ObjectId>();
+    private List<ObjectId> parents = new ArrayList<>();
 
     // like the -a option in git commit
     private boolean all;
@@ -249,15 +249,6 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      */
     @Override
     protected RevCommit _call() throws RuntimeException {
-        final String committer = resolveCommitter();
-        final String committerEmail = resolveCommitterEmail();
-        final String author = resolveAuthor();
-        final String authorEmail = resolveAuthorEmail();
-        final Long authorTime = getAuthorTimeStamp();
-        final Long committerTime = getCommitterTimeStamp();
-        final Integer authorTimeZoneOffset = getAuthorTimeZoneOffset();
-        final Integer committerTimeZoneOffset = getCommitterTimeZoneOffset();
-
         String commitMessage = message;
 
         getProgressListener().started();
@@ -344,33 +335,31 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
             }
         }
 
-        final RevCommit commit;
+        RevCommitBuilder builder = RevCommit.builder();
         if (this.commit == null) {
-            CommitBuilder cb = new CommitBuilder();
-            cb.setAuthor(author);
-            cb.setAuthorEmail(authorEmail);
-            cb.setCommitter(committer);
-            cb.setCommitterEmail(committerEmail);
-            cb.setMessage(commitMessage);
-            cb.setParentIds(parents);
-            cb.setTreeId(newTreeId);
-            cb.setCommitterTimestamp(committerTime);
-            cb.setAuthorTimestamp(authorTime);
-            cb.setCommitterTimeZoneOffset(committerTimeZoneOffset);
-            cb.setAuthorTimeZoneOffset(authorTimeZoneOffset);
-            commit = cb.build();
+            builder.author(resolveAuthor())//
+                    .authorEmail(resolveAuthorEmail())//
+                    .committer(resolveCommitter())//
+                    .committerEmail(resolveCommitterEmail())//
+                    .message(commitMessage == null ? "" : commitMessage)//
+                    .parentIds(parents)//
+                    .treeId(newTreeId)//
+                    .committerTimestamp(committerTimeStamp)//
+                    .authorTimestamp(authorTimeStamp)//
+                    .committerTimeZoneOffset(committerTimeZoneOffset)//
+                    .authorTimeZoneOffset(authorTimeZoneOffset);
         } else {
-            CommitBuilder cb = new CommitBuilder(this.commit);
-            cb.setParentIds(parents);
-            cb.setTreeId(newTreeId);
-            cb.setCommitterTimestamp(committerTime);
-            cb.setCommitterTimeZoneOffset(committerTimeZoneOffset);
+            builder.init(commit);
+            builder.parentIds(parents)//
+                    .treeId(newTreeId)//
+                    .committerTimestamp(committerTimeStamp)//
+                    .committerTimeZoneOffset(committerTimeZoneOffset);
             if (commitMessage != null) {
-                cb.setMessage(commitMessage);
+                builder.message(commitMessage);
             }
-            commit = cb.build();
         }
 
+        final RevCommit commit = builder.build();
         if (getProgressListener().isCanceled()) {
             return null;
         }
@@ -412,43 +401,6 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
             }
         };
         return Suppliers.memoize(supplier);
-    }
-
-    /**
-     * @return the timestamp to be used for the committer
-     */
-    public long getCommitterTimeStamp() {
-        if (committerTimeStamp == null) {
-            return platform().currentTimeMillis();
-        }
-        return committerTimeStamp.longValue();
-    }
-
-    /**
-     * @return the time zone offset to be used for the committer
-     */
-    public int getCommitterTimeZoneOffset() {
-        if (committerTimeZoneOffset == null) {
-            return platform().timeZoneOffset(getCommitterTimeStamp());
-        }
-        return committerTimeZoneOffset.intValue();
-    }
-
-    /**
-     * @return the timestamp to be used for the author
-     */
-    public long getAuthorTimeStamp() {
-        return authorTimeStamp == null ? getCommitterTimeStamp() : authorTimeStamp;
-    }
-
-    /**
-     * @return the time zone offset to be used for the committer
-     */
-    public int getAuthorTimeZoneOffset() {
-        if (authorTimeZoneOffset == null) {
-            return getCommitterTimeZoneOffset();
-        }
-        return authorTimeZoneOffset.intValue();
     }
 
     private String resolveCommitter() {

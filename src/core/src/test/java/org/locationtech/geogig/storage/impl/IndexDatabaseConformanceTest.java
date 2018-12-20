@@ -27,8 +27,8 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -499,7 +499,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         Envelope bounds = new Envelope();
         RevTree tree = RevTree.EMPTY;
         for (int y = -90; y <= 90; y += 5) {
-            QuadTreeBuilder builder = QuadTreeBuilder.create(target, target, tree, maxBounds);
+            RevTreeBuilder builder = RevTreeBuilder.quadBuilder(target, target, tree, maxBounds);
             for (int x = -180; x <= 180; x += 5) {
                 bounds.init(x, x, y, y);
                 String name = String.format("%d_%d", x, y);

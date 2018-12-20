@@ -29,8 +29,6 @@ import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
-import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
-import org.locationtech.geogig.storage.postgresql.v9.PGRefDatabase;
 import org.locationtech.geogig.test.integration.repository.RefDatabaseTest;
 
 public class PGRefDatabaseTest extends RefDatabaseTest {

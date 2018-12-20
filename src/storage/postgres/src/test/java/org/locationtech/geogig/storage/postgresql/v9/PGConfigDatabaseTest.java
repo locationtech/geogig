@@ -26,7 +26,6 @@ import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.PGTestProperties;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
-import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
 

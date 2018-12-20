@@ -13,11 +13,11 @@ import java.util.Comparator;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * Provides a way of describing the between two different {@link Node}s.
@@ -223,6 +223,14 @@ public class DiffEntry {
      */
     public @Nullable String oldName() {
         return oldObject == null ? null : oldObject.getNode().getName();
+    }
+
+    public @Nullable Node newNode() {
+        return newObject == null ? null : newObject.getNode();
+    }
+
+    public @Nullable Node oldNode() {
+        return oldObject == null ? null : oldObject.getNode();
     }
 
     /**

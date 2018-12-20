@@ -16,9 +16,9 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -144,8 +144,7 @@ public class RevertFeature extends AbstractWebAPICommand {
 
         // get tree from new commit
         Optional<ObjectId> treeId = geogig.command(ResolveTreeish.class)
-                .setTreeish(newCommitObjectId)
-                .call();
+                .setTreeish(newCommitObjectId).call();
 
         Preconditions.checkState(treeId.isPresent(),
                 "New commit id did not resolve to a valid tree.");
@@ -166,8 +165,8 @@ public class RevertFeature extends AbstractWebAPICommand {
         boolean delete = false;
         if (node == null) {
             delete = true;
-            node = geogig.command(FindTreeChild.class).setParent(newTree)
-                    .setChildPath(featurePath).call().orNull();
+            node = geogig.command(FindTreeChild.class).setParent(newTree).setChildPath(featurePath)
+                    .call().orNull();
             if (node == null) {
                 throw new CommandSpecException("The feature was not found in either commit tree.");
             }
@@ -185,7 +184,7 @@ public class RevertFeature extends AbstractWebAPICommand {
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
             treeBuilder = CanonicalTreeBuilder.create(geogig.objectDatabase(), parsed.get());
-            treeBuilder.remove(node.getNode().getName());
+            treeBuilder.remove(node.getNode());
         } else {
             treeBuilder = CanonicalTreeBuilder.create(geogig.objectDatabase());
         }
@@ -198,17 +197,17 @@ public class RevertFeature extends AbstractWebAPICommand {
 
         NodeRef newTreeNode = NodeRef.tree(node.getParentPath(), newFeatureTree.getId(),
                 metadataId);
-        RevTree newRoot = geogig.command(UpdateTree.class).setRoot(newTree)
-                .setChild(newTreeNode).call();
+        RevTree newRoot = geogig.command(UpdateTree.class).setRoot(newTree).setChild(newTreeNode)
+                .call();
 
         // build new commit with parent of new commit and the newly built tree
-        CommitBuilder builder = new CommitBuilder();
+        RevCommitBuilder builder = RevCommit.builder();
 
-        builder.setParentIds(Lists.newArrayList(newCommitObjectId));
-        builder.setTreeId(newRoot.getId());
-        builder.setAuthor(authorName.orNull());
-        builder.setAuthorEmail(authorEmail.orNull());
-        builder.setMessage(commitMessage
+        builder.parentIds(Lists.newArrayList(newCommitObjectId));
+        builder.treeId(newRoot.getId());
+        builder.author(authorName.orNull());
+        builder.authorEmail(authorEmail.orNull());
+        builder.message(commitMessage
                 .or("Reverted changes made to " + featurePath + " at " + newCommitId.toString()));
 
         RevCommit mapped = builder.build();

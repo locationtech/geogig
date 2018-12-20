@@ -32,7 +32,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.porcelain.DiffOp;
@@ -113,16 +112,15 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                             ExportDiffOp.this.function);
 
                     // (f) -> (SimpleFeature) (f.isPresent() ? f.get() : null)
-                    Function<Optional<Feature>, SimpleFeature> fn =  new Function<Optional<Feature>, SimpleFeature>() {
+                    Function<Optional<Feature>, SimpleFeature> fn = new Function<Optional<Feature>, SimpleFeature>() {
                         @Override
                         public SimpleFeature apply(Optional<Feature> f) {
                             return (SimpleFeature) (f.isPresent() ? f.get() : null);
-                        }};
+                        }
+                    };
 
-                    Iterator<SimpleFeature> filtered = Iterators.filter(
-                            Iterators.transform(transformed,
-                                   fn),
-                            Predicates.notNull());
+                    Iterator<SimpleFeature> filtered = Iterators
+                            .filter(Iterators.transform(transformed, fn), Predicates.notNull());
 
                     return new DelegateFeatureIterator<SimpleFeature>(filtered);
                 }
@@ -166,7 +164,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
         final SimpleFeatureType featureType = addChangeTypeAttribute(
                 database.getFeatureType(metadataId));
-        final RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
+        final RevFeatureType revFeatureType = RevFeatureType.builder().type(featureType).build();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
 
         final Function<DiffEntry, SimpleFeature> asFeature = (de) -> {

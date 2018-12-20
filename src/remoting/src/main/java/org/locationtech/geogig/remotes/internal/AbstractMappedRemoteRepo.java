@@ -17,11 +17,11 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.WriteTree;
@@ -200,13 +200,13 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
                     ObjectId newTreeId = writeTree.call();
 
-                    CommitBuilder builder = new CommitBuilder(commit);
+                    RevCommitBuilder builder = RevCommit.builder().init(commit);
                     List<ObjectId> newParents = new LinkedList<ObjectId>();
                     for (ObjectId parentCommitId : commit.getParentIds()) {
                         newParents.add(graphDatabase.getMapping(parentCommitId));
                     }
-                    builder.setParentIds(newParents);
-                    builder.setTreeId(newTreeId);
+                    builder.parentIds(newParents);
+                    builder.treeId(newTreeId);
 
                     RevCommit mapped = builder.build();
                     objectDatabase.put(mapped);
@@ -220,14 +220,14 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                     // Replace the old mapping with the new commit Id.
                     graphDatabase.map(commit.getId(), mapped.getId());
                 } else if (allowEmpty) {
-                    CommitBuilder builder = new CommitBuilder(commit);
-                    List<ObjectId> newParents = new LinkedList<ObjectId>();
+                    RevCommitBuilder builder = RevCommit.builder().init(commit);
+                    List<ObjectId> newParents = new LinkedList<>();
                     for (ObjectId parentCommitId : commit.getParentIds()) {
                         newParents.add(graphDatabase.getMapping(parentCommitId));
                     }
-                    builder.setParentIds(newParents);
-                    builder.setTreeId(rootTree.getId());
-                    builder.setMessage(PLACEHOLDER_COMMIT_MESSAGE);
+                    builder.parentIds(newParents);
+                    builder.treeId(rootTree.getId());
+                    builder.message(PLACEHOLDER_COMMIT_MESSAGE);
 
                     RevCommit mapped = builder.build();
                     objectDatabase.put(mapped);

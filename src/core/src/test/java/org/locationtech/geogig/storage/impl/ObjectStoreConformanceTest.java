@@ -52,8 +52,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
@@ -576,11 +574,11 @@ public abstract class ObjectStoreConformanceTest {
     public @Test void testGetDiffObjects() throws Exception {
         SimpleFeatureType featureType = DataUtilities.createType("points",
                 "sp:String,ip:Integer,pp:Point:srid=4326");
-        final RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
+        final RevFeatureType revFeatureType = RevFeatureType.builder().type(featureType).build();
         final int leftTreeSize = 1000;
         final List<SimpleFeature> features = createFeatures(featureType, leftTreeSize);
         final List<RevFeature> revFeatures = features.stream()
-                .map((f) -> RevFeatureBuilder.build(f)).collect(Collectors.toList());
+                .map((f) -> RevFeature.builder().build(f)).collect(Collectors.toList());
 
         db.put(revFeatureType);
         db.putAll(revFeatures.iterator());
@@ -612,7 +610,7 @@ public abstract class ObjectStoreConformanceTest {
             }
         }
         final List<RevFeature> rightRevFeatures = rightFeatures.stream()
-                .map((f) -> RevFeatureBuilder.build(f)).collect(Collectors.toList());
+                .map((f) -> RevFeature.builder().build(f)).collect(Collectors.toList());
         db.putAll(rightRevFeatures.iterator());
 
         List<DiffEntry> entries = createDiffEntries(revFeatures, rightRevFeatures);

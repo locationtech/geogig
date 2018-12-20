@@ -21,7 +21,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
@@ -160,7 +159,8 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         SimpleFeature duplicateFeature = featureBuilder.buildFeature("duplcate-contents");
         insertAndAdd(duplicateFeature);
 
-        assertEquals(RevFeatureBuilder.build(points1), RevFeatureBuilder.build(duplicateFeature));
+        assertEquals(RevFeature.builder().build(points1),
+                RevFeature.builder().build(duplicateFeature));
         commit("points, two features pointing to the same RevFeature");
 
         List<NodeRef> featureTypeTrees = repo.workingTree().getFeatureTypeTrees();

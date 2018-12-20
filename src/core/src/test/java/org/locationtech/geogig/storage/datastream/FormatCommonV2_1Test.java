@@ -24,7 +24,6 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2_1.LazyRevFeature;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -66,7 +65,7 @@ public class FormatCommonV2_1Test {
                 UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"), //
                 geom);
         geomIndex = values.size() - 1;
-        feature = RevFeatureBuilder.builder().addAll(values).build();
+        feature = RevFeature.builder().addAll(values).build();
     }
 
     @Test

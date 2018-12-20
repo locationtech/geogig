@@ -44,14 +44,13 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.CommitBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
@@ -316,21 +315,21 @@ public class InterchangeFormat {
                         .orNull();
             }
 
-            CommitBuilder builder = new CommitBuilder();
+            RevCommitBuilder builder = RevCommit.builder();
             long timestamp = context.platform().currentTimeMillis();
 
-            builder.setParentIds(Arrays.asList(commitId));
-            builder.setTreeId(newTree.getId());
-            builder.setCommitterTimestamp(timestamp);
-            builder.setCommitter(authorName);
-            builder.setCommitterEmail(authorEmail);
-            builder.setAuthorTimestamp(timestamp);
-            builder.setAuthor(authorName);
-            builder.setAuthorEmail(authorEmail);
+            builder.parentIds(Arrays.asList(commitId));
+            builder.treeId(newTree.getId());
+            builder.committerTimestamp(timestamp);
+            builder.committer(authorName);
+            builder.committerEmail(authorEmail);
+            builder.authorTimestamp(timestamp);
+            builder.author(authorName);
+            builder.authorEmail(authorEmail);
             if (commitMessage != null) {
-                builder.setMessage(commitMessage);
+                builder.message(commitMessage);
             } else {
-                builder.setMessage("Imported features from geopackage.");
+                builder.message("Imported features from geopackage.");
             }
 
             importCommit = builder.build();
@@ -597,7 +596,7 @@ public class InterchangeFormat {
                 }
 
                 SimpleFeature feature = builder.buildFeature("fakeId");
-                return RevFeatureBuilder.build(feature);
+                return RevFeature.builder().build(feature);
             } catch (SQLException | IOException e) {
                 throw new RuntimeException(e);
             }

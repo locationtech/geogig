@@ -131,6 +131,34 @@ public class HashObjectFunnels {
         return id;
     }
 
+    public static ObjectId hashTag(@NonNull String name, @NonNull ObjectId commitId,
+            @NonNull String message, @NonNull RevPerson tagger) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        HashObjectFunnels.tag(hasher, name, commitId, message, tagger);
+        return ObjectId.create(hasher.hash().asBytes());
+    }
+
+    public static ObjectId hashFeature(@NonNull List<Object> values) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        HashObjectFunnels.feature(hasher, values);
+        return ObjectId.create(hasher.hash().asBytes());
+    }
+
+    public static ObjectId hashCommit(@NonNull ObjectId treeId, @NonNull List<ObjectId> parentIds,
+            @NonNull RevPerson author, @NonNull RevPerson committer,
+            @NonNull String commitMessage) {
+
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        HashObjectFunnels.commit(hasher, treeId, parentIds, author, committer, commitMessage);
+        return ObjectId.create(hasher.hash().asBytes());
+    }
+
+    public static ObjectId hashFeatureType(@NonNull FeatureType featureType) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        HashObjectFunnels.featureType(hasher, featureType);
+        return ObjectId.create(hasher.hash().asBytes());
+    }
+
     public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
             @Nullable Iterable<Bucket> buckets) {
 

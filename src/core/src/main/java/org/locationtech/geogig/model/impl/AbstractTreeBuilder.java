@@ -15,7 +15,6 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
@@ -24,11 +23,14 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
 
-public abstract class AbstractTreeBuilder implements RevTreeBuilder {
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+public abstract @Accessors(fluent = true) class AbstractTreeBuilder implements RevTreeBuilder {
 
     protected final ObjectStore target;
 
-    protected RevTree original;
+    protected @Setter RevTree original;
 
     protected final AtomicBoolean disposed = new AtomicBoolean(false);
 
@@ -83,7 +85,7 @@ public abstract class AbstractTreeBuilder implements RevTreeBuilder {
     }
 
     @Override
-    public @Nullable RevTree build(BooleanSupplier abortFlag) {
+    public final RevTree build(BooleanSupplier abortFlag) {
         Preconditions.checkNotNull(abortFlag);
         boolean alreadyDisposed = disposed.getAndSet(true);
 
@@ -102,9 +104,4 @@ public abstract class AbstractTreeBuilder implements RevTreeBuilder {
         }
         return tree;
     }
-
-    public int getDepth() {
-        return clusteringStrategy().depth();
-    }
-
 }

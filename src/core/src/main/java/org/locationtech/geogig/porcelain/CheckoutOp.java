@@ -32,7 +32,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -170,7 +169,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
         UpdateTree updateTree = command(UpdateTree.class).setRoot(currentWorkHead);
 
-        Map<String, CanonicalTreeBuilder> featureTypeTrees = new HashMap<>();
+        Map<String, RevTreeBuilder> featureTypeTrees = new HashMap<>();
         Map<String, NodeRef> currentFeatureTypeRefs = new HashMap<>();
 
         for (String path : paths) {
@@ -199,9 +198,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                     if (TYPE.TREE.equals(foundChild.getType())) {
                         updateTree.removeChildTree(foundChild.path());
                     } else {
-                        String childName = foundChild.name();
                         getTreeBuilder(currentWorkHead, foundChild, featureTypeTrees,
-                                currentFeatureTypeRefs).remove(childName);
+                                currentFeatureTypeRefs).remove(foundChild.getNode());
                     }
                 }
             } else {
@@ -219,7 +217,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
         }
 
-        for (Map.Entry<String, CanonicalTreeBuilder> entry : featureTypeTrees.entrySet()) {
+        for (Map.Entry<String, RevTreeBuilder> entry : featureTypeTrees.entrySet()) {
             final String changedTreePath = entry.getKey();
             final NodeRef currentTreeRef = currentFeatureTypeRefs.get(changedTreePath);
             checkState(null != currentTreeRef);
@@ -235,14 +233,14 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         return checkoutResult;
     }
 
-    private CanonicalTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
-            Map<String, CanonicalTreeBuilder> featureTypeTrees,
+    private RevTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
+            Map<String, RevTreeBuilder> featureTypeTrees,
             Map<String, NodeRef> currentFeatureTypeRefs) {
 
         checkArgument(TYPE.FEATURE.equals(featureRef.getType()));
 
         final String typeTreePath = featureRef.getParentPath();
-        CanonicalTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
+        RevTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
         if (typeTreeBuilder == null) {
             NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
                     .setChildPath(typeTreePath).call().orNull();
@@ -258,7 +256,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             } else {
                 currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(),
+            typeTreeBuilder = RevTreeBuilder.builder(context.objectDatabase(),
                     currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
             featureTypeTrees.put(typeTreePath, typeTreeBuilder);

@@ -41,6 +41,8 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
@@ -48,8 +50,6 @@ import org.opengis.feature.type.Name;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LineString;
 
 public class GeoGigDataStoreTest extends RepositoryTestCase {
 

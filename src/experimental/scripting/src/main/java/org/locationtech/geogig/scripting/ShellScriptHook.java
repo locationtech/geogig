@@ -12,7 +12,6 @@ package org.locationtech.geogig.scripting;
 import java.io.File;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.hooks.CommandHook;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 

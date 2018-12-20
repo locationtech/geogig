@@ -22,7 +22,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RevObjectParse;
@@ -288,7 +287,7 @@ public class IndexTest extends RepositoryTestCase {
         {// simulate a commit so the repo head points to this new tree
             List<ObjectId> parents = ImmutableList.of();
 
-            RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId1).setParentIds(parents)
+            RevCommit commit = RevCommit.builder().treeId(newRepoTreeId1).parentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
             repo.objectDatabase().put(commit);
@@ -327,7 +326,7 @@ public class IndexTest extends RepositoryTestCase {
 
         {// simulate a commit so the repo head points to this new tree
             List<ObjectId> parents = ImmutableList.of();
-            RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId2).setParentIds(parents)
+            RevCommit commit = RevCommit.builder().treeId(newRepoTreeId2).parentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
 

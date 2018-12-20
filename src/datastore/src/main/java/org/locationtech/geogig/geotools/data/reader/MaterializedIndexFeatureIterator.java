@@ -25,6 +25,8 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -34,8 +36,6 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * A {@link SimpleFeature} iterator used to build features out of nodes {@link Node#getExtraData()

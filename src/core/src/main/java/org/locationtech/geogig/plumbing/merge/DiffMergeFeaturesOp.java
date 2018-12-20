@@ -21,14 +21,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.DiffFeature;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
@@ -40,6 +39,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -231,7 +231,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
         final List<Object> ancestorValues;
         ancestorValues = getAncestorValues(mergeIntoDiff, toMergeDiff, descriptors);
 
-        RevFeatureBuilder mergedValues = RevFeatureBuilder.builder();
+        RevFeatureBuilder mergedValues = RevFeature.builder();
 
         for (int i = 0; i < descriptors.size(); i++) {
             final PropertyDescriptor descriptor = descriptors.get(i);

@@ -38,7 +38,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.DiffIndex;
@@ -166,7 +165,7 @@ public class StagingAreaImpl implements StagingArea {
 
         final boolean hasConflicts;
 
-        final Map<String, CanonicalTreeBuilder> featureTypeTrees = Maps.newConcurrentMap();
+        final Map<String, RevTreeBuilder> featureTypeTrees = Maps.newConcurrentMap();
 
         final Map<String, NodeRef> currentFeatureTypeRefs = Maps.newConcurrentMap();
 
@@ -183,17 +182,17 @@ public class StagingAreaImpl implements StagingArea {
             this.hasConflicts = conflictsDb.hasConflicts(null);
         }
 
-        public CanonicalTreeBuilder getTreeBuilder(final NodeRef featureRef) {
+        public RevTreeBuilder getTreeBuilder(final NodeRef featureRef) {
             checkArgument(TYPE.FEATURE.equals(featureRef.getType()));
 
             final String typeTreePath = featureRef.getParentPath();
-            CanonicalTreeBuilder typeTreeBuilder;
+            RevTreeBuilder typeTreeBuilder;
             typeTreeBuilder = featureTypeTrees.computeIfAbsent(typeTreePath,
                     path -> newTreeBuilder(featureRef));
             return typeTreeBuilder;
         }
 
-        private CanonicalTreeBuilder newTreeBuilder(final NodeRef featureRef) {
+        private RevTreeBuilder newTreeBuilder(final NodeRef featureRef) {
             final String typeTreePath = featureRef.getParentPath();
             NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
                     .setChildPath(typeTreePath).call().orNull();
@@ -209,8 +208,8 @@ public class StagingAreaImpl implements StagingArea {
             } else {
                 currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            CanonicalTreeBuilder typeTreeBuilder = CanonicalTreeBuilder
-                    .create(context.objectDatabase(), currentTypeTree);
+            RevTreeBuilder typeTreeBuilder = RevTreeBuilder.builder(context.objectDatabase(),
+                    currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
             return typeTreeBuilder;
         }
@@ -279,8 +278,7 @@ public class StagingAreaImpl implements StagingArea {
 
             state.updateConflicts(null, 1);
 
-            for (Map.Entry<String, CanonicalTreeBuilder> entry : state.featureTypeTrees
-                    .entrySet()) {
+            for (Map.Entry<String, RevTreeBuilder> entry : state.featureTypeTrees.entrySet()) {
 
                 final String changedTreePath = entry.getKey();
                 final NodeRef currentTreeRef = state.currentFeatureTypeRefs.get(changedTreePath);
@@ -359,7 +357,7 @@ public class StagingAreaImpl implements StagingArea {
                 state.removedTrees.add(fullPath);
                 state.updateTree.removeChildTree(fullPath);
             } else {
-                state.getTreeBuilder(oldObject).remove(oldObject.name());
+                state.getTreeBuilder(oldObject).remove(oldObject.getNode());
             }
             break;
         default:

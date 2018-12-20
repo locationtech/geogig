@@ -90,6 +90,7 @@ import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
 import org.locationtech.geogig.test.TestData;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 import org.springframework.http.HttpMethod;
@@ -112,7 +113,6 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
-import org.locationtech.jts.geom.Envelope;
 
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;

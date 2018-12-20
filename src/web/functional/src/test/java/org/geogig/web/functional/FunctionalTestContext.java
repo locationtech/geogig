@@ -25,12 +25,11 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.TransactionResolve;
+import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.porcelain.BranchDeleteOp;
 import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
@@ -71,13 +70,13 @@ public abstract class FunctionalTestContext extends ExternalResource {
         }
         setUp();
 
-        RevFeatureType rft = RevFeatureTypeBuilder.build(TestData.pointsType);
+        RevFeatureType rft = RevFeatureType.builder().type(TestData.pointsType).build();
         setVariable("@PointsTypeID", rft.getId().toString());
 
-        rft = RevFeatureTypeBuilder.build(TestData.linesType);
+        rft = RevFeatureType.builder().type(TestData.linesType).build();
         setVariable("@LinesTypeID", rft.getId().toString());
 
-        rft = RevFeatureTypeBuilder.build(TestData.polysType);
+        rft = RevFeatureType.builder().type(TestData.polysType).build();
         setVariable("@PolysTypeID", rft.getId().toString());
     }
 
@@ -180,7 +179,8 @@ public abstract class FunctionalTestContext extends ExternalResource {
      *
      * @throws Exception
      */
-    public Collection<String> setUpDefaultMultiRepoServerWithRemotes(boolean http) throws Exception {
+    public Collection<String> setUpDefaultMultiRepoServerWithRemotes(boolean http)
+            throws Exception {
         if (http) {
             serveHttpRepos();
         }
@@ -197,7 +197,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
         repo2.command(CloneOp.class).setRemoteURI(URI.create(repo1Url)).call();
 
         String repo2Url = http ? getHttpLocation("repo2") : repo2.getLocation().toString();
-        
+
         repo2.close();
 
         if (http) {
@@ -214,7 +214,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
 
         repo3.command(RemoteAddOp.class).setName("repo1").setURL(repo1Url).call();
         repo3.command(RemoteAddOp.class).setName("repo2").setURL(repo2Url).call();
-        
+
         repo3.close();
 
         Repository repo4 = createRepo("repo4")//
@@ -228,7 +228,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
                 .setMode(ResetMode.HARD).call();
 
         String repo4Url = http ? getHttpLocation("repo4") : repo4.getLocation().toString();
-        
+
         repo4.close();
 
         repo1.command(RemoteAddOp.class).setName("repo4").setURL(repo4Url).call();
@@ -261,7 +261,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
         repo2.close();
         return Arrays.asList("full", "shallow");
     }
-    
+
     /**
      * Create a repository with the given name for testing.
      * 
@@ -281,6 +281,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
     protected TestData createUnmanagedRepo(final String name) throws Exception {
         return createRepo(name);
     }
+
     /**
      * Issue a request with the given {@link HttpMethod} to the provided resource URI.
      * 
@@ -299,7 +300,8 @@ public abstract class FunctionalTestContext extends ExternalResource {
      * @param content the payload to encode into the request body
      * @param contentType the MediaType of the payload
      */
-    public void call(final HttpMethod method, String resourceUri, String content, String contentType) {
+    public void call(final HttpMethod method, String resourceUri, String content,
+            String contentType) {
         callInternal(method, replaceVariables(resourceUri), content, contentType);
     }
 
@@ -311,7 +313,8 @@ public abstract class FunctionalTestContext extends ExternalResource {
      * @param content the payload to encode into the request body
      * @param contentType the MediaType of the payload
      */
-    protected abstract void callInternal(final HttpMethod method, String resourceUri, String content, String contentType);
+    protected abstract void callInternal(final HttpMethod method, String resourceUri,
+            String content, String contentType);
 
     /**
      * Issue a request with the given {@link HttpMethod} to the provided resource URI.
@@ -350,8 +353,8 @@ public abstract class FunctionalTestContext extends ExternalResource {
      * @param formFieldName the form field name for the file to be posted
      * @param file the file to post
      */
-    protected abstract void postFileInternal(final String resourceUri,
-            final String formFieldName, final File file);
+    protected abstract void postFileInternal(final String resourceUri, final String formFieldName,
+            final File file);
 
     /**
      * Issue a POST request to the provided URL with the given text as post data.
@@ -430,16 +433,15 @@ public abstract class FunctionalTestContext extends ExternalResource {
                         Optional<RevObject> object;
                         if (parts.length == 3) {
                             ref = parts[2];
-                            object = repo.command(RevObjectParse.class)
-                                    .setRefSpec(ref).call();
+                            object = repo.command(RevObjectParse.class).setRefSpec(ref).call();
 
                         } else {
                             ref = parts[3];
                             String txVar = getVariable(parts[2], variables);
                             GeogigTransaction transaction = repo.command(TransactionResolve.class)
                                     .setId(UUID.fromString(txVar)).call().get();
-                            object = transaction.command(RevObjectParse.class)
-                                    .setRefSpec(ref).call();
+                            object = transaction.command(RevObjectParse.class).setRefSpec(ref)
+                                    .call();
                         }
                         if (object.isPresent()) {
                             varValue = object.get().getId().toString();

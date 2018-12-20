@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
-import com.google.common.base.Function;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.model.NodeRef;
@@ -35,6 +34,7 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;

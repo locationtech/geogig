@@ -28,7 +28,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.TransactionBegin;
@@ -314,7 +314,7 @@ public class PullTest extends AbstractWebOpTest {
         remoteTestData.insert(TestData.point1_modified);
         remoteTestData.add();
         RevCommit theirs = remoteGeogig.command(CommitOp.class).setMessage("modify point1").call();
-        ObjectId point1_id = RevFeatureBuilder.build(TestData.point1_modified).getId();
+        ObjectId point1_id = RevFeature.builder().build(TestData.point1_modified).getId();
 
         testData.remove(TestData.point1);
         testData.add();
@@ -376,7 +376,7 @@ public class PullTest extends AbstractWebOpTest {
         remoteTestData.insert(TestData.point1_modified);
         remoteTestData.add();
         RevCommit theirs = remoteGeogig.command(CommitOp.class).setMessage("modify point1").call();
-        ObjectId point1_id = RevFeatureBuilder.build(TestData.point1_modified).getId();
+        ObjectId point1_id = RevFeature.builder().build(TestData.point1_modified).getId();
 
         testData.remove(TestData.point1);
         testData.add();

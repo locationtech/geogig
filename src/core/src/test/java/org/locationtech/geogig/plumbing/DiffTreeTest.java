@@ -34,8 +34,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.Context;
@@ -91,7 +89,7 @@ public class DiffTreeTest extends Assert {
 
         SimpleFeatureType ft = DataUtilities.createType("points",
                 "sp:String,ip:Integer,pp:Point:srid=3857");
-        revtype = RevFeatureTypeBuilder.build(ft);
+        revtype = RevFeatureType.builder().type(ft).build();
         metadataId = revtype.getId();
         geogig.getContext().objectDatabase().put(revtype);
     }
@@ -206,11 +204,11 @@ public class DiffTreeTest extends Assert {
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
         {
-            CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(db, tree2);
+            RevTreeBuilder builder = RevTreeBuilder.builder(db, tree2);
             // add 10 changed features, and delete 10 more
             for (int i = 0; i < 20; i++) {
                 if (i % 2 == 0) {
-                    builder.remove(String.valueOf(i));
+                    builder.remove(node(String.valueOf(i)));
                 } else {
                     builder.put(feature(i, RevObjectTestSupport.hashString("changed" + i)));
                 }
@@ -232,6 +230,12 @@ public class DiffTreeTest extends Assert {
         assertChangeTypeFilter(root2.getId(), root1.getId(), 10, 0, 10);
     }
 
+    private Node node(String id) {
+        return RevObjectFactory.defaultInstance().createNode(id, ObjectId.NULL, ObjectId.NULL,
+                TYPE.FEATURE, null, null);
+
+    }
+
     /**
      * Apply path, bounds, and changeType filtering all at once
      */
@@ -242,11 +246,11 @@ public class DiffTreeTest extends Assert {
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
         {
-            CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(db, tree2);
+            RevTreeBuilder builder = RevTreeBuilder.builder(db, tree2);
             // add 10 changed features, and delete 10 more
             for (int i = 0; i < 20; i++) {
                 if (i % 2 == 0) {
-                    builder.remove(String.valueOf(i));
+                    builder.remove(node(String.valueOf(i)));
                 } else {
                     builder.put(feature(i, RevObjectTestSupport.hashString("changed" + i)));
                 }
@@ -314,7 +318,7 @@ public class DiffTreeTest extends Assert {
     }
 
     private RevTree createRoot(ObjectDatabase db, final RevTree tree1, final RevTree tree2) {
-        RevTreeBuilder rootBuilder = CanonicalTreeBuilder.create(db);
+        RevTreeBuilder rootBuilder = RevTreeBuilder.builder(db);
         rootBuilder.put(RevObjectFactory.defaultInstance().createNode("tree1", tree1.getId(),
                 metadataId, TYPE.TREE, SpatialOps.boundsOf(tree1), null));
         rootBuilder.put(RevObjectFactory.defaultInstance().createNode("tree2", tree2.getId(),
@@ -325,7 +329,7 @@ public class DiffTreeTest extends Assert {
     }
 
     private RevTree tree(int nFeatures, ObjectDatabase db) {
-        RevTreeBuilder b = CanonicalTreeBuilder.create(db);
+        RevTreeBuilder b = RevTreeBuilder.builder(db);
         for (int i = 0; i < nFeatures; i++) {
             b.put(feature(i));
         }

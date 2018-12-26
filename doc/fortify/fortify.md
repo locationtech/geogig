@@ -41,13 +41,15 @@ PS C:\Users\User\geogig\src>
 
 We've configured the `sca-maven-plugin` to run Fortify scans through maven.
 
-Fortify doesn't understand Lombok annotations, so we've got a maven profile to generate a "delombok'ed" code base using the `fortify` profile:
+Fortify doesn't understand Lombok annotations, so we've got a maven profile to generate a "delombok'ed" code base using the `delombok` profile:
 
 ```
-PS C:\Users\User\geogig\src> mvn clean install -DskipTests -Pfortify
+PS C:\Users\User\geogig\src> mvn clean install -DskipTests -Pdelombok
 ```
 
 That creates a separate source tree under `<geogig>/build/fortify/geogig-<version>` that has all the lombok annotations removed and the bytecode lombok would create at compile time is instead injected directly as source code to the .java files.
+
+Now use the `fortify` profile on the delomboked source code base to run the scan:
 
 ```
 PS C:\Users\User\geogig\src> cd ..\build\fortify\geogig-1.4-SNAPSHOT\src
@@ -194,7 +196,7 @@ In summary, what the profile does is:
 - The delomboked root pom is a different one than the original root pom. It's copied from `build/fortify/pom.xml` to `build/fortify/geogig-<version>/src/pom.xml`, and contains the `sca-maven-plugin` configuration and only the modules that are to be scanned.
 
 
-To check how it's done look at the `fortify` profile in the project's [root pom.xml](../../src/pom.xml).
+To check how it's done look at the `delombok` profile in the project's [root pom.xml](../../src/pom.xml).
 
 ## Run the scan and resolve errors
 

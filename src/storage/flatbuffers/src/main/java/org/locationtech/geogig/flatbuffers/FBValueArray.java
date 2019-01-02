@@ -12,7 +12,7 @@ package org.locationtech.geogig.flatbuffers;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.flatbuffers.generated.Feature;
+import org.locationtech.geogig.flatbuffers.generated.v1.Feature;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.ValueArray;

@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.flatbuffers.generated.values.WKBGEOMETRY;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.WKBGEOMETRY;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.InStream;

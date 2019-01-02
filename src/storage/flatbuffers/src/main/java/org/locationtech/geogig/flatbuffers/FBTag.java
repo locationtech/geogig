@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
-import org.locationtech.geogig.flatbuffers.generated.Tag;
+import org.locationtech.geogig.flatbuffers.generated.v1.Tag;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;

@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.flatbuffers.generated.ObjectType;
+import org.locationtech.geogig.flatbuffers.generated.v1.ObjectType;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;

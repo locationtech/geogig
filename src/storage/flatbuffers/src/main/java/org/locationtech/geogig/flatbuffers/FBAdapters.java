@@ -14,10 +14,10 @@ import javax.annotation.Nullable;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.locationtech.geogig.flatbuffers.generated.QualifiedName;
-import org.locationtech.geogig.flatbuffers.generated.SHA;
-import org.locationtech.geogig.flatbuffers.generated.SimpleAttributeDescriptor;
-import org.locationtech.geogig.flatbuffers.generated.values.Bounds;
+import org.locationtech.geogig.flatbuffers.generated.v1.QualifiedName;
+import org.locationtech.geogig.flatbuffers.generated.v1.SHA;
+import org.locationtech.geogig.flatbuffers.generated.v1.SimpleAttributeDescriptor;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.Bounds;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.jts.geom.Envelope;
@@ -74,7 +74,7 @@ final @UtilityClass class FBAdapters {
     }
 
     public static org.opengis.feature.type.FeatureType toFeatureType(
-            @NonNull org.locationtech.geogig.flatbuffers.generated.SimpleFeatureType t) {
+            @NonNull org.locationtech.geogig.flatbuffers.generated.v1.SimpleFeatureType t) {
 
         SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder(ftfactory);
         featureTypeBuilder.setName(toName(t.name()));
@@ -84,7 +84,7 @@ final @UtilityClass class FBAdapters {
         final int size = t.attributesLength();
         for (int i = 0; i < size; i++) {
             SimpleAttributeDescriptor descriptor = t.attributes(i);
-            final org.locationtech.geogig.flatbuffers.generated.AttributeType type = descriptor
+            final org.locationtech.geogig.flatbuffers.generated.v1.AttributeType type = descriptor
                     .type();
             final int minOccurs = descriptor.minOccurs();
             final int maxOccurs = descriptor.maxOccurs();
@@ -118,7 +118,7 @@ final @UtilityClass class FBAdapters {
     }
 
     private static CoordinateReferenceSystem resolveCrs(
-            final org.locationtech.geogig.flatbuffers.generated.AttributeType type) {
+            final org.locationtech.geogig.flatbuffers.generated.v1.AttributeType type) {
         String authorityCode = type.crsAuthorityCode();
         String wkt = type.crsWkt();
         CoordinateReferenceSystem coordSys;

@@ -13,12 +13,12 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.flatbuffers.generated.LeafTree;
-import org.locationtech.geogig.flatbuffers.generated.SHA;
-import org.locationtech.geogig.flatbuffers.generated.values.Bounds;
-import org.locationtech.geogig.flatbuffers.generated.values.Dictionary;
-import org.locationtech.geogig.flatbuffers.generated.values.MapEntry;
-import org.locationtech.geogig.flatbuffers.generated.values.Value;
+import org.locationtech.geogig.flatbuffers.generated.v1.LeafTree;
+import org.locationtech.geogig.flatbuffers.generated.v1.SHA;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.Bounds;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.Dictionary;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.MapEntry;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.Value;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;

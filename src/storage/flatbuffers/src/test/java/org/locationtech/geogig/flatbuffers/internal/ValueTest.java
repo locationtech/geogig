@@ -10,7 +10,7 @@
 package org.locationtech.geogig.flatbuffers.internal;
 
 import org.junit.Test;
-import org.locationtech.geogig.flatbuffers.generated.values.Value;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.Value;
 
 public class ValueTest {
 

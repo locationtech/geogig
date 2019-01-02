@@ -20,7 +20,7 @@ import lombok.NonNull;
 
 final @AllArgsConstructor class FBBucket extends Bucket {
 
-    private final @NonNull org.locationtech.geogig.flatbuffers.generated.Bucket bucket;
+    private final @NonNull org.locationtech.geogig.flatbuffers.generated.v1.Bucket bucket;
 
     public @Override int getIndex() {
         return bucket.index();

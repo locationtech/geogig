@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.flatbuffers.generated.values.FLATGEOMETRY;
-import org.locationtech.geogig.flatbuffers.generated.values.GeometryType;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.FLATGEOMETRY;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.GeometryType;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequenceFilter;

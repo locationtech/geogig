@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import org.locationtech.geogig.flatbuffers.generated.NodeTree;
+import org.locationtech.geogig.flatbuffers.generated.v1.NodeTree;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevObjects;
@@ -82,7 +82,7 @@ final class FBNodeTree extends FBRevObject<NodeTree> implements RevTree {
     }
 
     private Bucket getByIndex(int index) {
-        org.locationtech.geogig.flatbuffers.generated.Bucket bucket = getTable().buckets(index);
+        org.locationtech.geogig.flatbuffers.generated.v1.Bucket bucket = getTable().buckets(index);
         return new FBBucket(bucket);
     }
 
@@ -105,7 +105,7 @@ final class FBNodeTree extends FBRevObject<NodeTree> implements RevTree {
     public @Override Optional<Bucket> getBucket(final int bucketIndex) {
         final int size = bucketsSize();
         for (int i = 0; i < size; i++) {
-            org.locationtech.geogig.flatbuffers.generated.Bucket bucket = getTable().buckets(i);
+            org.locationtech.geogig.flatbuffers.generated.v1.Bucket bucket = getTable().buckets(i);
             if (bucketIndex == bucket.index()) {
                 return Optional.of(new FBBucket(bucket));
             }

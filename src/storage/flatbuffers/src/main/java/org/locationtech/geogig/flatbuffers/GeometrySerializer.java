@@ -10,10 +10,10 @@
 package org.locationtech.geogig.flatbuffers;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.flatbuffers.generated.values.ENCODEDGEOMETRY;
-import org.locationtech.geogig.flatbuffers.generated.values.FLATGEOMETRY;
-import org.locationtech.geogig.flatbuffers.generated.values.GEOMETRY;
-import org.locationtech.geogig.flatbuffers.generated.values.WKBGEOMETRY;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.ENCODEDGEOMETRY;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.FLATGEOMETRY;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.GEOMETRY;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.WKBGEOMETRY;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;

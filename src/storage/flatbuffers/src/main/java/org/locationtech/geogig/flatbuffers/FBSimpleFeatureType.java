@@ -11,8 +11,8 @@ package org.locationtech.geogig.flatbuffers;
 
 import java.lang.ref.WeakReference;
 
-import org.locationtech.geogig.flatbuffers.generated.QualifiedName;
-import org.locationtech.geogig.flatbuffers.generated.SimpleFeatureType;
+import org.locationtech.geogig.flatbuffers.generated.v1.QualifiedName;
+import org.locationtech.geogig.flatbuffers.generated.v1.SimpleFeatureType;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObjects;
 import org.opengis.feature.type.FeatureType;

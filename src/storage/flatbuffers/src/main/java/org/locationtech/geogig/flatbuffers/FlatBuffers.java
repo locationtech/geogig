@@ -25,19 +25,19 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.geotools.referencing.wkt.Formattable;
-import org.locationtech.geogig.flatbuffers.generated.Commit;
-import org.locationtech.geogig.flatbuffers.generated.Feature;
-import org.locationtech.geogig.flatbuffers.generated.LeafTree;
-import org.locationtech.geogig.flatbuffers.generated.NodeTree;
-import org.locationtech.geogig.flatbuffers.generated.ObjectType;
-import org.locationtech.geogig.flatbuffers.generated.Person;
-import org.locationtech.geogig.flatbuffers.generated.QualifiedName;
-import org.locationtech.geogig.flatbuffers.generated.RevisionObject;
-import org.locationtech.geogig.flatbuffers.generated.SHA;
-import org.locationtech.geogig.flatbuffers.generated.SimpleAttributeDescriptor;
-import org.locationtech.geogig.flatbuffers.generated.SimpleFeatureType;
-import org.locationtech.geogig.flatbuffers.generated.Tag;
-import org.locationtech.geogig.flatbuffers.generated.values.Bounds;
+import org.locationtech.geogig.flatbuffers.generated.v1.Commit;
+import org.locationtech.geogig.flatbuffers.generated.v1.Feature;
+import org.locationtech.geogig.flatbuffers.generated.v1.LeafTree;
+import org.locationtech.geogig.flatbuffers.generated.v1.NodeTree;
+import org.locationtech.geogig.flatbuffers.generated.v1.ObjectType;
+import org.locationtech.geogig.flatbuffers.generated.v1.Person;
+import org.locationtech.geogig.flatbuffers.generated.v1.QualifiedName;
+import org.locationtech.geogig.flatbuffers.generated.v1.RevisionObject;
+import org.locationtech.geogig.flatbuffers.generated.v1.SHA;
+import org.locationtech.geogig.flatbuffers.generated.v1.SimpleAttributeDescriptor;
+import org.locationtech.geogig.flatbuffers.generated.v1.SimpleFeatureType;
+import org.locationtech.geogig.flatbuffers.generated.v1.Tag;
+import org.locationtech.geogig.flatbuffers.generated.v1.values.Bounds;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.HashObjectFunnels;
@@ -533,15 +533,15 @@ final class FlatBuffers {
 
     public int writeBucket(@NonNull FlatBufferBuilder builder, int bucketIndex,
             @NonNull ObjectId treeId, @NonNull Envelope bounds) {
-        org.locationtech.geogig.flatbuffers.generated.Bucket.startBucket(builder);
-        org.locationtech.geogig.flatbuffers.generated.Bucket.addIndex(builder, bucketIndex);
-        org.locationtech.geogig.flatbuffers.generated.Bucket.addTreeId(builder,
+        org.locationtech.geogig.flatbuffers.generated.v1.Bucket.startBucket(builder);
+        org.locationtech.geogig.flatbuffers.generated.v1.Bucket.addIndex(builder, bucketIndex);
+        org.locationtech.geogig.flatbuffers.generated.v1.Bucket.addTreeId(builder,
                 write(treeId, builder));
 
         // Bounds is a struct, must be serialized inline
         int boundsOffset = bounds.isNull() ? 0 : write(bounds, builder);
-        org.locationtech.geogig.flatbuffers.generated.Bucket.addBounds(builder, boundsOffset);
-        return org.locationtech.geogig.flatbuffers.generated.Bucket.endBucket(builder);
+        org.locationtech.geogig.flatbuffers.generated.v1.Bucket.addBounds(builder, boundsOffset);
+        return org.locationtech.geogig.flatbuffers.generated.v1.Bucket.endBucket(builder);
     }
 
     private int write(Envelope env, FlatBufferBuilder builder) {
@@ -644,7 +644,7 @@ final class FlatBuffers {
             crs_wktOffset = 0;
         }
 
-        return org.locationtech.geogig.flatbuffers.generated.AttributeType.createAttributeType(
+        return org.locationtech.geogig.flatbuffers.generated.v1.AttributeType.createAttributeType(
                 builder, nameOffset, bindingCode, identifiable, geometric, crs_authority_codeOffset,
                 crs_wktOffset);
     }

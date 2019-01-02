@@ -1,4 +1,4 @@
-namespace org.locationtech.geogig.flatbuffers.generated.values;
+namespace org.locationtech.geogig.flatbuffers.generated.v1.values;
 
 struct Bounds{
 	x1: float;

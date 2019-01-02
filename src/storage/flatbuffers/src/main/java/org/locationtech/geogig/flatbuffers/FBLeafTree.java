@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import org.locationtech.geogig.flatbuffers.generated.LeafTree;
+import org.locationtech.geogig.flatbuffers.generated.v1.LeafTree;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevObjects;

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
-import org.locationtech.geogig.flatbuffers.generated.Commit;
+import org.locationtech.geogig.flatbuffers.generated.v1.Commit;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObjects;

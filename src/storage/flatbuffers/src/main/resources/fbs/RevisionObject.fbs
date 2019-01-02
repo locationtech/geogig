@@ -1,5 +1,5 @@
 include "Value.fbs";
-namespace org.locationtech.geogig.flatbuffers.generated;
+namespace org.locationtech.geogig.flatbuffers.generated.v1;
 
 enum ObjectType : byte {
 	Commit = 0,
@@ -34,7 +34,7 @@ table Commit{
 table Bucket{
 	index: int;
 	tree_id: SHA;
-	bounds: org.locationtech.geogig.flatbuffers.generated.values.Bounds;
+	bounds: org.locationtech.geogig.flatbuffers.generated.v1.values.Bounds;
 }
 
 table LeafTree{
@@ -43,8 +43,8 @@ table LeafTree{
 	nodes_names: [string];
 	nodes_ids: [SHA];
 	nodes_metadata_ids: [SHA];
-	nodes_bounds: [org.locationtech.geogig.flatbuffers.generated.values.Bounds];
-	nodes_extra_data: [org.locationtech.geogig.flatbuffers.generated.values.Dictionary];
+	nodes_bounds: [org.locationtech.geogig.flatbuffers.generated.v1.values.Bounds];
+	nodes_extra_data: [org.locationtech.geogig.flatbuffers.generated.v1.values.Dictionary];
 }
 
 table NodeTree{
@@ -54,7 +54,7 @@ table NodeTree{
 }
 
 table Feature{
-	values: [org.locationtech.geogig.flatbuffers.generated.values.Value];
+	values: [org.locationtech.geogig.flatbuffers.generated.v1.values.Value];
 }
 
 table Tag{
@@ -71,7 +71,7 @@ table QualifiedName{
 
 table AttributeType{
 	name: QualifiedName (required);
-	binding: org.locationtech.geogig.flatbuffers.generated.values.ValueType;
+	binding: org.locationtech.geogig.flatbuffers.generated.v1.values.ValueType;
 	identified: bool;
 	geometric: bool;
 	crs_authority_code: string;

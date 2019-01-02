@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan - initial implementation
  */
-package org.locationtech.geogig.model.internal;
+package org.locationtech.geogig.tempstorage.rocksdb;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,6 +21,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.internal.DAG;
+import org.locationtech.geogig.model.internal.DAGNode;
+import org.locationtech.geogig.model.internal.DAGStorageProvider;
+import org.locationtech.geogig.model.internal.NodeId;
+import org.locationtech.geogig.model.internal.TreeCache;
+import org.locationtech.geogig.model.internal.TreeId;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.rocksdb.RocksDB;
 

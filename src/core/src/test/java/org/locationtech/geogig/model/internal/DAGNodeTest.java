@@ -18,8 +18,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
@@ -29,9 +27,6 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.internal.DAGNode.FeatureDAGNode;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
-
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 
 public class DAGNodeTest {
 
@@ -76,13 +71,4 @@ public class DAGNodeTest {
         RevObjectTestUtil.deepEquals(expected, resolved);
     }
 
-    @Test
-    public void lazyFeatureNodeEncodeDecode() throws IOException {
-        DAGNode node = DAGNode.featureNode(5, 511);
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        DAGNode.encode(node, out);
-
-        DAGNode decoded = DAGNode.decode(ByteStreams.newDataInput(out.toByteArray()));
-        assertEquals(node, decoded);
-    }
 }

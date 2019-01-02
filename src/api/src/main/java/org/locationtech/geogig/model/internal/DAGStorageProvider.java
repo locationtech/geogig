@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 
-interface DAGStorageProvider {
+public interface DAGStorageProvider {
 
     public TreeCache getTreeCache();
 

@@ -12,15 +12,8 @@ package org.locationtech.geogig.model.internal;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 import org.locationtech.jts.geom.Envelope;
-
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 
 public class NodeIdTest {
 
@@ -35,50 +28,8 @@ public class NodeIdTest {
 
         assertEquals(n1, n2);
         assertNotEquals(n1, n3);
-        assertEquals(n4,  n5);
+        assertEquals(n4, n5);
         assertNotEquals(n4, n6);
     }
 
-    @Test
-    public void testEncodeCanonicalNodeIds() throws Exception {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        List<NodeId> nodes = new ArrayList<>();
-        int size = 10;
-        for (int i = 0; i < size; i++) {
-            NodeId n = new NodeId("node-" + i);
-            nodes.add(n);
-            NodeId.write(n, out);
-        }
-
-        ByteArrayDataInput in = ByteStreams.newDataInput(out.toByteArray());
-
-        List<NodeId> decoded = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            NodeId n = NodeId.read(in);
-            decoded.add(n);
-        }
-        assertEquals(nodes, decoded);
-    }
-
-    @Test
-    public void testEncodeQuadTreeNodeIds() throws Exception {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        List<NodeId> nodes = new ArrayList<>();
-        int size = 10;
-        for (int i = 0; i < size; i++) {
-            Envelope env = new Envelope(i, i + 1, i, i + 1);
-            NodeId n = new NodeId("node-" + i, env);
-            nodes.add(n);
-            NodeId.write(n, out);
-        }
-
-        ByteArrayDataInput in = ByteStreams.newDataInput(out.toByteArray());
-
-        List<NodeId> decoded = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            NodeId n = NodeId.read(in);
-            decoded.add(n);
-        }
-        assertEquals(nodes, decoded);
-    }
 }

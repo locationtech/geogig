@@ -19,6 +19,7 @@
 
   <modules>
     <module>flatbuffers</module>
+    <module>temporary-rocksdb</module>
     <module>postgres</module>
     <module>rocksdb</module>
     <module>cache</module>

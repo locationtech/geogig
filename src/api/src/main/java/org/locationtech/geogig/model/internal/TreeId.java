@@ -26,7 +26,7 @@ import com.google.common.primitives.UnsignedBytes;
  * opposed to the final SHA-1 identifier of a built {@code RevTree}.
  *
  */
-final class TreeId implements Comparable<TreeId>, Serializable {
+public final class TreeId implements Comparable<TreeId>, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -38,7 +38,7 @@ final class TreeId implements Comparable<TreeId>, Serializable {
      * @param bucketIndicesByDepth array of bucket indexes that define this tree id
      * @implNote: this instance takes ownership of the argument array
      */
-    TreeId(byte[] bucketIndicesByDepth) {
+    public TreeId(byte[] bucketIndicesByDepth) {
         this.bucketIndicesByDepth = bucketIndicesByDepth;
     }
 

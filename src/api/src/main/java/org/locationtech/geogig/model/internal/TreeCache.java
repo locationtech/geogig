@@ -27,7 +27,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-class TreeCache {
+public class TreeCache {
 
     private final AtomicInteger idSequence = new AtomicInteger();
 

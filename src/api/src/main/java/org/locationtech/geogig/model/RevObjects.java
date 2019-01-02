@@ -65,6 +65,14 @@ public @UtilityClass class RevObjects {
         return DEFAULT_FACTORY_INSTANCE;
     }
 
+    public static Envelope boundsOf(@NonNull RevTree tree) {
+        Envelope env = new Envelope();
+        tree.forEachBucket(bucket -> bucket.expand(env));
+        tree.forEachTree(n -> n.expand(env));
+        tree.forEachFeature(n -> n.expand(env));
+        return env;
+    }
+
     public static String toString(@NonNull ObjectId id) {
         return RevObjects
                 .toString(id, ObjectId.NUM_BYTES, new StringBuilder(2 * ObjectId.NUM_BYTES))

@@ -11,11 +11,7 @@ package org.locationtech.geogig.model.internal;
 
 import static com.google.common.base.Objects.equal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
-class DAG implements Cloneable, Serializable {
+public class DAG implements Cloneable, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -106,7 +102,7 @@ class DAG implements Cloneable, Serializable {
         this.state = STATE.INITIALIZED;
     }
 
-    DAG(final TreeId id, final ObjectId originalTreeId, long childCount, STATE state,
+    public DAG(final TreeId id, final ObjectId originalTreeId, long childCount, STATE state,
             Map<String, NodeId> children, Set<TreeId> buckets) {
         this.id = id;
         this.originalTreeId = originalTreeId;
@@ -283,62 +279,6 @@ class DAG implements Cloneable, Serializable {
 
     void setMutated(boolean mutated) {
         this.mutated = mutated;
-    }
-
-    public static void serialize(DAG dag, DataOutput out) throws IOException {
-        final ObjectId treeId = dag.originalTreeId;
-        final STATE state = dag.getState();
-        final long childCount = dag.getTotalChildCount();
-        final Collection<NodeId> children = dag.children.values();
-        final Set<TreeId> buckets = dag.buckets;
-
-        treeId.writeTo(out);
-        out.writeByte(state.ordinal());
-        out.writeLong(childCount);
-
-        out.writeInt(children.size());
-        out.writeShort(buckets.size());
-
-        for (NodeId nodeid : children) {
-            NodeId.write(nodeid, out);
-        }
-        for (TreeId tid : buckets) {
-            byte[] bucketIndicesByDepth = tid.bucketIndicesByDepth;
-            out.writeShort(bucketIndicesByDepth.length);
-            out.write(bucketIndicesByDepth);
-        }
-    }
-
-    public static DAG deserialize(TreeId id, DataInput in) throws IOException {
-        final ObjectId treeId = ObjectId.readFrom(in);
-        final STATE state = STATE.values()[in.readByte() & 0xFF];
-        final long childCount = in.readLong();
-
-        final int childrenSize = in.readInt();
-        final int bucketSize = in.readShort();
-
-        Map<String, NodeId> children = ImmutableMap.of();
-        Set<TreeId> buckets = ImmutableSet.of();
-
-        if (childrenSize > 0) {
-            children = new HashMap<>();
-            for (int i = 0; i < childrenSize; i++) {
-                NodeId nid = NodeId.read(in);
-                children.put(nid.name(), nid);
-            }
-        }
-        if (bucketSize > 0) {
-            buckets = new HashSet<>();
-            for (int i = 0; i < bucketSize; i++) {
-                final int len = in.readShort();
-                final byte[] bucketIndicesByDepth = new byte[len];
-                in.readFully(bucketIndicesByDepth);
-                buckets.add(new TreeId(bucketIndicesByDepth));
-            }
-        }
-
-        DAG dag = new DAG(id, treeId, childCount, state, children, buckets);
-        return dag;
     }
 
     public List<TreeId> bucketList() {

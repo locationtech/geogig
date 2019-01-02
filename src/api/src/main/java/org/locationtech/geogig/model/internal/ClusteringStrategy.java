@@ -319,7 +319,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                 if (remove) {
                     System.out.printf(
                             "!!! Error removing %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
-                            nodeId.name, dag.getId(), pre, post, deltaSize,
+                            nodeId.name(), dag.getId(), pre, post, deltaSize,
                             Thread.currentThread().getName());
                 }
                 throw e;

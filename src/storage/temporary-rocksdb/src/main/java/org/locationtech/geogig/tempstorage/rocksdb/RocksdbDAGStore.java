@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan - initial implementation
  */
-package org.locationtech.geogig.model.internal;
+package org.locationtech.geogig.tempstorage.rocksdb;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,6 +22,8 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.internal.DAG;
+import org.locationtech.geogig.model.internal.TreeId;
 import org.rocksdb.DBOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
@@ -202,7 +204,7 @@ class RocksdbDAGStore {
     private DAG decode(TreeId id, byte[] value) {
         DAG dag;
         try {
-            dag = DAG.deserialize(id, ByteStreams.newDataInput(value));
+            dag = DAGSerializer.deserialize(id, ByteStreams.newDataInput(value));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -216,7 +218,7 @@ class RocksdbDAGStore {
 
     private byte[] encode(DAG bucketDAG, ByteArrayDataOutput out) {
         try {
-            DAG.serialize(bucketDAG, out);
+            DAGSerializer.serialize(bucketDAG, out);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

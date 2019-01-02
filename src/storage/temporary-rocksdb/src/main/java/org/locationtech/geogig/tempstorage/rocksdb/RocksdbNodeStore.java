@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan - initial implementation
  */
-package org.locationtech.geogig.model.internal;
+package org.locationtech.geogig.tempstorage.rocksdb;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -19,6 +19,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
+import org.locationtech.geogig.model.internal.DAGNode;
+import org.locationtech.geogig.model.internal.NodeId;
 import org.rocksdb.DBOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
@@ -174,7 +176,7 @@ class RocksdbNodeStore {
     private byte[] encode(DAGNode node, ByteArrayOutputStream outstream) {
         DataOutputStream out = new DataOutputStream(outstream);
         try {
-            DAGNode.encode(node, out);
+            DAGSerializer.encode(node, out);
             out.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -185,7 +187,7 @@ class RocksdbNodeStore {
     private DAGNode decode(byte[] nodeData) {
         DAGNode node;
         try {
-            node = DAGNode.decode(ByteStreams.newDataInput(nodeData));
+            node = DAGSerializer.decode(ByteStreams.newDataInput(nodeData));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -22,9 +22,9 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.DAG.STATE;
-import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,7 +206,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
 
     private TreeId computeExpandedChildId(RevTree originalTree, TreeId rootId) {
         final long size = originalTree.size();
-        final Envelope treeBounds = SpatialOps.boundsOf(original);
+        final Envelope treeBounds = RevObjects.boundsOf(original);
 
         final int childDepthIndex = rootId.depthLength();
 
@@ -263,7 +263,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
      */
     public TreeId computeExpandedTreeId(RevTree original, TreeId dagId) {
         final long size = original.size();
-        final Envelope treeBounds = SpatialOps.boundsOf(original);
+        final Envelope treeBounds = RevObjects.boundsOf(original);
         final List<Integer> quadrantsByDepth = bucketsByDepth(treeBounds, maxDepth);
         TreeId targetId;
         if (quadrantsByDepth.size() <= dagId.depthLength()) {

@@ -17,7 +17,6 @@ import java.util.function.BooleanSupplier;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.QuadTreeBuilder;
-import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
@@ -100,7 +99,7 @@ public interface RevTreeBuilder {
         trees = trees == null ? Collections.emptyList() : trees;
         features = features == null ? Collections.emptyList() : features;
         buckets = buckets == null ? Collections.emptySortedSet() : buckets;
-        ObjectId id = HashObject.hashTree(trees, features, buckets);
+        ObjectId id = HashObjectFunnels.hashTree(trees, features, buckets);
 
         if (buckets.isEmpty()) {
             return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);

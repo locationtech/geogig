@@ -9,16 +9,13 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.storage.datastream.FormatCommonV2_2;
-import org.locationtech.geogig.storage.datastream.Varint;
 
-abstract class DAGNode {
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
+public abstract class DAGNode {
 
     public abstract Node resolve(TreeCache cache);
 
@@ -28,61 +25,12 @@ abstract class DAGNode {
 
     public abstract boolean isNull();
 
-    private static final byte MAGIC_DIRECT = 7;
-
-    private static final byte MAGIC_LAZY_FEATURE = 9;
-
-    private static final byte MAGIC_LAZY_TREE = 11;
-
-    public static void encode(DAGNode node, DataOutput output) throws IOException {
-
-        if (node instanceof DirectDAGNode) {
-            output.writeByte(MAGIC_DIRECT);
-            FormatCommonV2_2.INSTANCE.writeNode(((DirectDAGNode) node).node, output);
-        } else {
-            LazyDAGNode ln = (LazyDAGNode) node;
-            if (ln instanceof TreeDAGNode) {
-                output.writeByte(MAGIC_LAZY_TREE);
-            } else {
-                output.writeByte(MAGIC_LAZY_FEATURE);
-            }
-            final int leafRevTreeId = ln.leafRevTreeId;
-            final int nodeIndex = ln.nodeIndex;
-            Varint.writeUnsignedVarInt(leafRevTreeId, output);
-            Varint.writeUnsignedVarInt(nodeIndex, output);
-        }
-
-    }
-
-    public static DAGNode decode(DataInput in) throws IOException {
-        final byte magic = in.readByte();
-        switch (magic) {
-        case MAGIC_DIRECT: {
-            Node node = FormatCommonV2_2.INSTANCE.readNode(in);
-            return DAGNode.of(node);
-        }
-        case MAGIC_LAZY_TREE: {
-            int treeCacheId = Varint.readUnsignedVarInt(in);
-            int nodeIndex = Varint.readUnsignedVarInt(in);
-            DAGNode node = DAGNode.treeNode(treeCacheId, nodeIndex);
-            return node;
-        }
-        case MAGIC_LAZY_FEATURE: {
-            int treeCacheId = Varint.readUnsignedVarInt(in);
-            int nodeIndex = Varint.readUnsignedVarInt(in);
-            DAGNode node = DAGNode.featureNode(treeCacheId, nodeIndex);
-            return node;
-        }
-        }
-        throw new IllegalArgumentException("Invalid magic number, expected 7 or 9, got " + magic);
-    }
-
     @Override
     public abstract boolean equals(Object o);
 
-    static class DirectDAGNode extends DAGNode {
+    public static class DirectDAGNode extends DAGNode {
 
-        private final Node node;
+        private final @Getter Node node;
 
         public DirectDAGNode(Node node) {
             this.node = node;
@@ -107,11 +55,11 @@ abstract class DAGNode {
         }
     }
 
-    abstract static class LazyDAGNode extends DAGNode {
+    public abstract static @Accessors(fluent = true) class LazyDAGNode extends DAGNode {
 
-        protected final int leafRevTreeId;
+        protected final @Getter int leafRevTreeId;
 
-        protected final int nodeIndex;
+        protected final @Getter int nodeIndex;
 
         public LazyDAGNode(final int leafRevTreeId, final int nodeIndex) {
             this.leafRevTreeId = leafRevTreeId;
@@ -147,7 +95,7 @@ abstract class DAGNode {
         }
     }
 
-    static final class TreeDAGNode extends LazyDAGNode {
+    public static final class TreeDAGNode extends LazyDAGNode {
 
         TreeDAGNode(int leafRevTreeId, int nodeIndex) {
             super(leafRevTreeId, nodeIndex);
@@ -160,7 +108,7 @@ abstract class DAGNode {
 
     }
 
-    static final class FeatureDAGNode extends LazyDAGNode {
+    public static final class FeatureDAGNode extends LazyDAGNode {
 
         FeatureDAGNode(int leafRevTreeId, int nodeIndex) {
             super(leafRevTreeId, nodeIndex);

@@ -40,10 +40,10 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
-import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Throwables;
@@ -309,7 +309,7 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
                     childTreeCount += bucketTree.numTrees();
 
                     Bucket bucket = RevObjectFactory.defaultInstance().createBucket(
-                            bucketTree.getId(), bucketIndex, SpatialOps.boundsOf(bucketTree));
+                            bucketTree.getId(), bucketIndex, RevObjects.boundsOf(bucketTree));
 
                     bucketsByIndex.add(bucket);
                 }

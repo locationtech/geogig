@@ -54,7 +54,7 @@ public abstract class ClusteringStrategyBuilder {
         }
     }
 
-    private static final Class<? extends DAGStorageProvider> DAGSTORECLASS = RocksdbDAGStorageProvider.class;
+    private static final Class<? extends DAGStorageProvider> DAGSTORECLASS = HeapDAGStorageProvider.class;
 
     public @VisibleForTesting static String getDAGStoreName() {
         return DAGSTORECLASS.getSimpleName();

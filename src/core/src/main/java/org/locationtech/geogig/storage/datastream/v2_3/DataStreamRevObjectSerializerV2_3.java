@@ -15,7 +15,7 @@ import java.io.IOException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
@@ -25,11 +25,11 @@ import com.google.common.primitives.Ints;
  * Serialization factory for serial version 2.2
  */
 @Beta
-public class DataStreamSerializationFactoryV2_3 extends DataStreamSerializationFactoryV2 {
+public class DataStreamRevObjectSerializerV2_3 extends DataStreamRevObjectSerializerV2 {
 
-    public static final DataStreamSerializationFactoryV2_3 INSTANCE = new DataStreamSerializationFactoryV2_3();
+    public static final DataStreamRevObjectSerializerV2_3 INSTANCE = new DataStreamRevObjectSerializerV2_3();
 
-    public DataStreamSerializationFactoryV2_3() {
+    public DataStreamRevObjectSerializerV2_3() {
         super(FormatCommonV2_3.INSTANCE);
     }
 

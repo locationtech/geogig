@@ -37,9 +37,9 @@ import com.google.common.io.ByteStreams;
 /**
  * Serialization factory for serial version 2
  */
-public class DataStreamSerializationFactoryV2 implements RevObjectSerializer {
+public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
 
-    public static final DataStreamSerializationFactoryV2 INSTANCE = new DataStreamSerializationFactoryV2();
+    public static final DataStreamRevObjectSerializerV2 INSTANCE = new DataStreamRevObjectSerializerV2();
 
     private final FormatCommonV2 format;
 
@@ -47,11 +47,11 @@ public class DataStreamSerializationFactoryV2 implements RevObjectSerializer {
     private final Serializer<? extends RevObject>[] serializers = new Serializer[TYPE
             .values().length];
 
-    public DataStreamSerializationFactoryV2() {
+    public DataStreamRevObjectSerializerV2() {
         this(FormatCommonV2.INSTANCE);
     }
 
-    protected DataStreamSerializationFactoryV2(FormatCommonV2 format) {
+    protected DataStreamRevObjectSerializerV2(FormatCommonV2 format) {
         Preconditions.checkNotNull(format);
         this.format = format;
         serializers[TYPE.COMMIT.ordinal()] = new CommitSerializer(format);

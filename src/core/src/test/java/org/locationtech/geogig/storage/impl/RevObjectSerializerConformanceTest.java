@@ -76,7 +76,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 
-public abstract class ObjectSerializationFactoryTest {
+public abstract class RevObjectSerializerConformanceTest {
 
     protected RevObjectSerializer serializer;
 

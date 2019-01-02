@@ -24,7 +24,7 @@ import org.locationtech.geogig.storage.cache.CacheIdentifier;
 import org.locationtech.geogig.storage.cache.CacheKey;
 import org.locationtech.geogig.storage.cache.CacheStats;
 import org.locationtech.geogig.storage.cache.SharedCache;
-import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
+import org.locationtech.geogig.storage.datastream.v2_3.DataStreamRevObjectSerializerV2_3;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -66,7 +66,7 @@ public class CaffeineSharedCache implements SharedCache {
                 new ArrayBlockingQueue<Runnable>(nThreads), tf, sameThreadHandler);
     }
 
-    private static final RevObjectSerializer ENCODER = DataStreamSerializationFactoryV2_3.INSTANCE;// new FlatBuffersRevObjectSerializer();
+    private static final RevObjectSerializer ENCODER = DataStreamRevObjectSerializerV2_3.INSTANCE;// new FlatBuffersRevObjectSerializer();
 
     /**
      * Size of the L1 cache {@link CacheKey} -> {@link RevTree}

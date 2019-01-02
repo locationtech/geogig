@@ -24,7 +24,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.storage.text.TextSerializationFactory;
+import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Charsets;
@@ -42,7 +42,7 @@ import com.google.common.collect.Maps;
  */
 public class PatchSerializer {
 
-    private static TextSerializationFactory serializer = new TextSerializationFactory();
+    private static TextRevObjectSerializer serializer = new TextRevObjectSerializer();
 
     /**
      * Creates a patch object to apply on a GeoGig working tree

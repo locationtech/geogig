@@ -7,16 +7,16 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream.v2_3;
+package org.locationtech.geogig.storage.datastream;
 
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_2Test;
+import org.locationtech.geogig.storage.impl.RevObjectSerializerConformanceTest;
 
-public class DataStreamSerializationFactoryV2_3Test extends DataStreamSerializationFactoryV2_2Test {
+public class DataStreamRevObjectSerializerV2Test extends RevObjectSerializerConformanceTest {
 
     @Override
     protected RevObjectSerializer getObjectSerializingFactory() {
-        return DataStreamSerializationFactoryV2_3.INSTANCE;
+        return DataStreamRevObjectSerializerV2.INSTANCE;
     }
 
 }

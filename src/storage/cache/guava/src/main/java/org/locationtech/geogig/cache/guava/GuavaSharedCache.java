@@ -33,7 +33,7 @@ import org.locationtech.geogig.storage.cache.CacheIdentifier;
 import org.locationtech.geogig.storage.cache.CacheKey;
 import org.locationtech.geogig.storage.cache.CacheStats;
 import org.locationtech.geogig.storage.cache.SharedCache;
-import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
+import org.locationtech.geogig.storage.datastream.v2_3.DataStreamRevObjectSerializerV2_3;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -71,7 +71,7 @@ public class GuavaSharedCache implements SharedCache {
     }
 
     private static final RevObjectSerializer ENCODER = //
-            DataStreamSerializationFactoryV2_3.INSTANCE;
+            DataStreamRevObjectSerializerV2_3.INSTANCE;
 
     private RevObjectSerializer encoder = ENCODER;
 

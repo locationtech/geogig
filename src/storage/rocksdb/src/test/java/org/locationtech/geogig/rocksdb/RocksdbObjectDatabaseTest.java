@@ -25,7 +25,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.StorageType;
-import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
+import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 
@@ -107,10 +107,10 @@ public class RocksdbObjectDatabaseTest {
 
     @Test
     public void testSerializer() {
-        assertTrue(db.serializer() instanceof SerializationFactoryProxy);
+        assertTrue(db.serializer() instanceof RevObjectSerializerProxy);
         db.close();
         db.open();
-        assertTrue(db.serializer() instanceof SerializationFactoryProxy);
+        assertTrue(db.serializer() instanceof RevObjectSerializerProxy);
     }
 
 }

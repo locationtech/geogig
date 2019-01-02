@@ -38,17 +38,17 @@ import lombok.NonNull;
  * serialization formats in the same database transparently, so upgrading the serialization format
  * requires no extra maintenance.
  */
-public class SerializationFactoryProxy implements RevObjectSerializer {
+public class RevObjectSerializerProxy implements RevObjectSerializer {
 
     /**
      * The serialized object is added a header that's one unsigned byte with the index of the
      * corresponding factory in this array
      */
     private static final RevObjectSerializer[] DEFAULT_SUPPORTED_FORMATS = { //
-            new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE), //
-            new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE), //
-            new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE), //
-            new LZFSerializationFactory(DataStreamSerializationFactoryV2_2.INSTANCE)//
+            new RevObjectSerializerLZF(DataStreamRevObjectSerializerV1.INSTANCE), //
+            new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2.INSTANCE), //
+            new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2_1.INSTANCE), //
+            new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2_2.INSTANCE)//
     };
 
     /**
@@ -64,11 +64,11 @@ public class SerializationFactoryProxy implements RevObjectSerializer {
      */
     private final RevObjectSerializer writer;
 
-    public SerializationFactoryProxy() {
+    public RevObjectSerializerProxy() {
         this(DEFAULT_SUPPORTED_FORMATS);
     }
 
-    public SerializationFactoryProxy(@NonNull RevObjectSerializer... supportedFormats) {
+    public RevObjectSerializerProxy(@NonNull RevObjectSerializer... supportedFormats) {
         this.supportedFormats = supportedFormats;
         this.maxFormatCode = supportedFormats.length - 1;
         this.writer = supportedFormats[maxFormatCode];

@@ -15,7 +15,7 @@ import java.io.OutputStreamWriter;
 
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.storage.text.TextSerializationFactory;
+import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -38,7 +38,7 @@ public class CatObject extends AbstractGeoGigOp<CharSequence> {
         Preconditions.checkState(object != null);
         RevObject revObject = object.get();
 
-        TextSerializationFactory serializer = TextSerializationFactory.INSTANCE;
+        TextRevObjectSerializer serializer = TextRevObjectSerializer.INSTANCE;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         String s = "id\t" + revObject.getId().toString() + "\n";
         OutputStreamWriter streamWriter = new OutputStreamWriter(output, Charsets.UTF_8);

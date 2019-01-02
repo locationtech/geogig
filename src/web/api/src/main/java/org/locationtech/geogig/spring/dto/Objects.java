@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.springframework.http.MediaType;
 
 /**
@@ -30,7 +30,7 @@ import org.springframework.http.MediaType;
 public class Objects extends LegacyRepoResponse {
 
     private static final RevObjectSerializer SERIALIZER =
-            DataStreamSerializationFactoryV1.INSTANCE;
+            DataStreamRevObjectSerializerV1.INSTANCE;
 
     @XmlElement
     private RevObject revObject;

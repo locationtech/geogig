@@ -38,7 +38,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.geogig.test.performance.EnablePerformanceTestRule;
 import org.locationtech.jts.geom.Envelope;
@@ -150,7 +150,7 @@ public class RevTreeFormatPrefTest {
             try {
                 for (int i = 0; i < repeatCount; i++) {
                     out.reset();
-                    DataStreamSerializationFactoryV2.INSTANCE.write(orig, out);
+                    DataStreamRevObjectSerializerV2.INSTANCE.write(orig, out);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -160,7 +160,7 @@ public class RevTreeFormatPrefTest {
             byte[] v2data = out.toByteArray();
             s.reset().start();
             for (int i = 0; i < repeatCount; i++) {
-                RevTree d = (RevTree) DataStreamSerializationFactoryV2.INSTANCE
+                RevTree d = (RevTree) DataStreamRevObjectSerializerV2.INSTANCE
                         .read(RevTree.EMPTY_TREE_ID, new ByteArrayInputStream(v2data));
                 for (Node n : Iterables.concat(d.trees(), d.features())) {
                     n.getName();
@@ -201,7 +201,7 @@ public class RevTreeFormatPrefTest {
         {
             out = new ByteArrayOutputStream();
             try {
-                DataStreamSerializationFactoryV2.INSTANCE.write(orig, out);
+                DataStreamRevObjectSerializerV2.INSTANCE.write(orig, out);
                 ByteArrayOutputStream v2compressed = compress(out.toByteArray());
                 ByteArrayOutputStream v3compressed = compress(encoded);
                 System.err.printf(

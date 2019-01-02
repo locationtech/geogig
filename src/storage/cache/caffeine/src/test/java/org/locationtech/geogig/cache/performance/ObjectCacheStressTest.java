@@ -46,7 +46,7 @@ import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.cache.CacheIdentifier;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.cache.SharedCache;
-import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
+import org.locationtech.geogig.storage.datastream.v2_3.DataStreamRevObjectSerializerV2_3;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -100,7 +100,7 @@ public class ObjectCacheStressTest {
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
             // new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
             // DataStreamSerializationFactoryV2_2.INSTANCE//
-             DataStreamSerializationFactoryV2_3.INSTANCE//
+             DataStreamRevObjectSerializerV2_3.INSTANCE//
 //            new FlatBuffersRevObjectSerializer()//
     );
 

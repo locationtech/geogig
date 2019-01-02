@@ -20,16 +20,16 @@ import org.junit.Test;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
+import org.locationtech.geogig.storage.impl.RevObjectSerializerConformanceTest;
 
 /**
  *
  */
-public class TextSerializationFactoryTest extends ObjectSerializationFactoryTest {
+public class TextRevObjectSerializerTest extends RevObjectSerializerConformanceTest {
 
     @Override
     protected RevObjectSerializer getObjectSerializingFactory() {
-        return new TextSerializationFactory();
+        return new TextRevObjectSerializer();
     }
 
     @Test

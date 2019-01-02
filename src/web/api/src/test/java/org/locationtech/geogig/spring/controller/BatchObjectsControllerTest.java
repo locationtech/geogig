@@ -24,7 +24,7 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -110,7 +110,7 @@ public class BatchObjectsControllerTest extends AbstractControllerTest {
         // get an InputStream from the content
         ByteArrayInputStream bais = new ByteArrayInputStream(content);
         // get the Object serializer
-        final RevObjectSerializer serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        final RevObjectSerializer serialFac = DataStreamRevObjectSerializerV1.INSTANCE;
         // expected number of RevObjects to be read
         final int expectedNumRevObjects = 14;
         // actual number of RevObject read

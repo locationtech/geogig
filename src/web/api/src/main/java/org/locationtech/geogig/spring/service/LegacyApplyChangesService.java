@@ -28,7 +28,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -48,7 +48,7 @@ public class LegacyApplyChangesService extends AbstractRepositoryService {
         if (repository != null) {
             try {
                 // read in commit object
-                final RevObjectSerializer serializer = DataStreamSerializationFactoryV1.INSTANCE;
+                final RevObjectSerializer serializer = DataStreamRevObjectSerializerV1.INSTANCE;
                 RevCommit commit = (RevCommit) serializer.read(ObjectId.NULL, input); // I don't
                                                                                       // need to
                                                                                       // know the

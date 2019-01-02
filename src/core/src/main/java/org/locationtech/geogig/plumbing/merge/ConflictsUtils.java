@@ -22,7 +22,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2_2;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.geogig.storage.impl.PersistedIterable.Serializer;
@@ -165,14 +165,14 @@ public class ConflictsUtils {
             RevFeature feature = value.getFeature();
             out.writeUTF(path);
             MergeStatusBuilder.OID.write(out, featureTypeId);
-            DataStreamSerializationFactoryV2.INSTANCE.write(feature, out);
+            DataStreamRevObjectSerializerV2.INSTANCE.write(feature, out);
         }
 
         @Override
         public FeatureInfo read(DataInputStream in) throws IOException {
             String path = in.readUTF();
             ObjectId featureTypeId = MergeStatusBuilder.OID.read(in);
-            RevFeature feature = (RevFeature) DataStreamSerializationFactoryV2.INSTANCE.read(in);
+            RevFeature feature = (RevFeature) DataStreamRevObjectSerializerV2.INSTANCE.read(in);
             return FeatureInfo.insert(feature, featureTypeId, path);
         }
 

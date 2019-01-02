@@ -45,7 +45,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.impl.Blobs;
-import org.locationtech.geogig.storage.text.TextSerializationFactory;
+import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -576,7 +576,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 commitString.getBytes(Charsets.UTF_8));
         RevCommit revCommit;
         try {
-            revCommit = (RevCommit) TextSerializationFactory.INSTANCE.read(id, stream);
+            revCommit = (RevCommit) TextRevObjectSerializer.INSTANCE.read(id, stream);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to parse commit " + commitString, e);
         }

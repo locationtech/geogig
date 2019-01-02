@@ -14,11 +14,11 @@ package org.locationtech.geogig.storage.datastream;
  *
  * @see FormatCommonV2_2
  */
-public class DataStreamSerializationFactoryV2_2 extends DataStreamSerializationFactoryV2_1 {
+public class DataStreamRevObjectSerializerV2_2 extends DataStreamRevObjectSerializerV2_1 {
 
-    public static final DataStreamSerializationFactoryV2_2 INSTANCE = new DataStreamSerializationFactoryV2_2();
+    public static final DataStreamRevObjectSerializerV2_2 INSTANCE = new DataStreamRevObjectSerializerV2_2();
 
-    public DataStreamSerializationFactoryV2_2() {
+    public DataStreamRevObjectSerializerV2_2() {
         super(FormatCommonV2_2.INSTANCE);
     }
 

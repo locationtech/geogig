@@ -28,7 +28,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.locationtech.geogig.storage.datastream.FormatCommonV1;
 import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
@@ -79,7 +79,7 @@ public class FilteredChangesControllerTest extends AbstractControllerTest {
                 .andReturn().getResponse().getContentAsByteArray();
         // build an iterator for the content bytes
         FilteredChangesReader reader = new FilteredChangesReader(content,
-                DataStreamSerializationFactoryV1.INSTANCE);
+                DataStreamRevObjectSerializerV1.INSTANCE);
         while (reader.hasNext()) {
             DiffPacket diff = reader.next();
             // ensure the DiffEntry, RevObject and MetaData are not null

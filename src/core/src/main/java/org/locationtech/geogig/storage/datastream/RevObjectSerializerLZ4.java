@@ -38,7 +38,7 @@ import net.jpountz.xxhash.XXHashFactory;
  * <a href="https://github.com/lz4/lz4-java/issues/48">lz-java issue #48</a>.
  */
 @Beta
-public class LZ4SerializationFactory implements RevObjectSerializer {
+public class RevObjectSerializerLZ4 implements RevObjectSerializer {
 
     // cache factory to avoid thread contention when looking up for the fastest instance on some LZ4
     // lib synchronized blocks
@@ -52,7 +52,7 @@ public class LZ4SerializationFactory implements RevObjectSerializer {
 
     private final RevObjectSerializer factory;
 
-    public LZ4SerializationFactory(final RevObjectSerializer factory) {
+    public RevObjectSerializerLZ4(final RevObjectSerializer factory) {
         Preconditions.checkNotNull(factory);
         this.factory = factory;
     }

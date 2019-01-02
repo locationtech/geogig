@@ -22,7 +22,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.storage.text.TextSerializationFactory;
+import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
@@ -208,7 +208,7 @@ public class Patch {
      */
     @Override
     public String toString() {
-        TextSerializationFactory serializer = TextSerializationFactory.INSTANCE;
+        TextRevObjectSerializer serializer = TextRevObjectSerializer.INSTANCE;
         StringBuilder sb = new StringBuilder();
         for (FeatureInfo feature : addedFeatures) {
             String path = feature.getPath();

@@ -23,7 +23,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -65,7 +65,7 @@ public class ObjectsControllerTest extends AbstractControllerTest {
         Iterator<RevCommit> call = repo.command(LogOp.class).call();
         assertTrue(call.hasNext());
         // get the Object serializer
-        final RevObjectSerializer serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        final RevObjectSerializer serialFac = DataStreamRevObjectSerializerV1.INSTANCE;
         while (call.hasNext()) {
             RevCommit next = call.next();
             // serialize the RevCommit

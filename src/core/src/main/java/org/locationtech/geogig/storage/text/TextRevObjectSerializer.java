@@ -134,9 +134,9 @@ import com.google.common.collect.Lists;
  * ...
  * </pre>
  */
-public class TextSerializationFactory implements RevObjectSerializer {
+public class TextRevObjectSerializer implements RevObjectSerializer {
 
-    public static final TextSerializationFactory INSTANCE = new TextSerializationFactory();
+    public static final TextRevObjectSerializer INSTANCE = new TextRevObjectSerializer();
 
     /**
      * @return {@code false}, this serializer does not support reading back multiple objects from a

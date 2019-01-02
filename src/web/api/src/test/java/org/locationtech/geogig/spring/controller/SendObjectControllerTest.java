@@ -29,7 +29,7 @@ import org.locationtech.geogig.model.RevCommitBuilder;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -77,7 +77,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         Iterator<RevCommit> call = repo.command(LogOp.class).call();
         assertTrue(call.hasNext());
         // get the Object serializer
-        final RevObjectSerializer serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        final RevObjectSerializer serialFac = DataStreamRevObjectSerializerV1.INSTANCE;
         while (call.hasNext()) {
             RevCommit next = call.next();
             // serialize the RevCommit
@@ -107,7 +107,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         Iterator<RevCommit> call = repo.command(LogOp.class).call();
         assertTrue(call.hasNext());
         // get the Object serializer
-        final RevObjectSerializer serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        final RevObjectSerializer serialFac = DataStreamRevObjectSerializerV1.INSTANCE;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         while (call.hasNext()) {
             RevCommit next = call.next();
@@ -149,7 +149,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
                 RevCommit.class);
         assertNull("Modified commit should not be in the repository yet.", preCheck);
         // get the Object serializer
-        final RevObjectSerializer serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        final RevObjectSerializer serialFac = DataStreamRevObjectSerializerV1.INSTANCE;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // write the commit OID
         byte[] commitOid = sendObjectCommit.getId().getRawValue();
@@ -189,7 +189,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
                 RevCommit.class);
         assertNull("Modified commit should not be in the repository yet.", preCheck);
         // get the Object serializer
-        final RevObjectSerializer serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        final RevObjectSerializer serialFac = DataStreamRevObjectSerializerV1.INSTANCE;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // wrap it with GZIP
         GZIPOutputStream gzos = new GZIPOutputStream(baos, true);

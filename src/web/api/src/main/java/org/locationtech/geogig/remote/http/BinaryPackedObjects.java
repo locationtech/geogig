@@ -31,7 +31,7 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public final class BinaryPackedObjects {
 
     public BinaryPackedObjects(ObjectStore database) {
         this.database = database;
-        this.marshaller = DataStreamSerializationFactoryV1.INSTANCE;
+        this.marshaller = DataStreamRevObjectSerializerV1.INSTANCE;
     }
 
     /**

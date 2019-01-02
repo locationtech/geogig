@@ -28,7 +28,7 @@ import org.locationtech.geogig.remote.http.BinaryPackedChanges;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.locationtech.geogig.test.TestData;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -68,7 +68,7 @@ public class ApplyChangesControllerTest extends AbstractControllerTest {
         assertTrue(masterCommits.hasNext());
         RevCommit masterCommit = masterCommits.next();
         // get the Object serializer
-        final RevObjectSerializer serialFac = DataStreamSerializationFactoryV1.INSTANCE;
+        final RevObjectSerializer serialFac = DataStreamRevObjectSerializerV1.INSTANCE;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serialFac.write(masterCommit, baos);
         // number of parent IDs?

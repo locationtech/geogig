@@ -31,7 +31,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.locationtech.geogig.storage.datastream.FormatCommonV1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public final class BinaryPackedChanges {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryPackedChanges.class);
 
-    private static final DataStreamSerializationFactoryV1 serializer = DataStreamSerializationFactoryV1.INSTANCE;
+    private static final DataStreamRevObjectSerializerV1 serializer = DataStreamRevObjectSerializerV1.INSTANCE;
 
     private final Repository repository;
 

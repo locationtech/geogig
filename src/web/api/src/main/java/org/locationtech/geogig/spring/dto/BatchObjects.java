@@ -18,7 +18,7 @@ import org.locationtech.geogig.remote.http.BinaryPackedObjects;
 import org.locationtech.geogig.remotes.internal.Deduplicator;
 import org.locationtech.geogig.remotes.internal.ObjectFunnel;
 import org.locationtech.geogig.remotes.internal.ObjectFunnels;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.springframework.http.MediaType;
 
 import com.google.common.io.CountingOutputStream;
@@ -86,7 +86,7 @@ public class BatchObjects extends LegacyRepoResponse {
             OutputStream output = counting;
             try {
                 ObjectFunnel funnel;
-                funnel = ObjectFunnels.newFunnel(output, DataStreamSerializationFactoryV1.INSTANCE);
+                funnel = ObjectFunnels.newFunnel(output, DataStreamRevObjectSerializerV1.INSTANCE);
                 packer.write(funnel, want, have, false, deduplicator);
                 counting.flush();
                 funnel.close();

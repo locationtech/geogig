@@ -30,8 +30,8 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
-import org.locationtech.geogig.storage.datastream.v2_3.DataStreamSerializationFactoryV2_3;
+import org.locationtech.geogig.storage.datastream.RevObjectSerializerLZ4;
+import org.locationtech.geogig.storage.datastream.v2_3.DataStreamRevObjectSerializerV2_3;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -70,7 +70,7 @@ public class ObjectCacheStressTest {
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
-            new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
+            new RevObjectSerializerLZ4(DataStreamRevObjectSerializerV2_3.INSTANCE)//
     );
 
     public static void main(String[] args) {

@@ -65,12 +65,12 @@ import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
-public class DataStreamSerializationFactoryV1 implements RevObjectSerializer {
+public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
 
     /**
      * factory singleton
      */
-    public static final DataStreamSerializationFactoryV1 INSTANCE = new DataStreamSerializationFactoryV1();
+    public static final DataStreamRevObjectSerializerV1 INSTANCE = new DataStreamRevObjectSerializerV1();
 
     private static final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = Maps
             .newEnumMap(TYPE.class);

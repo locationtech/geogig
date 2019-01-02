@@ -53,7 +53,7 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -273,7 +273,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                 final boolean traverseCommits = false;
 
                 Stopwatch sw = Stopwatch.createStarted();
-                RevObjectSerializer serializer = DataStreamSerializationFactoryV1.INSTANCE;
+                RevObjectSerializer serializer = DataStreamRevObjectSerializerV1.INSTANCE;
                 SendObjectsConnectionFactory outFactory;
                 ObjectFunnel objectFunnel;
 

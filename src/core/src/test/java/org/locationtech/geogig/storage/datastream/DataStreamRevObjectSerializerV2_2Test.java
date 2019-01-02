@@ -18,14 +18,14 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
+import org.locationtech.geogig.storage.impl.RevObjectSerializerConformanceTest;
 import org.locationtech.jts.geom.Envelope;
 
-public class DataStreamSerializationFactoryV2_2Test extends ObjectSerializationFactoryTest {
+public class DataStreamRevObjectSerializerV2_2Test extends RevObjectSerializerConformanceTest {
 
     @Override
     protected RevObjectSerializer getObjectSerializingFactory() {
-        return DataStreamSerializationFactoryV2_2.INSTANCE;
+        return DataStreamRevObjectSerializerV2_2.INSTANCE;
     }
 
     // exact bounds check

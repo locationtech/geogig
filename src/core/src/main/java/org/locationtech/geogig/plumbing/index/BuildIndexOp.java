@@ -18,7 +18,7 @@ import java.util.Set;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;

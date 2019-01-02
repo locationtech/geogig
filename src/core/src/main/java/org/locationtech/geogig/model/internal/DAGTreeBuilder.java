@@ -41,7 +41,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;

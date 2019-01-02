@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.QuadTreeTestSupport;
 import org.locationtech.geogig.plumbing.index.IndexTestSupport;
 import org.locationtech.jts.geom.Envelope;

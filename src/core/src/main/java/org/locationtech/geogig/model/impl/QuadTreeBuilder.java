@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
 import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
 import org.locationtech.geogig.storage.ObjectStore;

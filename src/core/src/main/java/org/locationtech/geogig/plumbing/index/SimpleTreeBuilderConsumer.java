@@ -17,7 +17,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.AbstractConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;

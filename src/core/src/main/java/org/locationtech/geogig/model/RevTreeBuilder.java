@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.model.impl;
+package org.locationtech.geogig.model;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,12 +15,8 @@ import java.util.SortedSet;
 import java.util.function.BooleanSupplier;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.CanonicalNodeNameOrder;
-import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObjectFactory;
-import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;

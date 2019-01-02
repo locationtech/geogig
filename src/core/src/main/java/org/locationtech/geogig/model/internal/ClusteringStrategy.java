@@ -33,7 +33,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 
 import com.google.common.annotations.VisibleForTesting;

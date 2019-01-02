@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import org.locationtech.geogig.model.RevTreeBuilder;
+
 public class LegacyTreeBuilderTest extends CanonicalTreeBuilderTest {
 
     @SuppressWarnings("deprecation")

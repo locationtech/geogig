@@ -30,6 +30,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;

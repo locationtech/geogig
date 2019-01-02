@@ -26,7 +26,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindOrCreateSubtree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.Context;

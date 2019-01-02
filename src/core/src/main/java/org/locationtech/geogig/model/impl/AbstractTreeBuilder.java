@@ -17,6 +17,7 @@ import java.util.function.BooleanSupplier;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
 import org.locationtech.geogig.model.internal.DAGTreeBuilder;
 import org.locationtech.geogig.storage.ObjectStore;

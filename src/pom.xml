@@ -654,6 +654,12 @@
                         <include>src/main/resources/**/*</include>
                       </includes>
                     </resource>
+                    <resource>
+                      <directory>${basedir}</directory>
+                      <includes>
+                        <include>src/main/generated-sources/**/*</include>
+                      </includes>
+                    </resource>
                   </resources>
                 </configuration>
               </execution>

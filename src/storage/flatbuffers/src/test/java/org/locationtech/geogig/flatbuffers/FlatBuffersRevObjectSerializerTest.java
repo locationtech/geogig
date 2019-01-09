@@ -9,11 +9,13 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
-public class FlatBuffersRevObjectSerializerTest{
-//extends ObjectSerializationFactoryTest {
-//
-//    protected @Override RevObjectSerializer getObjectSerializingFactory() {
-//        return new FlatBuffersRevObjectSerializer();
-//    }
-//
+import org.locationtech.geogig.storage.RevObjectSerializer;
+import org.locationtech.geogig.storage.impl.RevObjectSerializerConformanceTest;
+
+public class FlatBuffersRevObjectSerializerTest extends RevObjectSerializerConformanceTest {
+
+    protected @Override RevObjectSerializer newObjectSerializer() {
+        return new FlatBuffersRevObjectSerializer();
+    }
+
 }

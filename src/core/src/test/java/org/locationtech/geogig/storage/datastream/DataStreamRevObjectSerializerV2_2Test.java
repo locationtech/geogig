@@ -24,7 +24,7 @@ import org.locationtech.jts.geom.Envelope;
 public class DataStreamRevObjectSerializerV2_2Test extends RevObjectSerializerConformanceTest {
 
     @Override
-    protected RevObjectSerializer getObjectSerializingFactory() {
+    protected RevObjectSerializer newObjectSerializer() {
         return DataStreamRevObjectSerializerV2_2.INSTANCE;
     }
 

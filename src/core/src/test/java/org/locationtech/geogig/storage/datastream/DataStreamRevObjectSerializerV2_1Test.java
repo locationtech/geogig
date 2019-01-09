@@ -15,7 +15,7 @@ import org.locationtech.geogig.storage.impl.RevObjectSerializerConformanceTest;
 public class DataStreamRevObjectSerializerV2_1Test extends RevObjectSerializerConformanceTest {
 
     @Override
-    protected RevObjectSerializer getObjectSerializingFactory() {
+    protected RevObjectSerializer newObjectSerializer() {
         return DataStreamRevObjectSerializerV2_1.INSTANCE;
     }
 

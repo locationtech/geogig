@@ -127,7 +127,7 @@ public abstract class RevObjectSerializerConformanceTest {
 
     @Before
     public void before() throws Exception {
-        this.serializer = getObjectSerializingFactory();
+        this.serializer = newObjectSerializer();
         ObjectId treeId = RevObjectTestSupport.hashString("treeid");
         testCommit = testCommit(treeId, "groldan", "groldan@boundlessgeo.com", 5000L, "jd",
                 "jd@lmnsolutions.com", 10000L, "test message",
@@ -193,7 +193,7 @@ public abstract class RevObjectSerializerConformanceTest {
 
     }
 
-    protected abstract RevObjectSerializer getObjectSerializingFactory();
+    protected abstract RevObjectSerializer newObjectSerializer();
 
     @Test
     public void testCommitSerialization() throws IOException {

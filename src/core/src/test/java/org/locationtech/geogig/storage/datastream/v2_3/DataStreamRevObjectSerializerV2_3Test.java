@@ -15,7 +15,7 @@ import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV
 public class DataStreamRevObjectSerializerV2_3Test extends DataStreamRevObjectSerializerV2_2Test {
 
     @Override
-    protected RevObjectSerializer getObjectSerializingFactory() {
+    protected RevObjectSerializer newObjectSerializer() {
         return DataStreamRevObjectSerializerV2_3.INSTANCE;
     }
 

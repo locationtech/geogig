@@ -9,17 +9,8 @@
  */
 package org.locationtech.geogig.tempstorage.rocksdb;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-
-import org.junit.Test;
 import org.locationtech.geogig.model.internal.CanonicalClusteringStrategyTest;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.tempstorage.rocksdb.RocksdbDAGStorageProvider;
-
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 
 public class CanonicalClusteringStrategyRocksdbStorageTest extends CanonicalClusteringStrategyTest {
 

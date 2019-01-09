@@ -9,9 +9,20 @@
  */
 package org.locationtech.geogig.model.internal;
 
-interface DAGStorageProviderFactory {
+import org.locationtech.geogig.model.PriorityService;
+import org.locationtech.geogig.model.ServiceFinder;
+import org.locationtech.geogig.storage.ObjectStore;
 
-    public DAGStorageProvider canonical();
+import lombok.NonNull;
 
-    public DAGStorageProvider quadtree();
+public interface DAGStorageProviderFactory extends PriorityService {
+
+    public static final String ENV_VARIABLE = "TEMP_STORAGE_FACTORY";
+
+    public DAGStorageProvider newInstance(@NonNull ObjectStore treeStore);
+
+    public static DAGStorageProviderFactory defaultInstance() {
+        return new ServiceFinder().environmentVariable(ENV_VARIABLE).systemProperty(ENV_VARIABLE)
+                .lookupDefaultService(DAGStorageProviderFactory.class);
+    }
 }

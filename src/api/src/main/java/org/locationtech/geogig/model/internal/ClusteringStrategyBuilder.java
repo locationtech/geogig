@@ -13,15 +13,16 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeOrdering;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import lombok.NonNull;
 
 public abstract class ClusteringStrategyBuilder {
 
@@ -54,24 +55,19 @@ public abstract class ClusteringStrategyBuilder {
         }
     }
 
-    private static final Class<? extends DAGStorageProvider> DAGSTORECLASS = HeapDAGStorageProvider.class;
+    private static final DAGStorageProviderFactory DAGSTOREFACTORY = DAGStorageProviderFactory
+            .defaultInstance();
 
     public @VisibleForTesting static String getDAGStoreName() {
-        return DAGSTORECLASS.getSimpleName();
+        return DAGSTOREFACTORY.getClass().getSimpleName();
     }
 
     protected DAGStorageProvider createDAGStoreageProvider() {
-        // return new CachingDAGStorageProvider(treeStore);
         // return new LMDBDAGStorageProvider(treeStore);
         // return new HeapDAGStorageProvider(treeStore);
         // return new RocksdbDAGStorageProvider(treeStore);
         DAGStorageProvider provider;
-        try {
-            provider = DAGSTORECLASS.getConstructor(ObjectStore.class).newInstance(treeStore);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            throw new RuntimeException(e);
-        }
+        provider = DAGSTOREFACTORY.newInstance(treeStore);
         return provider;
     }
 
@@ -85,8 +81,8 @@ public abstract class ClusteringStrategyBuilder {
         return new QuadTreeClusteringStrategyBuilder(treeStore);
     }
 
-    public static QuadTreeClusteringStrategy quadTreeOrdering(Envelope maxBounds) {
-        return new QuadTreeClusteringStrategyBuilder().maxBounds(maxBounds).build();
+    public static NodeOrdering quadTreeOrdering(Envelope maxBounds) {
+        return QuadTreeClusteringStrategyBuilder.buildNodeOrdering(maxBounds);
     }
 
     public static class CanonicalClusteringStrategyBuilder extends ClusteringStrategyBuilder {
@@ -146,6 +142,14 @@ public abstract class ClusteringStrategyBuilder {
         @Override
         public QuadTreeClusteringStrategy build() {
             return (QuadTreeClusteringStrategy) super.build();
+        }
+
+        public static NodeOrdering buildNodeOrdering(@NonNull Envelope maxBounds) {
+            Envelope preciseBounds = RevObjects.makePrecise(maxBounds);
+            int maxDepth = Quadrant.findMaxDepth(preciseBounds,
+                    QuadTreeClusteringStrategyBuilder.ABSOLUTE_MAX_DEPTH);
+            return new QuadTreeClusteringStrategy(RevTree.EMPTY, new HeapDAGStorageProvider(null),
+                    preciseBounds, maxDepth);
         }
 
         @Override

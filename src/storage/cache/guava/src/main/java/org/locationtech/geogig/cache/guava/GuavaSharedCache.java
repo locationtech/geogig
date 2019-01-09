@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.flatbuffers.FlatBuffersRevObjectSerializer;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.storage.cache.CacheIdentifier;
 import org.locationtech.geogig.storage.cache.CacheKey;
 import org.locationtech.geogig.storage.cache.CacheStats;
 import org.locationtech.geogig.storage.cache.SharedCache;
-import org.locationtech.geogig.storage.datastream.v2_3.DataStreamRevObjectSerializerV2_3;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -70,8 +70,7 @@ public class GuavaSharedCache implements SharedCache {
                 new ArrayBlockingQueue<Runnable>(nThreads), tf, sameThreadHandler);
     }
 
-    private static final RevObjectSerializer ENCODER = //
-            DataStreamRevObjectSerializerV2_3.INSTANCE;
+    private static final RevObjectSerializer ENCODER = new FlatBuffersRevObjectSerializer();
 
     private RevObjectSerializer encoder = ENCODER;
 

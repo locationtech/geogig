@@ -47,6 +47,11 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-flatbuffers</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-geotools</artifactId>
       <version>${project.version}</version>
     </dependency>

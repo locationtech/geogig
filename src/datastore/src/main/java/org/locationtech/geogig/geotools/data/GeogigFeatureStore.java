@@ -28,7 +28,7 @@ import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentFeatureStore;
 import org.geotools.data.store.ContentState;
 import org.geotools.data.store.FeatureIteratorIterator;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.FeatureReaderIterator;

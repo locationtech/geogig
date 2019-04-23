@@ -29,7 +29,7 @@ import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.geotools.data.store.FeatureIteratorIterator;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.DecoratingFeature;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;

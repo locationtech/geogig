@@ -10,7 +10,7 @@
 package org.locationtech.geogig.ql.porcelain;
 
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.collection.DecoratingSimpleFeatureCollection;
 import org.geotools.feature.collection.DecoratingSimpleFeatureIterator;

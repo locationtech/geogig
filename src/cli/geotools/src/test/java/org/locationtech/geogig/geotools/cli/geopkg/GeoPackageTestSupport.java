@@ -43,7 +43,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;

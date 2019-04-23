@@ -17,7 +17,7 @@ import java.util.Iterator;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.collection.BaseFeatureCollection;

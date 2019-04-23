@@ -39,17 +39,17 @@
       <version>${project.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-data</artifactId>
-      <version>${gt.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.media</groupId>
-          <artifactId>jai_core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.geotools</groupId>-->
+<!--      <artifactId>gt-data</artifactId>-->
+<!--      <version>${gt.version}</version>-->
+<!--      <exclusions>-->
+<!--        <exclusion>-->
+<!--          <groupId>javax.media</groupId>-->
+<!--          <artifactId>jai_core</artifactId>-->
+<!--        </exclusion>-->
+<!--      </exclusions>-->
+<!--    </dependency>-->
     
     <!-- Test scope dependencies -->
     <dependency>

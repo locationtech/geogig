@@ -22,7 +22,7 @@ import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Query;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.Test;

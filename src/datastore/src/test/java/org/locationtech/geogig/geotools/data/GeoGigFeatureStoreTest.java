@@ -18,7 +18,7 @@ import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.FeatureCollection;
 import org.junit.Rule;
 import org.junit.Test;

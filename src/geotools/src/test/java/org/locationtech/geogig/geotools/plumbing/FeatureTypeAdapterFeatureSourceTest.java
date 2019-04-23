@@ -14,7 +14,7 @@ import java.util.List;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.AbstractReferenceSystem;

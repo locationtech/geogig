@@ -11,7 +11,7 @@ package org.locationtech.geogig.geotools.data.reader;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.Query;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.filter.expression.PropertyAccessor;
 import org.geotools.filter.expression.PropertyAccessorFactory;
 import org.geotools.util.Converters;

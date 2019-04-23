@@ -89,12 +89,12 @@
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-main</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.media</groupId>
-          <artifactId>jai_core</artifactId>
-        </exclusion>
-      </exclusions>
+<!--      <exclusions>-->
+<!--        <exclusion>-->
+<!--          <groupId>javax.media</groupId>-->
+<!--          <artifactId>jai_core</artifactId>-->
+<!--        </exclusion>-->
+<!--      </exclusions>-->
     </dependency>
     <dependency>
       <groupId>org.geotools</groupId>
@@ -147,18 +147,18 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-data</artifactId>
-      <version>${gt.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.media</groupId>
-          <artifactId>jai_core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.geotools</groupId>-->
+<!--      <artifactId>gt-data</artifactId>-->
+<!--      <version>${gt.version}</version>-->
+<!--      <scope>test</scope>-->
+<!--      <exclusions>-->
+<!--        <exclusion>-->
+<!--          <groupId>javax.media</groupId>-->
+<!--          <artifactId>jai_core</artifactId>-->
+<!--        </exclusion>-->
+<!--      </exclusions>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>

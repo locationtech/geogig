@@ -37,7 +37,7 @@ import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
-import org.geotools.renderer.ScreenMap;
+import org.geotools.data.util.ScreenMap;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.Bounded;

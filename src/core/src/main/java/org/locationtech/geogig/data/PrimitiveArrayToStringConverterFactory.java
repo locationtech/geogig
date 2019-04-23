@@ -14,7 +14,7 @@ import static org.locationtech.geogig.model.FieldType.UNKNOWN;
 import java.lang.reflect.Array;
 import java.util.List;
 
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.util.Converter;
 import org.geotools.util.ConverterFactory;
 import org.geotools.util.Converters;

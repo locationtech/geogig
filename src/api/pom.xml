@@ -35,12 +35,12 @@
       <!--NOTE: only needed until removing geotools dependencies from WorkingTree -->
       <groupId>org.geotools</groupId>
       <artifactId>gt-main</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.media</groupId>
-          <artifactId>jai_core</artifactId>
-        </exclusion>
-      </exclusions>
+<!--      <exclusions>-->
+<!--        <exclusion>-->
+<!--          <groupId>javax.media</groupId>-->
+<!--          <artifactId>jai_core</artifactId>-->
+<!--        </exclusion>-->
+<!--      </exclusions>-->
     </dependency>
 
     <dependency>

@@ -23,7 +23,7 @@ import org.geotools.data.memory.MemoryFeatureStore;
 import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.data.store.ContentState;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.feature.IllegalAttributeException;

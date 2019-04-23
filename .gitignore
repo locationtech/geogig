@@ -2,6 +2,7 @@ target
 .classpath
 .project
 .settings
+.idea/
 *~
 bin/
 #when run from within eclipse, cucumber tests create report folders in the project dir instead of it's target/ directory

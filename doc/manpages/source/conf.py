@@ -97,12 +97,12 @@ copyright = u'Boundless <http://boundlessgeo.com>'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '1.3'
+version = '2.0'
 # The full version, including alpha/beta/rc tags.
-release = '1.3-SNAPSHOT'
+release = '2.0-SNAPSHOT'
 # Users don't need to see the "SNAPSHOT" notation when it's there
 if release.find('SNAPSHOT') != -1:
-   release = '1.3'
+   release = '2.0'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

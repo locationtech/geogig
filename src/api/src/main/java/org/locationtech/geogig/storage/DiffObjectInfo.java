@@ -16,6 +16,8 @@ import org.locationtech.geogig.model.RevObject;
 
 import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
+
 public class DiffObjectInfo<T extends RevObject> {
 
     private final DiffEntry diffEntry;
@@ -24,8 +26,7 @@ public class DiffObjectInfo<T extends RevObject> {
 
     private final T newValue;
 
-    public DiffObjectInfo(DiffEntry diffEntry, T oldValue, T newValue) {
-        Preconditions.checkNotNull(diffEntry);
+    public DiffObjectInfo(@NonNull DiffEntry diffEntry, T oldValue, T newValue) {
         Preconditions.checkArgument(oldValue != null || newValue != null);
         this.diffEntry = diffEntry;
         this.oldValue = oldValue;

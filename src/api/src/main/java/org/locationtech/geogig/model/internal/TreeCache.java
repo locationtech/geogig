@@ -27,6 +27,8 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import lombok.NonNull;
+
 public class TreeCache {
 
     private final AtomicInteger idSequence = new AtomicInteger();
@@ -70,15 +72,12 @@ public class TreeCache {
         return tree;
     }
 
-    public RevTree resolve(final int leafRevTreeId) {
-        RevTree tree;
+    public @NonNull RevTree resolve(final int leafRevTreeId) {
         try {
-            tree = cache.get(Integer.valueOf(leafRevTreeId));
+            return cache.get(Integer.valueOf(leafRevTreeId));
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
-        Preconditions.checkNotNull(tree);
-        return tree;
     }
 
     public Integer getTreeId(RevTree tree) {

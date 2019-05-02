@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -32,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Optional;
 import com.google.common.base.Preconditions;
+
+import lombok.NonNull;
 
 /**
  * This class determines how the quadtree clustering strategy puts features in the tree.
@@ -97,13 +98,11 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
     }
 
     @Override
-    protected void mergeRoot(final DAG root) {
+    protected void mergeRoot(final @NonNull DAG root) {
         if (!ENABLE_EXPAND_COLLAPSE) {
             super.mergeRoot(root);
             return;
         }
-        checkNotNull(root);
-
         if (root.getState() == STATE.INITIALIZED) {
             final ObjectId originalTreeId = root.originalTreeId();
             final RevTree originalTree = getOriginalTree(originalTreeId);

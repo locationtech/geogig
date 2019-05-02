@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -41,6 +40,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import lombok.NonNull;
+
 /**
  * Base class for strategy objects that define the internal structure of a {@link RevTree}.
  * 
@@ -65,9 +66,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
     @VisibleForTesting
     final DAGCache dagCache;
 
-    protected ClusteringStrategy(RevTree original, DAGStorageProvider storageProvider) {
-        checkNotNull(original);
-        checkNotNull(storageProvider);
+    protected ClusteringStrategy(@NonNull RevTree original, @NonNull DAGStorageProvider storageProvider) {
         this.original = original;
         this.storageProvider = storageProvider;
         this.dagCache = new DAGCache(storageProvider);
@@ -251,10 +250,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
      *        {@code depth - 1}
      * @return
      */
-    protected int put(final DAG dag, final NodeId nodeId, final boolean remove) {
-        checkNotNull(dag);
-        checkNotNull(nodeId);
-
+    protected int put(final @NonNull DAG dag, final @NonNull NodeId nodeId, final boolean remove) {
         final int dagDepth = dag.getId().depthLength();
 
         mergeRoot(dag);
@@ -290,8 +286,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             if (size > normalizedSizeLimit) {
                 ListMultimap<TreeId, NodeId> promotions = ArrayListMultimap.create();
                 dag.forEachChild((childId) -> {
-                    TreeId bucketId = computeBucketId(childId, dagDepth + 1);
-                    checkNotNull(bucketId);
+                    final @NonNull TreeId bucketId = computeBucketId(childId, dagDepth + 1);
                     promotions.put(bucketId, childId);
                 });
 
@@ -399,9 +394,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
      * @return
      * @return
      */
-    protected void mergeRoot(DAG root) {
-        checkNotNull(root);
-
+    protected void mergeRoot(@NonNull DAG root) {
         if (root.getState() == STATE.INITIALIZED) {
 
             final RevTree original = getOriginalTree(root.originalTreeId());
@@ -457,7 +450,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         return original;
     }
 
-    TreeId computeBucketId(final NodeId nodeId, final int childDepth) {
+    @NonNull TreeId computeBucketId(final NodeId nodeId, final int childDepth) {
         byte[] treeId = new byte[childDepth];
 
         int unpromotableDepthIndex = -1;
@@ -590,8 +583,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
 
             Map<TreeId, DAG> toSave = new HashMap<>();
             for (TreeId id : dirty) {
-                DAG saveme = treeBuff.remove(id);
-                checkNotNull(saveme);
+                final @NonNull DAG saveme = treeBuff.remove(id);
                 toSave.put(id, saveme);
             }
             dirty.clear();

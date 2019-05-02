@@ -21,6 +21,8 @@ import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInts;
 import com.google.common.primitives.UnsignedLongs;
 
+import lombok.NonNull;
+
 /**
  * A unique identifier for a {@link RevObject}, which is created by passing a {@link HashFunction}
  * to {@link HashObjectFunnels}.
@@ -180,8 +182,7 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      * @return the object id represented by its string form, this method is the inverse of
      *         {@link #toString()}
      */
-    public static ObjectId valueOf(final String hash) {
-        Preconditions.checkNotNull(hash);
+    public static ObjectId valueOf(final @NonNull String hash) {
         Preconditions.checkArgument(hash.length() == NUM_CHARS, hash,
                 String.format("ObjectId.valueOf: Invalid hash string %s", hash));
         //@formatter:off
@@ -201,8 +202,7 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      * @param hash the string to convert
      * @return the byte array represented by its string form
      */
-    public static byte[] toRaw(final String hash) {
-        Preconditions.checkNotNull(hash);
+    public static byte[] toRaw(final @NonNull String hash) {
         for (int i = 0; i < hash.length(); i++) {
             char c = hash.charAt(i);
             if (-1 == Character.digit(c, 16)) {

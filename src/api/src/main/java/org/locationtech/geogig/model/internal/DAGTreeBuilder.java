@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -49,6 +48,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSortedSet;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -174,12 +174,8 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
         return build(clusteringStrategy, targetStore, () -> false);
     }
 
-    public static @Nullable RevTree build(final ClusteringStrategy clusteringStrategy,
-            final ObjectStore targetStore, final BooleanSupplier abortFlag) {
-        checkNotNull(clusteringStrategy);
-        checkNotNull(targetStore);
-        checkNotNull(abortFlag);
-
+    public static @Nullable RevTree build(final @NonNull ClusteringStrategy clusteringStrategy,
+            final @NonNull ObjectStore targetStore, final @NonNull BooleanSupplier abortFlag) {
         SharedState state = new SharedState(targetStore, clusteringStrategy, abortFlag);
 
         final DAG root = clusteringStrategy.buildRoot();
@@ -260,9 +256,8 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
 
             final List<DAG> mutableBuckets;
             {
-                final Set<TreeId> dagBuckets = new HashSet<>();
+                final @NonNull Set<TreeId> dagBuckets = new HashSet<>();
                 root.forEachBucket(dagBuckets::add);
-                checkNotNull(dagBuckets);
                 mutableBuckets = this.state.clusteringStrategy.getDagTrees(dagBuckets);
                 checkState(dagBuckets.size() == mutableBuckets.size());
             }

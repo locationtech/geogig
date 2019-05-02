@@ -16,6 +16,8 @@ import org.locationtech.geogig.model.RevFeatureType;
 
 import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
+
 /**
  * A class to compactly store information about a feature, including its path and feature type. This
  * is to be used in the context of applying patches or performing a merge operation, where this type
@@ -51,15 +53,11 @@ public class FeatureInfo {
         return isDelete;
     }  
 
-    public static FeatureInfo insert(RevFeature feature, ObjectId featureTypeId, String path) {
-        Preconditions.checkNotNull(feature);
-        Preconditions.checkNotNull(featureTypeId);
-        Preconditions.checkNotNull(path);
+    public static FeatureInfo insert(@NonNull RevFeature feature, @NonNull ObjectId featureTypeId, @NonNull String path) {
         return new FeatureInfo(feature, featureTypeId, path, false);
     }
 
-    public static FeatureInfo delete(final String path) {
-        Preconditions.checkNotNull(path);
+    public static FeatureInfo delete(final @NonNull String path) {
         return new FeatureInfo(null, null, path, true);
     }
 

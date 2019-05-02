@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.storage;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevObject;
+
+import lombok.NonNull;
 
 public class ObjectInfo<T extends RevObject> {
 
@@ -38,10 +38,7 @@ public class ObjectInfo<T extends RevObject> {
         return object;
     }
 
-    public static <T extends RevObject> ObjectInfo<T> of(NodeRef ref, T obj) {
-        checkNotNull(ref, "ref");
-        checkNotNull(obj, "obj");
-
+    public static <T extends RevObject> ObjectInfo<T> of(@NonNull NodeRef ref, @NonNull T obj) {
         return new ObjectInfo<T>(ref, obj);
     }
 }

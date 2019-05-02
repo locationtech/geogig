@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model;
 
 import java.io.Serializable;
+import java.util.Comparator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
@@ -93,7 +94,7 @@ import com.google.common.primitives.UnsignedLong;
  * 
  * @since 1.0
  */
-public final class CanonicalNodeNameOrder extends Ordering<String> implements Serializable {
+public final class CanonicalNodeNameOrder implements Comparator<String>, Serializable {
 
     private static final long serialVersionUID = -685759544293388523L;
 

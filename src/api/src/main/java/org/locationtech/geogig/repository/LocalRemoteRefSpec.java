@@ -19,6 +19,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
+import lombok.NonNull;
+
 public class LocalRemoteRefSpec {
 
     final String remoteRef, localRef;
@@ -105,8 +107,7 @@ public class LocalRemoteRefSpec {
         return new LocalRemoteRefSpec(remoteref, localref, force, isAllChildren);
     }
 
-    public Optional<String> mapToLocal(final String remoteRef) {
-        Preconditions.checkNotNull(remoteRef);
+    public Optional<String> mapToLocal(final @NonNull String remoteRef) {
         String localRef = null;
         if (isAllChildren()) {
             if (Ref.isChild(this.remoteRef, remoteRef)) {
@@ -121,8 +122,7 @@ public class LocalRemoteRefSpec {
         return Optional.ofNullable(localRef);
     }
 
-    public Optional<String> mapToRemote(final String local) {
-        Preconditions.checkNotNull(local);
+    public Optional<String> mapToRemote(final @NonNull String local) {
         String remoteRef = null;
         if (isAllChildren()) {
             if (Ref.isChild(this.localRef, local)) {

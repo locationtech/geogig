@@ -9,12 +9,12 @@
  */
 package org.locationtech.geogig.repository;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+
+import lombok.NonNull;
 
 /**
  * A class to store a merge conflict. It stores the information needed to solve the conflict, saving
@@ -44,12 +44,7 @@ public final class Conflict {
      * @param ours the {@code ObjectId} of the feature on the 'ours' side of the merge
      * @param theirs the {@code ObjectId} of the feature on the 'theirs' side of the merge
      */
-    public Conflict(String path, ObjectId ancestor, ObjectId ours, ObjectId theirs) {
-        checkNotNull(path, "path");
-        checkNotNull(ancestor, "ancestor");
-        checkNotNull(ours, "ours");
-        checkNotNull(theirs, "theirs");
-
+    public Conflict(@NonNull String path, @NonNull ObjectId ancestor, @NonNull ObjectId ours, @NonNull ObjectId theirs) {
         this.path = path;
         this.ancestor = ancestor;
         this.ours = ours;

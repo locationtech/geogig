@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 
 import junit.framework.TestCase;
+import lombok.NonNull;
 
 public class RevCommitBuilderTest extends TestCase {
 
@@ -169,8 +170,7 @@ public class RevCommitBuilderTest extends TestCase {
         assertEquals(commit1, commit2);
     }
 
-    private static ObjectId hashString(final String strToHash) {
-        Preconditions.checkNotNull(strToHash);
+    private static ObjectId hashString(final @NonNull String strToHash) {
         HashCode hashCode = ObjectId.HASH_FUNCTION.hashString(strToHash, Charset.forName("UTF-8"));
         return ObjectId.create(hashCode.asBytes());
     }

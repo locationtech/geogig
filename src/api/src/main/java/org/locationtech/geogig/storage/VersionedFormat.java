@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.storage;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.base.Objects;
+
+import lombok.NonNull;
 
 /**
  * Associates a format name and version with a java class.
@@ -32,9 +32,7 @@ public final class VersionedFormat {
      * @param version the version of the format
      * @param clazz the class
      */
-    public VersionedFormat(String format, String version, Class<?> clazz) {
-        checkNotNull(format);
-        checkNotNull(version);
+    public VersionedFormat(@NonNull String format, @NonNull String version, Class<?> clazz) {
         this.format = format;
         this.version = version;
         this.clazz = clazz;

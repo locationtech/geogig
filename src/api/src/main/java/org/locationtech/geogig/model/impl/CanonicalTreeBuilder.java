@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
@@ -22,6 +21,8 @@ import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
 import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
+
+import lombok.NonNull;
 
 public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTreeBuilder {
 
@@ -52,8 +53,7 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
      * @param featureId the name of the node to remove
      * @return {@code this}
      */
-    public final CanonicalTreeBuilder remove(final String featureId) {
-        checkNotNull(featureId, "Argument featureId is null");
+    public final CanonicalTreeBuilder remove(final @NonNull String featureId) {
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         Node removeNode = RevObjectFactory.defaultInstance().createNode(featureId, ObjectId.NULL,
                 ObjectId.NULL, TYPE.FEATURE, null, null);
@@ -79,9 +79,7 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
      * {@link CanonicalNodeNameOrder}, and whose internal structure starts by matching the provided
      * {@code original} tree.
      */
-    public static CanonicalTreeBuilder create(final ObjectStore store, final RevTree original) {
-        checkNotNull(store);
-        checkNotNull(original);
+    public static CanonicalTreeBuilder create(final @NonNull ObjectStore store, final @NonNull RevTree original) {
         CanonicalTreeBuilder builder = new CanonicalTreeBuilder(store, original);
         return builder;
     }

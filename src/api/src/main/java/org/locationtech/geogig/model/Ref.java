@@ -9,12 +9,12 @@
  */
 package org.locationtech.geogig.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Optional;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+
+import lombok.NonNull;
 
 /**
  * A named pointer to a {@link RevObject} that represents an entry point in a repository's revision
@@ -126,9 +126,7 @@ public class Ref implements Comparable<Ref> {
      * @param name name of this ref
      * @param oid object id for this ref
      */
-    public Ref(final String name, final ObjectId oid) {
-        Preconditions.checkNotNull(name);
-        Preconditions.checkNotNull(oid);
+    public Ref(final @NonNull String name, final @NonNull ObjectId oid) {
         this.name = name;
         this.objectId = oid;
     }
@@ -320,10 +318,7 @@ public class Ref implements Comparable<Ref> {
      * @return true if {@code nodePath} is a child of {@code parentPath} at any depth level,
      *         {@code false} if unrelated, sibling, or same path
      */
-    public static boolean isChild(String parent, String ref) {
-        checkNotNull(parent, "parent");
-        checkNotNull(ref, "ref");
-
+    public static boolean isChild(@NonNull String parent, @NonNull String ref) {
         int parentSeparatorIndex = parent.endsWith("/") ? parent.length() - 1 : parent.length();
 
         return ref.length() > parent.length()
@@ -331,8 +326,7 @@ public class Ref implements Comparable<Ref> {
                 && ref.startsWith(parent);
     }
 
-    public static String stripCommonPrefix(final String ref) {
-        Preconditions.checkNotNull(ref);
+    public static String stripCommonPrefix(final @NonNull String ref) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(ref));
         if (ref.indexOf('/') == -1) {
             return ref;

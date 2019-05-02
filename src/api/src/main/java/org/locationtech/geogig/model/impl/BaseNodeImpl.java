@@ -10,7 +10,6 @@
 package org.locationtech.geogig.model.impl;
 
 import static java.util.Optional.ofNullable;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 
@@ -20,6 +19,8 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Envelope;
+
+import lombok.NonNull;
 
 import java.util.Optional;
 
@@ -47,11 +48,8 @@ abstract class BaseNodeImpl extends Node {
 
     private final float bounds_x1, bounds_x2, bounds_y1, bounds_y2;
 
-    public BaseNodeImpl(final String name, final ObjectId oid, final ObjectId metadataId,
+    public BaseNodeImpl(final @NonNull  String name, final @NonNull ObjectId oid, final @NonNull ObjectId metadataId,
             @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
-        checkNotNull(name);
-        checkNotNull(oid);
-        checkNotNull(metadataId);
         this.name = name;
         this.objectId_h1 = RevObjects.h1(oid);
         this.objectId_h2 = RevObjects.h2(oid);

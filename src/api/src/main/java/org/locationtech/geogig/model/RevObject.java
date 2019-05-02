@@ -162,10 +162,8 @@ public interface RevObject extends Comparable<RevObject> {
          *        value
          * @return the enum value bound to {@code binding}
          */
-        public static TYPE valueOf(final Class<? extends RevObject> binding) {
-            Preconditions.checkNotNull(binding);
-            Integer value = byBinding.get(binding);
-            Preconditions.checkNotNull(value);
+        public static TYPE valueOf(final @NonNull Class<? extends RevObject> binding) {
+            final @NonNull Integer value = byBinding.get(binding);
             return valueOf(value);
         }
     }

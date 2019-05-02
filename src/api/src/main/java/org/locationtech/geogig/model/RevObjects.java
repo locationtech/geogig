@@ -10,7 +10,6 @@
 package org.locationtech.geogig.model;
 
 import static com.google.common.base.Objects.equal;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -94,10 +93,9 @@ public @UtilityClass class RevObjects {
      *        {@link ObjectId}
      * @return {@code target}
      */
-    public static StringBuilder toString(final ObjectId id, final int numBytes,
+    public static StringBuilder toString(final @NonNull ObjectId id, final int numBytes,
             StringBuilder target) {
 
-        Preconditions.checkNotNull(id);
         Preconditions.checkArgument(numBytes > 0 && numBytes <= ObjectId.NUM_BYTES);
 
         StringBuilder sb = target == null ? new StringBuilder(2 * numBytes) : target;
@@ -118,8 +116,7 @@ public @UtilityClass class RevObjects {
      *         {@link RevTree#features() feature} children collections, in the order mandated by the
      *         provided {@code comparator}
      */
-    public static Iterator<Node> children(RevTree tree, Comparator<Node> comparator) {
-        checkNotNull(comparator);
+    public static Iterator<Node> children(@NonNull RevTree tree, @NonNull Comparator<Node> comparator) {
         if (tree.treesSize() == 0) {
             return tree.features().iterator();
         }

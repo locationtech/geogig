@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.storage;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Objects;
 import java.util.Optional;
+
+import lombok.NonNull;
 
 /**
  * Provides an interface for implementations of config databases, which manage GeoGig config files.
@@ -120,12 +120,10 @@ public interface ConfigDatabase extends Closeable {
      */
     public void put(String key, Object value);
 
-    public default void putSection(String section, final Map<String, String> kvp) {
-        checkNotNull(section);
-        checkNotNull(kvp);
+    public default void putSection(@NonNull String section, final @NonNull Map<String, String> kvp) {
         kvp.forEach((k, v) -> {
-            checkNotNull(k);
-            checkNotNull(v);
+            Objects.requireNonNull(k);
+            Objects.requireNonNull(v);
             put(String.format("%s.%s", section, k), v);
         });
     }

@@ -25,6 +25,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 public abstract class RepositoryResolver {
 
     /**
@@ -59,10 +61,7 @@ public abstract class RepositoryResolver {
      * @throws IllegalArgumentException if no repository resolver is found capable of handling the
      *         given URI
      */
-    public static RepositoryResolver lookup(URI repoURI) throws IllegalArgumentException {
-
-        Preconditions.checkNotNull(repoURI, "Repository URI is null");
-
+    public static RepositoryResolver lookup(@NonNull URI repoURI) throws IllegalArgumentException {
         List<RepositoryResolver> resolvers = lookupResolvers();
         RepositoryResolver resolver = null;
         for (RepositoryResolver resolverImpl : resolvers) {
@@ -89,9 +88,7 @@ public abstract class RepositoryResolver {
      * @param scheme the URI scheme
      * @return {@code true} if any resolver could handle the scheme, {@code false} otherwise
      */
-    public static boolean resolverAvailableForURIScheme(String scheme) {
-        Preconditions.checkNotNull(scheme, "URI scheme is null");
-
+    public static boolean resolverAvailableForURIScheme(@NonNull String scheme) {
         List<RepositoryResolver> resolvers = lookupResolvers();
         for (RepositoryResolver resolverImpl : resolvers) {
             final String resolverClassName = resolverImpl.getClass().getName();

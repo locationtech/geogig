@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -92,9 +90,7 @@ public class HashObjectFunnels {
      * @param into expected to be {@link ObjectId#HASH_FUNCTION} in order to compute the SHA-1 hash
      * @param values the {@link RevFeature} actual values, not {@code Optional}s
      */
-    public static void feature(PrimitiveSink into, List<Object> values) {
-        checkNotNull(into);
-        checkNotNull(values);
+    public static void feature(@NonNull PrimitiveSink into, @NonNull List<Object> values) {
         FeatureFunnel.INSTANCE.funnelValues(values, into);
     }
 
@@ -106,12 +102,8 @@ public class HashObjectFunnels {
      * @param features the tree's {@link RevTree#trees() contained feature nodes}
      * @param buckets the tree's {@link RevTree#trees() contained bucket pointers}
      */
-    public static void tree(PrimitiveSink into, List<Node> trees, List<Node> features,
-            Iterable<Bucket> buckets) {
-        checkNotNull(into);
-        checkNotNull(trees);
-        checkNotNull(features);
-        checkNotNull(buckets);
+    public static void tree(@NonNull PrimitiveSink into, @NonNull List<Node> trees, @NonNull List<Node> features,
+    		@NonNull Iterable<Bucket> buckets) {
         TreeFunnel.INSTANCE.funnel(into, trees, features, buckets);
     }
 
@@ -649,31 +641,17 @@ public class HashObjectFunnels {
         }
     };
 
-    public static void tag(PrimitiveSink into, String name, ObjectId commitId, String message,
-            RevPerson tagger) {
-        checkNotNull(into);
-        checkNotNull(name);
-        checkNotNull(commitId);
-        checkNotNull(message);
-        checkNotNull(tagger);
+    public static void tag(@NonNull PrimitiveSink into, @NonNull String name, @NonNull ObjectId commitId, @NonNull String message,
+    		@NonNull RevPerson tagger) {
         TagFunnel.INSTANCE.funnel(into, name, commitId, message, tagger);
     }
 
-    public static void featureType(PrimitiveSink into, FeatureType featureType) {
-        checkNotNull(into);
-        checkNotNull(featureType);
+    public static void featureType(@NonNull PrimitiveSink into, @NonNull FeatureType featureType) {
         FeatureTypeFunnel.INSTANCE.funnel(into, featureType);
     }
 
-    public static void commit(PrimitiveSink into, ObjectId treeId, List<ObjectId> parentIds,
-            RevPerson author, RevPerson committer, String commitMessage) {
-        checkNotNull(into);
-        checkNotNull(treeId);
-        checkNotNull(parentIds);
-        checkNotNull(author);
-        checkNotNull(committer);
-        checkNotNull(commitMessage);
-
+    public static void commit(@NonNull PrimitiveSink into, @NonNull ObjectId treeId, @NonNull List<ObjectId> parentIds,
+    		@NonNull RevPerson author, @NonNull RevPerson committer, @NonNull String commitMessage) {
         CommitFunnel.INSTANCE.funnel(into, treeId, parentIds, commitMessage, author, committer);
     }
 

@@ -10,8 +10,9 @@
 package org.locationtech.geogig.model.internal;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+
+import java.util.Objects;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeOrdering;
@@ -30,8 +31,7 @@ public abstract class ClusteringStrategyBuilder {
 
     protected RevTree original = RevTree.EMPTY;
 
-    ClusteringStrategyBuilder(ObjectStore treeStore) {
-        checkNotNull(treeStore);
+    ClusteringStrategyBuilder(@NonNull ObjectStore treeStore) {
         this.treeStore = treeStore;
     }
 
@@ -40,7 +40,7 @@ public abstract class ClusteringStrategyBuilder {
     }
 
     public ClusteringStrategyBuilder original(RevTree original) {
-        checkNotNull(original, "null original tree, did you mean RevTree.EMPTY?");
+        Objects.requireNonNull(original, "null original tree, did you mean RevTree.EMPTY?");
         this.original = original;
         return this;
     }
@@ -167,8 +167,7 @@ public abstract class ClusteringStrategyBuilder {
                     maxDepth);
         }
 
-        public QuadTreeClusteringStrategyBuilder maxBounds(Envelope maxBounds) {
-            checkNotNull(maxBounds, "maxBounds is null");
+        public QuadTreeClusteringStrategyBuilder maxBounds(@NonNull Envelope maxBounds) {
             checkArgument(!maxBounds.isNull(), "maxBounds is not initialized");
             this.maxBounds = new Envelope(maxBounds);
             return this;

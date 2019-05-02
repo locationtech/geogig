@@ -20,6 +20,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 /**
  * Internal representation of a GeoGig remote repository.
  * 
@@ -132,8 +134,7 @@ public class Remote {
      *         remote's {@link #getFetchSpecs() fetch-specs}, or
      *         {@code java.util.Optional#empty() empty()} if none matches.
      */
-    public java.util.Optional<String> mapToLocal(String remoteRef) {
-        Preconditions.checkNotNull(remoteRef);
+    public java.util.Optional<String> mapToLocal(@NonNull String remoteRef) {
         if (fetchSpecs.isEmpty()) {
             if (remoteRef.startsWith(Ref.TAGS_PREFIX)) {
                 return java.util.Optional.of(remoteRef);
@@ -155,8 +156,7 @@ public class Remote {
         return java.util.Optional.empty();
     }
 
-    public java.util.Optional<String> mapToRemote(final String localRef) {
-        Preconditions.checkNotNull(localRef);
+    public java.util.Optional<String> mapToRemote(final @NonNull String localRef) {
         if (fetchSpecs.isEmpty()) {
             if (localRef.startsWith(Ref.TAGS_PREFIX)) {
                 return java.util.Optional.of(localRef);
@@ -230,8 +230,7 @@ public class Remote {
         return (s1 == null ? s2 == null : s1.equals(s2));
     }
 
-    public Remote fetch(String localRemoteRefSpec) {
-        Preconditions.checkNotNull(localRemoteRefSpec);
+    public Remote fetch(@NonNull String localRemoteRefSpec) {
         Remote branchRemote = new Remote(name, fetchurl, pushurl, localRemoteRefSpec, mapped,
                 mappedBranch, username, password);
         return branchRemote;

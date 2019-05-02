@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +23,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -39,9 +39,7 @@ public abstract @Accessors(fluent = true) class AbstractTreeBuilder implements R
         this(store, RevTree.EMPTY);
     }
 
-    protected AbstractTreeBuilder(final ObjectStore store, final RevTree original) {
-        checkNotNull(store);
-        checkNotNull(original);
+    protected AbstractTreeBuilder(final @NonNull ObjectStore store, final @NonNull RevTree original) {
         this.target = store;
         this.original = original;
     }
@@ -49,8 +47,7 @@ public abstract @Accessors(fluent = true) class AbstractTreeBuilder implements R
     protected abstract ClusteringStrategy clusteringStrategy();
 
     @Override
-    public boolean put(final Node node) {
-        checkNotNull(node, "Argument node is null");
+    public boolean put(final @NonNull Node node) {
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         int delta = clusteringStrategy().put(node);
         checkState(delta != -1);
@@ -58,17 +55,14 @@ public abstract @Accessors(fluent = true) class AbstractTreeBuilder implements R
     }
 
     @Override
-    public boolean remove(Node node) {
-        checkNotNull(node, "Argument node is null");
+    public boolean remove(@NonNull Node node) {
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         boolean removed = clusteringStrategy().remove(node);
         return removed;
     }
 
     @Override
-    public boolean update(Node oldNode, Node newNode) {
-        checkNotNull(oldNode, "Argument oldNode is null");
-        checkNotNull(newNode, "Argument newNode is null");
+    public boolean update(@NonNull Node oldNode, @NonNull Node newNode) {
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         int delta = clusteringStrategy().update(oldNode, newNode);
         return delta != 0;
@@ -86,8 +80,7 @@ public abstract @Accessors(fluent = true) class AbstractTreeBuilder implements R
     }
 
     @Override
-    public final RevTree build(BooleanSupplier abortFlag) {
-        Preconditions.checkNotNull(abortFlag);
+    public final RevTree build(@NonNull BooleanSupplier abortFlag) {
         boolean alreadyDisposed = disposed.getAndSet(true);
 
         checkState(!alreadyDisposed, "TreeBuilder is already disposed");

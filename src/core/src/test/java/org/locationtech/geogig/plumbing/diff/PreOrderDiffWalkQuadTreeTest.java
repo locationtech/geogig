@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -85,7 +86,7 @@ public class PreOrderDiffWalkQuadTreeTest {
         leftSource.open();
         rightSource.open();
         consumer = mock(Consumer.class);
-        when(consumer.feature(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
+        when(consumer.feature(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
 
         testSupport = new RevObjectTestSupport();
         testSupport.setBuildSpatialTrees(true);
@@ -136,7 +137,7 @@ public class PreOrderDiffWalkQuadTreeTest {
 
         visitor.walk(consumer);
 
-        when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(false);
+        when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(false);
 
         final NodeRef lNode = nodeFor(left);
         final NodeRef rNode = nodeFor(right);
@@ -239,7 +240,7 @@ public class PreOrderDiffWalkQuadTreeTest {
         final NodeRef rroot = nodeFor(right);
 
         // consume any tree diff
-        when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
+        when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
 
         visitor.walk(consumer);
 
@@ -261,7 +262,7 @@ public class PreOrderDiffWalkQuadTreeTest {
 
         verify(consumer, times(100)).feature((NodeRef) isNull(), any(NodeRef.class));
 
-        verify(consumer, times(2)).endTree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(2)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
 
@@ -284,11 +285,11 @@ public class PreOrderDiffWalkQuadTreeTest {
         visitor.walk(consumer);
 
         // one call to tree() for the root tree, and another for the new subtree
-        verify(consumer, times(2)).tree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(2)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
         // but no calls to feature() as we returned false on the second call to tree()
-        verify(consumer, times(0)).feature(any(NodeRef.class), any(NodeRef.class));
-        verify(consumer, times(2)).endTree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(0)).feature(nullable(NodeRef.class), nullable(NodeRef.class));
+        verify(consumer, times(2)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
 
@@ -312,22 +313,22 @@ public class PreOrderDiffWalkQuadTreeTest {
         when(consumer.tree(eq(lroot), eq(rroot))).thenReturn(true);
 
         // skip all buckets of depth 0
-        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), argThat(depthMatches(0)),
-                any(Bucket.class), any(Bucket.class))).thenReturn(false);
+        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), argThat(depthMatches(0)),
+        		nullable(Bucket.class), nullable(Bucket.class))).thenReturn(false);
 
         visitor.walk(consumer);
 
         verify(consumer, times(1)).tree(eq(lroot), eq(rroot));
 
-        verify(consumer, times(32)).bucket(any(NodeRef.class), any(NodeRef.class),
-                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(32)).bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
 
         // should not be any call to consumer.features as we skipped all buckets of depth 0 (which
         // point to leaf trees)
-        verify(consumer, times(0)).feature(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(0)).feature(nullable(NodeRef.class), nullable(NodeRef.class));
 
-        verify(consumer, times(32)).endBucket(any(NodeRef.class), any(NodeRef.class),
-                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(32)).endBucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
         verify(consumer, times(1)).endTree(eq(lroot), eq(rroot));
         verifyNoMoreInteractions(consumer);
     }
@@ -351,11 +352,11 @@ public class PreOrderDiffWalkQuadTreeTest {
         visitor.walk(consumer);
 
         // one call to tree() for the root tree, and another for the removed subtree
-        verify(consumer, times(2)).tree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(2)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
         // but no calls to feature() as we returned false on the second call to tree()
-        verify(consumer, times(0)).feature(any(NodeRef.class), any(NodeRef.class));
-        verify(consumer, times(2)).endTree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(0)).feature(nullable(NodeRef.class), nullable(NodeRef.class));
+        verify(consumer, times(2)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
 
@@ -382,10 +383,10 @@ public class PreOrderDiffWalkQuadTreeTest {
         }
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
-        when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
+        when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
         visitor.walk(consumer);
         // call of the root tree nodes
-        verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
         ArgumentCaptor<NodeRef> larg = ArgumentCaptor.forClass(NodeRef.class);
         ArgumentCaptor<NodeRef> rarg = ArgumentCaptor.forClass(NodeRef.class);
@@ -409,7 +410,7 @@ public class PreOrderDiffWalkQuadTreeTest {
         assertTrue(allValuesAtTheRight.contains(nodeRefChange1));
         assertTrue(allValuesAtTheRight.contains(nodeRefChange2));
 
-        verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(1)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
 
@@ -422,19 +423,19 @@ public class PreOrderDiffWalkQuadTreeTest {
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
-        when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
+        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class),
+        		nullable(Bucket.class), nullable(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
-        verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
-        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class),
-                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
+        verify(consumer, times(1)).bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
         verify(consumer, times(1)).feature((NodeRef) isNull(), any(NodeRef.class));
 
-        verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
-        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class),
-                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
+        verify(consumer, times(1)).endBucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
         verifyNoMoreInteractions(consumer);
     }
 
@@ -449,26 +450,26 @@ public class PreOrderDiffWalkQuadTreeTest {
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
-        when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
+        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class),
+        		nullable(Bucket.class), nullable(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
-        verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
         // consumer.bucket should be called for depth 0 and then 1
-        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class),
-                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
-        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class),
-                argThat(depthMatches(1)), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
+        verify(consumer, times(1)).bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(1)), nullable(Bucket.class), nullable(Bucket.class));
 
-        verify(consumer, times(1)).feature((NodeRef) isNull(), any(NodeRef.class));
+        verify(consumer, times(1)).feature((NodeRef) isNull(), nullable(NodeRef.class));
 
-        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class),
-                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
-        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class),
-                argThat(depthMatches(1)), any(Bucket.class), any(Bucket.class));
-        verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
+        verify(consumer, times(1)).endBucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
+        verify(consumer, times(1)).endBucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(1)), nullable(Bucket.class), nullable(Bucket.class));
+        verify(consumer, times(1)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
 
@@ -481,9 +482,9 @@ public class PreOrderDiffWalkQuadTreeTest {
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         // consume all
-        when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
+        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class),
+        		nullable(Bucket.class), nullable(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
         // there's only the root tree

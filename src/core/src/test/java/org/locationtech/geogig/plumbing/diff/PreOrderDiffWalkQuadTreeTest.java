@@ -13,11 +13,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Matchers.notNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,8 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.hamcrest.CustomMatcher;
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -63,6 +61,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -1025,13 +1024,7 @@ public class PreOrderDiffWalkQuadTreeTest {
         }
     }
 
-    private static Matcher<BucketIndex> depthMatches(final int expectedDepth) {
-        return new CustomMatcher<BucketIndex>("<Bucket depth equals> " + expectedDepth) {
-            @Override
-            public boolean matches(Object item) {
-                int bucketDepth = ((BucketIndex) item).depthIndex();
-                return bucketDepth == expectedDepth;
-            }
-        };
+    private static ArgumentMatcher<BucketIndex> depthMatches(final int expectedDepth) {
+    	return (item) -> expectedDepth == item.depthIndex();
     }
 }

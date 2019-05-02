@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -81,7 +81,7 @@ public class PreOrderDiffWalkTest {
 		leftSource.open();
 		rightSource.open();
 		consumer = mock(Consumer.class);
-		when(consumer.feature(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
+		when(consumer.feature(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
 	}
 
 	private PreOrderDiffWalk newVisitor(RevTree left, RevTree right) {
@@ -231,7 +231,7 @@ public class PreOrderDiffWalkTest {
 		final NodeRef rroot = nodeFor(right);
 
 		// consume any tree diff
-		when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
+		when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
 
 		visitor.walk(consumer);
 
@@ -251,7 +251,7 @@ public class PreOrderDiffWalkTest {
 
 		verify(consumer, times(100)).feature((NodeRef) isNull(), any(NodeRef.class));
 
-		verify(consumer, times(2)).endTree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(2)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
 		verifyNoMoreInteractions(consumer);
 	}
 
@@ -274,11 +274,11 @@ public class PreOrderDiffWalkTest {
 		visitor.walk(consumer);
 
 		// one call to tree() for the root tree, and another for the new subtree
-		verify(consumer, times(2)).tree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(2)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
 		// but no calls to feature() as we returned false on the second call to tree()
-		verify(consumer, times(0)).feature(any(NodeRef.class), any(NodeRef.class));
-		verify(consumer, times(2)).endTree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(0)).feature(nullable(NodeRef.class), nullable(NodeRef.class));
+		verify(consumer, times(2)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
 		verifyNoMoreInteractions(consumer);
 	}
 
@@ -341,11 +341,11 @@ public class PreOrderDiffWalkTest {
 		visitor.walk(consumer);
 
 		// one call to tree() for the root tree, and another for the removed subtree
-		verify(consumer, times(2)).tree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(2)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
 		// but no calls to feature() as we returned false on the second call to tree()
-		verify(consumer, times(0)).feature(any(NodeRef.class), any(NodeRef.class));
-		verify(consumer, times(2)).endTree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(0)).feature(nullable(NodeRef.class), nullable(NodeRef.class));
+		verify(consumer, times(2)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
 		verifyNoMoreInteractions(consumer);
 	}
 
@@ -467,26 +467,26 @@ public class PreOrderDiffWalkTest {
 		PreOrderDiffWalk visitor = newVisitor(left, right);
 
 		// consume all
-		when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-		when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class), any(Bucket.class),
-				any(Bucket.class))).thenReturn(true);
+		when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
+		when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), nullable(BucketIndex.class), nullable(Bucket.class),
+				nullable(Bucket.class))).thenReturn(true);
 
 		visitor.walk(consumer);
 		// there's only the root tree
-		verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
 		// there's only one feature on the right tree, so all right trees features fall
 		// on a single
 		// bucket
 		final int leftBucketCount = left.bucketsSize();
 		final int expectedBucketCalls = leftBucketCount;
-		verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
-				argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+		verify(consumer, times(expectedBucketCalls)).bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+				argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
 
 		verify(consumer, times(leftsize - 1)).feature(any(NodeRef.class), (NodeRef) isNull());
 
-		verify(consumer, times(expectedBucketCalls)).endBucket(any(NodeRef.class), any(NodeRef.class),
-				argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+		verify(consumer, times(expectedBucketCalls)).endBucket(nullable(NodeRef.class), nullable(NodeRef.class),
+				argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
 		verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
 		verifyNoMoreInteractions(consumer);
 	}
@@ -500,27 +500,27 @@ public class PreOrderDiffWalkTest {
 		PreOrderDiffWalk visitor = newVisitor(left, right);
 
 		// consume all
-		when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-		when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class), any(Bucket.class),
-				any(Bucket.class))).thenReturn(true);
+		when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
+		when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class), nullable(Bucket.class),
+				nullable(Bucket.class))).thenReturn(true);
 
 		visitor.walk(consumer);
 		// there's only the root tree
-		verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
 		// there's only one feature on the right tree, so all right trees features fall
 		// on a single
 		// bucket
 		final int leftBucketCount = right.bucketsSize();
 		final int expectedBucketCalls = leftBucketCount;
-		verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
-				argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+		verify(consumer, times(expectedBucketCalls)).bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+				argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
 
 		verify(consumer, times(rightsize - 1)).feature((NodeRef) isNull(), any(NodeRef.class));
 
-		verify(consumer, times(expectedBucketCalls)).endBucket(any(NodeRef.class), any(NodeRef.class),
-				argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
-		verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(expectedBucketCalls)).endBucket(nullable(NodeRef.class), nullable(NodeRef.class),
+				argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
+		verify(consumer, times(1)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
 		verifyNoMoreInteractions(consumer);
 	}
 
@@ -571,7 +571,7 @@ public class PreOrderDiffWalkTest {
 	private long testBucketLeafDeeper(final RevTree left, final int rightsize, final int overlapCount) {
 
 		consumer = mock(Consumer.class);
-		when(consumer.feature(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
+		when(consumer.feature(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
 		// left tree has feature nodes "f0" to "f<leftsize-1>"
 		final int leftsize = (int) left.size();
 		// the right tree feature node names start at "f<leftsize - 100>", so there's a
@@ -584,9 +584,9 @@ public class PreOrderDiffWalkTest {
 		PreOrderDiffWalk visitor = newVisitor(left, right);
 
 		// consume all
-		when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-		when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class), any(Bucket.class),
-				any(Bucket.class))).thenReturn(true);
+		when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
+		when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class), nullable(Bucket.class),
+				nullable(Bucket.class))).thenReturn(true);
 
 		Stopwatch sw = Stopwatch.createStarted();
 		visitor.walk(consumer);
@@ -595,7 +595,7 @@ public class PreOrderDiffWalkTest {
 				sw);
 
 		// there's only the root tree
-		verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
 		// there shall be <overlapCount> calls to feature with both non null args
 		// verify(consumer, times(overlapCount)).feature((Node) notNull(), (Node)
@@ -678,7 +678,7 @@ public class PreOrderDiffWalkTest {
 	private void testLeafBucketDeeper(final int leftsize, final RevTree rightRoot, final int overlapCount) {
 
 		consumer = mock(Consumer.class);
-		when(consumer.feature(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
+		when(consumer.feature(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
 
 		// right tree has feature nodes "f0" to "f<rightsize-1>"
 		final int rightsize = (int) rightRoot.size();
@@ -691,9 +691,9 @@ public class PreOrderDiffWalkTest {
 		PreOrderDiffWalk visitor = newVisitor(leftRoot, rightRoot);
 
 		// consume all
-		when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-		when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class), any(Bucket.class),
-				any(Bucket.class))).thenReturn(true);
+		when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
+		when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), nullable(BucketIndex.class), nullable(Bucket.class),
+				nullable(Bucket.class))).thenReturn(true);
 
 		visitor.walk(consumer);
 
@@ -702,7 +702,7 @@ public class PreOrderDiffWalkTest {
 
 		// there shall be <overlapCount> calls to feature with both non null args
 		final int totalFeatureNotifications = (rightsize + leftsize) - overlapCount;
-		verify(consumer, times(totalFeatureNotifications)).feature(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(totalFeatureNotifications)).feature(nullable(NodeRef.class), nullable(NodeRef.class));
 
 		// there shall be <overlapCount> calls to feature with both non null args
 		verify(consumer, times(overlapCount)).feature((NodeRef) notNull(), (NodeRef) notNull());
@@ -750,27 +750,27 @@ public class PreOrderDiffWalkTest {
 		PreOrderDiffWalk visitor = newVisitor(left, right);
 
 		// consume all
-		when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-		when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class), any(Bucket.class),
-				any(Bucket.class))).thenReturn(true);
+		when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
+		when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class), nullable(Bucket.class),
+				nullable(Bucket.class))).thenReturn(true);
 
 		visitor.walk(consumer);
 		// there's only the root tree
-		verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
 
 		// there's only one feature on the right tree, so all right trees features fall
 		// on a single
 		// bucket
 		final int leftBucketCount = left.bucketsSize();
 		final int expectedBucketCalls = leftBucketCount;
-		verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
-				argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+		verify(consumer, times(expectedBucketCalls)).bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+				argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
 
 		verify(consumer, times(leftsize - 1)).feature(any(NodeRef.class), (NodeRef) isNull());
 
-		verify(consumer, times(expectedBucketCalls)).endBucket(any(NodeRef.class), any(NodeRef.class),
-				argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
-		verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
+		verify(consumer, times(expectedBucketCalls)).endBucket(nullable(NodeRef.class), nullable(NodeRef.class),
+				argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class));
+		verify(consumer, times(1)).endTree(nullable(NodeRef.class), nullable(NodeRef.class));
 		verifyNoMoreInteractions(consumer);
 	}
 

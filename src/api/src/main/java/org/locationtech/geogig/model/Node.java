@@ -10,12 +10,11 @@
 package org.locationtech.geogig.model;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
-
-import java.util.Optional;
 
 import lombok.NonNull;
 

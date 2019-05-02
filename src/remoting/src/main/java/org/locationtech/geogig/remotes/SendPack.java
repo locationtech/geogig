@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.hooks.Hookable;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 @Hookable(name = "send-pack")

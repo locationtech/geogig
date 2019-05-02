@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.geotools.util.Range;
 import org.locationtech.geogig.model.DiffEntry;
@@ -50,7 +51,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;

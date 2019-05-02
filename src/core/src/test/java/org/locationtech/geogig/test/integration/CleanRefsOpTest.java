@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.Optional;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -17,7 +19,6 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.MergeOp;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class CleanRefsOpTest extends RepositoryTestCase {

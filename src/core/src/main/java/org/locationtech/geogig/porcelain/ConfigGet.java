@@ -10,14 +10,13 @@
 package org.locationtech.geogig.porcelain;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigException;
-
-import java.util.Optional;
 
 /**
  * Get a repository or global options

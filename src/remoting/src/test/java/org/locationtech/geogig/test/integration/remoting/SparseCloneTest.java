@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
@@ -55,7 +56,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 

@@ -14,6 +14,7 @@ import static org.locationtech.geogig.model.NodeRef.appendChild;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,7 +38,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.Name;
 
-import java.util.Optional;
 import com.google.common.collect.Iterators;
 
 /**

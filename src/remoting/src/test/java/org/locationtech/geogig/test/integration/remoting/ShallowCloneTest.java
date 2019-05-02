@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +41,6 @@ import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
 import org.opengis.feature.Feature;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**

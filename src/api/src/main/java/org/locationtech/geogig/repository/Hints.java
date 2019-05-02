@@ -13,8 +13,8 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-
 import java.util.Optional;
+
 import com.google.common.collect.Maps;
 
 /**

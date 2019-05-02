@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +46,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
 
-import java.util.Optional;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 

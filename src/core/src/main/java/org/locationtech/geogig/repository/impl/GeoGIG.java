@@ -12,6 +12,7 @@ package org.locationtech.geogig.repository.impl;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

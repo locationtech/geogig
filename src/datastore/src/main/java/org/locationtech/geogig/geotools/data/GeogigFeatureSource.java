@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -55,7 +56,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 

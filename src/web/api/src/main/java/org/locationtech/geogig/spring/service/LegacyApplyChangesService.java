@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import com.google.common.base.Suppliers;
 
 /**

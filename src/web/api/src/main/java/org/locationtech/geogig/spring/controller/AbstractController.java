@@ -13,6 +13,7 @@ import static org.locationtech.geogig.rest.repository.RepositoryProvider.GEOGIG_
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.json.Json;
@@ -38,8 +39,6 @@ import org.springframework.http.RequestEntity;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import java.util.Optional;
 
 /**
  * Base Controller to hold common controller logic.

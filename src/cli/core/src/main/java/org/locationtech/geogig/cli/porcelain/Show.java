@@ -14,6 +14,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
@@ -42,7 +43,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;

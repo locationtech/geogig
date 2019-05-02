@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 public class UpdateIndexTest extends AbstractIndexWebOpTest {

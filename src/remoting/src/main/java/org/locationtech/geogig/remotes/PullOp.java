@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.LocalRemoteRefSpec;
 import org.locationtech.geogig.repository.Remote;
 
 import com.google.common.base.Joiner;
-import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;

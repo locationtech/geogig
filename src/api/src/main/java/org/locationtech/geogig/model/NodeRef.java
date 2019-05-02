@@ -13,13 +13,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Objects;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;

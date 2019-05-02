@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 

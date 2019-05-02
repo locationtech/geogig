@@ -10,14 +10,13 @@
 package org.locationtech.geogig.storage.impl;
 
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.BlobStore;
-
-import java.util.Optional;
 
 /**
  * A {@link BlobStore} decorator for a specific {@link GeogigTransaction transaction}.

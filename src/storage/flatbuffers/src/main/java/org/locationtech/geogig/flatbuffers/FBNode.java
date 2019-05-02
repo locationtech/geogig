@@ -11,6 +11,7 @@ package org.locationtech.geogig.flatbuffers;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.v1.LeafTree;
@@ -22,8 +23,6 @@ import org.locationtech.geogig.flatbuffers.generated.v1.values.Value;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
-
-import java.util.Optional;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

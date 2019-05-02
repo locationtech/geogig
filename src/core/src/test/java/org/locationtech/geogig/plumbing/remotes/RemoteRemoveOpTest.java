@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.plumbing.remotes;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,8 +23,6 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-
-import java.util.Optional;
 
 public class RemoteRemoveOpTest extends RepositoryTestCase {
 

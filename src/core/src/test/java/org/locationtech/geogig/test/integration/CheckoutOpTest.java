@@ -12,6 +12,7 @@ package org.locationtech.geogig.test.integration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,8 +39,6 @@ import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
 import org.opengis.feature.Feature;
-
-import java.util.Optional;
 
 public class CheckoutOpTest extends RepositoryTestCase {
     @Rule

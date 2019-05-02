@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.Optional;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,8 +25,6 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
-
-import java.util.Optional;
 
 public class BranchDeleteOpTest extends RepositoryTestCase {
 

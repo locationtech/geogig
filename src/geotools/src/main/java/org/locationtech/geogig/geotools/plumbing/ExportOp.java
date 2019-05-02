@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -65,7 +66,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;

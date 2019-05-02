@@ -18,6 +18,7 @@ import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -30,8 +31,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import java.util.Optional;
 
 public class ConfigTest extends AbstractWebOpTest {
 

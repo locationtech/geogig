@@ -9,12 +9,13 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import static java.util.Optional.ofNullable;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -36,7 +37,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Iterables;

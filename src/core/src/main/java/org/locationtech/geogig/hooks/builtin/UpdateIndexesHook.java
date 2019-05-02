@@ -1,6 +1,7 @@
 package org.locationtech.geogig.hooks.builtin;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
@@ -13,8 +14,6 @@ import org.locationtech.geogig.porcelain.index.UpdateIndexesOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.ProgressListener;
-
-import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 

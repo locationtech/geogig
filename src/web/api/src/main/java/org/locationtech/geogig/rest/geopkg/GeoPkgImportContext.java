@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
@@ -44,8 +45,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamingWriter;
-
-import java.util.Optional;
 
 /**
  * Geopackage specific implementation of {@link DataStoreImportContextService}.

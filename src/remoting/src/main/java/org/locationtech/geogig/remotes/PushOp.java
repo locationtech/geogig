@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Ref;
@@ -28,7 +29,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 

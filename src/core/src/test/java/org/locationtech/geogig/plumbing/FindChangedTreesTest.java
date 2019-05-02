@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import org.geotools.data.DataUtilities;
@@ -52,7 +53,6 @@ import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import java.util.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;

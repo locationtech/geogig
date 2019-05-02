@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -40,7 +41,6 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;

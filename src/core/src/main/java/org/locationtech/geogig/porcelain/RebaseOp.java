@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -49,7 +50,6 @@ import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;

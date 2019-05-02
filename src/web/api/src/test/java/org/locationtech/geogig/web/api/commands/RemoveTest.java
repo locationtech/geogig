@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -30,8 +31,6 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-
-import java.util.Optional;
 
 public class RemoveTest extends AbstractWebOpTest {
 

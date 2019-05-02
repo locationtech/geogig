@@ -12,13 +12,13 @@ package org.locationtech.geogig.rest.repository;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;

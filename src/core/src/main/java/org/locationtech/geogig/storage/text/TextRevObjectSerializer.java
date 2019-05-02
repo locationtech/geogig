@@ -26,8 +26,8 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeSet;
-import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
@@ -65,7 +65,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.InternationalString;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableCollection;

@@ -11,6 +11,7 @@ package org.locationtech.geogig.di;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.storage.StorageProvider;
 import org.locationtech.geogig.storage.VersionedFormat;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
-import java.util.Optional;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provider;

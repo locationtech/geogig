@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -41,7 +42,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 

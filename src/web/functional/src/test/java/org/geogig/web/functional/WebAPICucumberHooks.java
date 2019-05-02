@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -103,7 +104,6 @@ import org.xmlunit.matchers.EvaluateXPathMatcher;
 import org.xmlunit.matchers.HasXPathMatcher;
 import org.xmlunit.xpath.JAXPXPathEngine;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;

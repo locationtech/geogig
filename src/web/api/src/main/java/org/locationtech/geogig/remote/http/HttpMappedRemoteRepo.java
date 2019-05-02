@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -47,7 +48,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;

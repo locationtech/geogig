@@ -10,7 +10,7 @@
 package org.locationtech.geogig.data.retrieve;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

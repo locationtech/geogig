@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;

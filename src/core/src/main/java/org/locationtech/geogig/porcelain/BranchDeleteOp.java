@@ -12,13 +12,13 @@ package org.locationtech.geogig.porcelain;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-
-import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 

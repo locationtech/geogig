@@ -11,6 +11,8 @@ package org.locationtech.geogig.porcelain.index;
 
 import static org.locationtech.geogig.plumbing.index.IndexTestSupport.getPointFid;
 
+import java.util.Optional;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +43,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 
-import java.util.Optional;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 

@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -17,8 +19,6 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-
-import java.util.Optional;
 
 /**
  * Interface for the RefParse command in GeoGig

@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 

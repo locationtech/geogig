@@ -13,6 +13,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Optional;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.RevObjectParse;
@@ -22,7 +24,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.Optional;
 import com.google.gson.JsonObject;
 
 /**

@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
@@ -41,7 +42,6 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;

@@ -10,13 +10,13 @@
 package org.locationtech.geogig.model;
 
 import java.util.Comparator;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Objects;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

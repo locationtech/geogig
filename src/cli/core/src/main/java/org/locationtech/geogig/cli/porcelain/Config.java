@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -37,7 +38,6 @@ import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Joiner;
-import java.util.Optional;
 
 /**
  * You can query/set/unset options with this command. The name is actually the section and the key

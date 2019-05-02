@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,7 +26,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Charsets;
-import java.util.Optional;
 import com.google.common.io.ByteStreams;
 
 public abstract class TransactionBlobStoreTest {

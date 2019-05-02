@@ -14,6 +14,7 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.util.Base64;
+import java.util.Optional;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -25,8 +26,6 @@ import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
-
-import java.util.Optional;
 
 /**
  * {@link RemoteResolver} implementation that works against the HTTP web API

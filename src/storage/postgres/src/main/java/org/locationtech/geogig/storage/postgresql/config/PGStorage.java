@@ -23,6 +23,7 @@ import java.sql.SQLTransientConnectionException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -31,7 +32,6 @@ import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

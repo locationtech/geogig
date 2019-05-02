@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -18,7 +19,6 @@ import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 

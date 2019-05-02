@@ -11,6 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Optional;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -39,7 +41,6 @@ import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 

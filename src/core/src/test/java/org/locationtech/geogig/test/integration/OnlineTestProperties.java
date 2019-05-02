@@ -11,10 +11,10 @@ package org.locationtech.geogig.test.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.locationtech.geogig.storage.fs.INIFile;
 
-import java.util.Optional;
 import com.google.common.base.Strings;
 
 public class OnlineTestProperties {

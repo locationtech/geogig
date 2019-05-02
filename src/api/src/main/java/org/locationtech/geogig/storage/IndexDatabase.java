@@ -11,14 +11,13 @@ package org.locationtech.geogig.storage;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-
-import java.util.Optional;
 
 import lombok.Value;
 

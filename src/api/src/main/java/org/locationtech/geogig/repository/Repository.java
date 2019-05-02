@@ -10,6 +10,7 @@
 package org.locationtech.geogig.repository;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -24,8 +25,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-
-import java.util.Optional;
 
 /**
  * A repository is a collection of commits, each of which is an archive of what the project's

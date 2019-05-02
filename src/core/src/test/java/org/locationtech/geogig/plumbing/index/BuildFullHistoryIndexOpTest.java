@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -35,8 +36,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-
-import java.util.Optional;
 
 public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
 

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.TreeSet;
 
 import org.geotools.data.memory.MemoryDataStore;
@@ -52,7 +53,6 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;

@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,7 +23,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.web.api.TestRepository;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 

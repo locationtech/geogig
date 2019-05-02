@@ -12,6 +12,7 @@ package org.locationtech.geogig.porcelain.index;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 public class UpdateIndexOpTest extends RepositoryTestCase {

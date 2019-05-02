@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -37,7 +38,6 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.geometry.BoundingBox;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 

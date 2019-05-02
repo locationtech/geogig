@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -34,7 +35,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;

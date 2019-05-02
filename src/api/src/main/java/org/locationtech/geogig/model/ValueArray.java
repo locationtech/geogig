@@ -9,13 +9,12 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-
-import java.util.Optional;
 
 /**
  * A {@code ValueArray} is an immutable data structure that contains a sequence of attribute value

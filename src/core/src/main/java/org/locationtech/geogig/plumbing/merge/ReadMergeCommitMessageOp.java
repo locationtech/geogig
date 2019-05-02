@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -20,7 +21,6 @@ import org.locationtech.geogig.storage.BlobStore;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import java.util.Optional;
 import com.google.common.io.CharStreams;
 
 public class ReadMergeCommitMessageOp extends AbstractGeoGigOp<String> {

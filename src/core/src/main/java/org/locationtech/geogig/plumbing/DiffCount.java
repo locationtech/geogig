@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**

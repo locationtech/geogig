@@ -11,6 +11,7 @@ package org.locationtech.geogig.test.integration;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,7 +37,6 @@ import org.locationtech.geogig.porcelain.RevertOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.opengis.feature.Feature;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 public class RevertOpTest extends RepositoryTestCase {

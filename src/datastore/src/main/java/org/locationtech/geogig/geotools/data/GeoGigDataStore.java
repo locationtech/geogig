@@ -12,6 +12,7 @@ package org.locationtech.geogig.geotools.data;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +51,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;

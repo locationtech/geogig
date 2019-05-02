@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -24,8 +26,6 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-
-import java.util.Optional;
 
 /**
  * This is the interface for the FeatureDiff command. It is used by passing a path to a feature, an

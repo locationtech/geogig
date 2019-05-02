@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
@@ -66,7 +67,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.identity.FeatureId;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;

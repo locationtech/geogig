@@ -11,10 +11,9 @@ package org.locationtech.geogig.rest.repository;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.repository.Repository;
-
-import java.util.Optional;
 
 public interface RepositoryProvider {
 

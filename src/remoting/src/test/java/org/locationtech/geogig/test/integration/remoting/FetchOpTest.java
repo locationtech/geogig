@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -45,7 +46,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**

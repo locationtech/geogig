@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;

@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain.index;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
@@ -30,8 +31,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-
-import java.util.Optional;
 
 public class DropIndexOpTest extends RepositoryTestCase {
 

@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 import java.util.Optional;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A tuple representing the result of some computation against the diff between two trees, holding

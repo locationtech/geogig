@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -35,7 +36,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.GraphDatabase;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;

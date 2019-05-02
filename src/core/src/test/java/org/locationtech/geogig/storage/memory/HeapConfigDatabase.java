@@ -10,14 +10,15 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static java.util.Optional.ofNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Optional.ofNullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +29,6 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.base.CharMatcher;
-import java.util.Optional;
 import com.google.common.collect.Sets;
 
 public class HeapConfigDatabase implements ConfigDatabase {

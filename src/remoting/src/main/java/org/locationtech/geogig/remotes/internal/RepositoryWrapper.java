@@ -9,9 +9,10 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.ObjectId;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**

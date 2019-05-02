@@ -22,6 +22,7 @@ import static org.locationtech.geogig.test.integration.remoting.RemotesIndexTest
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -42,8 +43,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.test.TestData;
 import org.opengis.feature.simple.SimpleFeature;
-
-import java.util.Optional;
 
 public class FetchOpWithIndexTest extends FetchOpTest {
 

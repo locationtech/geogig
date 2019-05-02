@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.impl;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-
-import java.util.Optional;
 
 /**
  * A {@link StagingArea} decorator for a specific {@link GeogigTransaction transaction}.

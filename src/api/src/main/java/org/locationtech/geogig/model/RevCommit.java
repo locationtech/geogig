@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model;
 
 import java.util.Optional;
+
 import com.google.common.collect.ImmutableList;
 
 /**

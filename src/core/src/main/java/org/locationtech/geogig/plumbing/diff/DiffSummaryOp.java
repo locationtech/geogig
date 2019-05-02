@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -46,7 +47,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.geometry.BoundingBox;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 

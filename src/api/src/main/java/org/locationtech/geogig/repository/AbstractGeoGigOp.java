@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.util.Converters;
@@ -23,8 +24,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-
-import java.util.Optional;
 
 /**
  * Provides a base implementation for internal GeoGig operations.

@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.DiffIndex;
@@ -21,8 +23,6 @@ import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-
-import java.util.Optional;
 
 /**
  * Web version of the Status operation in GeoGig's CLI. Lists the current branch as well as the

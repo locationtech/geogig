@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
@@ -45,7 +46,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;

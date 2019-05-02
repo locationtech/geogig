@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -80,7 +81,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;

@@ -11,6 +11,8 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -20,7 +22,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 

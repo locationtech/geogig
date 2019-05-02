@@ -14,6 +14,7 @@ import static org.locationtech.geogig.porcelain.ConfigOp.ConfigScope.LOCAL;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

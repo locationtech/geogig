@@ -11,12 +11,12 @@ package org.locationtech.geogig.model.impl;
 
 import static java.util.Optional.ofNullable;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Envelope;
-
-import java.util.Optional;
 
 class BucketImpl extends Bucket {
     private final int bucketTreeH1;

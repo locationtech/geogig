@@ -14,6 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -24,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import java.util.Optional;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Optional;
 
 import org.locationtech.geogig.cli.ArgumentTokenizer;
 import org.locationtech.geogig.cli.Console;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.spring.dto.ConsoleRunCommandResponse.ConsoleError
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Charsets;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.io.CharSource;
 import com.google.common.io.FileBackedOutputStream;

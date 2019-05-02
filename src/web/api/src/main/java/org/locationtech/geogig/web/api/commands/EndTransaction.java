@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
@@ -25,8 +27,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-
-import java.util.Optional;
 
 /**
  * Interface for the TransactionEnd operation in GeoGig.

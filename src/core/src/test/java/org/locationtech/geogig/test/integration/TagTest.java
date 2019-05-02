@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.Optional;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,8 +24,6 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagRemoveOp;
-
-import java.util.Optional;
 
 public class TagTest extends RepositoryTestCase {
 

@@ -2,10 +2,11 @@
 
 package org.locationtech.geogig.flatbuffers.generated.v1;
 
-import java.nio.*;
-import java.lang.*;
-import java.util.*;
-import com.google.flatbuffers.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+import com.google.flatbuffers.FlatBufferBuilder;
+import com.google.flatbuffers.Table;
 
 @SuppressWarnings("unused")
 public final class AttributeType extends Table {

@@ -13,6 +13,7 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.NavigableSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -47,7 +48,6 @@ import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.PropertyName;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Optional;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;

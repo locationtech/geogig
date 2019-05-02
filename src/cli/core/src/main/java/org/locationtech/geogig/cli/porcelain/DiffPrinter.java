@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.fusesource.jansi.Ansi;
@@ -43,7 +44,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import java.util.Optional;
 import com.google.common.base.Suppliers;
 
 interface DiffPrinter {

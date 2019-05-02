@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage;
 
 import java.io.InputStream;
-
 import java.util.Optional;
 
 /**

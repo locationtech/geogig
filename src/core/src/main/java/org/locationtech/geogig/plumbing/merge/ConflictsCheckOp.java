@@ -10,11 +10,10 @@
 package org.locationtech.geogig.plumbing.merge;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-
-import java.util.Optional;
 
 public class ConflictsCheckOp extends AbstractGeoGigOp<Boolean> {
     @Override

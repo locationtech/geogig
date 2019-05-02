@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapIndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 

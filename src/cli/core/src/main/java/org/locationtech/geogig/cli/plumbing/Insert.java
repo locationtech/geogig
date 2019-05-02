@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -42,7 +43,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;

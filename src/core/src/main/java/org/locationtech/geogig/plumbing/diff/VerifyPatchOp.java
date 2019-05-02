@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.locationtech.geogig.model.NodeRef;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Objects;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 

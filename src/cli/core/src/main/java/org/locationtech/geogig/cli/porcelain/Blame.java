@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -36,7 +37,6 @@ import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 
 /**
  * Shows information about the commits and authors that have modified the current attributes of a

@@ -12,6 +12,7 @@ package org.locationtech.geogig.web.api.commands;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
@@ -24,8 +25,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import java.util.Optional;
 
 /**
  * The interface for the Config operation in GeoGig.

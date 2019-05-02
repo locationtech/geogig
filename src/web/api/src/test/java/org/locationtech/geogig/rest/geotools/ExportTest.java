@@ -29,6 +29,7 @@ import static org.locationtech.geogig.test.TestData.polysType;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -59,7 +60,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.BoundingBox;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;

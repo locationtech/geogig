@@ -17,6 +17,7 @@ import static org.locationtech.geogig.test.TestData.pointsType;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -55,7 +56,6 @@ import org.locationtech.geogig.web.api.JsonUtils;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.opengis.filter.Filter;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

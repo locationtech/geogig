@@ -11,10 +11,10 @@ package org.locationtech.geogig.storage.memory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
 
-import java.util.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

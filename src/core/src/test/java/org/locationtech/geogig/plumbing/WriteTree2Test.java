@@ -10,7 +10,6 @@
 package org.locationtech.geogig.plumbing;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;

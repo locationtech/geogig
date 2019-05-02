@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -27,7 +28,6 @@ import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 

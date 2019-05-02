@@ -11,6 +11,7 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 import com.google.common.collect.Iterators;
 
 /**

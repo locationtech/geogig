@@ -11,6 +11,7 @@ package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -25,7 +26,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 
 /**
  * Exports layers from a repository snapshot to a GeoPackage file.

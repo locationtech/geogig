@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 import org.geotools.data.DataUtilities;
@@ -47,7 +48,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
-import java.util.Optional;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 

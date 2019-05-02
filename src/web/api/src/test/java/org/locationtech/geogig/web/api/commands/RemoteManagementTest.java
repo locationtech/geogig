@@ -16,6 +16,7 @@ import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
 import static org.locationtech.geogig.web.api.JsonUtils.toJSONArray;
 
 import java.net.URI;
+import java.util.Optional;
 
 import javax.json.JsonObject;
 
@@ -36,8 +37,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
-
-import java.util.Optional;
 
 public class RemoteManagementTest extends AbstractWebOpTest {
 

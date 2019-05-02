@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -30,8 +31,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
-
-import java.util.Optional;
 
 public class RemoveOpTest extends RepositoryTestCase {
 

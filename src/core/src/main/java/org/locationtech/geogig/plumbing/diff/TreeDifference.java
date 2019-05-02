@@ -14,6 +14,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newTreeMap;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
@@ -22,7 +23,6 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 
-import java.util.Optional;
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;

@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi;
@@ -38,7 +39,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 

@@ -13,6 +13,7 @@ import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Rule;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableSet;
 
 public class WalkGraphOpTest extends RepositoryTestCase {

@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.Optional;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -21,7 +23,6 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.InitOp;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class RevParseIntegrationTest extends RepositoryTestCase {

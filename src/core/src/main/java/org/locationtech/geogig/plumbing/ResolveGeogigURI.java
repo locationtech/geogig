@@ -14,13 +14,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;

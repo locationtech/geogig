@@ -11,6 +11,7 @@ package org.locationtech.geogig.rest;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Optional;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class AsyncContext {

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -38,7 +39,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

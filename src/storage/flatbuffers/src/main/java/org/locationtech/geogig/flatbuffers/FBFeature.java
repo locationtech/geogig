@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -19,7 +20,6 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;

@@ -16,6 +16,7 @@ import java.io.DataInput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -36,7 +37,6 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import com.google.common.base.Charsets;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;

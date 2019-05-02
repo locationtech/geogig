@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
@@ -47,7 +48,6 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.internal.Lists;
 import com.beust.jcommander.internal.Maps;
-import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;

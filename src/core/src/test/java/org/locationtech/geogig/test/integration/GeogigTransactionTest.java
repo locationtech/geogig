@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Rule;
@@ -33,8 +34,6 @@ import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
-
-import java.util.Optional;
 
 public class GeogigTransactionTest extends RepositoryTestCase {
     @Rule

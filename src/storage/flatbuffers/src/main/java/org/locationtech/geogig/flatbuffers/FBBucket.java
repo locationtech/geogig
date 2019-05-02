@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.jts.geom.Envelope;
-
-import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;

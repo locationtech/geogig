@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**

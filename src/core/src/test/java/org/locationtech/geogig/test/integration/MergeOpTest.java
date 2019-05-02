@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.geotools.data.DataUtilities;
 import org.junit.Rule;
@@ -56,7 +57,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 

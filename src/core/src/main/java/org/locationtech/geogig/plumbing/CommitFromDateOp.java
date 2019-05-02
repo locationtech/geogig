@@ -11,12 +11,12 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

@@ -11,11 +11,12 @@ package org.locationtech.geogig.plumbing.diff;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Optional;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Objects;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

@@ -11,6 +11,7 @@ package org.locationtech.geogig.repository;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
@@ -23,8 +24,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.FeatureType;
-
-import java.util.Optional;
 
 /**
  * Provides an interface for a working tree of a GeoGig repository.

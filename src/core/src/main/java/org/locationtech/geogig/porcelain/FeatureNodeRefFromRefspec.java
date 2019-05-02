@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -26,7 +28,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

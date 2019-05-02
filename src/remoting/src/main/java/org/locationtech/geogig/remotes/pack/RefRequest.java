@@ -13,12 +13,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-
-import java.util.Optional;
 
 /**
  * Represents a conversational protocol between two repositories to create, update, and delete

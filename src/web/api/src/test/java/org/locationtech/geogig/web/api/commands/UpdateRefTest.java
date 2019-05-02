@@ -15,6 +15,8 @@ import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.web.api.JsonUtils.jsonEquals;
 import static org.locationtech.geogig.web.api.JsonUtils.toJSON;
 
+import java.util.Optional;
+
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -27,8 +29,6 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-
-import java.util.Optional;
 
 public class UpdateRefTest extends AbstractWebOpTest {
 

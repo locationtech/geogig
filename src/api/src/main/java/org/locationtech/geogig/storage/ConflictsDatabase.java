@@ -11,12 +11,11 @@ package org.locationtech.geogig.storage;
 
 import java.io.Closeable;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Conflict;
-
-import java.util.Optional;
 
 /**
  * Provides an interface for implementations of conflict databases, which manage GeoGig conflicts.

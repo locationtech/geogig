@@ -18,6 +18,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -30,7 +31,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 

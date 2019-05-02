@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Strings;
 
 /**

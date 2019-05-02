@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.Optional;
+
 import javax.annotation.Nullable;
 
 import org.geotools.factory.CommonFactoryFinder;
@@ -29,7 +31,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.util.Optional;
 import com.google.common.base.Strings;
 
 import lombok.NonNull;

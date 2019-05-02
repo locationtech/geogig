@@ -9,13 +9,14 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.impl.Blobs;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 

@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
@@ -57,7 +58,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;

@@ -14,6 +14,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -24,7 +25,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Joiner;
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**

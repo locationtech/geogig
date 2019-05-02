@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.Bounded;
@@ -28,7 +29,6 @@ import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;

@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.impl;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,8 +21,6 @@ import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-
-import java.util.Optional;
 
 /**
  * A {@link ConflictsDatabase} decorator for a specific {@link GeogigTransaction transaction}.

@@ -12,6 +12,7 @@ package org.locationtech.geogig.web.api.commands;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.geotools.util.Range;
 import org.locationtech.geogig.model.DiffEntry;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 

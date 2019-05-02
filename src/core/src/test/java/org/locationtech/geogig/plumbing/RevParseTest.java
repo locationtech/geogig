@@ -10,14 +10,15 @@
 package org.locationtech.geogig.plumbing;
 
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createCommits;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,8 +35,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-
-import java.util.Optional;
 
 /**
  *

@@ -13,6 +13,7 @@ import static com.google.common.base.Objects.equal;
 
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -22,7 +23,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Objects;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;

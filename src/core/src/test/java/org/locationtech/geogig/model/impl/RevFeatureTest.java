@@ -12,13 +12,13 @@ package org.locationtech.geogig.model.impl;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 public class RevFeatureTest {

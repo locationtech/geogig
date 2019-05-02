@@ -11,6 +11,7 @@ package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,6 @@ import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;

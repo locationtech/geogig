@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Stream;
@@ -55,7 +56,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;

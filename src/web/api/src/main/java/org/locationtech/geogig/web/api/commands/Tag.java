@@ -11,6 +11,7 @@
 package org.locationtech.geogig.web.api.commands;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTag;
@@ -26,8 +27,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import java.util.Optional;
 
 /**
  * Interface for the Tag operations in GeoGig.

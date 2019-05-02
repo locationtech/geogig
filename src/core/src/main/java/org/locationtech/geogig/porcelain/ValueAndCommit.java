@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import org.locationtech.geogig.model.RevCommit;
-
 import java.util.Optional;
+
+import org.locationtech.geogig.model.RevCommit;
 
 public class ValueAndCommit {
 

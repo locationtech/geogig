@@ -12,6 +12,7 @@ package org.locationtech.geogig.scripting;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.hooks.CommandHook;
@@ -19,7 +20,6 @@ import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 import lombok.NonNull;

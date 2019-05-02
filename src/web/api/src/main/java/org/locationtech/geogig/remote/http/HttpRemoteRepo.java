@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -57,7 +58,6 @@ import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;

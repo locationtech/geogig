@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
@@ -43,7 +44,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class CommitOpTest extends RepositoryTestCase {

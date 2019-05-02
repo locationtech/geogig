@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -38,7 +39,6 @@ import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;

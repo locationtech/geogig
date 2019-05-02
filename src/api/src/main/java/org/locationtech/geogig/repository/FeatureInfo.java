@@ -14,8 +14,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 
-import com.google.common.base.Preconditions;
-
 import lombok.NonNull;
 
 /**

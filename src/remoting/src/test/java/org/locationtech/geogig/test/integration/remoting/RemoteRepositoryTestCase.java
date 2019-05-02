@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
@@ -90,7 +91,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;

@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.Optional;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,8 +24,6 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
-
-import java.util.Optional;
 
 public class FindCommonAncestorTest extends RepositoryTestCase {
     @Rule

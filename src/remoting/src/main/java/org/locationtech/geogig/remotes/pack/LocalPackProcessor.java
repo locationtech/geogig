@@ -14,6 +14,7 @@ import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,8 +28,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import java.util.Optional;
 
 import lombok.NonNull;
 

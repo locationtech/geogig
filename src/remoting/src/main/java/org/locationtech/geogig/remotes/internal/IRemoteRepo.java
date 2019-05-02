@@ -10,6 +10,7 @@
 package org.locationtech.geogig.remotes.internal;
 
 import java.io.Closeable;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableSet;
 
 /**

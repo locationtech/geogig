@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.spring.service;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
-
-import java.util.Optional;
 
 /**
  * Common Service utilities.

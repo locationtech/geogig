@@ -10,13 +10,13 @@
 package org.locationtech.geogig.plumbing.remotes;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.remotes.RemoteException.StatusCode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import java.util.Optional;
 import com.google.common.base.Supplier;
 
 /**

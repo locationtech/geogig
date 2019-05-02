@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
@@ -46,7 +47,6 @@ import org.opengis.filter.Filter;
 
 import com.beust.jcommander.Parameter;
 import com.google.common.base.Function;
-import java.util.Optional;
 
 /**
  * Exports features from a geogig feature type into a {@link DataStore} given by the concrete

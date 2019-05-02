@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
@@ -47,7 +48,6 @@ import org.opengis.feature.type.AttributeDescriptor;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Function;
-import java.util.Optional;
 
 /**
  * Exports features from a feature type into a shapefile.

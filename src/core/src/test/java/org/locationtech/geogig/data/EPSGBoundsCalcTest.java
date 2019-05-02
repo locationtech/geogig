@@ -12,6 +12,8 @@
 
 package org.locationtech.geogig.data;
 
+import java.util.Optional;
+
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
@@ -27,8 +29,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import java.util.Optional;
 
 public class EPSGBoundsCalcTest extends RepositoryTestCase {
 

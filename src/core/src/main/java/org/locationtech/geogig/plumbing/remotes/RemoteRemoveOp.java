@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing.remotes;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.locationtech.geogig.model.Ref;
@@ -21,7 +22,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 

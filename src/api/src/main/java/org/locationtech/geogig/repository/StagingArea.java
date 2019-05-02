@@ -11,6 +11,7 @@ package org.locationtech.geogig.repository;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
@@ -19,8 +20,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-
-import java.util.Optional;
 
 /**
  * Serves as an interface for the staging area of the GeoGig repository.

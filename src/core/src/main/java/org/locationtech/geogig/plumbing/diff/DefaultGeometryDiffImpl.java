@@ -9,11 +9,12 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.locationtech.jts.geom.Geometry;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,7 +27,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-import java.util.Optional;
 import com.google.common.collect.Maps;
 
 /**

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;

@@ -12,11 +12,12 @@ package org.locationtech.geogig.remotes;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Optional;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 
 import com.google.common.base.MoreObjects;
-import java.util.Optional;
 
 /**
  * Represents the state of a {@link Ref} at two different points in time

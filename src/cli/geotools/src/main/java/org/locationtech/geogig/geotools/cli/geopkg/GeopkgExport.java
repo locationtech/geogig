@@ -11,6 +11,7 @@ package org.locationtech.geogig.geotools.cli.geopkg;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,7 +38,6 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import java.util.Optional;
 
 /**
  * Exports features from a feature type into a Geopackage database.

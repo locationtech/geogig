@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import java.util.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 

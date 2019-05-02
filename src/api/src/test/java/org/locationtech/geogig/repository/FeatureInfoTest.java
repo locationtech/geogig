@@ -11,6 +11,7 @@ package org.locationtech.geogig.repository;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.junit.Test;
@@ -20,7 +21,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class FeatureInfoTest {

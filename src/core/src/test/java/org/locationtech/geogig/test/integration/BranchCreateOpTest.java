@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.Optional;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,8 +20,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CommitOp;
-
-import java.util.Optional;
 
 public class BranchCreateOpTest extends RepositoryTestCase {
 

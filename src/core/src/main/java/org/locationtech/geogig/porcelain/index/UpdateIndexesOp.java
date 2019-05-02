@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.JTS;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.collect.Maps;
 
 import lombok.extern.slf4j.Slf4j;

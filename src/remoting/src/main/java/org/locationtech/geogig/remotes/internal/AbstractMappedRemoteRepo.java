@@ -11,6 +11,7 @@ package org.locationtech.geogig.remotes.internal;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 
 import org.locationtech.geogig.model.DiffEntry;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;

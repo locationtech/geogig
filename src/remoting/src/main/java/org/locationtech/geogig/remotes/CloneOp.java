@@ -15,6 +15,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -42,7 +43,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;

@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -44,7 +45,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;

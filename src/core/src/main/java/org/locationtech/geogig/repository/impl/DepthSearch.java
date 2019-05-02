@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.NodeRef.PATH_SEPARATOR;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 

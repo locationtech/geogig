@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.web.api;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.locationtech.geogig.plumbing.TransactionResolve;
@@ -17,8 +18,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import java.util.Optional;
 
 /**
  * An abstract command that allows WebAPICommands to support long transactions.

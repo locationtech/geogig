@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.SortedSet;
 
@@ -38,7 +39,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;

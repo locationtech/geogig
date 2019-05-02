@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,7 +23,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.test.integration;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.DiffEntry;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.After;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 

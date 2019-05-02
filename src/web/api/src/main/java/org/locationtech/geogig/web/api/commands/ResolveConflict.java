@@ -11,6 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Optional;
+
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.NodeRef;
@@ -36,7 +38,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

@@ -11,6 +11,7 @@ package org.locationtech.geogig.repository.impl;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -41,7 +42,6 @@ import org.locationtech.geogig.storage.impl.TransactionRefDatabase;
 import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.locationtech.geogig.storage.impl.TransactionStagingArea;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 

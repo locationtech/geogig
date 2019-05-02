@@ -10,6 +10,7 @@
 package org.locationtech.geogig.test.integration;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -35,7 +36,6 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.opengis.feature.Feature;
 
-import java.util.Optional;
 import com.google.common.base.Suppliers;
 
 public class CherryPickOpTest extends RepositoryTestCase {

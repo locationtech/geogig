@@ -9,12 +9,13 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 import lombok.Getter;

@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Ordering;
 import com.google.common.primitives.UnsignedLong;
 
 /**

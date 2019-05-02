@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.plumbing;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
@@ -32,7 +33,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 
 public class ExportOpTest extends RepositoryTestCase {
 

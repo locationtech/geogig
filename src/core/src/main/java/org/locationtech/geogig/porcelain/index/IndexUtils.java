@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
@@ -31,7 +32,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

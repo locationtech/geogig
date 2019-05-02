@@ -30,6 +30,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -53,7 +54,6 @@ import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;

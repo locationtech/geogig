@@ -10,10 +10,9 @@
 package org.locationtech.geogig.storage.impl;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 import org.locationtech.geogig.storage.BlobStore;
-
-import java.util.Optional;
 
 /**
  * A general purpose interface for commands to store auxiliary data

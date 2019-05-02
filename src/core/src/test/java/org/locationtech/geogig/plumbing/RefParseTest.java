@@ -13,12 +13,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.RefDatabase;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 

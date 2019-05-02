@@ -9,12 +9,13 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

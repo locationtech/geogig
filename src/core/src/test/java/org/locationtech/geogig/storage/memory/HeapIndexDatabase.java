@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;

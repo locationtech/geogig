@@ -10,6 +10,7 @@
 package org.locationtech.geogig.plumbing;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 public class WalkGraphOp extends AbstractGeoGigOp<Void> {

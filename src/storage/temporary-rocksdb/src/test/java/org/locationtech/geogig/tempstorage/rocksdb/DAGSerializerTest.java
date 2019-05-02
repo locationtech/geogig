@@ -9,7 +9,6 @@ import java.util.List;
 import org.junit.Test;
 import org.locationtech.geogig.model.internal.DAGNode;
 import org.locationtech.geogig.model.internal.NodeId;
-import org.locationtech.geogig.tempstorage.rocksdb.DAGSerializer;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.io.ByteArrayDataInput;

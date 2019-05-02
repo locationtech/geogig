@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumMap;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
@@ -61,7 +62,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.util.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 

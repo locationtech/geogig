@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
-import static java.util.Optional.empty;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Optional.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +45,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 import org.opengis.feature.Feature;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;

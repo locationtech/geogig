@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 

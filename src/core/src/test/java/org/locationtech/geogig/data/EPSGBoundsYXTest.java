@@ -12,6 +12,8 @@
 
 package org.locationtech.geogig.data;
 
+import java.util.Optional;
+
 import org.geotools.referencing.CRS;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,8 +25,6 @@ import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-
-import java.util.Optional;
 
 // This test case is ignored because system properties were
 // not being properly set during the Travis CI build,

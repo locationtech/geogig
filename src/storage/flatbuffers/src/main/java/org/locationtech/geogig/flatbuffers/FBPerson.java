@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.flatbuffers.generated.v1.Person;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
-
-import java.util.Optional;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

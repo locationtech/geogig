@@ -12,6 +12,7 @@ package org.locationtech.geogig.flatbuffers;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -63,7 +64,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.flatbuffers.FlatBufferBuilder;

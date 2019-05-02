@@ -15,6 +15,7 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,7 +47,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
 import com.google.common.io.Files;
 
 /**

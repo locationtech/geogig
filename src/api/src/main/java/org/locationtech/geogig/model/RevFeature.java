@@ -10,10 +10,10 @@
 package org.locationtech.geogig.model;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.jts.geom.Geometry;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**

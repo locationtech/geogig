@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;

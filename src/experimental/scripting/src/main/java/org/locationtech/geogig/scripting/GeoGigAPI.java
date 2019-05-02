@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 

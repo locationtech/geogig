@@ -15,6 +15,7 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -46,7 +47,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.storage.GraphDatabase.Direction;
 import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
 import org.locationtech.geogig.storage.GraphDatabase.GraphNode;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

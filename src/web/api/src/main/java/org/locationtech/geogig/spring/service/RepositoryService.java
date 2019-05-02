@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.spring.service;
 
+import java.util.Optional;
+
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
@@ -40,7 +42,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 

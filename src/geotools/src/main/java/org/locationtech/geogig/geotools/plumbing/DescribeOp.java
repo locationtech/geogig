@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
@@ -21,8 +22,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
-
-import java.util.Optional;
 
 /**
  * Internal operation for describing a table from a GeoTools {@link DataStore}.

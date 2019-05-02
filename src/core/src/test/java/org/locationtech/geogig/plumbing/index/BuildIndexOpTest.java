@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeature;
 
-import java.util.Optional;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 

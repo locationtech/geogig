@@ -10,6 +10,7 @@
 package org.locationtech.geogig.remotes.internal;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
@@ -17,7 +18,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

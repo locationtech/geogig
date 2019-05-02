@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -19,7 +20,6 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Optional;
 
 /**
  * Get and set repository or global options

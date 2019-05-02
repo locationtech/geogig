@@ -10,11 +10,11 @@
 package org.locationtech.geogig.di;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.VersionedFormat;
 
-import java.util.Optional;
 import com.google.inject.Provider;
 
 abstract class FormatSelector<T> implements Provider<T> {

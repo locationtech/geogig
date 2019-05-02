@@ -10,6 +10,7 @@
 package org.locationtech.geogig.plumbing;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,7 +29,6 @@ import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 

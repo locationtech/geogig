@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.model;
 
-import org.locationtech.jts.geom.Envelope;
-
 import java.util.Optional;
+
+import org.locationtech.jts.geom.Envelope;
 
 import lombok.NonNull;
 

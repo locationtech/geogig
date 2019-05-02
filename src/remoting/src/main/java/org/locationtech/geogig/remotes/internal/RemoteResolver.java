@@ -10,14 +10,13 @@
 package org.locationtech.geogig.remotes.internal;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-
-import java.util.Optional;
 
 /**
  * Provides utilities for creating interfaces to remote repositories.

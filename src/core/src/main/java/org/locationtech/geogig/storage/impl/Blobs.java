@@ -10,11 +10,11 @@
 package org.locationtech.geogig.storage.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.storage.BlobStore;
 
 import com.google.common.base.Charsets;
-import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 

@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.ObjectId;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.VersionedFormat;
 import org.locationtech.geogig.storage.impl.Blobs;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;

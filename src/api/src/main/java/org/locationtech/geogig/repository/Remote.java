@@ -11,11 +11,11 @@ package org.locationtech.geogig.repository;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;

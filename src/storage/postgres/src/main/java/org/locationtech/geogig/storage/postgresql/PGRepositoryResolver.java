@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.postgresql;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.locationtech.geogig.repository.Context;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 

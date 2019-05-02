@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.storage;
 
-import org.locationtech.geogig.repository.RepositoryConnectionException;
-
 import java.util.Optional;
+
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 /**
  * Enumeration for the various types of storage used by GeoGig. Provides utility functions for

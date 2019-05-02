@@ -13,13 +13,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.geotools.TestHelper;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 
 public class ListOpTest {

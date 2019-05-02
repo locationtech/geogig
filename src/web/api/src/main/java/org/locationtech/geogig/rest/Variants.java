@@ -11,13 +11,13 @@ package org.locationtech.geogig.rest;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.locationtech.geogig.web.api.RESTUtils;
 import org.springframework.http.MediaType;
 
-import java.util.Optional;
 import com.google.common.collect.Maps;
 
 public class Variants {

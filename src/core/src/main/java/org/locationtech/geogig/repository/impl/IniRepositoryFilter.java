@@ -13,12 +13,11 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.impl.INIBlob;
-
-import java.util.Optional;
 
 /**
  * Provides a means of loading a RepositoryFilter from a blob store.

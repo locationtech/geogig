@@ -13,6 +13,7 @@ import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;

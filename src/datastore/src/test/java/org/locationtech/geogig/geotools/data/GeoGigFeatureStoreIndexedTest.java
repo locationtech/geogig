@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.geotools.data.DataUtilities;
@@ -49,7 +50,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 
-import java.util.Optional;
 import com.google.common.collect.Maps;
 
 /**

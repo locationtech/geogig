@@ -11,6 +11,7 @@ package org.locationtech.geogig.test.integration;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.DiffEntry;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

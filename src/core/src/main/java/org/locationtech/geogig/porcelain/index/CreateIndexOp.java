@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 
-import java.util.Optional;
 import com.google.common.base.Throwables;
 
 /**

@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.geotools.geometry.jts.WKTReader2;
@@ -28,7 +29,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 
 public class NodeTest {

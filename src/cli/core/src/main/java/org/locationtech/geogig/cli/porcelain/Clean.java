@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 
 @Parameters(commandNames = "clean", commandDescription = "Deletes untracked features from working tree")
 public class Clean extends AbstractCommand {

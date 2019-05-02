@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Rule;
@@ -31,8 +32,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.WKTReader;
-
-import java.util.Optional;
 
 public class FieldTypeTest {
     @Rule

@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -40,7 +41,6 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

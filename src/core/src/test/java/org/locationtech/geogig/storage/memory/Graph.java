@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.storage.memory;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.model.ObjectId;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 

@@ -13,6 +13,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,8 +30,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.geogig.storage.impl.PersistedIterable.Serializer;
-
-import java.util.Optional;
 
 public class MergeStatusBuilder extends MergeScenarioConsumer {
 

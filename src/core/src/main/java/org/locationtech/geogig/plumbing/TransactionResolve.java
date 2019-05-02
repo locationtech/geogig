@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.impl.TransactionRefDatabase;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

@@ -20,6 +20,7 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,7 +55,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Optional;
 import com.google.common.collect.Maps;
 
 /**

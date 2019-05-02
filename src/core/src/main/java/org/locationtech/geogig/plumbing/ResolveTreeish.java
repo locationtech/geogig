@@ -12,6 +12,8 @@ package org.locationtech.geogig.plumbing;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -19,8 +21,6 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import java.util.Optional;
 
 /**
  * Resolves the given "ref spec" to a tree id in the repository's object database.

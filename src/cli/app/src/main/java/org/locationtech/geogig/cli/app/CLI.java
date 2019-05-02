@@ -17,6 +17,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 public class CLI {

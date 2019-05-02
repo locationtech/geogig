@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.geotools.util.Range;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
-import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 

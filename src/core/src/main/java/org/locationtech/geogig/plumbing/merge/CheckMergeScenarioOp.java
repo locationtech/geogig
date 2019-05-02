@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing.merge;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -21,7 +22,6 @@ import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;

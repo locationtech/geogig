@@ -16,6 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.test.TestData;
 
-import java.util.Optional;
 import com.google.common.collect.Iterators;
 
 public class PRInitOpTest {

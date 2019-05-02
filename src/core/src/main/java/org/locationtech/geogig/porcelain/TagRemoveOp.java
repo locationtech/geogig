@@ -11,6 +11,8 @@ package org.locationtech.geogig.porcelain;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
@@ -18,7 +20,6 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

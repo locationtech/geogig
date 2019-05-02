@@ -9,12 +9,13 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
-
-import java.util.Optional;
 
 // TODO: Not sure if this belongs in porcelain or integration
 

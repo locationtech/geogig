@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import java.util.Optional;
 import com.google.common.base.Suppliers;
 
 /**

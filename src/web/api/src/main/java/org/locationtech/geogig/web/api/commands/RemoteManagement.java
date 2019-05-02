@@ -10,6 +10,7 @@
 package org.locationtech.geogig.web.api.commands;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.plumbing.remotes.RemoteException;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.springframework.http.HttpStatus;
-
-import java.util.Optional;
 
 /**
  * Interface for the Remote operations in GeoGig.

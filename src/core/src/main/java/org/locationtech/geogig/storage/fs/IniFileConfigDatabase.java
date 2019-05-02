@@ -15,6 +15,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.rocksdb;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -18,7 +19,6 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import com.google.common.base.Charsets;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 class DBHandle {

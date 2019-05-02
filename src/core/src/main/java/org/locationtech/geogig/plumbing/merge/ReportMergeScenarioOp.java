@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing.merge;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;

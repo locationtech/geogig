@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import org.locationtech.geogig.model.Bucket;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;

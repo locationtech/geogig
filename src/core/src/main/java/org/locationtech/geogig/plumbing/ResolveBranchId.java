@@ -9,12 +9,13 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.Optional;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;

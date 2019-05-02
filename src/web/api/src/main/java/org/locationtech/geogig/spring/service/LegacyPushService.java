@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.spring.service;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -22,8 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 /**
  *

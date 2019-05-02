@@ -11,6 +11,7 @@ package org.locationtech.geogig.geotools.cli.geojson;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
@@ -27,7 +28,6 @@ import org.opengis.feature.type.GeometryDescriptor;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 
 @Parameters(commandNames = "import", commandDescription = "Import GeoJSON")
 public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand {

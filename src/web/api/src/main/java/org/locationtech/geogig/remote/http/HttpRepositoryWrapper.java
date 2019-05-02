@@ -10,11 +10,11 @@
 package org.locationtech.geogig.remote.http;
 
 import java.net.URL;
+import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.remotes.internal.RepositoryWrapper;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**

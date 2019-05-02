@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.locationtech.geogig.model.NodeRef;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**

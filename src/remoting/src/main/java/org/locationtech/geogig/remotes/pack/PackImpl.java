@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -37,7 +38,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
-import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;

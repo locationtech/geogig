@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**

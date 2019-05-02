@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -45,7 +46,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;

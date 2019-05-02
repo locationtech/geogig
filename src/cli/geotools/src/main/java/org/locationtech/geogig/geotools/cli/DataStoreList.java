@@ -11,6 +11,7 @@ package org.locationtech.geogig.geotools.cli;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -20,8 +21,6 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ListOp;
-
-import java.util.Optional;
 
 /**
  * Lists feature types from a {@link DataStore} given by the concrete subclass.

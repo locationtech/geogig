@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.remotes;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Remote;
-
-import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

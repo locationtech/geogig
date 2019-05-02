@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -17,7 +19,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

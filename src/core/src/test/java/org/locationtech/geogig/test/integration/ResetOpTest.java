@@ -11,6 +11,8 @@ package org.locationtech.geogig.test.integration;
 
 import static org.locationtech.geogig.model.NodeRef.appendChild;
 
+import java.util.Optional;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,7 +33,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.opengis.feature.Feature;
 
-import java.util.Optional;
 import com.google.common.base.Suppliers;
 
 public class ResetOpTest extends RepositoryTestCase {

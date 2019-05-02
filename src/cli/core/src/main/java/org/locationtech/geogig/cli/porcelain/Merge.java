@@ -11,6 +11,7 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import java.util.Optional;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 

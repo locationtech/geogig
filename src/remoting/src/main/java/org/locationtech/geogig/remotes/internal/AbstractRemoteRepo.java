@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
@@ -19,7 +21,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 

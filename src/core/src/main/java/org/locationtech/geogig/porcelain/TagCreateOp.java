@@ -12,6 +12,8 @@ package org.locationtech.geogig.porcelain;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevPerson;
@@ -22,7 +24,6 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Platform;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

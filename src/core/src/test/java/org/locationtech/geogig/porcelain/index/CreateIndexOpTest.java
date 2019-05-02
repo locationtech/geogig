@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,8 +39,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-
-import java.util.Optional;
 
 public class CreateIndexOpTest extends RepositoryTestCase {
 

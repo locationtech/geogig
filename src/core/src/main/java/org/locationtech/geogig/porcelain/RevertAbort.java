@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import java.util.Optional;
+
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -19,7 +21,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

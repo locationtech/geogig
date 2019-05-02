@@ -12,6 +12,7 @@ package org.locationtech.geogig.geotools.cli;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 
 import com.beust.jcommander.Parameter;
-import java.util.Optional;
 
 /**
  * Describes a feature type from a {@link DataStore} given by the concrete subclass.

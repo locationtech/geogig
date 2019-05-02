@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -43,7 +44,6 @@ import org.locationtech.geogig.test.TestData;
 import org.springframework.http.HttpMethod;
 import org.w3c.dom.Document;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;

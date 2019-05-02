@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -50,7 +51,6 @@ import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;

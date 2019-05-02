@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -24,7 +25,6 @@ import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamingWriter;
 import org.springframework.http.MediaType;
 
-import java.util.Optional;
 import com.google.common.base.Strings;
 
 public abstract class AsyncCommandRepresentation<T> extends LegacyResponse {

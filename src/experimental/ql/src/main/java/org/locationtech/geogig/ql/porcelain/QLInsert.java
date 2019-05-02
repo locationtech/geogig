@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -36,7 +37,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;

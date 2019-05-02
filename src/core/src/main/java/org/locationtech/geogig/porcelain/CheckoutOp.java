@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -50,7 +51,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;

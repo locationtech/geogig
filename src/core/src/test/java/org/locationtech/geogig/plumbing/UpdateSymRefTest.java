@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.Optional;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,8 +21,6 @@ import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-
-import java.util.Optional;
 
 public class UpdateSymRefTest extends RepositoryTestCase {
 

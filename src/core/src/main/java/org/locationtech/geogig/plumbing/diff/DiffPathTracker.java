@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
+import java.util.Optional;
 import java.util.Stack;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -17,7 +18,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Objects;
-import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 public final class DiffPathTracker {

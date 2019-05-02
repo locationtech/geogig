@@ -16,6 +16,7 @@ import static org.junit.Assert.fail;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,8 +42,6 @@ import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.Feature;
-
-import java.util.Optional;
 
 public class PullOpTest extends RemoteRepositoryTestCase {
     @Rule

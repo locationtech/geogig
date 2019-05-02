@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
@@ -35,7 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.Optional;
 import com.google.common.collect.AbstractIterator;
 import com.google.gson.JsonObject;
 

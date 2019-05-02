@@ -12,6 +12,7 @@ package org.locationtech.geogig.model.impl;
 import static java.util.Optional.ofNullable;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -21,8 +22,6 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Envelope;
 
 import lombok.NonNull;
-
-import java.util.Optional;
 
 abstract class BaseNodeImpl extends Node {
 

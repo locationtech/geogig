@@ -23,7 +23,7 @@
 
     <delombok.outputDirectoryBase>${root.directory}/../src-delombok</delombok.outputDirectoryBase>
     <delombok-targetdir>${delombok.outputDirectoryBase}</delombok-targetdir>
-    <lombok.version>1.18.2</lombok.version>
+    <lombok.version>1.18.6</lombok.version>
     <lz4.version>1.3.0</lz4.version>
     <caffeine-version>2.6.2</caffeine-version>
     <compress-lzf.version>1.0.3</compress-lzf.version>

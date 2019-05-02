@@ -20,6 +20,9 @@
     <postgresWebFunctional.skip.pattern>org/geogig/web/postgresql/functional/**</postgresWebFunctional.skip.pattern>
     <allow.test.skip>true</allow.test.skip>
     <argLine>-Xms256m -Xmx512m</argLine>
+    <!-- or fmt.action 'validate' -->
+    <fmt.action>format</fmt.action>
+    <fmt.skip>false</fmt.skip>
 
     <delombok.outputDirectoryBase>${root.directory}/../src-delombok</delombok.outputDirectoryBase>
     <delombok-targetdir>${delombok.outputDirectoryBase}</delombok-targetdir>
@@ -60,6 +63,7 @@
     <maven-source-plugin-version>3.0.1</maven-source-plugin-version>
     <maven-surefire-report-plugin-version>2.20.1</maven-surefire-report-plugin-version>
     <maven-javadoc-plugin-vesion>3.0.0</maven-javadoc-plugin-vesion>
+    <formatter-maven-plugin.version>2.8.1</formatter-maven-plugin.version>
   </properties>
 
 
@@ -466,6 +470,11 @@
           <artifactId>maven-assembly-plugin</artifactId>
           <version>${assembly.plugin.version}</version>
         </plugin>
+        <plugin>
+          <groupId>net.revelc.code.formatter</groupId>
+          <artifactId>formatter-maven-plugin</artifactId>
+          <version>${formatter-maven-plugin.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -562,6 +571,34 @@
           <reuseForks>true</reuseForks>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>${fmt.action}</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skip>${fmt.skip}</skip>
+          <configFile>${maven.multiModuleProjectDirectory}/.mvn/formatter.xml</configFile>
+          <compilerSource>${project.build.jdk}</compilerSource>
+          <compilerCompliance>${project.build.jdk}</compilerCompliance>
+          <compilerTargetPlatform>${project.build.jdk}</compilerTargetPlatform>
+          <!-- Use Unix and Mac style line endings -->
+          <lineEnding>LF</lineEnding>
+          <encoding>UTF-8</encoding>
+          <skipJsFormatting>true</skipJsFormatting>
+          <skipCssFormatting>true</skipCssFormatting>
+          <skipHtmlFormatting>true</skipHtmlFormatting>
+          <skipJsonFormatting>true</skipJsonFormatting>
+          <skipXmlFormatting>true</skipXmlFormatting>
+          <skipJavaFormatting>false</skipJavaFormatting>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
   <profiles>

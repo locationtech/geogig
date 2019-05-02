@@ -7,7 +7,7 @@ jdk:
 before_install: 
   - cd src
   - sudo apt-get install libspatialite-dev
-install: mvn -B -U install -DskipTests=true -Ptravis,postgres
+install: mvn -B -U install -Dfmt.action=validate -DskipTests=true -Ptravis,postgres
 before_script:
   - psql -c 'create database geogig_tests;' -U postgres
   - psql -c "create extension postgis" -U postgres -d geogig_tests
@@ -24,7 +24,7 @@ before_script:
   - echo 'user = postgres' >> ~/.geogig-pg-tests.properties
   - echo 'password = ' >> ~/.geogig-pg-tests.properties
 script:
-  - mvn -B test -Ppostgres,experimental,online
+  - mvn -B test -Dfmt.skip=true -Ppostgres,experimental,online
 services: postgresql
 addons:
   postgresql: "9.4"

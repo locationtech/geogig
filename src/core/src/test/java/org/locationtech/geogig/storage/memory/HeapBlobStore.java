@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -56,7 +56,7 @@ public class HeapBlobStore implements TransactionBlobStore {
 
     @Override
     public Optional<byte[]> getBlob(String namespace, String path) {
-        return Optional.fromNullable(blobs.get(key(namespace, path)));
+        return Optional.ofNullable(blobs.get(key(namespace, path)));
     }
 
     private String key(@Nullable String ns, String path) {
@@ -71,7 +71,7 @@ public class HeapBlobStore implements TransactionBlobStore {
         if (blob.isPresent()) {
             in = new ByteArrayInputStream(blob.get());
         }
-        return Optional.fromNullable(in);
+        return Optional.ofNullable(in);
     }
 
     @Override

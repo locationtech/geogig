@@ -30,7 +30,7 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -58,7 +58,7 @@ class GeogigTransactionState implements State {
     }
 
     public Optional<GeogigTransaction> getGeogigTransaction() {
-        return Optional.fromNullable(this.geogigTx);
+        return Optional.ofNullable(this.geogigTx);
     }
 
     @Override
@@ -110,14 +110,14 @@ class GeogigTransactionState implements State {
         final Optional<String> fullName = getTransactionProperty("fullname");
         final Optional<String> email = getTransactionProperty("email");
 
-        final String author = fullName.isPresent() ? fullName.get() : txUserName.orNull();
-        String commitMessage = getTransactionProperty(VERSIONING_COMMIT_MESSAGE).orNull();
+        final String author = fullName.isPresent() ? fullName.get() : txUserName.orElse(null);
+        String commitMessage = getTransactionProperty(VERSIONING_COMMIT_MESSAGE).orElse(null);
 
         this.geogigTx.command(AddOp.class).call();
         try {
             CommitOp commitOp = this.geogigTx.command(CommitOp.class);
             if (txUserName != null) {
-                commitOp.setAuthor(author, email.orNull());
+                commitOp.setAuthor(author, email.orElse(null));
             }
             if (commitMessage == null) {
                 commitMessage = composeDefaultCommitMessage();
@@ -129,7 +129,7 @@ class GeogigTransactionState implements State {
         }
 
         try {
-            this.geogigTx.setAuthor(author, email.orNull()).commit();
+            this.geogigTx.setAuthor(author, email.orElse(null)).commit();
         } catch (ConflictsException e) {
             // TODO: how should this be handled?
             this.geogigTx.abort();
@@ -143,7 +143,7 @@ class GeogigTransactionState implements State {
         if (property instanceof String) {
             return Optional.of((String) property);
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     private String composeDefaultCommitMessage() {

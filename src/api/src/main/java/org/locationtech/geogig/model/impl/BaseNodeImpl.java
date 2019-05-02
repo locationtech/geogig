@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Optional.fromNullable;
+import static java.util.Optional.ofNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
@@ -21,7 +21,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 abstract class BaseNodeImpl extends Node {
 
@@ -68,7 +68,7 @@ abstract class BaseNodeImpl extends Node {
 
     @Override
     public Optional<ObjectId> getMetadataId() {
-        return Optional.fromNullable(metadataId);
+        return Optional.ofNullable(metadataId);
     }
 
     /**
@@ -103,7 +103,7 @@ abstract class BaseNodeImpl extends Node {
 
     @Override
     public Optional<Envelope> bounds() {
-        return fromNullable(boundsInternal().isNull() ? null : boundsInternal().asEnvelope());
+        return ofNullable(boundsInternal().isNull() ? null : boundsInternal().asEnvelope());
     }
 
     private Float32Bounds boundsInternal() {

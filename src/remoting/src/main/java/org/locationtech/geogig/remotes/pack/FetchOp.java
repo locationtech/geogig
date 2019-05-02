@@ -39,7 +39,7 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -350,7 +350,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
             private List<Remote> remotes = new ArrayList<Remote>();
 
-            private Optional<Integer> depth = Optional.absent();
+            private Optional<Integer> depth = Optional.empty();
 
             private boolean fetchTags = true;
 
@@ -386,7 +386,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                     }
                 } else if (depth.isPresent() || fullDepth) {
                     // Ignore depth, this is a full repository
-                    depth = Optional.absent();
+                    depth = Optional.empty();
                     fullDepth = false;
                 }
 
@@ -473,7 +473,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public Integer getDepth() {
-        return argsBuilder.depth.orNull();
+        return argsBuilder.depth.orElse(null);
     }
 
     /**

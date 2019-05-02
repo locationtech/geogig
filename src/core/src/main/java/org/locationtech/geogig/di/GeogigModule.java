@@ -95,7 +95,7 @@ public class GeogigModule extends AbstractModule {
         public Platform get() {
             if (resolved == null) {
                 Hints hints = this.hints.get();
-                resolved = (Platform) hints.get(Hints.PLATFORM).or(new DefaultPlatform());
+                resolved = (Platform) hints.get(Hints.PLATFORM).orElseGet(DefaultPlatform::new);
             }
             return resolved;
         }

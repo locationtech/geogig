@@ -19,7 +19,7 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class BranchCreateOpTest extends RepositoryTestCase {
 

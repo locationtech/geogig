@@ -11,7 +11,7 @@ package org.locationtech.geogig.remotes.internal;
 
 import org.locationtech.geogig.model.ObjectId;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -46,7 +46,7 @@ public interface RepositoryWrapper {
     /**
      * Gets the depth of the repository.
      * 
-     * @return the depth of the repository, or {@link Optional#absent()} if the repository is not
+     * @return the depth of the repository, or {@link Optional#empty()} if the repository is not
      *         shallow
      */
     public Optional<Integer> getRepoDepth();

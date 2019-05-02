@@ -11,7 +11,7 @@ package org.locationtech.geogig.storage;
 
 import java.io.InputStream;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * A general purpose interface for commands to store auxiliary data
@@ -24,7 +24,7 @@ public interface BlobStore {
      * Look up a blob by key.
      * 
      * @param path the blob's name
-     * @return the blob, or {@link Optional#absent()} if it was not found
+     * @return the blob, or {@link Optional#empty()} if it was not found
      */
     public Optional<byte[]> getBlob(String path);
 
@@ -32,7 +32,7 @@ public interface BlobStore {
      * Look up a blob by key.
      * 
      * @param path the blob's name
-     * @return the blob, or {@link Optional#absent()} if it was not found
+     * @return the blob, or {@link Optional#empty()} if it was not found
      */
     public Optional<InputStream> getBlobAsStream(String path);
 

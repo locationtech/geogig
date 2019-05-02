@@ -17,7 +17,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 public final class DiffPathTracker {
@@ -35,11 +35,11 @@ public final class DiffPathTracker {
     }
 
     public Optional<Node> currentLeftTree() {
-        return Optional.fromNullable(leftTrees.peek());
+        return Optional.ofNullable(leftTrees.peek());
     }
 
     public Optional<Node> currentRightTree() {
-        return Optional.fromNullable(rightTrees.peek());
+        return Optional.ofNullable(rightTrees.peek());
     }
 
     public Optional<ObjectId> currentLeftMetadataId() {
@@ -52,7 +52,7 @@ public final class DiffPathTracker {
 
     private Optional<ObjectId> metadataId(@Nullable Node treeNode) {
         if (treeNode == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return treeNode.getMetadataId();
     }

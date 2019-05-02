@@ -187,8 +187,8 @@ public class FormatCommonV2 {
     }
 
     public final void writePerson(RevPerson person, DataOutput data) throws IOException {
-        data.writeUTF(person.getName().or(""));
-        data.writeUTF(person.getEmail().or(""));
+        data.writeUTF(person.getName().orElse(""));
+        data.writeUTF(person.getEmail().orElse(""));
         writeUnsignedVarLong(person.getTimestamp(), data);
         writeUnsignedVarInt(person.getTimeZoneOffset(), data);
     }
@@ -292,7 +292,7 @@ public class FormatCommonV2 {
         writeUnsignedVarInt(feature.size(), data);
 
         for (int i = 0; i < feature.size(); i++) {
-            Object field = feature.get(i).orNull();
+            Object field = feature.get(i).orElse(null);
             FieldType type = FieldType.forValue(field);
             data.writeByte(type.getTag());
             valueEncoder.encode(type, field, data);
@@ -514,7 +514,7 @@ public class FormatCommonV2 {
         data.writeUTF(node.getName());
         node.getObjectId().writeTo(data);
         if (metadataMask == METADATA_PRESENT_MASK) {
-            node.getMetadataId().or(ObjectId.NULL).writeTo(data);
+            node.getMetadataId().orElse(ObjectId.NULL).writeTo(data);
         }
         if (BOUNDS_BOX2D_MASK == boundsMask) {
             writeBoundingBox(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(), data);

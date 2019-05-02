@@ -23,7 +23,7 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagRemoveOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class TagTest extends RepositoryTestCase {
 

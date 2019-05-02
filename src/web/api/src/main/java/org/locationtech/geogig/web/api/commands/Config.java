@@ -25,7 +25,7 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * The interface for the Config operation in GeoGig.

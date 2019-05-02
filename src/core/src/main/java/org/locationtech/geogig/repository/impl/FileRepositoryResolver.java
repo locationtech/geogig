@@ -33,7 +33,7 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
@@ -142,7 +142,7 @@ public class FileRepositoryResolver extends RepositoryResolver {
             Hints hints = Hints.readOnly().uri(repoURI);
             Context context = GlobalContextBuilder.builder().build(hints);
             ConfigDatabase configDatabase = context.configDatabase();
-            repoName = configDatabase.get("repo.name").orNull();
+            repoName = configDatabase.get("repo.name").orElse(null);
         }
         if (repoName == null) {
             // the repo doesn't exist or name is not configured, derive the name from the

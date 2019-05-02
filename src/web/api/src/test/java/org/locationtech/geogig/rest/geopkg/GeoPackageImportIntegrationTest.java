@@ -55,7 +55,7 @@ import org.locationtech.geogig.web.api.JsonUtils;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.opengis.filter.Filter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -643,7 +643,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
                 "{\"task\":{\"id\":%s,\"description\":\"Importing GeoPackage database file.\",\"href\":\"/geogig/tasks/%s.json\"}}",
                 taskId, taskId));
         assertTrue(JsonUtils.jsonEquals(expected, response, false));
-        Optional<AsyncContext.AsyncCommand<?>> asyncCommand = Optional.absent();
+        Optional<AsyncContext.AsyncCommand<?>> asyncCommand = Optional.empty();
         while (!asyncCommand.isPresent()) {
             asyncCommand = testAsyncContext.getAndPruneIfFinished(taskId);
         }

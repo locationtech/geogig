@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import org.locationtech.geogig.storage.fs.INIFile;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 
 public class OnlineTestProperties {
@@ -87,10 +87,10 @@ public class OnlineTestProperties {
             Optional<String> val = ini.get(pair.section, pair.option);
 
             if (!val.isPresent())
-                return Optional.absent();
+                return Optional.empty();
             String value = val.get();
             if (Strings.isNullOrEmpty(value))
-                return Optional.absent();
+                return Optional.empty();
 
             if (int.class.equals(c) || Integer.class.equals(c)) {
                 return Optional.of((T) Integer.valueOf(value));

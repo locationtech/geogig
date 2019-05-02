@@ -31,7 +31,7 @@ import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -123,7 +123,7 @@ public class PGStorage {
         Optional<Integer> repoPK;
         try (PGConfigDatabase configdb = new PGConfigDatabase(config)) {
             if (config.isRepositorySet()) {
-                String configuredName = configdb.get("repo.name").orNull();
+                String configuredName = configdb.get("repo.name").orElse(null);
                 Preconditions.checkState(config.getRepositoryName().equals(configuredName));
                 return true;
             } else {
@@ -266,7 +266,7 @@ public class PGStorage {
             // connections
             configdb.put("repo.name", argRepoName);
             checkState(pk == configdb.resolveRepositoryPK(argRepoName)
-                    .or(Environment.REPOSITORY_ID_UNSET));
+                    .orElse(Environment.REPOSITORY_ID_UNSET));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {

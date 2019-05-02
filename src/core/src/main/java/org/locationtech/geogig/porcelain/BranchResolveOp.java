@@ -28,7 +28,7 @@ public class BranchResolveOp extends AbstractGeoGigOp<java.util.Optional<Ref>>
     private String branchName = Ref.HEAD;
 
     protected @Override java.util.Optional<Ref> _call() {
-        Ref head = command(RefParse.class).setName(branchName).call().orNull();
+        Ref head = command(RefParse.class).setName(branchName).call().orElse(null);
         if (head != null && Ref.HEAD.equals(branchName) && (head instanceof SymRef)) {
             head = head.peel();
         }

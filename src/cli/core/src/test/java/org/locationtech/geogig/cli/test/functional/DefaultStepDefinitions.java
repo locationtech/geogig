@@ -77,7 +77,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
@@ -811,13 +811,13 @@ public class DefaultStepDefinitions {
         Repository repo = localRepo.geogigCLI.getGeogig().getRepository();
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
         if (typeTreeRef == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         String treeName = typeTreeRef.path();
         List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
                 attributeName);
         if (indexInfos.isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         Preconditions.checkState(indexInfos.size() == 1,
                 "Multiple indexes found for given tree ref.");

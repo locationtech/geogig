@@ -28,7 +28,7 @@ import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 
@@ -54,9 +54,9 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
 
     private boolean rebase = false;
 
-    private Optional<String> authorName = Optional.absent();
+    private Optional<String> authorName = Optional.empty();
 
-    private Optional<String> authorEmail = Optional.absent();
+    private Optional<String> authorEmail = Optional.empty();
 
     /**
      * @param cancel if {@code true}, the transaction will be cancelled, otherwise it will be
@@ -92,8 +92,8 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
      * @return {@code this}
      */
     public TransactionEnd setAuthor(@Nullable String authorName, @Nullable String authorEmail) {
-        this.authorName = Optional.fromNullable(authorName);
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorName = Optional.ofNullable(authorName);
+        this.authorEmail = Optional.ofNullable(authorEmail);
         return this;
     }
 
@@ -177,7 +177,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
                                 .setProgressListener(getProgressListener()).call();
                         try {
                             transaction.command(MergeOp.class)
-                                    .setAuthor(authorName.orNull(), authorEmail.orNull())
+                                    .setAuthor(authorName.orElse(null), authorEmail.orElse(null))
                                     .addCommit(currentRef.get().getObjectId())
                                     .setProgressListener(getProgressListener()).call();
                         } catch (NothingToCommitException e) {

@@ -20,7 +20,7 @@ import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
@@ -52,7 +52,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      * Constructs a new {@code LsRemote}.
      */
     public LsRemoteOp() {
-        this.remote = Suppliers.ofInstance(Optional.absent());
+        this.remote = Suppliers.ofInstance(Optional.empty());
         this.getBranches = true;
         this.getTags = true;
     }
@@ -131,7 +131,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      */
     @Override
     protected ImmutableSet<Ref> _call() {
-        final Remote remoteConfig = this.remote.get().orNull();
+        final Remote remoteConfig = this.remote.get().orElse(null);
 
         Preconditions.checkState(remoteRepo != null || remoteConfig != null,
                 "Remote was not provided");
@@ -151,7 +151,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
                     "Connected to remote " + remoteConfig.getName() + ". Retrieving references");
         }
 
-        Optional<Ref> headRef = Optional.absent();
+        Optional<Ref> headRef = Optional.empty();
         try {
             remoteRefs = remoteRepo.listRefs(repository(), getBranches, getTags);
             if (getHead) {

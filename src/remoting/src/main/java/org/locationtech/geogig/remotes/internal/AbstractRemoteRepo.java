@@ -19,7 +19,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -216,7 +216,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
 
         CommitTraverser traverser;
         if (remoteWrapper.getRepoDepth().isPresent()) {
-            Optional<Integer> pushDepth = Optional.absent();
+            Optional<Integer> pushDepth = Optional.empty();
             if (!remoteRef.isPresent()) {
                 pushDepth = remoteWrapper.getRepoDepth();
             }

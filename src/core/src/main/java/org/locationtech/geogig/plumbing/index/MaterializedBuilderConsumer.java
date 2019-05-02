@@ -39,7 +39,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -175,7 +175,7 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
             Map<String, Object> atts = new HashMap<>();
             extraDataProperties.forEach((attName, attIndex) -> {
                 Optional<Object> value = f.get(attIndex.intValue());
-                atts.put(attName, value.orNull());
+                atts.put(attName, value.orElse(null));
             });
 
             Map<String, Object> extraData = new HashMap<>(node.getExtraData());
@@ -183,9 +183,9 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
             extraData.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA, atts);
 
             String name = node.getName();
-            ObjectId metadataId = node.getMetadataId().or(ObjectId.NULL);
+            ObjectId metadataId = node.getMetadataId().orElse(ObjectId.NULL);
             TYPE type = node.getType();
-            Envelope orNull = node.bounds().orNull();
+            Envelope orNull = node.bounds().orElse(null);
             materialized = RevObjectFactory.defaultInstance().createNode(name, objectId, metadataId,
                     type, orNull, extraData);
         }

@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.locationtech.geogig.web.api.RESTUtils;
 import org.springframework.http.MediaType;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Maps;
 
 public class Variants {
@@ -45,7 +45,7 @@ public class Variants {
         } else if ("txt".equals(extension) && supported.contains(MediaType.TEXT_PLAIN)) {
             t = MediaType.TEXT_PLAIN;
         }
-        return Optional.fromNullable(t);
+        return Optional.ofNullable(t);
     }
 
 }

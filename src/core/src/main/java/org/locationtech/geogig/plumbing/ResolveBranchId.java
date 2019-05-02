@@ -14,7 +14,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
@@ -48,7 +48,7 @@ public class ResolveBranchId extends AbstractGeoGigOp<Optional<Ref>> {
         };
         ImmutableSet<Ref> refs = command(ForEachRef.class).setFilter(filter).call();
         if (refs.isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         } else {
             return Optional.of(refs.iterator().next());
         }

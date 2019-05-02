@@ -79,7 +79,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -188,7 +188,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         final boolean destPathProvided = destPath != null;
         if (destPathProvided) {
             destPathFeatureType = this.command(ResolveFeatureType.class).setRefSpec(destPath).call()
-                    .orNull();
+                    .orElse(null);
             // we delete the previous tree to honor the overwrite setting, but then turn it
             // to false. Otherwise, each table imported will overwrite the previous ones and
             // only the last one will be imported.
@@ -617,7 +617,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             int idx = oldAttributes.indexOf(newAttributes.get(i));
             if (idx != -1) {
                 Optional<Object> oldValue = oldFeature.get(idx);
-                builder.addValue(oldValue.orNull());
+                builder.addValue(oldValue.orElse(null));
             } else {
                 builder.addValue(null);
             }

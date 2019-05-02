@@ -24,7 +24,7 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class BranchDeleteOpTest extends RepositoryTestCase {
 
@@ -51,7 +51,7 @@ public class BranchDeleteOpTest extends RepositoryTestCase {
     public void BranchNotPresentTest() {
         Optional<? extends Ref> branchref = geogig.command(BranchDeleteOp.class).setName("noBranch")
                 .call();
-        assertEquals(Optional.absent(), branchref);
+        assertEquals(Optional.empty(), branchref);
     }
 
     @Test

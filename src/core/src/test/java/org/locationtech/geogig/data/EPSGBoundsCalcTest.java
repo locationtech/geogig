@@ -28,7 +28,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class EPSGBoundsCalcTest extends RepositoryTestCase {
 

@@ -114,7 +114,7 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
                     .setLeftSource(graphDatabase())//
                     .setRightId(issuerBranch.getObjectId())//
                     .setRightSource(issuerRepo.graphDatabase())//
-                    .call().orNull();
+                    .call().orElse(null);
         } finally {
             issuerRepo.close();
         }
@@ -135,7 +135,7 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
         Preconditions.checkNotNull(pr.getId());
         getProgressListener().setDescription("Initializing pull request " + pr);
 
-        com.google.common.base.Optional<GeogigTransaction> tx = command(TransactionResolve.class)
+        java.util.Optional<GeogigTransaction> tx = command(TransactionResolve.class)
                 .setId(pr.getTransactionId()).call();
         if (!tx.isPresent()) {
             PRStatus status = command(PRHealthCheckOp.class).setRequest(pr).call();

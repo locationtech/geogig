@@ -38,7 +38,7 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
@@ -135,7 +135,7 @@ public class Merge extends AbstractCommand implements CLICommand {
             }
             throw e;
         }
-        final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);
+        final ObjectId parentId = commit.parentN(0).orElse(ObjectId.NULL);
 
         console.println("[" + commit.getId() + "] " + commit.getMessage());
 

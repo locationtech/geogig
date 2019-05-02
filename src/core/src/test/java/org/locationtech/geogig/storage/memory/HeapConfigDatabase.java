@@ -10,7 +10,7 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.base.Optional.fromNullable;
+import static java.util.Optional.ofNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Sets;
 
 public class HeapConfigDatabase implements ConfigDatabase {
@@ -49,12 +49,12 @@ public class HeapConfigDatabase implements ConfigDatabase {
     @Override
     public Optional<String> get(String key) {
         checkKeyFormat(key);
-        return fromNullable(local.get(key));
+        return ofNullable(local.get(key));
     }
 
     @Override
     public Optional<String> getGlobal(String key) {
-        return fromNullable(global.get(key));
+        return ofNullable(global.get(key));
     }
 
     @Override
@@ -83,7 +83,7 @@ public class HeapConfigDatabase implements ConfigDatabase {
         } else {
             throw new IllegalArgumentException("Unsupported type: " + c);
         }
-        return fromNullable(val);
+        return ofNullable(val);
     }
 
     @Override

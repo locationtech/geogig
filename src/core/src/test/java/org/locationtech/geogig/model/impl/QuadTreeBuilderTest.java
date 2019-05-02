@@ -432,7 +432,7 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
         Node node = RevObjectFactory.defaultInstance().createNode(nodeName, oid, ObjectId.NULL,
                 TYPE.FEATURE, bounds, null);
 
-        Envelope nodeBounds = node.bounds().orNull();
+        Envelope nodeBounds = node.bounds().orElse(null);
         if (bounds != null) {
             checkState(nodeBounds.contains(bounds));
             checkState(maxBounds.contains(nodeBounds));

@@ -44,7 +44,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
@@ -160,7 +160,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * Gets the remote ref that matches the provided ref spec.
      * 
      * @param refspec the refspec to parse
-     * @return the matching {@link Ref} or {@link Optional#absent()} if the ref could not be found
+     * @return the matching {@link Ref} or {@link Optional#empty()} if the ref could not be found
      */
     @Override
     protected Optional<Ref> getRemoteRef(String refspec) {
@@ -181,7 +181,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                 .setNewValue(commitId).setDelete(delete).call();
 
         if (updatedRef.isPresent()) {
-            final Ref remoteHead = headRef().orNull();
+            final Ref remoteHead = headRef().orElse(null);
             if (remoteHead instanceof SymRef) {
                 if (((SymRef) remoteHead).getTarget().equals(updatedRef.get().getName())) {
                     remoteRepo.command(UpdateSymRef.class).setName(Ref.HEAD)
@@ -307,7 +307,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
     /**
      * Gets the depth of the remote repository.
      * 
-     * @return the depth of the repository, or {@link Optional#absent()} if the repository is not
+     * @return the depth of the repository, or {@link Optional#empty()} if the repository is not
      *         shallow
      */
     @Override

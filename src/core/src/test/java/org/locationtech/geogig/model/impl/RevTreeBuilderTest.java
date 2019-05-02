@@ -180,7 +180,7 @@ public abstract class RevTreeBuilderTest {
                 NodeRef entry = it.next();
                 if (i % 10 == 0) {
                     Node oldNode = entry.getNode();
-                    Envelope oldBounds = oldNode.bounds().orNull();
+                    Envelope oldBounds = oldNode.bounds().orElse(null);
                     Envelope newBounds = null;
                     if (oldBounds != null) {
                         newBounds = new Envelope(oldBounds);

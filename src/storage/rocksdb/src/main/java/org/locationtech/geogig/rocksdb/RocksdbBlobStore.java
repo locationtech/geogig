@@ -22,7 +22,7 @@ import org.rocksdb.RocksIterator;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
@@ -105,7 +105,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
-        return Optional.fromNullable(bytes);
+        return Optional.ofNullable(bytes);
     }
 
     @Override
@@ -119,7 +119,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
                 return new ByteArrayInputStream(b);
             }};
 
-        return blob.transform(fn);
+        return blob.map(fn);
     }
 
     @Override

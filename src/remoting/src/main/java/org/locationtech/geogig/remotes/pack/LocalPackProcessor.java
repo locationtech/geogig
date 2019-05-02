@@ -28,7 +28,7 @@ import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.NonNull;
 

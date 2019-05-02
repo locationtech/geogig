@@ -24,7 +24,7 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -62,7 +62,7 @@ public interface IRemoteRepo extends Closeable, CommandFactory {
     public ImmutableSet<Ref> listRefs(Repository local, boolean getHeads, boolean getTags);
 
     /**
-     * @return the remote's {@link Ref#HEAD HEAD} ref, or {@link Optional#absent() absent} if the
+     * @return the remote's {@link Ref#HEAD HEAD} ref, or {@link Optional#empty() absent} if the
      *         remote repo has no {@link Ref#HEAD HEAD}.
      */
     public Optional<Ref> headRef();
@@ -111,7 +111,7 @@ public interface IRemoteRepo extends Closeable, CommandFactory {
      * Delete the given refspec from the remote repository.
      * 
      * @param refspec the refspec to delete
-     * @return the deleted ref, {@link Optional#absent() absent} if it didn't exist
+     * @return the deleted ref, {@link Optional#empty() absent} if it didn't exist
      */
     public @Nullable Optional<Ref> deleteRef(String refspec);
 

@@ -56,10 +56,10 @@ public final @Accessors(fluent = true) class RevCommitBuilder {
      * @param copy the commit to initialize this builder properties with
      */
     public RevCommitBuilder init(@NonNull RevCommit copy) {
-        author = copy.getAuthor().getName().orNull();
-        authorEmail = copy.getAuthor().getEmail().orNull();
-        committer = copy.getCommitter().getName().orNull();
-        committerEmail = copy.getCommitter().getEmail().orNull();
+        author = copy.getAuthor().getName().orElse(null);
+        authorEmail = copy.getAuthor().getEmail().orElse(null);
+        committer = copy.getCommitter().getName().orElse(null);
+        committerEmail = copy.getCommitter().getEmail().orElse(null);
         message = copy.getMessage();
         parentIds = new ArrayList<>(copy.getParentIds());
         treeId = copy.getTreeId();

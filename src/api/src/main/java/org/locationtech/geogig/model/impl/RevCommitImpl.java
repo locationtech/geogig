@@ -14,7 +14,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 import lombok.Getter;
@@ -60,7 +60,7 @@ class RevCommitImpl extends AbstractRevObject implements RevCommit {
     }
 
     public @Override Optional<ObjectId> parentN(int parentIndex) {
-        Optional<ObjectId> parent = Optional.absent();
+        Optional<ObjectId> parent = Optional.empty();
         if (parentIds.size() > parentIndex) {
             parent = Optional.of(parentIds.get(parentIndex));
         }

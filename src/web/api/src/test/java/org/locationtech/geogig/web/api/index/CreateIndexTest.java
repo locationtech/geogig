@@ -26,7 +26,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class CreateIndexTest extends AbstractIndexWebOpTest {
 

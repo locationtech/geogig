@@ -28,7 +28,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 // TODO: Not sure if this belongs in porcelain or integration
 
@@ -51,26 +51,26 @@ public class ConfigOpTest extends RepositoryTestCase {
         config.setAction(ConfigAction.CONFIG_SET).setName("section.string").setValue("1").call();
 
         Map<String, String> result = config.setAction(ConfigAction.CONFIG_GET)
-                .setName("section.string").setValue(null).call().or(new HashMap<String, String>());
+                .setName("section.string").setValue(null).call().orElseGet(HashMap::new);
         assertEquals("1", result.get("section.string"));
 
         // Test overwriting a value that already exists
         config.setAction(ConfigAction.CONFIG_SET).setName("section.string").setValue("2").call();
 
         result = config.setAction(ConfigAction.CONFIG_GET).setName("section.string").setValue(null)
-                .call().or(new HashMap<String, String>());
+                .call().orElseGet(HashMap::new);
         assertEquals("2", result.get("section.string"));
 
         // Test unsetting a value that exists
         config.setAction(ConfigAction.CONFIG_UNSET).setName("section.string").setValue(null).call();
         result = config.setAction(ConfigAction.CONFIG_GET).setName("section.string").setValue(null)
-                .call().or(new HashMap<String, String>());
+                .call().orElseGet(HashMap::new);
         assertNull(result.get("section.string"));
 
         // Test unsetting a value that doesn't exist
         config.setAction(ConfigAction.CONFIG_UNSET).setName("section.string").setValue(null).call();
         result = config.setAction(ConfigAction.CONFIG_GET).setName("section.string").setValue(null)
-                .call().or(new HashMap<String, String>());
+                .call().orElseGet(HashMap::new);
         assertNull(result.get("section.string"));
 
         // Test removing a section that exists
@@ -80,10 +80,10 @@ public class ConfigOpTest extends RepositoryTestCase {
                 .call();
 
         result = config.setAction(ConfigAction.CONFIG_GET).setName("section.string").setValue(null)
-                .call().or(new HashMap<String, String>());
+                .call().orElseGet(HashMap::new);
         assertNull(result.get("section.string"));
         result = config.setAction(ConfigAction.CONFIG_GET).setName("section.string2").setValue(null)
-                .call().or(new HashMap<String, String>());
+                .call().orElseGet(HashMap::new);
         assertNull(result.get("section.string2"));
 
         // Try listing the config file
@@ -91,7 +91,7 @@ public class ConfigOpTest extends RepositoryTestCase {
         config.setAction(ConfigAction.CONFIG_SET).setName("section.string2").setValue("2").call();
 
         result = config.setAction(ConfigAction.CONFIG_LIST).call()
-                .or(new HashMap<String, String>());
+                .orElseGet(HashMap::new);
         assertEquals("1", result.get("section.string"));
         assertEquals("2", result.get("section.string2"));
     }
@@ -281,7 +281,7 @@ public class ConfigOpTest extends RepositoryTestCase {
         assertTrue(value.isPresent());
         assertEquals("1", value.get().get("section.key"));
 
-        value = Optional.absent();
+        value = Optional.empty();
         value = config.setAction(ConfigAction.CONFIG_GET).setScope(ConfigScope.LOCAL)
                 .setName("section.key").setValue("").call();
         assertTrue(value.isPresent());

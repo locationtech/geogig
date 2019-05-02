@@ -26,7 +26,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableSet;
 
 public class WalkGraphOpTest extends RepositoryTestCase {

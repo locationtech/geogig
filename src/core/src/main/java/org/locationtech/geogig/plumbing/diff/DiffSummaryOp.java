@@ -46,7 +46,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.geometry.BoundingBox;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 

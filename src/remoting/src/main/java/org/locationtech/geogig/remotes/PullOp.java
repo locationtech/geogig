@@ -30,7 +30,7 @@ import org.locationtech.geogig.repository.LocalRemoteRefSpec;
 import org.locationtech.geogig.repository.Remote;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -55,11 +55,11 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
 
     private List<String> refSpecs = new ArrayList<String>();
 
-    private Optional<Integer> depth = Optional.absent();
+    private Optional<Integer> depth = Optional.empty();
 
-    private Optional<String> authorName = Optional.absent();
+    private Optional<String> authorName = Optional.empty();
 
-    private Optional<String> authorEmail = Optional.absent();
+    private Optional<String> authorEmail = Optional.empty();
 
     private String message;
 
@@ -114,7 +114,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     }
 
     public Integer getDepth() {
-        return depth.orNull();
+        return depth.orElse(null);
     }
 
     /**
@@ -178,8 +178,8 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
      * @return {@code this}
      */
     public PullOp setAuthor(@Nullable String authorName, @Nullable String authorEmail) {
-        this.authorName = Optional.fromNullable(authorName);
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorName = Optional.ofNullable(authorName);
+        this.authorEmail = Optional.ofNullable(authorEmail);
         return this;
     }
 
@@ -196,11 +196,11 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     }
 
     public String getAuthor() {
-        return authorName.orNull();
+        return authorName.orElse(null);
     }
 
     public String getAuthorEmail() {
-        return authorEmail.orNull();
+        return authorEmail.orElse(null);
     }
 
     /**
@@ -215,7 +215,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         if (remote == null) {
             setRemote("origin");
         }
-        final Remote suppliedRemote = this.remote.get().orNull();
+        final Remote suppliedRemote = this.remote.get().orElse(null);
         checkArgument(suppliedRemote != null, "Remote could not be resolved.");
 
         final Ref currentBranch = resolveCurrentBranch();
@@ -239,7 +239,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         PullResult pullOpResult = new PullResult();
         TransferSummary fetchResult = command(FetchOp.class)//
                 .addRemote(remote)//
-                .setDepth(depth.or(0))//
+                .setDepth(depth.orElse(0))//
                 .setFullDepth(fullDepth)//
                 .setAllRemotes(all)//
                 .setFetchIndexes(includeIndexes)//
@@ -278,7 +278,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
                 }
                 try {
                     MergeReport report = command(MergeOp.class)
-                            .setAuthor(authorName.orNull(), authorEmail.orNull())//
+                            .setAuthor(authorName.orElse(null), authorEmail.orElse(null))//
                             .addCommit(localRemoteRef.getObjectId())//
                             .setNoFastForward(noFastForward)//
                             .setMessage(message)//

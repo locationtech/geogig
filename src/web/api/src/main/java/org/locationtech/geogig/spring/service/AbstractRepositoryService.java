@@ -12,7 +12,7 @@ package org.locationtech.geogig.spring.service;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Common Service utilities.
@@ -21,7 +21,7 @@ public abstract class AbstractRepositoryService {
 
     public Repository getRepository(RepositoryProvider provider, String repoName) {
         Optional<Repository> geogig = provider.getGeogig(repoName);
-        return geogig.orNull();
+        return geogig.orElse(null);
     }
 
 }

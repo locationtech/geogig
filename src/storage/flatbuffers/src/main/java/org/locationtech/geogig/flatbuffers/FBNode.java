@@ -23,7 +23,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +93,7 @@ abstract @RequiredArgsConstructor class FBNode extends org.locationtech.geogig.m
             id = FBAdapters.toId(mdid);
         }
         if (id.isNull()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(id);
     }

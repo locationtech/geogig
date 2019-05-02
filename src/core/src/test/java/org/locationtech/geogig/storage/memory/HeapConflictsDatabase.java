@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
@@ -104,12 +104,12 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
      * 
      * @param namespace the namespace of the conflict
      * @param path the conflict to retrieve
-     * @return the conflict, or {@link Optional#absent()} if it was not found
+     * @return the conflict, or {@link Optional#empty()} if it was not found
      */
     @Override
     public Optional<Conflict> getConflict(@Nullable String namespace, String path) {
         ConcurrentHashMap<String, Conflict> map = get(namespace);
-        return Optional.fromNullable(map.get(path));
+        return Optional.ofNullable(map.get(path));
     }
 
     /**

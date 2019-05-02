@@ -57,7 +57,7 @@ import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -154,7 +154,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         } finally {
             closeSafely(connection);
         }
-        return Optional.fromNullable(headRef);
+        return Optional.ofNullable(headRef);
     }
 
     public void closeSafely(@Nullable HttpURLConnection connection) {
@@ -485,7 +485,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
     /**
      * Gets the depth of the remote repository.
      * 
-     * @return the depth of the repository, or {@link Optional#absent()} if the repository is not
+     * @return the depth of the repository, or {@link Optional#empty()} if the repository is not
      *         shallow
      */
     @Override

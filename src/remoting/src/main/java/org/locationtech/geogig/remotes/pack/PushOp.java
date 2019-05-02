@@ -50,7 +50,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
@@ -199,7 +199,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         try {
             return Optional.of(resolveRemote());
         } catch (IllegalArgumentException e) {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -327,7 +327,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                 return Optional.of(remoteRef);
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     /**

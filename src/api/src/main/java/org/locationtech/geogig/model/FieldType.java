@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Maps;
 
 /**
@@ -220,7 +220,7 @@ public enum FieldType {
      * @see #forValue(Object)
      */
     public static FieldType forValue(Optional<Object> field) {
-        return forValue(field.orNull());
+        return forValue(field.orElse(null));
     }
 
     /**

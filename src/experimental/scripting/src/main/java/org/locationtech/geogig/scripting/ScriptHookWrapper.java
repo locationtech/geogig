@@ -19,7 +19,7 @@ import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 
 import lombok.NonNull;
@@ -57,7 +57,7 @@ public class ScriptHookWrapper implements CommandHook {
         if (annotation != null) {
             return Optional.of(annotation.name());
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 

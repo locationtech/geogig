@@ -22,7 +22,7 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Interface for the Blame operation in the GeoGig.
@@ -74,7 +74,7 @@ public class Blame extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
 
-        Optional<ObjectId> commit = Optional.absent();
+        Optional<ObjectId> commit = Optional.empty();
         if (branchOrCommit != null) {
             commit = geogig.command(RevParse.class).setRefSpec(branchOrCommit).call();
             if (!commit.isPresent()) {
@@ -84,7 +84,7 @@ public class Blame extends AbstractWebAPICommand {
 
         try {
             final BlameReport report = geogig.command(BlameOp.class).setPath(path)
-                    .setCommit(commit.orNull()).call();
+                    .setCommit(commit.orElse(null)).call();
 
             context.setResponseContent(new CommandResponse() {
                 @Override

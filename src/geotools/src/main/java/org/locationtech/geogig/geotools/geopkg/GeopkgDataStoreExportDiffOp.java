@@ -32,7 +32,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -127,7 +127,7 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
             // Return optional.absent for features that were not part of the diff
             String featureId = feature.getIdentifier().getID();
             if (!changedNodes.containsKey(featureId)) {
-                return Optional.absent();
+                return Optional.empty();
             }
 
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
@@ -136,7 +136,7 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
             builder.featureUserData(Hints.PROVIDED_FID, Long.valueOf(fidValue));
             fidMappings.put(Long.toString(fidValue), featureId);
             Feature modifiedFeature = builder.buildFeature(Long.toString(fidValue));
-            return Optional.fromNullable(modifiedFeature);
+            return Optional.ofNullable(modifiedFeature);
         };
 
         return function;

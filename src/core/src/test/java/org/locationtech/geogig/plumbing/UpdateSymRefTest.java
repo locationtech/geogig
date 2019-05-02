@@ -20,7 +20,7 @@ import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class UpdateSymRefTest extends RepositoryTestCase {
 

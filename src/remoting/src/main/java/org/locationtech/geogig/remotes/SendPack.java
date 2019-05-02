@@ -30,7 +30,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 @Hookable(name = "send-pack")
@@ -182,7 +182,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
             }
         } catch (SynchronizationException e) {
             if (e.statusCode == StatusCode.NOTHING_TO_PUSH) {
-                return Optional.absent();
+                return Optional.empty();
             }
             throw e;
         }

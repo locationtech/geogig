@@ -22,7 +22,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -85,11 +85,11 @@ public class FeatureDiff {
                 Optional<Object> oldValue = oldRevFeature.get(i);
                 PropertyDescriptor descriptor = oldAttributes.get(i);
                 if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
-                    diffs.put(descriptor, new GeometryAttributeDiff((Geometry) oldValue.orNull(),
+                    diffs.put(descriptor, new GeometryAttributeDiff((Geometry) oldValue.orElse(null),
                             (Geometry) null));
                 } else {
                     diffs.put(oldAttributes.get(i),
-                            new GenericAttributeDiffImpl(oldValue.orNull(), null));
+                            new GenericAttributeDiffImpl(oldValue.orElse(null), null));
                 }
             }
         } else if (oldRevFeature == null) {
@@ -103,10 +103,10 @@ public class FeatureDiff {
                 PropertyDescriptor descriptor = newAttributes.get(i);
                 if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
                     diffs.put(descriptor, new GeometryAttributeDiff((Geometry) null,
-                            (Geometry) newValue.orNull()));
+                            (Geometry) newValue.orElse(null)));
                 } else {
                     diffs.put(newAttributes.get(i),
-                            new GenericAttributeDiffImpl(null, newValue.orNull()));
+                            new GenericAttributeDiffImpl(null, newValue.orElse(null)));
                 }
             }
         } else {
@@ -122,10 +122,10 @@ public class FeatureDiff {
                         if (Geometry.class
                                 .isAssignableFrom(oldAttributes.get(i).getType().getBinding())) {
                             diffs.put(oldAttributes.get(i), new GeometryAttributeDiff(
-                                    (Geometry) oldValue.orNull(), (Geometry) newValue.orNull()));
+                                    (Geometry) oldValue.orElse(null), (Geometry) newValue.orElse(null)));
                         } else {
                             diffs.put(oldAttributes.get(i), new GenericAttributeDiffImpl(
-                                    oldValue.orNull(), newValue.orNull()));
+                                    oldValue.orElse(null), newValue.orElse(null)));
                         }
                     }
                     updatedAttributes.set(idx);
@@ -133,10 +133,10 @@ public class FeatureDiff {
                     if (Geometry.class
                             .isAssignableFrom(oldAttributes.get(i).getType().getBinding())) {
                         diffs.put(oldAttributes.get(i), new GeometryAttributeDiff(
-                                (Geometry) oldValue.orNull(), (Geometry) null));
+                                (Geometry) oldValue.orElse(null), (Geometry) null));
                     } else {
                         diffs.put(oldAttributes.get(i),
-                                new GenericAttributeDiffImpl(oldValue.orNull(), null));
+                                new GenericAttributeDiffImpl(oldValue.orElse(null), null));
                     }
                 }
             }
@@ -146,10 +146,10 @@ public class FeatureDiff {
                 PropertyDescriptor descriptor = newAttributes.get(i);
                 if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
                     diffs.put(descriptor, new GeometryAttributeDiff((Geometry) null,
-                            (Geometry) newRevFeature.get(i).orNull()));
+                            (Geometry) newRevFeature.get(i).orElse(null)));
                 } else {
                     diffs.put(descriptor,
-                            new GenericAttributeDiffImpl(null, newRevFeature.get(i).orNull()));
+                            new GenericAttributeDiffImpl(null, newRevFeature.get(i).orElse(null)));
                 }
             }
         }

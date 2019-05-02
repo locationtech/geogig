@@ -50,22 +50,22 @@ public class GeoToolsStepDefinitions {
         IniPGProperties properties = new IniPGProperties();
         StringBuilder sb = new StringBuilder();
         sb.append(" --host ");
-        sb.append(properties.get("database.host", String.class).or("localhost"));
+        sb.append(properties.get("database.host", String.class).orElse("localhost"));
 
         sb.append(" --port ");
-        sb.append(properties.get("database.port", String.class).or("5432"));
+        sb.append(properties.get("database.port", String.class).orElse("5432"));
 
         sb.append(" --schema ");
-        sb.append(properties.get("database.schema", String.class).or("public"));
+        sb.append(properties.get("database.schema", String.class).orElse("public"));
 
         sb.append(" --database ");
-        sb.append(properties.get("database.database", String.class).or("database"));
+        sb.append(properties.get("database.database", String.class).orElse("database"));
 
         sb.append(" --user ");
-        sb.append(properties.get("database.user", String.class).or("postgres"));
+        sb.append(properties.get("database.user", String.class).orElse("postgres"));
 
         sb.append(" --password ");
-        sb.append(properties.get("database.password", String.class).or("postgres"));
+        sb.append(properties.get("database.password", String.class).orElse("postgres"));
 
         return sb.toString();
     }

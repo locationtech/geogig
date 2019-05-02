@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
-import static com.google.common.base.Optional.fromNullable;
+import static java.util.Optional.ofNullable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doNothing;
@@ -90,7 +90,7 @@ import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -631,7 +631,7 @@ public abstract class RemoteRepositoryTestCase {
 
     protected void assertSummary(TransferSummary result, String remoteURL, @Nullable Ref before,
             @Nullable Ref after) {
-        assertSummary(result, remoteURL, fromNullable(before), fromNullable(after));
+        assertSummary(result, remoteURL, ofNullable(before), ofNullable(after));
     }
 
     protected void assertSummary(TransferSummary result, String remoteURL, Optional<Ref> before,
@@ -639,8 +639,8 @@ public abstract class RemoteRepositoryTestCase {
         assertNotNull(result);
         Collection<RefDiff> diffs = result.getRefDiffs().get(remoteURL);
         assertNotNull(diffs);
-        String name = before.or(after).get().getName();
-        RefDiff diff = Maps.uniqueIndex(diffs, (d) -> d.oldRef().or(d.newRef()).get().getName())
+        String name = before.orElseGet(after::get).getName();
+        RefDiff diff = Maps.uniqueIndex(diffs, (d) -> d.oldRef().orElse(d.getNewRef()).getName())
                 .get(name);
         assertNotNull(diff);
         assertEquals(before, diff.oldRef());

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.model;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * The GeoGig identity of a single individual, composed of a name and email address, as used to

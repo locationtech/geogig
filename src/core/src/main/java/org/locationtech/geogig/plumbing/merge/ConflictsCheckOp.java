@@ -14,7 +14,7 @@ import java.net.URI;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class ConflictsCheckOp extends AbstractGeoGigOp<Boolean> {
     @Override

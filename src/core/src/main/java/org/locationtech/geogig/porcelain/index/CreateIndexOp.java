@@ -24,7 +24,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Throwables;
 
 /**

@@ -29,7 +29,7 @@ import org.opengis.feature.type.Name;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 
 import lombok.NonNull;
@@ -45,7 +45,7 @@ final @UtilityClass class FBAdapters {
     }
 
     public static Optional<Envelope> toEnvelopeOpt(Bounds bounds) {
-        return Optional.fromNullable(isNull(bounds) ? null
+        return Optional.ofNullable(isNull(bounds) ? null
                 : new Envelope(bounds.x1(), bounds.x2(), bounds.y1(), bounds.y2()));
     }
 

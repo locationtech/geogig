@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
-import static com.google.common.base.Optional.absent;
+import static java.util.Optional.empty;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,7 +44,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
@@ -371,9 +371,9 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         push.addRefSpec("master:NewRemoteBranch");
         push.addRefSpec("Branch1:NewRemoteBranch2");
         TransferSummary summary = push.call();
-        assertSummary(summary, remote.getPushURL(), absent(),
+        assertSummary(summary, remote.getPushURL(), empty(),
                 Optional.of(new Ref("refs/heads/NewRemoteBranch", master.getObjectId())));
-        assertSummary(summary, remote.getPushURL(), absent(),
+        assertSummary(summary, remote.getPushURL(), empty(),
                 Optional.of(new Ref("refs/heads/NewRemoteBranch2", branch1.getObjectId())));
 
         assertTrue(
@@ -409,7 +409,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         PushOp push = pushOp();
         push.addRefSpec("newbranch");
         TransferSummary summary = push.call();
-        assertSummary(summary, remote.getPushURL(), absent(),
+        assertSummary(summary, remote.getPushURL(), empty(),
                 Optional.of(new Ref("refs/heads/newbranch", branch1.getObjectId())));
 
         TestSupport.verifyRepositoryContents(remoteRepo);
@@ -440,7 +440,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         PushOp push = pushOp();
         push.addRefSpec(refSpec);
         TransferSummary summary = push.call();
-        assertSummary(summary, remote.getPushURL(), ref, absent());
+        assertSummary(summary, remote.getPushURL(), ref, empty());
         assertFalse(remoteRepo.command(RefParse.class).setName(refName).call().isPresent());
     }
 

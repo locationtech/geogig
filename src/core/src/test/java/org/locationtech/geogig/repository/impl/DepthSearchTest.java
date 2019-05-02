@@ -45,7 +45,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 

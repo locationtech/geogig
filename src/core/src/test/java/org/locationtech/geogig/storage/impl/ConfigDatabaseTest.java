@@ -32,7 +32,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -76,16 +76,16 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.put("section.int", 1);
         config.put("section.string", "2");
 
-        final int one = config.get("section.int", Integer.class).or(-1);
+        final int one = config.get("section.int", Integer.class).orElse(-1);
         assertEquals(one, 1);
 
-        final String two = config.get("section.string").or("-1");
+        final String two = config.get("section.string").orElse("-1");
         assertEquals(two, "2");
 
         // Test overwriting a value that already exists
         config.put("section.string", "3");
 
-        final String three = config.get("section.string").or("-1");
+        final String three = config.get("section.string").orElse("-1");
         assertEquals(three, "3");
     }
 
@@ -95,16 +95,16 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.put("section.subsection.int", 1);
         config.put("section.subsection.string", "2");
 
-        final int one = config.get("section.subsection.int", Integer.class).or(-1);
+        final int one = config.get("section.subsection.int", Integer.class).orElse(-1);
         assertEquals(one, 1);
 
-        final String two = config.get("section.subsection.string").or("-1");
+        final String two = config.get("section.subsection.string").orElse("-1");
         assertEquals(two, "2");
 
         // Test overwriting a value that already exists
         config.put("section.subsection.string", "3");
 
-        final String three = config.get("section.subsection.string").or("-1");
+        final String three = config.get("section.subsection.string").orElse("-1");
         assertEquals(three, "3");
     }
 
@@ -114,16 +114,16 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.putGlobal("section.int", 1);
         config.putGlobal("section.string", "2");
 
-        final int one = config.getGlobal("section.int", Integer.class).or(-1);
+        final int one = config.getGlobal("section.int", Integer.class).orElse(-1);
         assertEquals(one, 1);
 
-        final String two = config.getGlobal("section.string").or("-1");
+        final String two = config.getGlobal("section.string").orElse("-1");
         assertEquals(two, "2");
 
         // Test overwriting a value that already exists
         config.putGlobal("section.string", "3");
 
-        final String three = config.getGlobal("section.string").or("-1");
+        final String three = config.getGlobal("section.string").orElse("-1");
         assertEquals(three, "3");
     }
 

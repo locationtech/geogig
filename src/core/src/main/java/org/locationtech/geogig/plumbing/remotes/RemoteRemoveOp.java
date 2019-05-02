@@ -21,7 +21,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 
@@ -40,7 +40,7 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
     /**
      * Executes the remote-remove operation.
      * 
-     * @return the {@link Remote} that was removed, or {@link Optional#absent()} if the remote
+     * @return the {@link Remote} that was removed, or {@link Optional#empty()} if the remote
      *         didn't exist.
      */
     @Override

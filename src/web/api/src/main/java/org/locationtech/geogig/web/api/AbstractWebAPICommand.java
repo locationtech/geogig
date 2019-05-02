@@ -18,7 +18,7 @@ import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * An abstract command that allows WebAPICommands to support long transactions.

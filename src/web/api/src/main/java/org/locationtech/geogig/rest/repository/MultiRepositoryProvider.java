@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
@@ -80,7 +80,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
     @Override
     public Optional<Repository> getGeogig(final String repositoryName) {
         if (null == repositoryName) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(getGeogigByName(repositoryName));
     }
@@ -257,7 +257,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
                     repository.open();
                 }
                 // now build the repo with the Hints
-                return Optional.fromNullable(repository);
+                return Optional.ofNullable(repository);
             } catch (IOException | URISyntaxException | RepositoryConnectionException ex) {
                 throw new RuntimeException(ex);
             }

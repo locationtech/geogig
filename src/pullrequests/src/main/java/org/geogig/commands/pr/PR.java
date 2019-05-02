@@ -142,8 +142,7 @@ public @Data @Builder class PR {
     }
 
     Optional<GeogigTransaction> tryGetTransaction(Context repo) {
-        Optional<GeogigTransaction> tx = com.google.common.base.Optional
-                .toJavaUtil(repo.command(TransactionResolve.class).setId(transactionId).call());
+        Optional<GeogigTransaction> tx = repo.command(TransactionResolve.class).setId(transactionId).call();
         return tx;
     }
 
@@ -168,7 +167,7 @@ public @Data @Builder class PR {
     }
 
     Optional<Ref> resolveRefOpt(Context prContext, String refName) {
-        Ref ref = prContext.command(RefParse.class).setName(refName).call().orNull();
+        Ref ref = prContext.command(RefParse.class).setName(refName).call().orElse(null);
         return Optional.ofNullable(ref);
     }
 

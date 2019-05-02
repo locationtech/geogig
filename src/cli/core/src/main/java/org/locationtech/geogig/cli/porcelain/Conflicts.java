@@ -38,7 +38,7 @@ import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
@@ -143,13 +143,13 @@ public class Conflicts extends AbstractCommand implements CLICommand {
         String path = Ref.ORIG_HEAD + ":" + conflict.getPath();
         Optional<NodeRef> oursNodeRef = geogig.command(FeatureNodeRefFromRefspec.class)
                 .setRefspec(path).call();
-        DiffEntry diffEntry = new DiffEntry(ancestorNodeRef.orNull(), oursNodeRef.orNull());
+        DiffEntry diffEntry = new DiffEntry(ancestorNodeRef.orElse(null), oursNodeRef.orElse(null));
         console.println("Ours");
         diffPrinter.print(geogig, console, diffEntry);
         path = theirsHeadId + ":" + conflict.getPath();
         Optional<NodeRef> theirsNodeRef = geogig.command(FeatureNodeRefFromRefspec.class)
                 .setRefspec(path).call();
-        diffEntry = new DiffEntry(ancestorNodeRef.orNull(), theirsNodeRef.orNull());
+        diffEntry = new DiffEntry(ancestorNodeRef.orElse(null), theirsNodeRef.orElse(null));
         console.println("Theirs");
         diffPrinter.print(geogig, console, diffEntry);
 

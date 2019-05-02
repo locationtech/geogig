@@ -45,7 +45,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -62,7 +62,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
     public static final String CHANGE_TYPE_NAME = "changetype";
 
     private static final Function<Feature, Optional<Feature>> IDENTITY = (feature) -> Optional
-            .fromNullable(feature);
+            .ofNullable(feature);
 
     private String path;
 
@@ -175,7 +175,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             final RevFeature revFeature = database.getFeature(nodeRef.getObjectId());
             for (int i = 0; i < revFeature.size(); i++) {
                 String name = featureType.getDescriptor(i + 1).getLocalName();
-                Object value = revFeature.get(i).orNull();
+                Object value = revFeature.get(i).orElse(null);
                 featureBuilder.set(name, value);
             }
             featureBuilder.set(CHANGE_TYPE_NAME, de.changeType().name().charAt(0));

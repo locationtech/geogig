@@ -11,7 +11,7 @@ package org.locationtech.geogig.storage;
 
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Enumeration for the various types of storage used by GeoGig. Provides utility functions for
@@ -44,12 +44,12 @@ public enum StorageType {
         if (storageName.isPresent() && !storageName.get().equals(formatName)) {
             throw new RepositoryConnectionException("Initializing already " + "initialized " + key
                     + " database. Would set " + formatName + ":" + version + " but found "
-                    + storageName.orNull() + ":" + storageVersion.orNull());
+                    + storageName.orElse(null) + ":" + storageVersion.orElse(null));
         }
         if (storageVersion.isPresent() && !version.equals(storageVersion.get())) {
             throw new RepositoryConnectionException("Initializing already " + "initialized " + key
                     + " database. Would set " + formatName + ":" + version + " but found "
-                    + storageName.orNull() + ":" + storageVersion.orNull());
+                    + storageName.orElse(null) + ":" + storageVersion.orElse(null));
         }
         configDB.put("storage." + key, formatName);
         configDB.put(formatName + ".version", version);
@@ -76,7 +76,7 @@ public enum StorageType {
         if (!(unset || valid)) {
             throw new RepositoryConnectionException("Cannot open " + key + " database with format: "
                     + formatName + " and version: " + version + ", found format: "
-                    + storageName.orNull() + ", version: " + storageVersion.orNull());
+                    + storageName.orElse(null) + ", version: " + storageVersion.orElse(null));
         }
         return !unset;
     }

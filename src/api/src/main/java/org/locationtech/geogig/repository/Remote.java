@@ -15,7 +15,7 @@ import java.net.URISyntaxException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -63,7 +63,7 @@ public class Remote {
         this.pushurl = checkURL(pushurl);
         this.fetch = fetch;
         this.mapped = mapped;
-        this.mappedBranch = Optional.fromNullable(mappedBranch).or("*");
+        this.mappedBranch = Optional.ofNullable(mappedBranch).orElse("*");
         this.username = username;
         this.password = password;
         this.fetchSpecs = Strings.isNullOrEmpty(fetch) ? ImmutableList.of()

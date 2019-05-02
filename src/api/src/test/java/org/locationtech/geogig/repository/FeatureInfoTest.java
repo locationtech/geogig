@@ -20,7 +20,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class FeatureInfoTest {
@@ -52,7 +52,7 @@ public class FeatureInfoTest {
 
             @Override
             public Optional<Object> get(int index) {
-                return Optional.absent();
+                return Optional.empty();
             }
 
             @Override

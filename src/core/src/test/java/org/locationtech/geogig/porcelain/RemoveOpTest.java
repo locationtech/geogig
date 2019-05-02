@@ -31,7 +31,7 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class RemoveOpTest extends RepositoryTestCase {
 

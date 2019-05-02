@@ -31,7 +31,7 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 

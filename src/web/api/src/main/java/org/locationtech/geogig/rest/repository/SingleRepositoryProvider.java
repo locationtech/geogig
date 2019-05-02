@@ -18,7 +18,7 @@ import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
@@ -34,7 +34,7 @@ public class SingleRepositoryProvider implements RepositoryProvider {
 
     @Override
     public Optional<Repository> getGeogig(final String repositoryName) {
-        return Optional.fromNullable(repo);
+        return Optional.ofNullable(repo);
     }
 
     @Override

@@ -18,7 +18,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 class DBHandle {
@@ -143,7 +143,7 @@ class DBHandle {
                 throw new RuntimeException(e);
             }
         }
-        return Optional.fromNullable(value);
+        return Optional.ofNullable(value);
     }
 
     public @Nullable ColumnFamilyHandle getColumnFamily(final String columnFamilyName) {

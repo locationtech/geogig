@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
@@ -246,7 +246,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return Optional.fromNullable(conflict);
+        return Optional.ofNullable(conflict);
     }
 
     @Override

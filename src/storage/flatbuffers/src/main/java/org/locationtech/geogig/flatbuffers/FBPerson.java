@@ -13,7 +13,7 @@ import org.locationtech.geogig.flatbuffers.generated.v1.Person;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +23,11 @@ final @RequiredArgsConstructor class FBPerson implements RevPerson {
     private final @NonNull Person p;
 
     public @Override Optional<String> getName() {
-        return Optional.fromNullable(p.name());
+        return Optional.ofNullable(p.name());
     }
 
     public @Override Optional<String> getEmail() {
-        return Optional.fromNullable(p.email());
+        return Optional.ofNullable(p.email());
     }
 
     public @Override long getTimestamp() {

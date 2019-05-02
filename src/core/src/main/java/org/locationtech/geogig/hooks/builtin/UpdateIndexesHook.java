@@ -14,7 +14,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 

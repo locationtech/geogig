@@ -23,7 +23,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -277,8 +277,8 @@ public @UtilityClass class RevObjects {
     }
 
     public static String toShortString(@NonNull RevPerson p) {
-        return String.format("\"%s\" <%s>, time: %d, tz: %d", p.getName().orNull(),
-                p.getEmail().orNull(), p.getTimestamp(), p.getTimeZoneOffset());
+        return String.format("\"%s\" <%s>, time: %d, tz: %d", p.getName().orElse(null),
+                p.getEmail().orElse(null), p.getTimestamp(), p.getTimeZoneOffset());
     }
 
     public static boolean equals(@NonNull RevObject object, @Nullable Object o) {
@@ -295,7 +295,7 @@ public @UtilityClass class RevObjects {
     }
 
     public static String toString(@NonNull Bucket bucket) {
-        Envelope env = bucket.bounds().orNull();
+        Envelope env = bucket.bounds().orElse(null);
         String bounds = env == null ? null : env.toString();
         return String.format("%s[index: %d, tree:%s, bounds: %s]", //
                 bucket.getClass().getSimpleName(), //
@@ -323,7 +323,7 @@ public @UtilityClass class RevObjects {
     }
 
     public static String toString(@NonNull Node node) {
-        Envelope env = node.bounds().orNull();
+        Envelope env = node.bounds().orElse(null);
         String bounds = env == null ? null : env.toString();
         return String.format("%s[%s -> %s, type: %s, md id: %s, bounds: %s]", //
                 node.getClass().getSimpleName(), //
@@ -361,7 +361,7 @@ public @UtilityClass class RevObjects {
             } else {
                 builder.append(", ");
             }
-            String valueString = String.valueOf(value.orNull());
+            String valueString = String.valueOf(value.orElse(null));
             builder.append(valueString.substring(0, Math.min(10, valueString.length())));
         }
         builder.append(']');

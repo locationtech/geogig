@@ -25,7 +25,7 @@ import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -153,7 +153,7 @@ public class Patch {
      * @return
      */
     public Optional<RevFeatureType> getFeatureTypeFromId(ObjectId id) {
-        return Optional.fromNullable(featureTypes.get(id));
+        return Optional.ofNullable(featureTypes.get(id));
     }
 
     /**

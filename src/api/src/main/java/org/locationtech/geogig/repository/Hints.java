@@ -14,7 +14,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Maps;
 
 /**
@@ -70,11 +70,11 @@ public class Hints implements Serializable {
      * Retrieves a hint with the given key.
      * 
      * @param key the key for the hint
-     * @return an {@link Optional} containing the value of the hint, or {@link Optional#absent()} if
+     * @return an {@link Optional} containing the value of the hint, or {@link Optional#empty()} if
      *         there was no hint with the given key
      */
     public Optional<Serializable> get(final String key) {
-        return Optional.fromNullable(hintsMap.get(key));
+        return Optional.ofNullable(hintsMap.get(key));
     }
 
     /**

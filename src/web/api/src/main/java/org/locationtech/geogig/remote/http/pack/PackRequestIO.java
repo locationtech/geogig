@@ -21,11 +21,11 @@ public class PackRequestIO {
     public void write(PackRequest request, OutputStream out) throws IOException {
         DataOutputStream dout = new DataOutputStream(out);
         dout.write(delimiter);
-        dout.writeInt(request.getMaxDepth().or(0));
+        dout.writeInt(request.getMaxDepth().orElse(0));
         writeRequests(dout, request.getRefs());
 
         // final int maxDepth = request.getMaxDepth().or(0);
-        // final RepositoryFilter sparseFilter = request.getSparseFilter().orNull();
+        // final RepositoryFilter sparseFilter = request.getSparseFilter().orElse(null);
         dout.write(delimiter);
         dout.flush();
     }

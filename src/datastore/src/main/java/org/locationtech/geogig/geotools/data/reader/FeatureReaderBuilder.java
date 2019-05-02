@@ -632,7 +632,7 @@ public class FeatureReaderBuilder {
      */
     private Optional<Index> resolveIndex(final ObjectId oldCanonical, final String treeName,
             final String attributeName, final IndexDatabase db) {
-        IndexInfo info = db.getIndexInfo(treeName, attributeName).orNull();
+        IndexInfo info = db.getIndexInfo(treeName, attributeName).orElse(null);
         Optional<Index> index = Optional.empty();
         if (info != null) {
             index = resolveIndex(oldCanonical, info, db);
@@ -643,10 +643,10 @@ public class FeatureReaderBuilder {
     private Optional<Ref> resolveRef(@Nullable String head, Context repo) {
         Ref ref = null;
         if (head != null) {
-            ref = repo.command(RefParse.class).setName(head).call().orNull();
+            ref = repo.command(RefParse.class).setName(head).call().orElse(null);
             if (null == ref) {
                 RevObject root = repo.command(RevObjectParse.class).setRefSpec(head).call()
-                        .orNull();
+                        .orElse(null);
                 if (null != root) {
                     ref = new Ref(root.getType().toString(), root.getId());
                 }
@@ -661,11 +661,11 @@ public class FeatureReaderBuilder {
         if (head.isPresent()) {
             ObjectId commitOrRootId = head.get().getObjectId();
             ObjectId rootTree = repo.command(ResolveTreeish.class).setTreeish(commitOrRootId).call()
-                    .orNull();
+                    .orElse(null);
             if (rootTree != null) {
                 RevTree tree = repo.objectDatabase().getTree(rootTree);
                 treeRef = repo.command(FindTreeChild.class).setParent(tree).setChildPath(treeName)
-                        .call().orNull();
+                        .call().orElse(null);
             }
         }
         return Optional.ofNullable(treeRef);
@@ -679,7 +679,7 @@ public class FeatureReaderBuilder {
         if (EMPTY_TREE_ID.equals(canonicalTreeId)) {
             index = new Index(indexInfo, EMPTY_TREE_ID, db);
         } else {
-            ObjectId indexedTree = db.resolveIndexedTree(indexInfo, canonicalTreeId).orNull();
+            ObjectId indexedTree = db.resolveIndexedTree(indexInfo, canonicalTreeId).orElse(null);
             if (indexedTree != null) {
                 index = new Index(indexInfo, indexedTree, db);
             }

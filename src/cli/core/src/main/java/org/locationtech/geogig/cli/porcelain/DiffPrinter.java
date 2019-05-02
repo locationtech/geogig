@@ -43,7 +43,7 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Suppliers;
 
 interface DiffPrinter {

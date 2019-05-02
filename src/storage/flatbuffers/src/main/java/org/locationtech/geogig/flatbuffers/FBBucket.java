@@ -13,7 +13,7 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;

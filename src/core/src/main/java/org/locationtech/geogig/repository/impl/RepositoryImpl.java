@@ -50,7 +50,7 @@ import org.locationtech.geogig.storage.impl.Blobs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -192,7 +192,7 @@ public class RepositoryImpl implements Repository {
 
     /**
      * @param revStr the string to parse
-     * @return the parsed {@link Ref}, or {@link Optional#absent()} if it did not parse.
+     * @return the parsed {@link Ref}, or {@link Optional#empty()} if it did not parse.
      */
     @Override
     public Optional<Ref> getRef(final String revStr) {
@@ -201,7 +201,7 @@ public class RepositoryImpl implements Repository {
     }
 
     /**
-     * @return the {@link Ref} pointed to by HEAD, or {@link Optional#absent()} if it could not be
+     * @return the {@link Ref} pointed to by HEAD, or {@link Optional#empty()} if it could not be
      *         resolved.
      */
     @Override
@@ -307,7 +307,7 @@ public class RepositoryImpl implements Repository {
 
     /**
      * @param path the path to search for
-     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#absent()}
+     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#empty()}
      *         if it wasn't found
      */
     @Override
@@ -316,7 +316,7 @@ public class RepositoryImpl implements Repository {
         if (nodeRef.isPresent()) {
             return Optional.of(nodeRef.get().getNode());
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -326,7 +326,7 @@ public class RepositoryImpl implements Repository {
      * @param tree the tree to search
      * @param childPath the path to search for
      * @return an {@link Optional} of the {@link Node} for the child path, or
-     *         {@link Optional#absent()} if it wasn't found
+     *         {@link Optional#empty()} if it wasn't found
      */
     @Override
     public Optional<Node> getTreeChild(RevTree tree, String childPath) {
@@ -335,7 +335,7 @@ public class RepositoryImpl implements Repository {
         if (nodeRef.isPresent()) {
             return Optional.of(nodeRef.get().getNode());
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -357,7 +357,7 @@ public class RepositoryImpl implements Repository {
         }
 
         if (repoDepth == 0) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(repoDepth);
     }
@@ -446,7 +446,7 @@ public class RepositoryImpl implements Repository {
         if (filterBlob.isPresent()) {
             filter = new IniRepositoryFilter(blobStore, SPARSE_FILTER_BLOB_KEY);
         }
-        return Optional.fromNullable(filter);
+        return Optional.ofNullable(filter);
     }
 
 }

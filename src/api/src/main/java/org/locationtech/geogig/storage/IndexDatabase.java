@@ -18,7 +18,7 @@ import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.Value;
 
@@ -84,7 +84,7 @@ public interface IndexDatabase extends ObjectStore {
      * 
      * @param treeName the name of the tree
      * @param attributeName the indexed attribute
-     * @return an {@link Optional} with the index, or {@link Optional#absent()} if there wasn't an
+     * @return an {@link Optional} with the index, or {@link Optional#empty()} if there wasn't an
      *         index
      */
     public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName);

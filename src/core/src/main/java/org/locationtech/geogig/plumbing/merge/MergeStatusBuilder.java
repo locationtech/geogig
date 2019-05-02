@@ -30,7 +30,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.geogig.storage.impl.PersistedIterable.Serializer;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class MergeStatusBuilder extends MergeScenarioConsumer {
 

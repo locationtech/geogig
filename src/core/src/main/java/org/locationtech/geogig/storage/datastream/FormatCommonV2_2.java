@@ -118,7 +118,7 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
         data.writeUTF(node.getName());
         node.getObjectId().writeTo(data);
         if (metadataMask == METADATA_PRESENT_MASK) {
-            node.getMetadataId().or(ObjectId.NULL).writeTo(data);
+            node.getMetadataId().orElse(ObjectId.NULL).writeTo(data);
         }
         writeBounds(env, data);
 

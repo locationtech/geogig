@@ -133,9 +133,9 @@ public class BranchConfigOp extends AbstractGeoGigOp<BranchConfig> {
             remoteBranch = all.get("merge");
             description = all.get("description");
         } else if (delete) {
-            remoteName = db.get(remoteKey).orNull();
-            remoteBranch = db.get(remoteBranchKey).orNull();
-            description = db.get(descriptionKey).orNull();
+            remoteName = db.get(remoteKey).orElse(null);
+            remoteBranch = db.get(remoteBranchKey).orElse(null);
+            description = db.get(descriptionKey).orElse(null);
             db.remove(remoteKey);
             db.remove(remoteBranchKey);
             db.remove(descriptionKey);

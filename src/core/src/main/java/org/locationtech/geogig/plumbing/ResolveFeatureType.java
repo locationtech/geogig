@@ -17,7 +17,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -61,12 +61,12 @@ public class ResolveFeatureType extends AbstractGeoGigOp<Optional<RevFeatureType
         Optional<RevTree> parent = command(RevObjectParse.class).setObjectId(parentId)
                 .call(RevTree.class);
         if (!parent.isPresent()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         Optional<NodeRef> node = command(FindTreeChild.class).setParent(parent.get())
                 .setChildPath(path).call();
         if (!node.isPresent()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         NodeRef found = node.get();
         ObjectId metadataID = found.getMetadataId();

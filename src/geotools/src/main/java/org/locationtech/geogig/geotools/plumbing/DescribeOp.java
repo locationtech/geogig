@@ -22,7 +22,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Internal operation for describing a table from a GeoTools {@link DataStore}.
@@ -96,7 +96,7 @@ public class DescribeOp extends AbstractGeoGigOp<Optional<Map<String, String>>> 
         }
 
         if (!foundTable) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(propertyMap);
     }

@@ -176,7 +176,7 @@ public class TestSupport {
             assertEquals(orig.getObjectId(), lazy.getObjectId());
             assertEquals(orig.getType(), lazy.getType());
             assertEquals(orig.getMetadataId(), lazy.getMetadataId());
-            assertEnvelope("at index " + i, orig.bounds().orNull(), lazy.bounds().orNull());
+            assertEnvelope("at index " + i, orig.bounds().orElse(null), lazy.bounds().orElse(null));
             Map<String, Object> expectedExtraData = orig.getExtraData();
             Map<String, Object> actualExtraData = lazy.getExtraData();
             assertEquals(expectedExtraData, actualExtraData);

@@ -31,7 +31,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.test.TestData;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Iterators;
 
 public class PRInitOpTest {
@@ -104,10 +104,10 @@ public class PRInitOpTest {
         assertTrue(transaction.isPresent());
         GeogigTransaction tx = transaction.get();
 
-        Ref headRef = tx.command(RefParse.class).setName(request.getHeadRef()).call().orNull();
-        Ref originRef = tx.command(RefParse.class).setName(request.getOriginRef()).call().orNull();
+        Ref headRef = tx.command(RefParse.class).setName(request.getHeadRef()).call().orElse(null);
+        Ref originRef = tx.command(RefParse.class).setName(request.getOriginRef()).call().orElse(null);
         Ref targetRef = tx.command(RefParse.class).setName(request.getTargetBranch()).call()
-                .orNull();
+                .orElse(null);
         assertNotNull(headRef);
         assertNotNull(originRef);
         assertNotNull(targetRef);

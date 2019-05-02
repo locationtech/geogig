@@ -25,7 +25,7 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * This is the interface for the FeatureDiff command. It is used by passing a path to a feature, an

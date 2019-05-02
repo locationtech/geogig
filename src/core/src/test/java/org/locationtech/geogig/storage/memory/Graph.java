@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.model.ObjectId;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
@@ -52,7 +52,7 @@ class Graph {
      * Looks up a node in the graph by its identifier.
      */
     public Optional<Node> get(ObjectId id) {
-        return Optional.fromNullable(nodes.get(id));
+        return Optional.ofNullable(nodes.get(id));
     }
 
     /**

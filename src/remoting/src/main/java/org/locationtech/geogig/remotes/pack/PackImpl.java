@@ -37,7 +37,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
@@ -218,8 +218,8 @@ class PackImpl implements Pack {
                 };
 
                 final @Nullable RevCommit parent = parentId.isNull() ? null
-                        : Optional.fromNullable((RevCommit) rootsById.get(parentId))
-                                .or(fn);
+                        : Optional.ofNullable((RevCommit) rootsById.get(parentId))
+                                .orElseGet(fn);
 
                 ObjectId oldRootTreeId = parent == null ? RevTree.EMPTY_TREE_ID
                         : parent.getTreeId();

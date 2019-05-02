@@ -17,7 +17,7 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigException;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Get a repository or global options
@@ -51,7 +51,7 @@ public class ConfigGet extends AbstractGeoGigOp<Optional<String>> {
         if (configGetResult.isPresent()) {
             return Optional.of(configGetResult.get().get(name));
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
 
     }

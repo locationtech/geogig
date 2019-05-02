@@ -42,7 +42,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -114,7 +114,7 @@ public class Show extends AbstractCommand implements CLICommand {
                         } else {
                             ansi.a(typeName).newline();
                         }
-                        ansi.a(value.or("[NULL]").toString()).newline();
+                        ansi.a(value.orElse("[NULL]").toString()).newline();
                     }
                     console.println(ansi.toString());
                 } else {
@@ -158,7 +158,7 @@ public class Show extends AbstractCommand implements CLICommand {
                     for (int i = 0; i < feature.size(); i++) {
                         Optional<Object> value = feature.get(i);
                         ansi.fg(Color.YELLOW).a(attribs.get(i).getName() + ": ").reset();
-                        ansi.a(value.or("[NULL]").toString()).newline();
+                        ansi.a(value.orElse("[NULL]").toString()).newline();
                     }
                     console.println(ansi.toString());
                 } else {
@@ -251,8 +251,8 @@ public class Show extends AbstractCommand implements CLICommand {
      */
     private String formatPerson(RevPerson person) {
         StringBuilder sb = new StringBuilder();
-        sb.append(person.getName().or("<name not set>"));
-        sb.append(" <").append(person.getEmail().or("")).append('>');
+        sb.append(person.getName().orElse("<name not set>"));
+        sb.append(" <").append(person.getEmail().orElse("")).append('>');
         return sb.toString();
     }
 

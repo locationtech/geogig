@@ -18,7 +18,7 @@ import java.util.Set;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.impl.INIBlob;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Provides a means of loading a RepositoryFilter from a blob store.

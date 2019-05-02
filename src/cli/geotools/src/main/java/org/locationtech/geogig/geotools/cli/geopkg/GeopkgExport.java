@@ -37,7 +37,7 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Exports features from a feature type into a Geopackage database.
@@ -113,7 +113,7 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
             builder.featureUserData(Hints.PROVIDED_FID, Long.valueOf(fidValue));
             fidMappings.put(Long.toString(fidValue), feature.getIdentifier().getID());
             Feature modifiedFeature = builder.buildFeature(Long.toString(fidValue));
-            return Optional.fromNullable(modifiedFeature);
+            return Optional.ofNullable(modifiedFeature);
         };
 
         return function;

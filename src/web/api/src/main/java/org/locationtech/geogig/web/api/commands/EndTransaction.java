@@ -26,7 +26,7 @@ import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Interface for the TransactionEnd operation in GeoGig.
@@ -87,7 +87,7 @@ public class EndTransaction extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    Optional<RevCommit> mergeCommit = Optional.absent();
+                    Optional<RevCommit> mergeCommit = Optional.empty();
                     out.writeMergeConflictsResponse(mergeCommit, report, transaction, ours.getId(),
                             theirs.getId(), ancestor.get(), consumer);
                     out.finish();

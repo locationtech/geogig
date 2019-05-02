@@ -42,7 +42,7 @@ import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -225,7 +225,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         if (raw != null) {
             return Optional.of(convert(raw, clazz));
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     <T> T convert(String value, Class<T> clazz) {
@@ -553,6 +553,6 @@ public class PGConfigDatabase implements ConfigDatabase {
                 }
             }
         }
-        return Optional.fromNullable(repoPK);
+        return Optional.ofNullable(repoPK);
     }
 }

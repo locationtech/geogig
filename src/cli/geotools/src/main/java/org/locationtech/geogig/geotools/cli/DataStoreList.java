@@ -21,7 +21,7 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ListOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Lists feature types from a {@link DataStore} given by the concrete subclass.

@@ -64,7 +64,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.InternationalString;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableCollection;
@@ -199,7 +199,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             print(w, "\t");
             print(w, node.getObjectId().toString());
             print(w, "\t");
-            print(w, node.getMetadataId().or(ObjectId.NULL).toString());
+            print(w, node.getMetadataId().orElse(ObjectId.NULL).toString());
             print(w, "\t");
             Envelope envHelper = new Envelope();
             writeBBox(w, node, envHelper);
@@ -266,16 +266,16 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             println(w);
             printPerson(w, "author", commit.getAuthor());
             printPerson(w, "committer", commit.getCommitter());
-            println(w, "message\t", Optional.fromNullable(commit.getMessage()).or(""));
+            println(w, "message\t", Optional.ofNullable(commit.getMessage()).orElse(""));
             w.flush();
         }
 
         private void printPerson(Writer w, String name, RevPerson person) throws IOException {
             print(w, name);
             print(w, "\t");
-            print(w, person.getName().or(" "));
+            print(w, person.getName().orElse(" "));
             print(w, "\t");
-            print(w, person.getEmail().or(" "));
+            print(w, person.getEmail().orElse(" "));
             print(w, "\t");
             print(w, Long.toString(person.getTimestamp()));
             print(w, "\t");
@@ -453,9 +453,9 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             println(w, "message\t", tag.getMessage());
             print(w, "tagger");
             print(w, "\t");
-            print(w, tag.getTagger().getName().or(" "));
+            print(w, tag.getTagger().getName().orElse(" "));
             print(w, "\t");
-            print(w, tag.getTagger().getEmail().or(" "));
+            print(w, tag.getTagger().getEmail().orElse(" "));
             print(w, "\t");
             print(w, Long.toString(tag.getTagger().getTimestamp()));
             print(w, "\t");
@@ -589,12 +589,12 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             String message = parseMessage(reader);
 
             RevCommitBuilder builder = RevCommit.builder();
-            builder.author(author.getName().orNull());
-            builder.authorEmail(author.getEmail().orNull());
+            builder.author(author.getName().orElse(null));
+            builder.authorEmail(author.getEmail().orElse(null));
             builder.authorTimestamp(author.getTimestamp());
             builder.authorTimeZoneOffset(author.getTimeZoneOffset());
-            builder.committer(committer.getName().orNull());
-            builder.committerEmail(committer.getEmail().orNull());
+            builder.committer(committer.getName().orElse(null));
+            builder.committerEmail(committer.getEmail().orElse(null));
             builder.committerTimestamp(committer.getTimestamp());
             builder.committerTimeZoneOffset(committer.getTimeZoneOffset());
             builder.message(message);

@@ -20,7 +20,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
@@ -48,7 +48,7 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
 
     public static Optional<URI> lookup(final File directory) {
         try {
-            return Optional.fromNullable(lookupGeogigDirectory(directory));
+            return Optional.ofNullable(lookupGeogigDirectory(directory));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -68,7 +68,7 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
     protected Optional<URI> _call() {
         final Optional<URI> repoLocation;
 
-        Optional<Serializable> repoUrl = Optional.absent();
+        Optional<Serializable> repoUrl = Optional.empty();
         if (hints != null && (repoUrl = hints.get(Hints.REPOSITORY_URL)).isPresent()) {
             try {
                 URI uri = new URI(String.valueOf(repoUrl.get()));

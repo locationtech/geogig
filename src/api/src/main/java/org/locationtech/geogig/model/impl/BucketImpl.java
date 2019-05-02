@@ -9,14 +9,14 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Optional.fromNullable;
+import static java.util.Optional.ofNullable;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 class BucketImpl extends Bucket {
     private final int bucketTreeH1;
@@ -54,7 +54,7 @@ class BucketImpl extends Bucket {
     }
 
     public @Override Optional<Envelope> bounds() {
-        return fromNullable(bounds.isNull() ? null : bounds.asEnvelope());
+        return ofNullable(bounds.isNull() ? null : bounds.asEnvelope());
     }
 
 }

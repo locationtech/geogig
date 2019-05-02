@@ -34,7 +34,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 

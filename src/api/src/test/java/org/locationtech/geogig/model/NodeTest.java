@@ -28,7 +28,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 
 public class NodeTest {
@@ -42,7 +42,7 @@ public class NodeTest {
         extraData.put("key", "value");
         Node node = RevObjectFactory.defaultInstance().createNode("Points", oid, ObjectId.NULL,
                 TYPE.TREE, null, extraData);
-        assertEquals(Optional.absent(), node.getMetadataId());
+        assertEquals(Optional.empty(), node.getMetadataId());
         assertEquals("Points", node.getName());
         assertEquals(oid, node.getObjectId());
         assertEquals(TYPE.TREE, node.getType());

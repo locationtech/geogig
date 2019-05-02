@@ -137,7 +137,7 @@ public class Clone extends AbstractCommand implements CLICommand {
         if (cloneInitializer.repoExists(cloneURI)) {
             URI resolvedURI = cloneURI;
             if ("file".equals(cloneURI.getScheme())) {
-                resolvedURI = ResolveGeogigURI.lookup(new File(cloneURI)).or(cloneURI);
+                resolvedURI = ResolveGeogigURI.lookup(new File(cloneURI)).orElse(cloneURI);
             }
             String msg = "Destination repository already exists: " + resolvedURI;
             throw new InvalidParameterException(msg);

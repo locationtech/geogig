@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Simple implementation of an INI parser and serializer that operates on byte arrays.
@@ -56,7 +56,7 @@ public abstract class INIBlob {
             if (optVal.isPresent())
                 return optVal;
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     public synchronized Map<String, String> getAll() throws IOException {
@@ -199,7 +199,7 @@ public abstract class INIBlob {
 
         public Optional<String> get(String section, String key) {
             // No-op
-            return Optional.absent();
+            return Optional.empty();
         }
 
         public boolean set(String section, String key, String value) {
@@ -233,14 +233,14 @@ public abstract class INIBlob {
         @Override
         public Optional<String> get(String section, String key) {
             if (!header.equals(section)) {
-                return Optional.absent();
+                return Optional.empty();
             } else {
                 for (KeyAndValue kv : values) {
                     if (kv.getKey().equals(key)) {
                         return Optional.of(kv.getValue());
                     }
                 }
-                return Optional.absent();
+                return Optional.empty();
             }
         }
 

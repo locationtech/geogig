@@ -24,7 +24,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
@@ -117,7 +117,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
             if (valueOpt.isPresent() && valueOpt.get().length() > 0) {
                 return valueOpt;
             } else {
-                return Optional.absent();
+                return Optional.empty();
             }
         } catch (StringIndexOutOfBoundsException e) {
             throw new ConfigException(e, StatusCode.SECTION_OR_KEY_INVALID);
@@ -133,7 +133,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
         if (text.isPresent()) {
             return Optional.of(cast(c, text.get()));
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -144,7 +144,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
             if (globalValueOpt.isPresent() && globalValueOpt.get().length() > 0) {
                 return globalValueOpt;
             } else {
-                return Optional.absent();
+                return Optional.empty();
             }
         } catch (StringIndexOutOfBoundsException e) {
             throw new ConfigException(e, StatusCode.SECTION_OR_KEY_INVALID);
@@ -160,7 +160,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
         if (text.isPresent()) {
             return Optional.of(cast(c, text.get()));
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 

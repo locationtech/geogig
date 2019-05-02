@@ -28,7 +28,7 @@ import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
@@ -168,7 +168,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
                 .setRefSpec(ref)
                 .call(RevObject.class);
 
-        Optional<NodeRef> treeRef = Optional.absent();
+        Optional<NodeRef> treeRef = Optional.empty();
 
         if (!revObject.isPresent()) {
             if (Ref.WORK_HEAD.equals(ref)) { // we are requesting a listing of the whole working

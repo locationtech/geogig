@@ -427,7 +427,7 @@ public abstract class CanonicalClusteringStrategyTest {
             for (Node n : original) {
                 ObjectId oid = RevObjectTestSupport.hashString(n.toString());
                 Node edit = RevObjectFactory.defaultInstance().createNode(n.getName(), oid,
-                        ObjectId.NULL, TYPE.FEATURE, n.bounds().orNull(), null);
+                        ObjectId.NULL, TYPE.FEATURE, n.bounds().orElse(null), null);
                 edited.add(edit);
 
             }

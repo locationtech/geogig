@@ -41,7 +41,7 @@ import org.locationtech.geogig.storage.impl.TransactionRefDatabase;
 import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.locationtech.geogig.storage.impl.TransactionStagingArea;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
@@ -65,9 +65,9 @@ public class GeogigTransaction implements Context {
 
     private TransactionBlobStore transactionBlobStore;
 
-    private Optional<String> authorName = Optional.absent();
+    private Optional<String> authorName = Optional.empty();
 
-    private Optional<String> authorEmail = Optional.absent();
+    private Optional<String> authorEmail = Optional.empty();
 
     /**
      * Constructs the transaction with the given ID and Injector.
@@ -104,8 +104,8 @@ public class GeogigTransaction implements Context {
      * @return {@code this}
      */
     public GeogigTransaction setAuthor(@Nullable String authorName, @Nullable String authorEmail) {
-        this.authorName = Optional.fromNullable(authorName);
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorName = Optional.ofNullable(authorName);
+        this.authorEmail = Optional.ofNullable(authorEmail);
         return this;
     }
 
@@ -161,7 +161,7 @@ public class GeogigTransaction implements Context {
     }
 
     public void commit(ProgressListener listener) throws ConflictsException {
-        context.command(TransactionEnd.class).setAuthor(authorName.orNull(), authorEmail.orNull())
+        context.command(TransactionEnd.class).setAuthor(authorName.orElse(null), authorEmail.orElse(null))
                 .setTransaction(this).setCancel(false).setRebase(true).setProgressListener(listener)
                 .call();
     }
@@ -171,7 +171,7 @@ public class GeogigTransaction implements Context {
     }
 
     public void commitSyncTransaction(ProgressListener listener) throws ConflictsException {
-        context.command(TransactionEnd.class).setAuthor(authorName.orNull(), authorEmail.orNull())
+        context.command(TransactionEnd.class).setAuthor(authorName.orElse(null), authorEmail.orElse(null))
                 .setTransaction(this).setCancel(false).setProgressListener(listener).call();
     }
 

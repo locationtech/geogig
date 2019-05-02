@@ -67,7 +67,7 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.geometry.BoundingBox;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -294,7 +294,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse();
         assertTrue(JsonUtils.jsonEquals(JsonUtils.toJSON(expected), response, false));
 
-        Optional<AsyncCommand<?>> asyncCommand = Optional.absent();
+        Optional<AsyncCommand<?>> asyncCommand = Optional.empty();
         while (!asyncCommand.isPresent()) {
             Thread.yield();
             asyncCommand = testAsyncContext.getAndPruneIfFinished("1");

@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableSet;
@@ -120,7 +120,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
             if (RocksConnectionManager.INSTANCE.exists(dbPath(txId))) {
                 return Optional.of(getOrCreateDb(txId));
             } else {
-                return Optional.absent();
+                return Optional.empty();
             }
         }
         return Optional.of(dbHandle.getReference());
@@ -221,7 +221,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
                 c = getInternal(dbRef.db(), path);
             }
         }
-        return Optional.fromNullable(c);
+        return Optional.ofNullable(c);
     }
 
     @Override

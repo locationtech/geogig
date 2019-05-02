@@ -27,7 +27,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 @Parameters(commandNames = "import", commandDescription = "Import GeoJSON")
 public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand {

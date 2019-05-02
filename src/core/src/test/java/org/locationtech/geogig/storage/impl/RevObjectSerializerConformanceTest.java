@@ -69,7 +69,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -348,10 +348,10 @@ public abstract class RevObjectSerializerConformanceTest {
         assertEquals(newFeature.getValues().size(), feat.getValues().size());
 
         for (int i = 0; i < newFeature.getValues().size(); i++) {
-            Object expected = newFeature.getValues().get(i).orNull();
+            Object expected = newFeature.getValues().get(i).orElse(null);
             String msg = "At index " + i + ": "
                     + (expected == null ? null : expected.getClass().getSimpleName());
-            Object actual = feat.get(i).orNull();
+            Object actual = feat.get(i).orElse(null);
             assertEquals(msg, expected, actual);
         }
 

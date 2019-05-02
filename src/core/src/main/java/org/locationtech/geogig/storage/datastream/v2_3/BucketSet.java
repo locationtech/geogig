@@ -52,7 +52,7 @@ class BucketSet {
                 out.writeByte(bucket.getIndex());
                 objectId.writeTo(out);
 
-                Envelope bounds = bucket.bounds().orNull();
+                Envelope bounds = bucket.bounds().orElse(null);
                 if (bounds == null || bounds.isNull()) {
                     out.writeDouble(Double.NaN);
                 } else {

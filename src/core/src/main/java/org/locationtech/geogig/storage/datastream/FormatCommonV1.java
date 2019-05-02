@@ -177,8 +177,8 @@ public class FormatCommonV1 {
     }
 
     public static final void writePerson(RevPerson person, DataOutput data) throws IOException {
-        data.writeUTF(person.getName().or(""));
-        data.writeUTF(person.getEmail().or(""));
+        data.writeUTF(person.getName().orElse(""));
+        data.writeUTF(person.getEmail().orElse(""));
         data.writeLong(person.getTimestamp());
         data.writeInt(person.getTimeZoneOffset());
     }
@@ -407,7 +407,7 @@ public class FormatCommonV1 {
         try {
             data.writeUTF(node.getName());
             node.getObjectId().writeTo(data);
-            node.getMetadataId().or(ObjectId.NULL).writeTo(data);
+            node.getMetadataId().orElse(ObjectId.NULL).writeTo(data);
             int typeN = node.getType().value();
             data.writeByte(typeN);
             envBuff.setToNull();

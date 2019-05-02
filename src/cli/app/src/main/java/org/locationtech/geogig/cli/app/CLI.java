@@ -32,7 +32,7 @@ import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 
 public class CLI {

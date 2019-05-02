@@ -27,7 +27,7 @@ import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 

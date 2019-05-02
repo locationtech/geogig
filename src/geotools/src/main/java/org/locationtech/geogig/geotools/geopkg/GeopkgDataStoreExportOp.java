@@ -25,7 +25,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Exports layers from a repository snapshot to a GeoPackage file.
@@ -105,7 +105,7 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
             builder.featureUserData(Hints.PROVIDED_FID, Long.valueOf(fidValue));
             fidMappings.put(Long.toString(fidValue), feature.getIdentifier().getID());
             Feature modifiedFeature = builder.buildFeature(Long.toString(fidValue));
-            return Optional.fromNullable(modifiedFeature);
+            return Optional.ofNullable(modifiedFeature);
         };
 
         return function;

@@ -17,7 +17,7 @@ import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.opengis.feature.type.Name;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Internal operation for listing tables from a GeoTools {@link DataStore}.
@@ -31,7 +31,7 @@ public class ListOp extends AbstractGeoGigOp<Optional<List<String>>> {
     /**
      * Executes the list operation on the provided data store.
      * 
-     * @return a list of all tables, or Optional.absent() if none were found
+     * @return a list of all tables, or Optional.empty() if none were found
      */
     @Override
     protected Optional<List<String>> _call() {
@@ -57,7 +57,7 @@ public class ListOp extends AbstractGeoGigOp<Optional<List<String>>> {
         }
 
         if (!foundTable) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(features);
     }

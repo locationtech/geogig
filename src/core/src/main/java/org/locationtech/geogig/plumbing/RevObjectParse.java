@@ -15,7 +15,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -92,7 +92,7 @@ public class RevObjectParse extends AbstractGeoGigOp<Optional<RevObject>> {
             resolvedObjectId = objectId;
         }
         if (resolvedObjectId.isNull()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         RevObject revObject;
         if (RevTree.EMPTY_TREE_ID.equals(resolvedObjectId)) {

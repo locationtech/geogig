@@ -26,7 +26,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -89,7 +89,7 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
                     "%s does not resolve to a feature", ref);
             return Optional.of(RevFeature.class.cast(revObject.get()));
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -107,6 +107,6 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
             return Optional.of(new NodeRef(node, NodeRef.parentPath(ref), featureType.getId()));
 
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }

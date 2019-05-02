@@ -51,7 +51,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Exports features from a feature type into a shapefile.
@@ -205,7 +205,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
                 }
             }
             Feature modifiedFeature = builder.buildFeature(feature.getIdentifier().getID());
-            return Optional.fromNullable(modifiedFeature);
+            return Optional.ofNullable(modifiedFeature);
         };
         return function;
     }

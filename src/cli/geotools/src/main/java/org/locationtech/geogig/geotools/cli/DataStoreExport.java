@@ -46,7 +46,7 @@ import org.opengis.filter.Filter;
 
 import com.beust.jcommander.Parameter;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Exports features from a geogig feature type into a {@link DataStore} given by the concrete
@@ -184,7 +184,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
 
     /**
      * Returns a transforming function that will be run against all features to be exported. The
-     * function may return {@code Optional.absent()}, which prevents that particular feature from
+     * function may return {@code Optional.empty()}, which prevents that particular feature from
      * being exported.
      * 
      * @param featureType the feature type of the features to transform

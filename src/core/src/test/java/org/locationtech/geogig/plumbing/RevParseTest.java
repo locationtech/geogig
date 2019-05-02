@@ -35,7 +35,7 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  *
@@ -124,7 +124,7 @@ public class RevParseTest extends RepositoryTestCase {
         assertEquals(commitId1, objectId.get());
 
         objectId = geogig.command(RevParse.class).setRefSpec("branch1^2").call();
-        assertEquals(Optional.absent(), objectId);
+        assertEquals(Optional.empty(), objectId);
 
         objectId = geogig.command(RevParse.class).setRefSpec("master^").call();
         assertEquals(commitId2, objectId.get());
@@ -136,10 +136,10 @@ public class RevParseTest extends RepositoryTestCase {
         assertEquals(commitId3, objectId.get());
 
         objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "^1").call();
-        assertEquals(Optional.absent(), objectId);
+        assertEquals(Optional.empty(), objectId);
 
         objectId = geogig.command(RevParse.class).setRefSpec(ObjectId.NULL.toString() + "^").call();
-        assertEquals(Optional.absent(), objectId);
+        assertEquals(Optional.empty(), objectId);
 
         objectId = geogig.command(RevParse.class).setRefSpec(ObjectId.NULL.toString()).call();
         assertEquals(ObjectId.NULL, objectId.get());
@@ -149,7 +149,7 @@ public class RevParseTest extends RepositoryTestCase {
         assertEquals(ObjectId.NULL, objectId.get());
 
         objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "~1").call();
-        assertEquals(Optional.absent(), objectId);
+        assertEquals(Optional.empty(), objectId);
 
         objectId = geogig.command(RevParse.class)
                 .setRefSpec(commitId1.toString().substring(0, commitId1.toString().length() - 2))
@@ -157,7 +157,7 @@ public class RevParseTest extends RepositoryTestCase {
         assertEquals(commitId1, objectId.get());
 
         objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "~a").call();
-        assertEquals(Optional.absent(), objectId);
+        assertEquals(Optional.empty(), objectId);
 
         objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "^{commit}")
                 .call();
@@ -177,7 +177,7 @@ public class RevParseTest extends RepositoryTestCase {
 
         objectId = geogig.command(RevParse.class)
                 .setRefSpec(RevObjectTestSupport.hashString("NotAFeature").toString()).call();
-        assertEquals(Optional.absent(), objectId);
+        assertEquals(Optional.empty(), objectId);
     }
 
     @Test
@@ -220,7 +220,7 @@ public class RevParseTest extends RepositoryTestCase {
 
         when(mockRefParse.setName(anyString())).thenReturn(mockRefParse);
         when(mockCommands.command(eq(RefParse.class))).thenReturn(mockRefParse);
-        Optional<Ref> ref = Optional.absent();
+        Optional<Ref> ref = Optional.empty();
         when(mockRefParse.call()).thenReturn(ref);
 
         List<ObjectId> oIds = Arrays.asList(RevObjectTestSupport.hashString("Object 1"),

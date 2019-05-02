@@ -20,7 +20,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Resolves the given "ref spec" to a tree id in the repository's object database.
@@ -69,7 +69,7 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
      * Executes the command.
      * 
      * @return an {@link Optional} of the {@link ObjectId} that was resolved, or
-     *         {@link Optional#absent()} if it did not resolve.
+     *         {@link Optional#empty()} if it did not resolve.
      */
     @Override
     protected Optional<ObjectId> _call() {
@@ -90,11 +90,11 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
     /**
      * @param resolved an {@link Optional} with an ObjectId to resolve
      * @return an {@link Optional} of the {@link ObjectId} that was resolved, or
-     *         {@link Optional#absent()} if it did not resolve.
+     *         {@link Optional#empty()} if it did not resolve.
      */
     private Optional<ObjectId> call(Optional<ObjectId> resolved) {
         if (!resolved.isPresent()) {
-            return Optional.absent();
+            return Optional.empty();
         }
 
         ObjectId objectId = resolved.get();
@@ -137,6 +137,6 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
                     treeishRefSpec, String.valueOf(objectType)));
         }
 
-        return Optional.fromNullable(objectId);
+        return Optional.ofNullable(objectId);
     }
 }

@@ -18,7 +18,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 
 public class RevFeatureTest {
@@ -31,7 +31,7 @@ public class RevFeatureTest {
 
         assertEquals(TYPE.FEATURE, feature.getType());
 
-        assertEquals(Lists.transform(values, (v) -> Optional.fromNullable(v)), feature.getValues());
+        assertEquals(Lists.transform(values, (v) -> Optional.ofNullable(v)), feature.getValues());
     }
 
     @Test

@@ -15,7 +15,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * A {@code ValueArray} is an immutable data structure that contains a sequence of attribute value
@@ -31,7 +31,7 @@ public interface ValueArray {
 
     /**
      * @return the feature attribute value at the provided {@code index}, or
-     *         {@link Optional#absent() absent} if the object at that index is {@code null} (not to
+     *         {@link Optional#empty() absent} if the object at that index is {@code null} (not to
      *         be misinterpreted as absent if the index is out of bounds, in which case an exception
      *         is thrown)
      */

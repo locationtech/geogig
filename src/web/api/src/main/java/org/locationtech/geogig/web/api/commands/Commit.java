@@ -24,7 +24,7 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Interface for the Commit operation in GeoGig.
@@ -37,9 +37,9 @@ public class Commit extends AbstractWebAPICommand {
 
     boolean all;
 
-    Optional<String> authorName = Optional.absent();
+    Optional<String> authorName = Optional.empty();
 
-    Optional<String> authorEmail = Optional.absent();
+    Optional<String> authorEmail = Optional.empty();
 
     @Override
     protected void setParametersInternal(ParameterSet options) {
@@ -71,14 +71,14 @@ public class Commit extends AbstractWebAPICommand {
      * @param authorName the author of the merge commit
      */
     public void setAuthorName(@Nullable String authorName) {
-        this.authorName = Optional.fromNullable(authorName);
+        this.authorName = Optional.ofNullable(authorName);
     }
 
     /**
      * @param authorEmail the email of the author of the merge commit
      */
     public void setAuthorEmail(@Nullable String authorEmail) {
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorEmail = Optional.ofNullable(authorEmail);
     }
 
     /**
@@ -91,11 +91,11 @@ public class Commit extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
         RevCommit commit;
-        commit = geogig.command(CommitOp.class).setAuthor(authorName.orNull(), authorEmail.orNull())
+        commit = geogig.command(CommitOp.class).setAuthor(authorName.orElse(null), authorEmail.orElse(null))
                 .setMessage(message).setAllowEmpty(true).setAll(all).call();
 
         final RevCommit commitToWrite = commit;
-        final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);
+        final ObjectId parentId = commit.parentN(0).orElse(ObjectId.NULL);
         int adds = 0, deletes = 0, changes = 0;
         try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                 .setOldVersion(parentId).setNewVersion(commit.getId()).call()) {

@@ -80,7 +80,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -336,7 +336,7 @@ public class ResponseWriter {
         writeElement("name", node.getName());
         writeElement("type", node.getType().name());
         writeElement("objectid", node.getObjectId().toString());
-        writeElement("metadataid", node.getMetadataId().or(ObjectId.NULL).toString());
+        writeElement("metadataid", node.getMetadataId().orElse(ObjectId.NULL).toString());
         out.writeEndArrayElement();
     }
 
@@ -379,7 +379,7 @@ public class ResponseWriter {
         writeElement("id", feature.getId().toString());
         out.writeStartArray("attribute");
         for (int i = 0; i < feature.size(); i++) {
-            Object value = feature.get(i).orNull();
+            Object value = feature.get(i).orElse(null);
             final FieldType type = FieldType.forValue(value);
             String valueString = TextValueSerializer.asString(value);
             out.writeStartArrayElement("attribute");
@@ -555,8 +555,8 @@ public class ResponseWriter {
      */
     public void writePerson(String enclosingElement, RevPerson p) throws StreamWriterException {
         out.writeStartElement(enclosingElement);
-        writeElement("name", p.getName().orNull());
-        writeElement("email", p.getEmail().orNull());
+        writeElement("name", p.getName().orElse(null));
+        writeElement("email", p.getEmail().orElse(null));
         writeElement("timestamp", Long.toString(p.getTimestamp()));
         writeElement("timeZoneOffset", Long.toString(p.getTimeZoneOffset()));
         out.writeEndElement();
@@ -839,7 +839,7 @@ public class ResponseWriter {
         if (result.getMergeReport().isPresent()
                 && result.getMergeReport().get().getReport().isPresent()) {
             MergeReport report = result.getMergeReport().get();
-            writeMergeResponse(Optional.fromNullable(report.getMergeCommit()),
+            writeMergeResponse(Optional.ofNullable(report.getMergeCommit()),
                     report.getReport().get(), report.getOurs(),
                     report.getPairs().get(0).getTheirs(), report.getPairs().get(0).getAncestor());
         }
@@ -914,8 +914,8 @@ public class ResponseWriter {
                 new Function<DiffEntry, GeometryChange>() {
                     @Override
                     public GeometryChange apply(DiffEntry input) {
-                        Optional<RevObject> feature = Optional.absent();
-                        Optional<RevObject> type = Optional.absent();
+                        Optional<RevObject> feature = Optional.empty();
+                        Optional<RevObject> type = Optional.empty();
                         String path = null;
                         String crsCode = null;
                         GeometryChange change = null;
@@ -1041,7 +1041,7 @@ public class ResponseWriter {
 
                         object = geogig.command(RevObjectParse.class)
                                 .setObjectId(commit.getTreeId()).call();
-                        Optional<NodeRef> node = Optional.absent();
+                        Optional<NodeRef> node = Optional.empty();
                         if (object.isPresent()) {
                             RevTree tree = (RevTree) object.get();
                             node = geogig.command(FindTreeChild.class).setParent(tree)
@@ -1354,7 +1354,7 @@ public class ResponseWriter {
             out.writeStartArrayElement("Attribute");
             writeElement("name", attrib);
             writeElement("value",
-                    TextValueSerializer.asString(Optional.fromNullable((Object) value.orNull())));
+                    TextValueSerializer.asString(Optional.ofNullable((Object) value.orElse(null))));
             writeCommit(commit, "commit", null, null, null);
             out.writeEndArrayElement();
         }

@@ -22,7 +22,7 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Platform;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -90,9 +90,9 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
         final String nameKey = "user.name";
         final String emailKey = "user.email";
         String taggerName = getClientData(nameKey, String.class)
-                .or(command(ConfigGet.class).setName(nameKey).call()).orNull();
+                .orElseGet(() -> command(ConfigGet.class).setName(nameKey).call().orElse(null));
         String taggerEmail = getClientData(emailKey, String.class)
-                .or(command(ConfigGet.class).setName(emailKey).call()).orNull();
+                .orElseGet(() -> command(ConfigGet.class).setName(emailKey).call().orElse(null));
 
         checkState(taggerName != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",

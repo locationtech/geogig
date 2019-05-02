@@ -23,7 +23,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Exports features from a feature type into a PostGIS database.
@@ -66,7 +66,7 @@ public class PGExport extends DataStoreExport implements CLICommand {
             }
             builder.featureUserData(Hints.PROVIDED_FID, fid);
             Feature modifiedFeature = builder.buildFeature(fid);
-            return Optional.fromNullable(modifiedFeature);
+            return Optional.ofNullable(modifiedFeature);
         };
 
         return function;

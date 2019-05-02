@@ -23,7 +23,7 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
@@ -89,7 +89,7 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
         checkArgument(!newBranchName.equals(oldBranchName), "Done");
         command(CheckRefFormat.class).setThrowsException(true).setRef(newBranchName)
                 .setAllowOneLevel(true).call();
-        Optional<Ref> oldBranch = Optional.absent();
+        Optional<Ref> oldBranch = Optional.empty();
 
         if (oldBranchName == null) {
             Optional<Ref> headRef = command(RefParse.class).setName(Ref.HEAD).call();

@@ -17,7 +17,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -47,6 +47,6 @@ public class LocalRemoteResolver implements RemoteResolver {
             return Optional.of(remoteRepo);
         }
 
-        return Optional.absent();
+        return Optional.empty();
     }
 }

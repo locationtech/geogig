@@ -15,7 +15,7 @@ public class RefRequestIO {
     public void write(DataOutputStream out, RefRequest r) throws IOException {
         String name = r.name;
         ObjectId want = r.want;
-        ObjectId have = r.have.orNull();
+        ObjectId have = r.have.orElse(null);
 
         out.writeUTF(name);
         writeId(out, want);

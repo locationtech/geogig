@@ -40,7 +40,7 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
@@ -88,9 +88,9 @@ public class HashObjectFunnelsTest {
             @Override
             public Optional<ObjectId> parentN(int parentIndex) {
                 if (parentIndex >= parents.size()) {
-                    return Optional.absent();
+                    return Optional.empty();
                 }
-                return Optional.fromNullable(parents.get(parentIndex));
+                return Optional.ofNullable(parents.get(parentIndex));
             }
 
             @Override
@@ -282,7 +282,7 @@ public class HashObjectFunnelsTest {
             @Override
             public void forEach(Consumer<Object> consumer) {
                 for (int i = 0; i < values.size(); i++) {
-                    consumer.accept(values.get(i).orNull());
+                    consumer.accept(values.get(i).orElse(null));
                 }
             }
 
@@ -310,7 +310,7 @@ public class HashObjectFunnelsTest {
 
         WKTReader reader = new WKTReader();
         // Make sure properties of each type are hashed
-        values.add(Optional.absent());
+        values.add(Optional.empty());
         values.add(Optional.of(new Boolean(false)));
         values.add(Optional.of((byte) 0x0));
         values.add(Optional.of((short) 0));
@@ -360,7 +360,7 @@ public class HashObjectFunnelsTest {
         ObjectId featureId1 = ObjectId.create(rawKey);
 
         hasher = Hashing.sha1().newHasher();
-        HashObjectFunnels.feature(hasher, Lists.transform(values, (value) -> value.orNull()));
+        HashObjectFunnels.feature(hasher, Lists.transform(values, (value) -> value.orElse(null)));
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
         ObjectId featureId2 = ObjectId.create(rawKey);

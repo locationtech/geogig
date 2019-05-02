@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -25,9 +26,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -56,7 +55,7 @@ public class HeapGraphDatabase implements GraphDatabase {
             return;
         }
 
-        Optional<URI> url = platform == null ? Optional.absent()
+        Optional<URI> url = platform == null ? Optional.empty()
                 : new ResolveGeogigURI(platform, null).call();
         if (url.isPresent()) {
             synchronized (graphs) {
@@ -83,7 +82,7 @@ public class HeapGraphDatabase implements GraphDatabase {
             return;
         }
         graph = null;
-        Optional<URI> url = platform == null ? Optional.absent()
+        Optional<URI> url = platform == null ? Optional.empty()
                 : new ResolveGeogigURI(platform, null).call();
         if (url.isPresent()) {
             synchronized (graphs) {
@@ -104,27 +103,15 @@ public class HeapGraphDatabase implements GraphDatabase {
 
     @Override
     public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
-        return graph.get(commitId).transform(new Function<Node, ImmutableList<ObjectId>>() {
-            @Override
-            public ImmutableList<ObjectId> apply(Node n) {
-                // transform outgoing nodes to id
-                // filter for null to skip fake root node
-                return new ImmutableList.Builder<ObjectId>()
-                        .addAll(filter(transform(n.to(), NODE_TO_ID), Predicates.notNull()))
-                        .build();
-            }
-        }).or(ImmutableList.<ObjectId> of());
+        // transform outgoing nodes to id
+        // filter for null to skip fake root node
+        return graph.get(commitId).map(
+        		n -> ImmutableList.copyOf( filter( transform(n.to(), NODE_TO_ID), i->i!=null) )).orElse(ImmutableList.of());
     }
 
     @Override
     public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
-        return graph.get(commitId).transform(new Function<Node, ImmutableList<ObjectId>>() {
-            @Override
-            public ImmutableList<ObjectId> apply(Node n) {
-                return new ImmutableList.Builder<ObjectId>().addAll(transform(n.from(), NODE_TO_ID))
-                        .build();
-            }
-        }).or(ImmutableList.<ObjectId> of());
+        return graph.get(commitId).map(n->ImmutableList.copyOf(transform(n.from(), NODE_TO_ID))).orElse(ImmutableList.of());
     }
 
     @Override
@@ -162,7 +149,7 @@ public class HeapGraphDatabase implements GraphDatabase {
 
     @Override
     public ObjectId getMapping(ObjectId commitId) {
-        return Optional.fromNullable(graph.getMapping(commitId)).or(ObjectId.NULL);
+        return Optional.ofNullable(graph.getMapping(commitId)).orElse(ObjectId.NULL);
     }
 
     @Override

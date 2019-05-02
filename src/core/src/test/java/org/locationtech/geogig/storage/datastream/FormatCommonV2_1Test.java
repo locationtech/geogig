@@ -118,11 +118,11 @@ public class FormatCommonV2_1Test {
 
         GeometryFactory provided = new GeometryFactory();
 
-        Geometry g1 = (Geometry) decoded.get(geomIndex).orNull();
+        Geometry g1 = (Geometry) decoded.get(geomIndex).orElse(null);
         assertNotSame(geom, g1);
         assertEquals(geom, g1);
 
-        Geometry g2 = decoded.get(geomIndex, provided).orNull();
+        Geometry g2 = decoded.get(geomIndex, provided).orElse(null);
         assertEquals(geom, g2);
         assertNotSame(g1, g2);
         assertSame(provided, g2.getFactory());

@@ -69,7 +69,7 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -308,11 +308,11 @@ public class InterchangeFormat {
             context.objectDatabase().put(newTree);
 
             if (authorName == null) {
-                authorName = context.command(ConfigGet.class).setName("user.name").call().orNull();
+                authorName = context.command(ConfigGet.class).setName("user.name").call().orElse(null);
             }
             if (authorEmail == null) {
                 authorEmail = context.command(ConfigGet.class).setName("user.email").call()
-                        .orNull();
+                        .orElse(null);
             }
 
             RevCommitBuilder builder = RevCommit.builder();

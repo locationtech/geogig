@@ -27,7 +27,7 @@ import org.locationtech.geogig.storage.StorageProvider;
 import org.locationtech.geogig.storage.VersionedFormat;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -93,10 +93,10 @@ public class PluginsModule extends AbstractModule {
             String versionKey = null;
             String format = null, version = null;
             try {
-                format = getConfig(formatKey, config).orNull();
+                format = getConfig(formatKey, config).orElse(null);
                 if (format != null) {
                     versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orNull();
+                    version = getConfig(versionKey, config).orElse(null);
                 }
             } catch (RuntimeException e) {
                 // ignore, the config may not be available when we need this.
@@ -138,10 +138,10 @@ public class PluginsModule extends AbstractModule {
 
             String format = null, version = null;
             try {
-                format = getConfig(formatKey, config).orNull();
+                format = getConfig(formatKey, config).orElse(null);
                 if (format != null) {
                     versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orNull();
+                    version = getConfig(versionKey, config).orElse(null);
                 }
             } catch (RuntimeException e) {
                 // ignore, the config may not be available when we need this.
@@ -182,10 +182,10 @@ public class PluginsModule extends AbstractModule {
             String versionKey = null;
             String format = null, version = null;
             try {
-                format = getConfig(formatKey, config).orNull();
+                format = getConfig(formatKey, config).orElse(null);
                 if (format != null) {
                     versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orNull();
+                    version = getConfig(versionKey, config).orElse(null);
                 }
             } catch (RuntimeException e) {
                 // ignore, the config may not be available when we need this.
@@ -233,10 +233,10 @@ public class PluginsModule extends AbstractModule {
             String versionKey = null;
             String format = null, version = null;
             try {
-                format = getConfig(formatKey, config).orNull();
+                format = getConfig(formatKey, config).orElse(null);
                 if (format != null) {
                     versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orNull();
+                    version = getConfig(versionKey, config).orElse(null);
                 }
             } catch (RuntimeException e) {
                 // ignore, the config may not be available when we need this.

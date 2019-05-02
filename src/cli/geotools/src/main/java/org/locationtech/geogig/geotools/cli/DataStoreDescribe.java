@@ -24,7 +24,7 @@ import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 
 import com.beust.jcommander.Parameter;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Describes a feature type from a {@link DataStore} given by the concrete subclass.

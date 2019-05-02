@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Provides the default formats for the various databases used by GeoGig.
@@ -62,30 +62,30 @@ public final class PluginDefaults {
 
     /**
      * @return an {@link Optional} with the {@link RefDatabase} format and version, or
-     *         {@link Optional#absent()} if there wasn't one
+     *         {@link Optional#empty()} if there wasn't one
      */
     public Optional<VersionedFormat> getRefs() {
-        return Optional.fromNullable(refs);
+        return Optional.ofNullable(refs);
     }
 
     /**
      * @return an {@link Optional} with the {@link ObjectDatabase} format and version, or
-     *         {@link Optional#absent()} if there wasn't one
+     *         {@link Optional#empty()} if there wasn't one
      */
     public Optional<VersionedFormat> getObjects() {
-        return Optional.fromNullable(objects);
+        return Optional.ofNullable(objects);
     }
 
     /**
      * @return an {@link Optional} with the {@link IndexDatabase} format and version, or
-     *         {@link Optional#absent()} if there wasn't one
+     *         {@link Optional#empty()} if there wasn't one
      */
     public Optional<VersionedFormat> getIndex() {
-        return Optional.fromNullable(index);
+        return Optional.ofNullable(index);
     }
 
     public Optional<VersionedFormat> getConflicts() {
-        return Optional.fromNullable(conflicts);
+        return Optional.ofNullable(conflicts);
     }
 
     /**

@@ -76,7 +76,7 @@ public class PGTestDataSourceProvider extends ExternalResource {
 
     public boolean isEnabled() {
         final boolean enabled = props.get(PGTestProperties.TESTS_ENABLED_KEY, Boolean.class)
-                .or(Boolean.FALSE).booleanValue();
+                .orElse(Boolean.FALSE).booleanValue();
         if (!enabled && !notified) {
             final String home = System.getProperty("user.home");
             String propsFile = new File(home, PGTestProperties.CONFIG_FILE).getAbsolutePath();

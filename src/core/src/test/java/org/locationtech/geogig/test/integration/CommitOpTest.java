@@ -43,7 +43,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class CommitOpTest extends RepositoryTestCase {
@@ -704,7 +704,7 @@ public class CommitOpTest extends RepositoryTestCase {
 
         assertNotNull(commit);
         assertEquals(parentId == null ? 0 : 1, commit.getParentIds().size());
-        assertEquals(parentId, commit.parentN(0).orNull());
+        assertEquals(parentId, commit.parentN(0).orElse(null));
         assertNotNull(commit.getTreeId());
         assertNotNull(commit.getId());
         if (author != null) {

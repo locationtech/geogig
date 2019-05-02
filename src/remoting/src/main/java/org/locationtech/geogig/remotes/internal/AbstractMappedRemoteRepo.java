@@ -34,7 +34,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
@@ -301,7 +301,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * Gets the remote ref that matches the provided ref spec.
      * 
      * @param refspec the refspec to parse
-     * @return the matching {@link Ref} or {@link Optional#absent()} if the ref could not be found
+     * @return the matching {@link Ref} or {@link Optional#empty()} if the ref could not be found
      */
     protected abstract Optional<Ref> getRemoteRef(String refspec);
 
@@ -330,7 +330,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param refspec the ref to update
      * @param commitId the new value of the ref
      * @param delete if true, the remote ref will be deleted
-     * @return the updated ref, or {@link Optional#absent() absent} if it didn't exist
+     * @return the updated ref, or {@link Optional#empty() absent} if it didn't exist
      */
     protected abstract Optional<Ref> updateRemoteRef(String refspec, ObjectId commitId,
             boolean delete);

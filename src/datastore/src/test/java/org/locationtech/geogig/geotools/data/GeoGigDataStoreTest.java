@@ -47,7 +47,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 

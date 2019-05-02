@@ -36,7 +36,7 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -146,7 +146,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     @Override
@@ -262,7 +262,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         if (indexTreeBytes != null) {
             return Optional.of(ObjectId.create(indexTreeBytes));
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     private static ObjectId parseTreeIdFromKey(byte[] key) {

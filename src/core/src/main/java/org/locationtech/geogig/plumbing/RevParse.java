@@ -29,7 +29,7 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -106,7 +106,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
      *         multiple objects), or a precondition refSpec form was given (e.g.
      *         <code> id^{commit}</code>) and the object {@code id} resolves to is not of the
      *         expected type.
-     * @return the resolved object id, may be {@link Optional#absent() absent}
+     * @return the resolved object id, may be {@link Optional#empty() absent}
      */
     @Override
     protected Optional<ObjectId> _call() {
@@ -179,14 +179,14 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
             Optional<ObjectId> treeId = command(ResolveTreeish.class).setSource(source)
                     .setTreeish(resolved.get()).call();
             if (!treeId.isPresent() || treeId.get().isNull()) {
-                return Optional.absent();
+                return Optional.empty();
             }
             RevTree revTree = source.getTree(treeId.get());
             Optional<NodeRef> ref = command(FindTreeChild.class).setParent(revTree)
                     .setChildPath(path).call();
 
             if (!ref.isPresent()) {
-                return Optional.absent();
+                return Optional.empty();
             }
             resolved = Optional.of(ref.get().getObjectId());
         }
@@ -197,7 +197,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
         checkNotNull(objectId);
         checkArgument(parentN > -1);
         if (objectId.isNull()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         if (parentN == 0) {
             // 0 == check id is a commit
@@ -210,7 +210,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
 
         RevCommit commit = resolveCommit(objectId);
         if (parentN > commit.getParentIds().size()) {
-            return Optional.absent();
+            return Optional.empty();
         }
 
         return commit.parentN(parentN - 1);
@@ -247,7 +247,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
         for (int i = 0; i < ancestorN; i++) {
             ImmutableList<ObjectId> parents = graph.getParents(ancestor);
             if (parents.isEmpty()) {
-                return Optional.absent();
+                return Optional.empty();
             }
             ancestor = parents.get(0);// use first parent
         }
@@ -257,7 +257,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
             // the ancestor might not exist in case the commit was the origin of a shallow clone
             ancestor = null;
         }
-        return Optional.fromNullable(ancestor);
+        return Optional.ofNullable(ancestor);
     }
 
     private Optional<ObjectId> verifyId(ObjectId objectId, RevObject.TYPE type) {
@@ -362,6 +362,6 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
         if (resolvedTo != null && !ObjectId.NULL.equals(resolvedTo) && !source.exists(resolvedTo)) {
             resolvedTo = null;
         }
-        return Optional.fromNullable(resolvedTo);
+        return Optional.ofNullable(resolvedTo);
     }
 }

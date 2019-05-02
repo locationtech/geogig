@@ -32,7 +32,7 @@ import com.google.common.io.Files;
 public class HooksTest extends RepositoryTestCase {
 
     private File resolveHooksFolder() {
-        URI repoURI = ResolveGeogigURI.lookup(geogig.getPlatform().pwd()).orNull();
+        URI repoURI = ResolveGeogigURI.lookup(geogig.getPlatform().pwd()).orElse(null);
         File hooksFolder = new File(new File(repoURI), "hooks");
         assertTrue(hooksFolder.exists());
         assertTrue(hooksFolder.isDirectory());

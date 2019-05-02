@@ -22,7 +22,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.web.api.TestRepository;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
@@ -55,7 +55,7 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
     @Override
     public Optional<Repository> getGeogig(final String repositoryName) {
         if (null == repositoryName) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(getGeogigByName(repositoryName));
     }

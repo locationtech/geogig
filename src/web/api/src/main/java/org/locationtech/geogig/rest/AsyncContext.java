@@ -29,7 +29,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class AsyncContext {
@@ -145,7 +145,7 @@ public class AsyncContext {
 
     public Optional<AsyncCommand<?>> get(final String taskId) {
         AsyncCommand<?> asyncCommand = commands.get(taskId);
-        return Optional.<AsyncCommand<?>> fromNullable(asyncCommand);
+        return Optional.<AsyncCommand<?>> ofNullable(asyncCommand);
     }
 
     public static class AsyncCommand<T> {
@@ -173,7 +173,7 @@ public class AsyncContext {
                 UUID txId = tx.getTransactionId();
                 return Optional.of(txId);
             }
-            return Optional.absent();
+            return Optional.empty();
         }
 
         public Context getContext() {

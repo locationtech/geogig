@@ -15,7 +15,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.NonNull;
 
@@ -93,11 +93,11 @@ public abstract class Node implements Bounded, Comparable<Node> {
     }
 
     public Node update(final ObjectId newId) {
-        return update(newId, bounds().orNull());
+        return update(newId, bounds().orElse(null));
     }
 
     public Node update(final ObjectId newId, final @Nullable Envelope newBounds) {
-        ObjectId mdId = getMetadataId().or(ObjectId.NULL);
+        ObjectId mdId = getMetadataId().orElse(ObjectId.NULL);
 
         return RevObjectFactory.defaultInstance().createNode(getName(), newId, mdId, getType(),
                 newBounds, getExtraData());

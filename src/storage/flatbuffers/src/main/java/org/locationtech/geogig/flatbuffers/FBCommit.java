@@ -15,7 +15,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -49,7 +49,7 @@ final class FBCommit extends FBRevObject<Commit> implements RevCommit {
         if (parentIdsLength > parentIndex) {
             return Optional.of(FBAdapters.toId(getTable().parentIds(parentIndex)));
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     public @Override RevPerson getAuthor() {

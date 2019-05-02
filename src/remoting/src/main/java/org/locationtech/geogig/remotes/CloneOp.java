@@ -42,7 +42,7 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -80,7 +80,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
 
     private static final String DEFAULT_REMOTE_NAME = NodeRef.nodeFromPath(Ref.ORIGIN);
 
-    private Optional<String> branch = Optional.absent();
+    private Optional<String> branch = Optional.empty();
 
     private URI remoteURI;
 
@@ -92,7 +92,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
 
     private String remoteName = DEFAULT_REMOTE_NAME;
 
-    private Optional<Integer> depth = Optional.absent();
+    private Optional<Integer> depth = Optional.empty();
 
     private boolean singleBranch = false;
 
@@ -118,7 +118,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
                 if (fetchIndexes && remoteRepo instanceof LocalRemoteRepo) {
                     fetchIndexes = false;
                 }
-                final Integer depth = this.depth.or(remoteRepo.getDepth()).or(0);
+                final Integer depth = this.depth.orElseGet(() -> remoteRepo.getDepth().orElse(0));
                 setDepth(cloneRepo, depth);
                 localRemoteRefs = fetchRemoteData(cloneRepo, remote, depth, fetchIndexes);
                 headRef = remoteRepo.headRef();
@@ -221,7 +221,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
      * @return {@code this}
      */
     public CloneOp setBranch(@Nullable String branch) {
-        this.branch = Optional.fromNullable(branch);
+        this.branch = Optional.ofNullable(branch);
         return this;
     }
 
@@ -372,7 +372,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
                 clone.command(RemoteRemoveOp.class).setName(remoteName).call();
             }
         }
-        final @Nullable String branch = this.branch.orNull();
+        final @Nullable String branch = this.branch.orElse(null);
         RemoteAddOp cmd = clone.command(RemoteAddOp.class)//
                 .setName(remoteName)//
                 .setURL(remoteURI.toString())//

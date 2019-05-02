@@ -15,7 +15,7 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Provides an interface for implementations of config databases, which manage GeoGig config files.

@@ -57,7 +57,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -164,7 +164,7 @@ public class WorkingTreeImpl implements WorkingTree {
         final RevTree workHead = getTree();
 
         final NodeRef currentTypeRef = context.command(FindTreeChild.class).setParent(workHead)
-                .setChildPath(path).call().orNull();
+                .setChildPath(path).call().orElse(null);
 
         if (null == currentTypeRef) {
             return workHead.getId();
@@ -198,7 +198,7 @@ public class WorkingTreeImpl implements WorkingTree {
         final RevTree workHead = getTree();
 
         final NodeRef childRef = context.command(FindTreeChild.class).setParent(workHead)
-                .setChildPath(treePath).call().orNull();
+                .setChildPath(treePath).call().orElse(null);
 
         if (null == childRef) {
             return workHead.getId();
@@ -286,7 +286,7 @@ public class WorkingTreeImpl implements WorkingTree {
 
         final RevTree workHead = getTree();
         final NodeRef currentTreeRef = context.command(FindTreeChild.class).setParent(workHead)
-                .setChildPath(treePath).call().orNull();
+                .setChildPath(treePath).call().orElse(null);
         if (null != currentTreeRef) {
             throw new IllegalArgumentException("Tree already exists at " + treePath);
         }
@@ -308,7 +308,7 @@ public class WorkingTreeImpl implements WorkingTree {
         updateWorkHead(newWorkHead.getId());
 
         NodeRef ref = context.command(FindTreeChild.class).setParent(newWorkHead)
-                .setChildPath(treePath).call().orNull();
+                .setChildPath(treePath).call().orElse(null);
         checkNotNull(ref, "tree wasn't created: " + treePath);
         return ref;
     }
@@ -498,7 +498,7 @@ public class WorkingTreeImpl implements WorkingTree {
     /**
      * @param path finds a {@link Node} for the feature at the given path in the index
      * @return the Node for the feature at the specified path if it exists in the work tree,
-     *         otherwise Optional.absent()
+     *         otherwise Optional.empty()
      */
     @Override
     public Optional<Node> findUnstaged(final String path) {
@@ -507,7 +507,7 @@ public class WorkingTreeImpl implements WorkingTree {
         if (nodeRef.isPresent()) {
             return Optional.of(nodeRef.get().getNode());
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -538,7 +538,7 @@ public class WorkingTreeImpl implements WorkingTree {
         final RevTree workHead = getTree();
 
         final NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
-                .setChildPath(treePath).call().orNull();
+                .setChildPath(treePath).call().orElse(null);
         Preconditions.checkArgument(null != typeTreeRef, "Tree does not exist: %s", treePath);
 
         final RevFeatureType newRevType = RevFeatureType.builder().type(featureType).build();
@@ -563,7 +563,7 @@ public class WorkingTreeImpl implements WorkingTree {
             NodeRef ref = oldFeatureRefs.next();
             Node node = ref.getNode();
             ObjectId newMetadataId;
-            final @Nullable ObjectId nodesMetadataId = node.getMetadataId().orNull();
+            final @Nullable ObjectId nodesMetadataId = node.getMetadataId().orElse(null);
             if (null == nodesMetadataId) {
                 // force the node holding the old metadata id instead of relying on its parent's
                 newMetadataId = oldDefaultMetadata;
@@ -575,7 +575,7 @@ public class WorkingTreeImpl implements WorkingTree {
                 newMetadataId = nodesMetadataId;
             }
             Node newNode = RevObjectFactory.defaultInstance().createNode(node.getName(),
-                    node.getObjectId(), newMetadataId, TYPE.FEATURE, node.bounds().orNull(), null);
+                    node.getObjectId(), newMetadataId, TYPE.FEATURE, node.bounds().orElse(null), null);
             newTreeBuilder.put(newNode);
         }
 

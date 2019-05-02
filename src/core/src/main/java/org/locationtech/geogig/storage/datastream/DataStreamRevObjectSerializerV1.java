@@ -61,7 +61,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
@@ -180,7 +180,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
                 writeHeader(data, "feature");
                 data.writeInt(feature.size());
                 for (Optional<Object> field : feature.getValues()) {
-                    Object value = field.orNull();
+                    Object value = field.orElse(null);
                     FieldType type = FieldType.forValue(value);
                     data.writeByte(type.getTag());
                     DataStreamValueSerializerV1.INSTANCE.encode(type, value, data);

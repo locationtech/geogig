@@ -24,7 +24,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.FeatureType;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Provides an interface for a working tree of a GeoGig repository.
@@ -168,7 +168,7 @@ public interface WorkingTree {
     /**
      * @param featurePath finds a {@link Node} for the feature at the given path in the index
      * @return the Node for the feature at the specified path if it exists in the work tree,
-     *         otherwise Optional.absent()
+     *         otherwise Optional.empty()
      */
     Optional<Node> findUnstaged(String featurePath);
 

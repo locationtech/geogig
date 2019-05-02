@@ -37,7 +37,7 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.geometry.BoundingBox;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -155,13 +155,13 @@ class WorkingTreeInsertHelper {
                 treeBuilders.put(treePath, builder);
             }
         }
-        return Optional.fromNullable(builder);
+        return Optional.ofNullable(builder);
     }
 
     private RevTreeBuilder getTreeBuilder(final Feature feature) {
 
         final String treePath = treePathResolver.apply(feature);
-        RevTreeBuilder builder = getTreeBuilder(treePath).orNull();
+        RevTreeBuilder builder = getTreeBuilder(treePath).orElse(null);
 
         if (builder == null) {
             final FeatureType type = feature.getType();

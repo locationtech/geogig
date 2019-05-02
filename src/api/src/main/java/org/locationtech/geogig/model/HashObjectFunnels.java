@@ -417,8 +417,8 @@ public class HashObjectFunnels {
 
                 @Override
                 public void funnel(RevPerson from, PrimitiveSink into) {
-                    NullableStringFunnel.funnel(from.getName().orNull(), into);
-                    NullableStringFunnel.funnel(from.getEmail().orNull(), into);
+                    NullableStringFunnel.funnel(from.getName().orElse(null), into);
+                    NullableStringFunnel.funnel(from.getEmail().orElse(null), into);
                     Funnels.longFunnel().funnel(from.getTimestamp(), into);
                     Funnels.integerFunnel().funnel(from.getTimeZoneOffset(), into);
                 }
@@ -432,7 +432,7 @@ public class HashObjectFunnels {
             RevObjectTypeFunnel.funnel(ref.getType(), into);
             StringFunnel.funnel((CharSequence) ref.getName(), into);
             ObjectIdFunnel.funnel(ref.getObjectId(), into);
-            ObjectIdFunnel.funnel(ref.getMetadataId().or(ObjectId.NULL), into);
+            ObjectIdFunnel.funnel(ref.getMetadataId().orElse(ObjectId.NULL), into);
             Map<String, Object> extraData = ref.getExtraData();
             // consider extraData only if it's not empty to maintain backwards compatibility with
             // Geogig pre 1.1

@@ -20,7 +20,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
@@ -92,7 +92,7 @@ public class FindTreeChild extends AbstractGeoGigOp<Optional<NodeRef>> {
      * Executes the command.
      * 
      * @return an {@code Optional} that contains the Node if it was found, or
-     *         {@link Optional#absent()} if it wasn't
+     *         {@link Optional#empty()} if it wasn't
      */
     @Override
     protected Optional<NodeRef> _call() {
@@ -105,7 +105,7 @@ public class FindTreeChild extends AbstractGeoGigOp<Optional<NodeRef>> {
             ObjectId rootTreeId = command(ResolveTreeish.class).setSource(source)
                     .setTreeish(Ref.HEAD).call().get();
             if (rootTreeId.isNull()) {
-                return Optional.absent();
+                return Optional.empty();
             }
             tree = command(RevObjectParse.class).setSource(source).setObjectId(rootTreeId)
                     .call(RevTree.class).get();

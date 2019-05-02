@@ -35,7 +35,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
@@ -292,7 +292,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         final String namekey = "user.name";
 
         String name = getClientData(namekey, String.class)
-                .or(command(ConfigGet.class).setName(namekey).call()).orNull();
+                .orElseGet(()->command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
@@ -305,7 +305,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         final String emailkey = "user.email";
 
         String email = getClientData(emailkey, String.class)
-                .or(command(ConfigGet.class).setName(emailkey).call()).orNull();
+                .orElseGet(()->command(ConfigGet.class).setName(emailkey).call().orElse(null));
 
         checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",

@@ -36,7 +36,7 @@ import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Shows information about the commits and authors that have modified the current attributes of a
@@ -83,13 +83,13 @@ public class Blame extends AbstractCommand {
                     StringBuilder sb = new StringBuilder();
                     sb.append(attrib).append(' ');
                     sb.append(commit.getId().toString()).append(' ');
-                    sb.append(commit.getAuthor().getName().or("")).append(' ');
-                    sb.append(commit.getAuthor().getEmail().or("")).append(' ');
+                    sb.append(commit.getAuthor().getName().orElse("")).append(' ');
+                    sb.append(commit.getAuthor().getEmail().orElse("")).append(' ');
                     sb.append(Long.toString(commit.getAuthor().getTimestamp())).append(' ');
                     sb.append(Integer.toString(commit.getAuthor().getTimeZoneOffset()));
                     if (!noValues) {
                         sb.append(" ").append(
-                                TextValueSerializer.asString(Optional.of((Object) value.orNull())));
+                                TextValueSerializer.asString(Optional.of((Object) value.orElse(null))));
                     }
                     console.println(sb.toString());
                 } else {
@@ -100,8 +100,8 @@ public class Blame extends AbstractCommand {
                         ansi.fg(YELLOW).a(s).a(" ").reset();
                     }
                     ansi.a(commit.getId().toString().substring(0, 8)).a(" ");
-                    ansi.a(commit.getAuthor().getName().or("")).a(" ");
-                    ansi.a(commit.getAuthor().getEmail().or("")).a(" ");
+                    ansi.a(commit.getAuthor().getName().orElse("")).a(" ");
+                    ansi.a(commit.getAuthor().getEmail().orElse("")).a(" ");
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                     String date = formatter.format(new Date(commit.getAuthor().getTimestamp()
                             + commit.getAuthor().getTimeZoneOffset()));

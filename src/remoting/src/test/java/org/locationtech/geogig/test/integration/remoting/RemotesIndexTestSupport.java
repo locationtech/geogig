@@ -40,7 +40,7 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;

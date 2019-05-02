@@ -22,7 +22,7 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Web version of the Status operation in GeoGig's CLI. Lists the current branch as well as the

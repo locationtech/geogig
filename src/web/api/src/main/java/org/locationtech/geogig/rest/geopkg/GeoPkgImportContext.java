@@ -45,7 +45,7 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamingWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Geopackage specific implementation of {@link DataStoreImportContextService}.
@@ -187,7 +187,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                         .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
                         .call();
                 ResponseWriter out = new ResponseWriter(w, getMediaType());
-                Optional<RevCommit> mergeCommit = Optional.absent();
+                Optional<RevCommit> mergeCommit = Optional.empty();
                 w.writeStartElement("result");
                 out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
                         theirs.getId(), ancestor.get(), consumer);

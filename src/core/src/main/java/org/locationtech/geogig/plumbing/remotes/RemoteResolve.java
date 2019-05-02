@@ -16,7 +16,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Supplier;
 
 /**
@@ -49,7 +49,7 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
             throw new RemoteException(StatusCode.MISSING_NAME);
         }
 
-        Optional<Remote> remoteOpt = Optional.absent();
+        Optional<Remote> remoteOpt = Optional.empty();
 
         ConfigDatabase config = configDatabase();
         List<String> allRemotes = config.getAllSubsections("remote");
@@ -62,14 +62,15 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
             Optional<String> remoteMappedBranch = config.get(remoteSection + ".mappedBranch");
             Optional<String> remoteUserName = config.get(remoteSection + ".username");
             Optional<String> remotePassword = config.get(remoteSection + ".password");
-            Optional<String> remotePushURL = Optional.absent();
+            Optional<String> remotePushURL = Optional.empty();
             if (remoteFetchURL.isPresent() && remoteFetch.isPresent()) {
                 remotePushURL = config.get(remoteSection + ".pushurl");
             }
-            Remote remote = new Remote(name, remoteFetchURL.or(""),
-                    remotePushURL.or(remoteFetchURL).or(""), remoteFetch.or(""),
-                    remoteMapped.or("false").equals("true"), remoteMappedBranch.orNull(),
-                    remoteUserName.orNull(), remotePassword.orNull());
+            String fetch = remoteFetchURL.orElse("");
+			Remote remote = new Remote(name, fetch,
+                    remotePushURL.orElse(fetch), remoteFetch.orElse(""),
+                    remoteMapped.orElse("false").equals("true"), remoteMappedBranch.orElse(null),
+                    remoteUserName.orElse(null), remotePassword.orElse(null));
             remoteOpt = Optional.of(remote);
         }
         return remoteOpt;

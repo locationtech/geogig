@@ -18,7 +18,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -57,7 +57,7 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
      * </ul>
      * 
      * @return an {@code Optional} that contains a {@link Ref reference} or
-     *         {@link Optional#absent()} if revstr can't be resolved to any {@link ObjectId}
+     *         {@link Optional#empty()} if revstr can't be resolved to any {@link ObjectId}
      * @throws IllegalArgumentException if {@code refSpec} resolves to more than one ref on the same
      *         namespace
      */
@@ -113,7 +113,7 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
             refName = resolveSingle(remotes);
         }
         if (refName == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return getRef(refName);
     }
@@ -136,14 +136,14 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
         } catch (IllegalArgumentException notARef) {
             storedValue = refDatabase().getSymRef(name);
             if (null == storedValue) {
-                return Optional.absent();
+                return Optional.empty();
             }
             sym = true;
         }
         if (null == storedValue) {
             storedValue = refDatabase().getSymRef(name);
             if (null == storedValue) {
-                return Optional.absent();
+                return Optional.empty();
             }
             sym = true;
         }

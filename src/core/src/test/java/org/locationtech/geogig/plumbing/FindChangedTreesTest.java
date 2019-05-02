@@ -52,7 +52,7 @@ import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;

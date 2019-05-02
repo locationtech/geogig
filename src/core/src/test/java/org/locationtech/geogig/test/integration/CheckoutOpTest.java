@@ -39,7 +39,7 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class CheckoutOpTest extends RepositoryTestCase {
     @Rule

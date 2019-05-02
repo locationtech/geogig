@@ -13,7 +13,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Remote;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +29,7 @@ public @Data @Builder @NoArgsConstructor @AllArgsConstructor class PullResult {
 
     private TransferSummary fetchResult;
 
-    private @Default Optional<MergeReport> mergeReport = Optional.absent();
+    private @Default Optional<MergeReport> mergeReport = Optional.empty();
 
     private Remote remote;
 

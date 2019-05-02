@@ -401,8 +401,8 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         List<RevCommit> commits = toList(geogig.command(LogOp.class).call());
         assertFalse(commits.isEmpty());
         assertTrue(commits.get(0).getAuthor().getName().isPresent());
-        assertEquals("John Doe", commits.get(0).getAuthor().getName().orNull());
-        assertEquals("jd@example.com", commits.get(0).getAuthor().getEmail().orNull());
+        assertEquals("John Doe", commits.get(0).getAuthor().getName().orElse(null));
+        assertEquals("jd@example.com", commits.get(0).getAuthor().getEmail().orElse(null));
     }
 
     public @Test void testAddFeaturesWrongTypeName() throws Exception {

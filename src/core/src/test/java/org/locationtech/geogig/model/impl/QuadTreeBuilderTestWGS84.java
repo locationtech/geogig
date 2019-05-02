@@ -57,7 +57,7 @@ public class QuadTreeBuilderTestWGS84 extends QuadTreeBuilderTest {
         final Envelope NEBounds = new Envelope(0, 180, 0, 90);
         List<Node> removes = new ArrayList<>();
         for (Node n : nodes) {
-            if (NEBounds.contains(n.bounds().orNull())) {
+            if (NEBounds.contains(n.bounds().orElse(null))) {
                 removes.add(n);
             }
         }

@@ -41,7 +41,7 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 

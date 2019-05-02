@@ -18,7 +18,7 @@ import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -47,7 +47,7 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
         final int size = size();
         Builder<Optional<Object>> builder = ImmutableList.builder();
         for (int i = 0; i < size; i++) {
-            builder.add(Optional.fromNullable(ValueArray.safeCopy(values[i])));
+            builder.add(Optional.ofNullable(ValueArray.safeCopy(values[i])));
         }
         return builder.build();
     }
@@ -57,7 +57,7 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
     }
 
     public @Override Optional<Object> get(final int index) {
-        return Optional.fromNullable(ValueArray.safeCopy(values[index]));
+        return Optional.ofNullable(ValueArray.safeCopy(values[index]));
     }
 
     public @Override Optional<Geometry> get(int index, GeometryFactory gf) {
@@ -66,7 +66,7 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
         if (g != null) {
             g2 = gf.createGeometry(g);
         }
-        return Optional.fromNullable(g2);
+        return Optional.ofNullable(g2);
     }
 
     public @Override void forEach(final Consumer<Object> consumer) {

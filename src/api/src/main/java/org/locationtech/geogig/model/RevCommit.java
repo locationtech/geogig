@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.model;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -94,7 +94,7 @@ public interface RevCommit extends RevObject {
 
     /**
      * Short cut for {@code getParentIds().get(parentIndex)}, retuning an optional with the parent
-     * id at {@code parentIndex} or {@link Optional#absent() absent} if {@code parentIndex} is out
+     * id at {@code parentIndex} or {@link Optional#empty() absent} if {@code parentIndex} is out
      * of bounds.
      * <p>
      * Beware {@code parentIndex} is <b>zero-based</b>, whilst the command line interface syntax for
@@ -106,7 +106,7 @@ public interface RevCommit extends RevObject {
      * 
      * @param parentIndex zero-based index in the {@link #getParentIds() list of parent ids} to
      *        return
-     * @return the parent id at the given index, or {@link Optional#absent() absent} if
+     * @return the parent id at the given index, or {@link Optional#empty() absent} if
      *         {@code parentIndex} is out of bounds
      */
     public Optional<ObjectId> parentN(int parentIndex);

@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -228,7 +228,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
                     java.util.Optional<Bucket> treeBucket = originalTree
                             .getBucket(q.getBucketNumber());
                     if (treeBucket.isPresent()) {
-                        Envelope bucketBounds = treeBucket.get().bounds().orNull();
+                        Envelope bucketBounds = treeBucket.get().bounds().orElse(null);
                         Quadrant bucketQuad = computeQuadrant(bucketBounds, childDepthIndex);
                         if (bucketQuad == null) {
                             isValidQuad = false;
@@ -367,7 +367,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
     @Override
     public NodeId computeId(final Node node) {
         @Nullable
-        Envelope bounds = node.bounds().orNull();
+        Envelope bounds = node.bounds().orElse(null);
         return new NodeId(node.getName(), bounds);
     }
 

@@ -36,7 +36,7 @@ import org.locationtech.geogig.porcelain.RevertOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 
 public class RevertOpTest extends RepositoryTestCase {

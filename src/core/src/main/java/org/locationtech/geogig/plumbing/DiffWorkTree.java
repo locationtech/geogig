@@ -19,7 +19,7 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -80,7 +80,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
     @Override
     protected AutoCloseableIterator<DiffEntry> _call() {
 
-        final Optional<String> ref = Optional.fromNullable(refSpec);
+        final Optional<String> ref = Optional.ofNullable(refSpec);
 
         final RevTree oldTree = ref.isPresent() ? getOldTree() : stagingArea().getTree();
         final RevTree newTree = workingTree().getTree();
@@ -99,7 +99,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
      */
     private RevTree getOldTree() {
 
-        final String oldVersion = Optional.fromNullable(refSpec).or(Ref.STAGE_HEAD);
+        final String oldVersion = Optional.ofNullable(refSpec).orElse(Ref.STAGE_HEAD);
 
         Optional<ObjectId> headTreeId = command(ResolveTreeish.class).setTreeish(oldVersion).call();
         Preconditions.checkArgument(headTreeId.isPresent(),

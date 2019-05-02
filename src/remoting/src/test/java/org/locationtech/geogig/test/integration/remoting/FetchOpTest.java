@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
-import static com.google.common.base.Optional.absent;
+import static java.util.Optional.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -45,7 +45,7 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**
@@ -212,8 +212,8 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         assertEquals(1, summary.getRefDiffs().size());
         assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
         assertSummary(summary, origin.getFetchURL(), localOriginMaster, originMaster);
-        assertSummary(summary, origin.getFetchURL(), absent(), originBranch1);
-        assertSummary(summary, origin.getFetchURL(), absent(), originTag);
+        assertSummary(summary, origin.getFetchURL(), empty(), originBranch1);
+        assertSummary(summary, origin.getFetchURL(), empty(), originTag);
         verifyFetch();
     }
 
@@ -227,11 +227,11 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         assertTrue(summary.getRefDiffs().containsKey(upstream.getFetchURL()));
 
         assertSummary(summary, origin.getFetchURL(), localOriginMaster, originMaster);
-        assertSummary(summary, origin.getFetchURL(), absent(), originBranch1);
-        assertSummary(summary, origin.getFetchURL(), absent(), originTag);
+        assertSummary(summary, origin.getFetchURL(), empty(), originBranch1);
+        assertSummary(summary, origin.getFetchURL(), empty(), originTag);
 
-        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamMaster);
-        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamBranch1);
+        assertSummary(summary, upstream.getFetchURL(), empty(), upstreamMaster);
+        assertSummary(summary, upstream.getFetchURL(), empty(), upstreamBranch1);
 
         verifyFetch();
     }
@@ -270,7 +270,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         assertEquals(1, summary.getRefDiffs().size());
         assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
         assertEquals(1, summary.getRefDiffs().get(origin.getFetchURL()).size());
-        assertSummary(summary, origin.getFetchURL(), absent(), originBranch2);
+        assertSummary(summary, origin.getFetchURL(), empty(), originBranch2);
         TestSupport.verifyRepositoryContents(local, "refs/remotes/origin/branch2");
 
     }
@@ -321,9 +321,9 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         assertEquals(1, summary.getRefDiffs().size());
         assertTrue(summary.getRefDiffs().containsKey(upstream.getFetchURL()));
 
-        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamMaster);
-        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamTag);
-        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamBranch1);
+        assertSummary(summary, upstream.getFetchURL(), empty(), upstreamMaster);
+        assertSummary(summary, upstream.getFetchURL(), empty(), upstreamTag);
+        assertSummary(summary, upstream.getFetchURL(), empty(), upstreamBranch1);
 
         TestSupport.verifySameContents(upstreamRepo, localRepo);
     }
@@ -339,11 +339,11 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         assertTrue(summary.getRefDiffs().containsKey(upstream.getFetchURL()));
 
         assertSummary(summary, origin.getFetchURL(), localOriginMaster, originMaster);
-        assertSummary(summary, origin.getFetchURL(), absent(), originBranch1);
-        assertSummary(summary, origin.getFetchURL(), absent(), originTag);
+        assertSummary(summary, origin.getFetchURL(), empty(), originBranch1);
+        assertSummary(summary, origin.getFetchURL(), empty(), originTag);
 
-        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamMaster);
-        assertSummary(summary, upstream.getFetchURL(), absent(), upstreamBranch1);
+        assertSummary(summary, upstream.getFetchURL(), empty(), upstreamMaster);
+        assertSummary(summary, upstream.getFetchURL(), empty(), upstreamBranch1);
 
         verifyFetch();
     }
@@ -365,8 +365,8 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         assertEquals(1, summary.getRefDiffs().size());
         assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
         assertSummary(summary, origin.getFetchURL(), localOriginMaster, originMaster);
-        assertSummary(summary, origin.getFetchURL(), absent(), originBranch1);
-        assertSummary(summary, origin.getFetchURL(), absent(), originTag);
+        assertSummary(summary, origin.getFetchURL(), empty(), originBranch1);
+        assertSummary(summary, origin.getFetchURL(), empty(), originTag);
         verifyFetch();
 
         // fetch again
@@ -390,7 +390,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         // fetch again
         fetch = fetchOp();
         TransferSummary summary = fetch.setPrune(true).call();
-        assertSummary(summary, origin.getFetchURL(), localOriginBranch1, absent());
+        assertSummary(summary, origin.getFetchURL(), localOriginBranch1, empty());
 
         verifyPrune();
     }
@@ -417,7 +417,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         TransferSummary summary = fetch.setPrune(true).call();
         assertEquals(1, summary.getRefDiffs().size());
         assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
-        assertSummary(summary, origin.getFetchURL(), localOriginBranch1, absent());
+        assertSummary(summary, origin.getFetchURL(), localOriginBranch1, empty());
 
         Ref expectedNew = toRemote(origin, branch2);
         assertSummary(summary, origin.getFetchURL(), null, expectedNew);

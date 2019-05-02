@@ -20,7 +20,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Serves as an interface for the staging area of the GeoGig repository.
@@ -59,7 +59,7 @@ public interface StagingArea {
     /**
      * @param path the path of the {@link Node}
      * @return the {@link Node} for the feature at the specified path if it exists in the index,
-     *         otherwise {@link Optional#absent()}
+     *         otherwise {@link Optional#empty()}
      */
     public abstract Optional<Node> findStaged(final String path);
 

@@ -39,7 +39,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Base Controller to hold common controller logic.
@@ -86,7 +86,7 @@ public abstract class AbstractController {
                 RepositoryProvider.class.isAssignableFrom(providerValue.getClass())) {
             return Optional.of((RepositoryProvider) providerValue);
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     /**

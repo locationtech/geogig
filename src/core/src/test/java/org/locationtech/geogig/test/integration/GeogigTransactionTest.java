@@ -34,7 +34,7 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class GeogigTransactionTest extends RepositoryTestCase {
     @Rule

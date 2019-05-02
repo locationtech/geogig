@@ -39,7 +39,7 @@ import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -208,7 +208,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                                                                    // is
                                                                    // compatible, so no need to
                                                                    // check
-                                        ok = attrDiff.canBeAppliedOn(value.orNull());
+                                        ok = attrDiff.canBeAppliedOn(value.orElse(null));
                                         break;
                                     }
                                 }

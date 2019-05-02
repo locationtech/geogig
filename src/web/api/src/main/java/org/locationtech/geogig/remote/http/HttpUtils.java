@@ -38,7 +38,7 @@ import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -150,12 +150,12 @@ class HttpUtils {
      * @param localRepository the repository to save the object to, if {@code null}, the object will
      *        not be saved
      * @param objectId the id of the object to retrieve
-     * @return the retrieved object, or {@link Optional#absent()} if the object was not found
+     * @return the retrieved object, or {@link Optional#empty()} if the object was not found
      */
     public static Optional<RevObject> getNetworkObject(URL repositoryURL,
             @Nullable Repository localRepository, ObjectId objectId) {
         HttpURLConnection connection = null;
-        Optional<RevObject> object = Optional.absent();
+        Optional<RevObject> object = Optional.empty();
         try {
             String expanded = repositoryURL.toString() + "/repo/objects/" + objectId.toString();
             connection = connect(expanded);
@@ -280,7 +280,7 @@ class HttpUtils {
         } finally {
             consumeErrStreamAndCloseConnection(connection);
         }
-        return Optional.fromNullable(updatedRef);
+        return Optional.ofNullable(updatedRef);
     }
 
     /**
@@ -289,13 +289,13 @@ class HttpUtils {
      * @param repositoryURL the URL of the repository
      * @param commit the commit whose depth should be determined, if null, the repository depth will
      *        be returned
-     * @return the depth of the repository or commit, or {@link Optional#absent()} if the repository
+     * @return the depth of the repository or commit, or {@link Optional#empty()} if the repository
      *         is not shallow or the commit was not found
      */
     public static Optional<Integer> getDepth(URL repositoryURL, @Nullable String commit) {
         HttpURLConnection connection = null;
-        Optional<String> commitId = Optional.fromNullable(commit);
-        Optional<Integer> depth = Optional.absent();
+        Optional<String> commitId = Optional.ofNullable(commit);
+        Optional<Integer> depth = Optional.empty();
         try {
             String expanded;
             if (commitId.isPresent()) {
@@ -367,11 +367,11 @@ class HttpUtils {
      * 
      * @param repositoryURL the URL of the repository
      * @param refspec the refspec to search for
-     * @return the remote ref, or {@link Optional#absent()} if it wasn't found
+     * @return the remote ref, or {@link Optional#empty()} if it wasn't found
      */
     public static Optional<Ref> getRemoteRef(URL repositoryURL, String refspec) {
         HttpURLConnection connection = null;
-        Optional<Ref> remoteRef = Optional.absent();
+        Optional<Ref> remoteRef = Optional.empty();
         try {
             String expanded = repositoryURL.toString() + "/refparse?name=" + refspec;
 

@@ -14,7 +14,7 @@ import java.net.URL;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.remotes.internal.RepositoryWrapper;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -65,13 +65,13 @@ class HttpRepositoryWrapper implements RepositoryWrapper {
     public int getDepth(ObjectId commitId) {
         Optional<Integer> depth = HttpUtils.getDepth(repositoryURL, commitId.toString());
 
-        return depth.or(0);
+        return depth.orElse(0);
     }
 
     /**
      * Gets the depth of the repository.
      * 
-     * @return the depth of the repository, or {@link Optional#absent()} if the repository is not
+     * @return the depth of the repository, or {@link Optional#empty()} if the repository is not
      *         shallow
      */
     @Override

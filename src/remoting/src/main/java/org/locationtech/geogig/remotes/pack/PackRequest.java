@@ -23,7 +23,7 @@ import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.repository.impl.RepositoryFilter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**
@@ -69,7 +69,7 @@ public class PackRequest {
     }
 
     public Optional<Integer> getMaxDepth() {
-        return Optional.fromNullable(maxDepth);
+        return Optional.ofNullable(maxDepth);
     }
 
     public PackRequest sparseFilter(@Nullable RepositoryFilter filter) {
@@ -78,7 +78,7 @@ public class PackRequest {
     }
 
     public Optional<RepositoryFilter> getSparseFilter() {
-        return Optional.fromNullable(sparseFilter);
+        return Optional.ofNullable(sparseFilter);
     }
 
     public PackRequest syncIndexes(boolean syncIndexes) {

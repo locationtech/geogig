@@ -15,7 +15,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**

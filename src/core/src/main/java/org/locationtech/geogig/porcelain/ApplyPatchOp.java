@@ -40,7 +40,7 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -175,7 +175,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
                 PropertyDescriptor descriptor = oldDescriptors.get(i);
                 if (newDescriptors.contains(descriptor)) {
                     Optional<Object> value = feature.get(i);
-                    attrs.put(descriptor.getName(), value.orNull());
+                    attrs.put(descriptor.getName(), value.orElse(null));
                 }
             }
             Set<Entry<PropertyDescriptor, AttributeDiff>> featureDiffs = diff.getDiffs().entrySet();

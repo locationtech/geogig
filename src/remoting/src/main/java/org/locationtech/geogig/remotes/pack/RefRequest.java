@@ -18,7 +18,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Represents a conversational protocol between two repositories to create, update, and delete
@@ -34,7 +34,7 @@ public class RefRequest {
     public final String name;
 
     /**
-     * Version of the ref to transfer objects for. {@link Optional#absent() absent} implies to
+     * Version of the ref to transfer objects for. {@link Optional#empty() absent} implies to
      * delete the ref at the receiving end.
      * <p>
      * Both {@code want} and {@code have} can't be absent at the same time.
@@ -42,7 +42,7 @@ public class RefRequest {
     public final ObjectId want;
 
     /**
-     * Version of the ref already present in the calling end. {@link Optional#absent() absent} means
+     * Version of the ref already present in the calling end. {@link Optional#empty() absent} means
      * the ref does not exist at the calling end.
      * <p>
      * Both {@code want} and {@code have} can't be absent at the same time.
@@ -55,11 +55,11 @@ public class RefRequest {
         checkArgument(!want.isNull(), "Do not request refs pointing to the NULl id");
         this.name = name;
         this.want = want;
-        this.have = Optional.fromNullable(have);
+        this.have = Optional.ofNullable(have);
     }
 
     public @Override String toString() {
-        return String.format("GET %s[want=%s, have=%s]", name, want, have.orNull());
+        return String.format("GET %s[want=%s, have=%s]", name, want, have.orElse(null));
     }
 
     public @Override int hashCode() {

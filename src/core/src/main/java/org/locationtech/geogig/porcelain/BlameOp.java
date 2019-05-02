@@ -32,7 +32,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Suppliers;
 
 /**
@@ -120,7 +120,7 @@ public class BlameOp extends AbstractGeoGigOp<BlameReport> {
                         while (iter.hasNext()) {
                             PropertyDescriptor key = iter.next();
                             Optional<?> value = Optional
-                                    .fromNullable(attribDiffs.get(key).getNewValue());
+                                    .ofNullable(attribDiffs.get(key).getNewValue());
                             String attribute = key.getName().toString();
                             report.addDiff(attribute, value, commit);
                         }

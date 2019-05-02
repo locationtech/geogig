@@ -23,7 +23,7 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class FindCommonAncestorTest extends RepositoryTestCase {
     @Rule

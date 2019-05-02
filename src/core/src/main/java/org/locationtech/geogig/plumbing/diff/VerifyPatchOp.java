@@ -29,7 +29,7 @@ import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -121,7 +121,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                     for (int i = 0; i < descriptors.size(); i++) {
                         if (descriptors.get(i).equals(descriptor)) {
                             Optional<Object> value = feature.get(i);
-                            if (!attrDiff.canBeAppliedOn(value.orNull())) {
+                            if (!attrDiff.canBeAppliedOn(value.orElse(null))) {
                                 ok = false;
                             }
                             break;

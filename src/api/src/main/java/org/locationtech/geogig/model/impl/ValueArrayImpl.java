@@ -17,7 +17,7 @@ import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * A binary representation of the values of a Feature.
@@ -42,7 +42,7 @@ class ValueArrayImpl implements ValueArray {
     }
 
     public @Override Optional<Object> get(final int index) {
-        return Optional.fromNullable(ValueArray.safeCopy(values[index]));
+        return Optional.ofNullable(ValueArray.safeCopy(values[index]));
     }
 
     public @Override Optional<Geometry> get(int index, GeometryFactory gf) {
@@ -51,7 +51,7 @@ class ValueArrayImpl implements ValueArray {
         if (g != null) {
             g2 = gf.createGeometry(g);
         }
-        return Optional.fromNullable(g2);
+        return Optional.ofNullable(g2);
     }
 
     public @Override void forEach(final Consumer<Object> consumer) {

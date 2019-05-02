@@ -62,7 +62,7 @@ public class ExtraDataPropertyAccessorFactory implements PropertyAccessorFactory
             Object value = null;
 
             if (PrePostFilterSplitter.BOUNDS_META_PROPERTY.equals(xpath)) {
-                value = b.bounds().orNull();
+                value = b.bounds().orElse(null);
             } else {
                 final Node node;
                 if (b instanceof NodeRef) {

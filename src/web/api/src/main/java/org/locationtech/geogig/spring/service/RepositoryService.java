@@ -40,7 +40,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -96,7 +96,7 @@ public class RepositoryService extends AbstractRepositoryService {
     }
 
     public Integer getDepth(RepositoryProvider provider, String repoName, ObjectId commitId) {
-        Optional<Integer> depth = Optional.absent();
+        Optional<Integer> depth = Optional.empty();
         Repository repository = getRepository(provider, repoName);
         if (repository != null) {
             if (commitId != null) {
@@ -105,7 +105,7 @@ public class RepositoryService extends AbstractRepositoryService {
                 depth = repository.getDepth();
             }
         }
-        return depth.orNull();
+        return depth.orElse(null);
     }
 
     public AutoCloseableIterator<DiffEntry> getAffectedFeatures(RepositoryProvider provider,
@@ -224,12 +224,12 @@ public class RepositoryService extends AbstractRepositoryService {
                     if (Boolean.TRUE.equals(merge.getOurs())) {
                         // take "ours" for this property
                         featureBuilder.set(descriptor.getName(), ourFeature == null ? null :
-                                 ourFeature.get(descriptorIndex).orNull());
+                                 ourFeature.get(descriptorIndex).orElse(null));
 
                     } else if (Boolean.TRUE.equals(merge.getTheirs())) {
                         // take "theirs" for this property
                         featureBuilder.set(descriptor.getName(), theirFeature == null ? null :
-                                theirFeature.get(descriptorIndex).orNull());
+                                theirFeature.get(descriptorIndex).orElse(null));
                     } else {
                         // take "value", even if it's null
                         featureBuilder.set(descriptor.getName(), merge.getValue());

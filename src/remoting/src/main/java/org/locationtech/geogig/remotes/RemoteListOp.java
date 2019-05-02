@@ -16,7 +16,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -47,9 +47,9 @@ public class RemoteListOp extends AbstractGeoGigOp<ImmutableList<Remote>> {
             if (remoteFetchURL.isPresent() && remoteFetch.isPresent()) {
                 Optional<String> remotePushURL = config.get(remoteSection + ".pushurl");
                 allRemotes.add(new Remote(remoteName, remoteFetchURL.get(),
-                        remotePushURL.or(remoteFetchURL.get()), remoteFetch.get(),
-                        remoteMapped.or("false").equals("true"), remoteMappedBranch.orNull(),
-                        remoteUserName.orNull(), remotePassword.orNull()));
+                        remotePushURL.orElse(remoteFetchURL.get()), remoteFetch.get(),
+                        remoteMapped.orElse("false").equals("true"), remoteMappedBranch.orElse(null),
+                        remoteUserName.orElse(null), remotePassword.orElse(null)));
             }
         }
         return ImmutableList.copyOf(allRemotes);

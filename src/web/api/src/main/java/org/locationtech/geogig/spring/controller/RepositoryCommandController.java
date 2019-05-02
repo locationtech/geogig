@@ -57,7 +57,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Controller for repository commands and repository info.

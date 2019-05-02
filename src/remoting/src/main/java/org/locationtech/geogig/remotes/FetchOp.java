@@ -37,7 +37,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -68,7 +68,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
             private List<Remote> remotes = new ArrayList<Remote>();
 
-            private Optional<Integer> depth = Optional.absent();
+            private Optional<Integer> depth = Optional.empty();
 
             private boolean fetchTags = true;
 
@@ -104,7 +104,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                     }
                 } else if (depth.isPresent() || fullDepth) {
                     // Ignore depth, this is a full repository
-                    depth = Optional.absent();
+                    depth = Optional.empty();
                     fullDepth = false;
                 }
 
@@ -208,7 +208,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public Integer getDepth() {
-        return argsBuilder.depth.orNull();
+        return argsBuilder.depth.orElse(null);
     }
 
     /**
@@ -288,7 +288,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             if (!(isHttp || isShallow || isSparse)) {
                 return command(org.locationtech.geogig.remotes.pack.FetchOp.class)//
                         .setAllRemotes(argsBuilder.allRemotes)//
-                        .setDepth(argsBuilder.depth.or(0))//
+                        .setDepth(argsBuilder.depth.orElse(0))//
                         .setFullDepth(argsBuilder.fullDepth)//
                         .setPrune(argsBuilder.prune)//
                         .addRemotes(argsBuilder.remotes)//
@@ -337,7 +337,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     private boolean anyRemoteIsShallow(FetchArgs args) {
         for (Remote remote : args.remotes) {
             try (IRemoteRepo repo = openRemote(remote)) {
-                Integer depth = repo.getDepth().or(0);
+                Integer depth = repo.getDepth().orElse(0);
                 if (depth.intValue() > 0) {
                     return true;
                 }
@@ -375,8 +375,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
                 // If we haven't specified a depth, but this is a shallow repository, set
                 // the fetch limit to the current repository depth.
-                final Optional<Integer> newFetchLimit = args.depth.or(
-                        isShallow && ref.getType() == ADDED_REF ? repoDepth : Optional.absent());
+                final Optional<Integer> newFetchLimit = args.depth.isPresent()? args.depth: Optional.ofNullable(
+                        isShallow && ref.getType() == ADDED_REF ? repoDepth.orElse(null) : null);
 
                 // Fetch updated data from this ref
                 final Ref newRef = ref.getNewRef();
@@ -541,7 +541,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                     return Optional.of(localRef);
                 }
             }
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 }

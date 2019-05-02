@@ -16,7 +16,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -42,7 +42,7 @@ public class CommitFromDateOp extends AbstractGeoGigOp<Optional<RevCommit>> {
                 return Optional.of(commit);
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
 }

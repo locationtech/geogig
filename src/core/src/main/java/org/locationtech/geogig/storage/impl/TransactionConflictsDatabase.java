@@ -21,7 +21,7 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * A {@link ConflictsDatabase} decorator for a specific {@link GeogigTransaction transaction}.

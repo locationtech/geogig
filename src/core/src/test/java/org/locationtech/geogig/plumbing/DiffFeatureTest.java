@@ -28,9 +28,9 @@ public class DiffFeatureTest extends RepositoryTestCase {
     @Test
     public void testDiffBetweenEditedFeatures() {
         NodeRef oldRef = geogig.command(FeatureNodeRefFromRefspec.class)
-                .setRefspec("HEAD:" + NodeRef.appendChild(pointsName, idP1)).call().orNull();
+                .setRefspec("HEAD:" + NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
         NodeRef newRef = geogig.command(FeatureNodeRefFromRefspec.class)
-                .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orNull();
+                .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
         FeatureDiff diff = geogig.command(DiffFeature.class)
                 .setOldVersion(Suppliers.ofInstance(oldRef))
                 .setNewVersion(Suppliers.ofInstance(newRef)).call();
@@ -41,9 +41,9 @@ public class DiffFeatureTest extends RepositoryTestCase {
     @Test
     public void testDiffBetweenFeatureAndItself() {
         NodeRef oldRef = geogig.command(FeatureNodeRefFromRefspec.class)
-                .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orNull();
+                .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
         NodeRef newRef = geogig.command(FeatureNodeRefFromRefspec.class)
-                .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orNull();
+                .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
         FeatureDiff diff = geogig.command(DiffFeature.class)
                 .setOldVersion(Suppliers.ofInstance(oldRef))
                 .setNewVersion(Suppliers.ofInstance(newRef)).call();
@@ -55,9 +55,9 @@ public class DiffFeatureTest extends RepositoryTestCase {
     public void testDiffUnexistentFeature() {
         try {
             NodeRef oldRef = geogig.command(FeatureNodeRefFromRefspec.class)
-                    .setRefspec(NodeRef.appendChild(pointsName, "Points.100")).call().orNull();
+                    .setRefspec(NodeRef.appendChild(pointsName, "Points.100")).call().orElse(null);
             NodeRef newRef = geogig.command(FeatureNodeRefFromRefspec.class)
-                    .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orNull();
+                    .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
             geogig.command(DiffFeature.class).setOldVersion(Suppliers.ofInstance(oldRef))
                     .setNewVersion(Suppliers.ofInstance(newRef)).call();
             fail();
@@ -70,9 +70,9 @@ public class DiffFeatureTest extends RepositoryTestCase {
     public void testDiffWrongPath() {
         try {
             NodeRef oldRef = geogig.command(FeatureNodeRefFromRefspec.class).setRefspec(pointsName)
-                    .call().orNull();
+                    .call().orElse(null);
             NodeRef newRef = geogig.command(FeatureNodeRefFromRefspec.class)
-                    .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orNull();
+                    .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
             geogig.command(DiffFeature.class).setOldVersion(Suppliers.ofInstance(oldRef))
                     .setNewVersion(Suppliers.ofInstance(newRef)).call();
             fail();

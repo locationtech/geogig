@@ -24,7 +24,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**
@@ -308,7 +308,7 @@ public class TextValueSerializer {
      * @param opt
      */
     public static String asString(Optional<Object> opt) {
-        return asString(opt.orNull());
+        return asString(opt.orElse(null));
     }
 
     public static String asString(@Nullable Object value) {

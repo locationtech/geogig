@@ -24,7 +24,7 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Maps;
 
 import lombok.extern.slf4j.Slf4j;

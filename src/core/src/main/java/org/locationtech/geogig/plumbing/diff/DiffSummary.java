@@ -11,7 +11,7 @@ package org.locationtech.geogig.plumbing.diff;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * A tuple representing the result of some computation against the diff between two trees, holding
@@ -43,6 +43,6 @@ public class DiffSummary<T, M> {
     }
 
     public Optional<M> getMergedResult() {
-        return Optional.fromNullable(merged);
+        return Optional.ofNullable(merged);
     }
 }

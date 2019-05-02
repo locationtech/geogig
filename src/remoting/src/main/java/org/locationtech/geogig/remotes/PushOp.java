@@ -28,7 +28,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 
@@ -89,7 +89,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         try {
             return Optional.of(resolveRemote(remoteName));
         } catch (IllegalArgumentException e) {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -138,7 +138,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
     private boolean isShallow(Remote remote) {
         try (IRemoteRepo repo = command(OpenRemote.class).setRemote(remote).call()) {
-            Integer depth = repo.getDepth().or(0);
+            Integer depth = repo.getDepth().orElse(0);
             if (depth.intValue() > 0) {
                 return true;
             }

@@ -12,7 +12,7 @@ package org.locationtech.geogig.model.impl;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.Value;
 

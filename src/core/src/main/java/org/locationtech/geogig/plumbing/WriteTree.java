@@ -29,7 +29,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -226,7 +226,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         NodeRef indexTreeRef = indexChangedTrees.get(parentPath);
 
         if (indexTreeRef == null) {
-            Optional<NodeRef> treeRef = Optional.absent();
+            Optional<NodeRef> treeRef = Optional.empty();
             if (!stageHead.isEmpty()) {// slight optimization, may save a lot of processing on
                                        // large first commits
                 treeRef = command(FindTreeChild.class).setParent(stageHead).setChildPath(parentPath)

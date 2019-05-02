@@ -33,7 +33,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
@@ -170,7 +170,7 @@ public class RevList extends AbstractCommand implements CLICommand {
             }
             if (showChanges) {
                 try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
-                        .setOldVersion(commit.parentN(0).or(ObjectId.NULL))
+                        .setOldVersion(commit.parentN(0).orElse(ObjectId.NULL))
                         .setNewVersion(commit.getId()).call()) {
                     DiffEntry diffEntry;
                     sb.append("changes\n");
@@ -189,8 +189,8 @@ public class RevList extends AbstractCommand implements CLICommand {
 
         private String format(RevPerson p) {
             StringBuilder sb = new StringBuilder();
-            sb.append(p.getName().or("[unknown]")).append(' ');
-            sb.append(p.getEmail().or("[unknown]")).append(' ');
+            sb.append(p.getName().orElse("[unknown]")).append(' ');
+            sb.append(p.getEmail().orElse("[unknown]")).append(' ');
             sb.append(p.getTimestamp()).append(' ').append(p.getTimeZoneOffset());
             return sb.toString();
         }

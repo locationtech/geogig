@@ -31,7 +31,7 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class ConfigTest extends AbstractWebOpTest {
 

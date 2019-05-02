@@ -137,7 +137,7 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
             } else {
                 progress.setDescription("Merge successful");
                 MergeReport mergeReport = pullResult.getMergeReport().get();
-                mergeScenarioReport = mergeReport.getReport().orNull();
+                mergeScenarioReport = mergeReport.getReport().orElse(null);
                 RevCommit commit = mergeReport.getMergeCommit();
                 // update mergeRef
                 testMergeCommitID = commit.getId();

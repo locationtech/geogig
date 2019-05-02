@@ -47,7 +47,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
@@ -188,7 +188,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
         } finally {
             HttpUtils.consumeErrStreamAndCloseConnection(connection);
         }
-        return Optional.fromNullable(headRef);
+        return Optional.ofNullable(headRef);
     }
 
     /**
@@ -292,7 +292,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * Gets the remote ref that matches the provided ref spec.
      * 
      * @param refspec the refspec to parse
-     * @return the matching {@link Ref} or {@link Optional#absent()} if the ref could not be found
+     * @return the matching {@link Ref} or {@link Optional#empty()} if the ref could not be found
      */
     @Override
     protected Optional<Ref> getRemoteRef(String refspec) {
@@ -431,7 +431,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
     /**
      * Gets the depth of the remote repository.
      * 
-     * @return the depth of the repository, or {@link Optional#absent()} if the repository is not
+     * @return the depth of the repository, or {@link Optional#empty()} if the repository is not
      *         shallow
      */
     @Override

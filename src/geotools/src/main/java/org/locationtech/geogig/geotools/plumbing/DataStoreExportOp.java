@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import static com.google.common.base.Optional.fromNullable;
+import static java.util.Optional.ofNullable;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -36,7 +36,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Iterables;
@@ -185,7 +185,7 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
 
     private Set<String> resolveExportLayerRefSpecs() {
 
-        final String refSpec = fromNullable(commitIsh).or(Ref.HEAD);
+        final String refSpec = ofNullable(commitIsh).orElse(Ref.HEAD);
         Optional<RevCommit> commit = command(RevObjectParse.class).setRefSpec(refSpec)
                 .call(RevCommit.class);
 

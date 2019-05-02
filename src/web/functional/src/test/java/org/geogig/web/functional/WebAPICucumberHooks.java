@@ -103,7 +103,7 @@ import org.xmlunit.matchers.EvaluateXPathMatcher;
 import org.xmlunit.matchers.HasXPathMatcher;
 import org.xmlunit.xpath.JAXPXPathEngine;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
@@ -356,13 +356,13 @@ public class WebAPICucumberHooks {
         Repository repo = context.getRepo(repositoryName);
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
         if (typeTreeRef == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         String treeName = typeTreeRef.path();
         List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
                 attributeName);
         if (indexInfos.isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         Preconditions.checkState(indexInfos.size() == 1,
                 "Multiple indexes found for given tree ref.");

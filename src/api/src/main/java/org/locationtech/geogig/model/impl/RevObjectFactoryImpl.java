@@ -38,7 +38,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
@@ -60,7 +60,7 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
 
     public @Override @NonNull RevPerson createPerson(@Nullable String name, @Nullable String email,
             long timeStamp, int timeZoneOffset) {
-        return new RevPersonImpl(Optional.fromNullable(name), Optional.fromNullable(email),
+        return new RevPersonImpl(Optional.ofNullable(name), Optional.ofNullable(email),
                 timeStamp, timeZoneOffset);
     }
 

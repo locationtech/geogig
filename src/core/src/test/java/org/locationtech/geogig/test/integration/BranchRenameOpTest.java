@@ -22,7 +22,7 @@ import org.locationtech.geogig.porcelain.BranchRenameOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class BranchRenameOpTest extends RepositoryTestCase {
 

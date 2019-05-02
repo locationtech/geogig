@@ -97,7 +97,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
 
         @Override
         public NodeRef apply(Node node) {
-            return new NodeRef(node, treePath, node.getMetadataId().or(metadataId));
+            return new NodeRef(node, treePath, node.getMetadataId().orElse(metadataId));
         }
     };
 
@@ -208,7 +208,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
 
             String childTreePath = NodeRef.appendChild(this.functor.treePath, next.getName());
             Iterator<NodeRef> children = new Recursive(childTreePath,
-                    next.getMetadataId().or(functor.metadataId), childTree, features, trees);
+                    next.getMetadataId().orElse(functor.metadataId), childTree, features, trees);
             if (trees) {
                 children = Iterators.concat(Iterators.singletonIterator(functor.apply(next)),
                         children);

@@ -76,7 +76,7 @@ public abstract class SharedCacheTest {
         assertEquals(0L, cache.sizeBytes());
     }
 
-    public @Test void testPutIfAbsent() {
+    public @Test void testPutIfempty() {
         cache = createCache(10, maxCacheSizeBytes);
         CacheKey k1 = repo1Id.create(obj.getId());
         assertNotNull(cache.put(k1, obj));

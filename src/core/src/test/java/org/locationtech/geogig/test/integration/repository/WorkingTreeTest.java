@@ -37,7 +37,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.Name;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Iterators;
 
 /**
@@ -460,10 +460,10 @@ public class WorkingTreeTest extends RepositoryTestCase {
         Optional<Node> featureBlobId = findTreeChild(root, path);
         assertTrue(featureBlobId.isPresent());
         assertEquals(RevFeatureType.builder().type(modifiedPointsType).build().getId(),
-                featureBlobId.get().getMetadataId().orNull());
+                featureBlobId.get().getMetadataId().orElse(null));
         path = NodeRef.appendChild(pointsName, points3.getIdentifier().getID());
         featureBlobId = findTreeChild(root, path);
-        assertEquals(null, featureBlobId.get().getMetadataId().orNull());
+        assertEquals(null, featureBlobId.get().getMetadataId().orElse(null));
 
         workTree.updateTypeTree(pointsName, modifiedPointsType);
         root = repo.workingTree().getTree();
@@ -475,11 +475,11 @@ public class WorkingTreeTest extends RepositoryTestCase {
         path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
         featureBlobId = findTreeChild(root, path);
         assertTrue(featureBlobId.isPresent());
-        assertEquals(null, featureBlobId.get().getMetadataId().orNull());
+        assertEquals(null, featureBlobId.get().getMetadataId().orElse(null));
         path = NodeRef.appendChild(pointsName, points3.getIdentifier().getID());
         featureBlobId = findTreeChild(root, path);
         assertEquals(RevFeatureType.builder().type(pointsType).build().getId(),
-                featureBlobId.get().getMetadataId().orNull());
+                featureBlobId.get().getMetadataId().orElse(null));
 
     }
 
@@ -511,7 +511,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
     private Optional<Node> findTreeChild(RevTree root, String pathRemove) {
         Optional<NodeRef> nodeRef = geogig.command(FindTreeChild.class).setParent(root)
                 .setChildPath(pathRemove).call();
-        Optional<Node> node = Optional.absent();
+        Optional<Node> node = Optional.empty();
         if (nodeRef.isPresent()) {
             node = Optional.of(nodeRef.get().getNode());
         }

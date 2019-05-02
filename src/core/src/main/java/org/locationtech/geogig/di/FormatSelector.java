@@ -14,7 +14,7 @@ import java.util.Map;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.VersionedFormat;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.inject.Provider;
 
 abstract class FormatSelector<T> implements Provider<T> {

@@ -14,7 +14,7 @@ import java.util.Map;
 
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public interface RepositoryProvider {
 

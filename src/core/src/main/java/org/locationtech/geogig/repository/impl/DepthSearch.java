@@ -24,7 +24,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
@@ -55,7 +55,7 @@ public class DepthSearch {
      * 
      * @param rootTreeId the tree to search
      * @param path the path to the {@code Node} to search for
-     * @return an {@link Optional} of the {@code Node} if it was found, or {@link Optional#absent()}
+     * @return an {@link Optional} of the {@code Node} if it was found, or {@link Optional#empty()}
      *         if it wasn't found.
      */
     public Optional<NodeRef> find(final ObjectId rootTreeId, final String path) {
@@ -71,7 +71,7 @@ public class DepthSearch {
      * 
      * @param rootTree the tree to search
      * @param childPath the path to the {@code Node} to search for
-     * @return an {@link Optional} of the {@code Node} if it was found, or {@link Optional#absent()}
+     * @return an {@link Optional} of the {@code Node} if it was found, or {@link Optional#empty()}
      *         if it wasn't found.
      */
     public Optional<NodeRef> find(final RevTree rootTree, final String childPath) {
@@ -85,7 +85,7 @@ public class DepthSearch {
      * @param parentPath the path of the parent tree
      * @param childPath the path to search for
      * @return an {@link Optional} of the {@code Node} if the child path was found, or
-     *         {@link Optional#absent()} if it wasn't found.
+     *         {@link Optional#empty()} if it wasn't found.
      */
     public Optional<NodeRef> find(final RevTree parent, final String parentPath,
             final String childPath) {
@@ -111,9 +111,9 @@ public class DepthSearch {
             String directChildName = childSteps.get(i);
             Optional<Node> subtreeRef = getDirectChild(subTree, directChildName, 0);
             if (!subtreeRef.isPresent()) {
-                return Optional.absent();
+                return Optional.empty();
             }
-            metadataId = subtreeRef.get().getMetadataId().or(ObjectId.NULL);
+            metadataId = subtreeRef.get().getMetadataId().orElse(ObjectId.NULL);
             subTree = objectDb.get(subtreeRef.get().getObjectId(), RevTree.class);
         }
         final String childName = childSteps.get(childSteps.size() - 1);
@@ -122,9 +122,9 @@ public class DepthSearch {
         if (node.isPresent()) {
             String nodeParentPath = NodeRef.parentPath(childPath);
             depthSearchResult = new NodeRef(node.get(), nodeParentPath,
-                    node.get().getMetadataId().or(metadataId));
+                    node.get().getMetadataId().orElse(metadataId));
         }
-        return Optional.fromNullable(depthSearchResult);
+        return Optional.ofNullable(depthSearchResult);
     }
 
     /**
@@ -135,7 +135,7 @@ public class DepthSearch {
     public Optional<Node> getDirectChild(RevTree parent, String directChildName,
             final int subtreesDepth) {
         if (parent.isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         }
 
         if (parent.treesSize() > 0 || parent.featuresSize() > 0) {
@@ -157,7 +157,7 @@ public class DepthSearch {
                     }
                 }
             }
-            return Optional.absent();
+            return Optional.empty();
         }
 
         // TODO revisit, shouldn't be using NodeOrder.bucket (a non static method) to respect the
@@ -165,7 +165,7 @@ public class DepthSearch {
         Integer bucket = refOrder.bucket(directChildName, subtreesDepth);
         Bucket subtreeBucket = parent.getBucket(bucket.intValue()).orElse(null);
         if (subtreeBucket == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         RevTree subtree = objectDb.get(subtreeBucket.getObjectId(), RevTree.class);
         return getDirectChild(subtree, directChildName, subtreesDepth + 1);

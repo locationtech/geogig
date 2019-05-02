@@ -50,7 +50,7 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
@@ -177,7 +177,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                 if (ours || theirs) {
                     String refspec = ours ? Ref.ORIG_HEAD : Ref.MERGE_HEAD;
                     ObjectId treeId = command(ResolveTreeish.class).setTreeish(refspec).call()
-                            .orNull();
+                            .orElse(null);
                     if (null != treeId) {
                         checkOutFromTree = objectDatabase.getTree(treeId);
                     }
@@ -187,13 +187,13 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             }
 
             final NodeRef nodeRef = command(FindTreeChild.class).setParent(checkOutFromTree)
-                    .setChildPath(path).call().orNull();
+                    .setChildPath(path).call().orElse(null);
 
             if ((ours || theirs) && null == nodeRef) {
                 // remove the node.
                 command(RemoveOp.class).setRecursive(true).addPathToRemove(path).call();
                 NodeRef foundChild = command(FindTreeChild.class).setParent(currentWorkHead)
-                        .setChildPath(path).call().orNull();
+                        .setChildPath(path).call().orElse(null);
                 if (foundChild != null) {
                     if (TYPE.TREE.equals(foundChild.getType())) {
                         updateTree.removeChildTree(foundChild.path());
@@ -243,7 +243,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         RevTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
         if (typeTreeBuilder == null) {
             NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
-                    .setChildPath(typeTreePath).call().orNull();
+                    .setChildPath(typeTreePath).call().orElse(null);
 
             final RevTree currentTypeTree;
             if (typeTreeRef == null) {
@@ -272,8 +272,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             throw buildConflictsException(conflictsDatabase);
         }
         Optional<Ref> targetRef = command(RefParse.class).setName(branchOrCommit).call();
-        Optional<ObjectId> targetCommitId = Optional.absent();
-        Optional<ObjectId> targetTreeId = Optional.absent();
+        Optional<ObjectId> targetCommitId = Optional.empty();
+        Optional<ObjectId> targetTreeId = Optional.empty();
         if (targetRef.isPresent()) {
             final java.util.Optional<String> remoteRepoName = Ref
                     .remoteName(targetRef.get().getName());
@@ -287,7 +287,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
                     targetTreeId = Optional.of(commit.getTreeId());
                     targetCommitId = Optional.of(commit.getId());
-                    targetRef = Optional.absent();
+                    targetRef = Optional.empty();
                 } else {
                     // Remote remote = command(remotere);
                     // command(MapRef.class).setRemote(remote).add(targetRef.get()).call().get(0);

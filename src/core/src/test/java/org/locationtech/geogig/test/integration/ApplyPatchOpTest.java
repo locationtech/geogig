@@ -33,7 +33,7 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -47,7 +47,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     private Optional<Node> findTreeChild(RevTree root, String pathRemove) {
         Optional<NodeRef> nodeRef = geogig.command(FindTreeChild.class).setParent(root)
                 .setChildPath(pathRemove).call();
-        Optional<Node> node = Optional.absent();
+        Optional<Node> node = Optional.empty();
         if (nodeRef.isPresent()) {
             node = Optional.of(nodeRef.get().getNode());
         }
@@ -407,11 +407,11 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         assertNotNull(typeTree);
         Optional<Node> featureBlobId = findTreeChild(root, path);
         assertEquals(RevFeatureType.builder().type(modifiedPointsType).build().getId(),
-                featureBlobId.get().getMetadataId().orNull());
+                featureBlobId.get().getMetadataId().orElse(null));
         assertTrue(featureBlobId.isPresent());
         path = NodeRef.appendChild(pointsName, points3.getIdentifier().getID());
         featureBlobId = findTreeChild(root, path);
-        assertEquals(null, featureBlobId.get().getMetadataId().orNull());
+        assertEquals(null, featureBlobId.get().getMetadataId().orElse(null));
 
     }
 

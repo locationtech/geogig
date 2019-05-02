@@ -16,7 +16,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -116,11 +116,11 @@ public class DiffEntry {
     }
 
     /**
-     * @return an {@link Optional} with the old object, or {@link Optional#absent()} if there was no
+     * @return an {@link Optional} with the old object, or {@link Optional#empty()} if there was no
      *         old object
      */
     public Optional<NodeRef> oldObject() {
-        return Optional.fromNullable(oldObject);
+        return Optional.ofNullable(oldObject);
     }
 
     /**
@@ -140,11 +140,11 @@ public class DiffEntry {
     }
 
     /**
-     * @return an {@link Optional} with the new object, or {@link Optional#absent()} if there was no
+     * @return an {@link Optional} with the new object, or {@link Optional#empty()} if there was no
      *         new object
      */
     public Optional<NodeRef> newObject() {
-        return Optional.fromNullable(newObject);
+        return Optional.ofNullable(newObject);
     }
 
     /**
@@ -308,8 +308,8 @@ public class DiffEntry {
 
         @Override
         public int compare(DiffEntry left, DiffEntry right) {
-            final NodeRef nodeRef1 = left.oldObject().or(left.newObject()).get();
-            final NodeRef nodeRef2 = right.oldObject().or(right.newObject()).get();
+            final NodeRef nodeRef1 = left.oldObject().orElse(left.getNewObject());
+            final NodeRef nodeRef2 = right.oldObject().orElse(right.getNewObject());
 
             if (nodeRef1.getType().equals(nodeRef2.getType())) {
                 return CanonicalNodeOrder.INSTANCE.compare(nodeRef1.getNode(), nodeRef2.getNode());

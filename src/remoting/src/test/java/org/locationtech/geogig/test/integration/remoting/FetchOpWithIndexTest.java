@@ -43,7 +43,7 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.test.TestData;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class FetchOpWithIndexTest extends FetchOpTest {
 

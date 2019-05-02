@@ -231,7 +231,7 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
             checkArgument(!req.want.isNull(), "Requested NULL tip for ref %s", refName);
 
             ObjectId wantCommit = req.want;
-            ObjectId haveCommit = req.have.or(ObjectId.NULL);
+            ObjectId haveCommit = req.have.orElse(ObjectId.NULL);
             Iterator<RevCommit> branchCommits;
             if (wantCommit.equals(haveCommit)) {
                 branchCommits = Collections.emptyIterator();
@@ -304,9 +304,9 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
                         : treeDiff.newObjectId();
 
                 ObjectId oldIndexTreeId = indexdb.resolveIndexedTree(indexInfo, oldCanonical)
-                        .or(RevTree.EMPTY_TREE_ID);
+                        .orElse(RevTree.EMPTY_TREE_ID);
                 ObjectId newIndexTreeId = indexdb.resolveIndexedTree(indexInfo, newCanonical)
-                        .or(RevTree.EMPTY_TREE_ID);
+                        .orElse(RevTree.EMPTY_TREE_ID);
 
                 builder.addIndex(indexInfo, newCanonical, oldIndexTreeId, newIndexTreeId);
 

@@ -62,8 +62,8 @@ class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>
             String attNameFlattenedOld = flattenedAttNames.get(2 * i);
             String attNameFlattenedNew = flattenedAttNames.get(2 * i + 1);
 
-            Object o = oldFeature == null ? null : oldFeature.get(i).orNull();
-            Object n = newFeature == null ? null : newFeature.get(i).orNull();
+            Object o = oldFeature == null ? null : oldFeature.get(i).orElse(null);
+            Object n = newFeature == null ? null : newFeature.get(i).orElse(null);
             diffFeatureBuilder.set(attNameFlattenedOld, o);
             diffFeatureBuilder.set(attNameFlattenedNew, n);
         }

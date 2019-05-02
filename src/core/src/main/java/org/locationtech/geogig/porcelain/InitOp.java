@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static com.google.common.base.Optional.absent;
+import static java.util.Optional.empty;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,7 +39,7 @@ import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.VersionedFormat;
 import org.locationtech.geogig.storage.impl.Blobs;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
@@ -208,8 +208,8 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         Optional<VersionedFormat> refs;
         Optional<VersionedFormat> objects;
 
-        refs = providedConfig.containsKey(refsKey) ? absent() : defaults.getRefs();
-        objects = providedConfig.containsKey(objectsKey) ? absent() : defaults.getObjects();
+        refs = providedConfig.containsKey(refsKey) ? empty() : defaults.getRefs();
+        objects = providedConfig.containsKey(objectsKey) ? empty() : defaults.getObjects();
 
         if (refs.isPresent()) {
             configProps.put(refsKey, refs.get().getFormat());

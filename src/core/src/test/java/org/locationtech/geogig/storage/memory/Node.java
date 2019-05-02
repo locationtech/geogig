@@ -14,7 +14,7 @@ import java.util.Map;
 
 import org.locationtech.geogig.model.ObjectId;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -89,7 +89,7 @@ class Node {
      * Retrieves a property of the node.
      */
     public Optional<String> get(String key) {
-        return Optional.fromNullable(props != null ? props.get(key) : null);
+        return Optional.ofNullable(props != null ? props.get(key) : null);
     }
 
     @Override

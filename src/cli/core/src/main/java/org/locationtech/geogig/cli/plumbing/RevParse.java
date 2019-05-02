@@ -25,7 +25,7 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 
 /**
@@ -109,7 +109,7 @@ public class RevParse extends AbstractCommand {
 
     private void resolveGeogigDir(Console console, GeoGIG geogig) throws IOException {
 
-        URI repoUrl = geogig.command(ResolveGeogigURI.class).call().orNull();
+        URI repoUrl = geogig.command(ResolveGeogigURI.class).call().orElse(null);
         if (null == repoUrl) {
             File currDir = geogig.getPlatform().pwd();
             console.println("Error: not a geogig dir '"

@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
@@ -40,7 +40,7 @@ final class FBFeature extends FBRevObject<Feature> implements RevFeature {
 
     public @Override ImmutableList<Optional<Object>> getValues() {
         ImmutableList.Builder<Optional<Object>> builder = ImmutableList.builder();
-        forEach(o -> builder.add(Optional.fromNullable(o)));
+        forEach(o -> builder.add(Optional.ofNullable(o)));
         return builder.build();
     }
 
@@ -49,11 +49,11 @@ final class FBFeature extends FBRevObject<Feature> implements RevFeature {
     }
 
     public @Override Optional<Object> get(int index) {
-        return Optional.fromNullable(getInternal(index, null));
+        return Optional.ofNullable(getInternal(index, null));
     }
 
     public @Override Optional<Geometry> get(int index, GeometryFactory gf) {
-        return Optional.fromNullable((Geometry) getInternal(index, gf));
+        return Optional.ofNullable((Geometry) getInternal(index, gf));
     }
 
     public @Override void forEach(Consumer<Object> consumer) {

@@ -46,7 +46,7 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
@@ -159,12 +159,12 @@ public class LegacyMergeFeatureService extends AbstractRepositoryService {
                                  attributeObject.get("ours").isJsonPrimitive() &&
                                  attributeObject.get("ours").getAsBoolean()) {
                             featureBuilder.set(descriptor.getName(), ourFeature == null ? null :
-                                     ourFeature.get(descriptorIndex).orNull());
+                                     ourFeature.get(descriptorIndex).orElse(null));
                         } else if (attributeObject.has("theirs") &&
                                  attributeObject.get("theirs").isJsonPrimitive() &&
                                  attributeObject.get("theirs").getAsBoolean()) {
                             featureBuilder.set(descriptor.getName(), theirFeature == null ? null :
-                                     theirFeature.get(descriptorIndex).orNull());
+                                     theirFeature.get(descriptorIndex).orElse(null));
                         } else if (attributeObject.has("value") &&
                                  attributeObject.get("value").isJsonPrimitive()) {
                             JsonPrimitive primitive = attributeObject.get("value")

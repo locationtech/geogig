@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableList;
  * <p>
  * By specification, all the feature tree {@link Node} objects that point to features that comply to
  * the tree's default metadata id have their {@link Node#getMetadataId()} unset (i.e.
- * {@code Optional.absent()}).
+ * {@code Optional.empty()}).
  * <p>
  * GeoGig's object model, however, allows datasets to be structured such that there can be nested
  * feature trees (for example, the {@code roads} feature tree may contain feature nodes as well as

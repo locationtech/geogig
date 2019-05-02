@@ -13,7 +13,7 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.locationtech.jts.geom.Geometry;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -36,15 +36,15 @@ public class DefaultGeometryDiffImpl {
     public DefaultGeometryDiffImpl(String s) {
         String[] tokens = s.split("\t");
         Preconditions.checkArgument(tokens.length == 2, "Wrong difference definition:", s);
-        oldGeom = Optional.fromNullable((Geometry) TextValueSerializer
+        oldGeom = Optional.ofNullable((Geometry) TextValueSerializer
                 .fromString(FieldType.forBinding(Geometry.class), tokens[0]));
-        newGeom = Optional.fromNullable((Geometry) TextValueSerializer
+        newGeom = Optional.ofNullable((Geometry) TextValueSerializer
                 .fromString(FieldType.forBinding(Geometry.class), tokens[1]));
 
     }
 
     private CharSequence geometryValueAsString(Optional<Geometry> value) {
-        return TextValueSerializer.asString(Optional.fromNullable((Object) value.orNull()));
+        return TextValueSerializer.asString(Optional.ofNullable((Object) value.orElse(null)));
     }
 
     public DefaultGeometryDiffImpl reversed() {

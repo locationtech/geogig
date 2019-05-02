@@ -17,7 +17,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Provides utilities for creating interfaces to remote repositories.
@@ -37,7 +37,7 @@ public interface RemoteResolver {
      * @param remoteConfig the information for the remote to connect to
      * @param remoteHints hints for the remote connection, currently only the
      *        {@link Hints#REMOTES_READ_ONLY} key might be of use
-     * @return the {@link IRemoteRepo} resolved based on the arguments, or {@link Optional#absent()
+     * @return the {@link IRemoteRepo} resolved based on the arguments, or {@link Optional#empty()
      *         absent} if this {@code RemoteResolver} can't handle the kind of remote denoted by the
      *         arguments.
      * @apiNote this method should not try to connect to the remote repository nor check for its
@@ -53,7 +53,7 @@ public interface RemoteResolver {
      * @param remote the remote to connect to
      * @param remoteHints hints for the remote repo, like read-only, etc.
      * @return an {@link Optional} of the interface to the remote repository, or
-     *         {@link Optional#absent()} if a connection to the remote could not be established.
+     *         {@link Optional#empty()} if a connection to the remote could not be established.
      */
     public static Optional<IRemoteRepo> newRemote(Remote remote, @Nullable Hints remoteHints) {
 
@@ -71,6 +71,6 @@ public interface RemoteResolver {
                 return resolved;
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }

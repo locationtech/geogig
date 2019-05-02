@@ -59,7 +59,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.BoundingBox;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
@@ -228,7 +228,7 @@ public class ExportTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse();
         assertTrue(JsonUtils.jsonEquals(JsonUtils.toJSON(expected), response, false));
 
-        Optional<AsyncCommand<?>> asyncCommand = Optional.absent();
+        Optional<AsyncCommand<?>> asyncCommand = Optional.empty();
         while (!asyncCommand.isPresent()) {
             asyncCommand = testAsyncContext.getAndPruneIfFinished("1");
         }

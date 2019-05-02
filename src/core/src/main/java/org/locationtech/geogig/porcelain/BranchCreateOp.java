@@ -23,7 +23,7 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 
 import lombok.extern.slf4j.Slf4j;
@@ -132,7 +132,7 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
         if (orphan) {
             branchOriginCommitId = ObjectId.NULL;
         } else {
-            final String branchOrigin = Optional.fromNullable(commit_ish).or(Ref.HEAD);
+            final String branchOrigin = Optional.ofNullable(commit_ish).orElse(Ref.HEAD);
             branchOriginCommitId = resolveOriginCommitId(branchOrigin);
         }
         Optional<Ref> branchRef = command(UpdateRef.class).setName(branchRefPath)

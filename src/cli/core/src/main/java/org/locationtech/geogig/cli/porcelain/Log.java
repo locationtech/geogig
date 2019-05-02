@@ -47,7 +47,7 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.internal.Lists;
 import com.beust.jcommander.internal.Maps;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -369,7 +369,7 @@ public class Log extends AbstractCommand implements CLICommand {
      */
     private String formatPerson(RevPerson person) {
         StringBuilder sb = new StringBuilder();
-        sb.append(person.getName().or("<name not set>"));
+        sb.append(person.getName().orElse("<name not set>"));
 
         if (person.getEmail().isPresent()) {
             sb.append(" <").append(person.getEmail().get()).append('>');

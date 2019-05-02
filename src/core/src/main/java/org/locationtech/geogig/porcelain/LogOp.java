@@ -35,7 +35,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.GraphDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
@@ -241,7 +241,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
             if (this.until == null) {
                 newestCommitId = command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
             } else {
-                RevObject obj = command(RevObjectParse.class).setObjectId(until).call().orNull();
+                RevObject obj = command(RevObjectParse.class).setObjectId(until).call().orElse(null);
                 if (obj instanceof RevTag) {
                     newestCommitId = ((RevTag) obj).getCommitId();
                 } else if (obj instanceof RevCommit) {
@@ -429,7 +429,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 lastCommit = tips.pop();
                 return lastCommit;
             }
-            Optional<ObjectId> parent = Optional.absent();
+            Optional<ObjectId> parent = Optional.empty();
             int index = 0;
             for (ObjectId parentId : lastCommit.getParentIds()) {
                 if (stopPoints.contains(parentId)) {
@@ -497,7 +497,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          */
         @SuppressWarnings("unchecked")
         public LinearHistoryIterator(final ObjectId tip, final Repository repo) {
-            this.nextCommitId = (Optional<ObjectId>) (tip.isNull() ? Optional.absent()
+            this.nextCommitId = (Optional<ObjectId>) (tip.isNull() ? Optional.empty()
                     : Optional.of(tip));
             this.repo = repo;
         }
@@ -513,7 +513,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 RevCommit commit = repo.getCommit(nextCommitId.get());
                 nextCommitId = commit.parentN(0);
                 if (nextCommitId.isPresent() && !repo.commitExists(nextCommitId.get())) {
-                    nextCommitId = Optional.absent();
+                    nextCommitId = Optional.empty();
                 }
                 return commit;
             }
@@ -608,7 +608,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                     // See if the new value is different from any of the parents.
                     int parentIndex = 0;
                     do {
-                        ObjectId parentId = commit.parentN(parentIndex++).or(ObjectId.NULL);
+                        ObjectId parentId = commit.parentN(parentIndex++).orElse(ObjectId.NULL);
                         if (parentId.isNull() || !repository.commitExists(parentId)) {
                             // we have reached the bottom of a shallow clone or the end of history.
                             if (!currentValue.isNull()) {

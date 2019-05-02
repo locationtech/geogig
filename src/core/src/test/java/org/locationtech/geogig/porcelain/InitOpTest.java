@@ -52,7 +52,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  *
@@ -145,7 +145,7 @@ public class InitOpTest {
     @Test
     public void testCreateNewRepo() throws Exception {
         when(injector.repository()).thenReturn(mockRepo);
-        Optional<Ref> absent = Optional.absent();
+        Optional<Ref> absent = Optional.empty();
         when(mockRefParse.call()).thenReturn(absent);
 
         Repository created = init.call();
@@ -173,7 +173,7 @@ public class InitOpTest {
     @Test
     public void testReinitializeExistingRepo() throws Exception {
         when(injector.repository()).thenReturn(mockRepo);
-        Optional<Ref> absent = Optional.absent();
+        Optional<Ref> absent = Optional.empty();
         when(mockRefParse.call()).thenReturn(absent);
 
         Repository created = init.call();

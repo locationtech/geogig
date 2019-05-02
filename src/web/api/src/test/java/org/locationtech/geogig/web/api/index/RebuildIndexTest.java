@@ -26,7 +26,7 @@ import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.ParameterSet;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class RebuildIndexTest extends AbstractIndexWebOpTest {
 

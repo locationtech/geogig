@@ -31,7 +31,7 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -212,7 +212,7 @@ public class Branch extends AbstractCommand implements CLICommand {
     }
 
     private String messageTitle(RevCommit commit) {
-        String message = Optional.fromNullable(commit.getMessage()).or("");
+        String message = Optional.ofNullable(commit.getMessage()).orElse("");
         int newline = message.indexOf('\n');
         return newline == -1 ? message : message.substring(0, newline);
     }
@@ -224,7 +224,7 @@ public class Branch extends AbstractCommand implements CLICommand {
     private Optional<RevCommit> findCommit(GeoGIG geogig, Ref branchRef) {
         ObjectId commitId = branchRef.getObjectId();
         if (commitId.isNull()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         RevCommit commit = geogig.getRepository().getCommit(commitId);
         return Optional.of(commit);

@@ -30,7 +30,7 @@ import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Interface for the Merge operation in GeoGig.
@@ -44,9 +44,9 @@ public class Merge extends AbstractWebAPICommand {
 
     String commit;
 
-    Optional<String> authorName = Optional.absent();
+    Optional<String> authorName = Optional.empty();
 
-    Optional<String> authorEmail = Optional.absent();
+    Optional<String> authorEmail = Optional.empty();
 
     @Override
     protected void setParametersInternal(ParameterSet options) {
@@ -78,14 +78,14 @@ public class Merge extends AbstractWebAPICommand {
      * @param authorName the author of the merge commit
      */
     public void setAuthorName(@Nullable String authorName) {
-        this.authorName = Optional.fromNullable(authorName);
+        this.authorName = Optional.ofNullable(authorName);
     }
 
     /**
      * @param authorEmail the email of the author of the merge commit
      */
     public void setAuthorEmail(@Nullable String authorEmail) {
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorEmail = Optional.ofNullable(authorEmail);
     }
 
     /**
@@ -105,7 +105,7 @@ public class Merge extends AbstractWebAPICommand {
         }
 
         MergeOp merge = geogig.command(MergeOp.class);
-        merge.setAuthor(authorName.orNull(), authorEmail.orNull());
+        merge.setAuthor(authorName.orElse(null), authorEmail.orElse(null));
 
         final Optional<ObjectId> oid = geogig.command(RevParse.class).setRefSpec(commit)
                 .call();
@@ -122,7 +122,7 @@ public class Merge extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    out.writeMergeResponse(Optional.fromNullable(report.getMergeCommit()),
+                    out.writeMergeResponse(Optional.ofNullable(report.getMergeCommit()),
                             report.getReport().get(), report.getOurs(),
                             report.getPairs().get(0).getTheirs(),
                             report.getPairs().get(0).getAncestor());
@@ -142,7 +142,7 @@ public class Merge extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    Optional<RevCommit> mergeCommit = Optional.absent();
+                    Optional<RevCommit> mergeCommit = Optional.empty();
                     out.writeMergeConflictsResponse(mergeCommit, report, geogig, ours.getId(),
                             theirs.getId(), ancestor.get(), consumer);
                     out.finish();

@@ -25,7 +25,7 @@ import org.locationtech.geogig.storage.GraphDatabase.Direction;
 import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
 import org.locationtech.geogig.storage.GraphDatabase.GraphNode;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
@@ -86,7 +86,7 @@ public class FindCommonAncestor extends AbstractGeoGigOp<Optional<ObjectId>> {
     /**
      * Finds the common {@link RevCommit commit} ancestor of two commits.
      * 
-     * @return an {@link Optional} of the ancestor commit, or {@link Optional#absent()} if no common
+     * @return an {@link Optional} of the ancestor commit, or {@link Optional#empty()} if no common
      *         ancestor was found
      */
     @Override
@@ -114,7 +114,7 @@ public class FindCommonAncestor extends AbstractGeoGigOp<Optional<ObjectId>> {
      * @param leftId the commit id of the left commit
      * @param rightId the commit id of the right commit
      * @return An {@link Optional} of the lowest common ancestor of the two commits, or
-     *         {@link Optional#absent()} if a common ancestor could not be found.
+     *         {@link Optional#empty()} if a common ancestor could not be found.
      */
     public Optional<ObjectId> findLowestCommonAncestor(ObjectId leftId, ObjectId rightId) {
         Set<GraphNode> leftSet = new HashSet<GraphNode>();
@@ -146,7 +146,7 @@ public class FindCommonAncestor extends AbstractGeoGigOp<Optional<ObjectId>> {
         }
         verifyAncestors(potentialCommonAncestors, leftSet, rightSet);
 
-        Optional<ObjectId> ancestor = Optional.absent();
+        Optional<ObjectId> ancestor = Optional.empty();
         if (potentialCommonAncestors.size() > 0) {
             ancestor = Optional.of(potentialCommonAncestors.get(0).getIdentifier());
         }

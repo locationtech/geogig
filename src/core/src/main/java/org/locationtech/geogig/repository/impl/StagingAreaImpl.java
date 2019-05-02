@@ -55,7 +55,7 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
@@ -121,7 +121,7 @@ public class StagingAreaImpl implements StagingArea {
     /**
      * @param path the path of the {@link Node} to find
      * @return the {@code Node} for the feature at the specified path if it exists in the index,
-     *         otherwise {@link Optional#absent()}
+     *         otherwise {@link Optional#empty()}
      */
     @Override
     public Optional<Node> findStaged(final String path) {
@@ -130,7 +130,7 @@ public class StagingAreaImpl implements StagingArea {
         if (entry.isPresent()) {
             return Optional.of(entry.get().getNode());
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -195,7 +195,7 @@ public class StagingAreaImpl implements StagingArea {
         private RevTreeBuilder newTreeBuilder(final NodeRef featureRef) {
             final String typeTreePath = featureRef.getParentPath();
             NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
-                    .setChildPath(typeTreePath).call().orNull();
+                    .setChildPath(typeTreePath).call().orElse(null);
 
             final RevTree currentTypeTree;
             if (typeTreeRef == null) {

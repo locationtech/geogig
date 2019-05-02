@@ -43,7 +43,7 @@ import org.locationtech.geogig.test.TestData;
 import org.springframework.http.HttpMethod;
 import org.w3c.dom.Document;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;

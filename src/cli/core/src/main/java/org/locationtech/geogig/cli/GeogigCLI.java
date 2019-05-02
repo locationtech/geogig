@@ -53,7 +53,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
@@ -410,7 +410,7 @@ public class GeogigCLI {
         }
         if (printError) {
             try {
-                consoleReader.println(Optional.fromNullable(consoleMessage).or("Unknown Error"));
+                consoleReader.println(Optional.ofNullable(consoleMessage).orElse("Unknown Error"));
                 consoleReader.flush();
             } catch (IOException e) {
                 LOGGER.error("Error writing to the console. Original error: {}", consoleMessage, e);
@@ -613,7 +613,7 @@ public class GeogigCLI {
             }
         }
 
-        Optional<String> unaliased = Optional.absent();
+        Optional<String> unaliased = Optional.empty();
 
         final Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
         final RepositoryResolver resolver = RepositoryResolver.lookup(uri);

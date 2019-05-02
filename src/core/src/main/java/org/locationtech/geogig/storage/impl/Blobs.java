@@ -14,7 +14,7 @@ import java.util.List;
 import org.locationtech.geogig.storage.BlobStore;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
@@ -32,7 +32,7 @@ public class Blobs {
 
     public static Optional<String> getBlobAsString(BlobStore blobStore, String blobName) {
         Optional<byte[]> blob = getBlob(blobStore, blobName);
-        Optional<String> str = Optional.absent();
+        Optional<String> str = Optional.empty();
         if (blob.isPresent()) {
             str = Optional.of(new String(blob.get(), Charsets.UTF_8));
         }

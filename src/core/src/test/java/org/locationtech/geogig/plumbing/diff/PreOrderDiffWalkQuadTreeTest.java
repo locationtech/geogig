@@ -840,7 +840,7 @@ public class PreOrderDiffWalkQuadTreeTest {
                 // make a change
                 node = RevObjectFactory.defaultInstance().createNode(node.getName(),
                         RevObjectTestSupport.hashString("changed-" + i),
-                        node.getMetadataId().or(ObjectId.NULL), TYPE.FEATURE, (Envelope) null,
+                        node.getMetadataId().orElse(ObjectId.NULL), TYPE.FEATURE, (Envelope) null,
                         null);
                 rightChanges.put(node.getName(), node);
             }

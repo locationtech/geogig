@@ -37,7 +37,7 @@ import org.locationtech.geogig.plumbing.merge.ReadMergeCommitMessageOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -122,8 +122,8 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      */
     public CommitOp setAuthor(final @Nullable String authorName,
             @Nullable final String authorEmail) {
-        this.authorName = Optional.fromNullable(authorName);
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorName = Optional.ofNullable(authorName);
+        this.authorEmail = Optional.ofNullable(authorEmail);
         return this;
     }
 
@@ -136,7 +136,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
     public CommitOp setCommitter(String committerName, @Nullable String committerEmail) {
         checkNotNull(committerName);
         this.committerName = committerName;
-        this.committerEmail = Optional.fromNullable(committerEmail);
+        this.committerEmail = Optional.ofNullable(committerEmail);
         return this;
     }
 
@@ -321,7 +321,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         }
 
         final ObjectId currentRootTreeId = command(ResolveTreeish.class)
-                .setTreeish(currHeadCommitId).call().or(RevTree.EMPTY_TREE_ID);
+                .setTreeish(currHeadCommitId).call().orElse(RevTree.EMPTY_TREE_ID);
         if (currentRootTreeId.equals(newTreeId)) {
             if (!allowEmpty && !amend) {
                 throw new NothingToCommitException("Nothing to commit after " + currHeadCommitId);
@@ -411,7 +411,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final String namekey = "user.name";
 
         String name = getClientData(namekey, String.class)
-                .or(command(ConfigGet.class).setName(namekey).call()).orNull();
+                .orElseGet(()->command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
@@ -423,13 +423,13 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
     @Nullable
     private String resolveCommitterEmail() {
         if (committerEmail != null) {
-            return committerEmail.orNull();
+            return committerEmail.orElse(null);
         }
 
         final String emailkey = "user.email";
 
         String email = getClientData(emailkey, String.class)
-                .or(command(ConfigGet.class).setName(emailkey).call()).orNull();
+                .orElseGet(()->command(ConfigGet.class).setName(emailkey).call().orElse(null));
 
         checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",
@@ -439,13 +439,13 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
     }
 
     private String resolveAuthor() {
-        return authorName == null ? resolveCommitter() : authorName.orNull();
+        return authorName == null ? resolveCommitter() : authorName.orElse(null);
     }
 
     @Nullable
     private String resolveAuthorEmail() {
         // only use provided authorEmail if authorName was provided
-        return authorName == null ? resolveCommitterEmail() : authorEmail.orNull();
+        return authorName == null ? resolveCommitterEmail() : authorEmail.orElse(null);
     }
 
     /**

@@ -27,7 +27,7 @@ import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
@@ -100,7 +100,7 @@ class PGBlobStore implements TransactionBlobStore {
             throw new RuntimeException(e);
         }
 
-        return Optional.fromNullable(bytes);
+        return Optional.ofNullable(bytes);
     }
 
     @Override
@@ -111,7 +111,7 @@ class PGBlobStore implements TransactionBlobStore {
         if (blob.isPresent()) {
             in = new ByteArrayInputStream(blob.get());
         }
-        return Optional.fromNullable(in);
+        return Optional.ofNullable(in);
     }
 
     @Override

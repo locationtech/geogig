@@ -25,7 +25,7 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.internal.Lists;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Suppliers;
 
 /**

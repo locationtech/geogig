@@ -63,7 +63,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.flatbuffers.FlatBufferBuilder;
@@ -300,7 +300,7 @@ final class FlatBuffers {
         if (hasMetadataIds) {
             LeafTree.startNodesMetadataIdsVector(builder, numNodes);
             forEachNodeReverseOrder(trees, features,
-                    n -> write(n.getMetadataId().or(ObjectId.NULL), builder));
+                    n -> write(n.getMetadataId().orElse(ObjectId.NULL), builder));
             nodesMetadataIdsOffset = builder.endVector();
         } else {
             nodesMetadataIdsOffset = 0;

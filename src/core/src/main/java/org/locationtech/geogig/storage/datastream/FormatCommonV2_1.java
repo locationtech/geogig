@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 
@@ -86,7 +86,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
 
             int offset = 0;
             for (int i = 0; i < attrCount; i++) {
-                Object value = feature.get(i).orNull();
+                Object value = feature.get(i).orElse(null);
                 FieldType type = FieldType.forValue(value);
                 data.writeByte(type.getTag() & 0xFF);
                 valueEncoder.encode(type, value, data);
@@ -217,7 +217,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
 
         @Override
         public Optional<Object> get(final int index) {
-            return Optional.fromNullable(parse(index));
+            return Optional.ofNullable(parse(index));
         }
 
         @Override
@@ -226,7 +226,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             final int tagValue = data[offset] & 0xFF;
             final FieldType type = FieldType.valueOf(tagValue);
             if (FieldType.NULL.equals(type)) {
-                return Optional.absent();
+                return Optional.empty();
             }
             DataInput in = ByteStreams.newDataInput(data, offset + 1);
 

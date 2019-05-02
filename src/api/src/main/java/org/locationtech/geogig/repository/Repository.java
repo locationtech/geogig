@@ -25,7 +25,7 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * A repository is a collection of commits, each of which is an archive of what the project's
@@ -112,12 +112,12 @@ public interface Repository extends CommandFactory{
 
     /**
      * @param revStr the string to parse
-     * @return the parsed {@link Ref}, or {@link Optional#absent()} if it did not parse.
+     * @return the parsed {@link Ref}, or {@link Optional#empty()} if it did not parse.
      */
     Optional<Ref> getRef(String revStr);
 
     /**
-     * @return the {@link Ref} pointed to by HEAD, or {@link Optional#absent()} if it could not be
+     * @return the {@link Ref} pointed to by HEAD, or {@link Optional#empty()} if it could not be
      *         resolved.
      */
     Optional<Ref> getHead();
@@ -171,7 +171,7 @@ public interface Repository extends CommandFactory{
 
     /**
      * @param path the path to search for
-     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#absent()}
+     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#empty()}
      *         if it wasn't found
      */
     Optional<Node> getRootTreeChild(String path);
@@ -182,7 +182,7 @@ public interface Repository extends CommandFactory{
      * @param tree the tree to search
      * @param childPath the path to search for
      * @return an {@link Optional} of the {@link Node} for the child path, or
-     *         {@link Optional#absent()} if it wasn't found
+     *         {@link Optional#empty()} if it wasn't found
      */
     Optional<Node> getTreeChild(RevTree tree, String childPath);
 

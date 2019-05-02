@@ -50,7 +50,7 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
@@ -395,7 +395,7 @@ public class Log extends AbstractWebAPICommand {
         // This is the feature type object
         Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setChildPath(path)
                 .setParent(geogig.workingTree().getTree()).call();
-        Optional<RevObject> type = Optional.absent();
+        Optional<RevObject> type = Optional.empty();
         if (ref.isPresent()) {
             type = geogig.command(RevObjectParse.class)
                     .setRefSpec(ref.get().getMetadataId().toString()).call();

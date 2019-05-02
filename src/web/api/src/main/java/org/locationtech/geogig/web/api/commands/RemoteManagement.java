@@ -28,7 +28,7 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.springframework.http.HttpStatus;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Interface for the Remote operations in GeoGig.

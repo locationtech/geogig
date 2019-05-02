@@ -74,7 +74,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         public Object get(int index) {
             Object v = values[index];
             if (v == NULL) {
-                v = feature.get(index).orNull();
+                v = feature.get(index).orElse(null);
                 values[index] = v;
             }
             return v;
@@ -83,7 +83,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         public Geometry get(int index, GeometryFactory gf) {
             Object v = values[index];
             if (v == NULL) {
-                v = feature.get(index, gf).orNull();
+                v = feature.get(index, gf).orElse(null);
                 values[index] = v;
             }
             return (Geometry) v;

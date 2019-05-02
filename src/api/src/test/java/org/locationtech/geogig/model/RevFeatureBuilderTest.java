@@ -98,7 +98,7 @@ public class RevFeatureBuilderTest {
         assertEquals(feature, built);
 
         for (int i = 0; i < f.getAttributeCount(); i++) {
-            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orElse(null));
         }
     }
 
@@ -115,7 +115,7 @@ public class RevFeatureBuilderTest {
         assertEquals(feature, built);
 
         for (int i = 0; i < f.getAttributeCount(); i++) {
-            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orElse(null));
         }
     }
 
@@ -135,7 +135,7 @@ public class RevFeatureBuilderTest {
         assertEquals(feature, built);
 
         for (int i = 0; i < f.getAttributeCount(); i++) {
-            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orElse(null));
         }
     }
 
@@ -156,7 +156,7 @@ public class RevFeatureBuilderTest {
         assertEquals(feature, builtWithArray);
 
         for (int i = 0; i < f.getAttributeCount(); i++) {
-            assertEquals(f.getAttribute(i), builtWithList.getValues().get(i).orNull());
+            assertEquals(f.getAttribute(i), builtWithList.getValues().get(i).orElse(null));
         }
     }
 

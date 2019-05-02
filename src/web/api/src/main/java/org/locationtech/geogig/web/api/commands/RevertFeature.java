@@ -39,7 +39,7 @@ import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
@@ -55,13 +55,13 @@ public class RevertFeature extends AbstractWebAPICommand {
 
     String newCommitId;
 
-    Optional<String> authorName = Optional.absent();
+    Optional<String> authorName = Optional.empty();
 
-    Optional<String> authorEmail = Optional.absent();
+    Optional<String> authorEmail = Optional.empty();
 
-    Optional<String> commitMessage = Optional.absent();
+    Optional<String> commitMessage = Optional.empty();
 
-    Optional<String> mergeMessage = Optional.absent();
+    Optional<String> mergeMessage = Optional.empty();
 
     @Override
     protected void setParametersInternal(ParameterSet options) {
@@ -105,28 +105,28 @@ public class RevertFeature extends AbstractWebAPICommand {
      * @param authorName the author of the merge commit
      */
     public void setAuthorName(@Nullable String authorName) {
-        this.authorName = Optional.fromNullable(authorName);
+        this.authorName = Optional.ofNullable(authorName);
     }
 
     /**
      * @param authorEmail the email of the author of the merge commit
      */
     public void setAuthorEmail(@Nullable String authorEmail) {
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorEmail = Optional.ofNullable(authorEmail);
     }
 
     /**
      * @param commitMessage the commit message for the revert
      */
     public void setCommitMessage(@Nullable String commitMessage) {
-        this.commitMessage = Optional.fromNullable(commitMessage);
+        this.commitMessage = Optional.ofNullable(commitMessage);
     }
 
     /**
      * @param mergeMessage the message for the merge of the revert commit
      */
     public void setMergeMessage(@Nullable String mergeMessage) {
-        this.mergeMessage = Optional.fromNullable(mergeMessage);
+        this.mergeMessage = Optional.ofNullable(mergeMessage);
     }
 
     /**
@@ -161,12 +161,12 @@ public class RevertFeature extends AbstractWebAPICommand {
 
         // get feature from old tree
         NodeRef node = geogig.command(FindTreeChild.class).setParent(oldTree)
-                .setChildPath(featurePath).call().orNull();
+                .setChildPath(featurePath).call().orElse(null);
         boolean delete = false;
         if (node == null) {
             delete = true;
             node = geogig.command(FindTreeChild.class).setParent(newTree).setChildPath(featurePath)
-                    .call().orNull();
+                    .call().orElse(null);
             if (node == null) {
                 throw new CommandSpecException("The feature was not found in either commit tree.");
             }
@@ -205,10 +205,10 @@ public class RevertFeature extends AbstractWebAPICommand {
 
         builder.parentIds(Lists.newArrayList(newCommitObjectId));
         builder.treeId(newRoot.getId());
-        builder.author(authorName.orNull());
-        builder.authorEmail(authorEmail.orNull());
+        builder.author(authorName.orElse(null));
+        builder.authorEmail(authorEmail.orElse(null));
         builder.message(commitMessage
-                .or("Reverted changes made to " + featurePath + " at " + newCommitId.toString()));
+                .orElseGet(() -> "Reverted changes made to " + featurePath + " at " + newCommitId.toString()));
 
         RevCommit mapped = builder.build();
         Repository repository = context.getRepository();
@@ -221,9 +221,9 @@ public class RevertFeature extends AbstractWebAPICommand {
         }
 
         MergeOp merge = geogig.command(MergeOp.class);
-        merge.setAuthor(authorName.orNull(), authorEmail.orNull());
+        merge.setAuthor(authorName.orElse(null), authorEmail.orElse(null));
         merge.addCommit(mapped.getId());
-        merge.setMessage(mergeMessage.or("Merged revert of " + featurePath));
+        merge.setMessage(mergeMessage.orElseGet(() -> "Merged revert of " + featurePath));
 
         try {
             final MergeReport report = merge.call();
@@ -232,7 +232,7 @@ public class RevertFeature extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    out.writeMergeResponse(Optional.fromNullable(report.getMergeCommit()),
+                    out.writeMergeResponse(Optional.ofNullable(report.getMergeCommit()),
                             report.getReport().get(), report.getOurs(),
                             report.getPairs().get(0).getTheirs(),
                             report.getPairs().get(0).getAncestor());
@@ -252,7 +252,7 @@ public class RevertFeature extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    Optional<RevCommit> mergeCommit = Optional.absent();
+                    Optional<RevCommit> mergeCommit = Optional.empty();
                     out.writeMergeConflictsResponse(mergeCommit, report, geogig, ours.getId(),
                             theirs.getId(), ancestor.get(), consumer);
                     out.finish();

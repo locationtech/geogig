@@ -129,9 +129,9 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
             final PropertyDescriptor descriptor = descriptors.get(i);
             final boolean isGeom = descriptor instanceof GeometryDescriptor;
             Name name = descriptor.getName();
-            Object valueAncestor = ancestor.get(i).orNull();
-            Object valueA = featureA.get(i).orNull();
-            Object valueB = featureB.get(i).orNull();
+            Object valueAncestor = ancestor.get(i).orElse(null);
+            Object valueA = featureA.get(i).orElse(null);
+            Object valueB = featureB.get(i).orElse(null);
 
             final boolean valueAEqualsAncestor = valueEquals(isGeom, valueA, valueAncestor);
 

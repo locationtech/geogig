@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.AsyncContext.Status;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Strings;
 
 /**

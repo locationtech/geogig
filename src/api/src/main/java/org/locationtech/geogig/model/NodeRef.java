@@ -20,7 +20,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -456,7 +456,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
 
     /**
      * @return and {@link Optional} containing the bounds of the {@code Node} this object points to,
-     *         or {@link Optional#absent()} if the {@code Node} has no bounds
+     *         or {@link Optional#empty()} if the {@code Node} has no bounds
      */
     @Override
     public Optional<Envelope> bounds() {

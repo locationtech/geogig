@@ -65,7 +65,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
@@ -85,7 +85,7 @@ import com.google.common.collect.Sets;
 public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     private static final Function<Feature, Optional<Feature>> IDENTITY = (feature) -> Optional
-            .fromNullable(feature);
+            .ofNullable(feature);
 
     private String path;
 
@@ -153,11 +153,11 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             Iterator<Optional<Feature>> transformed = Iterators.transform(adaptedFeatures,
                     ExportOp.this.function);
 
-            // (f) -> (SimpleFeature) f.orNull()
+            // (f) -> (SimpleFeature) f.orElse(null)
             Function<Optional<Feature>, SimpleFeature> fn =  new Function<Optional<Feature>, SimpleFeature>() {
                 @Override
                 public SimpleFeature apply(Optional<Feature> f) {
-                    return (SimpleFeature) f.orNull();
+                    return (SimpleFeature) f.orElse(null);
                 }};
 
             Iterator<SimpleFeature> filteredIter = Iterators.filter(
@@ -346,7 +346,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 int idx = oldAttributes.indexOf(newAttributes.get(i));
                 if (idx != -1) {
                     Optional<Object> oldValue = oldFeature.get(idx);
-                    builder.addValue(oldValue.orNull());
+                    builder.addValue(oldValue.orElse(null));
                 } else {
                     builder.addValue(null);
                 }
@@ -544,7 +544,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 return defaultMetadataId;
             }
             if (input instanceof Node) {
-                return ((Node) input).getMetadataId().or(defaultMetadataId);
+                return ((Node) input).getMetadataId().orElse(defaultMetadataId);
             }
             return ((NodeRef) input).getMetadataId();
         }

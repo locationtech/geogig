@@ -16,7 +16,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Conflict;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Provides an interface for implementations of conflict databases, which manage GeoGig conflicts.
@@ -45,7 +45,7 @@ public interface ConflictsDatabase extends Closeable {
      * 
      * @param namespace the namespace of the conflict
      * @param path the conflict to retrieve
-     * @return the conflict, or {@link Optional#absent()} if it was not found
+     * @return the conflict, or {@link Optional#empty()} if it was not found
      */
     public Optional<Conflict> getConflict(@Nullable String namespace, String path);
 

@@ -42,7 +42,7 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class PullOpTest extends RemoteRepositoryTestCase {
     @Rule

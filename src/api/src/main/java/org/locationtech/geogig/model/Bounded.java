@@ -11,7 +11,7 @@ package org.locationtech.geogig.model;
 
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.NonNull;
 

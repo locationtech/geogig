@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
@@ -87,7 +87,7 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
      */
     @Override
     protected AutoCloseableIterator<DiffEntry> _call() {
-        final String oldVersion = Optional.fromNullable(refSpec).or(Ref.HEAD);
+        final String oldVersion = Optional.ofNullable(refSpec).orElse(Ref.HEAD);
         final Optional<ObjectId> rootTreeId;
         rootTreeId = command(ResolveTreeish.class).setTreeish(oldVersion).call();
         Preconditions.checkArgument(rootTreeId.isPresent(), "refSpec %s did not resolve to a tree",

@@ -50,7 +50,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
@@ -174,7 +174,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
                 Ref ref = branchRef.get();
                 if (ref instanceof SymRef) {
                     ref = context.command(RefParse.class).setName(((SymRef) ref).getTarget()).call()
-                            .orNull();
+                            .orElse(null);
                 }
                 Preconditions.checkArgument(ref != null, "refSpec is a dead symref: " + refspec);
                 if (ref.getName().startsWith(Ref.HEADS_PREFIX)) {

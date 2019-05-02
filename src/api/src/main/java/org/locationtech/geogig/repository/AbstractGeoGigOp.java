@@ -24,7 +24,7 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Provides a base implementation for internal GeoGig operations.
@@ -97,14 +97,14 @@ public abstract class AbstractGeoGigOp<T> {
 
     protected <V> Optional<V> getClientData(Serializable key, Class<V> type) {
         if (metadata == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         V res = null;
         Object value = metadata.get(key);
         if (value != null) {
             res = Converters.convert(value, type);
         }
-        return Optional.fromNullable(res);
+        return Optional.ofNullable(res);
     }
 
     /**

@@ -53,7 +53,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
@@ -164,8 +164,8 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
             final ProgressListener progress) throws SynchronizationException {
 
         Optional<Ref> remoteRef = remoteRepository.command(RefParse.class).setName(refspec).call();
-        remoteRef = remoteRef.or(
-                remoteRepository.command(RefParse.class).setName(Ref.TAGS_PREFIX + refspec).call());
+        remoteRef = Optional.ofNullable(remoteRef.orElseGet(()->
+                remoteRepository.command(RefParse.class).setName(Ref.TAGS_PREFIX + refspec).call().orElse(null)));
         checkPush(local, ref, remoteRef);
 
         CommitTraverser traverser = getPushTraverser(local, remoteRef);
@@ -184,7 +184,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
         Ref updatedRef = remoteRepository.command(UpdateRef.class).setName(nameToSet)
                 .setNewValue(ref.getObjectId()).call().get();
 
-        Ref remoteHead = headRef().orNull();
+        Ref remoteHead = headRef().orElse(null);
         if (remoteHead instanceof SymRef) {
             if (((SymRef) remoteHead).getTarget().equals(updatedRef.getName())) {
                 remoteRepository.command(UpdateSymRef.class).setName(Ref.HEAD)

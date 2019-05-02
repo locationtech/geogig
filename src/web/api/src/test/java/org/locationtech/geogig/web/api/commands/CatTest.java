@@ -104,14 +104,14 @@ public class CatTest extends AbstractWebOpTest {
         RevPerson author = lastCommit.getAuthor();
         RevPerson committer = lastCommit.getCommitter();
         JsonObject authorObject = commit.getJsonObject("author");
-        assertEquals(author.getName().or(""), authorObject.getString("name"));
-        assertEquals(author.getEmail().or(""), authorObject.getString("email"));
+        assertEquals(author.getName().orElse(""), authorObject.getString("name"));
+        assertEquals(author.getEmail().orElse(""), authorObject.getString("email"));
         assertEquals(author.getTimestamp(),
                 authorObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(author.getTimeZoneOffset(), authorObject.getInt("timeZoneOffset"));
         JsonObject committerObject = commit.getJsonObject("committer");
-        assertEquals(committer.getName().or(""), committerObject.getString("name"));
-        assertEquals(committer.getEmail().or(""), committerObject.getString("email"));
+        assertEquals(committer.getName().orElse(""), committerObject.getString("name"));
+        assertEquals(committer.getEmail().orElse(""), committerObject.getString("email"));
         assertEquals(committer.getTimestamp(),
                 committerObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(committer.getTimeZoneOffset(), committerObject.getInt("timeZoneOffset"));
@@ -206,8 +206,8 @@ public class CatTest extends AbstractWebOpTest {
         assertEquals(tag.getCommitId().toString(), tagObject.getString("commitid"));
         RevPerson tagger = tag.getTagger();
         JsonObject taggerObject = tagObject.getJsonObject("tagger");
-        assertEquals(tagger.getName().or(""), taggerObject.getString("name"));
-        assertEquals(tagger.getEmail().or(""), taggerObject.getString("email"));
+        assertEquals(tagger.getName().orElse(""), taggerObject.getString("name"));
+        assertEquals(tagger.getEmail().orElse(""), taggerObject.getString("email"));
         assertEquals(tagger.getTimestamp(),
                 taggerObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(tagger.getTimeZoneOffset(), taggerObject.getInt("timeZoneOffset"));

@@ -33,7 +33,7 @@ import org.opengis.feature.type.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -70,7 +70,7 @@ public @UtilityClass class RevObjectTestUtil {
         assertEquals(expected.getIndex(), actual.getIndex());
         assertNotNull(expected.bounds());
         assertNotNull(actual.bounds());
-        equalsPrecise(expected.bounds().orNull(), actual.bounds().orNull());
+        equalsPrecise(expected.bounds().orElse(null), actual.bounds().orElse(null));
     }
 
     public static void equalsPrecise(Envelope expected, Envelope actual) {
@@ -92,10 +92,10 @@ public @UtilityClass class RevObjectTestUtil {
         assertEquals(expected.getType(), actual.getType());
         assertNotNull(expected.getMetadataId());
         assertNotNull(actual.getMetadataId());
-        assertEquals(expected.getMetadataId().orNull(), actual.getMetadataId().orNull());
+        assertEquals(expected.getMetadataId().orElse(null), actual.getMetadataId().orElse(null));
         assertNotNull(expected.bounds());
         assertNotNull(actual.bounds());
-        equalsPrecise(expected.bounds().orNull(), actual.bounds().orNull());
+        equalsPrecise(expected.bounds().orElse(null), actual.bounds().orElse(null));
         Map<String, Object> expectedExtraData = expected.getExtraData();
         Map<String, Object> actualExtraData = actual.getExtraData();
         assertNotNull(expectedExtraData);
@@ -163,8 +163,8 @@ public @UtilityClass class RevObjectTestUtil {
         assertEquals(expected.size(), actual.size());
         List<Integer> geometryIndices = new ArrayList<>();
         for (int i = 0; i < expected.size(); i++) {
-            Object expectedValue = expected.get(i).orNull();
-            Object actualValue = actual.get(i).orNull();
+            Object expectedValue = expected.get(i).orElse(null);
+            Object actualValue = actual.get(i).orElse(null);
             if (expectedValue instanceof Geometry) {
                 geometryIndices.add(i);
             }

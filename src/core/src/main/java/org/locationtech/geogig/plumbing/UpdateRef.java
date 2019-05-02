@@ -21,7 +21,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.RefDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import lombok.Getter;
 

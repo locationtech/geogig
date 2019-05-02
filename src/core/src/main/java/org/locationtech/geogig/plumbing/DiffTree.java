@@ -45,7 +45,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
@@ -119,7 +119,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     }
 
     public Optional<Stats> getStats() {
-        return Optional.fromNullable(stats);
+        return Optional.ofNullable(stats);
     }
 
     /**

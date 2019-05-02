@@ -11,7 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import org.locationtech.geogig.model.RevCommit;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class ValueAndCommit {
 
@@ -26,7 +26,7 @@ public class ValueAndCommit {
 
     @Override
     public String toString() {
-        return new StringBuilder().append(value.orNull()).append('/').append(commit.getId())
+        return new StringBuilder().append(value.orElse(null)).append('/').append(commit.getId())
                 .toString();
     }
 }

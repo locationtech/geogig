@@ -20,7 +20,7 @@ import org.locationtech.geogig.storage.BlobStore;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.io.CharStreams;
 
 public class ReadMergeCommitMessageOp extends AbstractGeoGigOp<String> {

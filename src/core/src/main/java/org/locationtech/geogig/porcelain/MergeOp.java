@@ -38,7 +38,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 
@@ -70,9 +70,9 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     private boolean fastForwardOnly;
 
-    private Optional<String> authorName = Optional.absent();
+    private Optional<String> authorName = Optional.empty();
 
-    private Optional<String> authorEmail = Optional.absent();
+    private Optional<String> authorEmail = Optional.empty();
 
     /**
      * Original values
@@ -154,8 +154,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
      * @return {@code this}
      */
     public MergeOp setAuthor(@Nullable String authorName, @Nullable String authorEmail) {
-        this.authorName = Optional.fromNullable(authorName);
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorName = Optional.ofNullable(authorName);
+        this.authorEmail = Optional.ofNullable(authorEmail);
         return this;
     }
 
@@ -359,7 +359,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         RevCommit mergeCommit = commit(mergeStatusBuilder.isFastForward());
 
         progress.setDescription("Merge: created merge commit " + mergeCommit);
-        return new MergeReport(mergeCommit, Optional.fromNullable(mergeScenario), oursId, pairs);
+        return new MergeReport(mergeCommit, Optional.ofNullable(mergeScenario), oursId, pairs);
     }
 
     private String fmt(RevCommit c) {
@@ -454,7 +454,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 CommitOp commit = command(CommitOp.class).setAllowEmpty(true)
                         .setMessage(commitMessage).addParents(commits);
                 if (authorName.isPresent() || authorEmail.isPresent()) {
-                    commit.setAuthor(authorName.orNull(), authorEmail.orNull());
+                    commit.setAuthor(authorName.orElse(null), authorEmail.orElse(null));
                 }
                 mergeCommit = commit.call();
             }

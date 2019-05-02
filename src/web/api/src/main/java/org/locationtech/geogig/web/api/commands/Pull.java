@@ -35,7 +35,7 @@ import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Interface for the Pull operation in GeoGig.
@@ -51,9 +51,9 @@ public class Pull extends AbstractWebAPICommand {
 
     String refSpec;
 
-    Optional<String> authorName = Optional.absent();
+    Optional<String> authorName = Optional.empty();
 
-    Optional<String> authorEmail = Optional.absent();
+    Optional<String> authorEmail = Optional.empty();
 
     @Override
     protected void setParametersInternal(ParameterSet options) {
@@ -95,14 +95,14 @@ public class Pull extends AbstractWebAPICommand {
      * @param authorName the author of the merge commit
      */
     public void setAuthorName(@Nullable String authorName) {
-        this.authorName = Optional.fromNullable(authorName);
+        this.authorName = Optional.ofNullable(authorName);
     }
 
     /**
      * @param authorEmail the email of the author of the merge commit
      */
     public void setAuthorEmail(@Nullable String authorEmail) {
-        this.authorEmail = Optional.fromNullable(authorEmail);
+        this.authorEmail = Optional.ofNullable(authorEmail);
     }
 
     /**
@@ -115,7 +115,7 @@ public class Pull extends AbstractWebAPICommand {
         final Context geogig = this.getRepositoryContext(context);
 
         PullOp command = geogig.command(PullOp.class)
-                .setAuthor(authorName.orNull(), authorEmail.orNull()).setRemote(remoteName)
+                .setAuthor(authorName.orElse(null), authorEmail.orElse(null)).setRemote(remoteName)
                 .setAll(fetchAll).addRefSpec(refSpec);
         try {
             final PullResult result = command.call();
@@ -162,7 +162,7 @@ public class Pull extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    Optional<RevCommit> mergeCommit = Optional.absent();
+                    Optional<RevCommit> mergeCommit = Optional.empty();
                     out.writeMergeConflictsResponse(mergeCommit, report, geogig, ours.getId(),
                             theirs.getId(), ancestor.get(), consumer);
                     out.finish();

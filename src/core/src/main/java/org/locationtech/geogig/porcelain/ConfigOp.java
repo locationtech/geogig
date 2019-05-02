@@ -19,7 +19,7 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Get and set repository or global options
@@ -91,7 +91,7 @@ public class ConfigOp extends AbstractGeoGigOp<Optional<Map<String, String>>> {
                 throw new ConfigException(StatusCode.SECTION_OR_NAME_NOT_PROVIDED);
 
             if (value == null || value.isEmpty()) {
-                Optional<String> val = Optional.absent();
+                Optional<String> val = Optional.empty();
                 if (scope == ConfigScope.GLOBAL) {
                     val = config.getGlobal(name);
                 } else {
@@ -176,7 +176,7 @@ public class ConfigOp extends AbstractGeoGigOp<Optional<Map<String, String>>> {
             throw new ConfigException(StatusCode.OPTION_DOES_NOT_EXIST);
         }
 
-        return Optional.absent();
+        return Optional.empty();
     }
 
     /**

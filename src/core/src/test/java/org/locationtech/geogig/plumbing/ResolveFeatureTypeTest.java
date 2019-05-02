@@ -18,7 +18,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class ResolveFeatureTypeTest extends RepositoryTestCase {
 

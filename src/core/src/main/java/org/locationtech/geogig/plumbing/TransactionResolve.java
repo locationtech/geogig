@@ -15,12 +15,12 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.impl.TransactionRefDatabase;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 
 /**
  * Resolves a provided UUID to a {@link GeogigTransaction} if it exists, or
- * {@link Optional#absent()} otherwise.
+ * {@link Optional#empty()} otherwise.
  *
  * @see GeogigTransaction
  */
@@ -38,7 +38,7 @@ public class TransactionResolve extends AbstractGeoGigOp<Optional<GeogigTransact
     }
 
     /**
-     * @return the resolved {@link GeogigTransaction}, or {@link Optional#absent()} if it could not
+     * @return the resolved {@link GeogigTransaction}, or {@link Optional#empty()} if it could not
      *         be resolved
      */
     @Override
@@ -54,6 +54,6 @@ public class TransactionResolve extends AbstractGeoGigOp<Optional<GeogigTransact
             transaction = new GeogigTransaction(context, id);
         }
 
-        return Optional.fromNullable(transaction);
+        return Optional.ofNullable(transaction);
     }
 }

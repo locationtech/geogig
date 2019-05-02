@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
@@ -229,16 +229,16 @@ public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuild
         }
 
         if (!deep) {
-            return Optional.absent();
+            return Optional.empty();
         }
         if (deletes.contains(key)) {
-            return Optional.absent();
+            return Optional.empty();
         }
 
         final Integer bucketIndex = computeBucket(key);
         final Bucket bucket = bucketTreesByBucket.get(bucketIndex);
         if (bucket == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
 
         RevTree subtree = loadTree(bucket.getObjectId());
@@ -249,7 +249,7 @@ public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuild
         if (node.isPresent()) {
             return Optional.of(node.get());
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 

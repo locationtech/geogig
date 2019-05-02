@@ -69,7 +69,7 @@ import org.locationtech.geogig.web.api.JsonUtils;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -236,7 +236,7 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
         assertTrue(JsonUtils.jsonEquals(JsonUtils.toJSON(expected),
                 JsonUtils.toJSON(response.toString()), false));
 
-        Optional<AsyncCommand<?>> asyncCommand = Optional.absent();
+        Optional<AsyncCommand<?>> asyncCommand = Optional.empty();
         while (!asyncCommand.isPresent()) {
             Thread.yield();
             asyncCommand = testAsyncContext.getAndPruneIfFinished("1");

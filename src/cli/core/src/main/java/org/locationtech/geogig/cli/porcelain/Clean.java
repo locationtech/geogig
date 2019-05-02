@@ -29,7 +29,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 @Parameters(commandNames = "clean", commandDescription = "Deletes untracked features from working tree")
 public class Clean extends AbstractCommand {

@@ -32,7 +32,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class FieldTypeTest {
     @Rule
@@ -130,7 +130,7 @@ public class FieldTypeTest {
     @Test
     public void testForValue() throws Exception {
         WKTReader reader = new WKTReader();
-        assertEquals(FieldType.NULL, FieldType.forValue(Optional.absent()));
+        assertEquals(FieldType.NULL, FieldType.forValue(Optional.empty()));
         assertEquals(FieldType.BOOLEAN, FieldType.forValue(Optional.of(new Boolean(false))));
         assertEquals(FieldType.BYTE, FieldType.forValue(Optional.of((byte) 0x0)));
         assertEquals(FieldType.SHORT, FieldType.forValue(Optional.of((short) 0)));

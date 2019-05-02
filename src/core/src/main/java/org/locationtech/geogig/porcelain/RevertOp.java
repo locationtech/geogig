@@ -50,7 +50,7 @@ import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
@@ -496,7 +496,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final String namekey = "user.name";
 
         String name = getClientData(namekey, String.class)
-                .or(command(ConfigGet.class).setName(namekey).call()).orNull();
+                .orElseGet(()->command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
@@ -509,7 +509,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final String emailkey = "user.email";
 
         String email = getClientData(emailkey, String.class)
-                .or(command(ConfigGet.class).setName(emailkey).call()).orNull();
+                .orElseGet(()->command(ConfigGet.class).setName(emailkey).call().orElse(null));
 
         checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",

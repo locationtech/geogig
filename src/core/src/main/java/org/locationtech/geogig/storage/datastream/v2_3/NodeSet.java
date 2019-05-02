@@ -34,7 +34,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -422,7 +422,7 @@ class NodeSet {
     }
 
     public Optional<ObjectId> getMetadataId(final int objectIdIndex) {
-        Optional<ObjectId> mdId = Optional.absent();
+        Optional<ObjectId> mdId = Optional.empty();
         if (objectIdIndex > -1) {
             mdId = Optional.of(getObjectId(objectIdIndex));
         }
@@ -431,7 +431,7 @@ class NodeSet {
 
     public Optional<Envelope> getBounds(final int nodeIndex, final int boundsIndex) {
         if (-1 == boundsIndex) {
-            return Optional.absent();
+            return Optional.empty();
         }
         checkState(header.nodeFlags.boundsPresent(nodeIndex));
         final boolean isPoint = header.nodeFlags.isPoint(nodeIndex);

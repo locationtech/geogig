@@ -26,7 +26,7 @@ import org.locationtech.geogig.remotes.internal.RemoteResolver;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * {@link RemoteResolver} implementation that works against the HTTP web API
@@ -65,7 +65,7 @@ public class HttpRemoteResolver implements RemoteResolver {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return Optional.fromNullable(remoteRepo);
+        return Optional.ofNullable(remoteRepo);
     }
 
     private static final char[] PASSWORD = "jd4nvds832lsn4apq".toCharArray();

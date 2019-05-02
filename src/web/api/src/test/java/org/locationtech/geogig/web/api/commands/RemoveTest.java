@@ -31,7 +31,7 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class RemoveTest extends AbstractWebOpTest {
 

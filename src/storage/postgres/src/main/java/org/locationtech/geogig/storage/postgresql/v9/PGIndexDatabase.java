@@ -53,7 +53,7 @@ import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
@@ -278,7 +278,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
             throw new RuntimeException(e);
         }
 
-        return Optional.fromNullable(index);
+        return Optional.ofNullable(index);
     }
 
     @Override
@@ -482,7 +482,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
             throw new RuntimeException(e);
         }
 
-        return Optional.fromNullable(indexedTreeId);
+        return Optional.ofNullable(indexedTreeId);
     }
 
     public @Override AutoCloseableIterator<IndexTreeMapping> resolveIndexedTrees(IndexInfo index) {

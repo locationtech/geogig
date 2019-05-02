@@ -12,7 +12,7 @@ package org.locationtech.geogig.geotools.data;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.geotools.renderer.ScreenMap;
+import org.geotools.data.util.ScreenMap;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;

@@ -24,10 +24,10 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.factory.Hints;
 import org.geotools.filter.expression.PropertyAccessor;
 import org.geotools.filter.expression.PropertyAccessorFactory;
 import org.geotools.filter.expression.PropertyAccessors;
+import org.geotools.util.factory.Hints;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.data.reader.ExtraDataPropertyAccessorFactory.ExtraDataPropertyAccesor;

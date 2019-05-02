@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.factory.Hints;
+import org.geotools.util.factory.Hints;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;

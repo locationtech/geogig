@@ -17,9 +17,9 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.geotools.data.DataUtilities;
+import org.geotools.data.util.ScreenMap;
 import org.geotools.feature.SchemaException;
 import org.geotools.referencing.operation.transform.IdentityTransform;
-import org.geotools.renderer.ScreenMap;
 import org.junit.Test;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;

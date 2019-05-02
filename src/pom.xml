@@ -41,7 +41,6 @@
     <logback.version>1.1.2</logback.version>
     <mockito.version>2.27.0</mockito.version>
     <slf4j.version>1.7.5</slf4j.version>
-    <sqljdbc4.version>3.0</sqljdbc4.version>
     <hikaricp.version>2.4.2</hikaricp.version>
     <rocksdb.version>5.14.2</rocksdb.version>
     <postgresql.version>42.1.1</postgresql.version>
@@ -296,11 +295,6 @@
         <scope>test</scope>
       </dependency>
 
-      <dependency>
-        <groupId>com.microsoft</groupId>
-        <artifactId>sqljdbc4</artifactId>
-        <version>${sqljdbc4.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.glassfish</groupId>
         <artifactId>javax.json</artifactId>

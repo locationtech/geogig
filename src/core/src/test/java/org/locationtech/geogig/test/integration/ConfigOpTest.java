@@ -90,8 +90,7 @@ public class ConfigOpTest extends RepositoryTestCase {
         config.setAction(ConfigAction.CONFIG_SET).setName("section.string").setValue("1").call();
         config.setAction(ConfigAction.CONFIG_SET).setName("section.string2").setValue("2").call();
 
-        result = config.setAction(ConfigAction.CONFIG_LIST).call()
-                .orElseGet(HashMap::new);
+        result = config.setAction(ConfigAction.CONFIG_LIST).call().orElseGet(HashMap::new);
         assertEquals("1", result.get("section.string"));
         assertEquals("2", result.get("section.string2"));
     }

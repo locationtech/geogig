@@ -67,10 +67,10 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
                 remotePushURL = config.get(remoteSection + ".pushurl");
             }
             String fetch = remoteFetchURL.orElse("");
-			Remote remote = new Remote(name, fetch,
-                    remotePushURL.orElse(fetch), remoteFetch.orElse(""),
-                    remoteMapped.orElse("false").equals("true"), remoteMappedBranch.orElse(null),
-                    remoteUserName.orElse(null), remotePassword.orElse(null));
+            Remote remote = new Remote(name, fetch, remotePushURL.orElse(fetch),
+                    remoteFetch.orElse(""), remoteMapped.orElse("false").equals("true"),
+                    remoteMappedBranch.orElse(null), remoteUserName.orElse(null),
+                    remotePassword.orElse(null));
             remoteOpt = Optional.of(remote);
         }
         return remoteOpt;

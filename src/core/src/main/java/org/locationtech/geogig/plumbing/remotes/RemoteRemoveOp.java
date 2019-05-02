@@ -40,8 +40,8 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
     /**
      * Executes the remote-remove operation.
      * 
-     * @return the {@link Remote} that was removed, or {@link Optional#empty()} if the remote
-     *         didn't exist.
+     * @return the {@link Remote} that was removed, or {@link Optional#empty()} if the remote didn't
+     *         exist.
      */
     @Override
     protected Remote _call() {
@@ -62,14 +62,14 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
         final String remotePrefix = Ref.append(Ref.REMOTES_PREFIX, name);
 
         // r -> Ref.isChild(remotePrefix, r.getName())
-        Predicate<Ref> fn =  new Predicate<Ref>() {
+        Predicate<Ref> fn = new Predicate<Ref>() {
             @Override
             public boolean apply(Ref r) {
                 return Ref.isChild(remotePrefix, r.getName());
-            }};
+            }
+        };
 
-        ImmutableSet<Ref> localRemoteRefs = command(ForEachRef.class)
-                .setFilter(fn).call();
+        ImmutableSet<Ref> localRemoteRefs = command(ForEachRef.class).setFilter(fn).call();
         for (Ref localRef : localRemoteRefs) {
             command(UpdateRef.class).setDelete(true).setName(localRef.getName()).call();
         }

@@ -25,7 +25,8 @@ public class DataStreamRevObjectSerializerV2_1 extends DataStreamRevObjectSerial
     protected DataStreamRevObjectSerializerV2_1(FormatCommonV2 format) {
         super(format);
     }
-        @Override
+
+    @Override
     public String getDisplayName() {
         return "Binary 2.1";
     }

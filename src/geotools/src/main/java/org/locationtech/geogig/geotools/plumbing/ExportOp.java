@@ -154,15 +154,15 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                     ExportOp.this.function);
 
             // (f) -> (SimpleFeature) f.orElse(null)
-            Function<Optional<Feature>, SimpleFeature> fn =  new Function<Optional<Feature>, SimpleFeature>() {
+            Function<Optional<Feature>, SimpleFeature> fn = new Function<Optional<Feature>, SimpleFeature>() {
                 @Override
                 public SimpleFeature apply(Optional<Feature> f) {
                     return (SimpleFeature) f.orElse(null);
-                }};
+                }
+            };
 
-            Iterator<SimpleFeature> filteredIter = Iterators.filter(
-                    Iterators.transform(transformed, fn),
-                    Predicates.notNull());
+            Iterator<SimpleFeature> filteredIter = Iterators
+                    .filter(Iterators.transform(transformed, fn), Predicates.notNull());
 
             // check the resulting schema has something to contribute
             PeekingIterator<SimpleFeature> peekingIt = Iterators.peekingIterator(filteredIter);

@@ -575,7 +575,8 @@ public class WorkingTreeImpl implements WorkingTree {
                 newMetadataId = nodesMetadataId;
             }
             Node newNode = RevObjectFactory.defaultInstance().createNode(node.getName(),
-                    node.getObjectId(), newMetadataId, TYPE.FEATURE, node.bounds().orElse(null), null);
+                    node.getObjectId(), newMetadataId, TYPE.FEATURE, node.bounds().orElse(null),
+                    null);
             newTreeBuilder.put(newNode);
         }
 

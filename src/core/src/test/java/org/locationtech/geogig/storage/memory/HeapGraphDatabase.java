@@ -106,12 +106,14 @@ public class HeapGraphDatabase implements GraphDatabase {
         // transform outgoing nodes to id
         // filter for null to skip fake root node
         return graph.get(commitId).map(
-        		n -> ImmutableList.copyOf( filter( transform(n.to(), NODE_TO_ID), i->i!=null) )).orElse(ImmutableList.of());
+                n -> ImmutableList.copyOf(filter(transform(n.to(), NODE_TO_ID), i -> i != null)))
+                .orElse(ImmutableList.of());
     }
 
     @Override
     public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
-        return graph.get(commitId).map(n->ImmutableList.copyOf(transform(n.from(), NODE_TO_ID))).orElse(ImmutableList.of());
+        return graph.get(commitId).map(n -> ImmutableList.copyOf(transform(n.from(), NODE_TO_ID)))
+                .orElse(ImmutableList.of());
     }
 
     @Override

@@ -26,8 +26,10 @@ import com.beust.jcommander.ParameterException;
  * <p>
  * Commands that don't necessarily require a repository to run (e.g. {@link Init init}, {@link Help
  * help}, {@link Config config}, etc} shall not be annotated with {@link RequiresRepository
+ * 
  * @RequiresRepository}, although they're free to check {@link GeogigCLI#getGeogig()} for nullity if
- * they need to perform one or another task depending on the precense or not of a repository.
+ *                       they need to perform one or another task depending on the precense or not
+ *                       of a repository.
  * 
  */
 public interface CLICommand {

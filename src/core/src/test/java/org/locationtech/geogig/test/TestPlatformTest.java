@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.test;
 
-
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
@@ -24,15 +23,15 @@ public class TestPlatformTest {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    //simple test -- ensure that the platform clock is always increase (no repeated values).
+    // simple test -- ensure that the platform clock is always increase (no repeated values).
     @Test
     public void testClock() throws IOException {
         Platform testPlatform = new TestPlatform(tempFolder.getRoot());
 
         long lastTime = 0;
-        for (int t=0;t<100; t++) {
+        for (int t = 0; t < 100; t++) {
             long time = testPlatform.currentTimeMillis();
-            assertNotEquals(time,lastTime);
+            assertNotEquals(time, lastTime);
             lastTime = time;
         }
     }

@@ -63,12 +63,13 @@ public class IndexUtils {
         List<NodeRef> treeRefs = context.command(FindFeatureTypeTrees.class).setRootTreeRef(rootRef)
                 .call();
 
-        //  (r) -> r.path()
-        Function<NodeRef, String> fn =  new Function<NodeRef, String>() {
+        // (r) -> r.path()
+        Function<NodeRef, String> fn = new Function<NodeRef, String>() {
             @Override
             public String apply(NodeRef r) {
                 return r.path();
-            }};
+            }
+        };
 
         ImmutableMap<String, NodeRef> map = Maps.uniqueIndex(treeRefs, fn);
         NodeRef treeRef = map.get(treePath);

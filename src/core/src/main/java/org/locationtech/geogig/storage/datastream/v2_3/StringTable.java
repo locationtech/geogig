@@ -50,7 +50,7 @@ abstract class StringTable {
     public abstract String get(int index) throws NoSuchElementException;
 
     public abstract int get(String value);
-    
+
     /**
      * @return number of entries in the string table
      */

@@ -89,7 +89,7 @@ public class FeatureTypeAdapterFeatureSourceTest {
         // get the resulting features
         List<SimpleFeature> newFeatures = DataUtilities.list(ftafs.getFeatures());
 
-        //verify correct
+        // verify correct
         Assert.isTrue(f1.equals(newFeatures.get(0)));
         Assert.isTrue(f2.equals(newFeatures.get(1)));
     }

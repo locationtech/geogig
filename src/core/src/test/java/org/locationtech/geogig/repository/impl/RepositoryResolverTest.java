@@ -178,8 +178,8 @@ public class RepositoryResolverTest {
         verifyFileRepositoryResolver(true, fileUri);
 
         // now disable the FileRepositoryResolver
-        RepositoryResolverTestUtil.setDisabledResolvers(Arrays.asList(
-                "org.locationtech.geogig.repository.impl.FileRepositoryResolver"));
+        RepositoryResolverTestUtil.setDisabledResolvers(
+                Arrays.asList("org.locationtech.geogig.repository.impl.FileRepositoryResolver"));
 
         // Verify the TestResolver is available again
         verifyTestResolver(true, testUri);

@@ -47,11 +47,11 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig diff [-- <path>...]}: compare working tree and index
- * <li> {@code geogig diff <commit> [-- <path>...]}: compare the working tree with the given commit
- * <li> {@code geogig diff --cached [-- <path>...]}: compare the index with the HEAD commit
- * <li> {@code geogig diff --cached <commit> [-- <path>...]}: compare the index with the given commit
- * <li> {@code geogig diff <commit1> <commit2> [-- <path>...]}: compare {@code commit1} with
+ * <li>{@code geogig diff [-- <path>...]}: compare working tree and index
+ * <li>{@code geogig diff <commit> [-- <path>...]}: compare the working tree with the given commit
+ * <li>{@code geogig diff --cached [-- <path>...]}: compare the index with the HEAD commit
+ * <li>{@code geogig diff --cached <commit> [-- <path>...]}: compare the index with the given commit
+ * <li>{@code geogig diff <commit1> <commit2> [-- <path>...]}: compare {@code commit1} with
  * {@code commit2}, where {@code commit1} is the eldest or left side of the diff.
  * </ul>
  * 
@@ -128,10 +128,10 @@ public class Diff extends AbstractCommand implements CLICommand {
             Console console = cli.getConsole();
             console.println(String.format("Trees: added %,d, changed %,d, removed %,d",
                     count.getTreesAdded(), count.getTreesChanged(), count.getTreesRemoved()));
-            console.println(String.format(
-                    "Features: added %,d, changed %,d, removed %,d, total: %,d",
-                    count.getFeaturesAdded(), count.getFeaturesChanged(),
-                    count.getFeaturesRemoved(), count.featureCount()));
+            console.println(
+                    String.format("Features: added %,d, changed %,d, removed %,d, total: %,d",
+                            count.getFeaturesAdded(), count.getFeaturesChanged(),
+                            count.getFeaturesRemoved(), count.featureCount()));
             console.flush();
             return;
         }

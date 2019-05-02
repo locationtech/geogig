@@ -76,7 +76,8 @@ public class TestSupport extends ExternalResource {
 
     public TestData clone(TestData origin, String name) {
         TestData clone = newRepo(name);
-        clone.getRepo().command(CloneOp.class).setCloneIndexes(true).setRemoteURI(origin.getRepo().getLocation()).call();
+        clone.getRepo().command(CloneOp.class).setCloneIndexes(true)
+                .setRemoteURI(origin.getRepo().getLocation()).call();
         return clone;
     }
 }

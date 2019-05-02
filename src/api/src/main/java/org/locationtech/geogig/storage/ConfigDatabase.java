@@ -120,7 +120,8 @@ public interface ConfigDatabase extends Closeable {
      */
     public void put(String key, Object value);
 
-    public default void putSection(@NonNull String section, final @NonNull Map<String, String> kvp) {
+    public default void putSection(@NonNull String section,
+            final @NonNull Map<String, String> kvp) {
         kvp.forEach((k, v) -> {
             Objects.requireNonNull(k);
             Objects.requireNonNull(v);

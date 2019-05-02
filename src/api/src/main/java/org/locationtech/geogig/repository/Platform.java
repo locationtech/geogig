@@ -17,7 +17,7 @@ import java.io.Serializable;
  * 
  * @since 1.0
  */
-public interface Platform extends Serializable{
+public interface Platform extends Serializable {
 
     /**
      * @return the working directory

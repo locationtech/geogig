@@ -44,7 +44,8 @@ public final class Conflict {
      * @param ours the {@code ObjectId} of the feature on the 'ours' side of the merge
      * @param theirs the {@code ObjectId} of the feature on the 'theirs' side of the merge
      */
-    public Conflict(@NonNull String path, @NonNull ObjectId ancestor, @NonNull ObjectId ours, @NonNull ObjectId theirs) {
+    public Conflict(@NonNull String path, @NonNull ObjectId ancestor, @NonNull ObjectId ours,
+            @NonNull ObjectId theirs) {
         this.path = path;
         this.ancestor = ancestor;
         this.ours = ours;

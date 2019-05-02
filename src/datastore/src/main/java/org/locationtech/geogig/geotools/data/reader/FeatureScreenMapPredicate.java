@@ -17,10 +17,9 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Predicate;
 
-
 /**
- * This is a simple class that is very much like the ScreenMapPredicate class.
- * This works on SimpleFeatures only.
+ * This is a simple class that is very much like the ScreenMapPredicate class. This works on
+ * SimpleFeatures only.
  */
 class FeatureScreenMapPredicate implements Predicate<SimpleFeature> {
     ScreenMap screenMap;
@@ -29,14 +28,13 @@ class FeatureScreenMapPredicate implements Predicate<SimpleFeature> {
         this.screenMap = screenMap;
     }
 
-
     /**
      * Filter out small features (<pixel) where that pixel already has a small feature in it.
      */
     @Override
     public boolean apply(SimpleFeature feature) {
         Envelope e = ((Geometry) feature.getDefaultGeometry()).getEnvelopeInternal();
-        //only do work if its a small geometry
+        // only do work if its a small geometry
         if (screenMap.canSimplify(e)) {
             // screenmap isn't thread safe
             // Both this and ScreenMapPredicate syncronize on the underlying ScreenMap object.

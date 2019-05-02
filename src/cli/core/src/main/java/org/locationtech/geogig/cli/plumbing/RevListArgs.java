@@ -53,7 +53,8 @@ public class RevListArgs {
     @Nullable
     public String committer;
 
-    @Parameter(names = { "--path", "-p" }, description = "Print only commits that have modified the given path(s)", variableArity = true)
+    @Parameter(names = { "--path",
+            "-p" }, description = "Print only commits that have modified the given path(s)", variableArity = true)
     public List<String> pathNames = Lists.newArrayList();
 
     @Parameter(names = "--summary", description = "Show summary of changes for each commit")

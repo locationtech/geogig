@@ -48,8 +48,9 @@ abstract class BaseNodeImpl extends Node {
 
     private final float bounds_x1, bounds_x2, bounds_y1, bounds_y2;
 
-    public BaseNodeImpl(final @NonNull  String name, final @NonNull ObjectId oid, final @NonNull ObjectId metadataId,
-            @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
+    public BaseNodeImpl(final @NonNull String name, final @NonNull ObjectId oid,
+            final @NonNull ObjectId metadataId, @Nullable Envelope bounds,
+            @Nullable Map<String, Object> extraData) {
         this.name = name;
         this.objectId_h1 = RevObjects.h1(oid);
         this.objectId_h2 = RevObjects.h2(oid);

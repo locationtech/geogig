@@ -50,33 +50,38 @@ public class EPSGBoundsCalcTest extends RepositoryTestCase {
     @Test
     public void epsgTest() throws Exception {
 
-        String[] testArray = {"EPSG:3031","EPSG:26910","EPSG:3857","EPSG:3412","EPSG:3411"};
+        String[] testArray = { "EPSG:3031", "EPSG:26910", "EPSG:3857", "EPSG:3412", "EPSG:3411" };
         Envelope[] testEnvelopes = new Envelope[5];
 
-        testEnvelopes[0] = new Envelope(-3333134.027630277, 3333134.027630277, -3333134.027630277, 3333134.027630277);
-        testEnvelopes[1] = new Envelope(212172.22206537757, 788787.632995196, 3378624.2031936757, 9083749.435906317);
-        testEnvelopes[2] = new Envelope(-2.0037508342789244E7, 2.0037508342789244E7, -2.00489661040146E7, 2.0048966104014594E7);
-        testEnvelopes[3] = new Envelope(-3323231.542684214, 3323231.542684214, -3323231.542684214, 3323231.542684214);
-        testEnvelopes[4] = new Envelope(-2349879.5592850395, 2349879.5592850395, -2349879.5592850395, 2349879.5592850395);
+        testEnvelopes[0] = new Envelope(-3333134.027630277, 3333134.027630277, -3333134.027630277,
+                3333134.027630277);
+        testEnvelopes[1] = new Envelope(212172.22206537757, 788787.632995196, 3378624.2031936757,
+                9083749.435906317);
+        testEnvelopes[2] = new Envelope(-2.0037508342789244E7, 2.0037508342789244E7,
+                -2.00489661040146E7, 2.0048966104014594E7);
+        testEnvelopes[3] = new Envelope(-3323231.542684214, 3323231.542684214, -3323231.542684214,
+                3323231.542684214);
+        testEnvelopes[4] = new Envelope(-2349879.5592850395, 2349879.5592850395,
+                -2349879.5592850395, 2349879.5592850395);
 
         Envelope bounds;
-        for (int i=0; i<testArray.length; i++) {
+        for (int i = 0; i < testArray.length; i++) {
             bounds = new EPSGBoundsCalc().getCRSBounds(testArray[i]);
             assertEnvelopesEqual(testEnvelopes[i], bounds);
         }
     }
 
-    @Test(expected=NoSuchAuthorityCodeException.class)
-    public void googleProjectionTest() throws Exception{
+    @Test(expected = NoSuchAuthorityCodeException.class)
+    public void googleProjectionTest() throws Exception {
         new EPSGBoundsCalc().getCRSBounds("EPSG:900913");
     }
 
-    @Test(expected=NoSuchAuthorityCodeException.class)
-    public void badCodeTest() throws Exception{
+    @Test(expected = NoSuchAuthorityCodeException.class)
+    public void badCodeTest() throws Exception {
         new EPSGBoundsCalc().getCRSBounds("random stuff!!!");
     }
 
-    @Test(expected=CRSException.class)
+    @Test(expected = CRSException.class)
     public void noCRSMatch() throws Exception {
         String noEPSGMatchWKT = "GEOGCS[\"GCS_WGS_1985\",DATUM[\"D_WGS_1985\",SPHEROID[\"WGS_1985\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]";
 
@@ -85,13 +90,13 @@ public class EPSGBoundsCalcTest extends RepositoryTestCase {
         String typeName = "noCRSMatchType";
         String id = "Points.6";
 
-        //create the feature with the noEPSGMatchWKT CRS
+        // create the feature with the noEPSGMatchWKT CRS
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setCRS(origCrs);
         builder.add("geom", Point.class);
         builder.setName(typeName);
 
-        //need to make this a feature, so it can be used with the insertAndAdd command
+        // need to make this a feature, so it can be used with the insertAndAdd command
         SimpleFeatureType type = builder.buildFeatureType();
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(type);
         Feature f = featureBuilder.buildFeature(id);
@@ -99,7 +104,7 @@ public class EPSGBoundsCalcTest extends RepositoryTestCase {
         insertAndAdd(f);
 
         Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
-            .setRefSpec("WORK_HEAD:" + NodeRef.appendChild(typeName, id)).call();
+                .setRefSpec("WORK_HEAD:" + NodeRef.appendChild(typeName, id)).call();
 
         RevFeatureType ft = null;
         if (featureType.isPresent())
@@ -129,15 +134,16 @@ public class EPSGBoundsCalcTest extends RepositoryTestCase {
         insertAndAdd(f);
 
         Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
-            .setRefSpec("WORK_HEAD:" + NodeRef.appendChild(typeName, id)).call();
+                .setRefSpec("WORK_HEAD:" + NodeRef.appendChild(typeName, id)).call();
 
         RevFeatureType ft = null;
         if (featureType.isPresent())
             ft = featureType.get();
 
-        //double check the actual bounds
+        // double check the actual bounds
         Envelope actual = new EPSGBoundsCalc().getCRSBounds(ft);
-        Envelope expected = new Envelope(205723.76927073707, 794276.2307292629, 3128220.0383561817, 9329005.182379141);
+        Envelope expected = new Envelope(205723.76927073707, 794276.2307292629, 3128220.0383561817,
+                9329005.182379141);
         assertEnvelopesEqual(expected, actual);
     }
 }

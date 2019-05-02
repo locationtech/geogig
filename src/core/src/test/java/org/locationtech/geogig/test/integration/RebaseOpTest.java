@@ -472,7 +472,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
-        assertEquals(conflicts.get(0).getOurs(), RevFeature.builder().build(points1Modified).getId());
+        assertEquals(conflicts.get(0).getOurs(),
+                RevFeature.builder().build(points1Modified).getId());
         assertEquals(conflicts.get(0).getTheirs(),
                 RevFeature.builder().build(points1ModifiedB).getId());
 
@@ -570,7 +571,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
-        assertEquals(conflicts.get(0).getOurs(), RevFeature.builder().build(points1Modified).getId());
+        assertEquals(conflicts.get(0).getOurs(),
+                RevFeature.builder().build(points1Modified).getId());
         assertEquals(conflicts.get(0).getTheirs(),
                 RevFeature.builder().build(points1ModifiedB).getId());
 

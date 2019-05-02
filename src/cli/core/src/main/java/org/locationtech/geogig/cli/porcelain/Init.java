@@ -128,7 +128,8 @@ public class Init extends AbstractCommand implements CLICommand {
 
         String message;
         String locationStr = "file".equals(repoURI.getScheme())
-                ? new File(repoURI).getAbsolutePath() : repoURI.toString();
+                ? new File(repoURI).getAbsolutePath()
+                : repoURI.toString();
         message = (repoExisted ? "Reinitialized existing" : "Initialized empty")
                 + " Geogig repository in " + locationStr;
 

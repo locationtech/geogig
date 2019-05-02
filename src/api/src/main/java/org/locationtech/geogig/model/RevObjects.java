@@ -116,7 +116,8 @@ public @UtilityClass class RevObjects {
      *         {@link RevTree#features() feature} children collections, in the order mandated by the
      *         provided {@code comparator}
      */
-    public static Iterator<Node> children(@NonNull RevTree tree, @NonNull Comparator<Node> comparator) {
+    public static Iterator<Node> children(@NonNull RevTree tree,
+            @NonNull Comparator<Node> comparator) {
         if (tree.treesSize() == 0) {
             return tree.features().iterator();
         }

@@ -39,8 +39,8 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig checkout [-f] [<branchName>]}
- * <li> {@code geogig checkout [<branchOrCommitName>] [-p <paths>...]}
+ * <li>{@code geogig checkout [-f] [<branchName>]}
+ * <li>{@code geogig checkout [<branchOrCommitName>] [-p <paths>...]}
  * </ul>
  * 
  * @see CheckoutOp
@@ -51,12 +51,14 @@ public class Checkout extends AbstractCommand implements CLICommand {
     @Parameter(arity = 1, description = "<branch|commit>")
     private List<String> branchOrStartPoint = Lists.newArrayList();
 
-    @Parameter(names = { "--force", "-f" }, description = "When switching branches, proceed even if the index or the "
-            + "working tree differs from HEAD. This is used to throw away local changes.")
+    @Parameter(names = { "--force",
+            "-f" }, description = "When switching branches, proceed even if the index or the "
+                    + "working tree differs from HEAD. This is used to throw away local changes.")
     private boolean force = false;
 
-    @Parameter(names = { "--path", "-p" }, description = "Don't switch branches just update the named paths in the "
-            + "working tree from the index tree or a named treeish object.", variableArity = true)
+    @Parameter(names = { "--path",
+            "-p" }, description = "Don't switch branches just update the named paths in the "
+                    + "working tree from the index tree or a named treeish object.", variableArity = true)
     private List<String> paths = Lists.newArrayList();
 
     @Parameter(names = "--ours", description = "When checking out paths from the index, check out 'ours' version for unmerged paths")
@@ -89,10 +91,12 @@ public class Checkout extends AbstractCommand implements CLICommand {
                 console.println("Branch '" + result.getNewRef().localName()
                         + "' was set up to track remote branch '" + result.getNewRef().localName()
                         + "' from " + result.getRemoteName() + ".");
-                console.println("Switched to a new branch '" + result.getNewRef().localName() + "'");
+                console.println(
+                        "Switched to a new branch '" + result.getNewRef().localName() + "'");
                 break;
             case UPDATE_OBJECTS:
-                console.println("Objects in the working tree were updated to the specifed version.");
+                console.println(
+                        "Objects in the working tree were updated to the specifed version.");
                 break;
             case DETACHED_HEAD:
                 console.println("You are in 'detached HEAD' state. HEAD is now at "

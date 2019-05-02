@@ -19,7 +19,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig remote <command> <args>...}
+ * <li>{@code geogig remote <command> <args>...}
  * </ul>
  * 
  * @see RemoteAdd

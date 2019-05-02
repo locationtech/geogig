@@ -116,8 +116,8 @@ public abstract class AbstractCommand implements CLICommand {
      *         to the {@link GeogigCLI#getConsole() console}.
      * @param cli
      */
-    protected abstract void runInternal(GeogigCLI cli) throws InvalidParameterException,
-            CommandFailedException, IOException;
+    protected abstract void runInternal(GeogigCLI cli)
+            throws InvalidParameterException, CommandFailedException, IOException;
 
     /**
      * Prints the JCommander usage for this command.
@@ -166,8 +166,8 @@ public abstract class AbstractCommand implements CLICommand {
     public static void checkParameter(boolean expression, String errorMessageTemplate,
             Object... errorMessageArgs) {
         if (!expression) {
-            throw new InvalidParameterException(String.format(errorMessageTemplate,
-                    errorMessageArgs));
+            throw new InvalidParameterException(
+                    String.format(errorMessageTemplate, errorMessageArgs));
         }
     }
 }

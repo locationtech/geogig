@@ -231,7 +231,6 @@ public class PushOpTest extends RemoteRepositoryTestCase {
             assertTrue(remoteRepo.objectDatabase().exists(commit.getTreeId()));
         }
 
-
         // Make sure the local repository got all of the commits
         List<RevCommit> logged = newArrayList(remoteRepo.command(LogOp.class).call());
         List<RevCommit> expected = newArrayList(localRepo.command(LogOp.class).call());

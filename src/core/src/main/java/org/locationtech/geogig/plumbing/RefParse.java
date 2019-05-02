@@ -56,8 +56,8 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
      * {@code refs/remotes} namespace, in that order of precedence</li>
      * </ul>
      * 
-     * @return an {@code Optional} that contains a {@link Ref reference} or
-     *         {@link Optional#empty()} if revstr can't be resolved to any {@link ObjectId}
+     * @return an {@code Optional} that contains a {@link Ref reference} or {@link Optional#empty()}
+     *         if revstr can't be resolved to any {@link ObjectId}
      * @throws IllegalArgumentException if {@code refSpec} resolves to more than one ref on the same
      *         namespace
      */

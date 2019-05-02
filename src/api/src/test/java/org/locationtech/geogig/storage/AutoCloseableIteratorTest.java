@@ -123,9 +123,11 @@ public class AutoCloseableIteratorTest {
         AtomicBoolean closed = new AtomicBoolean(false);
         TestAutoCloseableIterator testIter1 = new TestAutoCloseableIterator(closed);
 
-        AutoCloseableIterator<List<String>> partition = AutoCloseableIterator.partition(testIter1, 1);
+        AutoCloseableIterator<List<String>> partition = AutoCloseableIterator.partition(testIter1,
+                1);
 
-        AutoCloseableIterator<Iterator<String>> main = AutoCloseableIterator.transform(partition, item -> item.iterator());
+        AutoCloseableIterator<Iterator<String>> main = AutoCloseableIterator.transform(partition,
+                item -> item.iterator());
 
         AutoCloseableIterator<String> result = AutoCloseableIterator.concat(main);
         assertEquals("item1", result.next());
@@ -175,7 +177,7 @@ public class AutoCloseableIteratorTest {
         limit.close();
         assertTrue(closed.get());
     }
-    
+
     @Test
     public void testPartition() {
         AtomicBoolean closed = new AtomicBoolean(false);
@@ -184,7 +186,7 @@ public class AutoCloseableIteratorTest {
         AutoCloseableIterator<List<String>> partition = AutoCloseableIterator.partition(orig, 2);
         assertTrue(partition.hasNext());
         assertEquals(2, partition.next().size());
-        
+
         assertTrue(partition.hasNext());
         assertEquals(1, partition.next().size());
 

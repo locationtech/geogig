@@ -125,16 +125,17 @@ public class LogOpTest extends RepositoryTestCase {
 
         assertEquals(log_chrono.size(), 9);
 
-        List<ObjectId> log_topo_ids = log_topo.stream().map(c -> c.getId()).sorted().collect(Collectors.toList());
-        List<ObjectId> log_chrono_ids = log_chrono.stream().map(c -> c.getId()).sorted().collect(Collectors.toList());
+        List<ObjectId> log_topo_ids = log_topo.stream().map(c -> c.getId()).sorted()
+                .collect(Collectors.toList());
+        List<ObjectId> log_chrono_ids = log_chrono.stream().map(c -> c.getId()).sorted()
+                .collect(Collectors.toList());
 
         assertTrue(log_topo_ids.equals(log_chrono_ids));
     }
 
     protected static final ProgressListener SIMPLE_PROGRESS = new DefaultProgressListener() {
-        public @Override
-        void setDescription(String msg, Object... args) {
-            System.err.printf(msg+"\n", args);
+        public @Override void setDescription(String msg, Object... args) {
+            System.err.printf(msg + "\n", args);
         }
     };
 
@@ -143,8 +144,7 @@ public class LogOpTest extends RepositoryTestCase {
                 .setProgressListener(SIMPLE_PROGRESS).call();
     }
 
-    protected MergeReport mergeNoFF(String branch, String mergeMessage,
-                                    boolean mergeOurs) {
+    protected MergeReport mergeNoFF(String branch, String mergeMessage, boolean mergeOurs) {
         Ref branchRef = geogig.command(RefParse.class).setName(branch).call().get();
         ObjectId updatesBranchTip = branchRef.getObjectId();
         MergeReport mergeReport = geogig.command(MergeOp.class)//
@@ -157,7 +157,6 @@ public class LogOpTest extends RepositoryTestCase {
                 .call();
         return mergeReport;
     }
-
 
     @Test
     public void testEmptyRepo() throws Exception {

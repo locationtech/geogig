@@ -56,7 +56,8 @@ public class SpatialOpsTest {
         assertNotNull("Envelope should not be null", envelope);
     }
 
-    private void validateCRS(CoordinateReferenceSystem crs, boolean domainShouldNotBeNull) throws Exception {
+    private void validateCRS(CoordinateReferenceSystem crs, boolean domainShouldNotBeNull)
+            throws Exception {
         assertNotNull("CRS should not be null", crs);
         if (domainShouldNotBeNull) {
             assertNotNull("Domain of Validity should not be null", crs.getDomainOfValidity());

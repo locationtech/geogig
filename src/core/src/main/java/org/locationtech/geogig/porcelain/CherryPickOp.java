@@ -118,7 +118,8 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                         diffEntryBuffer.add(diff);
                         if (diffEntryBuffer.size() == BUFFER_SIZE) {
                             // Stage it
-                            stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                            stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(),
+                                    0);
                             diffEntryBuffer.clear();
                         }
 
@@ -143,7 +144,8 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                         }
                         if (diffEntryBuffer.size() > 0) {
                             // Stage it
-                            stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                            stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(),
+                                    0);
                             diffEntryBuffer.clear();
                         }
                     }

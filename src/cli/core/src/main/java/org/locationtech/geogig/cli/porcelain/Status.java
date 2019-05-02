@@ -139,8 +139,7 @@ public class Status extends AbstractCommand implements CLICommand {
      * @see DiffEntry
      */
     private void print(final Console console, final AutoCloseableIterator<DiffEntry> changes,
-            final Color color,
-            final long total) throws IOException {
+            final Color color, final long total) throws IOException {
 
         final int limit = all || this.limit == null ? Integer.MAX_VALUE : this.limit.intValue();
 

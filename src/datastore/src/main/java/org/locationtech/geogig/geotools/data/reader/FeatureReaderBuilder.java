@@ -174,15 +174,16 @@ public class FeatureReaderBuilder {
         this.nativeSchema = (SimpleFeatureType) nativeType.type();
         this.typeRef = typeRef;
 
-        //(a) -> a.getLocalName()
-        Function<AttributeDescriptor, String> fn =  new Function<AttributeDescriptor, String>() {
+        // (a) -> a.getLocalName()
+        Function<AttributeDescriptor, String> fn = new Function<AttributeDescriptor, String>() {
             @Override
             public String apply(AttributeDescriptor a) {
-               return a.getLocalName();
-            }};
+                return a.getLocalName();
+            }
+        };
 
-        this.nativeSchemaAttributeNames = Sets.newHashSet(
-                Lists.transform(nativeSchema.getAttributeDescriptors(),fn));
+        this.nativeSchemaAttributeNames = Sets
+                .newHashSet(Lists.transform(nativeSchema.getAttributeDescriptors(), fn));
     }
 
     /**
@@ -539,12 +540,13 @@ public class FeatureReaderBuilder {
     }
 
     private List<String> simpleNames(SimpleFeatureType type) {
-        //(ad) -> ad.getLocalName()
-        Function<AttributeDescriptor, String> fn =  new Function<AttributeDescriptor, String>() {
+        // (ad) -> ad.getLocalName()
+        Function<AttributeDescriptor, String> fn = new Function<AttributeDescriptor, String>() {
             @Override
             public String apply(AttributeDescriptor ad) {
-                return  ad.getLocalName();
-            }};
+                return ad.getLocalName();
+            }
+        };
 
         return Lists.transform(type.getAttributeDescriptors(), fn);
     }
@@ -731,8 +733,7 @@ public class FeatureReaderBuilder {
     public static AutoCloseableIterator<NodeRef> toFeatureRefs(
             final AutoCloseableIterator<DiffEntry> diffs, final ChangeType changeType) {
 
-
-        Function<DiffEntry, NodeRef> fn =  new Function<DiffEntry, NodeRef>() {
+        Function<DiffEntry, NodeRef> fn = new Function<DiffEntry, NodeRef>() {
             @Override
             public NodeRef apply(DiffEntry e) {
                 if (e.isAdd()) {
@@ -741,10 +742,12 @@ public class FeatureReaderBuilder {
                 if (e.isDelete()) {
                     return e.getOldObject();
                 }
-                return ChangeType.CHANGED_OLD.equals(changeType) ? e.getOldObject() : e.getNewObject();
-            }};
+                return ChangeType.CHANGED_OLD.equals(changeType) ? e.getOldObject()
+                        : e.getNewObject();
+            }
+        };
 
-        return AutoCloseableIterator.transform(diffs,fn);
+        return AutoCloseableIterator.transform(diffs, fn);
     }
 
     private Filter resolveNativeFilter() {
@@ -930,11 +933,12 @@ public class FeatureReaderBuilder {
             Preconditions.checkArgument(featureIds.hasNext(), "Empty Id filter");
 
             // (fid) -> fid.getID()
-            Function<FeatureId, String> fn =  new Function<FeatureId, String>() {
+            Function<FeatureId, String> fn = new Function<FeatureId, String>() {
                 @Override
                 public String apply(FeatureId fid) {
                     return fid.getID();
-                }};
+                }
+            };
 
             pathFilters = Lists.newArrayList(Iterators.transform(featureIds, fn));
         }

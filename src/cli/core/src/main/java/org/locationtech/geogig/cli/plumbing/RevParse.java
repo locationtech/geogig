@@ -33,9 +33,9 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig rev-parse --resolve-geogig-uri}: check if the current directory is inside a
+ * <li>{@code geogig rev-parse --resolve-geogig-uri}: check if the current directory is inside a
  * geogig repository and print out the repository location
- * <li> {@code geogig rev-parse --is-inside-work-tree}: check if the current directory is inside a
+ * <li>{@code geogig rev-parse --is-inside-work-tree}: check if the current directory is inside a
  * geogig repository and print out the repository location
  * </ul>
  */

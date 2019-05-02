@@ -105,14 +105,14 @@ public class Version implements Comparable<Version> {
             marked = marked.substring(0, marked.indexOf("XXX"));
         }
         // (s) -> Integer.parseInt(s)
-        Function<String, Integer> fn =  new Function<String, Integer>() {
+        Function<String, Integer> fn = new Function<String, Integer>() {
             @Override
             public Integer apply(String s) {
                 return Integer.parseInt(s);
-            }};
+            }
+        };
 
-        final List<Integer> versions = Lists.transform(Splitter.on('.').splitToList(marked),
-                fn);
+        final List<Integer> versions = Lists.transform(Splitter.on('.').splitToList(marked), fn);
         // version string can be either
         // {major}.{minor}.{patch}
         // or (since PostgreSQL 10)

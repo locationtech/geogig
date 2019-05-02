@@ -14,26 +14,27 @@ import org.geotools.filter.visitor.DuplicatingFilterVisitor;
 import org.opengis.filter.expression.PropertyName;
 
 /**
- * this is very simple, it changes a property reference.
- * i.e.  "property" = 'a'     TO    "new_property" = 'a'
+ * this is very simple, it changes a property reference. i.e. "property" = 'a' TO "new_property" =
+ * 'a'
  */
 public class RenamePropertyFilterVisitor extends DuplicatingFilterVisitor {
 
-        String originalPropertyName;
+    String originalPropertyName;
 
-        String newPropertyName;
+    String newPropertyName;
 
-        public RenamePropertyFilterVisitor(String pName, String newPname) {
-                this.originalPropertyName = pName;
-                this.newPropertyName = newPname;
+    public RenamePropertyFilterVisitor(String pName, String newPname) {
+        this.originalPropertyName = pName;
+        this.newPropertyName = newPname;
+    }
+
+    @Override
+    public Object visit(PropertyName expression, Object extraData) {
+        String pName = expression.getPropertyName();
+        if ((pName != null) && (pName.equals(originalPropertyName))) {
+            return getFactory(extraData).property(newPropertyName,
+                    expression.getNamespaceContext());
         }
-
-        @Override public Object visit(PropertyName expression, Object extraData) {
-                String pName = expression.getPropertyName();
-                if ((pName != null) && (pName.equals(originalPropertyName))) {
-                        return getFactory(extraData)
-                                .property(newPropertyName, expression.getNamespaceContext());
-                }
-                return super.visit(expression, extraData);
-        }
+        return super.visit(expression, extraData);
+    }
 }

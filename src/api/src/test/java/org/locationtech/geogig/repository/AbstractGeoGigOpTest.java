@@ -29,7 +29,7 @@ public class AbstractGeoGigOpTest {
             protected String _call() {
                 return "myValue";
             }
-            
+
         };
         assertEquals("myValue", testOp.call());
     }

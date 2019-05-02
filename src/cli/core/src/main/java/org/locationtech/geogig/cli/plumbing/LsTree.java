@@ -45,19 +45,23 @@ public class LsTree extends AbstractCommand implements CLICommand {
     @Parameter(description = "<[refspec]:[path]>", arity = 1)
     private List<String> refList = Lists.newArrayList();
 
-    @Parameter(names = { "-t" }, description = "Show tree entries even when going to recurse them. Has no effect if -r was not passed. -d implies -t.")
+    @Parameter(names = {
+            "-t" }, description = "Show tree entries even when going to recurse them. Has no effect if -r was not passed. -d implies -t.")
     private boolean includeTrees;
 
-    @Parameter(names = { "-d" }, description = "Show only the named tree entry itself, not its children.")
+    @Parameter(names = {
+            "-d" }, description = "Show only the named tree entry itself, not its children.")
     private boolean onlyTrees;
 
     @Parameter(names = { "-r" }, description = "Recurse into sub-trees.")
     private boolean recursive;
 
-    @Parameter(names = { "-v", "--verbose" }, description = "Verbose output, include metadata, object id, and object type along with object path.")
+    @Parameter(names = { "-v",
+            "--verbose" }, description = "Verbose output, include metadata, object id, and object type along with object path.")
     private boolean verbose;
 
-    @Parameter(names = { "-s", "--size" }, description = "Print tree size (number of features). If verbose output was requested it takes precedence over size")
+    @Parameter(names = { "-s",
+            "--size" }, description = "Print tree size (number of features). If verbose output was requested it takes precedence over size")
     private boolean printSize;
 
     @Override
@@ -114,8 +118,8 @@ public class LsTree extends AbstractCommand implements CLICommand {
                             .append(Double.toString(env.getMaxY()));
                     sb.append(input.getMetadataId().toString()).append(' ')
                             .append(input.getType().toString().toLowerCase()).append(' ')
-                            .append(input.getObjectId().toString()).append(' ')
-                            .append(input.path()).append(' ').append(sbenv);
+                            .append(input.getObjectId().toString()).append(' ').append(input.path())
+                            .append(' ').append(sbenv);
                     if (input.getType().equals(TYPE.TREE)) {
                         RevTree tree = geogig.command(RevObjectParse.class)
                                 .setObjectId(input.getObjectId()).call(RevTree.class).get();

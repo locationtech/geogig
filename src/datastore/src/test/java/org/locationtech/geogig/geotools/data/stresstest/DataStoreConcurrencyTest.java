@@ -91,6 +91,7 @@ public class DataStoreConcurrencyTest {
 
     // Feature insert counter
     private static final AtomicInteger CONCURRENT_INSERT_COUNT = new AtomicInteger(0);
+
     // List of Feature counts read by ReadTask instances
     private static final ArrayList<Integer> READ_COUNT_LIST = new ArrayList<>(4);
 
@@ -320,7 +321,7 @@ public class DataStoreConcurrencyTest {
             try {
                 for (int i = 0; i < numReads; i++) {
                     // ensure the read and readCount increment are atomic
-                    synchronized( CONCURRENT_INSERT_COUNT) {
+                    synchronized (CONCURRENT_INSERT_COUNT) {
                         assertEquals(CONCURRENT_INSERT_COUNT.get(), doRead());
                         readCount += CONCURRENT_INSERT_COUNT.get();
                     }

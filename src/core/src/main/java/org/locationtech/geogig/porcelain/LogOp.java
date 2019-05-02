@@ -241,7 +241,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
             if (this.until == null) {
                 newestCommitId = command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
             } else {
-                RevObject obj = command(RevObjectParse.class).setObjectId(until).call().orElse(null);
+                RevObject obj = command(RevObjectParse.class).setObjectId(until).call()
+                        .orElse(null);
                 if (obj instanceof RevTag) {
                     newestCommitId = ((RevTag) obj).getCommitId();
                 } else if (obj instanceof RevCommit) {

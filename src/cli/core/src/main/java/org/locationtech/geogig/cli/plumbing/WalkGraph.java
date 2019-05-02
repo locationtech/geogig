@@ -45,7 +45,8 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
     @Parameter(description = "<[refspec]:[path]>", arity = 1)
     private List<String> refList = Lists.newArrayList();
 
-    @Parameter(names = { "-v", "--verbose" }, description = "Verbose output, include metadata, object id, and object type among object path.")
+    @Parameter(names = { "-v",
+            "--verbose" }, description = "Verbose output, include metadata, object id, and object type among object path.")
     private boolean verbose;
 
     @Override

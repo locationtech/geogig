@@ -462,7 +462,8 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @param metadataId the metadata id of the tree
      * @return the newly constructed {@code NodeRef}
      */
-    public static NodeRef tree(@NonNull String treePath, @NonNull ObjectId id, @NonNull ObjectId metadataId) {
+    public static NodeRef tree(@NonNull String treePath, @NonNull ObjectId id,
+            @NonNull ObjectId metadataId) {
         NodeRef.checkValidPath(treePath);
         String parentPath = NodeRef.parentPath(treePath);
         String treeName = NodeRef.nodeFromPath(treePath);

@@ -121,12 +121,13 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
         {
             Iterable<Node> allNodes = Iterables.concat(list);
 
-            //Node::getObjectId, but friendly for Fortify
-            Function<Node, ObjectId> fn_Node_getObjectId =  new Function<Node, ObjectId>() {
+            // Node::getObjectId, but friendly for Fortify
+            Function<Node, ObjectId> fn_Node_getObjectId = new Function<Node, ObjectId>() {
                 @Override
                 public ObjectId apply(Node node) {
                     return node.getObjectId();
-                }};
+                }
+            };
 
             Iterable<ObjectId> nodeIds = Iterables.transform(allNodes, fn_Node_getObjectId);
             Iterator<RevFeature> objectsIt = featureSource.getAll(nodeIds,

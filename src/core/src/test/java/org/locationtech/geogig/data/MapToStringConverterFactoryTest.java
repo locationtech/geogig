@@ -29,9 +29,9 @@ import com.google.common.collect.ImmutableMap;
  *
  */
 public class MapToStringConverterFactoryTest {
-    
+
     @Test
-    public void nullTest(){
+    public void nullTest() {
         assertNull(Converters.convert(null, Map.class));
         assertNull(Converters.convert("", Map.class));
         assertNull(Converters.convert(" ", Map.class));

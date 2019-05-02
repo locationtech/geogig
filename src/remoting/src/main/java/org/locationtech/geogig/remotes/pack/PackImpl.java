@@ -147,16 +147,17 @@ class PackImpl implements Pack {
                 Iterator<RevCommit> commitsIterator;
                 missingContents = sourceStore.getAll(() -> missingContentIds);
 
-//                (c) -> {
-//                    objectReport.addCommit();
-//                    return true;
-//                }
-                Predicate<RevCommit> fn =  new Predicate<RevCommit>() {
+                // (c) -> {
+                // objectReport.addCommit();
+                // return true;
+                // }
+                Predicate<RevCommit> fn = new Predicate<RevCommit>() {
                     @Override
                     public boolean apply(RevCommit c) {
                         objectReport.addCommit();
                         return true;
-                    }};
+                    }
+                };
 
                 commitsIterator = Iterators.filter(commits.iterator(), fn);
 
@@ -188,15 +189,16 @@ class PackImpl implements Pack {
     private List<ObjectId[]> collectMissingRootTreeIdPairs(List<RevCommit> commits,
             ObjectDatabase sourceStore) {
 
-        //RevObject::getId, but friendly for Fortify
-        com.google.common.base.Function<RevCommit, ObjectId> fn_getId =  new com.google.common.base.Function<RevCommit, ObjectId>() {
+        // RevObject::getId, but friendly for Fortify
+        com.google.common.base.Function<RevCommit, ObjectId> fn_getId = new com.google.common.base.Function<RevCommit, ObjectId>() {
             @Override
             public ObjectId apply(RevCommit revobj) {
                 return revobj.getId();
-            }};
+            }
+        };
 
         final Map<ObjectId, RevCommit> rootsById = new HashMap<>(
-                Maps.uniqueIndex(commits,fn_getId));
+                Maps.uniqueIndex(commits, fn_getId));
 
         List<ObjectId[]> diffRootTreeIds = new ArrayList<>();
 
@@ -210,16 +212,16 @@ class PackImpl implements Pack {
             }
             for (ObjectId parentId : parentIds) {
 
-                //() -> source.getCommit(parentId)
+                // () -> source.getCommit(parentId)
                 Supplier<RevCommit> fn = new Supplier<RevCommit>() {
-                    @Override public RevCommit get() {
+                    @Override
+                    public RevCommit get() {
                         return source.getCommit(parentId);
                     }
                 };
 
                 final @Nullable RevCommit parent = parentId.isNull() ? null
-                        : Optional.ofNullable((RevCommit) rootsById.get(parentId))
-                                .orElseGet(fn);
+                        : Optional.ofNullable((RevCommit) rootsById.get(parentId)).orElseGet(fn);
 
                 ObjectId oldRootTreeId = parent == null ? RevTree.EMPTY_TREE_ID
                         : parent.getTreeId();

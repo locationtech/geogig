@@ -36,7 +36,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig fetch [<options>] [<repository>...]}
+ * <li>{@code geogig fetch [<options>] [<repository>...]}
  * </ul>
  * 
  * @see FetchOp
@@ -48,13 +48,15 @@ public class Fetch extends AbstractCommand implements CLICommand {
     @Parameter(names = "--all", description = "Fetch from all remotes.")
     private boolean all = false;
 
-    @Parameter(names = { "-p", "--prune" }, description = "After fetching, remove any remote-tracking branches which no longer exist on the remote.")
+    @Parameter(names = { "-p",
+            "--prune" }, description = "After fetching, remove any remote-tracking branches which no longer exist on the remote.")
     private boolean prune = false;
 
     @Parameter(names = { "--depth" }, description = "Depth of the fetch.")
     private int depth = 0;
 
-    @Parameter(names = { "--fulldepth" }, description = "Fetch the full history from the repository.")
+    @Parameter(names = {
+            "--fulldepth" }, description = "Fetch the full history from the repository.")
     private boolean fulldepth = false;
 
     @Parameter(names = { "-I", "--include-indexes" }, description = "Fetch also spatial indexes")
@@ -83,7 +85,7 @@ public class Fetch extends AbstractCommand implements CLICommand {
             fetch.setAll(all).setPrune(prune).setFullDepth(fulldepth);
             fetch.setDepth(depth);
             fetch.setFetchIndexes(withIndexes);
-            
+
             if (args != null) {
                 for (String repo : args) {
                     fetch.addRemote(repo);

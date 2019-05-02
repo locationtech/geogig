@@ -307,8 +307,8 @@ public class RepositoryImpl implements Repository {
 
     /**
      * @param path the path to search for
-     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#empty()}
-     *         if it wasn't found
+     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#empty()} if
+     *         it wasn't found
      */
     @Override
     public Optional<Node> getRootTreeChild(String path) {

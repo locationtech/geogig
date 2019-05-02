@@ -48,8 +48,9 @@ public class RemoteListOp extends AbstractGeoGigOp<ImmutableList<Remote>> {
                 Optional<String> remotePushURL = config.get(remoteSection + ".pushurl");
                 allRemotes.add(new Remote(remoteName, remoteFetchURL.get(),
                         remotePushURL.orElse(remoteFetchURL.get()), remoteFetch.get(),
-                        remoteMapped.orElse("false").equals("true"), remoteMappedBranch.orElse(null),
-                        remoteUserName.orElse(null), remotePassword.orElse(null)));
+                        remoteMapped.orElse("false").equals("true"),
+                        remoteMappedBranch.orElse(null), remoteUserName.orElse(null),
+                        remotePassword.orElse(null)));
             }
         }
         return ImmutableList.copyOf(allRemotes);

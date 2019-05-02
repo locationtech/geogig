@@ -107,44 +107,47 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
 
     private Set<ObjectId> resolveWantCommits(List<RefRequest> refs, boolean isTags) {
 
-        //  (o) -> o.want
-        Function<RefRequest, ObjectId> fn =  new Function<RefRequest, ObjectId>() {
+        // (o) -> o.want
+        Function<RefRequest, ObjectId> fn = new Function<RefRequest, ObjectId>() {
             @Override
             public ObjectId apply(RefRequest o) {
                 return o.want;
-            }};
+            }
+        };
 
         return resolveHeadCommits(refs, isTags, Predicates.alwaysTrue(), fn);
     }
 
     private Set<ObjectId> resolveHaveCommits(List<RefRequest> refs, boolean isTags) {
 
-        //  (o) -> o.have.get()
-        Function<RefRequest, ObjectId> fn =  new Function<RefRequest, ObjectId>() {
+        // (o) -> o.have.get()
+        Function<RefRequest, ObjectId> fn = new Function<RefRequest, ObjectId>() {
             @Override
             public ObjectId apply(RefRequest o) {
-                return  o.have.get();
-            }};
+                return o.have.get();
+            }
+        };
 
-        //(r) -> r.have.isPresent()
-        Predicate<RefRequest> fn2 =  new Predicate<RefRequest>() {
+        // (r) -> r.have.isPresent()
+        Predicate<RefRequest> fn2 = new Predicate<RefRequest>() {
             @Override
             public boolean apply(RefRequest r) {
                 return r.have.isPresent();
-            }};
+            }
+        };
 
-
-        return resolveHeadCommits(refs, isTags, fn2,fn);
+        return resolveHeadCommits(refs, isTags, fn2, fn);
     }
 
     private Set<RevTag> resolveWantTags(List<RefRequest> tagRequests) {
 
-        //(r) -> r.want
-        Function<RefRequest, ObjectId> fn =  new Function<RefRequest, ObjectId>() {
+        // (r) -> r.want
+        Function<RefRequest, ObjectId> fn = new Function<RefRequest, ObjectId>() {
             @Override
             public ObjectId apply(RefRequest r) {
                 return r.want;
-            }};
+            }
+        };
 
         Iterable<ObjectId> ids = transform(tagRequests, fn);
 
@@ -160,12 +163,13 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
         if (isTags) {
             Iterator<RevTag> tags = objectDatabase().getAll(ids, NOOP_LISTENER, RevTag.class);
 
-            //(t) -> t.getCommitId()
-            Function<RevTag, ObjectId> fn =  new Function<RevTag, ObjectId>() {
+            // (t) -> t.getCommitId()
+            Function<RevTag, ObjectId> fn = new Function<RevTag, ObjectId>() {
                 @Override
                 public ObjectId apply(RevTag t) {
                     return t.getCommitId();
-                }};
+                }
+            };
 
             ids = newArrayList(Iterators.transform(tags, fn));
         }
@@ -178,13 +182,14 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
         List<RefRequest> refs;
 
         // (r) -> r.name.startsWith(Ref.TAGS_PREFIX)
-        Predicate<RefRequest> fn =  new Predicate<RefRequest>() {
+        Predicate<RefRequest> fn = new Predicate<RefRequest>() {
             @Override
             public boolean apply(RefRequest r) {
                 return r.name.startsWith(Ref.TAGS_PREFIX);
-            }};
+            }
+        };
 
-        refs = newArrayList(filter(req.getRefs(),fn));
+        refs = newArrayList(filter(req.getRefs(), fn));
 
         return refs;
     }
@@ -195,12 +200,12 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
         List<RefRequest> refs;
 
         // (r) -> !r.name.startsWith(Ref.TAGS_PREFIX)
-        Predicate<RefRequest> fn =  new Predicate<RefRequest>() {
+        Predicate<RefRequest> fn = new Predicate<RefRequest>() {
             @Override
             public boolean apply(RefRequest r) {
                 return !r.name.startsWith(Ref.TAGS_PREFIX);
-            }};
-
+            }
+        };
 
         refs = newArrayList(filter(req.getRefs(), fn));
 

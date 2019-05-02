@@ -35,6 +35,7 @@ abstract @RequiredArgsConstructor class FBRevObject<T extends Table> implements 
     protected T getTable() {
         return table;
     }
+
     public final @Override boolean equals(java.lang.Object o) {
         return RevObjects.equals(this, o);
     }

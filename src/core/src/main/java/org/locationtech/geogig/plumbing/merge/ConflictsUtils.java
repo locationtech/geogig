@@ -55,7 +55,8 @@ public class ConflictsUtils {
                 true);
     }
 
-    static @VisibleForTesting class DiffEntrySerializer implements PersistedIterable.Serializer<DiffEntry> {
+    static @VisibleForTesting class DiffEntrySerializer
+            implements PersistedIterable.Serializer<DiffEntry> {
 
         private final PersistedIterable.Serializer<String> STRING = new PersistedIterable.StringSerializer();
 

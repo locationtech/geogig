@@ -298,13 +298,14 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
             Iterable<RefDiff> refdifss, Optional<Ref> remoteHeadRef) {
 
         // (cr) -> cr.getNewRef()
-        Function<RefDiff, Ref> fn =  new Function<RefDiff, Ref>() {
+        Function<RefDiff, Ref> fn = new Function<RefDiff, Ref>() {
             @Override
             public Ref apply(RefDiff cr) {
                 return cr.getNewRef();
-            }};
+            }
+        };
 
-        final Iterable<Ref> remoteRefs = Iterables.transform(refdifss,fn);
+        final Iterable<Ref> remoteRefs = Iterables.transform(refdifss, fn);
         final Iterable<Ref> localRefs = command(MapRef.class)//
                 .setRemote(remote)//
                 .addAll(remoteRefs)//

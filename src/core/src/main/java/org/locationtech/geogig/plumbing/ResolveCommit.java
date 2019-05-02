@@ -34,7 +34,8 @@ public class ResolveCommit extends AbstractGeoGigOp<java.util.Optional<RevCommit
     protected @Override java.util.Optional<RevCommit> _call() {
         Preconditions.checkNotNull(commitIsh, "commit-ish not provided");
 
-        final ObjectId id = context.command(RevParse.class).setRefSpec(commitIsh).call().orElse(null);
+        final ObjectId id = context.command(RevParse.class).setRefSpec(commitIsh).call()
+                .orElse(null);
 
         RevCommit commit = null;
         if (id != null) {

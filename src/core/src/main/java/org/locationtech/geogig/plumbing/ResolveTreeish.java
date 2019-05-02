@@ -113,8 +113,7 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
             break;
         case COMMIT: {
             Optional<RevCommit> commit = command(RevObjectParse.class).setSource(source)
-                    .setObjectId(objectId)
-                    .call(RevCommit.class);
+                    .setObjectId(objectId).call(RevCommit.class);
             if (commit.isPresent()) {
                 objectId = commit.get().getTreeId();
             } else {
@@ -124,8 +123,7 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
         }
         case TAG: {
             Optional<RevTag> tag = command(RevObjectParse.class).setSource(source)
-                    .setObjectId(objectId)
-                    .call(RevTag.class);
+                    .setObjectId(objectId).call(RevTag.class);
             if (tag.isPresent()) {
                 ObjectId commitId = tag.get().getCommitId();
                 return call(Optional.of(commitId));

@@ -39,7 +39,8 @@ public abstract @Accessors(fluent = true) class AbstractTreeBuilder implements R
         this(store, RevTree.EMPTY);
     }
 
-    protected AbstractTreeBuilder(final @NonNull ObjectStore store, final @NonNull RevTree original) {
+    protected AbstractTreeBuilder(final @NonNull ObjectStore store,
+            final @NonNull RevTree original) {
         this.target = store;
         this.original = original;
     }

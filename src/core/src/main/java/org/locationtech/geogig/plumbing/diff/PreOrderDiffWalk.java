@@ -482,22 +482,20 @@ public class PreOrderDiffWalk {
                 Set<ObjectId> rbucketIds = new HashSet<>();
 
                 // index -> this.bucketIndex.append(index, left, right)
-                Function<Integer, BucketIndex> fn =  new Function<Integer, BucketIndex>() {
+                Function<Integer, BucketIndex> fn = new Function<Integer, BucketIndex>() {
                     @Override
                     public BucketIndex apply(Integer index) {
                         return bucketIndex.append(index, left, right);
-                    }};
-
+                    }
+                };
 
                 left.forEachBucket(bucket -> {
                     lbucketIds.add(bucket.getObjectId());
-                    indices.computeIfAbsent(Integer.valueOf(bucket.getIndex()),
-                            fn);
+                    indices.computeIfAbsent(Integer.valueOf(bucket.getIndex()), fn);
                 });
                 right.forEachBucket(bucket -> {
                     rbucketIds.add(bucket.getObjectId());
-                    indices.computeIfAbsent(Integer.valueOf(bucket.getIndex()),
-                            fn);
+                    indices.computeIfAbsent(Integer.valueOf(bucket.getIndex()), fn);
                 });
                 childBucketIndexes = newTreeSet(indices.values());
 
@@ -678,12 +676,13 @@ public class PreOrderDiffWalk {
             final Map<ObjectId, RevTree> bucketTrees;
             {
 
-                //Bucket::getObjectId, but friendly for Fortify
-                Function<Bucket, ObjectId> fn_bucket_getObjectId =  new Function<Bucket, ObjectId>() {
+                // Bucket::getObjectId, but friendly for Fortify
+                Function<Bucket, ObjectId> fn_bucket_getObjectId = new Function<Bucket, ObjectId>() {
                     @Override
                     public ObjectId apply(Bucket bucket) {
                         return bucket.getObjectId();
-                    }};
+                    }
+                };
 
                 Iterable<ObjectId> ids = transform(buckets.values(), fn_bucket_getObjectId);
                 bucketTrees = Streams.stream(source.getAll(ids, NOOP_LISTENER, RevTree.class))
@@ -703,14 +702,14 @@ public class PreOrderDiffWalk {
                     leafTreeNodesByBucket.keySet());
 
             // (i) -> this.bucketIndex.append(i, left, right)
-            Function<Integer, BucketIndex> fn_append =  new Function<Integer, BucketIndex>() {
+            Function<Integer, BucketIndex> fn_append = new Function<Integer, BucketIndex>() {
                 @Override
                 public BucketIndex apply(Integer i) {
                     return bucketIndex.append(i, left, right);
-                }};
+                }
+            };
 
-            Iterable<BucketIndex> childPaths = Iterables.transform(childIndexes,
-                    fn_append);
+            Iterable<BucketIndex> childPaths = Iterables.transform(childIndexes, fn_append);
             bucketIndexes = Sets.newTreeSet(childPaths);
 
             return bucketIndexes;

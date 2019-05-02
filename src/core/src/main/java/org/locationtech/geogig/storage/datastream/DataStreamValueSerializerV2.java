@@ -62,7 +62,6 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         data.write(field);
     }
 
-
     @Override
     public void writeGeometry(Geometry field, DataOutput data) throws IOException {
         WKBWriter wkbWriter = new WKBWriter();

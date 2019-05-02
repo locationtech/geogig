@@ -30,10 +30,9 @@ public interface ValueArray {
     public int size();
 
     /**
-     * @return the feature attribute value at the provided {@code index}, or
-     *         {@link Optional#empty() absent} if the object at that index is {@code null} (not to
-     *         be misinterpreted as absent if the index is out of bounds, in which case an exception
-     *         is thrown)
+     * @return the feature attribute value at the provided {@code index}, or {@link Optional#empty()
+     *         absent} if the object at that index is {@code null} (not to be misinterpreted as
+     *         absent if the index is out of bounds, in which case an exception is thrown)
      */
     public Optional<Object> get(final int index);
 

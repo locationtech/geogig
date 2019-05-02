@@ -40,20 +40,24 @@ public class Ls extends AbstractCommand implements CLICommand {
     @Parameter(description = "<[refspec]:[path]>", arity = 1)
     private List<String> refList = Lists.newArrayList();
 
-    @Parameter(names = { "-t" }, description = "Show tree entries even when going to recurse them. Has no effect if -r was not passed. -d implies -t.")
+    @Parameter(names = {
+            "-t" }, description = "Show tree entries even when going to recurse them. Has no effect if -r was not passed. -d implies -t.")
     private boolean includeTrees;
 
-    @Parameter(names = { "-d" }, description = "Show only the named tree entry itself, not its children.")
+    @Parameter(names = {
+            "-d" }, description = "Show only the named tree entry itself, not its children.")
     private boolean onlyTrees;
 
     @Parameter(names = { "-r" }, description = "Recurse into sub-trees.")
     private boolean recursive;
 
-    @Parameter(names = { "-v", "--verbose" }, description = "Verbose output, include metadata and object id")
+    @Parameter(names = { "-v",
+            "--verbose" }, description = "Verbose output, include metadata and object id")
     private boolean verbose;
 
-    @Parameter(names = { "-a", "--abbrev" }, description = "Instead of showing the full 40-byte hexadecimal object lines, show only a partial prefix. "
-            + "Non default number of digits can be specified with --abbrev <n>.")
+    @Parameter(names = { "-a",
+            "--abbrev" }, description = "Instead of showing the full 40-byte hexadecimal object lines, show only a partial prefix. "
+                    + "Non default number of digits can be specified with --abbrev <n>.")
     private Integer abbrev;
 
     @Override
@@ -123,8 +127,8 @@ public class Ls extends AbstractCommand implements CLICommand {
             }
 
             private String abbrev(ObjectId oid) {
-                return abbrev == null ? oid.toString() : oid.toString().substring(0,
-                        abbrev.intValue());
+                return abbrev == null ? oid.toString()
+                        : oid.toString().substring(0, abbrev.intValue());
             }
         };
 

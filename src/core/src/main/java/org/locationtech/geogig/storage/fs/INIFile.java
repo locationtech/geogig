@@ -25,7 +25,6 @@ public abstract class INIFile extends INIBlob {
      */
     private long timestamp = 0;
 
-
     public abstract File iniFile();
 
     @Override

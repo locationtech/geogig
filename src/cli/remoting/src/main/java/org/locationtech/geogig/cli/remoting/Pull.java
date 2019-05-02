@@ -43,7 +43,7 @@ import com.google.common.base.Objects;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig pull [options] [<repository> [<refspec>...]]}
+ * <li>{@code geogig pull [options] [<repository> [<refspec>...]]}
  * </ul>
  * 
  * @see PullOp
@@ -61,7 +61,8 @@ public class Pull extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--depth" }, description = "Depth of the pull.")
     private int depth = 0;
 
-    @Parameter(names = { "--fulldepth" }, description = "Pull the full history from the repository.")
+    @Parameter(names = {
+            "--fulldepth" }, description = "Pull the full history from the repository.")
     private boolean fulldepth = false;
 
     @Parameter(names = { "-I", "--include-indexes" }, description = "Pull also spatial indexes")
@@ -91,7 +92,7 @@ public class Pull extends AbstractCommand implements CLICommand {
         pull.setAll(all).setRebase(rebase).setFullDepth(fulldepth);
         pull.setDepth(depth);
         pull.setIncludeIndexes(withIndexes);
-        
+
         if (args != null) {
             if (args.size() > 0) {
                 pull.setRemote(args.get(0));

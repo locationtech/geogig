@@ -66,7 +66,8 @@ public abstract class ClusteringStrategy extends NodeOrdering {
     @VisibleForTesting
     final DAGCache dagCache;
 
-    protected ClusteringStrategy(@NonNull RevTree original, @NonNull DAGStorageProvider storageProvider) {
+    protected ClusteringStrategy(@NonNull RevTree original,
+            @NonNull DAGStorageProvider storageProvider) {
         this.original = original;
         this.storageProvider = storageProvider;
         this.dagCache = new DAGCache(storageProvider);
@@ -450,7 +451,8 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         return original;
     }
 
-    @NonNull TreeId computeBucketId(final NodeId nodeId, final int childDepth) {
+    @NonNull
+    TreeId computeBucketId(final NodeId nodeId, final int childDepth) {
         byte[] treeId = new byte[childDepth];
 
         int unpromotableDepthIndex = -1;

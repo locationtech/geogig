@@ -94,7 +94,8 @@ public class Insert extends AbstractCommand implements CLICommand {
                     repository.objectDatabase().put(rft);
                 }
                 String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
-                FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(), path);
+                FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(),
+                        path);
                 return fi;
             });
 

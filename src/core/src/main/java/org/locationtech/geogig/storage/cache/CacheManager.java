@@ -136,7 +136,7 @@ public class CacheManager implements CacheManagerBean {
     public void setEncoder(@NonNull RevObjectSerializer encoder) {
         sharedCache().setEncoder(encoder);
     }
-    
+
     /**
      * Resolves the default maximum cache size in bytes.
      * <p>

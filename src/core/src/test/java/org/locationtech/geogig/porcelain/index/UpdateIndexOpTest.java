@@ -248,8 +248,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertEquals(IndexType.QUADTREE, indexInfo.getIndexType());
         assertEquals(2, indexInfo.getMetadata().size());
         assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
-        assertEquals(newBounds,
-                indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
+        assertEquals(newBounds, indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
         assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
         List<String> extraAttributes = Lists.newArrayList(
                 (String[]) indexInfo.getMetadata().get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));

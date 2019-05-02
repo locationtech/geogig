@@ -49,13 +49,13 @@ import java.util.Optional;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig config [--global] name [value]}: retrieves or sets the config variable
+ * <li>{@code geogig config [--global] name [value]}: retrieves or sets the config variable
  * specified by name
- * <li> {@code geogig config [--global] --get name}: retrieves the config variable specified by name
- * <li> {@code geogig config [--global] --unset name}: removes the config variable specified by name
- * <li> {@code geogig config [--global] --remove-section name}: removes the config section specified
+ * <li>{@code geogig config [--global] --get name}: retrieves the config variable specified by name
+ * <li>{@code geogig config [--global] --unset name}: removes the config variable specified by name
+ * <li>{@code geogig config [--global] --remove-section name}: removes the config section specified
  * by name
- * <li> {@code geogig config [--global] -l}: lists all config variables
+ * <li>{@code geogig config [--global] -l}: lists all config variables
  * </ul>
  * 
  * @see ConfigOp
@@ -128,8 +128,9 @@ public class Config extends AbstractCommand implements CLICommand {
             } else if (local) {
                 scope = ConfigScope.LOCAL;
             }
-            
-            ConfigOp configOp = geogig.command(ConfigOp.class).setScope(scope).setAction(action).setName(name).setValue(value);
+
+            ConfigOp configOp = geogig.command(ConfigOp.class).setScope(scope).setAction(action)
+                    .setName(name).setValue(value);
 
             if (rootUri != null) {
                 try {

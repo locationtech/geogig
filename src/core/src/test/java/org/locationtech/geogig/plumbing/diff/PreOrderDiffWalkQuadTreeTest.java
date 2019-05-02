@@ -313,8 +313,9 @@ public class PreOrderDiffWalkQuadTreeTest {
         when(consumer.tree(eq(lroot), eq(rroot))).thenReturn(true);
 
         // skip all buckets of depth 0
-        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), argThat(depthMatches(0)),
-        		nullable(Bucket.class), nullable(Bucket.class))).thenReturn(false);
+        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                argThat(depthMatches(0)), nullable(Bucket.class), nullable(Bucket.class)))
+                        .thenReturn(false);
 
         visitor.walk(consumer);
 
@@ -424,8 +425,9 @@ public class PreOrderDiffWalkQuadTreeTest {
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
-        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class),
-        		nullable(Bucket.class), nullable(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                any(BucketIndex.class), nullable(Bucket.class), nullable(Bucket.class)))
+                        .thenReturn(true);
 
         visitor.walk(consumer);
         verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
@@ -451,8 +453,9 @@ public class PreOrderDiffWalkQuadTreeTest {
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
-        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class),
-        		nullable(Bucket.class), nullable(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                any(BucketIndex.class), nullable(Bucket.class), nullable(Bucket.class)))
+                        .thenReturn(true);
 
         visitor.walk(consumer);
         verify(consumer, times(1)).tree(nullable(NodeRef.class), nullable(NodeRef.class));
@@ -483,8 +486,9 @@ public class PreOrderDiffWalkQuadTreeTest {
 
         // consume all
         when(consumer.tree(nullable(NodeRef.class), nullable(NodeRef.class))).thenReturn(true);
-        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class), any(BucketIndex.class),
-        		nullable(Bucket.class), nullable(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(nullable(NodeRef.class), nullable(NodeRef.class),
+                any(BucketIndex.class), nullable(Bucket.class), nullable(Bucket.class)))
+                        .thenReturn(true);
 
         visitor.walk(consumer);
         // there's only the root tree
@@ -1026,6 +1030,6 @@ public class PreOrderDiffWalkQuadTreeTest {
     }
 
     private static ArgumentMatcher<BucketIndex> depthMatches(final int expectedDepth) {
-    	return (item) -> expectedDepth == item.depthIndex();
+        return (item) -> expectedDepth == item.depthIndex();
     }
 }

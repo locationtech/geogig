@@ -154,13 +154,11 @@ public class FieldTypeTest {
                 FieldType.forValue(Optional.of(reader.read("POLYGON((0 0, 1 1, 2 2, 0 0))"))));
         assertEquals(FieldType.MULTIPOINT,
                 FieldType.forValue(Optional.of(reader.read("MULTIPOINT((0 0),(1 1))"))));
-        assertEquals(FieldType.MULTILINESTRING,
- FieldType
+        assertEquals(FieldType.MULTILINESTRING, FieldType
                 .forValue(Optional.of(reader.read("MULTILINESTRING ((0 0, 1 1),(2 2, 3 3))"))));
         assertEquals(FieldType.MULTIPOLYGON, FieldType.forValue(Optional
                 .of(reader.read("MULTIPOLYGON(((0 0, 1 1, 2 2, 0 0)),((3 3, 4 4, 5 5, 3 3)))"))));
-        assertEquals(FieldType.GEOMETRYCOLLECTION,
- FieldType.forValue(
+        assertEquals(FieldType.GEOMETRYCOLLECTION, FieldType.forValue(
                 Optional.of(reader.read("GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(4 6,7 10))"))));
         assertEquals(FieldType.UUID, FieldType.forValue(Optional.of(UUID.randomUUID())));
         assertEquals(FieldType.BIG_INTEGER, FieldType.forValue(Optional.of(new BigInteger("0"))));

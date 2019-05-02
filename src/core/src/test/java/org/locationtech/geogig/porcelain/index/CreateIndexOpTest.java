@@ -8,6 +8,7 @@
  * Johnathan Garrett (Prominent Edge) - initial implementation
  */
 package org.locationtech.geogig.porcelain.index;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -113,8 +114,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
 
         IndexTestSupport.verifyIndex(geogig, index.indexTreeId(), worldPointsTree.getId());
     }
-    
-    
+
     public @Test void testAbortsCleanly() {
 
         RuntimeException expected = new RuntimeException("expected");
@@ -132,7 +132,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
             CreateIndexOp createIndex = geogig.command(CreateIndexOp.class);
             createIndex = spy(createIndex);
             doReturn(failingOp).when(createIndex).command(eq(BuildIndexOp.class));
-            
+
             createIndex.setTreeName(treeName)//
                     .setCanonicalTypeTree(worldPointsTree)//
                     .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
@@ -146,7 +146,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
 
         assertFalse(indexdb.getIndexInfo(treeName, attributeName).isPresent());
     }
-    
+
     @Test
     public void testCreateIndexMetadata() {
         Envelope bounds = new Envelope(-180, 180, -90, 90);
@@ -211,7 +211,6 @@ public class CreateIndexOpTest extends RepositoryTestCase {
         assertEquals(extraAttributes,
                 indexInfo.getMetadata().get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
 
-
         Optional<ObjectId> indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
                 worldPointsTree.getId());
         assertTrue(indexedTreeId.isPresent());
@@ -223,17 +222,14 @@ public class CreateIndexOpTest extends RepositoryTestCase {
         // make sure old commits are indexed
         ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
                 .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
-        indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
-                canonicalFeatureTreeId);
+        indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
         IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x");
 
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
-                .setTreeish("HEAD~1:" + worldPointsLayer.getName())
-                .call().get();
-        indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
-                canonicalFeatureTreeId);
+                .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
+        indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
         IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x");
@@ -246,10 +242,8 @@ public class CreateIndexOpTest extends RepositoryTestCase {
         IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x");
 
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
-                .setTreeish("branch1:" + worldPointsLayer.getName())
-                .call().get();
-        indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
-                canonicalFeatureTreeId);
+                .setTreeish("branch1:" + worldPointsLayer.getName()).call().get();
+        indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
         IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x");
@@ -278,7 +272,6 @@ public class CreateIndexOpTest extends RepositoryTestCase {
                 .setIndexType(IndexType.QUADTREE)//
                 .call();
     }
-
 
     @Test
     public void testCreateIndexNoFeatureTypeId() {

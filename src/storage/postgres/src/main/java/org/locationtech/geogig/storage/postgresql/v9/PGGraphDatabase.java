@@ -145,27 +145,28 @@ public class PGGraphDatabase implements GraphDatabase {
         final PGId node = PGId.valueOf(commitId);
 
         // (p) -> p.toObjectId()
-        Function<PGId, ObjectId> fn =  new Function<PGId, ObjectId>() {
+        Function<PGId, ObjectId> fn = new Function<PGId, ObjectId>() {
             @Override
             public ObjectId apply(PGId p) {
                 return p.toObjectId();
-            }};
+            }
+        };
 
-        return ImmutableList.copyOf(Iterables.transform(outgoing(node),fn));
+        return ImmutableList.copyOf(Iterables.transform(outgoing(node), fn));
     }
 
     @Override
     public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
 
         // (p) -> p.toObjectId()
-        Function<PGId, ObjectId> fn =  new Function<PGId, ObjectId>() {
+        Function<PGId, ObjectId> fn = new Function<PGId, ObjectId>() {
             @Override
             public ObjectId apply(PGId p) {
                 return p.toObjectId();
-            }};
+            }
+        };
 
-        return ImmutableList.copyOf(
-                Iterables.transform(incoming(PGId.valueOf(commitId)), fn));
+        return ImmutableList.copyOf(Iterables.transform(incoming(PGId.valueOf(commitId)), fn));
     }
 
     @Override

@@ -94,8 +94,8 @@ public interface RevCommit extends RevObject {
 
     /**
      * Short cut for {@code getParentIds().get(parentIndex)}, retuning an optional with the parent
-     * id at {@code parentIndex} or {@link Optional#empty() absent} if {@code parentIndex} is out
-     * of bounds.
+     * id at {@code parentIndex} or {@link Optional#empty() absent} if {@code parentIndex} is out of
+     * bounds.
      * <p>
      * Beware {@code parentIndex} is <b>zero-based</b>, whilst the command line interface syntax for
      * parents is one-based (e.g. {@code <commit id>^1} for the first parent instead of

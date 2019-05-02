@@ -12,7 +12,7 @@ package org.locationtech.geogig.cache.guava;
 import org.locationtech.geogig.storage.cache.SharedCache;
 import org.locationtech.geogig.storage.cache.SharedCacheTest;
 
-public class GuavaSharedCacheTest extends SharedCacheTest{
+public class GuavaSharedCacheTest extends SharedCacheTest {
 
     protected @Override SharedCache createCache(int l1Capacity, long maxCacheSizeBytes) {
         return new GuavaSharedCache(l1Capacity, maxCacheSizeBytes);

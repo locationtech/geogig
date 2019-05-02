@@ -250,8 +250,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         branch("testbranch1");
 
         String fid = getPointFid(10, 5);
-        Feature modified = feature(IndexTestSupport.featureType, fid, "POINT(1 1)",
-                new Double(1), new Double(1), "1,1");
+        Feature modified = feature(IndexTestSupport.featureType, fid, "POINT(1 1)", new Double(1),
+                new Double(1), "1,1");
         insertAndAdd(modified);
         RevCommit commit = commit("modified 10, 5");
         NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
@@ -281,16 +281,16 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         checkout("master");
 
         try {
-            geogig.command(MergeOp.class).addCommit(commit.getId())
-                    .setMessage("merged branch1").call();
+            geogig.command(MergeOp.class).addCommit(commit.getId()).setMessage("merged branch1")
+                    .call();
             fail();
         } catch (MergeConflictsException e) {
             // expected
         }
 
         // resolve conflict
-        Feature resolved = feature(IndexTestSupport.featureType, fid, "POINT(2 1)",
-                new Double(2), new Double(1), "2,1");
+        Feature resolved = feature(IndexTestSupport.featureType, fid, "POINT(2 1)", new Double(2),
+                new Double(1), "2,1");
         insertAndAdd(resolved);
 
         // commit
@@ -393,8 +393,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         branch("testbranch1");
 
         String fid = getPointFid(10, 5);
-        Feature modified = feature(IndexTestSupport.featureType, fid, "POINT(1 1)",
-                new Double(1), new Double(1), "1,1");
+        Feature modified = feature(IndexTestSupport.featureType, fid, "POINT(1 1)", new Double(1),
+                new Double(1), "1,1");
         insertAndAdd(modified);
         RevCommit masterCommit = commit("modified 10, 5");
         NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
@@ -448,8 +448,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         // resolve the conflict
         fid = getPointFid(10, 5);
-        Feature resolved = feature(IndexTestSupport.featureType, fid, "POINT(2 1)",
-                new Double(2), new Double(1), "2,1");
+        Feature resolved = feature(IndexTestSupport.featureType, fid, "POINT(2 1)", new Double(2),
+                new Double(1), "2,1");
         insertAndAdd(resolved);
 
         // continue rebase
@@ -528,11 +528,11 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
     }
-    
+
     @Test
     public void testUpdateIndexesHookTransaction() {
         IndexInfo indexInfo = createIndex(true, "x");
-        
+
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
         String fid = getPointFid(5, 5);
@@ -548,11 +548,12 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(transaction, commitIndex.get(), featureTree.getObjectId(), "x");
-        
+        IndexTestSupport.verifyIndex(transaction, commitIndex.get(), featureTree.getObjectId(),
+                "x");
+
         // end the transaction
         geogig.command(TransactionEnd.class).setTransaction(transaction).call();
-        
+
         featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
                 "HEAD:" + worldPointsLayer.getName());
 

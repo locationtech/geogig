@@ -173,9 +173,9 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         Supplier<Iterator<NodeRef>> refs = command(LsTreeOp.class).setReference(treeId.toString())
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES);
 
-        //        Supplier<Iterator<Node>> nodes = Suppliers.compose(//
-        //                it -> Iterators.transform(it, NodeRef::getNode)//
-        //                , refs);
+        // Supplier<Iterator<Node>> nodes = Suppliers.compose(//
+        // it -> Iterators.transform(it, NodeRef::getNode)//
+        // , refs);
 
         Iterator<Node> ns = Streams.stream(refs.get()).map(NodeRef::getNode).iterator();
 

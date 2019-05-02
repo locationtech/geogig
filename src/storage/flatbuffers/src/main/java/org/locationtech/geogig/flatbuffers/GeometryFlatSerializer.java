@@ -81,7 +81,7 @@ final @UtilityClass class GeometryFlatSerializer {
 
     public static @Nullable Geometry decode(@NonNull FLATGEOMETRY fg,
             @NonNull GeometryFactory geomFac) {
-        
+
         final int dimension = fg.dimension();
         final byte geometryType = fg.type();
         final int numOrdinates = fg.ordinatesLength();

@@ -164,8 +164,8 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
             final ProgressListener progress) throws SynchronizationException {
 
         Optional<Ref> remoteRef = remoteRepository.command(RefParse.class).setName(refspec).call();
-        remoteRef = Optional.ofNullable(remoteRef.orElseGet(()->
-                remoteRepository.command(RefParse.class).setName(Ref.TAGS_PREFIX + refspec).call().orElse(null)));
+        remoteRef = Optional.ofNullable(remoteRef.orElseGet(() -> remoteRepository
+                .command(RefParse.class).setName(Ref.TAGS_PREFIX + refspec).call().orElse(null)));
         checkPush(local, ref, remoteRef);
 
         CommitTraverser traverser = getPushTraverser(local, remoteRef);

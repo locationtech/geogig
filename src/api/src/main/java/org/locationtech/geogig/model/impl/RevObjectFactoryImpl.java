@@ -60,8 +60,8 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
 
     public @Override @NonNull RevPerson createPerson(@Nullable String name, @Nullable String email,
             long timeStamp, int timeZoneOffset) {
-        return new RevPersonImpl(Optional.ofNullable(name), Optional.ofNullable(email),
-                timeStamp, timeZoneOffset);
+        return new RevPersonImpl(Optional.ofNullable(name), Optional.ofNullable(email), timeStamp,
+                timeZoneOffset);
     }
 
     public @Override @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,

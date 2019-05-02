@@ -50,17 +50,22 @@ public class RefParseTest {
 
         Builder<String, String> builder = ImmutableMap.builder();
         Map<String, String> allRefs = builder//
-                .put("refs/heads/master", RevObjectTestSupport.hashString("refs/heads/master").toString())//
-                .put("refs/heads/branch1", RevObjectTestSupport.hashString("refs/heads/branch1").toString())//
-                .put("refs/heads/v1.1", RevObjectTestSupport.hashString("refs/heads/v1.1").toString())//
+                .put("refs/heads/master",
+                        RevObjectTestSupport.hashString("refs/heads/master").toString())//
+                .put("refs/heads/branch1",
+                        RevObjectTestSupport.hashString("refs/heads/branch1").toString())//
+                .put("refs/heads/v1.1",
+                        RevObjectTestSupport.hashString("refs/heads/v1.1").toString())//
                 .put("refs/tags/tag1", RevObjectTestSupport.hashString("refs/tags/tag1").toString())//
                 .put("refs/tags/v1.1", RevObjectTestSupport.hashString("refs/tags/v1.1").toString())//
                 .put("refs/remotes/origin/master",
                         RevObjectTestSupport.hashString("refs/remotes/origin/master").toString())//
                 .put("refs/remotes/origin/branch1",
                         RevObjectTestSupport.hashString("refs/remotes/origin/branch1").toString())//
-                .put("refs/remotes/juan/master", RevObjectTestSupport.hashString("refs/remotes/juan/master").toString())//
-                .put("refs/remotes/juan/v1.1", RevObjectTestSupport.hashString("refs/remotes/juan/v1.1").toString())//
+                .put("refs/remotes/juan/master",
+                        RevObjectTestSupport.hashString("refs/remotes/juan/master").toString())//
+                .put("refs/remotes/juan/v1.1",
+                        RevObjectTestSupport.hashString("refs/remotes/juan/v1.1").toString())//
                 .build();
 
         when(mockRefDb.getAll()).thenReturn(allRefs);

@@ -241,12 +241,13 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
     public List<String> getRemoteNames() {
 
-        //(remote) -> remote.getName()
-        Function<Remote, String> fn =  new Function<Remote, String>() {
+        // (remote) -> remote.getName()
+        Function<Remote, String> fn = new Function<Remote, String>() {
             @Override
             public String apply(Remote remote) {
                 return remote.getName();
-            }};
+            }
+        };
 
         return Lists.transform(argsBuilder.remotes, fn);
     }
@@ -362,12 +363,13 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 prune(remoteRemoteRefs, localRemoteRefs, needUpdate);
             }
 
-            //(r) -> r.getType() != REMOVED_REF
-            Predicate<RefDiff> fn =  new Predicate<RefDiff>() {
+            // (r) -> r.getType() != REMOVED_REF
+            Predicate<RefDiff> fn = new Predicate<RefDiff>() {
                 @Override
                 public boolean apply(RefDiff r) {
                     return r.getType() != REMOVED_REF;
-                }};
+                }
+            };
 
             for (RefDiff ref : filter(needUpdate, fn)) {
                 final Optional<Integer> repoDepth = repository.getDepth();
@@ -375,8 +377,10 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
                 // If we haven't specified a depth, but this is a shallow repository, set
                 // the fetch limit to the current repository depth.
-                final Optional<Integer> newFetchLimit = args.depth.isPresent()? args.depth: Optional.ofNullable(
-                        isShallow && ref.getType() == ADDED_REF ? repoDepth.orElse(null) : null);
+                final Optional<Integer> newFetchLimit = args.depth.isPresent() ? args.depth
+                        : Optional.ofNullable(
+                                isShallow && ref.getType() == ADDED_REF ? repoDepth.orElse(null)
+                                        : null);
 
                 // Fetch updated data from this ref
                 final Ref newRef = ref.getNewRef();

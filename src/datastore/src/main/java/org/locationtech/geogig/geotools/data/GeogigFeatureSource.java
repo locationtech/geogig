@@ -292,14 +292,14 @@ public class GeogigFeatureSource extends ContentFeatureSource {
         }
 
         // (p) -> p.getLocalName()
-        Function<AttributeDescriptor, String> fn =  new Function<AttributeDescriptor, String>() {
+        Function<AttributeDescriptor, String> fn = new Function<AttributeDescriptor, String>() {
             @Override
             public String apply(AttributeDescriptor p) {
                 return p.getLocalName();
-            }};
+            }
+        };
 
-        List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(),
-                fn);
+        List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(), fn);
 
         boolean retypeRequired = !Arrays.asList(queryProps).equals(resultNames);
         return retypeRequired;

@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.cli.plumbing;
 
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -107,7 +106,8 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                         HashSet<PropertyDescriptor> diffDescriptors = Sets
                                 .newHashSet(diffs.keySet());
                         NodeRef noderef = diffEntry.changeType() != ChangeType.REMOVED
-                                ? diffEntry.getNewObject() : diffEntry.getOldObject();
+                                ? diffEntry.getNewObject()
+                                : diffEntry.getOldObject();
                         RevFeatureType featureType = geogig.command(RevObjectParse.class)
                                 .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class)
                                 .get();
@@ -157,7 +157,8 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                         }
                     } else {
                         NodeRef noderef = diffEntry.changeType() == ChangeType.ADDED
-                                ? diffEntry.getNewObject() : diffEntry.getOldObject();
+                                ? diffEntry.getNewObject()
+                                : diffEntry.getOldObject();
                         RevFeatureType featureType = geogig.command(RevObjectParse.class)
                                 .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class)
                                 .get();

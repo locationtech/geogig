@@ -46,7 +46,8 @@ public class VerifyPatch extends AbstractCommand {
     @Parameter(description = "<patch>")
     private List<String> patchFiles = new ArrayList<String>();
 
-    @Parameter(names = { "--reverse" }, description = "Check if the patch can be applied in reverse")
+    @Parameter(names = {
+            "--reverse" }, description = "Check if the patch can be applied in reverse")
     private boolean reverse;
 
     @Override

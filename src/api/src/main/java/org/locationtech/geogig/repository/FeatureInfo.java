@@ -29,8 +29,8 @@ public class FeatureInfo {
 
     private RevFeature feature;
 
-    private ObjectId featureTypeId;    
- 
+    private ObjectId featureTypeId;
+
     private String path;
 
     private boolean isDelete;
@@ -46,14 +46,15 @@ public class FeatureInfo {
         this.path = path;
         this.feature = feature;
         this.featureTypeId = featureTypeId;
-        this.isDelete = isDelete;      
-    }     
+        this.isDelete = isDelete;
+    }
 
     public boolean isDelete() {
         return isDelete;
-    }  
+    }
 
-    public static FeatureInfo insert(@NonNull RevFeature feature, @NonNull ObjectId featureTypeId, @NonNull String path) {
+    public static FeatureInfo insert(@NonNull RevFeature feature, @NonNull ObjectId featureTypeId,
+            @NonNull String path) {
         return new FeatureInfo(feature, featureTypeId, path, false);
     }
 
@@ -67,7 +68,7 @@ public class FeatureInfo {
     public RevFeature getFeature() {
         return feature;
     }
-    
+
     public void setFeature(RevFeature f) {
         feature = f;
     }
@@ -85,7 +86,7 @@ public class FeatureInfo {
     public String getPath() {
         return path;
     }
-    
+
     public String getName() {
         return NodeRef.nodeFromPath(getPath());
     }

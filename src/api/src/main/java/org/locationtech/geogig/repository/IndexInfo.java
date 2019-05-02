@@ -97,8 +97,8 @@ public @ToString final class IndexInfo {
     }
 
     /**
-     * Properly compares two IndexInfo metadatas.  Since some of the values in the map
-     * can be String[], normal Objects.equals() do not work.  We use a better comparison.
+     * Properly compares two IndexInfo metadatas. Since some of the values in the map can be
+     * String[], normal Objects.equals() do not work. We use a better comparison.
      *
      * @param meta1
      * @param meta2
@@ -110,9 +110,9 @@ public @ToString final class IndexInfo {
         if ((meta1 == null) || (meta2 == null))
             return false; // one null, the other not
         if (meta1 == meta2)
-            return true; //both the same reference
+            return true; // both the same reference
         if (meta1.size() != meta2.size())
-            return false; //different # of entries
+            return false; // different # of entries
 
         for (Map.Entry<String, Object> entry : meta1.entrySet()) {
             if (!meta2.containsKey(entry.getKey()))
@@ -125,10 +125,10 @@ public @ToString final class IndexInfo {
         return true;
     }
 
-
     @Override
     public int hashCode() {
-        return Objects.hash(getTreeName(), getAttributeName(), getIndexType(), getMetadata().size());
+        return Objects.hash(getTreeName(), getAttributeName(), getIndexType(),
+                getMetadata().size());
     }
 
     public static ObjectId getIndexId(String treeName, String attributeName) {

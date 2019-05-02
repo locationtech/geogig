@@ -515,8 +515,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return AutoCloseableIterator.fromIterator(mappings.iterator());
     }
 
-//    public @Override void copyIndexTo(final IndexInfo index, final IndexDatabase target) {
-//    }
+    // public @Override void copyIndexTo(final IndexInfo index, final IndexDatabase target) {
+    // }
 
     public @Override void copyIndexesTo(final IndexDatabase target)
             throws UnsupportedOperationException {

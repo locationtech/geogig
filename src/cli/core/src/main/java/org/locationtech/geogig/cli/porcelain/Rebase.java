@@ -51,15 +51,17 @@ import com.google.common.base.Suppliers;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig rebase [--onto <newbase>] [<upstream>] [<branch>]}
+ * <li>{@code geogig rebase [--onto <newbase>] [<upstream>] [<branch>]}
  * </ul>
  * 
  * @see RebaseOp
  */
-@Parameters(commandNames = { "rebase" }, commandDescription = "Forward-port local commits to the updated upstream head")
+@Parameters(commandNames = {
+        "rebase" }, commandDescription = "Forward-port local commits to the updated upstream head")
 public class Rebase extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "--onto" }, description = "Starting point at which to create the new commits.")
+    @Parameter(names = {
+            "--onto" }, description = "Starting point at which to create the new commits.")
     private String onto;
 
     @Parameter(names = { "--abort" }, description = "Abort a conflicted rebase.")
@@ -71,7 +73,8 @@ public class Rebase extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--skip" }, description = "Skip the current conflicting commit.")
     private boolean skip;
 
-    @Parameter(names = { "--squash" }, description = "Squash commits instead of applying them one by one. A message has to be provided to use for the squashed commit")
+    @Parameter(names = {
+            "--squash" }, description = "Squash commits instead of applying them one by one. A message has to be provided to use for the squashed commit")
     private String squash;
 
     @Parameter(description = "[<upstream>] [<branch>]")
@@ -104,7 +107,8 @@ public class Rebase extends AbstractCommand implements CLICommand {
                 // Make sure branch is valid
                 Optional<ObjectId> branchRef = geogig.command(RevParse.class)
                         .setRefSpec(arguments.get(1)).call();
-                checkParameter(branchRef.isPresent(), "The branch reference could not be resolved.");
+                checkParameter(branchRef.isPresent(),
+                        "The branch reference could not be resolved.");
                 // Checkout <branch> prior to rebase
                 try {
                     geogig.command(CheckoutOp.class).setSource(arguments.get(1)).call();
@@ -116,7 +120,8 @@ public class Rebase extends AbstractCommand implements CLICommand {
 
             Optional<Ref> upstreamRef = geogig.command(RefParse.class).setName(arguments.get(0))
                     .call();
-            checkParameter(upstreamRef.isPresent(), "The upstream reference could not be resolved.");
+            checkParameter(upstreamRef.isPresent(),
+                    "The upstream reference could not be resolved.");
             rebase.setUpstream(Suppliers.ofInstance(upstreamRef.get().getObjectId()));
         }
 
@@ -131,11 +136,14 @@ public class Rebase extends AbstractCommand implements CLICommand {
         } catch (RebaseConflictsException e) {
             StringBuilder sb = new StringBuilder();
             sb.append(e.getMessage() + "\n");
-            sb.append("When you have fixed this conflicts, run 'geogig rebase --continue' to continue rebasing.\n");
-            sb.append("If you would prefer to skip this commit, instead run 'geogig rebase --skip.\n");
-            sb.append("To check out the original branch and stop rebasing, run 'geogig rebase --abort'\n");
+            sb.append(
+                    "When you have fixed this conflicts, run 'geogig rebase --continue' to continue rebasing.\n");
+            sb.append(
+                    "If you would prefer to skip this commit, instead run 'geogig rebase --skip.\n");
+            sb.append(
+                    "To check out the original branch and stop rebasing, run 'geogig rebase --abort'\n");
             throw new CommandFailedException(sb.toString(), true);
-        }catch(IllegalStateException e){
+        } catch (IllegalStateException e) {
             throw new CommandFailedException(e.getMessage(), true);
         }
 

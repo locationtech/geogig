@@ -35,7 +35,7 @@ public class PRCloseOp extends PRCommand<PRStatus> {
         if (status.isClosed()) {
             return status;
         }
-        
+
         PR pr = status.getRequest();
         Context liveContext = context();
         GeogigTransaction tx = pr.getTransaction(liveContext);

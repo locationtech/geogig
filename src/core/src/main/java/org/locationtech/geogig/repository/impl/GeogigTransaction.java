@@ -161,9 +161,9 @@ public class GeogigTransaction implements Context {
     }
 
     public void commit(ProgressListener listener) throws ConflictsException {
-        context.command(TransactionEnd.class).setAuthor(authorName.orElse(null), authorEmail.orElse(null))
-                .setTransaction(this).setCancel(false).setRebase(true).setProgressListener(listener)
-                .call();
+        context.command(TransactionEnd.class)
+                .setAuthor(authorName.orElse(null), authorEmail.orElse(null)).setTransaction(this)
+                .setCancel(false).setRebase(true).setProgressListener(listener).call();
     }
 
     public void commitSyncTransaction() throws ConflictsException {
@@ -171,8 +171,9 @@ public class GeogigTransaction implements Context {
     }
 
     public void commitSyncTransaction(ProgressListener listener) throws ConflictsException {
-        context.command(TransactionEnd.class).setAuthor(authorName.orElse(null), authorEmail.orElse(null))
-                .setTransaction(this).setCancel(false).setProgressListener(listener).call();
+        context.command(TransactionEnd.class)
+                .setAuthor(authorName.orElse(null), authorEmail.orElse(null)).setTransaction(this)
+                .setCancel(false).setProgressListener(listener).call();
     }
 
     public void abort() {

@@ -186,12 +186,13 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
 
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
 
-        //RevObject::getId, but friendly for Fortify
-        Function<RevObject, ObjectId> fn_getId =  new Function<RevObject, ObjectId>() {
+        // RevObject::getId, but friendly for Fortify
+        Function<RevObject, ObjectId> fn_getId = new Function<RevObject, ObjectId>() {
             @Override
             public ObjectId apply(RevObject revobj) {
                 return revobj.getId();
-            }};
+            }
+        };
 
         ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, fn_getId);
 
@@ -270,7 +271,8 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
         final List<Object> ancestorValues;
         {
             RevFeature ancestor = mergeIntoDiff.getOldFeature() == null
-                    ? toMergeDiff.getOldFeature() : mergeIntoDiff.getOldFeature();
+                    ? toMergeDiff.getOldFeature()
+                    : mergeIntoDiff.getOldFeature();
             if (ancestor == null) {
                 Object[] array = new Optional[descriptors.size()];
                 ancestorValues = Arrays.asList(array);

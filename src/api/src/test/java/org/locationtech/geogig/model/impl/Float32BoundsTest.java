@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -31,7 +30,6 @@ public class Float32BoundsTest {
         bounds.expand(testEnvelope);
         assertTrue(testEnvelope.covers(bounds.asEnvelope()));
 
-
         coord = new Coordinate(Math.PI, Math.E);
         bounds = Float32Bounds.valueOf(new Envelope(coord));
         assertNotEquals(bounds, new Envelope(coord));
@@ -42,6 +40,5 @@ public class Float32BoundsTest {
         bounds.expand(testEnvelope);
         assertTrue(testEnvelope.covers(bounds.asEnvelope()));
     }
-
 
 }

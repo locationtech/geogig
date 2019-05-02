@@ -18,10 +18,8 @@ import cucumber.api.junit.Cucumber;
  *
  */
 @RunWith(Cucumber.class)
-@CucumberOptions(
-        plugin = {"pretty", "html:cucumber-report-general"},
-         strict = true,
-         features = {"classpath:features/dimension/"})
+@CucumberOptions(plugin = { "pretty", "html:cucumber-report-general" }, strict = true, features = {
+        "classpath:features/dimension/" })
 public class RunDataStoreDimensionTest {
 
 }

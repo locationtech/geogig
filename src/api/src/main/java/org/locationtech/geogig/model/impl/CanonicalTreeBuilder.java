@@ -79,7 +79,8 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
      * {@link CanonicalNodeNameOrder}, and whose internal structure starts by matching the provided
      * {@code original} tree.
      */
-    public static CanonicalTreeBuilder create(final @NonNull ObjectStore store, final @NonNull RevTree original) {
+    public static CanonicalTreeBuilder create(final @NonNull ObjectStore store,
+            final @NonNull RevTree original) {
         CanonicalTreeBuilder builder = new CanonicalTreeBuilder(store, original);
         return builder;
     }

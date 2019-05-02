@@ -141,7 +141,8 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
                 : "";
         if (!path.isEmpty()) {
             final String providedRefName = ref.lastIndexOf(':') != -1
-                    ? ref.substring(0, ref.lastIndexOf(':')) : null;
+                    ? ref.substring(0, ref.lastIndexOf(':'))
+                    : null;
             if (providedRefName != null) {
                 Optional<ObjectId> rootTreeId = command(ResolveTreeish.class).setSource(source)
                         .setTreeish(providedRefName).call();
@@ -165,8 +166,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
             }
         }
         Optional<RevObject> revObject = command(RevObjectParse.class).setSource(source)
-                .setRefSpec(ref)
-                .call(RevObject.class);
+                .setRefSpec(ref).call(RevObject.class);
 
         Optional<NodeRef> treeRef = Optional.empty();
 
@@ -179,8 +179,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
             NodeRef.checkValidPath(ref);
 
             treeRef = command(FindTreeChild.class).setSource(source)
-                    .setParent(workingTree().getTree())
-                    .setChildPath(ref).call();
+                    .setParent(workingTree().getTree()).setChildPath(ref).call();
 
             Preconditions.checkArgument(treeRef.isPresent(), "Invalid reference: %s", ref);
             ObjectId treeId = treeRef.get().getObjectId();

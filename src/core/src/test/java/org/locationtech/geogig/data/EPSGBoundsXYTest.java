@@ -40,7 +40,7 @@ public class EPSGBoundsXYTest extends RepositoryTestCase {
 
     // Reset properties after test
     @AfterClass
-    public  static void tearDownProp() {
+    public static void tearDownProp() {
         System.clearProperty("org.geotools.referencing.forceXY");
         CRS.reset("all");
     }
@@ -57,7 +57,7 @@ public class EPSGBoundsXYTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).setMessage("Commit1").call();
 
         Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
-            .setRefSpec("WORK_HEAD:" + NodeRef.appendChild(pointsName, idP1)).call();
+                .setRefSpec("WORK_HEAD:" + NodeRef.appendChild(pointsName, idP1)).call();
 
         RevFeatureType ft = null;
         if (featureType.isPresent())

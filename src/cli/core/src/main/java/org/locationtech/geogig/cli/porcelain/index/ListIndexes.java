@@ -31,8 +31,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 
 @RequiresRepository(true)
-@Parameters(commandNames = {
-        "list" }, commandDescription = "List all indexes in the repository.")
+@Parameters(commandNames = { "list" }, commandDescription = "List all indexes in the repository.")
 public class ListIndexes extends AbstractCommand implements CLICommand {
 
     @Parameter(names = "--tree", description = "Name of the feature tree to list indexes for.")

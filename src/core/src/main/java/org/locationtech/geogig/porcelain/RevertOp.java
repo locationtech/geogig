@@ -332,11 +332,12 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                     List<DiffEntry> partition = partitions.next();
 
                     // e -> e.path()
-                    com.google.common.base.Function<DiffEntry,String> fn = new com.google.common.base.Function<DiffEntry, String>() {
+                    com.google.common.base.Function<DiffEntry, String> fn = new com.google.common.base.Function<DiffEntry, String>() {
                         @Override
                         public String apply(DiffEntry e) {
-                           return e.path();
-                        }};
+                            return e.path();
+                        }
+                    };
 
                     branchDiffCommand.setPathFilter(Lists.transform(partition, fn));
 
@@ -496,7 +497,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final String namekey = "user.name";
 
         String name = getClientData(namekey, String.class)
-                .orElseGet(()->command(ConfigGet.class).setName(namekey).call().orElse(null));
+                .orElseGet(() -> command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
@@ -509,7 +510,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final String emailkey = "user.email";
 
         String email = getClientData(emailkey, String.class)
-                .orElseGet(()->command(ConfigGet.class).setName(emailkey).call().orElse(null));
+                .orElseGet(() -> command(ConfigGet.class).setName(emailkey).call().orElse(null));
 
         checkState(email != null,
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",

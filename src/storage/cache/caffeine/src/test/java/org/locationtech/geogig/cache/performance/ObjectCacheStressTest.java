@@ -60,7 +60,7 @@ import lombok.Value;
 
 public class ObjectCacheStressTest {
 
-//     private final RevObjectFactory objectFactory = new FlatBuffersRevObjectFactory();
+    // private final RevObjectFactory objectFactory = new FlatBuffersRevObjectFactory();
     private final RevObjectFactory objectFactory = new RevObjectFactoryImpl();
 
     final int numPutAndGetThreads = 16;
@@ -100,8 +100,8 @@ public class ObjectCacheStressTest {
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
             // new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
             // DataStreamSerializationFactoryV2_2.INSTANCE//
-             DataStreamRevObjectSerializerV2_3.INSTANCE//
-//            new FlatBuffersRevObjectSerializer()//
+            DataStreamRevObjectSerializerV2_3.INSTANCE//
+    // new FlatBuffersRevObjectSerializer()//
     );
 
     public static void main(String[] args) {

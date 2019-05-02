@@ -129,8 +129,8 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
         canonicalTypeTree = objectDatabase().getTree(typeTreeRef.getObjectId());
         featureType = objectDatabase().getFeatureType(typeTreeRef.getMetadataId());
 
-        final GeometryDescriptor geometryAtt = IndexUtils
-                .resolveGeometryAttribute(featureType, geometryAttributeName);
+        final GeometryDescriptor geometryAtt = IndexUtils.resolveGeometryAttribute(featureType,
+                geometryAttributeName);
         final Envelope maxBounds = this.bounds != null ? this.bounds
                 : IndexUtils.resolveMaxBounds(geometryAtt);
         final @Nullable String[] extraAttributes = IndexUtils

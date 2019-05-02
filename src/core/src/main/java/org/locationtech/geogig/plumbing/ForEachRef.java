@@ -49,7 +49,8 @@ public class ForEachRef extends AbstractGeoGigOp<ImmutableSet<Ref>> {
 
         @SuppressWarnings("unchecked")
         final Predicate<Ref> filter = (Predicate<Ref>) (this.filter == null
-                ? Predicates.alwaysTrue() : this.filter);
+                ? Predicates.alwaysTrue()
+                : this.filter);
 
         ImmutableSet.Builder<Ref> refs = new ImmutableSet.Builder<Ref>();
         for (String refName : refDatabase().getAll().keySet()) {

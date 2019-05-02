@@ -19,7 +19,7 @@ public class QuadTreeBuilderExpandCollapseTest {
     public QuadTreeTestSupport support;
 
     public @Test void testExpandCollapse() {
-        //support.newStrategy();
+        // support.newStrategy();
     }
 
 }

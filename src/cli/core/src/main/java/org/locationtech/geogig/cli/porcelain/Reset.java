@@ -49,8 +49,8 @@ import com.google.common.base.Suppliers;
  * which must be one of the following:
  * <p>
  * {@code --soft} Does not touch the index file nor the working tree at all (but resets the head to
- * {@code <commit>}, just like all modes do). This leaves all your changed files
- * "Changes to be committed", as {@code geogig status} would put it.
+ * {@code <commit>}, just like all modes do). This leaves all your changed files "Changes to be
+ * committed", as {@code geogig status} would put it.
  * <p>
  * {@code --mixed} Resets the index but not the working tree (i.e., the changed files are preserved
  * but not marked for commit) and reports what has not been updated. This is the default action.
@@ -62,13 +62,14 @@ import com.google.common.base.Suppliers;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig reset [<commit>] --path <path>...}
- * <li> {@code geogig reset --(hard|soft|mixed) [<commit>]}
+ * <li>{@code geogig reset [<commit>] --path <path>...}
+ * <li>{@code geogig reset --(hard|soft|mixed) [<commit>]}
  * </ul>
  * 
  * @see ResetOp
  */
-@Parameters(commandNames = { "reset" }, commandDescription = "Reset current HEAD to the specified state, optionally modifying index and working tree to match")
+@Parameters(commandNames = {
+        "reset" }, commandDescription = "Reset current HEAD to the specified state, optionally modifying index and working tree to match")
 public class Reset extends AbstractCommand implements CLICommand {
 
     @Parameter(names = { "--hard" }, description = "Resets the index and the working tree.")

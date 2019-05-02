@@ -10,9 +10,8 @@ import org.locationtech.geogig.model.FieldType;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * Holds on the node's extra data as an array of objects to lower the memory impact of HashMap,
- * and makes sure the returned map is a recursive safe copy in order to preserve the node's
- * immutability
+ * Holds on the node's extra data as an array of objects to lower the memory impact of HashMap, and
+ * makes sure the returned map is a recursive safe copy in order to preserve the node's immutability
  *
  */
 public class ExtraData {

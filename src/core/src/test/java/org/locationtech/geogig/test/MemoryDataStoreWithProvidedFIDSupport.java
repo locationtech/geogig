@@ -66,7 +66,6 @@ public class MemoryDataStoreWithProvidedFIDSupport extends MemoryDataStore {
         // don't dispose the store, it will wipe the in-memory contents
     }
 
-
     private static class MemoryFeatureWriterWithProvidedFIDSupport
             implements FeatureWriter<SimpleFeatureType, SimpleFeature> {
         @SuppressWarnings("unused")

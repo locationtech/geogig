@@ -32,8 +32,9 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig squash [<message>] <since_commit> <until_commit>
- * </ul>
+ * <li>{@code geogig squash [<message>] <since_commit> <until_commit>
+ * 
+</ul>
  * 
  * @see org.locationtech.geogig.porcelain.LogOp
  */

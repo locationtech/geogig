@@ -88,8 +88,8 @@ public class Blame extends AbstractCommand {
                     sb.append(Long.toString(commit.getAuthor().getTimestamp())).append(' ');
                     sb.append(Integer.toString(commit.getAuthor().getTimeZoneOffset()));
                     if (!noValues) {
-                        sb.append(" ").append(
-                                TextValueSerializer.asString(Optional.of((Object) value.orElse(null))));
+                        sb.append(" ").append(TextValueSerializer
+                                .asString(Optional.of((Object) value.orElse(null))));
                     }
                     console.println(sb.toString());
                 } else {

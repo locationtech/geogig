@@ -86,7 +86,8 @@ public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
 
         Map<String, Object> metadata = this.metadata;
 
-        IndexInfo index = indexDatabase.createIndexInfo(treeName, attributeName, indexType, metadata);
+        IndexInfo index = indexDatabase.createIndexInfo(treeName, attributeName, indexType,
+                metadata);
 
         return index;
     }

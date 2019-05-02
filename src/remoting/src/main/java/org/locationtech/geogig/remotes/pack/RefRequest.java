@@ -34,8 +34,8 @@ public class RefRequest {
     public final String name;
 
     /**
-     * Version of the ref to transfer objects for. {@link Optional#empty() absent} implies to
-     * delete the ref at the receiving end.
+     * Version of the ref to transfer objects for. {@link Optional#empty() absent} implies to delete
+     * the ref at the receiving end.
      * <p>
      * Both {@code want} and {@code have} can't be absent at the same time.
      */

@@ -294,15 +294,15 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     protected ImmutableList<Name> createTypeNames() throws IOException {
         List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT);
 
-        //(ref) -> getDescriptorName(ref)
-        Function<NodeRef, Name> fn =  new Function<NodeRef, Name>() {
+        // (ref) -> getDescriptorName(ref)
+        Function<NodeRef, Name> fn = new Function<NodeRef, Name>() {
             @Override
             public Name apply(NodeRef ref) {
                 return getDescriptorName(ref);
-            }};
+            }
+        };
 
-        return ImmutableList
-                .copyOf(Collections2.transform(typeTrees, fn));
+        return ImmutableList.copyOf(Collections2.transform(typeTrees, fn));
     }
 
     private List<NodeRef> findTypeRefs(@Nullable Transaction tx) {

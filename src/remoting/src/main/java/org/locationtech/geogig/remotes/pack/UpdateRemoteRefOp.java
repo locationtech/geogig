@@ -53,18 +53,20 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
         final List<RefDiff> localRemoteRefs = convertToRemote(remoteLocalRefs);
 
         // (r) -> !isSymRef(r)
-        Predicate<RefDiff> fn =  new Predicate<RefDiff>() {
+        Predicate<RefDiff> fn = new Predicate<RefDiff>() {
             @Override
             public boolean apply(RefDiff r) {
                 return !isSymRef(r);
-            }};
+            }
+        };
 
         // (r) -> isSymRef(r)
-        Predicate<RefDiff> fn2 =  new Predicate<RefDiff>() {
+        Predicate<RefDiff> fn2 = new Predicate<RefDiff>() {
             @Override
             public boolean apply(RefDiff r) {
                 return isSymRef(r);
-            }};
+            }
+        };
 
         // update symrefs after refs so their target are present
         updateRefs(Iterables.filter(localRemoteRefs, fn));

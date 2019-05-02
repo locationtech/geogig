@@ -26,12 +26,13 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig [--]help [<command>]}
+ * <li>{@code geogig [--]help [<command>]}
  * </ul>
  */
 @ReadOnly
 @RequiresRepository(false)
-@Parameters(commandNames = { "--help", "help" }, commandDescription = "Print this help message, or provide a command name to get help for")
+@Parameters(commandNames = { "--help",
+        "help" }, commandDescription = "Print this help message, or provide a command name to get help for")
 public class Help implements CLICommand {
 
     @Parameter

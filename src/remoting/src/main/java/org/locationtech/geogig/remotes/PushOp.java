@@ -100,7 +100,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
     @Override
-    protected TransferSummary _call() throws SynchronizationException{
+    protected TransferSummary _call() throws SynchronizationException {
         final String remoteName = this.remoteName == null ? "origin" : this.remoteName;
         final Remote remote = resolveRemote(remoteName);
 

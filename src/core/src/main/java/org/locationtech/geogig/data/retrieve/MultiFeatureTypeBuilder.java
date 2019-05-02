@@ -53,7 +53,7 @@ class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, Simple
 
     public SimpleFeature build(ObjectId metadataId, String id, RevFeature revFeature,
             @Nullable GeometryFactory geometryFactory) {
-     
+
         FeatureBuilder featureBuilder = get(metadataId);
         return (SimpleFeature) featureBuilder.build(id, revFeature, geometryFactory);
     }

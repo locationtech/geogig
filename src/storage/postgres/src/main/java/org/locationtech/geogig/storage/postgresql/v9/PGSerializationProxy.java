@@ -32,8 +32,7 @@ class PGSerializationProxy extends RevObjectSerializerProxy {
             new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2_1.INSTANCE), //
             new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2_2.INSTANCE)//
             // The above formats oughta stay like that for backwards compatibility
-            , new FlatBuffersRevObjectSerializer()
-    };
+            , new FlatBuffersRevObjectSerializer() };
 
     public PGSerializationProxy() {
         super(SUPPORTED_FORMATS);

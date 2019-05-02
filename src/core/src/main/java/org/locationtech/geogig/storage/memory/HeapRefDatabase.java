@@ -178,11 +178,12 @@ public class HeapRefDatabase extends AbstractRefDatabase {
         Map<String, String> all = new HashMap<>(Maps.filterKeys(this.refs, keyFilter));
 
         // (v) -> unmask(v)
-        Function<String, String> fn =  new Function<String, String>() {
+        Function<String, String> fn = new Function<String, String>() {
             @Override
             public String apply(String v) {
-                return  unmask(v);
-            }};
+                return unmask(v);
+            }
+        };
 
         all = Maps.transformValues(all, fn);
         return all;

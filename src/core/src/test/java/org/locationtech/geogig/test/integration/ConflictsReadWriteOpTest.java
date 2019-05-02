@@ -29,9 +29,10 @@ public class ConflictsReadWriteOpTest extends RepositoryTestCase {
 
     @Test
     public void testReadWriteConflicts() throws Exception {
-        Conflict conflict = new Conflict(idP1, RevObjectTestSupport.hashString("ancestor"), RevObjectTestSupport.hashString("ours"),
-                RevObjectTestSupport.hashString("theirs"));
-        Conflict conflict2 = new Conflict(idP2, RevObjectTestSupport.hashString("ancestor2"), RevObjectTestSupport.hashString("ours2"),
+        Conflict conflict = new Conflict(idP1, RevObjectTestSupport.hashString("ancestor"),
+                RevObjectTestSupport.hashString("ours"), RevObjectTestSupport.hashString("theirs"));
+        Conflict conflict2 = new Conflict(idP2, RevObjectTestSupport.hashString("ancestor2"),
+                RevObjectTestSupport.hashString("ours2"),
                 RevObjectTestSupport.hashString("theirs2"));
         ArrayList<Conflict> conflicts = Lists.newArrayList(conflict, conflict2);
         geogig.command(ConflictsWriteOp.class).setConflicts(conflicts).call();

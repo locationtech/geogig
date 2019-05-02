@@ -91,14 +91,15 @@ public class FunctionalStepDefinitions {
     private static final SimpleFeatureType POINT_TYPE, POLY_TYPE, POINT_WITH_TIME_TYPE;
 
     private static final String POINT_TYPE_NAME = "point";
+
     private static final String POLY_TYPE_NAME = "polygon";
+
     private static final String POINT_WITH_TIME_TYPE_NAME = "pointTime";
 
     static {
         final String pointsTypeSpec = "the_geom:Point:srid=4326,sp:String,ip:Integer";
         final String polyTypeSpec = "the_geom:MultiPolygon:srid=4326,sp:String,ip:Integer";
-        final String pointsWithTimeTypeSpec =
-                "the_geom:Point:srid=4326,sp:String,ip:Integer,dp:Date";
+        final String pointsWithTimeTypeSpec = "the_geom:Point:srid=4326,sp:String,ip:Integer,dp:Date";
         try {
             POINT_TYPE = DataUtilities.createType(POINT_TYPE_NAME, pointsTypeSpec);
             POLY_TYPE = DataUtilities.createType(POLY_TYPE_NAME, polyTypeSpec);
@@ -126,6 +127,7 @@ public class FunctionalStepDefinitions {
     private static int WRITES_PER_THREAD, WRITE_THREADS;
 
     private SimpleFeature postEditedFeature;
+
     private SimpleFeature preEditedFeature;
 
     // working layer
@@ -172,17 +174,17 @@ public class FunctionalStepDefinitions {
     public void i_am_working_with_the_layer(String layerName) throws Throwable {
         assertNotNull("Layer name must exist", layerName);
         switch (layerName) {
-            case POINT_TYPE_NAME:
-                this.currentLayer = POINT_TYPE;
-                break;
-            case POLY_TYPE_NAME:
-                this.currentLayer = POLY_TYPE;
-                break;
-            case POINT_WITH_TIME_TYPE_NAME:
-                this.currentLayer = POINT_WITH_TIME_TYPE;
-                break;
-            default:
-                fail(String.format("Layer name does not exist in test data: %s", layerName));
+        case POINT_TYPE_NAME:
+            this.currentLayer = POINT_TYPE;
+            break;
+        case POLY_TYPE_NAME:
+            this.currentLayer = POLY_TYPE;
+            break;
+        case POINT_WITH_TIME_TYPE_NAME:
+            this.currentLayer = POINT_WITH_TIME_TYPE;
+            break;
+        default:
+            fail(String.format("Layer name does not exist in test data: %s", layerName));
         }
     }
 
@@ -212,8 +214,8 @@ public class FunctionalStepDefinitions {
         }
     }
 
-    @Then("^I should be able to retrieve data from \"([^\"]*)\"" +
-            " using (\\d+) threads and (\\d+) reads per thread$")
+    @Then("^I should be able to retrieve data from \"([^\"]*)\""
+            + " using (\\d+) threads and (\\d+) reads per thread$")
     public void datastore_should_have_some_data(String storeName, int readThreadCount,
             int numReadsPerThread) throws Throwable {
         List<Future<List<SimpleFeature>>> reads = runReads(readThreadCount, numReadsPerThread,
@@ -235,8 +237,8 @@ public class FunctionalStepDefinitions {
         try (SimpleFeatureIterator srcFeatures = getIterator(getFeatureStore(srcStore))) {
 
             while (srcFeatures.hasNext()) {
-                SimpleFeature clonedFeature =
-                        (SimpleFeature) DataUtilities.duplicate(srcFeatures.next());
+                SimpleFeature clonedFeature = (SimpleFeature) DataUtilities
+                        .duplicate(srcFeatures.next());
                 Transaction tx = new DefaultTransaction();
                 destFeatureSource.setTransaction(tx);
                 try {
@@ -253,8 +255,8 @@ public class FunctionalStepDefinitions {
     @When("^I create a spatial index on \"([^\"]*)\"$")
     public void i_create_a_spatial_index_on(String storeName) throws Throwable {
         GeoGigDataStore store = datastoreMap.get(storeName);
-        Optional<ObjectId> createOrUpdateIndex =
-                store.createOrUpdateIndex(currentLayer.getTypeName());
+        Optional<ObjectId> createOrUpdateIndex = store
+                .createOrUpdateIndex(currentLayer.getTypeName());
         assertTrue("Expected an Index to be created", createOrUpdateIndex.isPresent());
         IndexDatabase indexDatabase = store.resolveContext(Transaction.AUTO_COMMIT).indexDatabase();
         List<IndexInfo> resolveIndexInfo = indexDatabase.getIndexInfos(currentLayer.getTypeName());
@@ -273,8 +275,8 @@ public class FunctionalStepDefinitions {
         final String[] attributeArray = attributes.split(" ");
         final List<String> attributeList = Arrays.asList(attributeArray);
         GeoGigDataStore store = datastoreMap.get(storeName);
-        Optional<ObjectId> createOrUpdateIndex =
-                store.createOrUpdateIndex(currentLayer.getTypeName(), attributeArray);
+        Optional<ObjectId> createOrUpdateIndex = store
+                .createOrUpdateIndex(currentLayer.getTypeName(), attributeArray);
         assertTrue("Expected an Index to be created", createOrUpdateIndex.isPresent());
         IndexDatabase indexDatabase = store.resolveContext(Transaction.AUTO_COMMIT).indexDatabase();
         List<IndexInfo> resolveIndexInfo = indexDatabase.getIndexInfos(currentLayer.getTypeName());
@@ -282,8 +284,8 @@ public class FunctionalStepDefinitions {
         IndexInfo info = resolveIndexInfo.get(0);
         assertEquals("Unexpected Index type", IndexType.QUADTREE, info.getIndexType());
         assertEquals("Unexpected Index spatial attribute", "the_geom", info.getAttributeName());
-        assertTrue("Extra Attribute list missing expected attributes", attributeList.containsAll(
-                IndexInfo.getMaterializedAttributeNames(info)));
+        assertTrue("Extra Attribute list missing expected attributes",
+                attributeList.containsAll(IndexInfo.getMaterializedAttributeNames(info)));
         assertEquals("Unexpected Index Path name", currentLayer.getTypeName(), info.getTreeName());
     }
 
@@ -337,15 +339,13 @@ public class FunctionalStepDefinitions {
         SimpleFeatureStore featureStore2 = getFeatureStore(store2);
         SimpleFeatureCollection featureCollection1 = featureStore1.getFeatures();
         SimpleFeatureCollection featureCollection2 = featureStore2.getFeatures();
-        assertEquals(
-                String.format("Expected the same number of features in %s as in %s", store2, store1),
-                featureCollection1.size(), featureCollection2.size());
+        assertEquals(String.format("Expected the same number of features in %s as in %s", store2,
+                store1), featureCollection1.size(), featureCollection2.size());
         try (SimpleFeatureIterator featureIterator1 = featureCollection1.features()) {
             while (featureIterator1.hasNext()) {
                 SimpleFeature feature1 = featureIterator1.next();
                 assertTrue(String.format("Expected %s to contain all features from %s", store2,
-                        store1),
-                        featureCollection2.contains(feature1));
+                        store1), featureCollection2.contains(feature1));
             }
         }
     }
@@ -391,11 +391,10 @@ public class FunctionalStepDefinitions {
         }
     }
 
-    @When("^I make (\\d+) edits to \"([^\"]*)\" using (\\d+) edit threads" +
-            " while using (\\d+) read threads and (\\d+) reads per thread$")
+    @When("^I make (\\d+) edits to \"([^\"]*)\" using (\\d+) edit threads"
+            + " while using (\\d+) read threads and (\\d+) reads per thread$")
     public void i_make_concurrent_edits_and_reads(int numEdits, String storeName, int numThreads,
-            int numReads, int numReadThreads)
-            throws Throwable {
+            int numReads, int numReadThreads) throws Throwable {
         final GeoGigDataStore store = datastoreMap.get(storeName);
         // fire off the edits
         List<Future<List<FeatureId>>> edits = runEdits(numThreads, numEdits, store);
@@ -410,8 +409,8 @@ public class FunctionalStepDefinitions {
             readFuture.get();
         }
         // verify the commit counts
-        List<RevCommit> commits = copyOf(store.resolveContext(Transaction.AUTO_COMMIT).
-                command(LogOp.class).call());
+        List<RevCommit> commits = copyOf(
+                store.resolveContext(Transaction.AUTO_COMMIT).command(LogOp.class).call());
         // number of commits should be (initial commit, plus initial data insert, plus edits in
         // this step
         final int expectedCommitCount = 1 + WRITE_THREADS + numEdits * numThreads;
@@ -477,11 +476,10 @@ public class FunctionalStepDefinitions {
             if (postEditedFeature.getIdentifier().equals(feature.getIdentifier())) {
                 // found the FID
                 final Object featureAttributeValue = feature.getAttribute("sp");
-                assertEquals(
-                        String.format(
-                                "DataStore %s does not contain edited feature with \"sp\" attribute: %s",
-                                storeName, editedAttributeValue),
-                        editedAttributeValue, featureAttributeValue);
+                assertEquals(String.format(
+                        "DataStore %s does not contain edited feature with \"sp\" attribute: %s",
+                        storeName, editedAttributeValue), editedAttributeValue,
+                        featureAttributeValue);
                 assertEquals(postEditedFeature, feature);
                 return;
             }
@@ -522,8 +520,7 @@ public class FunctionalStepDefinitions {
 
     }
 
-    private SimpleFeatureStore getFeatureStore(String storeName)
-            throws IOException {
+    private SimpleFeatureStore getFeatureStore(String storeName) throws IOException {
         GeoGigDataStore store = datastoreMap.get(storeName);
         return (SimpleFeatureStore) store.getFeatureSource(currentLayer.getTypeName());
     }
@@ -539,10 +536,10 @@ public class FunctionalStepDefinitions {
         Context context = GlobalContextBuilder.builder().build(new Hints().platform(platform));
         GeoGIG geogig = new GeoGIG(context);
         geogig.command(InitOp.class).call();
-        geogig.command(ConfigOp.class).setAction(ConfigOp.ConfigAction.CONFIG_SET).
-                setName("user.name").setValue("geogig_test").call();
-        geogig.command(ConfigOp.class).setAction(ConfigOp.ConfigAction.CONFIG_SET).
-                setName("user.email").setValue("geogig_test@geogig.org").call();
+        geogig.command(ConfigOp.class).setAction(ConfigOp.ConfigAction.CONFIG_SET)
+                .setName("user.name").setValue("geogig_test").call();
+        geogig.command(ConfigOp.class).setAction(ConfigOp.ConfigAction.CONFIG_SET)
+                .setName("user.email").setValue("geogig_test@geogig.org").call();
         return geogig.getRepository();
     }
 
@@ -550,8 +547,8 @@ public class FunctionalStepDefinitions {
             final int insertsPerTask, GeoGigDataStore store) {
         List<Future<List<SimpleFeature>>> insertResults = Lists.newArrayList();
         for (int i = 0; i < writeThreadCount; i++) {
-            insertResults.add(writeService.submit(new InsertTask(store, insertsPerTask,
-                    currentLayer)));
+            insertResults
+                    .add(writeService.submit(new InsertTask(store, insertsPerTask, currentLayer)));
         }
         return insertResults;
     }
@@ -568,7 +565,7 @@ public class FunctionalStepDefinitions {
     private List<Future<List<FeatureId>>> runEdits(final int editThreadCount,
             final int editsPerTask, GeoGigDataStore store) {
         List<Future<List<FeatureId>>> editResults = Lists.newArrayList();
-        for (int i=0; i<editThreadCount; ++i) {
+        for (int i = 0; i < editThreadCount; ++i) {
             editResults.add(writeService.submit(new EditTask(store, editsPerTask, currentLayer)));
         }
         return editResults;
@@ -581,8 +578,8 @@ public class FunctionalStepDefinitions {
         return createRandomCoordinate(-179.9, 179.9, -89.9, 89.9);
     }
 
-    private static Coordinate createRandomCoordinate(double minLat, double maxLat,
-            double minLon, double maxLon) {
+    private static Coordinate createRandomCoordinate(double minLat, double maxLat, double minLon,
+            double maxLon) {
         return new Coordinate(RANDOM.nextDouble() * (maxLat - minLat) + minLat,
                 RANDOM.nextDouble() * (maxLon - minLon) + minLon);
     }
@@ -604,17 +601,17 @@ public class FunctionalStepDefinitions {
         // generate a random Day (ignoring leap year stuff, so no Feb 29)
         int day;
         switch (month) {
-            case 1: // February
-                day = 1 + RANDOM.nextInt(27);
-                break;
-            case 3:  // April
-            case 5:  // June
-            case 8:  // September
-            case 10: // November
-                day = 1 + RANDOM.nextInt(29);
-                break;
-            default:
-                day = 1 + RANDOM.nextInt(30);
+        case 1: // February
+            day = 1 + RANDOM.nextInt(27);
+            break;
+        case 3: // April
+        case 5: // June
+        case 8: // September
+        case 10: // November
+            day = 1 + RANDOM.nextInt(29);
+            break;
+        default:
+            day = 1 + RANDOM.nextInt(30);
         }
         calendar.set(year, month, day);
         return calendar.getTime();
@@ -669,19 +666,19 @@ public class FunctionalStepDefinitions {
                 }
                 builder.reset();
                 switch (type.getTypeName()) {
-                    case POINT_TYPE_NAME:
-                        builder.set("the_geom", createRandomPoint());
-                        break;
-                    case POLY_TYPE_NAME:
-                        builder.set("the_geom", createRandomPolygon());
-                        break;
-                    case POINT_WITH_TIME_TYPE_NAME:
-                        builder.set("the_geom", createRandomPoint());
-                        builder.set("dp", createRandomDate());
-                        break;
-                    default:
-                        throw new RuntimeException(String.format("Invalid layer name: %s",
-                                type.getTypeName()));
+                case POINT_TYPE_NAME:
+                    builder.set("the_geom", createRandomPoint());
+                    break;
+                case POLY_TYPE_NAME:
+                    builder.set("the_geom", createRandomPolygon());
+                    break;
+                case POINT_WITH_TIME_TYPE_NAME:
+                    builder.set("the_geom", createRandomPoint());
+                    builder.set("dp", createRandomDate());
+                    break;
+                default:
+                    throw new RuntimeException(
+                            String.format("Invalid layer name: %s", type.getTypeName()));
                 }
                 builder.set("sp", String.valueOf(random));
                 builder.set("ip", Integer.valueOf(random));
@@ -752,7 +749,9 @@ public class FunctionalStepDefinitions {
     public static class EditTask implements Callable<List<FeatureId>> {
 
         private final int numEdits;
+
         private final GeoGigDataStore dataStore;
+
         private final SimpleFeatureType type;
 
         public EditTask(GeoGigDataStore dataStore, int numEdits, final SimpleFeatureType type) {
@@ -764,15 +763,15 @@ public class FunctionalStepDefinitions {
         @Override
         public List<FeatureId> call() throws Exception {
             final List<FeatureId> list = Lists.newArrayList();
-            for (int i=0; i<numEdits; ++i) {
+            for (int i = 0; i < numEdits; ++i) {
                 list.add(doEdit());
             }
             return list;
         }
 
         public FeatureId doEdit() throws Exception {
-            SimpleFeatureStore featureStore = (SimpleFeatureStore) dataStore.
-                    getFeatureSource(type.getTypeName());
+            SimpleFeatureStore featureStore = (SimpleFeatureStore) dataStore
+                    .getFeatureSource(type.getTypeName());
             final int featureIndex = RANDOM.nextInt(WRITES_PER_THREAD * WRITE_THREADS);
             int count = 0;
             Transaction tx = new DefaultTransaction();
@@ -785,8 +784,8 @@ public class FunctionalStepDefinitions {
                     featureIterator.next();
                 }
                 // get the next feature
-                featureToEdit = (SimpleFeature)DataUtilities.duplicate(featureIterator.next());
-                editedFeature = (SimpleFeature)DataUtilities.duplicate(featureToEdit);
+                featureToEdit = (SimpleFeature) DataUtilities.duplicate(featureIterator.next());
+                editedFeature = (SimpleFeature) DataUtilities.duplicate(featureToEdit);
                 // edit the feature
                 Object attribute = editedFeature.getAttribute("sp");
                 assertNotNull(attribute);

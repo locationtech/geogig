@@ -142,7 +142,8 @@ public @Data @Builder class PR {
     }
 
     Optional<GeogigTransaction> tryGetTransaction(Context repo) {
-        Optional<GeogigTransaction> tx = repo.command(TransactionResolve.class).setId(transactionId).call();
+        Optional<GeogigTransaction> tx = repo.command(TransactionResolve.class).setId(transactionId)
+                .call();
         return tx;
     }
 

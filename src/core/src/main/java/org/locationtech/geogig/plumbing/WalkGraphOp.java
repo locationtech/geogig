@@ -94,7 +94,7 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
         }
 
         PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, source, source, true);
-        
+
         final ObjectStore treeSource = source;
         Consumer consumer = new Consumer() {
 

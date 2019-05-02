@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig remote list [-v]}
+ * <li>{@code geogig remote list [-v]}
  * </ul>
  * 
  * @see RemoteListOp
@@ -42,7 +42,8 @@ import com.google.common.collect.ImmutableList;
 @Parameters(commandNames = "list", commandDescription = "List all remotes for the current repository")
 public class RemoteList extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "-v", "--verbose" }, description = "Be a little more verbose and show remote url after name.")
+    @Parameter(names = { "-v",
+            "--verbose" }, description = "Be a little more verbose and show remote url after name.")
     boolean verbose = false;
 
     /**

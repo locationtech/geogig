@@ -53,7 +53,7 @@ public class Push extends AbstractCommand implements CLICommand {
         PushOp push = cli.getGeogig().command(PushOp.class);
         push.setProgressListener(cli.getProgressListener());
         push.setAll(all);
-        
+
         if (args != null) {
             if (args.size() > 0) {
                 push.setRemote(args.get(0));

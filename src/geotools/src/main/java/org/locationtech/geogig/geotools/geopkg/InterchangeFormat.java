@@ -308,7 +308,8 @@ public class InterchangeFormat {
             context.objectDatabase().put(newTree);
 
             if (authorName == null) {
-                authorName = context.command(ConfigGet.class).setName("user.name").call().orElse(null);
+                authorName = context.command(ConfigGet.class).setName("user.name").call()
+                        .orElse(null);
             }
             if (authorEmail == null) {
                 authorEmail = context.command(ConfigGet.class).setName("user.email").call()

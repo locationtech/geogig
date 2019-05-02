@@ -68,14 +68,15 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
                 }
             });
 
-            //(de) -> de.newPath(), but friendly for Fortify
-            Function<DiffEntry, String> fn_DiffEntry_newPath =  new Function<DiffEntry, String>() {
+            // (de) -> de.newPath(), but friendly for Fortify
+            Function<DiffEntry, String> fn_DiffEntry_newPath = new Function<DiffEntry, String>() {
                 @Override
                 public String apply(DiffEntry node) {
                     return node.newPath();
-                }};
+                }
+            };
 
-            workingTree().delete(transform(added,fn_DiffEntry_newPath), getProgressListener());
+            workingTree().delete(transform(added, fn_DiffEntry_newPath), getProgressListener());
         }
 
         return workingTree();

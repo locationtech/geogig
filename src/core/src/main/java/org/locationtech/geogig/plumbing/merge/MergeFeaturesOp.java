@@ -95,12 +95,13 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
                 featureBId);
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
 
-        //RevObject::getId, but friendly for Fortify
-        Function<RevObject, ObjectId> fn_getId =  new Function<RevObject, ObjectId>() {
+        // RevObject::getId, but friendly for Fortify
+        Function<RevObject, ObjectId> fn_getId = new Function<RevObject, ObjectId>() {
             @Override
             public ObjectId apply(RevObject revobj) {
                 return revobj.getId();
-            }};
+            }
+        };
 
         ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, fn_getId);
         checkState(map.containsKey(metadataId), "Invalid reference: %s", metadataId);

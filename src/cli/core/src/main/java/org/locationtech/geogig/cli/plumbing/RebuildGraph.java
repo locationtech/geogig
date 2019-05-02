@@ -43,7 +43,8 @@ public class RebuildGraph extends AbstractCommand implements CLICommand {
             if (quiet) {
                 console.println(updatedObjects.size() + " graph elements (commits) were fixed.");
             } else {
-                console.println("The following graph elements (commits) were incomplete or missing and have been fixed:");
+                console.println(
+                        "The following graph elements (commits) were incomplete or missing and have been fixed:");
                 for (ObjectId object : updatedObjects) {
                     console.println(object.toString());
                 }

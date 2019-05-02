@@ -35,7 +35,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig remote add [-t <branch>] <name> <url>}
+ * <li>{@code geogig remote add [-t <branch>] <name> <url>}
  * </ul>
  * 
  * @see RemoteAddOp

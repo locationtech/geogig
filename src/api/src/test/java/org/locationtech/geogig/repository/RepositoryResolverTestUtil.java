@@ -18,9 +18,11 @@ public class RepositoryResolverTestUtil {
 
     /**
      * Sets a list of disabled RepositoryResolvers.
+     * 
      * @param disabledResolvers List of class names of RepositoryResolver implementations that
-     * should be disabled. Example: "org.locationtech.geogig.repository.impl.FileRepositoryResolver"
-     * to disable the File/Directory resolver for URI scheme "file".
+     *        should be disabled. Example:
+     *        "org.locationtech.geogig.repository.impl.FileRepositoryResolver" to disable the
+     *        File/Directory resolver for URI scheme "file".
      */
     public static void setDisabledResolvers(List<String> disabledResolvers) {
         RepositoryResolver.setDisabledResolvers(disabledResolvers);

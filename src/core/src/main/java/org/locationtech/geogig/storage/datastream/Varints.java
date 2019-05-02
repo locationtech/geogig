@@ -76,7 +76,8 @@ public final class Varints {
         }
     }
 
-    public static int[] readUnsignedIntArray(DataInput in, AtomicInteger outBytesRead) throws IOException {
+    public static int[] readUnsignedIntArray(DataInput in, AtomicInteger outBytesRead)
+            throws IOException {
         final int length = readLength(in);
         int[] values = new int[length];
         for (int i = 0; i < length; i++) {

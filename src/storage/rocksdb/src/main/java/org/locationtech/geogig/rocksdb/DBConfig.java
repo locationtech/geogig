@@ -38,11 +38,11 @@ class DBConfig {
         this.columnFamilyNames = columnFamilyNames;
         this.defaultMetadata = ImmutableMap.copyOf(defaultMetadata);
     }
-    
+
     /**
      * @return the names of extra columns to create when the database is created
      */
-    public Set<String> getColumnFamilyNames(){
+    public Set<String> getColumnFamilyNames() {
         return columnFamilyNames;
     }
 

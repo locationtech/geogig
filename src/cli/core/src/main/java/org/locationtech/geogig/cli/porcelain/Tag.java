@@ -34,7 +34,7 @@ import com.google.common.collect.Lists;
 /**
  * Creates or deletes tags Usage:
  * <ul>
- * <li> {@code geogig commit <tagname> [tag_commit] [-d] [-m <msg>]}
+ * <li>{@code geogig commit <tagname> [tag_commit] [-d] [-m <msg>]}
  * </ul>
  * 
  * @see TagOp
@@ -56,8 +56,9 @@ public class Tag extends AbstractCommand implements CLICommand {
      */
     @Override
     public void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter((message != null && !message.trim().isEmpty()) || nameAndCommit.isEmpty()
-                || delete, "No tag message provided");
+        checkParameter(
+                (message != null && !message.trim().isEmpty()) || nameAndCommit.isEmpty() || delete,
+                "No tag message provided");
         checkParameter(nameAndCommit.size() < 2 || (nameAndCommit.size() == 2 && !delete),
                 "Too many parameters provided");
 

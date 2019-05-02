@@ -26,12 +26,10 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 
-class ContentIdsProducer
-        implements java.util.function.Consumer<ObjectId>, Runnable {
+class ContentIdsProducer implements java.util.function.Consumer<ObjectId>, Runnable {
 
-    public static ContentIdsProducer forCommits(ObjectStore source,
-            List<ObjectId[]> diffTreeIds, Deduplicator deduplicator,
-            ObjectReporter objectReport) {
+    public static ContentIdsProducer forCommits(ObjectStore source, List<ObjectId[]> diffTreeIds,
+            Deduplicator deduplicator, ObjectReporter objectReport) {
 
         boolean reportFeatures = true;
         return new ContentIdsProducer(source, diffTreeIds, deduplicator, objectReport,
@@ -105,8 +103,7 @@ class ContentIdsProducer
         }
 
         final ObjectStore source = this.source;
-        final RevTree left = EMPTY_TREE_ID.equals(leftTreeId) ? EMPTY
-                : source.getTree(leftTreeId);
+        final RevTree left = EMPTY_TREE_ID.equals(leftTreeId) ? EMPTY : source.getTree(leftTreeId);
         final RevTree right = EMPTY_TREE_ID.equals(rightTreeId) ? EMPTY
                 : source.getTree(rightTreeId);
 

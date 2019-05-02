@@ -105,7 +105,8 @@ public class PRInitOpTest {
         GeogigTransaction tx = transaction.get();
 
         Ref headRef = tx.command(RefParse.class).setName(request.getHeadRef()).call().orElse(null);
-        Ref originRef = tx.command(RefParse.class).setName(request.getOriginRef()).call().orElse(null);
+        Ref originRef = tx.command(RefParse.class).setName(request.getOriginRef()).call()
+                .orElse(null);
         Ref targetRef = tx.command(RefParse.class).setName(request.getTargetBranch()).call()
                 .orElse(null);
         assertNotNull(headRef);

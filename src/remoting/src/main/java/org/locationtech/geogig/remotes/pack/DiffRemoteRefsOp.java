@@ -81,12 +81,13 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
             }
             if (this.getTags) {
 
-                //RevTag::getName, but friendly for Fortify
-                Function<RevTag, String> fn_revTag_getName =  new Function<RevTag, String>() {
+                // RevTag::getName, but friendly for Fortify
+                Function<RevTag, String> fn_revTag_getName = new Function<RevTag, String>() {
                     @Override
                     public String apply(RevTag revTag) {
                         return revTag.getName();
-                    }};
+                    }
+                };
 
                 Map<String, RevTag> tags = Maps.uniqueIndex(command(TagListOp.class).call(),
                         fn_revTag_getName);
@@ -99,12 +100,13 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
                 }
             }
 
-            //Ref::getName, but friendly for Fortify
-            Function<Ref, String> fn_ref_getName =  new Function<Ref, String>() {
+            // Ref::getName, but friendly for Fortify
+            Function<Ref, String> fn_ref_getName = new Function<Ref, String>() {
                 @Override
                 public String apply(Ref ref) {
                     return ref.getName();
-                }};
+                }
+            };
 
             remotes = Maps.uniqueIndex(remoteRefs, fn_ref_getName);
             locals = Maps.uniqueIndex(remoteLocalRefs, fn_ref_getName);
@@ -117,16 +119,15 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
             final String mappedBranchName = Ref.localName(mappedBranch);
 
             // (name) -> Ref.localName(name).equals(mappedBranchName)
-            Predicate<String> fn =  new Predicate<String>() {
+            Predicate<String> fn = new Predicate<String>() {
                 @Override
                 public boolean apply(String name) {
                     return Ref.localName(name).equals(mappedBranchName);
-                }};
+                }
+            };
 
-            remotes = Maps.filterKeys(remotes,
-                    fn);
-            locals = Maps.filterKeys(locals,
-                    fn);
+            remotes = Maps.filterKeys(remotes, fn);
+            locals = Maps.filterKeys(locals, fn);
         }
         MapDifference<String, Ref> difference = Maps.difference(remotes, locals);
 

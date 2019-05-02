@@ -395,8 +395,7 @@ public abstract class INIBlob {
 
     private void write() throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(
-                new BufferedWriter(new OutputStreamWriter(stream)));
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream)));
         try {
             for (Entry e : data) {
                 e.write(writer);

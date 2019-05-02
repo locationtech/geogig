@@ -102,8 +102,8 @@ public class HashObjectFunnels {
      * @param features the tree's {@link RevTree#trees() contained feature nodes}
      * @param buckets the tree's {@link RevTree#trees() contained bucket pointers}
      */
-    public static void tree(@NonNull PrimitiveSink into, @NonNull List<Node> trees, @NonNull List<Node> features,
-    		@NonNull Iterable<Bucket> buckets) {
+    public static void tree(@NonNull PrimitiveSink into, @NonNull List<Node> trees,
+            @NonNull List<Node> features, @NonNull Iterable<Bucket> buckets) {
         TreeFunnel.INSTANCE.funnel(into, trees, features, buckets);
     }
 
@@ -641,8 +641,8 @@ public class HashObjectFunnels {
         }
     };
 
-    public static void tag(@NonNull PrimitiveSink into, @NonNull String name, @NonNull ObjectId commitId, @NonNull String message,
-    		@NonNull RevPerson tagger) {
+    public static void tag(@NonNull PrimitiveSink into, @NonNull String name,
+            @NonNull ObjectId commitId, @NonNull String message, @NonNull RevPerson tagger) {
         TagFunnel.INSTANCE.funnel(into, name, commitId, message, tagger);
     }
 
@@ -650,8 +650,9 @@ public class HashObjectFunnels {
         FeatureTypeFunnel.INSTANCE.funnel(into, featureType);
     }
 
-    public static void commit(@NonNull PrimitiveSink into, @NonNull ObjectId treeId, @NonNull List<ObjectId> parentIds,
-    		@NonNull RevPerson author, @NonNull RevPerson committer, @NonNull String commitMessage) {
+    public static void commit(@NonNull PrimitiveSink into, @NonNull ObjectId treeId,
+            @NonNull List<ObjectId> parentIds, @NonNull RevPerson author,
+            @NonNull RevPerson committer, @NonNull String commitMessage) {
         CommitFunnel.INSTANCE.funnel(into, treeId, parentIds, commitMessage, author, committer);
     }
 

@@ -203,36 +203,35 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
     private void stageDeletes(Iterator<NodeRef> trees, Iterator<String> features) {
         final StagingArea index = stagingArea();
 
-        //(treeRef) -> new DiffEntry(treeRef, null), but friendly for Fortify
-        Function<NodeRef, DiffEntry> fn_DiffEntry_new =  new Function<NodeRef, DiffEntry>() {
+        // (treeRef) -> new DiffEntry(treeRef, null), but friendly for Fortify
+        Function<NodeRef, DiffEntry> fn_DiffEntry_new = new Function<NodeRef, DiffEntry>() {
             @Override
             public DiffEntry apply(NodeRef treeRef) {
                 return new DiffEntry(treeRef, null);
-            }};
+            }
+        };
 
-        Iterator<DiffEntry> treeDeletes = Iterators.transform(trees,
-                fn_DiffEntry_new);
+        Iterator<DiffEntry> treeDeletes = Iterators.transform(trees, fn_DiffEntry_new);
 
-
-//        (featurePath) -> {
-//            Node node = RevObjectFactory.defaultInstance().createNode(
-//                    NodeRef.nodeFromPath(featurePath), ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE,
-//                    null, null);
-//            String parentPath = NodeRef.parentPath(featurePath);
-//            NodeRef oldFeature = new NodeRef(node, parentPath, ObjectId.NULL);
-//            return new DiffEntry(oldFeature, null);
-//        }
-        Function<String,DiffEntry> f = new Function<String, DiffEntry>() {
+        // (featurePath) -> {
+        // Node node = RevObjectFactory.defaultInstance().createNode(
+        // NodeRef.nodeFromPath(featurePath), ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE,
+        // null, null);
+        // String parentPath = NodeRef.parentPath(featurePath);
+        // NodeRef oldFeature = new NodeRef(node, parentPath, ObjectId.NULL);
+        // return new DiffEntry(oldFeature, null);
+        // }
+        Function<String, DiffEntry> f = new Function<String, DiffEntry>() {
             @Override
             public DiffEntry apply(String featurePath) {
                 Node node = RevObjectFactory.defaultInstance().createNode(
-                        NodeRef.nodeFromPath(featurePath), ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE,
-                        null, null);
+                        NodeRef.nodeFromPath(featurePath), ObjectId.NULL, ObjectId.NULL,
+                        TYPE.FEATURE, null, null);
                 String parentPath = NodeRef.parentPath(featurePath);
                 NodeRef oldFeature = new NodeRef(node, parentPath, ObjectId.NULL);
                 return new DiffEntry(oldFeature, null);
-            }};
-
+            }
+        };
 
         Iterator<DiffEntry> featureDeletes = Iterators.transform(features, f);
 
@@ -263,15 +262,15 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES)
                 .setReference(workTree.getId().toString()).call();
 
-        //NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> fn_path =  new Function<NodeRef, String>() {
+        // NodeRef::path, but friendly for Fortify
+        Function<NodeRef, String> fn_path = new Function<NodeRef, String>() {
             @Override
             public String apply(NodeRef noderef) {
                 return noderef.path();
-            }};
+            }
+        };
 
-        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees,
-                fn_path);
+        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees, fn_path);
 
         Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(),
                 new HashSet<>(pathsToRemove));

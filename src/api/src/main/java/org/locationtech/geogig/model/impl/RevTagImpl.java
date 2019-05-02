@@ -50,7 +50,7 @@ class RevTagImpl extends AbstractRevObject implements RevTag {
     public @Override TYPE getType() {
         return TYPE.TAG;
     }
-    
+
     public @Override String toString() {
         return RevObjects.toString(this);
     }

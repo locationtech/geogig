@@ -148,8 +148,8 @@ class FullDiffPrinter implements DiffPrinter {
                 Entry<PropertyDescriptor, AttributeDiff> entry = iter.next();
                 PropertyDescriptor pd = entry.getKey();
                 AttributeDiff ad = entry.getValue();
-                if (ad instanceof GeometryAttributeDiff
-                        && ad.getType() == org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.MODIFIED
+                if (ad instanceof GeometryAttributeDiff && ad
+                        .getType() == org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.MODIFIED
                         && !noGeom) {
                     GeometryAttributeDiff gd = (GeometryAttributeDiff) ad;
                     ansi.fg(YELLOW);
@@ -184,7 +184,8 @@ class FullDiffPrinter implements DiffPrinter {
                             .getType() == org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.ADDED
                                     ? GREEN
                                     : (ad.getType() == org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.REMOVED
-                                            ? RED : YELLOW));
+                                            ? RED
+                                            : YELLOW));
                     ansi.a(pd.getName()).a(": ").a(ad.toString());
                     ansi.reset();
                     ansi.newline();

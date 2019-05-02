@@ -38,7 +38,7 @@ import java.util.Optional;
  * 
  * @since 1.0
  */
-public interface Repository extends CommandFactory{
+public interface Repository extends CommandFactory {
 
     String DEPTH_CONFIG_KEY = "core.depth";
 
@@ -171,8 +171,8 @@ public interface Repository extends CommandFactory{
 
     /**
      * @param path the path to search for
-     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#empty()}
-     *         if it wasn't found
+     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#empty()} if
+     *         it wasn't found
      */
     Optional<Node> getRootTreeChild(String path);
 

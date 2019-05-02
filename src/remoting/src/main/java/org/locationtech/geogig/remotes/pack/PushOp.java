@@ -138,7 +138,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
             final List<PushReq> pushRequests = parseRequests(remoteRefs);
             final PackRequest request = prepareRequest(pushRequests, remoteRefs);
             request.syncIndexes(pushIndexes);
-            
+
             List<RefDiff> dataTransferResults = localRepo.command(SendPackOp.class)//
                     .setRequest(request)//
                     .setTarget(remoteRepo)//
@@ -340,12 +340,13 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
     private List<RefDiff> updateRemoteRefs(List<PushReq> pushRequests, Set<Ref> previousRemoteRefs,
             IRemoteRepo remoteRepo) {
 
-        //Ref::getName, but friendly for Fortify
-        Function<Ref, String> fn_ref_getName =  new Function<Ref, String>() {
+        // Ref::getName, but friendly for Fortify
+        Function<Ref, String> fn_ref_getName = new Function<Ref, String>() {
             @Override
             public String apply(Ref ref) {
                 return ref.getName();
-            }};
+            }
+        };
 
         final Map<String, Ref> beforeRemoteRefs = Maps.uniqueIndex(previousRemoteRefs,
                 fn_ref_getName);
@@ -406,12 +407,13 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
         PackRequest req = new PackRequest();
 
-        //Ref::getName, but friendly for Fortify
-        Function<Ref, String> fn_ref_getName =  new Function<Ref, String>() {
+        // Ref::getName, but friendly for Fortify
+        Function<Ref, String> fn_ref_getName = new Function<Ref, String>() {
             @Override
             public String apply(Ref ref) {
                 return ref.getName();
-            }};
+            }
+        };
 
         final Map<String, Ref> remoteRefsByName = Maps.uniqueIndex(remoteRefs, fn_ref_getName);
 
@@ -429,13 +431,13 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
             final @Nullable ObjectId have;
             if (preq.forceUpdate) {
 
-
-                //(r) -> r.getObjectId()
-                Function<Ref, ObjectId> fn =  new Function<Ref, ObjectId>() {
+                // (r) -> r.getObjectId()
+                Function<Ref, ObjectId> fn = new Function<Ref, ObjectId>() {
                     @Override
                     public ObjectId apply(Ref f) {
                         return f.getObjectId();
-                    }};
+                    }
+                };
 
                 have = findShallowestCommonAncestor(want,
                         Sets.newHashSet(Iterables.transform(remoteRefs, fn)));
@@ -453,17 +455,18 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                 }
                 if (resolvedRemoteRef == null) {
 
-                    //(r) -> r.getObjectId()
-                    Function<Ref, ObjectId> fn =  new Function<Ref, ObjectId>() {
+                    // (r) -> r.getObjectId()
+                    Function<Ref, ObjectId> fn = new Function<Ref, ObjectId>() {
                         @Override
                         public ObjectId apply(Ref f) {
                             return f.getObjectId();
-                        }};
+                        }
+                    };
 
                     // creating a new branch on the remote from a branch in the local repo, lets
                     // check if we can figure out a common ancestor
-                    have = findShallowestCommonAncestor(want, Sets
-                            .newHashSet(Iterables.transform(remoteRefs, fn)));
+                    have = findShallowestCommonAncestor(want,
+                            Sets.newHashSet(Iterables.transform(remoteRefs, fn)));
                 } else {
                     // have is guaranteed to be in the local repo because of checkPush above
                     have = resolvedRemoteRef.getObjectId();

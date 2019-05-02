@@ -113,11 +113,12 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         Optional<byte[]> blob = getBlob(namespace, path);
 
         // (b) -> new ByteArrayInputStream(b)
-        Function<byte[], InputStream> fn =  new Function<byte[], InputStream>() {
+        Function<byte[], InputStream> fn = new Function<byte[], InputStream>() {
             @Override
             public InputStream apply(byte[] b) {
                 return new ByteArrayInputStream(b);
-            }};
+            }
+        };
 
         return blob.map(fn);
     }

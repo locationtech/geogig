@@ -62,14 +62,14 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig branch [-c] <branchname>[<startpoint>]}: Creates a new branch with the given
+ * <li>{@code geogig branch [-c] <branchname>[<startpoint>]}: Creates a new branch with the given
  * branchname at the specified startpoint and checks it out immediately
- * <li> {@code geogig branch [--color=always] [-v] [-a]}: Lists all branches (Local and Remote) in
+ * <li>{@code geogig branch [--color=always] [-v] [-a]}: Lists all branches (Local and Remote) in
  * color with commit id and commit message
- * <li> {@code geogig branch [-r]}: List only remote branches
- * <li> {@code geogig branch [--delete] <branchname>...}: Deletes all the branches listed unless HEAD
+ * <li>{@code geogig branch [-r]}: List only remote branches
+ * <li>{@code geogig branch [--delete] <branchname>...}: Deletes all the branches listed unless HEAD
  * is pointing to it
- * <li> {@code geogig branch [--force] [--rename] [<oldBranchName>] <newBranchName>}: Renames a
+ * <li>{@code geogig branch [--force] [--rename] [<oldBranchName>] <newBranchName>}: Renames a
  * branch specified by oldBranchName or current branch if no oldBranchName is given to newBranchName
  * </ul>
  * 
@@ -84,7 +84,8 @@ public class Branch extends AbstractCommand implements CLICommand {
     @Parameter(description = "<branch name> [<start point>]")
     private List<String> branchName = Lists.newArrayList();
 
-    @Parameter(names = { "--checkout", "-c" }, description = "automatically checkout the new branch when the command is used to create a branch")
+    @Parameter(names = { "--checkout",
+            "-c" }, description = "automatically checkout the new branch when the command is used to create a branch")
     private boolean checkout;
 
     @Parameter(names = { "--delete", "-d" })
@@ -93,14 +94,16 @@ public class Branch extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--orphan", "-o" }, description = "create an orphan branch")
     private boolean orphan = false;
 
-    @Parameter(names = { "--force", "-f" }, description = "Force renaming/creating of a branch if the specified branc name already exists")
+    @Parameter(names = { "--force",
+            "-f" }, description = "Force renaming/creating of a branch if the specified branc name already exists")
     private boolean force = false;
 
     @Parameter(names = { "--verbose", "-v",
             "Verbose output for list mode. Shows branch commit id and commit message." })
     private boolean verbose = false;
 
-    @Parameter(names = { "--remote", "-r" }, description = "List or delete (if used with -d) the remote-tracking branches.")
+    @Parameter(names = { "--remote",
+            "-r" }, description = "List or delete (if used with -d) the remote-tracking branches.")
     private boolean remotes = false;
 
     @Parameter(names = { "--all", "-a" }, description = "List all branches, both local and remote")

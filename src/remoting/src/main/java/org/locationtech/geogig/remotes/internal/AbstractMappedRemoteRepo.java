@@ -47,7 +47,6 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
     public static String PLACEHOLDER_COMMIT_MESSAGE = "Placeholder Sparse Commit";
 
-
     private final Remote remote;
 
     protected AbstractMappedRemoteRepo(Remote remote) {

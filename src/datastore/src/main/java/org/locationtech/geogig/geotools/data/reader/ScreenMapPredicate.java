@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.renderer.ScreenMap;
+import org.geotools.data.util.ScreenMap;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;

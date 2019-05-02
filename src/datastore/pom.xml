@@ -41,14 +41,8 @@
 
     <dependency>
       <groupId>org.geotools</groupId>
-      <artifactId>gt-data</artifactId>
+      <artifactId>gt-main</artifactId>
       <version>${gt.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.media</groupId>
-          <artifactId>jai_core</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     
     <!-- Test scope dependencies -->

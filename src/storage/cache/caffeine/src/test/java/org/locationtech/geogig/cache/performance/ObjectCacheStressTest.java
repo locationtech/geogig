@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.geotools.io.TableWriter;
+import org.geotools.util.TableWriter;
 import org.locationtech.geogig.cache.caffeine.CaffeineSharedCache;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;

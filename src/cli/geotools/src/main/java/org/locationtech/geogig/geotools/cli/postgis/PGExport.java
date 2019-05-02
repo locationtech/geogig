@@ -10,8 +10,8 @@
 package org.locationtech.geogig.geotools.cli.postgis;
 
 import org.geotools.data.DataStore;
-import org.geotools.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.util.factory.Hints;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.cli.DataStoreExport;

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import org.geotools.renderer.ScreenMap;
+import org.geotools.data.util.ScreenMap;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;

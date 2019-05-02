@@ -58,10 +58,6 @@
       <version>${gt.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>javax.media</groupId>
-          <artifactId>jai_core</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.postgresql</groupId>
           <artifactId>postgresql</artifactId>
         </exclusion>
@@ -94,10 +90,6 @@
           <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>javax.media</groupId>
-          <artifactId>jai_core</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
         </exclusion>
@@ -108,12 +100,6 @@
       <groupId>org.geotools</groupId>
       <artifactId>gt-geojson</artifactId>
       <version>${gt.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.media</groupId>
-          <artifactId>jai_core</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- Test scope dependencies -->

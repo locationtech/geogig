@@ -22,18 +22,15 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.referencing.CRS;
+import org.locationtech.geogig.feature.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Funnels;
@@ -589,26 +586,30 @@ public class HashObjectFunnels {
 
         @Override
         public void funnel(PropertyDescriptor descriptor, PrimitiveSink into) {
-            NameFunnel.funnel(descriptor.getName(), into);
 
-            PropertyType attrType = descriptor.getType();
-            NameFunnel.funnel(attrType.getName(), into);
+            final @NonNull Name name = descriptor.getName();
+            final @NonNull Name attrTypeName = descriptor.getTypeName();
+            final @NonNull Class<?> binding = descriptor.getBinding();
+            final FieldType type = FieldType.forBinding(binding);
 
-            FieldType type = FieldType.forBinding(attrType.getBinding());
+            NameFunnel.funnel(name, into);
+
+            NameFunnel.funnel(attrTypeName, into);
+
             into.putInt(type.getTag());
             into.putBoolean(descriptor.isNillable());
 
             into.putInt(descriptor.getMaxOccurs());
             into.putInt(descriptor.getMinOccurs());
 
-            if (descriptor instanceof GeometryDescriptor) {
-                CoordinateReferenceSystem crs;
-                crs = ((GeometryDescriptor) descriptor).getCoordinateReferenceSystem();
-                String srsName;
-                if (crs == null) {
-                    srsName = RevObjects.NULL_CRS_IDENTIFIER;
-                } else {
-                    srsName = CRS.toSRS(crs);
+            if (descriptor.isGeometryDescriptor()) {
+                CoordinateReferenceSystem crs = descriptor.coordinateReferenceSystem();
+                String srsName = crs.getSrsIdentifier();
+                if (srsName == null) {
+                    srsName = crs.getWKT();
+                }
+                if (srsName == null) {
+                    srsName = CoordinateReferenceSystem.NULL.getSrsIdentifier();
                 }
                 NullableStringFunnel.funnel(srsName, into);
             }

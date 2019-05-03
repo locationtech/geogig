@@ -40,6 +40,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.wkt.Formattable;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -55,8 +57,6 @@ import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.feature.type.PropertyType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -235,7 +235,8 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
                 CoordinateReferenceSystem crs = gType.getCoordinateReferenceSystem();
                 String srsName;
                 if (crs == null) {
-                    srsName = RevObjects.NULL_CRS_IDENTIFIER;
+                    srsName = org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
+                            .getSrsIdentifier();
                 } else {
                     final boolean longitudeFirst = CRS.getAxisOrder(crs,
                             false) == AxisOrder.EAST_NORTH;

@@ -90,9 +90,9 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
     private RevPerson resolveTagger() {
         final String nameKey = "user.name";
         final String emailKey = "user.email";
-        String taggerName = getClientData(nameKey, String.class)
+        String taggerName = getClientData(nameKey)
                 .orElseGet(() -> command(ConfigGet.class).setName(nameKey).call().orElse(null));
-        String taggerEmail = getClientData(emailKey, String.class)
+        String taggerEmail = getClientData(emailKey)
                 .orElseGet(() -> command(ConfigGet.class).setName(emailKey).call().orElse(null));
 
         checkState(taggerName != null,

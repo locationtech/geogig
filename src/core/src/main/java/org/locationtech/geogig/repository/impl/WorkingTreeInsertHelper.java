@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -35,7 +36,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.Feature;
-import org.opengis.feature.type.FeatureType;
 import org.opengis.geometry.BoundingBox;
 
 import com.google.common.collect.Lists;

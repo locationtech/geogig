@@ -44,6 +44,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -73,7 +74,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.Feature;
-import org.opengis.feature.type.PropertyDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

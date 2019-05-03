@@ -25,6 +25,8 @@ import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
+import org.locationtech.geogig.feature.AttributeType;
+import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.FieldType;
@@ -46,10 +48,8 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.FeatureTypeFactory;
 import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -331,7 +331,8 @@ public class FormatCommonV1 {
             final CoordinateReferenceSystem crs;
             try {
                 if (isCRSCode) {
-                    if (RevObjects.NULL_CRS_IDENTIFIER.equals(crsText)) {
+                    if (org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
+                            .getSrsIdentifier().equals(crsText)) {
                         crs = null;
                     } else {
                         boolean forceLongitudeFirst = crsText.startsWith("EPSG:");

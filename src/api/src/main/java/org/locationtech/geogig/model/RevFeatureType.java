@@ -11,9 +11,9 @@ package org.locationtech.geogig.model;
 
 import java.util.List;
 
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 
 /**
  * {@code RevFeatureType} is an immutable data structure that describes the schema for a set of

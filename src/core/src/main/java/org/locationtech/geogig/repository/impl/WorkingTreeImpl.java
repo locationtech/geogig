@@ -26,6 +26,7 @@ import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -56,7 +57,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;

@@ -22,7 +22,8 @@ public class CrsTextSerializer {
     public static String serialize(CoordinateReferenceSystem crs) {
         String srsName;
         if (crs == null) {
-            srsName = RevObjects.NULL_CRS_IDENTIFIER;
+            srsName = org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
+                    .getSrsIdentifier();
         } else {
             // use a flag to control whether the code is returned in EPSG: form instead of
             // urn:ogc:.. form irrespective of the org.geotools.referencing.forceXY System
@@ -64,7 +65,8 @@ public class CrsTextSerializer {
         boolean crsCode = crsText.startsWith("EPSG") || crsText.startsWith("urn:ogc:def:crs:EPSG");
         try {
             if (crsCode) {
-                if (RevObjects.NULL_CRS_IDENTIFIER.equals(crsText)) {
+                if (org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
+                        .getSrsIdentifier().equals(crsText)) {
                     crs = null;
                 } else {
                     boolean forceLongitudeFirst = crsText.startsWith("EPSG:");

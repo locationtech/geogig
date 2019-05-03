@@ -19,10 +19,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;

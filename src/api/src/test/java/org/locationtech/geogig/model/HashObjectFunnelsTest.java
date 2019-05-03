@@ -26,21 +26,19 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.SchemaException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -453,9 +451,9 @@ public class HashObjectFunnelsTest {
     }
 
     @Test
-    public void testFeatureTypeFunnel() throws SchemaException {
-        FeatureType featureType = DataUtilities.createType("http://geogig.points", "Points",
-                "sp:String,ip:Integer,pp:Point:0");
+    public void testFeatureTypeFunnel() {
+        FeatureType featureType = FeatureTypes.createType("http://geogig.points#Points",
+                "sp:String", "ip:Integer", "pp:Point:srid=4326");
         RevFeatureType testFeatureType = new RevFeatureType() {
             @Override
             public TYPE getType() {
@@ -479,7 +477,7 @@ public class HashObjectFunnelsTest {
 
             @Override
             public Name getName() {
-                return new NameImpl("http://geogig.points", "Points");
+                return new Name("http://geogig.points", "Points");
             }
         };
 

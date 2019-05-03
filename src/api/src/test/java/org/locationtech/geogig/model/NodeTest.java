@@ -20,7 +20,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,6 +27,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -306,7 +306,7 @@ public class NodeTest {
     }
 
     private Geometry geom(String wkt) throws ParseException {
-        Geometry value = new WKTReader2().read(wkt);
+        Geometry value = new WKTReader().read(wkt);
         return value;
     }
 }

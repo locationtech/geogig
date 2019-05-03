@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.Name;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;

@@ -33,6 +33,7 @@ import org.geotools.feature.NameImpl;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
@@ -54,7 +55,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.impl.Blobs;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.Name;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;

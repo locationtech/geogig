@@ -23,6 +23,7 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
@@ -37,7 +38,6 @@ import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.FeatureType;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

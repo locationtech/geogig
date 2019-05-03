@@ -15,49 +15,48 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.SchemaException;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.WKTReader2;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.Feature.FeatureBuilder;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.opengis.feature.Feature;
-import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
 
 public class RevFeatureBuilderTest {
 
-    private SimpleFeature points1;
+    private org.locationtech.geogig.feature.Feature points1;
 
-    public @Before void before() throws SchemaException {
-        SimpleFeatureType pointsType = DataUtilities.createType("Points",
-                "sp:String,ip:Integer,pp:Point:srid=4326");
+    public @Before void before() {
+        FeatureType pointsType = FeatureTypes.createType("Points", "sp:String", "ip:Integer",
+                "pp:Point:srid=4326");
         points1 = feature(pointsType, "Points.1", "StringProp1_1", new Integer(1000), "POINT(1 1)");
 
     }
 
-    protected SimpleFeature feature(SimpleFeatureType type, String id, Object... values) {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    protected Feature feature(FeatureType type, String id, Object... values) {
+        FeatureBuilder builder = Feature.builder().type(type);
+        List<Object> vs = new ArrayList<>();
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
+            if (type.getDescriptor(i).isGeometryDescriptor()) {
                 if (value instanceof String) {
                     value = geom((String) value);
                 }
             }
-            builder.set(i, value);
+            vs.add(value);
         }
-        return builder.buildFeature(id);
+        return builder.id(id).values(vs).build();
     }
 
     protected Geometry geom(String wkt) {
         try {
-            return new WKTReader2().read(wkt);
+            return new WKTReader().read(wkt);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -87,7 +86,7 @@ public class RevFeatureBuilderTest {
 
     @Test
     public void testBuildWithAddValue() throws Exception {
-        SimpleFeature f = (SimpleFeature) points1;
+        Feature f = points1;
         RevFeature feature = RevFeature.builder().build(f);
 
         RevFeatureBuilder b = RevFeature.builder();
@@ -104,13 +103,11 @@ public class RevFeatureBuilderTest {
 
     @Test
     public void testBuildWithAddProperty() throws Exception {
-        SimpleFeature f = (SimpleFeature) points1;
+        Feature f = points1;
         RevFeature feature = RevFeature.builder().build(f);
 
         RevFeatureBuilder b = RevFeature.builder();
-        for (Property p : f.getProperties()) {
-            b.addProperty(p);
-        }
+        b.addAll(f.getValues());
         RevFeature built = b.build();
         assertEquals(feature, built);
 
@@ -121,16 +118,13 @@ public class RevFeatureBuilderTest {
 
     @Test
     public void testReset() {
-        SimpleFeature f = (SimpleFeature) points1;
+        Feature f = points1;
         RevFeature feature = RevFeature.builder().build(f);
 
         RevFeatureBuilder b = RevFeature.builder();
         b.addValue(1000);
         b.addValue("str");
-        b.reset();
-        for (Property p : f.getProperties()) {
-            b.addProperty(p);
-        }
+        b.reset().addAll(f.getValues());
         RevFeature built = b.build();
         assertEquals(feature, built);
 
@@ -141,17 +135,17 @@ public class RevFeatureBuilderTest {
 
     @Test
     public void testAddAll() {
-        SimpleFeature f = (SimpleFeature) points1;
+        Feature f = points1;
         RevFeature feature = RevFeature.builder().build(f);
 
         RevFeatureBuilder b = RevFeature.builder();
-        b.addAll(f.getAttributes());
+        b.addAll(f.getValues());
 
         RevFeature builtWithList = b.build();
         assertEquals(feature, builtWithList);
 
         b.reset();
-        b.addAll(f.getAttributes().toArray(new Object[f.getAttributeCount()]));
+        b.addAll(f.getValues().toArray(new Object[f.getAttributeCount()]));
         RevFeature builtWithArray = b.build();
         assertEquals(feature, builtWithArray);
 

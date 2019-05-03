@@ -16,9 +16,9 @@ import java.util.SortedSet;
 import javax.annotation.Nonnegative;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.FeatureType;
 
 import lombok.NonNull;
 

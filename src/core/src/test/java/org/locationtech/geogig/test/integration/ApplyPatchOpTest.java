@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.porcelain.ApplyPatchOp;
 import org.locationtech.geogig.porcelain.CannotApplyPatchException;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

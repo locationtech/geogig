@@ -18,12 +18,12 @@ import java.util.Map;
 
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;

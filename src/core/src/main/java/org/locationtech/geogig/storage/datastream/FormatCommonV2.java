@@ -36,6 +36,9 @@ import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.wkt.Formattable;
+import org.locationtech.geogig.feature.AttributeType;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.FieldType;
@@ -58,11 +61,8 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.FeatureTypeFactory;
 import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.feature.type.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
@@ -637,7 +637,8 @@ public class FormatCommonV2 {
             final CoordinateReferenceSystem crs;
             try {
                 if (isCRSCode) {
-                    if (RevObjects.NULL_CRS_IDENTIFIER.equals(crsText)) {
+                    if (org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
+                            .getSrsIdentifier().equals(crsText)) {
                         crs = null;
                     } else {
                         boolean forceLongitudeFirst = crsText.startsWith("EPSG:");
@@ -687,7 +688,8 @@ public class FormatCommonV2 {
             CoordinateReferenceSystem crs = gType.getCoordinateReferenceSystem();
             String srsName;
             if (crs == null) {
-                srsName = RevObjects.NULL_CRS_IDENTIFIER;
+                srsName = org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
+                        .getSrsIdentifier();
             } else {
                 final boolean longitudeFirst = CRS.getAxisOrder(crs, false) == AxisOrder.EAST_NORTH;
                 final boolean codeOnly = true;

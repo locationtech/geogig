@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -41,7 +42,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;

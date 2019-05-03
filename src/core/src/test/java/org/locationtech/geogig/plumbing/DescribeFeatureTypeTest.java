@@ -10,9 +10,9 @@
 package org.locationtech.geogig.plumbing;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableSet;
 

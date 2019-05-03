@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;

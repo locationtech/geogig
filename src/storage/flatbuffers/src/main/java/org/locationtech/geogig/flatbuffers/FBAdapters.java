@@ -16,6 +16,8 @@ import javax.annotation.Nullable;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.locationtech.geogig.feature.AttributeType;
+import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.flatbuffers.generated.v1.QualifiedName;
 import org.locationtech.geogig.flatbuffers.generated.v1.SHA;
 import org.locationtech.geogig.flatbuffers.generated.v1.SimpleAttributeDescriptor;
@@ -24,10 +26,8 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.FeatureTypeFactory;
 import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.Name;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -74,7 +74,7 @@ final @UtilityClass class FBAdapters {
                 env.getMaxY() < bounds.y1());
     }
 
-    public static org.opengis.feature.type.FeatureType toFeatureType(
+    public static org.locationtech.geogig.feature.FeatureType toFeatureType(
             @NonNull org.locationtech.geogig.flatbuffers.generated.v1.SimpleFeatureType t) {
 
         SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder(ftfactory);
@@ -137,7 +137,7 @@ final @UtilityClass class FBAdapters {
         return coordSys;
     }
 
-    public static org.opengis.feature.type.Name toName(@NonNull QualifiedName qname) {
+    public static org.locationtech.geogig.feature.Name toName(@NonNull QualifiedName qname) {
         String namespaceUri = qname.namespaceUri();
         String localName = qname.localName();
         if (Strings.isNullOrEmpty(namespaceUri)) {

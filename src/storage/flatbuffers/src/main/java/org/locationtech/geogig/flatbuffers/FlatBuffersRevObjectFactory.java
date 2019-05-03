@@ -18,6 +18,8 @@ import java.util.Objects;
 import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.flatbuffers.generated.v1.ObjectType;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
@@ -35,8 +37,6 @@ import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.model.impl.RevObjectFactoryImpl;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 

@@ -19,19 +19,14 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.geotools.geometry.jts.WKTReader2;
-import org.geotools.referencing.CRS;
 import org.junit.Assert;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.feature.type.AttributeType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
@@ -133,27 +128,7 @@ public @UtilityClass class RevObjectTestUtil {
         for (int i = 0; i < eds.size(); i++) {
             PropertyDescriptor ed = eds.get(i);
             PropertyDescriptor ad = ads.get(i);
-            assertEquals(ed.getName(), ad.getName());
-            assertEquals(ed.getMinOccurs(), ad.getMinOccurs());
-            assertEquals(ed.getMaxOccurs(), ad.getMaxOccurs());
-            assertEquals(ed.isNillable(), ad.isNillable());
-            if (ed instanceof GeometryDescriptor) {
-                assertTrue(ad instanceof GeometryDescriptor);
-                GeometryDescriptor gexp = (GeometryDescriptor) ed;
-                GeometryDescriptor gact = (GeometryDescriptor) ad;
-                CoordinateReferenceSystem expectedCrs = gexp.getCoordinateReferenceSystem();
-                CoordinateReferenceSystem actualCrs = gact.getCoordinateReferenceSystem();
-                assertTrue(CRS.equalsIgnoreMetadata(expectedCrs, actualCrs));
-            }
-            PropertyType et = ed.getType();
-            PropertyType at = ad.getType();
-            assertEquals(et.getName(), at.getName());
-            assertEquals(et.getBinding(), at.getBinding());
-            if (et instanceof AttributeType) {
-                assertTrue(at instanceof AttributeType);
-                assertEquals(((AttributeType) et).isIdentified(),
-                        ((AttributeType) at).isIdentified());
-            }
+            assertEquals(ed, ad);
         }
         assertEquals(expected, actual);
     }
@@ -334,7 +309,7 @@ public @UtilityClass class RevObjectTestUtil {
     public static Geometry geom(String wkt) {
         Geometry value;
         try {
-            value = new WKTReader2().read(wkt);
+            value = new WKTReader().read(wkt);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }

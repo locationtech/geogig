@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -44,7 +45,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 

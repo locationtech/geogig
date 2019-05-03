@@ -35,6 +35,7 @@ import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -56,12 +57,10 @@ import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -675,16 +674,7 @@ public class PreOrderDiffWalk {
                 final SortedMap<Integer, Bucket> buckets) {
             final Map<ObjectId, RevTree> bucketTrees;
             {
-
-                // Bucket::getObjectId, but friendly for Fortify
-                Function<Bucket, ObjectId> fn_bucket_getObjectId = new Function<Bucket, ObjectId>() {
-                    @Override
-                    public ObjectId apply(Bucket bucket) {
-                        return bucket.getObjectId();
-                    }
-                };
-
-                Iterable<ObjectId> ids = transform(buckets.values(), fn_bucket_getObjectId);
+                Iterable<ObjectId> ids = transform(buckets.values(), Bucket::getObjectId);
                 bucketTrees = Streams.stream(source.getAll(ids, NOOP_LISTENER, RevTree.class))
                         .collect(Collectors.toMap(t -> t.getId(), t -> t));
             }
@@ -696,23 +686,11 @@ public class PreOrderDiffWalk {
                 final ListMultimap<Integer, Node> leafTreeNodesByBucket, RevTree left,
                 RevTree right) {
 
-            final SortedSet<BucketIndex> bucketIndexes;
-
             Set<Integer> childIndexes = Sets.union(treeBuckets.keySet(),
                     leafTreeNodesByBucket.keySet());
 
-            // (i) -> this.bucketIndex.append(i, left, right)
-            Function<Integer, BucketIndex> fn_append = new Function<Integer, BucketIndex>() {
-                @Override
-                public BucketIndex apply(Integer i) {
-                    return bucketIndex.append(i, left, right);
-                }
-            };
-
-            Iterable<BucketIndex> childPaths = Iterables.transform(childIndexes, fn_append);
-            bucketIndexes = Sets.newTreeSet(childPaths);
-
-            return bucketIndexes;
+            return childIndexes.stream().map(i -> bucketIndex.append(i, left, right))
+                    .collect(Collectors.toCollection(TreeSet::new));
         }
 
         /**
@@ -753,10 +731,8 @@ public class PreOrderDiffWalk {
         protected final ListMultimap<Integer, Node> splitNodesToBucketsAtDepth(Iterator<Node> nodes,
                 final BucketIndex parentIndex) {
 
-            Function<Node, Integer> keyFunction = node -> Integer
-                    .valueOf(info.nodeOrder.bucket(node, parentIndex.depthIndex() + 1));
-
-            ListMultimap<Integer, Node> nodesByBucket = Multimaps.index(nodes, keyFunction);
+            ListMultimap<Integer, Node> nodesByBucket = Multimaps.index(nodes, node -> Integer
+                    .valueOf(info.nodeOrder.bucket(node, parentIndex.depthIndex() + 1)));
 
             return nodesByBucket;
         }

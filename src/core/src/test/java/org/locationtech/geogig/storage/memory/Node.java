@@ -19,6 +19,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import lombok.Getter;
+
 /**
  * Node class used by {@link Graph}.
  * <p>
@@ -30,7 +32,7 @@ import com.google.common.collect.Maps;
  */
 class Node {
 
-    final ObjectId id;
+    final @Getter ObjectId id;
 
     final List<Edge> in = Lists.newArrayList();
 

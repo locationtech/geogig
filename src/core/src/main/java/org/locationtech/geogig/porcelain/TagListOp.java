@@ -22,7 +22,6 @@ import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BulkOpListener;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -35,16 +34,7 @@ public class TagListOp extends AbstractGeoGigOp<ImmutableList<RevTag>> {
     protected ImmutableList<RevTag> _call() {
         List<Ref> refs = newArrayList(
                 command(ForEachRef.class).setPrefixFilter(Ref.TAGS_PREFIX).call());
-
-        // (r) -> r.getObjectId()
-        Function<Ref, ObjectId> fn = new Function<Ref, ObjectId>() {
-            @Override
-            public ObjectId apply(Ref ref) {
-                return ref.getObjectId();
-            }
-        };
-
-        List<ObjectId> tagIds = transform(refs, fn);
+        List<ObjectId> tagIds = transform(refs, Ref::getObjectId);
 
         Iterator<RevTag> alltags;
         alltags = objectDatabase().getAll(tagIds, BulkOpListener.NOOP_LISTENER, RevTag.class);

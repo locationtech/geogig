@@ -15,6 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -22,7 +24,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 
-import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -100,7 +101,7 @@ class PGObjectStoreGetAllIterator<T extends RevObject> extends AbstractIterator<
             }
         };
 
-        Iterable<List<T>> lists = Iterables.transform(futures, futureGetter);
+        Iterable<List<T>> lists = futures.stream().map(futureGetter).collect(Collectors.toList());
         Iterable<T> concat = Iterables.concat(lists);
         Iterator<T> iterator = concat.iterator();
 

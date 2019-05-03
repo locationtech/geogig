@@ -31,7 +31,6 @@ import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
@@ -83,10 +82,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
         Iterator<NodeRef> it = new DepthTreeIterator("", ObjectId.NULL, result, objectStore,
                 Strategy.CHILDREN);
-        Function<NodeRef, String> asName = v -> {
-            return v.name();
-        };
-        HashSet<String> names = Sets.newHashSet(Iterators.transform(it, asName));
+        HashSet<String> names = Sets.newHashSet(Iterators.transform(it, NodeRef::name));
         assertEquals(numEntries - removedKeys.size(), names.size());
         for (Node key : removedKeys) {
             assertFalse(names.contains(key.getName()));
@@ -127,10 +123,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
         Iterator<NodeRef> it = new DepthTreeIterator("", ObjectId.NULL, result, objectStore,
                 Strategy.CHILDREN);
-        Function<NodeRef, String> asName = v -> {
-            return v.name();
-        };
-        HashSet<String> names = Sets.newHashSet(Iterators.transform(it, asName));
+        HashSet<String> names = Sets.newHashSet(Iterators.transform(it, NodeRef::name));
         assertEquals(numEntries - removedKeys.size(), names.size());
         for (Node key : removedKeys) {
             assertFalse(names.contains(key.getName()));

@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import java.util.function.Function;
+
 import org.geotools.data.util.ScreenMap;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -22,8 +24,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
-
-import com.google.common.base.Function;
 
 /**
  * This is a simple function that, if a geometry is "small" (fits in a pixel - as defined by the

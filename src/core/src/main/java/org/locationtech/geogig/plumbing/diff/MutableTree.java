@@ -35,7 +35,6 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
@@ -132,15 +131,7 @@ public class MutableTree implements Cloneable {
     public static MutableTree createFromRefs(final ObjectId rootId,
             final Iterator<NodeRef> treeRefs) {
 
-        // NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> fn_path = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef noderef) {
-                return noderef.path();
-            }
-        };
-
-        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(treeRefs, fn_path);
+        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(treeRefs, NodeRef::path);
 
         return createFromPaths(rootId, treesByPath);
     }

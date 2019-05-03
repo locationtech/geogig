@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
@@ -36,10 +38,8 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -196,16 +196,8 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
                         .setStrategy(Strategy.TREES_ONLY).call());
 
         final Set<String> exportLayers;
-
-        // (n) -> n.name()
-        Function<NodeRef, String> fn = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef n) {
-                return n.name();
-            }
-        };
-
-        final Set<String> repoLayers = Sets.newHashSet(Iterables.transform(featureTreeRefs, fn));
+        final Set<String> repoLayers = featureTreeRefs.stream().map(NodeRef::name)
+                .collect(Collectors.toSet());
 
         if (treePaths == null || treePaths.isEmpty()) {
             exportLayers = repoLayers;
@@ -230,7 +222,7 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
             }
         };
 
-        return Sets.newHashSet(Iterables.transform(exportLayers, fn2));
+        return exportLayers.stream().map(fn2).collect(Collectors.toSet());
     }
 
     /**

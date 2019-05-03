@@ -35,7 +35,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -95,16 +94,7 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
         Iterable<ObjectId> ids = ImmutableList.of(metadataId, ancestorFeatureId, featureAId,
                 featureBId);
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
-
-        // RevObject::getId, but friendly for Fortify
-        Function<RevObject, ObjectId> fn_getId = new Function<RevObject, ObjectId>() {
-            @Override
-            public ObjectId apply(RevObject revobj) {
-                return revobj.getId();
-            }
-        };
-
-        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, fn_getId);
+        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, RevObject::getId);
         checkState(map.containsKey(metadataId), "Invalid reference: %s", metadataId);
         checkState(map.containsKey(ancestorFeatureId), "Invalid reference: %s", ancestorFeatureId);
         checkState(map.containsKey(featureAId), "Invalid reference: %s", featureAId);

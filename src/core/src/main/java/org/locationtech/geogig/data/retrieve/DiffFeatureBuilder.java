@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
+import java.util.function.Function;
+
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.DiffEntry;
@@ -18,8 +20,6 @@ import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-
-import com.google.common.base.Function;
 
 class DiffFeatureBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleFeature> {
 

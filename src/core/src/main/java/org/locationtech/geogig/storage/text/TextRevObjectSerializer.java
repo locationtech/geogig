@@ -64,7 +64,6 @@ import org.opengis.filter.Filter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.InternationalString;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -596,16 +595,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             builder.committerTimestamp(committer.getTimestamp());
             builder.committerTimeZoneOffset(committer.getTimeZoneOffset());
             builder.message(message);
-
-            // (str) -> ObjectId.valueOf(str)
-            Function<String, ObjectId> fn = new Function<String, ObjectId>() {
-                @Override
-                public ObjectId apply(String str) {
-                    return ObjectId.valueOf(str);
-                }
-            };
-
-            List<ObjectId> parentIds = Lists.transform(parents, fn);
+            List<ObjectId> parentIds = Lists.transform(parents, ObjectId::valueOf);
             builder.parentIds(parentIds);
             builder.treeId(ObjectId.valueOf(tree));
             RevCommit commit = builder.build();

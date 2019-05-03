@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.cli.postgis;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.geotools.data.DataStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -24,7 +25,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
-import com.google.common.base.Function;
 
 /**
  * Exports features from a feature type into a PostGIS database.

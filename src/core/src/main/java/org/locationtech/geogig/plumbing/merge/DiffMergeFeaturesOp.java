@@ -40,7 +40,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -185,16 +184,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
                 toMergeMetadataId, ancestorFeatureId, featureAId, featureBId);
 
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
-
-        // RevObject::getId, but friendly for Fortify
-        Function<RevObject, ObjectId> fn_getId = new Function<RevObject, ObjectId>() {
-            @Override
-            public ObjectId apply(RevObject revobj) {
-                return revobj.getId();
-            }
-        };
-
-        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, fn_getId);
+        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, RevObject::getId);
 
         if (ids.size() != map.size()) {
             ids.forEach((id) -> checkState(map.containsKey(id), "Invalid reference: %s", id));

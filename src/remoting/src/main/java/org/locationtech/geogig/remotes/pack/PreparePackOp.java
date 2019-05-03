@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.DiffEntry;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
@@ -140,16 +140,7 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
     }
 
     private Set<RevTag> resolveWantTags(List<RefRequest> tagRequests) {
-
-        // (r) -> r.want
-        Function<RefRequest, ObjectId> fn = new Function<RefRequest, ObjectId>() {
-            @Override
-            public ObjectId apply(RefRequest r) {
-                return r.want;
-            }
-        };
-
-        Iterable<ObjectId> ids = transform(tagRequests, fn);
+        Iterable<ObjectId> ids = transform(tagRequests, r -> r.want);
 
         Iterator<RevTag> tags = objectDatabase().getAll(ids, NOOP_LISTENER, RevTag.class);
 
@@ -159,19 +150,11 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
     private Set<ObjectId> resolveHeadCommits(List<RefRequest> refs, boolean isTags,
             Predicate<? super RefRequest> filter,
             Function<? super RefRequest, ? extends ObjectId> function) {
-        Iterable<ObjectId> ids = transform(filter(refs, filter), function);
+        List<ObjectId> ids = refs.stream().filter(filter).map(function)
+                .collect(Collectors.toList());
         if (isTags) {
             Iterator<RevTag> tags = objectDatabase().getAll(ids, NOOP_LISTENER, RevTag.class);
-
-            // (t) -> t.getCommitId()
-            Function<RevTag, ObjectId> fn = new Function<RevTag, ObjectId>() {
-                @Override
-                public ObjectId apply(RevTag t) {
-                    return t.getCommitId();
-                }
-            };
-
-            ids = newArrayList(Iterators.transform(tags, fn));
+            ids = newArrayList(Iterators.transform(tags, RevTag::getCommitId));
         }
         return Sets.newHashSet(ids);
     }

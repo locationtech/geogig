@@ -24,7 +24,6 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
 import lombok.extern.slf4j.Slf4j;
@@ -73,17 +72,8 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
 
         final List<NodeRef> previousVersionTrees = command(FindFeatureTypeTrees.class)
                 .setRootTreeRef(previousRefSpec).call();
-
-        // NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> fn_path = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef noderef) {
-                return noderef.path();
-            }
-        };
-
         final Map<String, NodeRef> previousTreeRefs = Maps.uniqueIndex(previousVersionTrees,
-                fn_path);
+                NodeRef::path);
 
         final IndexDatabase indexDatabase = indexDatabase();
 

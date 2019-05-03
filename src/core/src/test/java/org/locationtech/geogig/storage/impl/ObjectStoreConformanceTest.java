@@ -71,7 +71,6 @@ import org.locationtech.jts.io.WKTReader;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -183,9 +182,8 @@ public abstract class ObjectStoreConformanceTest {
         ObjectId notInDb1 = RevObjectTestSupport.hashString("fake1");
         ObjectId notInDb2 = RevObjectTestSupport.hashString("fake2");
 
-        Function<RevObject, ObjectId> toId = p -> p.getId();
         List<ObjectId> ids = Lists.newArrayList(concat(singletonIterator(notInDb1),
-                transform(objs.iterator(), toId), singletonIterator(notInDb2)));
+                transform(objs.iterator(), RevObject::getId), singletonIterator(notInDb2)));
 
         db.deleteAll(ids.iterator());
         for (ObjectId id : ids) {
@@ -205,9 +203,8 @@ public abstract class ObjectStoreConformanceTest {
         ObjectId notInDb1 = RevObjectTestSupport.hashString("fake1");
         ObjectId notInDb2 = RevObjectTestSupport.hashString("fake2");
 
-        Function<RevObject, ObjectId> toId = p -> p.getId();
         Iterator<ObjectId> ids = concat(singletonIterator(notInDb1),
-                transform(objs.iterator(), toId), singletonIterator(notInDb2));
+                transform(objs.iterator(), RevObject::getId), singletonIterator(notInDb2));
 
         CountingListener listener = BulkOpListener.newCountingListener();
         db.deleteAll(ids, listener);
@@ -280,13 +277,13 @@ public abstract class ObjectStoreConformanceTest {
         assertTrue(db.put(feature(5, "not queried 1")));
         assertTrue(db.put(feature(6, "not queried 2")));
 
-        Function<RevObject, ObjectId> toId = p -> p.getId();
-        Iterable<ObjectId> ids = Iterables.transform(expected, toId);
+        Iterable<ObjectId> ids = Iterables.transform(expected, RevObject::getId);
 
         Iterator<RevObject> iterator = db.getAll(ids);
         List<RevObject> actual = ImmutableList.copyOf(iterator);
 
-        assertEquals(Sets.newHashSet(ids), Sets.newHashSet(Iterables.transform(actual, toId)));
+        assertEquals(Sets.newHashSet(ids),
+                Sets.newHashSet(Iterables.transform(actual, RevObject::getId)));
 
     }
 
@@ -302,8 +299,7 @@ public abstract class ObjectStoreConformanceTest {
         assertTrue(db.put(feature(5, "not queried 1")));
         assertTrue(db.put(feature(6, "not queried 2")));
 
-        Function<RevObject, ObjectId> toId = p -> p.getId();
-        Iterable<ObjectId> ids = Iterables.transform(expected, toId);
+        Iterable<ObjectId> ids = Iterables.transform(expected, RevObject::getId);
 
         CountingListener listener = BulkOpListener.newCountingListener();
 
@@ -314,7 +310,8 @@ public abstract class ObjectStoreConformanceTest {
 
         List<RevObject> actual = ImmutableList.copyOf(result);
 
-        assertEquals(Sets.newHashSet(ids), Sets.newHashSet(Iterables.transform(actual, toId)));
+        assertEquals(Sets.newHashSet(ids),
+                Sets.newHashSet(Iterables.transform(actual, RevObject::getId)));
 
         assertEquals(expected.size(), listener.found());
         assertEquals(2, listener.notFound());
@@ -474,8 +471,7 @@ public abstract class ObjectStoreConformanceTest {
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
                 feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
-        Function<RevObject, ObjectId> toId = p -> p.getId();
-        final Iterable<ObjectId> ids = Iterables.transform(expected, toId);
+        final Iterable<ObjectId> ids = Iterables.transform(expected, RevObject::getId);
 
         final List<ObjectId> found = new CopyOnWriteArrayList<>();
         final List<ObjectId> inserted = new CopyOnWriteArrayList<>();

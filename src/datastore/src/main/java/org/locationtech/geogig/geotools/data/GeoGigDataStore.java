@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
@@ -50,11 +51,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -291,18 +289,9 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     }
 
     @Override
-    protected ImmutableList<Name> createTypeNames() throws IOException {
+    protected List<Name> createTypeNames() throws IOException {
         List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT);
-
-        // (ref) -> getDescriptorName(ref)
-        Function<NodeRef, Name> fn = new Function<NodeRef, Name>() {
-            @Override
-            public Name apply(NodeRef ref) {
-                return getDescriptorName(ref);
-            }
-        };
-
-        return ImmutableList.copyOf(Collections2.transform(typeTrees, fn));
+        return typeTrees.stream().map(this::getDescriptorName).collect(Collectors.toList());
     }
 
     private List<NodeRef> findTypeRefs(@Nullable Transaction tx) {

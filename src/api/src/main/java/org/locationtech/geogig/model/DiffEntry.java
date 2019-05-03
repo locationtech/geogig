@@ -19,6 +19,8 @@ import org.locationtech.jts.geom.Envelope;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
+
 /**
  * Provides a way of describing the between two different {@link Node}s.
  * 
@@ -98,6 +100,18 @@ public class DiffEntry {
 
         this.oldObject = oldObject;
         this.newObject = newObject;
+    }
+
+    public static DiffEntry add(@NonNull NodeRef newObject) {
+        return new DiffEntry(null, newObject);
+    }
+
+    public static DiffEntry delete(@NonNull NodeRef oldObject) {
+        return new DiffEntry(oldObject, null);
+    }
+
+    public static DiffEntry modify(@NonNull NodeRef oldObject, @NonNull NodeRef newObject) {
+        return new DiffEntry(oldObject, newObject);
     }
 
     /**

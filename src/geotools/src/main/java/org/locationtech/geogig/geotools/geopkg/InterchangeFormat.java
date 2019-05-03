@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 import javax.sql.DataSource;
 
@@ -69,9 +70,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
@@ -264,24 +263,9 @@ public class InterchangeFormat {
         try (Connection connection = dataSource.getConnection();
                 GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
 
-            // Ref::getName, but friendly for Fortify
-            Function<AuditTable, String> fn_getTableName = new Function<AuditTable, String>() {
-                @Override
-                public String apply(AuditTable at) {
-                    return at.getTableName();
-                }
-            };
-
-            // k -> importTables.isEmpty() || importTables.contains(k)
-            Predicate<String> fn = new Predicate<String>() {
-                @Override
-                public boolean apply(String k) {
-                    return importTables.isEmpty() || importTables.contains(k);
-                }
-            };
-
-            final Map<String, AuditTable> tables = Maps
-                    .filterKeys(Maps.uniqueIndex(metadata.getAuditTables(), fn_getTableName), fn);
+            final Map<String, AuditTable> tables = Maps.filterKeys(
+                    Maps.uniqueIndex(metadata.getAuditTables(), AuditTable::getTableName),
+                    k -> importTables.isEmpty() || importTables.contains(k));
 
             checkState(tables.size() > 0, "No table to import.");
             Iterator<AuditTable> iter = tables.values().iterator();
@@ -474,8 +458,8 @@ public class InterchangeFormat {
             }
         };
 
-        Iterator<RevFeature> feautres = Iterators.filter(Iterators.transform(changes, function),
-                Predicates.notNull());
+        Iterator<RevFeature> feautres = Iterators
+                .filter(Iterators.transform(changes, function::apply), Predicates.notNull());
 
         store.putAll(feautres);
 
@@ -568,16 +552,7 @@ public class InterchangeFormat {
             this.builder = new SimpleFeatureBuilder(type);
             this.builder.setValidating(false);
             List<AttributeDescriptor> descriptors = type.getAttributeDescriptors();
-
-            // at -> at.getLocalName()
-            Function<AttributeDescriptor, String> fn = new Function<AttributeDescriptor, String>() {
-                @Override
-                public String apply(AttributeDescriptor at) {
-                    return at.getLocalName();
-                }
-            };
-
-            this.attNames = Lists.transform(descriptors, fn);
+            this.attNames = Lists.transform(descriptors, AttributeDescriptor::getLocalName);
             GeometryDescriptor geometryDescriptor = type.getGeometryDescriptor();
             this.geometryAttribute = geometryDescriptor == null ? null
                     : geometryDescriptor.getLocalName();

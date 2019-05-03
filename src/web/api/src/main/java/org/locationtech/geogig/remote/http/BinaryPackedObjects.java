@@ -35,7 +35,6 @@ import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -83,7 +82,8 @@ public final class BinaryPackedObjects {
         LOGGER.info("scanning for previsit list...");
         Stopwatch sw = Stopwatch.createStarted();
         ImmutableList<ObjectId> needsPrevisit = traverseCommits
-                ? scanForPrevisitList(want, have, deduplicator) : ImmutableList.copyOf(have);
+                ? scanForPrevisitList(want, have, deduplicator)
+                : ImmutableList.copyOf(have);
         LOGGER.info(String.format(
                 "Previsit list built in %s for %,d ids: %s. Calculating reachable content ids...",
                 sw.stop(), needsPrevisit.size(), needsPrevisit));
@@ -156,11 +156,9 @@ public final class BinaryPackedObjects {
     private ImmutableList<ObjectId> reachableContentIds(ImmutableList<ObjectId> needsPrevisit,
             Deduplicator deduplicator) {
 
-        Function<RevObject, ObjectId> getIdTransformer = (obj) -> obj == null ? null : obj.getId();
-
         Iterator<ObjectId> reachable = Iterators.transform( //
                 PostOrderIterator.contentsOf(needsPrevisit, database, deduplicator), //
-                getIdTransformer);
+                obj -> obj == null ? null : obj.getId());
         return ImmutableList.copyOf(reachable);
     }
 

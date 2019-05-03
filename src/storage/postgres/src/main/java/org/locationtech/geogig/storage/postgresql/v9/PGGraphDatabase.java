@@ -45,7 +45,6 @@ import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -143,30 +142,13 @@ public class PGGraphDatabase implements GraphDatabase {
     @Override
     public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         final PGId node = PGId.valueOf(commitId);
-
-        // (p) -> p.toObjectId()
-        Function<PGId, ObjectId> fn = new Function<PGId, ObjectId>() {
-            @Override
-            public ObjectId apply(PGId p) {
-                return p.toObjectId();
-            }
-        };
-
-        return ImmutableList.copyOf(Iterables.transform(outgoing(node), fn));
+        return ImmutableList.copyOf(Iterables.transform(outgoing(node), PGId::toObjectId));
     }
 
     @Override
     public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
-
-        // (p) -> p.toObjectId()
-        Function<PGId, ObjectId> fn = new Function<PGId, ObjectId>() {
-            @Override
-            public ObjectId apply(PGId p) {
-                return p.toObjectId();
-            }
-        };
-
-        return ImmutableList.copyOf(Iterables.transform(incoming(PGId.valueOf(commitId)), fn));
+        return ImmutableList
+                .copyOf(Iterables.transform(incoming(PGId.valueOf(commitId)), PGId::toObjectId));
     }
 
     @Override

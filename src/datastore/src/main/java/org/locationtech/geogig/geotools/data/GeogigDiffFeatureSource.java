@@ -61,7 +61,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -326,16 +325,8 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
         if (Query.ALL_NAMES == queryProps) {
             return false;
         }
-
-        // (p) -> p.getLocalName()
-        Function<AttributeDescriptor, String> fn = new Function<AttributeDescriptor, String>() {
-            @Override
-            public String apply(AttributeDescriptor p) {
-                return p.getLocalName();
-            }
-        };
-
-        List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(), fn);
+        List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(),
+                AttributeDescriptor::getLocalName);
 
         boolean retypeRequired = !Arrays.asList(queryProps).equals(resultNames);
         return retypeRequired;

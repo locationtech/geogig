@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -136,7 +136,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
             @Override
             public Iterator<ObjectId> iterator() {
                 Iterator<Node> iterator = nodesToMove.get();
-                Iterator<ObjectId> ids = Iterators.transform(iterator, asId);
+                Iterator<ObjectId> ids = Iterators.transform(iterator, asId::apply);
 
                 return ids;
             }

@@ -46,7 +46,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.geometry.BoundingBox;
 
-import com.google.common.base.Function;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 
@@ -187,16 +186,8 @@ public @Builder class DiffSummaryOp extends AbstractGeoGigOp<List<LayerDiffSumma
         Set<NodeRef> leftnodes = l.join();
         Set<NodeRef> rightnodes = r.join();
 
-        // NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> toPath = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef noderef) {
-                return noderef.path();
-            }
-        };
-
-        final MapDifference<String, NodeRef> difference = difference(uniqueIndex(leftnodes, toPath),
-                uniqueIndex(rightnodes, toPath));
+        final MapDifference<String, NodeRef> difference = difference(
+                uniqueIndex(leftnodes, NodeRef::path), uniqueIndex(rightnodes, NodeRef::path));
 
         Map<String, NodeRef[]> resolvedChangedPaths = new HashMap<>();
 

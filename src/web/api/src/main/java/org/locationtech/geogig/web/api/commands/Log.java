@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.geotools.util.Range;
 import org.locationtech.geogig.model.DiffEntry;
@@ -50,7 +51,6 @@ import org.locationtech.geogig.web.api.StreamingWriter;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.http.MediaType;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
@@ -326,7 +326,7 @@ public class Log extends AbstractWebAPICommand {
             };
 
             final Iterator<CommitWithChangeCounts> summarizedLog = Iterators.transform(log,
-                    changeCountFunctor);
+                    changeCountFunctor::apply);
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
@@ -417,7 +417,8 @@ public class Log extends AbstractWebAPICommand {
             while (log.hasNext()) {
                 commit = log.next();
                 String parentId = commit.getParentIds().size() >= 1
-                        ? commit.getParentIds().get(0).toString() : ObjectId.NULL.toString();
+                        ? commit.getParentIds().get(0).toString()
+                        : ObjectId.NULL.toString();
                 try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                         .setOldVersion(parentId).setNewVersion(commit.getId().toString())
                         .setFilter(path).call()) {

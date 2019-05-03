@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bounded;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -128,13 +128,13 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         if (iterator == null) {
             switch (strategy) {
             case CHILDREN:
-                iterator = Iterators.transform(new Children(tree), functor);
+                iterator = Iterators.transform(new Children(tree), functor::apply);
                 break;
             case FEATURES_ONLY:
-                iterator = Iterators.transform(new Features(tree), functor);
+                iterator = Iterators.transform(new Features(tree), functor::apply);
                 break;
             case TREES_ONLY:
-                iterator = Iterators.transform(new Trees(tree), functor);
+                iterator = Iterators.transform(new Trees(tree), functor::apply);
                 break;
             case RECURSIVE:
                 iterator = new Recursive(treePath, metadataId, tree, true, true);

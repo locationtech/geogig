@@ -22,7 +22,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -176,16 +175,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
 
     private Map<String, String> getAll(Predicate<String> keyFilter) {
         Map<String, String> all = new HashMap<>(Maps.filterKeys(this.refs, keyFilter));
-
-        // (v) -> unmask(v)
-        Function<String, String> fn = new Function<String, String>() {
-            @Override
-            public String apply(String v) {
-                return unmask(v);
-            }
-        };
-
-        all = Maps.transformValues(all, fn);
+        all = Maps.transformValues(all, this::unmask);
         return all;
     }
 

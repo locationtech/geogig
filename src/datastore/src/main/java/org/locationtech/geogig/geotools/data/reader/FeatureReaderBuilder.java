@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
@@ -81,7 +82,6 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -173,16 +173,8 @@ public class FeatureReaderBuilder {
         this.nativeSchema = (SimpleFeatureType) nativeType.type();
         this.typeRef = typeRef;
 
-        // (a) -> a.getLocalName()
-        Function<AttributeDescriptor, String> fn = new Function<AttributeDescriptor, String>() {
-            @Override
-            public String apply(AttributeDescriptor a) {
-                return a.getLocalName();
-            }
-        };
-
-        this.nativeSchemaAttributeNames = Sets
-                .newHashSet(Lists.transform(nativeSchema.getAttributeDescriptors(), fn));
+        this.nativeSchemaAttributeNames = Sets.newHashSet(Lists.transform(
+                nativeSchema.getAttributeDescriptors(), AttributeDescriptor::getLocalName));
     }
 
     /**
@@ -539,15 +531,7 @@ public class FeatureReaderBuilder {
     }
 
     private List<String> simpleNames(SimpleFeatureType type) {
-        // (ad) -> ad.getLocalName()
-        Function<AttributeDescriptor, String> fn = new Function<AttributeDescriptor, String>() {
-            @Override
-            public String apply(AttributeDescriptor ad) {
-                return ad.getLocalName();
-            }
-        };
-
-        return Lists.transform(type.getAttributeDescriptors(), fn);
+        return Lists.transform(type.getAttributeDescriptors(), AttributeDescriptor::getLocalName);
     }
 
     private AutoCloseableIterator<? extends SimpleFeature> applyPostFilter(Filter postFilter,
@@ -931,15 +915,7 @@ public class FeatureReaderBuilder {
                     .filter(Iterators.filter(identifiers.iterator(), FeatureId.class), notNull());
             Preconditions.checkArgument(featureIds.hasNext(), "Empty Id filter");
 
-            // (fid) -> fid.getID()
-            Function<FeatureId, String> fn = new Function<FeatureId, String>() {
-                @Override
-                public String apply(FeatureId fid) {
-                    return fid.getID();
-                }
-            };
-
-            pathFilters = Lists.newArrayList(Iterators.transform(featureIds, fn));
+            pathFilters = Lists.newArrayList(Iterators.transform(featureIds, FeatureId::getID));
         }
 
         return pathFilters;

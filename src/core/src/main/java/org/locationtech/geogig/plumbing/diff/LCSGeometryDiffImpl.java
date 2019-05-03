@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
@@ -27,7 +28,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -174,11 +174,11 @@ public class LCSGeometryDiffImpl {
                 Polygon polyg = (Polygon) subgeom;
                 Coordinate[] coords = polyg.getExteriorRing().getCoordinates();
                 Iterator<String> iter = Iterators.transform(Iterators.forArray(coords),
-                        printCoords);
+                        printCoords::apply);
                 sb.append(Joiner.on(' ').join(iter));
                 for (int j = 0; j < polyg.getNumInteriorRing(); j++) {
                     coords = polyg.getInteriorRingN(j).getCoordinates();
-                    iter = Iterators.transform(Iterators.forArray(coords), printCoords);
+                    iter = Iterators.transform(Iterators.forArray(coords), printCoords::apply);
                     sb.append(" " + INNER_RING_SEPARATOR + " ");
                     sb.append(Joiner.on(' ').join(iter));
                 }
@@ -188,7 +188,7 @@ public class LCSGeometryDiffImpl {
             } else {
                 Coordinate[] coords = subgeom.getCoordinates();
                 Iterator<String> iter = Iterators.transform(Iterators.forArray(coords),
-                        printCoords);
+                        printCoords::apply);
                 sb.append(Joiner.on(' ').join(iter));
                 sb.append(" " + SUBGEOM_SEPARATOR + " ");
             }

@@ -31,7 +31,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -62,16 +61,7 @@ public class IndexUtils {
         }
         List<NodeRef> treeRefs = context.command(FindFeatureTypeTrees.class).setRootTreeRef(rootRef)
                 .call();
-
-        // (r) -> r.path()
-        Function<NodeRef, String> fn = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef r) {
-                return r.path();
-            }
-        };
-
-        ImmutableMap<String, NodeRef> map = Maps.uniqueIndex(treeRefs, fn);
+        ImmutableMap<String, NodeRef> map = Maps.uniqueIndex(treeRefs, NodeRef::path);
         NodeRef treeRef = map.get(treePath);
         return treeRef;
     }

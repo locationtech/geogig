@@ -39,7 +39,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -121,15 +120,7 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
         {
             Iterable<Node> allNodes = Iterables.concat(list);
 
-            // Node::getObjectId, but friendly for Fortify
-            Function<Node, ObjectId> fn_Node_getObjectId = new Function<Node, ObjectId>() {
-                @Override
-                public ObjectId apply(Node node) {
-                    return node.getObjectId();
-                }
-            };
-
-            Iterable<ObjectId> nodeIds = Iterables.transform(allNodes, fn_Node_getObjectId);
+            Iterable<ObjectId> nodeIds = Iterables.transform(allNodes, Node::getObjectId);
             Iterator<RevFeature> objectsIt = featureSource.getAll(nodeIds,
                     BulkOpListener.NOOP_LISTENER, RevFeature.class);
             objectsIt.forEachRemaining((o) -> objects.put(o.getId(), o));

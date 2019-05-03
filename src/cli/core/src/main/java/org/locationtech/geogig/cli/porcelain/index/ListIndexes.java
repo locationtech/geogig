@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 
 @RequiresRepository(true)
@@ -76,7 +76,8 @@ public class ListIndexes extends AbstractCommand implements CLICommand {
             }
         };
 
-        Iterator<CharSequence> lines = Iterators.transform(indexInfos.iterator(), printFunctor);
+        Iterator<CharSequence> lines = Iterators.transform(indexInfos.iterator(),
+                printFunctor::apply);
 
         Console console = cli.getConsole();
         while (lines.hasNext()) {

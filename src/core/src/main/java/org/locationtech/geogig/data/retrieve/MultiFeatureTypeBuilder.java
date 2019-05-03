@@ -11,6 +11,7 @@ package org.locationtech.geogig.data.retrieve;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.util.factory.Hints;
@@ -22,8 +23,6 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
-
-import com.google.common.base.Function;
 
 class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, SimpleFeature> {
 

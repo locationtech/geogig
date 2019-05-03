@@ -46,7 +46,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
@@ -512,12 +511,7 @@ public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuild
         }
         if (!missing.isEmpty()) {
             Map<ObjectId, Integer> ids = Maps.uniqueIndex(missing,
-                    new Function<Integer, ObjectId>() {
-                        @Override
-                        public ObjectId apply(Integer index) {
-                            return bucketTreesByBucket.get(index).getObjectId();
-                        }
-                    });
+                    index -> bucketTreesByBucket.get(index).getObjectId());
             Iterator<RevObject> all = obStore.getAll(ids.keySet());
             while (all.hasNext()) {
                 RevObject next = all.next();

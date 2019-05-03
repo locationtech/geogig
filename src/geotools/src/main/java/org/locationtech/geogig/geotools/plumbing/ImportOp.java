@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -79,7 +80,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -568,7 +568,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                 }
             };
 
-            Iterator<FeatureInfo> infos = Iterators.transform(features, fn);
+            Iterator<FeatureInfo> infos = Iterators.transform(features, fn::apply);
             workTree.insert(infos, taskProgress);
         } catch (Exception e) {
             LOG.warn("Unable to insert into " + treePath, e);
@@ -579,18 +579,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     private Iterator<Feature> transformIterator(Iterator<NodeRef> nodeIterator,
             final RevFeatureType newFeatureType) {
 
-        // (node) -> alter(node, newFeatureType)
-        Function<NodeRef, Feature> fn = new Function<NodeRef, Feature>() {
-            @Override
-            public Feature apply(NodeRef node) {
-                return alter(node, newFeatureType);
-            }
-        };
-
-        Iterator<Feature> iterator = Iterators.transform(nodeIterator, fn);
-
-        return iterator;
-
+        return Iterators.transform(nodeIterator, node -> alter(node, newFeatureType));
     }
 
     /**

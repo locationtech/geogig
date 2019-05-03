@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
@@ -45,7 +46,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -109,18 +109,12 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                             objectDatabase(), defaultMetadataId, progressListener);
 
                     Iterator<Optional<Feature>> transformed = Iterators.transform(plainFeatures,
-                            ExportDiffOp.this.function);
+                            ExportDiffOp.this.function::apply);
 
-                    // (f) -> (SimpleFeature) (f.isPresent() ? f.get() : null)
-                    Function<Optional<Feature>, SimpleFeature> fn = new Function<Optional<Feature>, SimpleFeature>() {
-                        @Override
-                        public SimpleFeature apply(Optional<Feature> f) {
-                            return (SimpleFeature) (f.isPresent() ? f.get() : null);
-                        }
-                    };
-
-                    Iterator<SimpleFeature> filtered = Iterators
-                            .filter(Iterators.transform(transformed, fn), Predicates.notNull());
+                    Iterator<SimpleFeature> filtered = Iterators.filter(
+                            Iterators.transform(transformed,
+                                    fopt -> (SimpleFeature) fopt.orElse(null)),
+                            Predicates.notNull());
 
                     return new DelegateFeatureIterator<SimpleFeature>(filtered);
                 }

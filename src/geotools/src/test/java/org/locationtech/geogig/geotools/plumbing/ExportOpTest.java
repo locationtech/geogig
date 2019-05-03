@@ -11,6 +11,7 @@ package org.locationtech.geogig.geotools.plumbing;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
@@ -31,8 +32,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-
-import com.google.common.base.Function;
 
 public class ExportOpTest extends RepositoryTestCase {
 

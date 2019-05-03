@@ -27,7 +27,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 
@@ -67,16 +66,7 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
                     return input.changeType().equals(ChangeType.ADDED);
                 }
             });
-
-            // (de) -> de.newPath(), but friendly for Fortify
-            Function<DiffEntry, String> fn_DiffEntry_newPath = new Function<DiffEntry, String>() {
-                @Override
-                public String apply(DiffEntry node) {
-                    return node.newPath();
-                }
-            };
-
-            workingTree().delete(transform(added, fn_DiffEntry_newPath), getProgressListener());
+            workingTree().delete(transform(added, DiffEntry::newPath), getProgressListener());
         }
 
         return workingTree();

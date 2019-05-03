@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
@@ -57,7 +58,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.type.FeatureType;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -326,16 +326,8 @@ public class WorkingTreeImpl implements WorkingTree {
 
         final RevTree currentWorkHead = getTree();
 
-        // NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> fn_path = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef noderef) {
-                return noderef.path();
-            }
-        };
-
         final Map<String, NodeRef> currentTrees = Maps
-                .newHashMap(Maps.uniqueIndex(getFeatureTypeTrees(), fn_path));
+                .newHashMap(Maps.uniqueIndex(getFeatureTypeTrees(), NodeRef::path));
 
         Map<String, RevTreeBuilder> parentBuilders = new HashMap<>();
 
@@ -376,7 +368,8 @@ public class WorkingTreeImpl implements WorkingTree {
             return feature;
         };
 
-        Iterator<RevFeature> features = Iterators.transform(featureInfos, treeBuildingTransformer);
+        Iterator<RevFeature> features = Iterators.transform(featureInfos,
+                treeBuildingTransformer::apply);
         features = Iterators.filter(features, Predicates.notNull());
 
         // (f) -> !progress.isCanceled()

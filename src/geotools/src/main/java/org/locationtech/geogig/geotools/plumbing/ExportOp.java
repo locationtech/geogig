@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DefaultTransaction;
@@ -66,7 +66,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
@@ -151,28 +150,22 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                     defaultMetadataId);
 
             Iterator<Optional<Feature>> transformed = Iterators.transform(adaptedFeatures,
-                    ExportOp.this.function);
+                    ExportOp.this.function::apply);
 
-            // (f) -> (SimpleFeature) f.orElse(null)
-            Function<Optional<Feature>, SimpleFeature> fn = new Function<Optional<Feature>, SimpleFeature>() {
-                @Override
-                public SimpleFeature apply(Optional<Feature> f) {
-                    return (SimpleFeature) f.orElse(null);
-                }
-            };
-
-            Iterator<SimpleFeature> filteredIter = Iterators
-                    .filter(Iterators.transform(transformed, fn), Predicates.notNull());
+            Iterator<SimpleFeature> filteredIter = Iterators.filter(
+                    Iterators.transform(transformed, f -> (SimpleFeature) f.orElse(null)),
+                    Predicates.notNull());
 
             // check the resulting schema has something to contribute
             PeekingIterator<SimpleFeature> peekingIt = Iterators.peekingIterator(filteredIter);
             if (peekingIt.hasNext()) {
-                Function<AttributeDescriptor, String> toString = (at) -> at.getLocalName();
                 SimpleFeature peek = peekingIt.peek();
                 Set<String> sourceAtts = new HashSet<String>(
-                        Lists.transform(peek.getFeatureType().getAttributeDescriptors(), toString));
-                Set<String> targetAtts = new HashSet<String>(Lists
-                        .transform(targetStore.getSchema().getAttributeDescriptors(), toString));
+                        Lists.transform(peek.getFeatureType().getAttributeDescriptors(),
+                                AttributeDescriptor::getLocalName));
+                Set<String> targetAtts = new HashSet<String>(
+                        Lists.transform(targetStore.getSchema().getAttributeDescriptors(),
+                                AttributeDescriptor::getLocalName));
                 if (Sets.intersection(sourceAtts, targetAtts).isEmpty()) {
                     throw new GeoToolsOpException(StatusCode.UNABLE_TO_ADD,
                             "No common attributes between source and target feature types");
@@ -247,18 +240,12 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         BulkFeatureRetriever gf = new BulkFeatureRetriever(database);
         Iterator<SimpleFeature> feats = gf.getGeoToolsFeatures(nodes);
 
-        Iterator<SimpleFeature> transformedIter = Iterators.transform(feats,
-                new Function<SimpleFeature, SimpleFeature>() {
-
-                    private AtomicInteger count = new AtomicInteger();
-
-                    @Override
-                    public SimpleFeature apply(SimpleFeature input) {
-                        progressListener
-                                .setProgress((count.incrementAndGet() * 100.f) / typeTree.size());
-                        return input;
-                    }
-                });
+        progressListener.setMaxProgress(typeTree.size());
+        progressListener.setProgress(0);
+        Iterator<SimpleFeature> transformedIter = Iterators.transform(feats, f -> {
+            progressListener.incrementBy(1);
+            return f;
+        });
         return transformedIter;
     }
 
@@ -357,7 +344,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             return feature;
         };
 
-        return Iterators.transform(plainFeatures, alterFunction);
+        return Iterators.transform(plainFeatures, alterFunction::apply);
     }
 
     private NodeRef resolTypeTreeRef(final String refspec, final String treePath,

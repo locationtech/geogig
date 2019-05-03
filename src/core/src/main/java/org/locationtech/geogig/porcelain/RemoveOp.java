@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
@@ -41,7 +42,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
@@ -203,15 +203,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
     private void stageDeletes(Iterator<NodeRef> trees, Iterator<String> features) {
         final StagingArea index = stagingArea();
 
-        // (treeRef) -> new DiffEntry(treeRef, null), but friendly for Fortify
-        Function<NodeRef, DiffEntry> fn_DiffEntry_new = new Function<NodeRef, DiffEntry>() {
-            @Override
-            public DiffEntry apply(NodeRef treeRef) {
-                return new DiffEntry(treeRef, null);
-            }
-        };
-
-        Iterator<DiffEntry> treeDeletes = Iterators.transform(trees, fn_DiffEntry_new);
+        Iterator<DiffEntry> treeDeletes = Iterators.transform(trees, DiffEntry::delete);
 
         // (featurePath) -> {
         // Node node = RevObjectFactory.defaultInstance().createNode(
@@ -233,7 +225,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
             }
         };
 
-        Iterator<DiffEntry> featureDeletes = Iterators.transform(features, f);
+        Iterator<DiffEntry> featureDeletes = Iterators.transform(features, f::apply);
 
         ProgressListener progress = DefaultProgressListener.NULL;
         index.stage(progress, Iterators.concat(treeDeletes, featureDeletes), -1);
@@ -262,15 +254,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES)
                 .setReference(workTree.getId().toString()).call();
 
-        // NodeRef::path, but friendly for Fortify
-        Function<NodeRef, String> fn_path = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef noderef) {
-                return noderef.path();
-            }
-        };
-
-        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees, fn_path);
+        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees, NodeRef::path);
 
         Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(),
                 new HashSet<>(pathsToRemove));

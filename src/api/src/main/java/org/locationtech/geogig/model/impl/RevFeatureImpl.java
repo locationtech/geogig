@@ -21,9 +21,6 @@ import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-
 /**
  * A binary representation of the values of a Feature.
  * 

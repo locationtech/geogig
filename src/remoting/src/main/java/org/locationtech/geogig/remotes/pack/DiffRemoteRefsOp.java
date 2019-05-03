@@ -27,7 +27,6 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -80,17 +79,8 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
                         .call();
             }
             if (this.getTags) {
-
-                // RevTag::getName, but friendly for Fortify
-                Function<RevTag, String> fn_revTag_getName = new Function<RevTag, String>() {
-                    @Override
-                    public String apply(RevTag revTag) {
-                        return revTag.getName();
-                    }
-                };
-
                 Map<String, RevTag> tags = Maps.uniqueIndex(command(TagListOp.class).call(),
-                        fn_revTag_getName);
+                        RevTag::getName);
                 for (Ref rf : remoteRefs) {
                     if (rf.getName().startsWith(Ref.TAGS_PREFIX)
                             && tags.containsKey(rf.localName())) {
@@ -99,17 +89,8 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
                     }
                 }
             }
-
-            // Ref::getName, but friendly for Fortify
-            Function<Ref, String> fn_ref_getName = new Function<Ref, String>() {
-                @Override
-                public String apply(Ref ref) {
-                    return ref.getName();
-                }
-            };
-
-            remotes = Maps.uniqueIndex(remoteRefs, fn_ref_getName);
-            locals = Maps.uniqueIndex(remoteLocalRefs, fn_ref_getName);
+            remotes = Maps.uniqueIndex(remoteRefs, Ref::getName);
+            locals = Maps.uniqueIndex(remoteLocalRefs, Ref::getName);
         }
         final boolean mapped = remote.getInfo().getMapped();
         if (mapped) {

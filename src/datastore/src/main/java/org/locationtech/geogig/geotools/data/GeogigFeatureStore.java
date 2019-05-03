@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 import org.geotools.data.EmptyFeatureReader;
 import org.geotools.data.FeatureReader;
@@ -54,7 +55,6 @@ import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
@@ -271,7 +271,8 @@ public class GeogigFeatureStore extends ContentFeatureStore {
              * differences in the default and incoming schema such as namespace or missing
              * properties
              */
-            features = Iterators.transform(features, new SchemaInforcer(nativeSchema));
+            SchemaInforcer schemaInforcer = new SchemaInforcer(nativeSchema);
+            features = Iterators.transform(features, schemaInforcer::apply);
             // the returned list is expected to be in the order provided by the argument feature
             // collection, so lets add the fids in the transformer here
 
@@ -289,7 +290,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
                 }
             };
 
-            Iterator<FeatureInfo> featureInfos = Iterators.transform(features, fn);
+            Iterator<FeatureInfo> featureInfos = Iterators.transform(features, fn::apply);
 
             workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
@@ -377,8 +378,9 @@ public class GeogigFeatureStore extends ContentFeatureStore {
              * differences in the default and incoming schema such as namespace or missing
              * properties
              */
+            SchemaInforcer schemaInforcer = new SchemaInforcer(nativeSchema);
             Iterator<SimpleFeature> schemaEnforced = Iterators.transform(features,
-                    new SchemaInforcer(nativeSchema));
+                    schemaInforcer::apply);
 
             ProgressListener listener = new DefaultProgressListener();
 
@@ -391,7 +393,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
                 }
             };
 
-            Iterator<FeatureInfo> featureInfos = Iterators.transform(schemaEnforced, fn);
+            Iterator<FeatureInfo> featureInfos = Iterators.transform(schemaEnforced, fn::apply);
 
             workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
@@ -445,16 +447,8 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         }
 
         Iterator<SimpleFeature> featureIterator = featureIterator(filter);
-
-        // (f) -> NodeRef.appendChild(typeTreePath, f.getID()
-        Function<SimpleFeature, String> fn = new Function<SimpleFeature, String>() {
-            @Override
-            public String apply(SimpleFeature f) {
-                return NodeRef.appendChild(typeTreePath, f.getID());
-            }
-        };
-
-        Iterator<String> affectedFeaturePaths = Iterators.transform(featureIterator, fn);
+        Iterator<String> affectedFeaturePaths = Iterators.transform(featureIterator,
+                f -> NodeRef.appendChild(typeTreePath, f.getID()));
         workingTree.delete(affectedFeaturePaths, DefaultProgressListener.NULL);
     }
 

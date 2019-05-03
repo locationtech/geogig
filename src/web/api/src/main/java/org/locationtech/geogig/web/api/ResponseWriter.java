@@ -80,7 +80,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.http.MediaType;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -910,7 +909,7 @@ public class ResponseWriter {
         int counter = 0;
 
         Iterator<GeometryChange> changeIterator = Iterators.transform(diff,
-                new Function<DiffEntry, GeometryChange>() {
+                new com.google.common.base.Function<DiffEntry, GeometryChange>() {
                     @Override
                     public GeometryChange apply(DiffEntry input) {
                         Optional<RevObject> feature = Optional.empty();
@@ -1021,7 +1020,7 @@ public class ResponseWriter {
             final ObjectId ours, final ObjectId theirs, boolean alreadyInArray)
             throws StreamWriterException {
         Iterator<GeometryConflict> conflictIterator = Iterators.transform(conflicts,
-                new Function<Conflict, GeometryConflict>() {
+                new com.google.common.base.Function<Conflict, GeometryConflict>() {
                     @Override
                     public GeometryConflict apply(Conflict input) {
                         ObjectId commitId = ours;
@@ -1156,7 +1155,7 @@ public class ResponseWriter {
     private void writeMerged(final Context geogig, Iterator<FeatureInfo> features,
             boolean alreadyInArray) throws StreamWriterException {
         Iterator<GeometryChange> changeIterator = Iterators.transform(features,
-                new Function<FeatureInfo, GeometryChange>() {
+                new com.google.common.base.Function<FeatureInfo, GeometryChange>() {
 
                     private Map<ObjectId, RevFeatureType> typeCache = new HashMap<>();
 

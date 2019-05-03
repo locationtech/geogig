@@ -47,7 +47,6 @@ import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -344,11 +343,7 @@ public abstract class RevTreeBuilderTest {
 
         Iterator<NodeRef> it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
                 Strategy.CHILDREN);
-        Function<NodeRef, Node> asNode = v -> {
-            return v.getNode();
-        };
-        List<Node> nodes = Lists.newArrayList(Iterators.transform(it, asNode));
-        return nodes;
+        return Lists.newArrayList(Iterators.transform(it, NodeRef::getNode));
     }
 
     protected void print(RevTree root) {

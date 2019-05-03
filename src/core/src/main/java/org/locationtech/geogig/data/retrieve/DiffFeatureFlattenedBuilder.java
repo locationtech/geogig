@@ -11,6 +11,7 @@ package org.locationtech.geogig.data.retrieve;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -21,8 +22,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-
-import com.google.common.base.Function;
 
 class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleFeature> {
 

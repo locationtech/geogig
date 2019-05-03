@@ -11,6 +11,7 @@ package org.locationtech.geogig.data.retrieve;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
@@ -36,8 +37,6 @@ import org.opengis.feature.type.FeatureTypeFactory;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.google.common.base.Function;
 
 import lombok.NonNull;
 

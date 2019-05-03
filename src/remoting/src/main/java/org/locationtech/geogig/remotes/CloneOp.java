@@ -43,7 +43,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 
@@ -296,16 +295,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
 
     private void setUpRemoteTrackingBranches(Repository clone, Remote remote,
             Iterable<RefDiff> refdifss, Optional<Ref> remoteHeadRef) {
-
-        // (cr) -> cr.getNewRef()
-        Function<RefDiff, Ref> fn = new Function<RefDiff, Ref>() {
-            @Override
-            public Ref apply(RefDiff cr) {
-                return cr.getNewRef();
-            }
-        };
-
-        final Iterable<Ref> remoteRefs = Iterables.transform(refdifss, fn);
+        final Iterable<Ref> remoteRefs = Iterables.transform(refdifss, RefDiff::getNewRef);
         final Iterable<Ref> localRefs = command(MapRef.class)//
                 .setRemote(remote)//
                 .addAll(remoteRefs)//

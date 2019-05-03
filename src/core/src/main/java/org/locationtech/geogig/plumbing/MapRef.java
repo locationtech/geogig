@@ -21,7 +21,6 @@ import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -50,8 +49,8 @@ public class MapRef extends AbstractGeoGigOp<List<Ref>> {
         checkState(toRemote != null,
                 "must indicate whether to convert refs to local or remotes namespace");
 
-        Function<Ref, Ref> function = (r) -> toRemote.booleanValue() ? toRemote(r) : toLocal(r);
-        return Lists.newArrayList(Iterables.transform(refs, function));
+        return Lists.newArrayList(
+                Iterables.transform(refs, r -> toRemote.booleanValue() ? toRemote(r) : toLocal(r)));
     }
 
     private Ref toRemote(Ref localRef) {

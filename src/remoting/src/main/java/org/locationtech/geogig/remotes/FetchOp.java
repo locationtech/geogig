@@ -37,7 +37,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -240,16 +239,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public List<String> getRemoteNames() {
-
-        // (remote) -> remote.getName()
-        Function<Remote, String> fn = new Function<Remote, String>() {
-            @Override
-            public String apply(Remote remote) {
-                return remote.getName();
-            }
-        };
-
-        return Lists.transform(argsBuilder.remotes, fn);
+        return Lists.transform(argsBuilder.remotes, Remote::getName);
     }
 
     /**

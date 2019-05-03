@@ -9,15 +9,14 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.transform;
-
 import java.net.URI;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -25,23 +24,20 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.GraphDatabase;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 
 /**
  * Provides an default in memory implementation of a GeoGig Graph Database.
  */
 public class HeapGraphDatabase implements GraphDatabase {
 
-    static final Function<Node, ObjectId> NODE_TO_ID = (n) -> n.id;
+    private static final Map<URI, Ref> graphs = Maps.newConcurrentMap();
 
-    static final Map<URI, Ref> graphs = Maps.newConcurrentMap();
-
-    final @Nullable Platform platform;
+    private final @Nullable Platform platform;
 
     Graph graph;
 
@@ -102,18 +98,17 @@ public class HeapGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+    public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         // transform outgoing nodes to id
         // filter for null to skip fake root node
-        return graph.get(commitId).map(
-                n -> ImmutableList.copyOf(filter(transform(n.to(), NODE_TO_ID), i -> i != null)))
-                .orElse(ImmutableList.of());
+        return graph.get(commitId).map(Node::to).map(Streams::stream).orElse(Stream.empty())
+                .filter(n -> n != null).map(Node::getId).collect(Collectors.toList());
     }
 
     @Override
-    public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
-        return graph.get(commitId).map(n -> ImmutableList.copyOf(transform(n.from(), NODE_TO_ID)))
-                .orElse(ImmutableList.of());
+    public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+        return graph.get(commitId).map(Node::from).map(Streams::stream).orElse(Stream.empty())
+                .filter(n -> n != null).map(Node::getId).collect(Collectors.toList());
     }
 
     @Override

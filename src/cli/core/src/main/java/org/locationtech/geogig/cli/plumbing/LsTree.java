@@ -14,6 +14,7 @@ import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -31,7 +32,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -131,7 +131,7 @@ public class LsTree extends AbstractCommand implements CLICommand {
             }
         };
 
-        Iterator<CharSequence> lines = Iterators.transform(iter, printFunctor);
+        Iterator<CharSequence> lines = Iterators.transform(iter, printFunctor::apply);
 
         while (lines.hasNext()) {
             console.println(lines.next());

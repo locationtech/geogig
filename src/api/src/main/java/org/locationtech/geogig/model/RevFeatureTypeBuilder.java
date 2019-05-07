@@ -32,7 +32,7 @@ public @Accessors(fluent = true) class RevFeatureTypeBuilder {
 
     private @Setter FeatureType type;
 
-    RevFeatureTypeBuilder() {
+    public RevFeatureTypeBuilder() {
         //
     }
 

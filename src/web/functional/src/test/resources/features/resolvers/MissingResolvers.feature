@@ -23,7 +23,7 @@ Feature: Tests Init request behavior when certain repository backends backend ar
     Then the response status should be '400'
     And the response ContentType should be "application/xml"
     And the xpath "/response/success/text()" equals "false"
-    And the xpath "/response/error/text()" contains "No repository initializer found capable of handling this kind of URI: file:/"
+    And the xpath "/response/error/text()" contains "No repository initializer found capable of handling this kind of URI: file"
   @Status400
   Scenario: Init request for RocksDB repo with RocksDB backend missing, JSON response
     Given There is an empty multirepo server
@@ -37,7 +37,7 @@ Feature: Tests Init request behavior when certain repository backends backend ar
     Then the response status should be '400'
     And the response ContentType should be "application/json"
     And the json object "response.success" equals "false"
-    And the json response "response.error" should contain "No repository initializer found capable of handling this kind of URI: file:/"
+    And the json response "response.error" should contain "No repository initializer found capable of handling this kind of URI: file"
   @Status400
   Scenario: Init request for PostgreSQL repo with PostgreSQL backend missing
     Given There is an empty multirepo server
@@ -52,7 +52,7 @@ Feature: Tests Init request behavior when certain repository backends backend ar
     Then the response status should be '400'
     And the response ContentType should be "application/xml"
     And the xpath "/response/success/text()" equals "false"
-    And the xpath "/response/error/text()" contains "No repository initializer found capable of handling this kind of URI: postgresql:/"
+    And the xpath "/response/error/text()" contains "No repository initializer found capable of handling this kind of URI: postgresql"
   @Status400
   Scenario: Init request for PostgreSQL repo with PostgreSQL backend missing, JSON response
     Given There is an empty multirepo server
@@ -67,7 +67,7 @@ Feature: Tests Init request behavior when certain repository backends backend ar
     Then the response status should be '400'
     And the response ContentType should be "application/json"
     And the json object "response.success" equals "false"
-    And the json response "response.error" should contain "No repository initializer found capable of handling this kind of URI: postgresql:/"
+    And the json response "response.error" should contain "No repository initializer found capable of handling this kind of URI: postgresql"
 
   Scenario: Init request for RocksDB repo with PostgreSQL backend missing
     Given There is an empty multirepo server
@@ -111,7 +111,7 @@ Feature: Tests Init request behavior when certain repository backends backend ar
     Then the response status should be '400'
     And the response ContentType should be "application/xml"
     And the xpath "/response/success/text()" equals "false"
-    And the xpath "/response/error/text()" contains "No repository initializer found capable of handling this kind of URI: file:/"
+    And the xpath "/response/error/text()" contains "No repository initializer found capable of handling this kind of URI: file"
   @Status400
   Scenario: Init request for RocksDB repo with RocksDB and PostgreSQL backends missing, JSON response
     Given There is an empty multirepo server
@@ -125,7 +125,7 @@ Feature: Tests Init request behavior when certain repository backends backend ar
     Then the response status should be '400'
     And the response ContentType should be "application/json"
     And the json object "response.success" equals "false"
-    And the json response "response.error" should contain "No repository initializer found capable of handling this kind of URI: file:/"
+    And the json response "response.error" should contain "No repository initializer found capable of handling this kind of URI: file"
   @Status400
   Scenario: Init request for PostgreSQL repo with RocksDB and PostgreSQL backends missing
     Given There is an empty multirepo server
@@ -140,7 +140,7 @@ Feature: Tests Init request behavior when certain repository backends backend ar
     Then the response status should be '400'
     And the response ContentType should be "application/xml"
     And the xpath "/response/success/text()" equals "false"
-    And the xpath "/response/error/text()" contains "No repository initializer found capable of handling this kind of URI: postgresql:/"
+    And the xpath "/response/error/text()" contains "No repository initializer found capable of handling this kind of URI: postgresql"
   @Status400
   Scenario: Init request for PostgreSQL repo with RocksDB and PostgreSQL backends missing, JSON response
     Given There is an empty multirepo server
@@ -155,5 +155,5 @@ Feature: Tests Init request behavior when certain repository backends backend ar
     Then the response status should be '400'
     And the response ContentType should be "application/json"
     And the json object "response.success" equals "false"
-    And the json response "response.error" should contain "No repository initializer found capable of handling this kind of URI: postgresql:/"
+    And the json response "response.error" should contain "No repository initializer found capable of handling this kind of URI: postgresql"
    

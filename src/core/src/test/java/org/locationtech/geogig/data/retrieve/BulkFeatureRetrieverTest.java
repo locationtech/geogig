@@ -10,7 +10,7 @@
 package org.locationtech.geogig.data.retrieve;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -18,9 +18,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -34,8 +35,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.collect.Lists;
 
@@ -45,11 +45,11 @@ public class BulkFeatureRetrieverTest {
     public void testGet() throws Exception {
         ObjectId meta1 = getOID(1);
 
-        SimpleFeatureType fType1 = DataUtilities.createType("location",
-                "the_geom:Point:srid=4326,name:String,name2:String");
+        FeatureType fType1 = FeatureTypes.createType("location", "the_geom:Point:srid=4326",
+                "name:String", "name2:String");
         RevFeatureType revft1 = RevFeatureType.builder().id(meta1).type(fType1).build();
 
-        WKTReader2 wkt = new WKTReader2();
+        WKTReader wkt = new WKTReader();
         RevFeature f1 = RevObjectTestSupport.featureForceId(getOID(2), wkt.read("POINT(0 0)"),
                 "abc", "def");
         RevFeature f2 = RevObjectTestSupport.featureForceId(getOID(3), wkt.read("POINT(0 0)"),
@@ -59,7 +59,7 @@ public class BulkFeatureRetrieverTest {
         when(odb.getFeatureType(meta1)).thenReturn(revft1);
 
         Iterator<RevObject> iterator = (Arrays.asList((RevObject) f1, (RevObject) f2)).iterator();
-        when(odb.getAll(anyObject(), anyObject(), anyObject())).thenReturn(iterator);
+        when(odb.getAll(any(), any(), any())).thenReturn(iterator);
 
         Node n1 = RevObjectFactory.defaultInstance().createNode("name1", getOID(2), meta1,
                 TYPE.FEATURE, new Envelope(), null);
@@ -75,21 +75,21 @@ public class BulkFeatureRetrieverTest {
         AutoCloseableIterator<ObjectInfo<RevObject>> objects = AutoCloseableIterator
                 .fromIterator(objs.iterator());
 
-        when(odb.getObjects(anyObject(), anyObject(), anyObject())).thenReturn(objects);
+        when(odb.getObjects(any(), any(), any())).thenReturn(objects);
 
         Iterator<NodeRef> input = Arrays.asList(nr1, nr2).iterator();
 
         BulkFeatureRetriever getter = new BulkFeatureRetriever(odb);
 
-        Iterator<SimpleFeature> results = getter.getGeoToolsFeatures(input);
+        Iterator<Feature> results = getter.getGeoToolsFeatures(input);
 
-        List<SimpleFeature> feats = Lists.newArrayList(results);
+        List<Feature> feats = Lists.newArrayList(results);
 
         assertEquals(2, feats.size());
 
-        SimpleFeature feat1 = "abc".equals(feats.get(0).getAttribute("name")) ? feats.get(0)
+        Feature feat1 = "abc".equals(feats.get(0).getAttribute("name")) ? feats.get(0)
                 : feats.get(1);
-        SimpleFeature feat2 = "rrr".equals(feats.get(0).getAttribute("name")) ? feats.get(0)
+        Feature feat2 = "rrr".equals(feats.get(0).getAttribute("name")) ? feats.get(0)
                 : feats.get(1);
 
         assertEquals("abc", feat1.getAttribute("name"));

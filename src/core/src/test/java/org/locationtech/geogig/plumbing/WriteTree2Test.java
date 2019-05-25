@@ -17,6 +17,7 @@ import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
@@ -41,7 +42,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -712,7 +712,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
         RevFeature revFeature = RevFeature.builder().build(feature);
         db.put(revFeature);
-        Envelope bounds = (Envelope) feature.getBounds();
+        Envelope bounds = (Envelope) feature.getDefaultGeometryBounds();
         return RevObjectFactory.defaultInstance().createNode(id, revFeature.getId(), ObjectId.NULL,
                 TYPE.FEATURE, bounds, null);
     }

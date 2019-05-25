@@ -28,19 +28,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.SchemaException;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.geometry.jts.WKTReader2;
-import org.geotools.referencing.CRS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.di.Decorator;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -83,13 +78,10 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.TestContextBuilder;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.geometry.BoundingBox;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
@@ -127,9 +119,9 @@ public abstract class RemoteRepositoryTestCase {
 
     protected static final String pointsTypeSpec = "sp:String,ip:Integer,pp:Point:srid=4326";
 
-    protected static final Name pointsTypeName = new NameImpl("http://geogig.points", pointsName);
+    protected static final Name pointsTypeName = Name.valueOf("http://geogig.points", pointsName);
 
-    protected SimpleFeatureType pointsType;
+    protected FeatureType pointsType;
 
     protected Feature points1;
 
@@ -149,9 +141,9 @@ public abstract class RemoteRepositoryTestCase {
 
     protected static final String linesTypeSpec = "sp:String,ip:Integer,pp:LineString:srid=4326";
 
-    protected static final Name linesTypeName = new NameImpl("http://geogig.lines", linesName);
+    protected static final Name linesTypeName = Name.valueOf("http://geogig.lines", linesName);
 
-    protected SimpleFeatureType linesType;
+    protected FeatureType linesType;
 
     protected Feature lines1;
 
@@ -291,7 +283,7 @@ public abstract class RemoteRepositoryTestCase {
         doSetUp();
     }
 
-    protected final void doSetUp() throws IOException, SchemaException, ParseException, Exception {
+    protected final void doSetUp() throws Exception {
         localGeogig = new GeogigContainer("localtestrepository");
         remoteGeogig = new GeogigContainer("remotetestrepository");
         upstreamGeogig = new GeogigContainer("upstream");
@@ -307,7 +299,7 @@ public abstract class RemoteRepositoryTestCase {
             upstreamGeogig.addRemoteOverride(originInfo, originRepo);
         }
 
-        pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
+        pointsType = FeatureTypes.createType(pointsTypeName.toString(), pointsTypeSpec.split(","));
 
         points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
         points1_modified = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
@@ -319,7 +311,7 @@ public abstract class RemoteRepositoryTestCase {
         points3_modified = feature(pointsType, idP3, "StringProp1_3a", new Integer(3001),
                 "POINT(3 4)");
 
-        linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
+        linesType = FeatureTypes.createType(linesTypeName.toString(), linesTypeSpec.split(","));
 
         lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
                 "LINESTRING (1 1, 2 2)");
@@ -381,18 +373,18 @@ public abstract class RemoteRepositoryTestCase {
         //
     }
 
-    protected Feature feature(SimpleFeatureType type, String id, Object... values) {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    protected Feature feature(FeatureType type, String id, Object... values) {
+        Feature feature = Feature.build(id, type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
+            if (type.getDescriptor(i).isGeometryDescriptor()) {
                 if (value instanceof String) {
                     value = geom((String) value);
                 }
             }
-            builder.set(i, value);
+            feature.setAttribute(i, value);
         }
-        return builder.buildFeature(id);
+        return feature;
     }
 
     protected List<RevCommit> populate(GeoGIG geogig, boolean oneCommitPerFeature,
@@ -456,7 +448,7 @@ public abstract class RemoteRepositoryTestCase {
         String parentPath = name.getLocalPart();
         RevFeatureType type = RevFeatureType.builder().type(f.getType()).build();
         repo.objectDatabase().put(type);
-        String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
+        String path = NodeRef.appendChild(parentPath, f.getId());
         FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), type.getId(), path);
         workTree.insert(fi);
         return fi.getFeature().getId();
@@ -477,7 +469,7 @@ public abstract class RemoteRepositoryTestCase {
 
     protected Geometry geom(String wkt) {
         try {
-            return new WKTReader2().read(wkt);
+            return new WKTReader().read(wkt);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -511,7 +503,7 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     public FeatureInfo featureInfo(String treePath, Feature f) {
-        final String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+        final String path = NodeRef.appendChild(treePath, f.getId());
         RevFeature feature = RevFeature.builder().build(f);
         FeatureType type = f.getType();
         RevFeatureType ftype = RevFeatureType.builder().type(type).build();
@@ -538,7 +530,7 @@ public abstract class RemoteRepositoryTestCase {
         final WorkingTree workTree = geogig.getRepository().workingTree();
         Name name = f.getType().getName();
         String localPart = name.getLocalPart();
-        String id = f.getIdentifier().getID();
+        String id = f.getId();
         boolean existed = workTree.delete(localPart, id);
         return existed;
     }
@@ -547,7 +539,7 @@ public abstract class RemoteRepositoryTestCase {
         final WorkingTree workTree = repo.workingTree();
 
         Iterator<String> featurePaths = Iterators.transform(features.iterator(),
-                (f) -> f.getType().getName().getLocalPart() + "/" + f.getIdentifier().toString());
+                (f) -> f.getType().getName().getLocalPart() + "/" + f.getId());
         workTree.delete(featurePaths, new DefaultProgressListener());
     }
 
@@ -590,14 +582,14 @@ public abstract class RemoteRepositoryTestCase {
     /**
      * Computes the aggregated bounds of {@code features}, assuming all of them are in the same CRS
      */
-    protected ReferencedEnvelope boundsOf(Feature... features) {
-        ReferencedEnvelope bounds = null;
+    protected Envelope boundsOf(Feature... features) {
+        Envelope bounds = null;
         for (int i = 0; i < features.length; i++) {
             Feature f = features[i];
             if (bounds == null) {
-                bounds = (ReferencedEnvelope) f.getBounds();
+                bounds = f.getDefaultGeometryBounds();
             } else {
-                bounds.include(f.getBounds());
+                bounds.expandToInclude(f.getDefaultGeometryBounds());
             }
         }
         return bounds;
@@ -606,20 +598,20 @@ public abstract class RemoteRepositoryTestCase {
     /**
      * Computes the aggregated bounds of {@code features} in the {@code targetCrs}
      */
-    protected ReferencedEnvelope boundsOf(CoordinateReferenceSystem targetCrs, Feature... features)
-            throws Exception {
-        ReferencedEnvelope bounds = new ReferencedEnvelope(targetCrs);
-
-        for (int i = 0; i < features.length; i++) {
-            Feature f = features[i];
-            BoundingBox fbounds = f.getBounds();
-            if (!CRS.equalsIgnoreMetadata(targetCrs, fbounds)) {
-                fbounds = fbounds.toBounds(targetCrs);
-            }
-            bounds.include(fbounds);
-        }
-        return bounds;
-    }
+    // protected Envelope boundsOf(CoordinateReferenceSystem targetCrs, Feature... features)
+    // throws Exception {
+    // ReferencedEnvelope bounds = new ReferencedEnvelope(targetCrs);
+    //
+    // for (int i = 0; i < features.length; i++) {
+    // Feature f = features[i];
+    // BoundingBox fbounds = f.getBounds();
+    // if (!CRS.equalsIgnoreMetadata(targetCrs, fbounds)) {
+    // fbounds = fbounds.toBounds(targetCrs);
+    // }
+    // bounds.include(fbounds);
+    // }
+    // return bounds;
+    // }
 
     public RevCommit commit(Repository repo, String msg) {
         return repo.command(CommitOp.class).setMessage(msg).call();

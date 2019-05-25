@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.geotools.TestHelper;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -57,6 +58,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import lombok.NonNull;
 
 public class ImportOpTest extends RepositoryTestCase {
 
@@ -249,7 +252,7 @@ public class ImportOpTest extends RepositoryTestCase {
         SimpleFeature feature = SimpleFeatureBuilder.build(type,
                 new Object[] { gf.createPoint(new Coordinate(0, 0)), "feature0" }, "feature");
 
-        FeatureInfo fi = featureInfo("dest", feature);
+        FeatureInfo fi = featureInfo("dest", GT.adapt(feature));
         WorkingTree workingTree = geogig.getRepository().workingTree();
         workingTree.insert(fi);
         ImportOp importOp = geogig.command(ImportOp.class);
@@ -501,10 +504,10 @@ public class ImportOpTest extends RepositoryTestCase {
         assertTrue(revType.isPresent());
 
         FeatureType storedType = revType.get().type();
-        CoordinateReferenceSystem storedCrs = storedType.getGeometryDescriptor()
-                .getCoordinateReferenceSystem();
-
-        assertEquals(origCrs, storedCrs);
+        org.locationtech.geogig.crs.@NonNull CoordinateReferenceSystem storedCrs = storedType
+                .getGeometryDescriptor().get().coordinateReferenceSystem();
+        CoordinateReferenceSystem gtCrs = GT.adapt(storedCrs);
+        assertEquals(origCrs, gtCrs);
     }
 
     private void testForceKnownCRS(final String expectedSRS, String actualCRSWKT)
@@ -536,11 +539,11 @@ public class ImportOpTest extends RepositoryTestCase {
         assertTrue(revType.isPresent());
 
         FeatureType storedType = revType.get().type();
-        CoordinateReferenceSystem storedCrs = storedType.getGeometryDescriptor()
-                .getCoordinateReferenceSystem();
+        org.locationtech.geogig.crs.@NonNull CoordinateReferenceSystem storedCrs = storedType
+                .getGeometryDescriptor().get().coordinateReferenceSystem();
 
-        assertNotEquals(origCrs, storedCrs);
-        assertEquals(expectedSRS, CRS.toSRS(storedCrs));
+        assertNotEquals(origCrs, GT.adapt(storedCrs));
+        assertEquals(expectedSRS, storedCrs.getSrsIdentifier());
     }
 
     @Override

@@ -9,12 +9,11 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.geotools.data.DataStore;
-import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
@@ -37,28 +36,16 @@ public class ListOp extends AbstractGeoGigOp<Optional<List<String>>> {
         if (dataStore == null) {
             throw new GeoToolsOpException(StatusCode.DATASTORE_NOT_DEFINED);
         }
-
-        List<String> features = new ArrayList<String>();
-
-        boolean foundTable = false;
-
-        List<Name> typeNames;
+        List<String> typeNames;
         try {
-            typeNames = dataStore.getNames();
+            typeNames = dataStore.getNames().stream()
+                    .map(org.opengis.feature.type.Name::getLocalPart).sorted()
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             throw new GeoToolsOpException(StatusCode.UNABLE_TO_GET_NAMES);
         }
 
-        for (Name typeName : typeNames) {
-            foundTable = true;
-
-            features.add(typeName.toString());
-        }
-
-        if (!foundTable) {
-            return Optional.empty();
-        }
-        return Optional.of(features);
+        return Optional.ofNullable(typeNames.isEmpty() ? null : typeNames);
     }
 
     /**

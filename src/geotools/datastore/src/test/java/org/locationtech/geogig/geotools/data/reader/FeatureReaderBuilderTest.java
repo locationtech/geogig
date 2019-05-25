@@ -19,9 +19,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.FeatureReader;
@@ -33,7 +35,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.factory.Hints;
 import org.junit.After;
 import org.junit.Test;
-import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
@@ -64,7 +66,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
@@ -117,8 +118,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         insertAndAdd(points1, points2, points3);
         commit("inital");
 
-        SimpleFeatureType fullSchema = pointsType;
-        RevFeatureType nativeType = RevFeatureType.builder().type(fullSchema).build();
+        RevFeatureType nativeType = RevFeatureType.builder().type(pointsType).build();
         Context actualContext = repo.context();
         context = spy(actualContext);
 
@@ -205,18 +205,19 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         testResultingSchemaExplicitTargetSchema(namespaceAndLocalNameRename, "pp", "sp");
     }
 
-    public void testResultingSchemaExplicitTargetSchema(Name targetName,
+    public void testResultingSchemaExplicitTargetSchema(org.opengis.feature.type.Name targetName,
             @Nullable String... propertySubset) throws Exception {
 
+        SimpleFeatureType gtPointsType = GT.adapt(pointsType);
         SimpleFeatureType redefinedFullSchema;
         {
             SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
             builder.setName(targetName);
             if (propertySubset == null || propertySubset.length == 0) {
-                builder.addAll(pointsType.getAttributeDescriptors());
+                builder.addAll(gtPointsType.getAttributeDescriptors());
             } else {
                 for (String att : propertySubset) {
-                    AttributeDescriptor descriptor = pointsType.getDescriptor(att);
+                    AttributeDescriptor descriptor = gtPointsType.getDescriptor(att);
                     Preconditions.checkArgument(descriptor != null);
                     builder.add(descriptor);
                 }
@@ -387,8 +388,8 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         Mockito.verify(mockIt, times(1)).close();
     }
 
-    private Map<FeatureId, SimpleFeature> verifyFeatures(Query query, Feature... expectedFeatures)
-            throws Exception {
+    private Map<FeatureId, SimpleFeature> verifyFeatures(Query query,
+            org.locationtech.geogig.feature.Feature... expectedFeatures) throws Exception {
 
         getReader(query);
 
@@ -417,10 +418,12 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
     private Map<FeatureId, SimpleFeature> verifyFeatures(
             FeatureReader<SimpleFeatureType, SimpleFeature> actualFeatures,
-            Feature... expectedFeatures) throws Exception {
+            org.locationtech.geogig.feature.Feature... expectedFeatures) throws Exception {
 
-        Map<FeatureId, Feature> expectedMap = Maps.uniqueIndex(Lists.newArrayList(expectedFeatures),
-                (f) -> f.getIdentifier());
+        SimpleFeatureType sft = actualFeatures.getFeatureType();
+        Map<FeatureId, Feature> expectedMap = Arrays.asList(expectedFeatures).stream()
+                .map(f -> GT.adapt(sft, f))
+                .collect(Collectors.toMap(f -> f.getIdentifier(), f -> f));
 
         Map<FeatureId, SimpleFeature> actualMap = new HashMap<>();
         while (reader.hasNext()) {

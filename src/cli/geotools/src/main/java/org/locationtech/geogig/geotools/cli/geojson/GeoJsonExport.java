@@ -26,6 +26,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.model.NodeRef;
@@ -103,8 +104,8 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
                     .call();
             checkParameter(type.equals(TYPE.FEATURETYPE),
                     "Provided reference does not resolve to a feature type: ", sFeatureTypeId);
-            outputFeatureType = (SimpleFeatureType) cli.getGeogig().command(RevObjectParse.class)
-                    .setObjectId(id.get()).call(RevFeatureType.class).get().type();
+            outputFeatureType = GT.adapt(cli.getGeogig().command(RevObjectParse.class)
+                    .setObjectId(id.get()).call(RevFeatureType.class).get().type());
             featureTypeId = id.get();
         } else {
             try {
@@ -190,12 +191,7 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();
-            if (revFeatureType.type() instanceof SimpleFeatureType) {
-                return (SimpleFeatureType) revFeatureType.type();
-            } else {
-                throw new InvalidParameterException(
-                        "Cannot find feature type for the specified path");
-            }
+            return GT.adapt(revFeatureType.type());
         } else {
             throw new InvalidParameterException("Cannot find feature type for the specified path");
         }

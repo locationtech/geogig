@@ -49,6 +49,11 @@
       <artifactId>geogig-gt-datastore</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-cql</artifactId>
+      <version>${gt.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.geotools</groupId>

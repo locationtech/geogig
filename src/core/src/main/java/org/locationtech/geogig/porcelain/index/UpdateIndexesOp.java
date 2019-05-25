@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.JTS;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -144,7 +143,9 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
                 String id = indexTree.getId().toString().substring(0, 8);
                 long size = indexTree.size();
                 Envelope env = SpatialOps.boundsOf(indexTree);
-                String bounds = env == null ? "null" : JTS.toGeometry(env).toString();
+                String bounds = env == null ? "null"
+                        : String.format("[%f, %f, %f, %f]", env.getMinX(), env.getMinY(),
+                                env.getMaxX(), env.getMaxY());
                 progress.setDescription(String.format("Updated index: %s, size: %,d, bounds: %s",
                         id, size, bounds));
 

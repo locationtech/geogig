@@ -13,10 +13,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.referencing.CRS;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.PropertyDescriptor;
@@ -27,9 +28,6 @@ import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -119,25 +117,21 @@ public class IndexUtils {
      * @param geometryDescriptor the geometry descriptor
      * @return the {@link Envelope} with the maximum bounds of the CRS of the geometry descriptor
      */
-    public static Envelope resolveMaxBounds(GeometryDescriptor geometryDescriptor) {
-        final CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
-        checkArgument(crs != null, "Property %s does not define a Coordinate Reference System",
+    public static Envelope resolveMaxBounds(PropertyDescriptor geometryDescriptor) {
+        checkArgument(geometryDescriptor.isGeometryDescriptor());
+        final CoordinateReferenceSystem crs = geometryDescriptor.coordinateReferenceSystem();
+        checkArgument(!crs.isNull(), "Property %s does not define a Coordinate Reference System",
                 geometryDescriptor.getLocalName());
-        Envelope maxBounds;
-        try {
-            maxBounds = SpatialOps.boundsOf(crs);
-        } catch (Exception e) {
-            String crsIdentifier;
-            try {
-                crsIdentifier = CRS.lookupIdentifier(crs, true);
-            } catch (FactoryException ex) {
-                crsIdentifier = crs.toString();
-            }
-            throw new IllegalStateException("Error computing bounds for CRS " + crsIdentifier, e);
-        }
-        checkArgument(maxBounds != null,
+        Optional<Envelope> maxBounds = SpatialOps.boundsOf(crs);
+        checkArgument(maxBounds.isPresent(),
                 "Unable to resolve the area of validity for the layer's CRS");
-        return maxBounds;
+        Envelope aov = maxBounds.get();
+        Envelope rounded = new Envelope(//
+                Math.floor(aov.getMinX()), //
+                Math.ceil(aov.getMaxX()), //
+                Math.floor(aov.getMinY()), //
+                Math.ceil(aov.getMaxY()));
+        return rounded;
     }
 
     /**
@@ -147,20 +141,25 @@ public class IndexUtils {
      * @param geometryAttributeName the name of the geometry attribute (optional)
      * @return the {@link GeometryDescriptor} of the geometry attribute
      */
-    public static GeometryDescriptor resolveGeometryAttribute(RevFeatureType featureType,
+    public static PropertyDescriptor resolveGeometryAttribute(RevFeatureType featureType,
             @Nullable String geometryAttributeName) {
-        GeometryDescriptor descriptor;
+        PropertyDescriptor descriptor;
         if (geometryAttributeName == null) {
-            descriptor = featureType.type().getGeometryDescriptor();
+            descriptor = featureType.type().getGeometryDescriptor().orElse(null);
             checkArgument(descriptor != null,
                     "FeatureType '%s' does not define a default geometry attribute",
                     featureType.type().getName().getLocalPart());
         } else {
-            PropertyDescriptor prop = featureType.type().getDescriptor(geometryAttributeName);
-            checkArgument(prop != null, "property %s does not exist", geometryAttributeName);
-            checkArgument(prop instanceof GeometryDescriptor,
-                    "property %s is not a geometry attribute", geometryAttributeName);
-            descriptor = (GeometryDescriptor) prop;
+            PropertyDescriptor prop;
+            try {
+                prop = featureType.type().getDescriptor(geometryAttributeName);
+            } catch (NoSuchElementException e) {
+                throw new IllegalArgumentException(
+                        String.format("property %s does not exist", geometryAttributeName));
+            }
+            checkArgument(prop.isGeometryDescriptor(), "property %s is not a geometry attribute",
+                    geometryAttributeName);
+            descriptor = prop;
         }
         return descriptor;
     }

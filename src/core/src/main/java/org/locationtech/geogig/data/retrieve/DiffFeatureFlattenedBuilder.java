@@ -14,29 +14,28 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.DiffObjectInfo;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
-class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleFeature> {
+import lombok.NonNull;
 
-    private SimpleFeatureBuilder diffFeatureBuilder;
+class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>, Feature> {
 
     private List<String> nativeAttNames;
 
     private List<String> flattenedAttNames;
 
-    public DiffFeatureFlattenedBuilder(SimpleFeatureType diffType, RevFeatureType nativeType) {
+    private @NonNull FeatureType diffType;
 
-        this.diffFeatureBuilder = new SimpleFeatureBuilder(diffType);
-
-        nativeAttNames = nativeType.type().getDescriptors().stream()
-                .map(d -> d.getName().getLocalPart()).collect(Collectors.toList());
+    public DiffFeatureFlattenedBuilder(@NonNull FeatureType diffType,
+            @NonNull FeatureType nativeType) {
+        this.diffType = diffType;
+        nativeAttNames = nativeType.getDescriptors().stream().map(d -> d.getName().getLocalPart())
+                .collect(Collectors.toList());
         flattenedAttNames = new ArrayList<>(nativeAttNames.size() * 2);
         for (String att : nativeAttNames) {
             flattenedAttNames.add(BulkFeatureRetriever.FLATTENED_ATTNAME_PREFIX_OLD + att);
@@ -44,7 +43,7 @@ class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>
         }
     }
 
-    public @Override SimpleFeature apply(DiffObjectInfo<RevFeature> info) {
+    public @Override Feature apply(DiffObjectInfo<RevFeature> info) {
 
         DiffEntry entry = info.entry();
 
@@ -53,7 +52,9 @@ class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>
         RevFeature oldFeature = info.oldValue().orElse(null);
         RevFeature newFeature = info.newValue().orElse(null);
         final ChangeType changeType = info.entry().changeType();
-        diffFeatureBuilder.set(BulkFeatureRetriever.DIFF_FEATURE_CHANGETYPE_ATTNAME,
+
+        Feature diffFeature = Feature.build(id, diffType);
+        diffFeature.setAttribute(BulkFeatureRetriever.DIFF_FEATURE_CHANGETYPE_ATTNAME,
                 Integer.valueOf(changeType.value()));
 
         List<String> nativeTypeNames = this.nativeAttNames;
@@ -63,9 +64,9 @@ class DiffFeatureFlattenedBuilder implements Function<DiffObjectInfo<RevFeature>
 
             Object o = oldFeature == null ? null : oldFeature.get(i).orElse(null);
             Object n = newFeature == null ? null : newFeature.get(i).orElse(null);
-            diffFeatureBuilder.set(attNameFlattenedOld, o);
-            diffFeatureBuilder.set(attNameFlattenedNew, n);
+            diffFeature.setAttribute(attNameFlattenedOld, o);
+            diffFeature.setAttribute(attNameFlattenedNew, n);
         }
-        return diffFeatureBuilder.buildFeature(id);
+        return diffFeature;
     }
 }

@@ -11,8 +11,8 @@ package org.locationtech.geogig.data;
 
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.collection.DecoratingFeatureCollection;
-import org.locationtech.geogig.feature.FeatureType;
 import org.opengis.feature.Feature;
+import org.opengis.feature.type.FeatureType;
 
 public class ForwardingFeatureCollection<T extends FeatureType, F extends Feature>
         extends DecoratingFeatureCollection<T, F> {

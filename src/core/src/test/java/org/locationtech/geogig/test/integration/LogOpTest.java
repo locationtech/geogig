@@ -20,10 +20,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.geotools.util.Range;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -38,11 +38,11 @@ import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 public class LogOpTest extends RepositoryTestCase {
 
@@ -231,15 +231,15 @@ public class LogOpTest extends RepositoryTestCase {
 
         for (Feature f : features) {
             insertAndAdd(f);
-            String id = f.getIdentifier().getID();
+            String id = f.getId();
             final RevCommit commit = geogig.command(CommitOp.class).call();
-            if (id.equals(lines1.getIdentifier().getID())) {
+            if (id.equals(lines1.getId())) {
                 expectedCommit = commit;
             }
             allCommits.add(commit);
         }
 
-        String path = NodeRef.appendChild(linesName, lines1.getIdentifier().getID());
+        String path = NodeRef.appendChild(linesName, lines1.getId());
 
         List<RevCommit> feature2_1Commits = toList(logOp.addPath(path).call());
         assertEquals(1, feature2_1Commits.size());
@@ -254,18 +254,18 @@ public class LogOpTest extends RepositoryTestCase {
         RevCommit expectedPointCommit = null;
         for (Feature f : features) {
             insertAndAdd(f);
-            String id = f.getIdentifier().getID();
+            String id = f.getId();
             final RevCommit commit = geogig.command(CommitOp.class).call();
-            if (id.equals(lines1.getIdentifier().getID())) {
+            if (id.equals(lines1.getId())) {
                 expectedLineCommit = commit;
-            } else if (id.equals(points1.getIdentifier().getID())) {
+            } else if (id.equals(points1.getId())) {
                 expectedPointCommit = commit;
             }
             allCommits.add(commit);
         }
 
-        String linesPath = NodeRef.appendChild(linesName, lines1.getIdentifier().getID());
-        String pointsPath = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String linesPath = NodeRef.appendChild(linesName, lines1.getId());
+        String pointsPath = NodeRef.appendChild(pointsName, points1.getId());
 
         List<RevCommit> feature2_1Commits = toList(logOp.addPath(linesPath).call());
         List<RevCommit> featureCommits = toList(logOp.addPath(pointsPath).call());
@@ -288,8 +288,7 @@ public class LogOpTest extends RepositoryTestCase {
 
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class)
-                    .setMessage(f.getIdentifier().toString()).call();
+            final RevCommit commit = geogig.command(CommitOp.class).setMessage(f.getId()).call();
             commits.addFirst(commit);
             if (pointsName.equals(f.getType().getName().getLocalPart())) {
                 typeName1Commits.addFirst(commit);
@@ -356,10 +355,7 @@ public class LogOpTest extends RepositoryTestCase {
         }
 
         // test time range exclusive
-        boolean minInclusive = false;
-        boolean maxInclusive = false;
-        Range<Date> commitRange = new Range<Date>(Date.class, new Date(2000), minInclusive,
-                new Date(5000), maxInclusive);
+        Range<Date> commitRange = Range.open(new Date(2000), new Date(5000));
         logOp.setTimeRange(commitRange);
 
         List<RevCommit> logged = toList(logOp.call());
@@ -367,10 +363,7 @@ public class LogOpTest extends RepositoryTestCase {
         assertEquals(expected, logged);
 
         // test time range inclusive
-        minInclusive = true;
-        maxInclusive = true;
-        commitRange = new Range<Date>(Date.class, new Date(2000), minInclusive, new Date(5000),
-                maxInclusive);
+        commitRange = Range.closed(new Date(2000), new Date(5000));
         logOp = geogig.command(LogOp.class).setTimeRange(commitRange);
 
         logged = toList(logOp.call());

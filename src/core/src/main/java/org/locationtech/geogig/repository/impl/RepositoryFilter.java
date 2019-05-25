@@ -13,19 +13,22 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
-import org.geotools.filter.text.cql2.CQL;
-import org.geotools.filter.text.cql2.CQLException;
-import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.opengis.feature.Feature;
-import org.opengis.filter.Filter;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Provides a filter for sparse repositories. A default filter can be applied to all feature types,
@@ -33,7 +36,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class RepositoryFilter {
 
-    private Map<String, Filter> repositoryFilters;
+    private Map<String, Predicate<Feature>> repositoryFilters;
 
     private List<FilterDescription> filterDescriptions;
 
@@ -87,8 +90,8 @@ public class RepositoryFilter {
      * Constructs a new {@code RepositoryFilter}.
      */
     public RepositoryFilter() {
-        repositoryFilters = new HashMap<String, Filter>();
-        filterDescriptions = new LinkedList<FilterDescription>();
+        repositoryFilters = new HashMap<>();
+        filterDescriptions = new LinkedList<>();
     }
 
     /**
@@ -102,21 +105,45 @@ public class RepositoryFilter {
      * Adds a new filter to the repository.
      * 
      * @param featurePath the path of the features to filter, "default" for a fall back filter
-     * @param filterType the format of the filter text, for example "CQL"
+     * @param filterType the format of the filter text, for example {@code CQL} or {@code WKT}
      * @param filterText the filter text
      */
     public void addFilter(String featurePath, String filterType, String filterText) {
         Preconditions.checkState(featurePath != null && filterType != null && filterText != null,
                 "Missing filter parameter.");
+
+        Predicate<Feature> filter = f -> true;
         if (filterType.equals("CQL")) {
-            try {
-                Filter newFilter = CQL.toFilter(filterText);
-                repositoryFilters.put(featurePath, newFilter);
-                filterDescriptions.add(new FilterDescription(featurePath, filterType, filterText));
-            } catch (CQLException e) {
-                throw new RuntimeException(e);
-            }
+            throw new UnsupportedOperationException("CQL filters not yet supported");
+            // try {
+            // Filter newFilter = CQL.toFilter(filterText);
+            // repositoryFilters.put(featurePath, newFilter);
+            // filterDescriptions.add(new FilterDescription(featurePath, filterType, filterText));
+            // } catch (CQLException e) {
+            // throw new RuntimeException(e);
+            // }
         }
+        if (filterType.equalsIgnoreCase("WKT")) {
+            Geometry geometry;
+            try {
+                geometry = new WKTReader().read(filterText);
+            } catch (ParseException e) {
+                throw new IllegalArgumentException(e);
+            }
+            filter = new GeometryIntersectsFilter(geometry);
+        }
+        repositoryFilters.put(featurePath, filter);
+        filterDescriptions.add(new FilterDescription(featurePath, filterType, filterText));
+    }
+
+    private static @Value class GeometryIntersectsFilter implements Predicate<Feature> {
+        private final @NonNull Geometry geom;
+
+        public @Override boolean test(Feature t) {
+            Geometry defaultGeometry = t.getDefaultGeometry();
+            return defaultGeometry != null && geom.intersects(defaultGeometry);
+        }
+
     }
 
     /**
@@ -130,14 +157,13 @@ public class RepositoryFilter {
     public boolean filterObject(RevFeatureType type, String featurePath, RevObject object) {
         if (object.getType() == TYPE.FEATURE) {
             RevFeature revFeature = (RevFeature) object;
-            FeatureBuilder builder = new FeatureBuilder(type);
-            Feature feature = builder.build("TEMP_ID", revFeature);
+            Feature feature = Feature.build("TEMP_ID", type, revFeature);
 
-            Filter typeFilter = repositoryFilters.get(featurePath);
+            Predicate<Feature> typeFilter = repositoryFilters.get(featurePath);
             if (typeFilter == null) {
                 typeFilter = repositoryFilters.get("default");
             }
-            if (typeFilter == null || typeFilter.evaluate(feature)) {
+            if (typeFilter == null || typeFilter.test(feature)) {
                 return true;
             }
         }

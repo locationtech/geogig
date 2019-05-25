@@ -21,9 +21,9 @@ import org.geotools.data.QueryCapabilities;
 import org.geotools.data.ResourceInfo;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.locationtech.geogig.feature.FeatureType;
-import org.locationtech.geogig.feature.Name;
 import org.opengis.feature.Feature;
+import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 
 public class ForwardingFeatureSource<T extends FeatureType, F extends Feature>

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
+import static org.junit.Assert.assertNotNull;
 import static org.locationtech.geogig.test.TestData.copy;
 import static org.locationtech.geogig.test.TestData.line1;
 import static org.locationtech.geogig.test.TestData.line2;
@@ -20,6 +21,7 @@ import static org.locationtech.geogig.test.integration.remoting.RemotesIndexTest
 import static org.locationtech.geogig.test.integration.remoting.RemotesIndexTestSupport.verifyClonedIndexes;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +31,7 @@ import java.util.stream.IntStream;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.porcelain.index.Index;
@@ -42,9 +45,20 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.test.TestData;
-import org.opengis.feature.simple.SimpleFeature;
 
 public class FetchOpWithIndexTest extends FetchOpTest {
+
+    private Map<String, Repository> repos;
+
+    @Override
+    protected void setUpInternal() throws Exception {
+        super.setUpInternal();
+        repos = new HashMap<>();
+        // originRepo, localRepo, upstreamRepo
+        repos.put(localRepo.getLocation().toString(), localRepo);
+        repos.put(originRepo.getLocation().toString(), originRepo);
+        repos.put(upstreamRepo.getLocation().toString(), upstreamRepo);
+    }
 
     /**
      * Override to set setCloneIndexes(true) and add a command hook that creates the indexes on the
@@ -68,10 +82,10 @@ public class FetchOpWithIndexTest extends FetchOpTest {
             createIndexes(originRepo);
             createIndexes(upstreamRepo);
             String originURI = origin.getFetchURL();
-            command.getClientData().put(originURI, originRepo);
+            command.getClientData().put(originURI, originRepo.getLocation().toString());
 
             String upstreamURI = upstream.getFetchURL();
-            command.getClientData().put(upstreamURI, upstreamRepo);
+            command.getClientData().put(upstreamURI, upstreamRepo.getLocation().toString());
         }
 
         public @Override void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
@@ -105,8 +119,9 @@ public class FetchOpWithIndexTest extends FetchOpTest {
                     .filter(r -> remoteURI.equals(r.getFetchURL())).findFirst().get();
 
             String fetchURL = remoteObj.getFetchURL();
-            Repository remote = (Repository) command.getClientData().get(fetchURL);
-
+            String remoteURL = command.getClientData().get(fetchURL);
+            Repository remote = repos.get(remoteURL);
+            assertNotNull(remote);
             Collection<RefDiff> collection = ts.getRefDiffs().get(remoteURI);
             for (RefDiff rd : collection) {
                 if (rd.isDelete()) {
@@ -149,6 +164,8 @@ public class FetchOpWithIndexTest extends FetchOpTest {
 
         Repository repo1 = c1.repo;
         Repository repo2 = c2.repo;
+        repos.put(repo1.getLocation().toString(), repo1);
+        repos.put(repo2.getLocation().toString(), repo2);
 
         Remote remote = repo2.command(RemoteAddOp.class).setURL(repo1.getLocation().toString())
                 .setName("repo1").call();
@@ -159,7 +176,7 @@ public class FetchOpWithIndexTest extends FetchOpTest {
         createIndexes(repo1);
 
         FetchOp command = repo2.command(FetchOp.class);
-        command.getClientData().put(remote.getFetchURL(), repo1);
+        command.getClientData().put(remote.getFetchURL(), repo1.getLocation().toString());
         TransferSummary ts = command.setAllRemotes(true)//
                 .setFetchIndexes(true)// FETCHING INDEXES FROM SCRATCH
                 .call();
@@ -176,7 +193,7 @@ public class FetchOpWithIndexTest extends FetchOpTest {
                 .mergeNoFF("newbranch", "merge newbranch onto master");
 
         command = repo2.command(FetchOp.class);
-        command.getClientData().put(remote.getFetchURL(), repo1);
+        command.getClientData().put(remote.getFetchURL(), repo1.getLocation().toString());
         ts = command.setAllRemotes(true)//
                 .setFetchIndexes(true)// SHOULD KEEP WORKING AFTERWARDS
                 .call();
@@ -207,6 +224,8 @@ public class FetchOpWithIndexTest extends FetchOpTest {
 
         Repository repo1 = c1.repo;
         Repository repo2 = c2.repo;
+        repos.put(repo1.getLocation().toString(), repo1);
+        repos.put(repo2.getLocation().toString(), repo2);
 
         Remote remote = repo2.command(RemoteAddOp.class).setURL(repo1.getLocation().toString())
                 .setName("repo1").call();
@@ -218,15 +237,15 @@ public class FetchOpWithIndexTest extends FetchOpTest {
         System.err.println(indexesByBranch);
 
         FetchOp command = repo2.command(FetchOp.class);
-        command.getClientData().put(remote.getFetchURL(), repo1);
+        command.getClientData().put(remote.getFetchURL(), repo1.getLocation().toString());
         command.setAllRemotes(true)//
                 .setFetchIndexes(false)// NOT FETCHING INDEXES INITIALLY
                 .call();
 
-        List<SimpleFeature> points = IntStream.range(0, 1000).mapToObj(i -> copy(point1, "p" + i))
+        List<Feature> points = IntStream.range(0, 1000).mapToObj(i -> copy(point1, "p" + i))
                 .collect(Collectors.toList());
 
-        List<SimpleFeature> lines = IntStream.range(0, 1000).mapToObj(i -> copy(line1, "l" + i))
+        List<Feature> lines = IntStream.range(0, 1000).mapToObj(i -> copy(line1, "l" + i))
                 .collect(Collectors.toList());
 
         support.checkout("branch1")//
@@ -239,7 +258,7 @@ public class FetchOpWithIndexTest extends FetchOpTest {
                 .mergeNoFF("newbranch", "merge newbranch onto master");
 
         command = repo2.command(FetchOp.class);
-        command.getClientData().put(remote.getFetchURL(), repo1);
+        command.getClientData().put(remote.getFetchURL(), repo1.getLocation().toString());
         TransferSummary ts = command.setAllRemotes(true)//
                 .setFetchIndexes(true)// BUT FETCHING AFTERWARDS, SHOULD GET THEM ALL
                 .call();

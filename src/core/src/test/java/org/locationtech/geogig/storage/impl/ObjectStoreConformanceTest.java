@@ -37,11 +37,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -68,8 +69,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -569,38 +568,37 @@ public abstract class ObjectStoreConformanceTest {
     }
 
     public @Test void testGetDiffObjects() throws Exception {
-        SimpleFeatureType featureType = DataUtilities.createType("points",
-                "sp:String,ip:Integer,pp:Point:srid=4326");
+        FeatureType featureType = FeatureTypes.createType("points", "sp:String", "ip:Integer",
+                "pp:Point:srid=4326");
         final RevFeatureType revFeatureType = RevFeatureType.builder().type(featureType).build();
         final int leftTreeSize = 1000;
-        final List<SimpleFeature> features = createFeatures(featureType, leftTreeSize);
+        final List<Feature> features = createFeatures(featureType, leftTreeSize);
         final List<RevFeature> revFeatures = features.stream()
                 .map((f) -> RevFeature.builder().build(f)).collect(Collectors.toList());
 
         db.put(revFeatureType);
         db.putAll(revFeatures.iterator());
 
-        List<SimpleFeature> rightFeatures = new ArrayList<>(features);
-        List<SimpleFeature> added;
-        List<SimpleFeature> removed;
-        List<SimpleFeature> changedAttribute;
-        List<SimpleFeature> changedGeometry;
+        List<Feature> rightFeatures = new ArrayList<>(features);
+        List<Feature> added;
+        List<Feature> removed;
+        List<Feature> changedAttribute;
+        List<Feature> changedGeometry;
         {
             added = new ArrayList<>();
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
             for (int i = leftTreeSize; i < leftTreeSize + 100; i++) {
-                added.add(poiFeature(builder, i));
+                added.add(poiFeature(featureType, i));
             }
             removed = new ArrayList<>(rightFeatures.subList(200, 300));
             rightFeatures.removeAll(removed);
             rightFeatures.addAll(added);
             changedAttribute = new ArrayList<>(rightFeatures.subList(100, 200));
-            for (SimpleFeature f : changedAttribute) {
+            for (Feature f : changedAttribute) {
                 f.setAttribute("sp", f.getAttribute("sp") + "_changed");
             }
             changedGeometry = new ArrayList<>(rightFeatures.subList(400, 500));
             GeometryFactory gf = new GeometryFactory();
-            for (SimpleFeature f : changedGeometry) {
+            for (Feature f : changedGeometry) {
                 Point geom = (Point) f.getAttribute("pp");
                 geom = gf.createPoint(new Coordinate(-geom.getX(), -geom.getY()));
                 f.setAttribute("pp", geom);
@@ -685,27 +683,23 @@ public abstract class ObjectStoreConformanceTest {
         return new DiffEntry(oldObject, newObject);
     }
 
-    private List<SimpleFeature> createFeatures(SimpleFeatureType featureType, int count) {
+    private List<Feature> createFeatures(FeatureType featureType, int count) {
 
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-        List<SimpleFeature> list = IntStream.range(0, count).mapToObj((i) -> poiFeature(builder, i))
+        return IntStream.range(0, count).mapToObj((i) -> poiFeature(featureType, i))
                 .collect(Collectors.toList());
-
-        return list;
     }
 
-    private SimpleFeature poiFeature(SimpleFeatureBuilder builder, int i) {
-        builder.reset();
-        builder.set("sp", "string_" + i);
-        builder.set("ip", i);
+    private Feature poiFeature(FeatureType featureType, int i) {
+        Feature f = Feature.build(String.valueOf(i), featureType);
+        f.setAttribute("sp", "string_" + i);
+        f.setAttribute("ip", i);
         try {
-            builder.set("pp",
+            f.setAttribute("pp",
                     new WKTReader().read(String.format("POINT(%f %f)", i / 100d, i / 100d)));
 
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        SimpleFeature f = builder.buildFeature(String.valueOf(i));
         return f;
     }
 }

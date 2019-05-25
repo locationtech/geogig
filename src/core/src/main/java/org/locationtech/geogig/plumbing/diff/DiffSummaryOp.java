@@ -28,7 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -44,7 +43,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.geometry.BoundingBox;
 
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
@@ -132,9 +130,9 @@ public @Builder class DiffSummaryOp extends AbstractGeoGigOp<List<LayerDiffSumma
             return count;
         });
 
-        CompletableFuture<org.locationtech.geogig.plumbing.diff.DiffSummary<BoundingBox, BoundingBox>> diffBounds;
+        CompletableFuture<org.locationtech.geogig.plumbing.diff.DiffSummary<Envelope, Envelope>> diffBounds;
         diffBounds = CompletableFuture.supplyAsync(() -> {
-            DiffSummary<BoundingBox, BoundingBox> boundsDiff;
+            DiffSummary<Envelope, Envelope> boundsDiff;
             boundsDiff = command(DiffBounds.class).setOldVersion(leftTree).setNewVersion(rightTree)
                     .setLeftSource(leftSource).setRightSource(rightSource).call();
             return boundsDiff;
@@ -146,12 +144,12 @@ public @Builder class DiffSummaryOp extends AbstractGeoGigOp<List<LayerDiffSumma
 
     private LayerDiffSummary toSummary(@NonNull String path, @Nullable RevTree left,
             @Nullable RevTree right, @NonNull DiffObjectCount count,
-            @NonNull DiffSummary<BoundingBox, BoundingBox> bounds) {
+            @NonNull DiffSummary<Envelope, Envelope> bounds) {
 
-        BoundingBox lb = bounds.getLeft();
-        BoundingBox rb = bounds.getRight();
-        ReferencedEnvelope leftBounds = lb.isEmpty() ? null : new ReferencedEnvelope(lb);
-        ReferencedEnvelope rightBounds = rb.isEmpty() ? null : new ReferencedEnvelope(rb);
+        Envelope lb = bounds.getLeft();
+        Envelope rb = bounds.getRight();
+        Envelope leftBounds = lb.isNull() ? null : new Envelope(lb);
+        Envelope rightBounds = rb.isNull() ? null : new Envelope(rb);
 
         LayerDiffSummary s = LayerDiffSummary.builder()//
                 .path(path)//

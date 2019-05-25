@@ -27,6 +27,8 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.util.factory.Hints;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -117,7 +119,7 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
                 "LINESTRING(1.401298464324817E-45 1.401298464324817E-45,2.802596928649634E-45 2.802596928649634E-45)");
         Geometry updateGeom = geom("LINESTRING(1 1, 1.000001 1.000001)");
 
-        testVerySmallGeometries(linesType, 130, smallGeom, updateGeom);
+        testVerySmallGeometries(GT.adapt(linesType), 130, smallGeom, updateGeom);
     }
 
     private void testVerySmallGeometries(SimpleFeatureType type, final int count,
@@ -133,7 +135,7 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
         final String geometryAttribute = type.getGeometryDescriptor().getLocalName();
 
         final List<SimpleFeature> features;
-        features = createClones(count, feature(type, "0", "sval", 1, initialGeom));
+        features = createClones(count, feature(GT.adapt(type), "0", "sval", 1, initialGeom));
         {
             SimpleFeatureStore store = (SimpleFeatureStore) dataStore.getFeatureSource(typeName);
             Transaction tx = new DefaultTransaction();
@@ -149,7 +151,8 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
         verify(index.info(), features);
 
         final List<SimpleFeature> expectedFeatures;
-        expectedFeatures = createClones(count, feature(type, "1", "sval-updated", 2, updateGeom));
+        expectedFeatures = createClones(count,
+                feature(GT.adapt(type), "1", "sval-updated", 2, updateGeom));
         {
             SimpleFeatureStore store = (SimpleFeatureStore) dataStore.getFeatureSource(typeName);
             Transaction tx;
@@ -209,11 +212,12 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
         }
     }
 
-    private List<SimpleFeature> createClones(int count, SimpleFeature proto) {
+    private List<SimpleFeature> createClones(int count, Feature proto) {
         List<SimpleFeature> list = new ArrayList<>(count);
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(proto.getFeatureType());
+        SimpleFeatureType sft = GT.adapt(proto.getType());
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(sft);
         for (int i = 0; i < count; i++) {
-            builder.init(proto);
+            builder.init(GT.adapt(sft, proto));
             String fid = String.valueOf(i);
             SimpleFeature f = builder.buildFeature(fid);
             f.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
@@ -343,7 +347,7 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
         }
         RevTree tree = IndexTestSupport.createWorldPointsTree(repository);
         WorkingTree workingTree = repository.workingTree();
-        NodeRef typeTreeRef = workingTree.createTypeTree(type.getTypeName(), type);
+        NodeRef typeTreeRef = workingTree.createTypeTree(type.getTypeName(), GT.adapt(type));
 
         ObjectStore store = repository.objectDatabase();
         CanonicalTreeBuilder newRootBuilder = CanonicalTreeBuilder.create(store,

@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,6 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -51,7 +52,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
@@ -79,7 +79,7 @@ public class FindChangedTreesTest extends Assert {
 
     private Repository repo;
 
-    private SimpleFeatureType ftproto;
+    private FeatureType ftproto;
 
     public @Before void setUp() throws Exception {
 
@@ -94,7 +94,8 @@ public class FindChangedTreesTest extends Assert {
         repo = geogig.getOrCreateRepository();
 
         command = repo.command(FindChangedTrees.class);
-        ftproto = DataUtilities.createType("points", "sp:String,ip:Integer,pp:Point:srid=3857");
+        ftproto = FeatureTypes.createType("points", "sp:String", "ip:Integer",
+                "pp:Point:srid=3857");
     }
 
     public @Test void testNoOldVersionSet() {
@@ -339,19 +340,19 @@ public class FindChangedTreesTest extends Assert {
     }
 
     private List<NodeRef> createLayers(int base, int count) {
-        SimpleFeatureTypeBuilder ftb = new SimpleFeatureTypeBuilder();
-        Map<String, SimpleFeatureType> types = new HashMap<>();
+        FeatureTypeBuilder ftb = FeatureType.builder();
+        Map<String, FeatureType> types = new HashMap<>();
         for (int i = base; i < count; i++) {
             String treePath = "tree" + i;
-            ftb.setName(treePath);
-            ftb.addAll(ftproto.getAttributeDescriptors());
-            SimpleFeatureType featureType = ftb.buildFeatureType();
+            ftb.localName(treePath);
+            ftb.descriptors(ftproto.getDescriptors());
+            FeatureType featureType = ftb.build();
             types.put(treePath, featureType);
         }
         return createLayers(types);
     }
 
-    private List<NodeRef> createLayers(Map<String, SimpleFeatureType> types) {
+    private List<NodeRef> createLayers(Map<String, FeatureType> types) {
         List<NodeRef> layers = new ArrayList<>();
         WorkingTree workingTree = repo.workingTree();
 

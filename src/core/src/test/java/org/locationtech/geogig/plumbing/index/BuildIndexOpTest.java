@@ -14,8 +14,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -33,7 +33,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -154,9 +153,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
 
     public void testSupportsDuplicatedData(@Nullable String... extraAttributes) throws Exception {
         insertAndAdd(points1, points2, points3);
-        SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(pointsType);
-        featureBuilder.addAll(((SimpleFeature) points1).getAttributes());
-        SimpleFeature duplicateFeature = featureBuilder.buildFeature("duplcate-contents");
+        Feature duplicateFeature = points1.createCopy("duplicate-contents");
         insertAndAdd(duplicateFeature);
 
         assertEquals(RevFeature.builder().build(points1),

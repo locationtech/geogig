@@ -37,9 +37,7 @@ import java.util.EnumMap;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.CRS.AxisOrder;
-import org.geotools.referencing.wkt.Formattable;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.FieldType;
@@ -49,18 +47,12 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
@@ -227,47 +219,22 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             data.writeUTF(lp == null ? "" : lp);
         }
 
-        private void writePropertyType(PropertyType type, DataOutput data) throws IOException {
-            writeName(type.getName(), data);
+        private void writePropertyType(PropertyDescriptor type, DataOutput data)
+                throws IOException {
+            writeName(type.getTypeName(), data);
             data.writeByte(FieldType.forBinding(type.getBinding()).getTag());
-            if (type instanceof GeometryType) {
-                GeometryType gType = (GeometryType) type;
-                CoordinateReferenceSystem crs = gType.getCoordinateReferenceSystem();
-                String srsName;
-                if (crs == null) {
-                    srsName = org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
-                            .getSrsIdentifier();
-                } else {
-                    final boolean longitudeFirst = CRS.getAxisOrder(crs,
-                            false) == AxisOrder.EAST_NORTH;
-                    final boolean codeOnly = true;
-                    String crsCode = CRS.toSRS(crs, codeOnly);
-                    if (crsCode != null) {
-                        srsName = (longitudeFirst ? "EPSG:" : "urn:ogc:def:crs:EPSG::") + crsCode;
-                        // check that what we are writing is actually a valid EPSG code and we will
-                        // be
-                        // able to decode it later. If not, we will use WKT instead
-                        try {
-                            CRS.decode(srsName, longitudeFirst);
-                        } catch (NoSuchAuthorityCodeException e) {
-                            srsName = null;
-                        } catch (FactoryException e) {
-                            srsName = null;
-                        }
-                    } else {
-                        srsName = null;
-                    }
+            if (type.isGeometryDescriptor()) {
+                CoordinateReferenceSystem crs = type.coordinateReferenceSystem();
+                String srsName = null;
+                if (crs.getSrsIdentifier() != null) {
+                    srsName = crs.getSrsIdentifier();
                 }
+
                 if (srsName != null) {
-                    data.writeBoolean(true);
+                    data.writeBoolean(true);// code only
                     data.writeUTF(srsName);
                 } else {
-                    final String wkt;
-                    if (crs instanceof Formattable) {
-                        wkt = ((Formattable) crs).toWKT(Formattable.SINGLE_LINE);
-                    } else {
-                        wkt = crs.toWKT();
-                    }
+                    final String wkt = crs.getWKT();
                     data.writeBoolean(false);
                     data.writeUTF(wkt);
                 }
@@ -279,7 +246,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             data.writeBoolean(attr.isNillable());
             data.writeInt(attr.getMinOccurs());
             data.writeInt(attr.getMaxOccurs());
-            writePropertyType(attr.getType(), data);
+            writePropertyType(attr, data);
         }
     }
 

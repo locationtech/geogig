@@ -18,12 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
@@ -35,9 +36,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -47,7 +45,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
 @Parameters(commandNames = "insert", commandDescription = "Inserts features in the repository")
@@ -93,7 +90,7 @@ public class Insert extends AbstractCommand implements CLICommand {
                     types.put(ft, rft);
                     repository.objectDatabase().put(rft);
                 }
-                String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
+                String path = NodeRef.appendChild(parentPath, f.getId());
                 FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(),
                         path);
                 return fi;
@@ -108,9 +105,9 @@ public class Insert extends AbstractCommand implements CLICommand {
 
     public Map<String, List<Feature>> readFeatures(Iterable<String> lines) {
 
-        Map<String, List<Feature>> features = Maps.newHashMap();
+        Map<String, List<Feature>> features = new HashMap<>();
         List<String> featureChanges = Lists.newArrayList();
-        Map<String, SimpleFeatureBuilder> featureTypes = Maps.newHashMap(); //
+        Map<String, FeatureType> featureTypes = new HashMap<>(); //
         String line;
         Iterator<String> iter = lines.iterator();
         while (iter.hasNext()) {
@@ -142,7 +139,7 @@ public class Insert extends AbstractCommand implements CLICommand {
     }
 
     private Feature createFeature(List<String> featureChanges,
-            Map<String, SimpleFeatureBuilder> featureTypes) {
+            Map<String, FeatureType> featureTypes) {
         String path = featureChanges.get(0);
         String tree = NodeRef.parentPath(path);
         String featureId = NodeRef.nodeFromPath(path);
@@ -150,23 +147,21 @@ public class Insert extends AbstractCommand implements CLICommand {
             Optional<RevFeatureType> opt = geogig.command(ResolveFeatureType.class)
                     .setRefSpec("WORK_HEAD:" + tree).call();
             checkParameter(opt.isPresent(), "The parent tree does not exist: " + tree);
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(
-                    (SimpleFeatureType) opt.get().type());
-            featureTypes.put(tree, builder);
+            featureTypes.put(tree, opt.get().type());
         }
-        SimpleFeatureBuilder ftb = featureTypes.get(tree);
-        SimpleFeatureType ft = ftb.getFeatureType();
+        FeatureType ft = featureTypes.get(tree);
+        Feature f = Feature.build(featureId, ft);
         for (int i = 1; i < featureChanges.size(); i++) {
             String[] tokens = featureChanges.get(i).split("\t");
             Preconditions.checkArgument(tokens.length == 2,
                     "Wrong attribute definition: " + featureChanges.get(i));
             String fieldName = tokens[0];
-            AttributeDescriptor desc = ft.getDescriptor(fieldName);
+            PropertyDescriptor desc = ft.getDescriptor(fieldName);
             Preconditions.checkNotNull(desc, "Wrong attribute in feature description");
-            FieldType type = FieldType.forBinding(desc.getType().getBinding());
+            FieldType type = FieldType.forBinding(desc.getBinding());
             Object value = TextValueSerializer.fromString(type, tokens[1]);
-            ftb.set(tokens[0], value);
+            f.setAttribute(tokens[0], value);
         }
-        return ftb.buildFeature(featureId);
+        return f;
     }
 }

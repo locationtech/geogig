@@ -19,7 +19,6 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.geotools.util.Range;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -41,6 +40,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
 /**
@@ -61,10 +61,9 @@ import com.google.common.collect.Sets;
 @CanRunDuringConflict
 public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
-    private static final Range<Long> ALWAYS = new Range<Long>(Long.class, 0L, true, Long.MAX_VALUE,
-            true);
+    private static final Range<Date> ALWAYS = Range.all();
 
-    private Range<Long> timeRange;
+    private Range<Date> timeRange;
 
     private Integer skip;
 
@@ -218,9 +217,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
         if (commitRange == null) {
             this.timeRange = ALWAYS;
         } else {
-            this.timeRange = new Range<Long>(Long.class, commitRange.getMinValue().getTime(),
-                    commitRange.isMinIncluded(), commitRange.getMaxValue().getTime(),
-                    commitRange.isMaxIncluded());
+            this.timeRange = commitRange;
         }
         return this;
     }
@@ -533,7 +530,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
         private final ObjectId oldestCommitId;
 
-        private final Range<Long> timeRange;
+        private final Range<Date> timeRange;
 
         private final Set<String> paths;
 
@@ -553,7 +550,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * @param commiter the regexp pattern to filter author names
          * @param author the regexp pattern to filter commiter names
          */
-        public LogFilter(final ObjectId oldestCommitId, final Range<Long> timeRange,
+        public LogFilter(final ObjectId oldestCommitId, final Range<Date> timeRange,
                 final Set<String> paths, Pattern author, Pattern commiter) {
             Preconditions.checkNotNull(oldestCommitId);
             Preconditions.checkNotNull(timeRange);
@@ -592,8 +589,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                     return false;
                 }
             }
-            boolean applies = timeRange
-                    .contains(Long.valueOf(commit.getCommitter().getTimestamp()));
+            boolean applies = timeRange.contains(new Date(commit.getCommitter().getTimestamp()));
             if (!applies) {
                 return false;
             }

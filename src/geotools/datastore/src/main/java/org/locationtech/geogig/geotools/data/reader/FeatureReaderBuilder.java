@@ -40,7 +40,9 @@ import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
@@ -170,7 +172,7 @@ public class FeatureReaderBuilder {
         this.leftRepo = leftRepo;
         this.rightRepo = rightRepo;
         this.nativeType = nativeType;
-        this.nativeSchema = (SimpleFeatureType) nativeType.type();
+        this.nativeSchema = GT.adapt(nativeType.type());
         this.typeRef = typeRef;
 
         this.nativeSchemaAttributeNames = Sets.newHashSet(Lists.transform(
@@ -422,7 +424,7 @@ public class FeatureReaderBuilder {
         final ObjectStore leftFeatureSource = leftRepo.objectDatabase();
         final ObjectStore rightFeatureSource = rightRepo.objectDatabase();
 
-        AutoCloseableIterator<? extends SimpleFeature> features;
+        AutoCloseableIterator<SimpleFeature> features;
 
         // contains only the attributes required to satisfy the output schema and the in-process
         // filter
@@ -431,22 +433,27 @@ public class FeatureReaderBuilder {
         if (info.indexContainsAllRequiredProperties) {
             resultSchema = resolveMinimalNativeSchema(info.fullSchema, info.requiredProperties);
             CoordinateReferenceSystem nativeCrs = info.fullSchema.getCoordinateReferenceSystem();
-            features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
-                    geometryFactory, nativeCrs);
+            org.locationtech.geogig.crs.CoordinateReferenceSystem nativeGigCrs = GT
+                    .adapt(nativeCrs);
+            features = MaterializedIndexFeatureIterator.create(GT.adapt(resultSchema), featureRefs,
+                    geometryFactory, nativeGigCrs);
         } else {
             BulkFeatureRetriever retriever;
             retriever = new BulkFeatureRetriever(leftFeatureSource, rightFeatureSource);
             Name typeNameOverride;
             if (simpleNames(nativeSchema).equals(simpleNames(info.fullSchema))) {
                 resultSchema = info.fullSchema;
-                typeNameOverride = info.fullSchema.getName();
+                typeNameOverride = GT.adapt(info.fullSchema.getName());
             } else {
                 resultSchema = nativeSchema;
                 typeNameOverride = null;
             }
             // using fullSchema here will build "normal" full-attribute lazy features
-            features = retriever.getGeoToolsFeatures(featureRefs, nativeType, typeNameOverride,
-                    geometryFactory);
+            AutoCloseableIterator<Feature> gigFeatures = retriever.getGeoToolsFeatures(featureRefs,
+                    nativeType, typeNameOverride, geometryFactory);
+
+            features = AutoCloseableIterator.transform(gigFeatures,
+                    gf -> GT.adapt(resultSchema, gf));
         }
 
         if (!info.filterIsFullySupportedByIndex) {
@@ -464,9 +471,8 @@ public class FeatureReaderBuilder {
                     simplificationDistance.doubleValue(), geometryFactory));
         }
 
-        FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
-        featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(resultSchema,
-                features);
+        FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = new FeatureReaderAdapter(
+                resultSchema, features);
 
         // we only want a sub-set of the attributes provided - we need to re-type
         // the features (either from the index or the full-feature)
@@ -488,10 +494,10 @@ public class FeatureReaderBuilder {
         return featureReader;
     }
 
-    private SimpleFeatureType resolveFullSchema() {
+    public SimpleFeatureType resolveFullSchema() {
         SimpleFeatureType targetSchema = this.targetSchema;
         if (targetSchema == null) {
-            targetSchema = (SimpleFeatureType) nativeType.type();
+            targetSchema = this.nativeSchema;
         }
         return targetSchema;
     }
@@ -534,8 +540,8 @@ public class FeatureReaderBuilder {
         return Lists.transform(type.getAttributeDescriptors(), AttributeDescriptor::getLocalName);
     }
 
-    private AutoCloseableIterator<? extends SimpleFeature> applyPostFilter(Filter postFilter,
-            AutoCloseableIterator<? extends SimpleFeature> features) {
+    private AutoCloseableIterator<SimpleFeature> applyPostFilter(Filter postFilter,
+            AutoCloseableIterator<SimpleFeature> features) {
 
         Predicate<SimpleFeature> filterPredicate = PostFilter.forFilter(postFilter);
         features = AutoCloseableIterator.filter(features, filterPredicate);

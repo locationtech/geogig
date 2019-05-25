@@ -18,16 +18,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
-
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.CRS.AxisOrder;
-import org.geotools.referencing.crs.DefaultEngineeringCRS;
-import org.geotools.referencing.wkt.Formattable;
-import org.locationtech.geogig.feature.AttributeType;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.flatbuffers.generated.v1.Commit;
 import org.locationtech.geogig.flatbuffers.generated.v1.Feature;
 import org.locationtech.geogig.flatbuffers.generated.v1.LeafTree;
@@ -57,12 +52,6 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -153,9 +142,9 @@ final class FlatBuffers {
         return offset;
     }
 
-    public RevObject decode(@Nullable ObjectId id, @Nonnull byte[] data, @Nonnegative int offset,
-            @Nonnegative int length) {
-
+    public RevObject decode(@Nullable ObjectId id, @NonNull byte[] data, int offset, int length) {
+        Preconditions.checkArgument(offset >= 0);
+        Preconditions.checkArgument(length > 0);
         final ByteBuffer dataBuffer = ByteBuffer.wrap(data, offset, length);
         return decode(id, dataBuffer);
     }
@@ -550,43 +539,41 @@ final class FlatBuffers {
     }
 
     private int write(@NonNull RevFeatureType t, @NonNull FlatBufferBuilder builder) {
-        org.opengis.feature.simple.SimpleFeatureType type = (org.opengis.feature.simple.SimpleFeatureType) t
-                .type();
+        FeatureType type = t.type();
         return writeSimpleFeatureType(builder, type);
     }
 
     public int writeSimpleFeatureType(@NonNull FlatBufferBuilder builder,
-            @NonNull org.opengis.feature.simple.SimpleFeatureType type) {
+            @NonNull FeatureType type) {
 
-        GeometryDescriptor defgeom = type.getGeometryDescriptor();
+        PropertyDescriptor defgeom = type.getGeometryDescriptor().orElse(null);
 
         int nameOffset = writeQualifiedName(type.getName(), builder);
         int defaultGeometryNameOffset = defgeom == null ? 0
                 : builder.createString(defgeom.getLocalName());
 
-        int[] attributesOffsets = writeAttributeDescriptors(type.getAttributeDescriptors(),
-                builder);
+        int[] attributesOffsets = writePropertyDescriptors(type.getDescriptors(), builder);
         int attributesOffset = SimpleFeatureType.createAttributesVector(builder, attributesOffsets);
 
         return SimpleFeatureType.createSimpleFeatureType(builder, nameOffset,
                 defaultGeometryNameOffset, attributesOffset);
     }
 
-    private int[] writeAttributeDescriptors(List<AttributeDescriptor> attributeDescriptors,
+    private int[] writePropertyDescriptors(List<PropertyDescriptor> PropertyDescriptors,
             FlatBufferBuilder builder) {
 
-        int[] offsets = new int[attributeDescriptors.size()];
+        int[] offsets = new int[PropertyDescriptors.size()];
         for (int i = 0; i < offsets.length; i++) {
-            offsets[i] = writeAttributeDescriptor(attributeDescriptors.get(i), builder);
+            offsets[i] = writePropertyDescriptor(PropertyDescriptors.get(i), builder);
         }
         return offsets;
     }
 
-    private int writeAttributeDescriptor(AttributeDescriptor attDescriptor,
+    private int writePropertyDescriptor(PropertyDescriptor attDescriptor,
             FlatBufferBuilder builder) {
 
         final int nameOffset = writeQualifiedName(attDescriptor.getName(), builder);
-        final int typeOffset = writeAttributeType(attDescriptor.getType(), builder);
+        final int typeOffset = writeAttributeType(attDescriptor, builder);
         final int minOccurs = attDescriptor.getMinOccurs();
         final int maxOccurs = attDescriptor.getMaxOccurs();
         final boolean nillable = attDescriptor.isNillable();
@@ -594,9 +581,9 @@ final class FlatBuffers {
                 typeOffset, minOccurs, maxOccurs, nillable);
     }
 
-    private int writeAttributeType(AttributeType att, FlatBufferBuilder builder) {
+    private int writeAttributeType(PropertyDescriptor att, FlatBufferBuilder builder) {
 
-        final int nameOffset = writeQualifiedName(att.getName(), builder);
+        final int nameOffset = writeQualifiedName(att.getTypeName(), builder);
         final byte bindingCode;
         {
             Class<?> binding = att.getBinding();
@@ -604,39 +591,14 @@ final class FlatBuffers {
             Preconditions.checkArgument(fieldType != FieldType.UNKNOWN);
             bindingCode = fieldType.getTag();// just because they do match
         }
-        final boolean identifiable = att.isIdentified();
-        final boolean geometric = att instanceof GeometryType;
+        final boolean identifiable = false;
+        final boolean geometric = att.isGeometryDescriptor();
         final int crs_authority_codeOffset;
         final int crs_wktOffset;
         if (geometric) {
-            String srsName = null;
-            String wkt = null;
-            GeometryType gd = (GeometryType) att;
-            CoordinateReferenceSystem crs = gd.getCoordinateReferenceSystem();
-            if (crs != null && !DefaultEngineeringCRS.CARTESIAN_2D.equals(crs)) {
-                boolean codeOnly = true;
-                final boolean longitudeFirst = CRS.getAxisOrder(crs, false) == AxisOrder.EAST_NORTH;
-                final String crsCode = CRS.toSRS(crs, codeOnly);
-                if (crsCode != null) {
-                    srsName = (longitudeFirst ? "EPSG:" : "urn:ogc:def:crs:EPSG::") + crsCode;
-                    // check that what we are writing is actually a valid EPSG code and we will
-                    // be able to decode it later. If not, we will use WKT instead
-                    try {
-                        CRS.decode(srsName, longitudeFirst);
-                    } catch (NoSuchAuthorityCodeException e) {
-                        srsName = null;
-                    } catch (FactoryException e) {
-                        srsName = null;
-                    }
-                }
-                if (srsName == null) {
-                    if (crs instanceof Formattable) {
-                        wkt = ((Formattable) crs).toWKT(Formattable.SINGLE_LINE);
-                    } else {
-                        wkt = crs.toWKT();
-                    }
-                }
-            }
+            CoordinateReferenceSystem crs = att.coordinateReferenceSystem();
+            String srsName = crs.getSrsIdentifier();
+            String wkt = crs.getWKT();
             crs_authority_codeOffset = srsName == null ? 0 : builder.createString(srsName);
             crs_wktOffset = wkt == null ? 0 : builder.createString(wkt);
         } else {

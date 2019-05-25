@@ -25,6 +25,7 @@ import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -147,7 +148,7 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
                 .call();
         checkState(opType.isPresent());
 
-        SimpleFeatureType featureType = (SimpleFeatureType) opType.get().type();
+        SimpleFeatureType featureType = GT.adapt(opType.get().type());
 
         try {
             targetStore.createSchema(featureType);

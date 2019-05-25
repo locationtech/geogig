@@ -24,6 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -55,9 +56,9 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(geogig.getRepository());
-        dataStore.createSchema(super.pointsType);
-        dataStore.createSchema(super.linesType);
-        dataStore.createSchema(super.polyType);
+        dataStore.createSchema(GT.adapt(super.pointsType));
+        dataStore.createSchema(GT.adapt(super.linesType));
+        dataStore.createSchema(GT.adapt(super.polyType));
 
         points = (GeogigFeatureStore) dataStore.getFeatureSource(pointsName);
     }
@@ -181,9 +182,13 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
         assertTrue(points.getQueryCapabilities().isUseProvidedFIDSupported());
 
+        SimpleFeatureType gtPointsType = GT.adapt(pointsType);
+        SimpleFeature gtPoints1 = GT.adapt(gtPointsType, points1);
+        SimpleFeature gtPoints2 = GT.adapt(gtPointsType, points2);
+        SimpleFeature gtPoints3 = GT.adapt(gtPointsType, points3);
+
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) points3));
+        collection = DataUtilities.collection(Arrays.asList(gtPoints1, gtPoints2, gtPoints3));
 
         Transaction tx = new DefaultTransaction();
         points.setTransaction(tx);
@@ -202,9 +207,9 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             assertFalse(idP1.equals(fid1.getID()));
 
             // now force the use of provided feature ids
-            points1.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
-            points2.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
-            points3.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
+            gtPoints1.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
+            gtPoints2.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
+            gtPoints3.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
 
             List<FeatureId> providedFids = points.addFeatures(collection);
             assertNotNull(providedFids);
@@ -411,7 +416,8 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         SimpleFeatureType newType = DataUtilities.createType("http://geogig.someType", "someType",
                 "sp:String,ip:Integer");
 
-        Feature newFeature = feature(newType, "someType.1", "StringProp1", new Integer(1000));
+        Feature newFeature = GT.adapt(newType,
+                feature(GT.adapt(newType), "someType.1", "StringProp1", new Integer(1000)));
 
         collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
                 (SimpleFeature) points2, (SimpleFeature) newFeature));
@@ -424,9 +430,10 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     public @Test void testAddFeaturesSubType() throws Exception {
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
-        SimpleFeatureType subType = DataUtilities.createSubType(pointsType, new String[] { "ip" });
-
-        Feature newFeature = feature(subType, "subtype.1", new Integer(-1));
+        SimpleFeatureType subType = DataUtilities.createSubType(GT.adapt(pointsType),
+                new String[] { "ip" });
+        FeatureType gigType = GT.adapt(subType);
+        Feature newFeature = GT.adapt(subType, feature(gigType, "subtype.1", new Integer(-1)));
         newFeature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
 
         collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
@@ -447,8 +454,10 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         final SimpleFeatureType newType = DataUtilities.createType(
                 original.getName().getNamespaceURI(), original.getName().getLocalPart(), typeSpec);
 
-        Feature newFeature = feature(newType, "someid", "StringProp1", new Integer(1000),
-                (Geometry) null, "value of att not in target schema");
+        FeatureType gigType = GT.adapt(newType);
+
+        Feature newFeature = GT.adapt(newType, feature(gigType, "someid", "StringProp1",
+                new Integer(1000), (Geometry) null, "value of att not in target schema"));
 
         collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
                 (SimpleFeature) points2, (SimpleFeature) newFeature));

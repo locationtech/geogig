@@ -122,7 +122,7 @@ public final @Accessors(fluent = true) class RevFeatureBuilder {
      * @return the newly constructed RevFeature
      */
     public RevFeature build(@NonNull Feature feature) {
-        feature.getValues().forEach(this::addValue);
+        feature.forEach(this::addValue);
         return build();
     }
 }

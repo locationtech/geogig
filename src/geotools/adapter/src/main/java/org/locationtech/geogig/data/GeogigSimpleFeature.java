@@ -25,9 +25,7 @@ import org.geotools.feature.type.Types;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.Converters;
 import org.geotools.util.Utilities;
-import org.locationtech.geogig.feature.AttributeType;
-import org.locationtech.geogig.feature.Name;
-import org.locationtech.geogig.feature.PropertyDescriptor;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.jts.geom.Envelope;
@@ -39,8 +37,10 @@ import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.GeometryType;
+import org.opengis.feature.type.Name;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.Identifier;
 import org.opengis.geometry.BoundingBox;
@@ -695,15 +695,18 @@ class GeogigSimpleFeature implements SimpleFeature {
 
     public static Map<String, Integer> buildAttNameToRevTypeIndex(RevFeatureType revType) {
 
-        List<PropertyDescriptor> sortedDescriptors = revType.descriptors();
+        FeatureType type = revType.type();
+        List<org.locationtech.geogig.feature.PropertyDescriptor> sortedDescriptors = type
+                .getDescriptors();
 
         Map<String, Integer> typeAttNameToRevTypeIndex = Maps.newHashMap();
 
-        final GeometryDescriptor defaultGeometry = ((SimpleFeatureType) revType.type())
-                .getGeometryDescriptor();
+        final org.locationtech.geogig.feature.PropertyDescriptor defaultGeometry = type
+                .getGeometryDescriptor().orElse(null);
         for (int revFeatureIndex = 0; revFeatureIndex < sortedDescriptors
                 .size(); revFeatureIndex++) {
-            PropertyDescriptor prop = sortedDescriptors.get(revFeatureIndex);
+            org.locationtech.geogig.feature.PropertyDescriptor prop = sortedDescriptors
+                    .get(revFeatureIndex);
             typeAttNameToRevTypeIndex.put(prop.getName().getLocalPart(),
                     Integer.valueOf(revFeatureIndex));
 

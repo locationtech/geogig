@@ -32,12 +32,11 @@ import org.geotools.data.store.FeatureIteratorIterator;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.FeatureReaderIterator;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.identity.FeatureIdVersionedImpl;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
-import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -123,7 +122,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
     }
 
     @Override
-    public Name getName() {
+    public org.opengis.feature.type.Name getName() {
         return delegate.getName();
     }
 
@@ -254,7 +253,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
 
         ProgressListener listener = new DefaultProgressListener();
 
-        final SimpleFeatureType nativeSchema = (SimpleFeatureType) delegate.getNativeType().type();
+        final FeatureType nativeSchema = delegate.getNativeType().type();
         final NodeRef typeRef = delegate.getTypeRef();
         final String treePath = typeRef.path();
         final ObjectId featureTypeId = typeRef.getMetadataId();
@@ -263,8 +262,8 @@ public class GeogigFeatureStore extends ContentFeatureStore {
                 : Collections.emptyList();
 
         try (FeatureIterator<SimpleFeature> featureIterator = featureCollection.features()) {
-            Iterator<SimpleFeature> features;
-            features = new FeatureIteratorIterator<SimpleFeature>(featureIterator);
+            Iterator<SimpleFeature> gtFeatures = new FeatureIteratorIterator<SimpleFeature>(
+                    featureIterator);
             /*
              * Make sure to transform the incoming features to the native schema to avoid situations
              * where geogig would change the metadataId of the RevFeature nodes due to small
@@ -272,15 +271,16 @@ public class GeogigFeatureStore extends ContentFeatureStore {
              * properties
              */
             SchemaInforcer schemaInforcer = new SchemaInforcer(nativeSchema);
-            features = Iterators.transform(features, schemaInforcer::apply);
+            Iterator<org.locationtech.geogig.feature.Feature> features = Iterators
+                    .transform(gtFeatures, schemaInforcer::apply);
             // the returned list is expected to be in the order provided by the argument feature
             // collection, so lets add the fids in the transformer here
 
-            Function<SimpleFeature, FeatureInfo> fn = new Function<SimpleFeature, FeatureInfo>() {
+            Function<org.locationtech.geogig.feature.Feature, FeatureInfo> fn = new Function<org.locationtech.geogig.feature.Feature, FeatureInfo>() {
                 @Override
-                public FeatureInfo apply(SimpleFeature f) {
+                public FeatureInfo apply(org.locationtech.geogig.feature.Feature f) {
                     RevFeature feature = RevFeature.builder().build(f);
-                    String fid = f.getID();
+                    String fid = f.getId();
                     String path = NodeRef.appendChild(treePath, fid);
                     String version = feature.getId().toString();
                     if (returnFidsOnInsert) {
@@ -309,9 +309,8 @@ public class GeogigFeatureStore extends ContentFeatureStore {
      * This class also creates a feature with the full native schema in case the input feature is a
      * reduced version.
      */
-    private static class SchemaInforcer implements Function<SimpleFeature, SimpleFeature> {
-
-        private SimpleFeatureBuilder builder;
+    private static class SchemaInforcer
+            implements Function<SimpleFeature, org.locationtech.geogig.feature.Feature> {
 
         private static final AtomicLong seq = new AtomicLong();
 
@@ -319,9 +318,11 @@ public class GeogigFeatureStore extends ContentFeatureStore {
 
         private final String nativeTypeName;
 
-        public SchemaInforcer(final SimpleFeatureType targetSchema) {
-            this.nativeTypeName = targetSchema.getTypeName();
-            this.builder = new SimpleFeatureBuilder(targetSchema);
+        private final FeatureType targetSchema;
+
+        public SchemaInforcer(final FeatureType targetSchema) {
+            this.targetSchema = targetSchema;
+            this.nativeTypeName = targetSchema.getName().getLocalPart();
             Hasher hasher = Hashing.murmur3_32().newHasher();
             hasher.putString(targetSchema.getName().getLocalPart(), Charsets.UTF_8);
             hasher.putLong(System.currentTimeMillis());
@@ -330,48 +331,50 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         }
 
         @Override
-        public SimpleFeature apply(SimpleFeature input) {
-            builder.reset();
-
+        public org.locationtech.geogig.feature.Feature apply(SimpleFeature input) {
             final SimpleFeatureType featureType = input.getType();
             final String typeName = featureType.getTypeName();
             Preconditions.checkArgument(nativeTypeName.equals(typeName),
                     "Tried to insert features of type '%s' into '%s'", featureType.getTypeName(),
                     nativeTypeName);
 
-            for (int i = 0; i < featureType.getAttributeCount(); i++) {
-                String name = featureType.getDescriptor(i).getLocalName();
-                builder.set(name, input.getAttribute(name));
-            }
-
             String id;
             if (Boolean.TRUE.equals(input.getUserData().get(Hints.USE_PROVIDED_FID))) {
-                id = input.getID();
+                Object providedFid = input.getUserData().get(Hints.PROVIDED_FID);
+                if (providedFid == null) {
+                    id = input.getID();
+                } else {
+                    id = String.valueOf(providedFid);
+                }
             } else {
                 id = baseId + seq.incrementAndGet();
             }
 
-            SimpleFeature feature = builder.buildFeature(id);
-            if (!input.getUserData().isEmpty()) {
-                feature.getUserData().putAll(input.getUserData());
+            org.locationtech.geogig.feature.Feature feature;
+            feature = org.locationtech.geogig.feature.Feature.build(id, this.targetSchema);
+
+            for (int i = 0; i < featureType.getAttributeCount(); i++) {
+                String name = featureType.getDescriptor(i).getLocalName();
+                feature.setAttribute(name, input.getAttribute(name));
             }
             return feature;
         }
     };
 
     @Override
-    public void modifyFeatures(Name[] names, Object[] values, Filter filter) throws IOException {
+    public void modifyFeatures(org.opengis.feature.type.Name[] names, Object[] values,
+            Filter filter) throws IOException {
         Preconditions.checkState(getDataStore().isAllowTransactions(),
                 "Transactions not supported; head is not a local branch");
 
         final WorkingTree workingTree = delegate.getWorkingTree();
-        final SimpleFeatureType nativeSchema = (SimpleFeatureType) delegate.getNativeType().type();
+        final FeatureType nativeSchema = delegate.getNativeType().type();
         final NodeRef typeRef = delegate.getTypeRef();
         final String treePath = typeRef.path();
         final ObjectId featureTypeId = typeRef.getMetadataId();
 
-        try (AutoCloseableIterator<SimpleFeature> features = modifyingFeatureIterator(names, values,
-                filter)) {
+        try (AutoCloseableIterator<SimpleFeature> gtFeatures = modifyingFeatureIterator(names,
+                values, filter)) {
             /*
              * Make sure to transform the incoming features to the native schema to avoid situations
              * where geogig would change the metadataId of the RevFeature nodes due to small
@@ -379,17 +382,16 @@ public class GeogigFeatureStore extends ContentFeatureStore {
              * properties
              */
             SchemaInforcer schemaInforcer = new SchemaInforcer(nativeSchema);
-            Iterator<SimpleFeature> schemaEnforced = Iterators.transform(features,
-                    schemaInforcer::apply);
+            Iterator<org.locationtech.geogig.feature.Feature> schemaEnforced = Iterators
+                    .transform(gtFeatures, schemaInforcer::apply);
 
             ProgressListener listener = new DefaultProgressListener();
 
-            // (p) -> p.getLocalName()
-            Function<SimpleFeature, FeatureInfo> fn = new Function<SimpleFeature, FeatureInfo>() {
+            Function<org.locationtech.geogig.feature.Feature, FeatureInfo> fn = new Function<org.locationtech.geogig.feature.Feature, FeatureInfo>() {
                 @Override
-                public FeatureInfo apply(SimpleFeature f) {
+                public FeatureInfo apply(org.locationtech.geogig.feature.Feature f) {
                     return FeatureInfo.insert(RevFeature.builder().build(f), featureTypeId,
-                            NodeRef.appendChild(treePath, f.getID()));
+                            NodeRef.appendChild(treePath, f.getId()));
                 }
             };
 
@@ -408,8 +410,9 @@ public class GeogigFeatureStore extends ContentFeatureStore {
      * @return
      * @throws IOException
      */
-    private AutoCloseableIterator<SimpleFeature> modifyingFeatureIterator(final Name[] names,
-            final Object[] values, final Filter filter) throws IOException {
+    private AutoCloseableIterator<SimpleFeature> modifyingFeatureIterator(
+            final org.opengis.feature.type.Name[] names, final Object[] values, final Filter filter)
+            throws IOException {
 
         AutoCloseableIterator<SimpleFeature> iterator = featureIterator(filter);
 
@@ -457,7 +460,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
     */
     private static final class ModifyingFunction implements Function<SimpleFeature, SimpleFeature> {
 
-        private Name[] names;
+        private org.opengis.feature.type.Name[] names;
 
         private Object[] values;
 
@@ -465,7 +468,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
          * @param names
          * @param values
          */
-        public ModifyingFunction(Name[] names, Object[] values) {
+        public ModifyingFunction(org.opengis.feature.type.Name[] names, Object[] values) {
             this.names = names;
             this.values = values;
         }
@@ -473,7 +476,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         @Override
         public SimpleFeature apply(SimpleFeature input) {
             for (int i = 0; i < names.length; i++) {
-                Name attName = names[i];
+                org.opengis.feature.type.Name attName = names[i];
                 Object attValue = values[i];
                 input.setAttribute(attName, attValue);
             }

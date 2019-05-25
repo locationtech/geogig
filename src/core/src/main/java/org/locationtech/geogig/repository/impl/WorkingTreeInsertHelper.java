@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -35,8 +36,6 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.Feature;
-import org.opengis.geometry.BoundingBox;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -85,9 +84,9 @@ class WorkingTreeInsertHelper {
 
         final RevTreeBuilder treeBuilder = getTreeBuilder(feature);
 
-        String fid = feature.getIdentifier().getID();
+        String fid = feature.getId();
         // System.err.printf("%s -> %s\n", fid, treeBuilder);
-        BoundingBox bounds = feature.getBounds();
+        Envelope bounds = feature.getDefaultGeometryBounds();
         FeatureType type = feature.getType();
 
         final Node node = createFeatureNode(revFeatureId, fid, bounds, type);
@@ -96,16 +95,8 @@ class WorkingTreeInsertHelper {
     }
 
     private Node createFeatureNode(final ObjectId id, final String name,
-            @Nullable final BoundingBox bounds, final FeatureType type) {
-        Envelope bbox;
-        if (bounds == null) {
-            bbox = null;
-        } else if (bounds instanceof Envelope) {
-            bbox = (Envelope) bounds;
-        } else {
-            bbox = new Envelope(bounds.getMinimum(0), bounds.getMaximum(0), bounds.getMinimum(1),
-                    bounds.getMaximum(1));
-        }
+            @Nullable final Envelope bbox, final FeatureType type) {
+
         RevFeatureType revFeatureType = revFeatureTypes.get(type.getName().getLocalPart());
         if (null == revFeatureType) {
             revFeatureType = RevFeatureType.builder().type(type).build();
@@ -121,7 +112,7 @@ class WorkingTreeInsertHelper {
 
     public void remove(FeatureToDelete feature) {
         final RevTreeBuilder treeBuilder = getTreeBuilder(feature);
-        String fid = feature.getIdentifier().getID();
+        String fid = feature.getId();
         Node featureNode = RevObjectFactory.defaultInstance().createNode(fid, ObjectId.NULL,
                 ObjectId.NULL, TYPE.FEATURE, null, null);
         treeBuilder.remove(featureNode);

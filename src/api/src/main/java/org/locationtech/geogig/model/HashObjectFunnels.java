@@ -22,7 +22,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.feature.CoordinateReferenceSystem;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.feature.PropertyDescriptor;

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.GeometryDescriptor;
 
 /**
  * Creates a {@link RevTree} that represents a quad-tree out of an existing canonical
@@ -129,7 +129,7 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
         canonicalTypeTree = objectDatabase().getTree(typeTreeRef.getObjectId());
         featureType = objectDatabase().getFeatureType(typeTreeRef.getMetadataId());
 
-        final GeometryDescriptor geometryAtt = IndexUtils.resolveGeometryAttribute(featureType,
+        final PropertyDescriptor geometryAtt = IndexUtils.resolveGeometryAttribute(featureType,
                 geometryAttributeName);
         final Envelope maxBounds = this.bounds != null ? this.bounds
                 : IndexUtils.resolveMaxBounds(geometryAtt);

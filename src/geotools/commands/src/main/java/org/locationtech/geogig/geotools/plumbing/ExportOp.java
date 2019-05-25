@@ -35,6 +35,7 @@ import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.feature.PropertyDescriptor;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Bounded;
@@ -54,6 +55,7 @@ import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
@@ -220,7 +222,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     }
 
-    private static Iterator<SimpleFeature> getFeatures(final RevTree typeTree,
+    private static AutoCloseableIterator<SimpleFeature> getFeatures(final RevTree typeTree,
             final ObjectDatabase database, final ObjectId defaultMetadataId,
             final @Nullable ReferencedEnvelope bboxFilter,
             final ProgressListener progressListener) {
@@ -238,15 +240,25 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             nodes = iterator;
         }
         BulkFeatureRetriever gf = new BulkFeatureRetriever(database);
-        Iterator<SimpleFeature> feats = gf.getGeoToolsFeatures(nodes);
+        AutoCloseableIterator<org.locationtech.geogig.feature.Feature> feats = gf
+                .getGeoToolsFeatures(nodes);
 
+        Function<org.locationtech.geogig.feature.Feature, SimpleFeature> transformFunction = new Function<org.locationtech.geogig.feature.Feature, SimpleFeature>() {
+            private SimpleFeatureType cachedType;
+
+            public @Override SimpleFeature apply(org.locationtech.geogig.feature.Feature feature) {
+                if (cachedType == null) {
+                    cachedType = GT.adapt(feature.getType());
+                }
+                progressListener.incrementBy(1);
+                return GT.adapt(cachedType, feature);
+            }
+        };
+        AutoCloseableIterator<SimpleFeature> simpleFeatures = AutoCloseableIterator.transform(feats,
+                transformFunction);
         progressListener.setMaxProgress(typeTree.size());
         progressListener.setProgress(0);
-        Iterator<SimpleFeature> transformedIter = Iterators.transform(feats, f -> {
-            progressListener.incrementBy(1);
-            return f;
-        });
-        return transformedIter;
+        return simpleFeatures;
     }
 
     private Iterator<SimpleFeature> adaptToArguments(final Iterator<SimpleFeature> plainFeatures,
@@ -547,7 +559,11 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
         private Envelope project(ReferencedEnvelope bbox, ObjectId metadataId) {
             RevFeatureType featureType = store.getFeatureType(metadataId);
-            CoordinateReferenceSystem targetCRS = featureType.type().getCoordinateReferenceSystem();
+            org.locationtech.geogig.crs.CoordinateReferenceSystem gigCrs = featureType.type()
+                    .getGeometryDescriptor().map(PropertyDescriptor::getCoordinateReferenceSystem)
+                    .orElse(null);
+
+            CoordinateReferenceSystem targetCRS = GT.adapt(gigCrs);
             Envelope transformed;
             try {
                 CoordinateReferenceSystem sourceCRS = bbox.getCoordinateReferenceSystem();

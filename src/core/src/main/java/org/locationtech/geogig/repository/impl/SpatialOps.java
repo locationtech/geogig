@@ -10,24 +10,18 @@
 package org.locationtech.geogig.repository.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
-import org.locationtech.geogig.data.EPSGBoundsCalc;
+import org.locationtech.geogig.crs.CRS;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.porcelain.CRSException;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.geometry.BoundingBox;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.geom.Polygon;
 
 import com.google.common.base.Splitter;
 
@@ -54,29 +48,6 @@ public class SpatialOps {
             newObject.expand(env);
         }
         return env;
-    }
-
-    /**
-     * Creates and returns a geometry out of bounds (a point if bounds.getSpan(0) ==
-     * bounds.getSpan(1) == 0D, a polygon otherwise), setting the bounds
-     * {@link BoundingBox#getCoordinateReferenceSystem() CRS} as the geometry's
-     * {@link Geometry#getUserData() user data}.
-     * 
-     * @param bounds the bounding box to build from
-     * @return the newly constructed geometry
-     */
-    public static Geometry toGeometry(final BoundingBox bounds) {
-        if (bounds == null) {
-            return null;
-        }
-        Geometry geom;
-        if (bounds.getSpan(0) == 0D && bounds.getSpan(1) == 0D) {
-            geom = gfac.createPoint(new Coordinate(bounds.getMinX(), bounds.getMinY()));
-        } else {
-            geom = JTS.toGeometry(bounds, gfac);
-        }
-        geom.setUserData(bounds.getCoordinateReferenceSystem());
-        return geom;
     }
 
     public static Envelope boundsOf(RevTree tree) {
@@ -106,56 +77,9 @@ public class SpatialOps {
      * @return bounds an Envelope containing the CRS bounds, throws a NoSuchAuthorityCodeException
      *         if the crs cannot be found
      */
-    public @Nullable static Envelope boundsOf(CoordinateReferenceSystem crs) throws Exception {
-        crs = findKnownCrs(crs);
-        return EPSGBoundsCalc.getExtents(crs);
-    }
-
-    /**
-     * Parses a bounding box in the format {@code <minx,miny,maxx,maxy,SRS>} where SRS is an EPSG
-     * code like {@code EPSG:4325} etc.
-     * <p>
-     * The oridinates must be given in "longitude first" format, and the SRS will be decoded the
-     * same way.
-     * 
-     * @throws IllegalArgumentException if the argument doesn't match the expected format, or the
-     *         SRS can't be parsed.
-     */
-    @Nullable
-    public static ReferencedEnvelope parseBBOX(final @Nullable String bboxArg) {
-        if (bboxArg == null) {
-            return null;
-        }
-        List<String> split = Splitter.on(',').omitEmptyStrings().splitToList(bboxArg);
-        if (split.size() != 5) {
-            throw new IllegalArgumentException(String.format(
-                    "Invalid bbox parameter: '%s'. Expected format: <minx,miny,maxx,maxy,CRS>",
-                    bboxArg));
-        }
-        double minx;
-        double miny;
-        double maxx;
-        double maxy;
-        try {
-            minx = Double.parseDouble(split.get(0));
-            miny = Double.parseDouble(split.get(1));
-            maxx = Double.parseDouble(split.get(2));
-            maxy = Double.parseDouble(split.get(3));
-        } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException(String.format(
-                    "Invalid bbox parameter: '%s'. Expected format: <minx,miny,maxx,maxy,CRS>",
-                    bboxArg));
-        }
-        final String srs = split.get(4);
-        final CoordinateReferenceSystem crs;
-        try {
-            crs = CRS.decode(srs, true);
-        } catch (FactoryException e) {
-            throw new IllegalArgumentException(String
-                    .format("Invalid bbox parameter: '%s'. Can't parse CRS '%s'", bboxArg, srs));
-        }
-        ReferencedEnvelope env = new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
-        return env;
+    public static Optional<Envelope> boundsOf(
+            org.locationtech.geogig.crs.CoordinateReferenceSystem crs) {
+        return CRS.findAreaOfValidity(crs.getSrsIdentifier());
     }
 
     /**
@@ -195,30 +119,43 @@ public class SpatialOps {
         return env;
     }
 
-    public static CoordinateReferenceSystem findIdentifier(GeometryDescriptor geometryDescriptor)
-            throws FactoryException, CRSException {
-        if (geometryDescriptor != null) {
-            CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
-            return findKnownCrs(crs);
+    public static Polygon toGeometry(Envelope e) {
+        if (e == null || e.isNull()) {
+            return gfac.createPolygon();
         }
-        return null;
+        Coordinate[] shell = new Coordinate[5];
+        shell[0] = new Coordinate(e.getMinX(), e.getMinY());
+        shell[1] = new Coordinate(e.getMinX(), e.getMaxY());
+        shell[2] = new Coordinate(e.getMaxX(), e.getMaxY());
+        shell[3] = new Coordinate(e.getMaxX(), e.getMinY());
+        shell[4] = new Coordinate(e.getMinX(), e.getMinY());
+        return gfac.createPolygon(shell);
     }
 
-    public static CoordinateReferenceSystem findKnownCrs(CoordinateReferenceSystem crs)
-            throws FactoryException, CRSException {
-        String srs = CRS.toSRS(crs);
-        if (srs != null && !srs.startsWith("EPSG:")) {
-            boolean fullScan = true;
-            String knownIdentifier;
-            knownIdentifier = CRS.lookupIdentifier(crs, fullScan);
-            if (knownIdentifier != null) {
-                boolean longitudeFirst = CRS.getAxisOrder(crs).equals(CRS.AxisOrder.EAST_NORTH);
-                crs = CRS.decode(knownIdentifier, longitudeFirst);
-            } else {
-                throw new CRSException(
-                        "Could not find identifier associated with the defined CRS: \n" + crs);
-            }
-        }
-        return crs;
-    }
+    // public static CoordinateReferenceSystem findIdentifier(GeometryDescriptor geometryDescriptor)
+    // throws FactoryException, CRSException {
+    // if (geometryDescriptor != null) {
+    // CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
+    // return findKnownCrs(crs);
+    // }
+    // return null;
+    // }
+    //
+    // public static CoordinateReferenceSystem findKnownCrs(CoordinateReferenceSystem crs)
+    // throws FactoryException, CRSException {
+    // String srs = CRS.toSRS(crs);
+    // if (srs != null && !srs.startsWith("EPSG:")) {
+    // boolean fullScan = true;
+    // String knownIdentifier;
+    // knownIdentifier = CRS.lookupIdentifier(crs, fullScan);
+    // if (knownIdentifier != null) {
+    // boolean longitudeFirst = CRS.getAxisOrder(crs).equals(CRS.AxisOrder.EAST_NORTH);
+    // crs = CRS.decode(knownIdentifier, longitudeFirst);
+    // } else {
+    // throw new CRSException(
+    // "Could not find identifier associated with the defined CRS: \n" + crs);
+    // }
+    // }
+    // return crs;
+    // }
 }

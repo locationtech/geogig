@@ -21,6 +21,7 @@ import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
@@ -65,12 +66,12 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
         this.crs = crs;
     }
 
-    public static MaterializedIndexFeatureIterator create(SimpleFeatureType outputSchema,
+    public static MaterializedIndexFeatureIterator create(FeatureType outputSchema,
             AutoCloseableIterator<NodeRef> nodes, GeometryFactory geometryFactory,
-            CoordinateReferenceSystem crs) {
+            org.locationtech.geogig.crs.CoordinateReferenceSystem crs) {
 
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(outputSchema);
-        return new MaterializedIndexFeatureIterator(builder, nodes, geometryFactory, crs);
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(GT.adapt(outputSchema));
+        return new MaterializedIndexFeatureIterator(builder, nodes, geometryFactory, GT.adapt(crs));
     }
 
     @Override

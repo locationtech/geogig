@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -43,7 +44,6 @@ import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;

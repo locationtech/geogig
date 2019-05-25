@@ -11,8 +11,7 @@ package org.geogig.commands.pr;
 
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.porcelain.MergeConflictsException;

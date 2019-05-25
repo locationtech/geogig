@@ -27,8 +27,6 @@ import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.concurrent.ThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -145,7 +143,7 @@ public class StagingAreaImpl implements StagingArea {
         return head.equals(stageHead);
     }
 
-    private static final @ThreadSafe class StageState {
+    private static final class StageState {
 
         final Context context;
 

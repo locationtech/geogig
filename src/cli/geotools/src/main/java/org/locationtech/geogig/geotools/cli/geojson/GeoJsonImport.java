@@ -18,6 +18,8 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -123,10 +125,9 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
                 // If the destination tree does not exist, we use the default name for the geometry
                 // attribute
                 if (ft.isPresent()) {
-                    GeometryDescriptor geomDescriptor = ft.get().type().getGeometryDescriptor();
-                    if (geomDescriptor != null) {
-                        geomName = geomDescriptor.getLocalName();
-                    }
+                    geomName = ft.map(RevFeatureType::type)
+                            .flatMap(FeatureType::getGeometryDescriptor)
+                            .map(PropertyDescriptor::getLocalName).orElse(null);
                 }
             }
             try {

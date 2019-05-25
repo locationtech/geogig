@@ -410,7 +410,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
         final String namekey = "user.name";
 
-        String name = getClientData(nameKey)
+        String name = getClientData(namekey)
                 .orElseGet(() -> command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,

@@ -13,8 +13,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.geotools.data.DataUtilities;
 import org.junit.Test;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
+import org.locationtech.geogig.feature.PropertyDescriptor;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -27,10 +32,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.geometry.BoundingBox;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.Lists;
 
@@ -47,57 +49,55 @@ public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
     public void testAdaptEmptySchema() throws Exception {
         CoordinateReferenceSystem crs = pointsType.getCoordinateReferenceSystem();
 
-        SimpleFeatureType emptySchema = DataUtilities.createSubType(pointsType, new String[0]);
+        FeatureType emptySchema = FeatureTypes.createSubType(pointsType, new String[0]);
 
         AutoCloseableIterator<NodeRef> nodes = AutoCloseableIterator.emptyIterator();
         MaterializedIndexFeatureIterator iterator;
         iterator = MaterializedIndexFeatureIterator.create(emptySchema, nodes, geometryFactory,
                 crs);
 
-        NodeRef nodeRef = nodeRef((SimpleFeature) points1);
+        NodeRef nodeRef = nodeRef(points1);
 
         SimpleFeature feature = iterator.adapt(nodeRef);
         assertNotNull(feature);
-        assertEquals(emptySchema, feature.getFeatureType());
+        assertEquals(emptySchema, GT.adapt(feature.getFeatureType()));
         Envelope expectedBounds = nodeRef.bounds().get();
         BoundingBox fbounds = feature.getBounds();
         assertEquals(expectedBounds, fbounds);
-        assertEquals(crs, fbounds.getCoordinateReferenceSystem());
+        assertEquals(GT.adapt(crs), fbounds.getCoordinateReferenceSystem());
     }
 
     @Test
     public void testAdaptFullySupportedSchema() throws Exception {
         CoordinateReferenceSystem crs = pointsType.getCoordinateReferenceSystem();
 
-        SimpleFeatureType subType = DataUtilities.createSubType(pointsType,
-                new String[] { "pp", "ip" });
+        FeatureType subType = FeatureTypes.createSubType(pointsType, "pp", "ip");
 
         AutoCloseableIterator<NodeRef> nodes = AutoCloseableIterator.emptyIterator();
         MaterializedIndexFeatureIterator iterator;
         iterator = MaterializedIndexFeatureIterator.create(subType, nodes, geometryFactory, crs);
 
-        NodeRef nodeRef = nodeRef((SimpleFeature) points1, "pp", "ip");
+        NodeRef nodeRef = nodeRef(points1, "pp", "ip");
 
         SimpleFeature feature = iterator.adapt(nodeRef);
         assertNotNull(feature);
-        assertEquals(subType, feature.getFeatureType());
+        assertEquals(subType, GT.adapt(feature.getFeatureType()));
 
         Envelope expectedBounds = nodeRef.bounds().get();
         BoundingBox fbounds = feature.getBounds();
         assertEquals(expectedBounds, fbounds);
-        assertEquals(crs, fbounds.getCoordinateReferenceSystem());
+        assertEquals(crs, GT.adapt(fbounds.getCoordinateReferenceSystem()));
     }
 
     @Test
     public void testIterate() throws Exception {
         CoordinateReferenceSystem crs = pointsType.getCoordinateReferenceSystem();
 
-        SimpleFeatureType subType = DataUtilities.createSubType(pointsType,
-                new String[] { "pp", "ip" });
+        FeatureType subType = FeatureTypes.createSubType(pointsType, "pp", "ip");
 
-        NodeRef n1 = nodeRef((SimpleFeature) points1, "pp", "ip");
-        NodeRef n2 = nodeRef((SimpleFeature) points2, "pp", "ip");
-        NodeRef n3 = nodeRef((SimpleFeature) points3, "pp", "ip");
+        NodeRef n1 = nodeRef(points1, "pp", "ip");
+        NodeRef n2 = nodeRef(points2, "pp", "ip");
+        NodeRef n3 = nodeRef(points3, "pp", "ip");
 
         AutoCloseableIterator<NodeRef> nodes = AutoCloseableIterator
                 .fromIterator(Lists.newArrayList(n1, n2, n3).iterator());
@@ -107,24 +107,24 @@ public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
 
         ArrayList<SimpleFeature> features = Lists.newArrayList(iterator);
         assertEquals(3, features.size());
-        assertFeature(subType, (SimpleFeature) points1, features.get(0));
-        assertFeature(subType, (SimpleFeature) points2, features.get(1));
-        assertFeature(subType, (SimpleFeature) points3, features.get(2));
+        assertFeature(subType, points1, features.get(0));
+        assertFeature(subType, points2, features.get(1));
+        assertFeature(subType, points3, features.get(2));
     }
 
-    private void assertFeature(SimpleFeatureType expectedType, SimpleFeature expectedValues,
+    private void assertFeature(FeatureType expectedType, Feature expectedValues,
             SimpleFeature actual) {
-        assertEquals(expectedType, actual.getFeatureType());
-        assertEquals(expectedValues.getID(), actual.getID());
-        assertEquals(expectedValues.getBounds(), actual.getBounds());
+        assertEquals(expectedType, GT.adapt(actual.getFeatureType()));
+        assertEquals(expectedValues.getId(), actual.getID());
+        assertEquals(expectedValues.getDefaultGeometryBounds(), GT.adapt(actual.getBounds()));
 
-        for (AttributeDescriptor att : expectedType.getAttributeDescriptors()) {
+        for (PropertyDescriptor att : expectedType.getDescriptors()) {
             String name = att.getLocalName();
             assertEquals(expectedValues.getAttribute(name), actual.getAttribute(name));
         }
     }
 
-    private NodeRef nodeRef(SimpleFeature f, String... extraAttributes) {
+    private NodeRef nodeRef(Feature f, String... extraAttributes) {
 
         Map<String, Object> extraData = new HashMap<>();
         Map<String, Object> extraAtts = new HashMap<>();
@@ -136,11 +136,11 @@ public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
         extraData.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA, extraAtts);
 
         ObjectId id = RevFeature.builder().build(f).getId();
-        Envelope bounds = (Envelope) f.getBounds();
-        Node node = RevObjectFactory.defaultInstance().createNode(f.getID(), id, ObjectId.NULL,
+        Envelope bounds = (Envelope) f.getDefaultGeometryBounds();
+        Node node = RevObjectFactory.defaultInstance().createNode(f.getId(), id, ObjectId.NULL,
                 TYPE.FEATURE, bounds, extraData);
 
-        String typeName = f.getType().getTypeName();
+        String typeName = f.getType().getName().getLocalPart();
         NodeRef nodeRef = NodeRef.create(typeName, node);
         return nodeRef;
     }

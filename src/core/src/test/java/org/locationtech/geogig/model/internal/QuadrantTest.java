@@ -17,9 +17,9 @@ import static org.locationtech.geogig.model.internal.Quadrant.NW;
 import static org.locationtech.geogig.model.internal.Quadrant.SE;
 import static org.locationtech.geogig.model.internal.Quadrant.SW;
 
-import org.geotools.geometry.jts.JTS;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -168,6 +168,6 @@ public class QuadrantTest {
     }
 
     private Geometry poly(Envelope e) {
-        return JTS.toGeometry(e, GF);
+        return SpatialOps.toGeometry(e);
     }
 }

@@ -9,76 +9,33 @@
  */
 package org.locationtech.geogig.storage.text;
 
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.CRS.AxisOrder;
-import org.geotools.referencing.wkt.Formattable;
-import org.locationtech.geogig.model.RevObjects;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.crs.CRS;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+
+import lombok.NonNull;
 
 public class CrsTextSerializer {
 
-    public static String serialize(CoordinateReferenceSystem crs) {
-        String srsName;
+    public static @NonNull String serialize(@Nullable CoordinateReferenceSystem crs) {
         if (crs == null) {
-            srsName = org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
-                    .getSrsIdentifier();
-        } else {
-            // use a flag to control whether the code is returned in EPSG: form instead of
-            // urn:ogc:.. form irrespective of the org.geotools.referencing.forceXY System
-            // property.
-            final boolean longitudeFirst = CRS.getAxisOrder(crs, false) == AxisOrder.EAST_NORTH;
-            boolean codeOnly = true;
-            String crsCode = CRS.toSRS(crs, codeOnly);
-            if (crsCode != null) {
-                srsName = (longitudeFirst ? "EPSG:" : "urn:ogc:def:crs:EPSG::") + crsCode;
-                // check that what we are writing is actually a valid EPSG code and we will
-                // be able to decode it later. If not, we will use WKT instead
-                try {
-                    CRS.decode(srsName, longitudeFirst);
-                } catch (NoSuchAuthorityCodeException e) {
-                    srsName = null;
-                } catch (FactoryException e) {
-                    srsName = null;
-                }
-            } else {
-                srsName = null;
-            }
+            return org.locationtech.geogig.crs.CoordinateReferenceSystem.NULL.getSrsIdentifier();
         }
-        if (srsName != null) {
-            return srsName;
-        } else {
-            String wkt;
-            if (crs instanceof Formattable) {
-                wkt = ((Formattable) crs).toWKT(Formattable.SINGLE_LINE);
-            } else {
-                wkt = crs.toWKT();
-            }
-            return wkt;
+        if (crs.getSrsIdentifier() != null) {
+            return crs.getSrsIdentifier();
         }
-
+        return crs.getWKT().replaceAll("\n", "");
     }
 
-    public static CoordinateReferenceSystem deserialize(String crsText) {
-        CoordinateReferenceSystem crs;
+    public static @Nullable CoordinateReferenceSystem deserialize(String crsText) {
         boolean crsCode = crsText.startsWith("EPSG") || crsText.startsWith("urn:ogc:def:crs:EPSG");
-        try {
-            if (crsCode) {
-                if (org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
-                        .getSrsIdentifier().equals(crsText)) {
-                    crs = null;
-                } else {
-                    boolean forceLongitudeFirst = crsText.startsWith("EPSG:");
-                    crs = CRS.decode(crsText, forceLongitudeFirst);
-                }
-            } else {
-                crs = CRS.parseWKT(crsText);
-            }
-        } catch (FactoryException e) {
-            throw new IllegalArgumentException("Cannot parse CRS definition: " + crsText);
+        CoordinateReferenceSystem crs;
+        if (crsCode) {
+            crs = CRS.decode(crsText);
+        } else {
+            crs = CRS.fromWKT(crsText);
         }
-        return crs;
+        return crs.isNull() ? null : crs;
     }
 
 }

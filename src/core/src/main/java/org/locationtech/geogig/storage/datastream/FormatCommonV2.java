@@ -30,13 +30,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.feature.type.BasicFeatureTypes;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.CRS.AxisOrder;
-import org.geotools.referencing.wkt.Formattable;
-import org.locationtech.geogig.feature.AttributeType;
+import org.locationtech.geogig.crs.CRS;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.Bucket;
@@ -52,27 +48,19 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.FeatureTypeFactory;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.filter.Filter;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.math.DoubleMath;
+
+import lombok.Value;
 
 public class FormatCommonV2 {
 
@@ -117,12 +105,6 @@ public class FormatCommonV2 {
      * Constant for reading TREE objects. Indicates that the next entry is a bucket.
      */
     public static final byte BUCKET = 0x02;
-
-    /**
-     * The featuretype factory to use when calling code does not provide one.
-     */
-    private static final FeatureTypeFactory DEFAULT_FEATURETYPE_FACTORY = new SimpleFeatureTypeBuilder()
-            .getFeatureTypeFactory();
 
     public RevTag readTag(@Nullable ObjectId id, DataInput in) throws IOException {
         final ObjectId commitId = readObjectId(in);
@@ -600,77 +582,61 @@ public class FormatCommonV2 {
         }
     }
 
-    public RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in) throws IOException {
-        return readFeatureType(id, in, DEFAULT_FEATURETYPE_FACTORY);
+    private static @Value @lombok.Builder class AttributeType {
+        private Name name;
+
+        private Class<?> binding;
+
+        private CoordinateReferenceSystem crs;
     }
 
-    public RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in,
-            FeatureTypeFactory typeFactory) throws IOException {
-
+    public RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in) throws IOException {
         Name name = readName(in);
         int propertyCount = readUnsignedVarInt(in);
-        List<AttributeDescriptor> attributes = new ArrayList<AttributeDescriptor>();
+        List<PropertyDescriptor> attributes = new ArrayList<>();
         for (int i = 0; i < propertyCount; i++) {
-            attributes.add(readAttributeDescriptor(in, typeFactory));
+            attributes.add(readAttributeDescriptor(in));
         }
-        SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
-                Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
-
-        return RevFeatureType.builder().id(id).type(ftype).build();
+        FeatureType featureType = FeatureType.builder().name(name).descriptors(attributes).build();
+        return RevFeatureType.builder().id(id).type(featureType).build();
     }
 
     private static Name readName(DataInput in) throws IOException {
         String namespace = in.readUTF();
         String localPart = in.readUTF();
-        return new NameImpl(namespace.length() == 0 ? null : namespace,
-                localPart.length() == 0 ? null : localPart);
+        return Name.valueOf(namespace, localPart);
     }
 
-    private static AttributeType readAttributeType(DataInput in, FeatureTypeFactory typeFactory)
-            throws IOException {
+    private static AttributeType readAttributeType(DataInput in) throws IOException {
         final Name name = readName(in);
         final byte typeTag = in.readByte();
         final FieldType type = FieldType.valueOf(typeTag);
+        final Class<?> binding = type.getBinding();
+        CoordinateReferenceSystem crs = null;
         if (Geometry.class.isAssignableFrom(type.getBinding())) {
             final boolean isCRSCode = in.readBoolean(); // as opposed to a raw WKT string
             final String crsText = in.readUTF();
-            final CoordinateReferenceSystem crs;
-            try {
-                if (isCRSCode) {
-                    if (org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
-                            .getSrsIdentifier().equals(crsText)) {
-                        crs = null;
-                    } else {
-                        boolean forceLongitudeFirst = crsText.startsWith("EPSG:");
-                        crs = CRS.decode(crsText, forceLongitudeFirst);
-                    }
-                } else {
-                    crs = CRS.parseWKT(crsText);
-                }
-            } catch (FactoryException e) {
-                throw new RuntimeException(e);
+            if (isCRSCode) {
+                crs = CRS.decode(crsText);
+            } else {
+                crs = CRS.fromWKT(crsText);
             }
-            return typeFactory.createGeometryType(name, type.getBinding(), crs, false, false,
-                    Collections.<Filter> emptyList(), null, null);
-        } else {
-            return typeFactory.createAttributeType(name, type.getBinding(), false, false,
-                    Collections.<Filter> emptyList(), null, null);
+            if (crs.isNull()) {
+                crs = null;
+            }
         }
+        return AttributeType.builder().name(name).binding(binding).crs(crs).build();
     }
 
-    private static AttributeDescriptor readAttributeDescriptor(DataInput in,
-            FeatureTypeFactory typeFactory) throws IOException {
+    private static PropertyDescriptor readAttributeDescriptor(DataInput in) throws IOException {
         final Name name = readName(in);
         final boolean nillable = in.readBoolean();
         final int minOccurs = in.readInt();
         final int maxOccurs = in.readInt();
-        final AttributeType type = readAttributeType(in, typeFactory);
-        if (type instanceof GeometryType)
-            return typeFactory.createGeometryDescriptor((GeometryType) type, name, minOccurs,
-                    maxOccurs, nillable, null);
-        else
-            return typeFactory.createAttributeDescriptor(type, name, minOccurs, maxOccurs, nillable,
-                    null);
+        final AttributeType type = readAttributeType(in);
+        return PropertyDescriptor.builder().name(name).typeName(type.getName())
+                .binding(type.getBinding()).coordinateReferenceSystem(type.getCrs())
+                .nillable(nillable).minOccurs(minOccurs).maxOccurs(maxOccurs).build();
     }
 
     private static void writeName(Name name, DataOutput data) throws IOException {
@@ -680,46 +646,25 @@ public class FormatCommonV2 {
         data.writeUTF(lp);
     }
 
-    private static void writePropertyType(PropertyType type, DataOutput data) throws IOException {
-        writeName(type.getName(), data);
+    private static void writePropertyType(PropertyDescriptor type, DataOutput data)
+            throws IOException {
+        writeName(type.getTypeName(), data);
         data.writeByte(FieldType.forBinding(type.getBinding()).getTag());
-        if (type instanceof GeometryType) {
-            GeometryType gType = (GeometryType) type;
-            CoordinateReferenceSystem crs = gType.getCoordinateReferenceSystem();
+        if (type.isGeometryDescriptor()) {
+            CoordinateReferenceSystem crs = type.coordinateReferenceSystem();
             String srsName;
-            if (crs == null) {
-                srsName = org.locationtech.geogig.feature.CoordinateReferenceSystem.NULL
-                        .getSrsIdentifier();
+            if (crs.getSrsIdentifier() != null) {
+                srsName = crs.getSrsIdentifier();
             } else {
-                final boolean longitudeFirst = CRS.getAxisOrder(crs, false) == AxisOrder.EAST_NORTH;
-                final boolean codeOnly = true;
-                String crsCode = CRS.toSRS(crs, codeOnly);
-                if (crsCode != null) {
-                    srsName = (longitudeFirst ? "EPSG:" : "urn:ogc:def:crs:EPSG::") + crsCode;
-                    // check that what we are writing is actually a valid EPSG code and we will be
-                    // able to decode it later. If not, we will use WKT instead
-                    try {
-                        CRS.decode(srsName, longitudeFirst);
-                    } catch (NoSuchAuthorityCodeException e) {
-                        srsName = null;
-                    } catch (FactoryException e) {
-                        srsName = null;
-                    }
-                } else {
-                    srsName = null;
-                }
+                srsName = null;
             }
+
             if (srsName != null) {
-                data.writeBoolean(true);
+                data.writeBoolean(true);// code only
                 data.writeUTF(srsName);
             } else {
-                final String wkt;
-                if (crs instanceof Formattable) {
-                    wkt = ((Formattable) crs).toWKT(Formattable.SINGLE_LINE);
-                } else {
-                    wkt = crs.toWKT();
-                }
-                data.writeBoolean(false);
+                final String wkt = crs.getWKT();
+                data.writeBoolean(false);// WKT
                 data.writeUTF(wkt);
             }
         }
@@ -730,7 +675,7 @@ public class FormatCommonV2 {
         data.writeBoolean(attr.isNillable());
         data.writeInt(attr.getMinOccurs());
         data.writeInt(attr.getMaxOccurs());
-        writePropertyType(attr.getType(), data);
+        writePropertyType(attr, data);
     }
 
 }

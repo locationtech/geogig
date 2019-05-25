@@ -112,19 +112,19 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         for (PropertyDescriptor attribute : attributes) {
             switch (attribute.getName().toString()) {
             case "geometry":
-                assertTrue(LineString.class.isAssignableFrom(attribute.getType().getBinding()));
+                assertTrue(LineString.class.isAssignableFrom(attribute.getBinding()));
                 assertEquals("LINESTRING (102 0, 103 1, 104 0, 105 1)",
                         feature1Obj.get(attributeIndex).get().toString());
                 assertEquals("LINESTRING (100 0, 101 0, 101 1, 100 1)",
                         feature2Obj.get(attributeIndex).get().toString());
                 break;
             case "prop0":
-                assertTrue(String.class.isAssignableFrom(attribute.getType().getBinding()));
+                assertTrue(String.class.isAssignableFrom(attribute.getBinding()));
                 assertEquals("value0", feature1Obj.get(attributeIndex).get());
                 assertEquals("value1", feature2Obj.get(attributeIndex).get());
                 break;
             case "prop1":
-                assertTrue(Double.class.isAssignableFrom(attribute.getType().getBinding()));
+                assertTrue(Double.class.isAssignableFrom(attribute.getBinding()));
                 assertEquals(0.0, feature1Obj.get(attributeIndex).get());
                 assertEquals(0.2, feature2Obj.get(attributeIndex).get());
                 break;

@@ -20,7 +20,7 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.FeatureIteratorIterator;
 import org.junit.Test;
 import org.locationtech.geogig.data.FeatureBuilder;
-import org.locationtech.geogig.feature.AttributeType;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevCommit;
@@ -32,6 +32,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.AttributeType;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -46,8 +47,8 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
         masterBranchCommits = new ArrayList<>();
         branch1Commits = new ArrayList<>();
         dataStore = new GeoGigDataStore(geogig.getRepository());
-        dataStore.createSchema(super.pointsType);
-        dataStore.createSchema(super.linesType);
+        dataStore.createSchema(GT.adapt(super.pointsType));
+        dataStore.createSchema(GT.adapt(super.linesType));
 
         insertAndAdd(points1, lines1);
         masterBranchCommits.add(commit("first commit"));
@@ -110,7 +111,7 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
         SimpleFeature oldValue = (SimpleFeature) diffFeature.getAttribute("old");
         SimpleFeature newValue = (SimpleFeature) diffFeature.getAttribute("new");
         assertNull(oldValue);
-        assertEquals(points2.getIdentifier(), newValue.getIdentifier());
+        assertEquals(points2.getId(), newValue.getIdentifier());
     }
 
     public @Test void testDiffBranchVsMaster() throws IOException {

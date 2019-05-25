@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -22,7 +23,7 @@ import org.locationtech.jts.geom.GeometryFactory;
  * 
  * @since 1.4
  */
-public interface ValueArray {
+public interface ValueArray extends Iterable<Object> {
     /**
      * @return the number of attribute values in the feature
      */
@@ -59,4 +60,21 @@ public interface ValueArray {
         return value;
     }
 
+    public @Override default Iterator<Object> iterator() {
+        return new Iterator<Object>() {
+            final int size = ValueArray.this.size();
+
+            int curr = 0;
+
+            public @Override boolean hasNext() {
+                return curr < size;
+            }
+
+            public @Override Object next() {
+                Object val = ValueArray.this.get(curr).orElse(null);
+                this.curr++;
+                return val;
+            }
+        };
+    }
 }

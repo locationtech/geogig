@@ -15,6 +15,9 @@ import java.util.NoSuchElementException;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureWriter;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -40,12 +43,15 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
 
     private SimpleFeature last;
 
+    private final FeatureType featureType;
+
     private GeoGigFeatureWriter(final FeatureReader<SimpleFeatureType, SimpleFeature> reader,
             final NodeRef typeRef, final WorkingTree workingTree) {
         this.reader = reader;
         this.typePath = typeRef.path();
         this.featureTypeId = typeRef.getMetadataId();
         this.workingTree = workingTree;
+        this.featureType = GT.adapt(reader.getFeatureType());
     }
 
     public static GeoGigFeatureWriter create(
@@ -88,7 +94,8 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
     public void write() throws IOException {
         Preconditions.checkState(last != null, "next() hasn't been called");
         String parentTreePath = typePath;
-        RevFeature feature = RevFeature.builder().build(last);
+        Feature lastF = GT.adapt(this.featureType, last);
+        RevFeature feature = RevFeature.builder().build(lastF);
         String path = NodeRef.appendChild(parentTreePath, last.getID());
         FeatureInfo fi = FeatureInfo.insert(feature, featureTypeId, path);
         workingTree.insert(fi);

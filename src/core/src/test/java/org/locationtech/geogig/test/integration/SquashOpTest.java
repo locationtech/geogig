@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -28,7 +29,6 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.SquashOp;
-import org.opengis.feature.Feature;
 
 import com.google.common.collect.Lists;
 
@@ -132,8 +132,7 @@ public class SquashOpTest extends RepositoryTestCase {
         List<RevCommit> commits = Lists.newArrayList();
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class)
-                    .setMessage(f.getIdentifier().getID()).call();
+            final RevCommit commit = geogig.command(CommitOp.class).setMessage(f.getId()).call();
             commits.add(commit);
         }
         geogig.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(1))
@@ -152,8 +151,7 @@ public class SquashOpTest extends RepositoryTestCase {
         List<RevCommit> commits = Lists.newArrayList();
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class)
-                    .setMessage(f.getIdentifier().getID()).call();
+            final RevCommit commit = geogig.command(CommitOp.class).setMessage(f.getId()).call();
             commits.add(commit);
         }
         geogig.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(2))

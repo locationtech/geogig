@@ -10,6 +10,8 @@
 package org.locationtech.geogig.test.integration;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -21,8 +23,6 @@ import org.locationtech.geogig.porcelain.CreatePatchOp;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 public class CreatePatchOpTest extends RepositoryTestCase {
 
@@ -35,8 +35,8 @@ public class CreatePatchOpTest extends RepositoryTestCase {
         insertAndAdd(points1, points2);
         geogig.command(CommitOp.class).setAll(true).call();
 
-        final String featureId = points1.getIdentifier().getID();
-        final Feature modifiedFeature = feature((SimpleFeatureType) points1.getType(), featureId,
+        final String featureId = points1.getId();
+        final Feature modifiedFeature = feature((FeatureType) points1.getType(), featureId,
                 "changedProp", new Integer(1500), "POINT (2 2)");
         insert(modifiedFeature);
         insert(points3);
@@ -64,8 +64,8 @@ public class CreatePatchOpTest extends RepositoryTestCase {
         insertAndAdd(points1, points2);
         geogig.command(CommitOp.class).setAll(true).call();
 
-        final String featureId = points1.getIdentifier().getID();
-        final Feature modifiedFeature = feature((SimpleFeatureType) points1.getType(), featureId,
+        final String featureId = points1.getId();
+        final Feature modifiedFeature = feature((FeatureType) points1.getType(), featureId,
                 "changedProp", new Integer(1500), null);
 
         insertAndAdd(modifiedFeature);

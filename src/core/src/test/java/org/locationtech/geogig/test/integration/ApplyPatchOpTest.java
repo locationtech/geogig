@@ -57,7 +57,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     @Test
     public void testAddFeaturePatch() throws Exception {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         patch.addAddedFeature(path, RevFeature.builder().build(points1),
                 RevFeatureType.builder().type(pointsType).build());
         geogig.command(ApplyPatchOp.class).setPatch(patch).call();
@@ -74,7 +74,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testRemoveFeaturePatch() throws Exception {
         insert(points1);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         patch.addRemovedFeature(path, RevFeature.builder().build(points1),
                 RevFeatureType.builder().type(pointsType).build());
         geogig.command(ApplyPatchOp.class).setPatch(patch).call();
@@ -88,9 +88,9 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testModifyFeatureAttributePatch() throws Exception {
         insert(points1);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1.getProperty("sp").getValue();
+        Object oldValue = points1.getAttribute("sp");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
         FeatureDiff feaureDiff = new FeatureDiff(path, map,
@@ -117,9 +117,9 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testModifyFeatureAttributeOutdatedPatch() throws Exception {
         insert(points1_modified);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1.getProperty("sp").getValue();
+        Object oldValue = points1.getAttribute("sp");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
         FeatureDiff feaureDiff = new FeatureDiff(path, map,
@@ -138,9 +138,9 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testRemoveFeatureAttributePatch() throws Exception {
         insert(points1B);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1B.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1B.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1B.getProperty("extra").getValue();
+        Object oldValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
@@ -152,7 +152,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
                 .setRefSpec("WORK_HEAD:" + path).call(RevFeature.class);
         assertTrue(feature.isPresent());
         List<Optional<Object>> values = feature.get().getValues();
-        assertEquals(points1.getProperties().size(), values.size());
+        assertEquals(points1.getAttributeCount(), values.size());
         assertFalse(values.contains(Optional.of("ExtraString")));
 
     }
@@ -161,9 +161,9 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testAddFeatureAttributePatch() throws Exception {
         insert(points1);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object newValue = points1B.getProperty("extra").getValue();
+        Object newValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
@@ -178,9 +178,9 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testRemoveFeatureAttributeOutdatedPatch() throws Exception {
         insert(points1B_modified);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1B.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1B.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1B.getProperty("extra").getValue();
+        Object oldValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
@@ -200,9 +200,9 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testAddFeatureAttributeOutdatedPatch() throws Exception {
         insert(points1B);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object newValue = points1B.getProperty("extra").getValue();
+        Object newValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
@@ -222,7 +222,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testAddedFeatureExists() throws Exception {
         insert(points1);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         patch.addAddedFeature(path, RevFeature.builder().build(points1),
                 RevFeatureType.builder().type(pointsType).build());
         try {
@@ -236,9 +236,9 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     @Test
     public void testModifiedFeatureDoesNotExists() throws Exception {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1.getProperty("sp").getValue();
+        Object oldValue = points1.getAttribute("sp");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
@@ -256,7 +256,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     @Test
     public void testRemovedFeatureDoesNotExists() throws Exception {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         patch.addRemovedFeature(path, RevFeature.builder().build(points1),
                 RevFeatureType.builder().type(pointsType).build());
         try {
@@ -271,12 +271,12 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testPartialApplication() throws Exception {
         insert(points1, points2);
         Patch patch = new Patch();
-        String pathRemove = NodeRef.appendChild(pointsName, points2.getIdentifier().getID());
+        String pathRemove = NodeRef.appendChild(pointsName, points2.getId());
         patch.addRemovedFeature(pathRemove, RevFeature.builder().build(points2),
                 RevFeatureType.builder().type(pointsType).build());
-        String pathModify = NodeRef.appendChild(pointsName, points1B.getIdentifier().getID());
+        String pathModify = NodeRef.appendChild(pointsName, points1B.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1B.getProperty("extra").getValue();
+        Object oldValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(pathModify, map,
@@ -308,19 +308,19 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testReversedPatch() throws Exception {
         insert(points1, points2);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1.getProperty("sp").getValue();
+        Object oldValue = points1.getAttribute("sp");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
         FeatureDiff feaureDiff = new FeatureDiff(path, map,
                 RevFeatureType.builder().type(pointsType).build(),
                 RevFeatureType.builder().type(pointsType).build());
         patch.addModifiedFeature(feaureDiff);
-        String removedPath = NodeRef.appendChild(pointsName, points2.getIdentifier().getID());
+        String removedPath = NodeRef.appendChild(pointsName, points2.getId());
         patch.addRemovedFeature(removedPath, RevFeature.builder().build(points2),
                 RevFeatureType.builder().type(pointsType).build());
-        String addedPath = NodeRef.appendChild(pointsName, points3.getIdentifier().getID());
+        String addedPath = NodeRef.appendChild(pointsName, points3.getId());
         patch.addAddedFeature(addedPath, RevFeature.builder().build(points3),
                 RevFeatureType.builder().type(pointsType).build());
         geogig.command(ApplyPatchOp.class).setPatch(patch).call();
@@ -394,7 +394,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
     public void testAddFeatureWithNonDefaultFeatureType() throws Exception {
         insert(points2, points3);
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         patch.addAddedFeature(path, RevFeature.builder().build(points1B),
                 RevFeatureType.builder().type(modifiedPointsType).build());
         geogig.command(ApplyPatchOp.class).setPatch(patch).call();
@@ -409,7 +409,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         assertEquals(RevFeatureType.builder().type(modifiedPointsType).build().getId(),
                 featureBlobId.get().getMetadataId().orElse(null));
         assertTrue(featureBlobId.isPresent());
-        path = NodeRef.appendChild(pointsName, points3.getIdentifier().getID());
+        path = NodeRef.appendChild(pointsName, points3.getId());
         featureBlobId = findTreeChild(root, path);
         assertEquals(null, featureBlobId.get().getMetadataId().orElse(null));
 

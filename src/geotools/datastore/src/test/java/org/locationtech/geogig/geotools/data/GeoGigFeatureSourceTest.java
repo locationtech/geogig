@@ -40,7 +40,7 @@ import org.geotools.referencing.operation.transform.IdentityTransform;
 import org.geotools.util.factory.Hints;
 import org.junit.Test;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
-import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.internal.QuadTreeTestSupport;
 import org.locationtech.geogig.plumbing.LsTreeOp;
@@ -83,8 +83,8 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(geogig.getRepository());
-        dataStore.createSchema(super.pointsType);
-        dataStore.createSchema(super.linesType);
+        dataStore.createSchema(GT.adapt(super.pointsType));
+        dataStore.createSchema(GT.adapt(super.linesType));
         insertAndAdd(points1, points2, points3, lines1, lines2, lines3);
         geogig.command(CommitOp.class).setAuthor("yo", "yo@test.com")
                 .setCommitter("me", "me@test.com").setMessage("initial import").call();
@@ -114,7 +114,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         commit("added polygons layer");
 
         ContentFeatureSource polySource = dataStore.getFeatureSource(polyName);
-        Name polys = new NameImpl(namespace, polyName);
+        NameImpl polys = new NameImpl(namespace, polyName);
         assertEquals(polys, polySource.getName());
 
         assertEquals(polys, polySource.getSchema().getName());
@@ -123,8 +123,8 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
                 new Query(polyName, Filter.INCLUDE, new String[] { "ip", "sp" }));
     }
 
-    private void testGetName(Name expected, ContentFeatureSource source, Query query)
-            throws IOException {
+    private void testGetName(org.opengis.feature.type.Name expected, ContentFeatureSource source,
+            Query query) throws IOException {
         SimpleFeatureCollection collection = source.getFeatures(query);
         SimpleFeatureType schema = collection.getSchema();
         assertEquals(expected, schema.getName());
@@ -179,17 +179,19 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
     @Test
     public void testGetBounds() throws IOException {
-        ReferencedEnvelope expected;
+        ReferencedEnvelope expected = new ReferencedEnvelope(
+                pointsSource.getSchema().getCoordinateReferenceSystem());
+
         ReferencedEnvelope bounds;
 
         bounds = pointsSource.getBounds();
         assertNotNull(bounds);
-        expected = boundsOf(points1, points2, points3);
+        expected.init(boundsOf(points1, points2, points3));
         assertEquals(expected, bounds);
 
         bounds = linesSource.getBounds();
         assertNotNull(bounds);
-        expected = boundsOf(lines1, lines2, lines3);
+        expected.init(boundsOf(lines1, lines2, lines3));
         assertEquals(expected, bounds);
     }
 
@@ -203,10 +205,12 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         bounds = pointsSource.getBounds(new Query(pointsName, filter));
         assertEquals(boundsOf(points2), bounds);
 
-        ReferencedEnvelope queryBounds = boundsOf(points1, points2);
+        ReferencedEnvelope queryBounds = new ReferencedEnvelope(
+                pointsSource.getSchema().getCoordinateReferenceSystem());
+        queryBounds.init(boundsOf(points1, points2));
 
         Polygon geometry = JTS.toGeometry(queryBounds);
-        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().get().getLocalName()),
                 ff.literal(geometry));
 
         bounds = pointsSource.getBounds(new Query(pointsName, filter));
@@ -219,7 +223,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         geometry = JTS.toGeometry(transformedQueryBounds);
         geometry.setUserData(queryCrs);
 
-        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().get().getLocalName()),
                 ff.literal(geometry));
 
         bounds = pointsSource.getBounds(new Query(pointsName, filter));
@@ -241,10 +245,12 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         bounds = pointsSource.getBounds(new Query(pointsName, filter));
         assertEquals(boundsOf(points2), bounds);
 
-        ReferencedEnvelope queryBounds = boundsOf(points1, points2);
+        ReferencedEnvelope queryBounds = new ReferencedEnvelope(
+                pointsSource.getSchema().getCoordinateReferenceSystem());
+        queryBounds.init(boundsOf(points1, points2));
 
         Polygon geometry = JTS.toGeometry(queryBounds);
-        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().get().getLocalName()),
                 ff.literal(geometry));
 
         bounds = pointsSource.getBounds(new Query(pointsName, filter));
@@ -257,7 +263,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         geometry = JTS.toGeometry(transformedQueryBounds);
         geometry.setUserData(queryCrs);
 
-        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().get().getLocalName()),
                 ff.literal(geometry));
 
         bounds = pointsSource.getBounds(new Query(pointsName, filter));
@@ -278,10 +284,12 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         filter = ff.id(Collections.singleton(ff.featureId(RepositoryTestCase.idP2)));
         assertEquals(1, pointsSource.getCount(new Query(pointsName, filter)));
 
-        ReferencedEnvelope queryBounds = boundsOf(points1, points2);
+        ReferencedEnvelope queryBounds = new ReferencedEnvelope(
+                pointsSource.getSchema().getCoordinateReferenceSystem());
+        queryBounds.init(boundsOf(points1, points2));
 
         Polygon geometry = JTS.toGeometry(queryBounds);
-        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().get().getLocalName()),
                 ff.literal(geometry));
 
         assertEquals(2, pointsSource.getCount(new Query(pointsName, filter)));
@@ -293,7 +301,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         geometry = JTS.toGeometry(transformedQueryBounds);
         geometry.setUserData(queryCrs);
 
-        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().get().getLocalName()),
                 ff.literal(geometry));
 
         assertEquals(2, pointsSource.getCount(new Query(pointsName, filter)));
@@ -355,10 +363,12 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
         assertEquals(expected, actual);
 
-        ReferencedEnvelope queryBounds = boundsOf(points1, points2);
+        ReferencedEnvelope queryBounds = new ReferencedEnvelope(
+                pointsSource.getSchema().getCoordinateReferenceSystem());
+        queryBounds.init(boundsOf(points1, points2));
 
         Polygon geometry = JTS.toGeometry(queryBounds);
-        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().get().getLocalName()),
                 ff.literal(geometry));
 
         collection = pointsSource.getFeatures(new Query(pointsName, filter));
@@ -378,7 +388,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         geometry = JTS.toGeometry(transformedQueryBounds);
         geometry.setUserData(queryCrs);
 
-        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().get().getLocalName()),
                 ff.literal(geometry));
 
         collection = pointsSource.getFeatures(new Query(pointsName, filter));
@@ -458,7 +468,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         SimpleFeatureIterator iter = pointsSource.getFeatures(query).features();
 
         assertTrue(iter.hasNext());
-        assertEquals(points1.getIdentifier().getID(), iter.next().getID());
+        assertEquals(points1.getId(), iter.next().getID());
 
         assertTrue(screenMap.get(boundsOf(points1)));
     }
@@ -492,10 +502,10 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
         assertNull(type.getGeometryDescriptor().getCoordinateReferenceSystem());
 
-        List<Feature> features = new ArrayList<>();
+        List<org.locationtech.geogig.feature.Feature> features = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            Feature f = super.feature(type, String.valueOf(i), String.format("POINT(%d %d)", i, i),
-                    "f-" + i);
+            org.locationtech.geogig.feature.Feature f = super.feature(GT.adapt(type),
+                    String.valueOf(i), String.format("POINT(%d %d)", i, i), "f-" + i);
             features.add(f);
         }
         super.insert(features);

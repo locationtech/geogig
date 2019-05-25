@@ -13,40 +13,45 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 
 import org.geotools.data.FeatureReader;
-import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Adapts a closeable iterator of features as a {@link FeatureReader}
  */
-public class FeatureReaderAdapter<T extends FeatureType, F extends Feature>
-        implements FeatureReader<T, F> {
+public class FeatureReaderAdapter implements FeatureReader<SimpleFeatureType, SimpleFeature> {
 
-    private final T schema;
+    private final SimpleFeatureType schema;
 
     @VisibleForTesting
-    final AutoCloseableIterator<? extends F> iterator;
+    final AutoCloseableIterator<SimpleFeature> iterator;
 
-    public FeatureReaderAdapter(T schema, AutoCloseableIterator<? extends F> iterator) {
+    public FeatureReaderAdapter(SimpleFeatureType schema,
+            AutoCloseableIterator<SimpleFeature> iterator) {
         this.schema = schema;
         this.iterator = iterator;
     }
 
-    public static <T extends FeatureType, F extends Feature> FeatureReaderAdapter<T, F> of(T schema,
-            AutoCloseableIterator<? extends F> iterator) {
-        return new FeatureReaderAdapter<T, F>(schema, iterator);
+    public static FeatureReaderAdapter adapt(SimpleFeatureType schema,
+            AutoCloseableIterator<org.locationtech.geogig.feature.Feature> iterator) {
+
+        AutoCloseableIterator<SimpleFeature> gtFeatures = AutoCloseableIterator.transform(iterator,
+                gf -> GT.adapt((SimpleFeatureType) schema, gf));
+
+        return new FeatureReaderAdapter(schema, gtFeatures);
     }
 
     @Override
-    public T getFeatureType() {
+    public SimpleFeatureType getFeatureType() {
         return schema;
     }
 
     @Override
-    public F next() throws NoSuchElementException {
+    public SimpleFeature next() throws NoSuchElementException {
         try {
             return iterator.next();
         } catch (RuntimeException e) {

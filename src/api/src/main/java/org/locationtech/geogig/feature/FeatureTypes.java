@@ -1,5 +1,6 @@
 package org.locationtech.geogig.feature;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -11,6 +12,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.crs.CRS;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
 import org.locationtech.geogig.feature.PropertyDescriptor.PropertyDescriptorBuilder;
 import org.locationtech.jts.geom.Geometry;
@@ -29,11 +32,25 @@ public class FeatureTypes {
     public static @NonNull FeatureType createType(@NonNull String name,
             @NonNull String... attrDefs) {
 
-        FeatureTypeBuilder builder = FeatureType.builder().name(parseName(name));
+        return createType(Name.valueOf(name), attrDefs);
+    }
+
+    public static @NonNull FeatureType createType(@NonNull Name name, @NonNull String... attrDefs) {
+
+        FeatureTypeBuilder builder = FeatureType.builder().name(name);
         List<PropertyDescriptor> descriptors = Arrays.asList(attrDefs).stream()
                 .map(FeatureTypes::createDescriptor).collect(Collectors.toList());
         builder.descriptors(descriptors);
         return builder.build();
+    }
+
+    public static FeatureType createSubType(FeatureType type, String... includedAttributeNames) {
+        FeatureTypeBuilder builder = FeatureType.builder().name(type.getName());
+        List<PropertyDescriptor> descriptors = new ArrayList<>();
+        for (String attName : includedAttributeNames) {
+            descriptors.add(type.getDescriptor(attName));
+        }
+        return builder.descriptors(descriptors).build();
     }
 
     /**
@@ -62,7 +79,7 @@ public class FeatureTypes {
 
         }
 
-        Name descriptorName = parseName(parts[0]);
+        Name descriptorName = Name.valueOf(parts[0]);
         Class<?> binding = toBinding(parts[1]);
         CoordinateReferenceSystem crs = toCrs(props.get("srid"));
         int maxOccurs = Integer.valueOf(props.getOrDefault("maxOccurs", "1"));
@@ -80,23 +97,12 @@ public class FeatureTypes {
         return builder.build();
     }
 
-    private static Name parseName(String name) {
-        Name descriptorName;
-        String namespace = null;
-        if (name.contains("#")) {
-            namespace = name.substring(0, name.indexOf('#'));
-            name = name.substring(name.indexOf('#') + 1);
-        }
-        descriptorName = new Name(namespace, name);
-        return descriptorName;
-    }
-
     private static @Nullable CoordinateReferenceSystem toCrs(@Nullable String srid) {
         CoordinateReferenceSystem crs = null;
         if (srid != null) {
             Integer id = Integer.parseInt(srid);
             String crsId = "EPSG:" + id;
-            CoordinateReferenceSystem.builder().srsIdentifier(crsId);
+            crs = CRS.decode(crsId);
         }
         return crs;
     }
@@ -133,4 +139,10 @@ public class FeatureTypes {
         typeMap.put("geometrycollection", GeometryCollection.class);
         typeMap.put("date", Date.class);
     }
+
+    public static FeatureTypeBuilder builder(@NonNull FeatureType copyMe) {
+        List<PropertyDescriptor> descriptors = new ArrayList<>(copyMe.getDescriptors());
+        return FeatureType.builder().name(copyMe.getName()).descriptors(descriptors);
+    }
+
 }

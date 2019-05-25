@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -33,8 +34,6 @@ import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
@@ -55,7 +54,7 @@ public class IndexTest extends RepositoryTestCase {
     public void testInsertIdenticalObjects() throws Exception {
         ObjectId oId1 = insertAndAdd(points1);
         Feature equalContentFeature = feature(pointsType, "DifferentId",
-                ((SimpleFeature) points1).getAttributes().toArray());
+                points1.getAttributes().toArray());
 
         ObjectId oId2 = insertAndAdd(equalContentFeature);
 

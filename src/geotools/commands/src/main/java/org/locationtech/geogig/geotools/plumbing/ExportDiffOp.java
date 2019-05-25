@@ -24,8 +24,10 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.collection.BaseFeatureCollection;
 import org.geotools.feature.collection.DelegateFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.factory.Hints;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
@@ -44,7 +46,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
 
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
@@ -156,10 +157,9 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             AutoCloseableIterator<DiffEntry> diffs, final boolean old, final ObjectStore database,
             final ObjectId metadataId, final ProgressListener progressListener) {
 
-        final SimpleFeatureType featureType = addChangeTypeAttribute(
-                database.getFeatureType(metadataId));
+        final FeatureType featureType = addChangeTypeAttribute(database.getFeatureType(metadataId));
         final RevFeatureType revFeatureType = RevFeatureType.builder().type(featureType).build();
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(GT.adapt(featureType));
 
         final Function<DiffEntry, SimpleFeature> asFeature = (de) -> {
             NodeRef nodeRef = old ? de.getOldObject() : de.getNewObject();
@@ -193,17 +193,13 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         return filterNulls;
     }
 
-    private static SimpleFeatureType addChangeTypeAttribute(RevFeatureType revFType) {
-        SimpleFeatureType featureType = (SimpleFeatureType) revFType.type();
-        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+    private static FeatureType addChangeTypeAttribute(RevFeatureType revFType) {
+
+        FeatureType type = revFType.type();
+        FeatureTypeBuilder builder = FeatureType.builder();
         builder.add(CHANGE_TYPE_NAME, String.class);
-        for (AttributeDescriptor descriptor : featureType.getAttributeDescriptors()) {
-            builder.add(descriptor);
-        }
-        builder.setName(featureType.getName());
-        builder.setCRS(featureType.getCoordinateReferenceSystem());
-        featureType = builder.buildFeatureType();
-        return featureType;
+        type.getDescriptors().forEach(builder::add);
+        return builder.name(type.getName()).build();
     }
 
     private NodeRef resolTypeTreeRef(final String refspec, final String treePath,

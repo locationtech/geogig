@@ -19,11 +19,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.geotools.data.DataUtilities;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -54,8 +56,6 @@ import org.locationtech.geogig.porcelain.StatusOp;
 import org.locationtech.geogig.porcelain.StatusOp.StatusSummary;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -128,19 +128,19 @@ public class MergeOpTest extends RepositoryTestCase {
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
-        String path = appendChild(pointsName, points2.getIdentifier().getID());
+        String path = appendChild(pointsName, points2.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(pointsName, points1.getIdentifier().getID());
+        path = appendChild(pointsName, points1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(pointsName, points3.getIdentifier().getID());
+        path = appendChild(pointsName, points3.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(linesName, lines1.getIdentifier().getID());
+        path = appendChild(linesName, lines1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
@@ -439,23 +439,23 @@ public class MergeOpTest extends RepositoryTestCase {
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
-        String path = appendChild(pointsName, points1.getIdentifier().getID());
+        String path = appendChild(pointsName, points1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(pointsName, points2.getIdentifier().getID());
+        path = appendChild(pointsName, points2.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(pointsName, points3.getIdentifier().getID());
+        path = appendChild(pointsName, points3.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(linesName, lines1.getIdentifier().getID());
+        path = appendChild(linesName, lines1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(linesName, lines2.getIdentifier().getID());
+        path = appendChild(linesName, lines2.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
@@ -538,19 +538,19 @@ public class MergeOpTest extends RepositoryTestCase {
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
-        String path = appendChild(pointsName, points2.getIdentifier().getID());
+        String path = appendChild(pointsName, points2.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(pointsName, points1.getIdentifier().getID());
+        path = appendChild(pointsName, points1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(pointsName, points3.getIdentifier().getID());
+        path = appendChild(pointsName, points3.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(linesName, lines1.getIdentifier().getID());
+        path = appendChild(linesName, lines1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
@@ -659,11 +659,11 @@ public class MergeOpTest extends RepositoryTestCase {
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
-        String path = appendChild(pointsName, points1.getIdentifier().getID());
+        String path = appendChild(pointsName, points1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
-        path = appendChild(pointsName, points2.getIdentifier().getID());
+        path = appendChild(pointsName, points2.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
@@ -715,7 +715,7 @@ public class MergeOpTest extends RepositoryTestCase {
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
-        String path = appendChild(pointsName, points1.getIdentifier().getID());
+        String path = appendChild(pointsName, points1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
                 .isPresent());
 
@@ -1181,9 +1181,8 @@ public class MergeOpTest extends RepositoryTestCase {
     @Test
     public void testMergeConflictingPolygon() throws Exception {
         String polyId = "polyId";
-        String polygonTypeSpec = "poly:Polygon:srid=4326";
-        SimpleFeatureType polygonType = DataUtilities.createType("http://geogig.polygon",
-                "polygons", polygonTypeSpec);
+        FeatureType polygonType = FeatureTypes.createType("http://geogig.polygon#polygons",
+                "poly:Polygon:srid=4326");
         Feature polygonOriginal = feature(polygonType, polyId,
                 "POLYGON((0 0,1 0,2 0,3 0,4 0,5 0,5 1,4 1,3 1,2 1,1 1,1 0,0 0))");
         insertAndAdd(polygonOriginal);
@@ -1235,7 +1234,7 @@ public class MergeOpTest extends RepositoryTestCase {
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
 
-        String path = appendChild(pointsName, points1.getIdentifier().getID());
+        String path = appendChild(pointsName, points1.getId());
 
         Optional<RevFeature> feature = repo.command(RevObjectParse.class)
                 .setRefSpec(/*

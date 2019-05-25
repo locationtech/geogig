@@ -263,7 +263,7 @@ public class Patch {
                 if (idx != -1) {
                     updatedDescriptors.set(idx);
                 } else {
-                    Class<?> oldType = oldDescriptor.getType().getBinding();
+                    Class<?> oldType = oldDescriptor.getBinding();
                     sb.append("R\t" + oldDescriptors.get(i).getName().getLocalPart() + "["
                             + oldType.getName() + "]");
                 }
@@ -273,7 +273,7 @@ public class Patch {
             for (int i = updatedDescriptors.nextSetBit(0); i >= 0; i = updatedDescriptors
                     .nextSetBit(i + 1)) {
                 PropertyDescriptor newDescriptor = newDescriptors.get(i);
-                Class<?> oldType = newDescriptor.getType().getBinding();
+                Class<?> oldType = newDescriptor.getBinding();
                 sb.append("A\t" + newDescriptors.get(i).getName().getLocalPart() + "["
                         + oldType.getName() + "]");
             }

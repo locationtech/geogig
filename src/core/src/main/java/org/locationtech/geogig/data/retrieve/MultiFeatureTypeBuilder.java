@@ -9,65 +9,49 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
-import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.util.factory.Hints;
-import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.feature.simple.SimpleFeature;
 
-class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, SimpleFeature> {
+import lombok.NonNull;
 
-    Map<ObjectId, FeatureBuilder> cache = new HashMap<ObjectId, FeatureBuilder>();
+class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, Feature> {
 
-    ObjectStore odb;
+    private ConcurrentMap<ObjectId, FeatureType> cache = new ConcurrentHashMap<>();
 
-    public MultiFeatureTypeBuilder(ObjectStore odb) {
+    private ObjectStore odb;
+
+    public MultiFeatureTypeBuilder(@NonNull ObjectStore odb) {
         this.odb = odb;
     }
 
-    public synchronized FeatureBuilder get(ObjectId metadataId) {
-        FeatureBuilder featureBuilder = cache.get(metadataId);
-        if (featureBuilder == null) {
-            RevFeatureType revFtype = odb.getFeatureType(metadataId);
-            featureBuilder = new FeatureBuilder(revFtype);
-            cache.put(metadataId, featureBuilder);
-        }
-        return featureBuilder;
+    FeatureType get(ObjectId metadataId) {
+        FeatureType featureType = cache.computeIfAbsent(metadataId, this::load);
+        return featureType;
     }
 
-    @Override
-    public SimpleFeature apply(ObjectInfo<RevFeature> info) {
-        FeatureBuilder featureBuilder = get(info.ref().getMetadataId());
-        return build(featureBuilder, info, null);
+    private FeatureType load(ObjectId metadataId) {
+        RevFeatureType revFtype = odb.getFeatureType(metadataId);
+        return revFtype.type();
     }
 
-    public SimpleFeature build(ObjectId metadataId, String id, RevFeature revFeature,
-            @Nullable GeometryFactory geometryFactory) {
-
-        FeatureBuilder featureBuilder = get(metadataId);
-        return (SimpleFeature) featureBuilder.build(id, revFeature, geometryFactory);
-    }
-
-    public static SimpleFeature build(FeatureBuilder featureBuilder, ObjectInfo<RevFeature> info,
-            @Nullable GeometryFactory geometryFactory) {
-
-        String fid = info.node().getName();
-        RevFeature revFeature = info.object();
-        SimpleFeature feature = (SimpleFeature) featureBuilder.build(fid, revFeature,
-                geometryFactory);
-        feature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
-        feature.getUserData().put(Hints.PROVIDED_FID, fid);
-        feature.getUserData().put(RevFeature.class, revFeature);
-        feature.getUserData().put(RevFeatureType.class, featureBuilder.getType());
+    public @Override Feature apply(ObjectInfo<RevFeature> info) {
+        FeatureType featureType = get(info.ref().getMetadataId());
+        String id = info.node().getName();
+        RevFeature values = info.object();
+        Feature feature = Feature.build(id, featureType, values);
+        // feature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
+        // feature.getUserData().put(Hints.PROVIDED_FID, fid);
+        // feature.getUserData().put(RevFeature.class, revFeature);
+        // feature.getUserData().put(RevFeatureType.class, featureBuilder.getType());
         return feature;
     }
 }

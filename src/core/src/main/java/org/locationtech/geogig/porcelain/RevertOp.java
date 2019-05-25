@@ -487,7 +487,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
     private String resolveCommitter() {
         final String namekey = "user.name";
 
-        String name = getClientData(nameKey)
+        String name = getClientData(namekey)
                 .orElseGet(() -> command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,

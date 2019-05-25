@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test;
+package org.locationtech.geogig.geotools.cli.geopkg;
 
 import java.io.IOException;
 import java.util.Iterator;

@@ -13,16 +13,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.geotools.data.util.ScreenMap;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Predicate;
 
-class DiffFeatureScreenMapPredicate implements Predicate<SimpleFeature> {
+class DiffFeatureScreenMapPredicate implements Predicate<org.locationtech.geogig.feature.Feature> {
 
     private ScreenMap screenMap;
 
@@ -38,7 +38,7 @@ class DiffFeatureScreenMapPredicate implements Predicate<SimpleFeature> {
     /**
      * Filter out small features (<pixel) where that pixel already has a small feature in it.
      */
-    public @Override boolean apply(SimpleFeature feature) {
+    public @Override boolean apply(Feature feature) {
         List<String> geometryAttributes = this.geometryAttributes;
         boolean apply = false;
         for (int i = 0; i < geometryAttributes.size(); i++) {
@@ -48,7 +48,7 @@ class DiffFeatureScreenMapPredicate implements Predicate<SimpleFeature> {
         return apply;
     }
 
-    private boolean apply(SimpleFeature feature, final String att) {
+    private boolean apply(Feature feature, final String att) {
         Geometry g = (Geometry) feature.getAttribute(att);
         if (g == null) {
             return false;// filter it out

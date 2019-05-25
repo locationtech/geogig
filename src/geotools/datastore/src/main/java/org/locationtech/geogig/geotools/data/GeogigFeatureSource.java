@@ -33,7 +33,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
-import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
 import org.locationtech.geogig.geotools.data.reader.WalkInfo;
 import org.locationtech.geogig.model.NodeRef;
@@ -152,7 +152,7 @@ public class GeogigFeatureSource extends ContentFeatureSource {
      * {@link FeatureSource#getName()}
      */
     @Override
-    public Name getName() {
+    public org.opengis.feature.type.Name getName() {
         return getEntry().getName();
     }
 
@@ -362,10 +362,10 @@ public class GeogigFeatureSource extends ContentFeatureSource {
     protected SimpleFeatureType buildFeatureType() throws IOException {
 
         RevFeatureType nativeType = getNativeType();
-        SimpleFeatureType featureType = (SimpleFeatureType) nativeType.type();
+        SimpleFeatureType featureType = GT.adapt(nativeType.type());
 
-        final Name name = featureType.getName();
-        final Name assignedName = getEntry().getName();
+        final org.opengis.feature.type.Name name = featureType.getName();
+        final org.opengis.feature.type.Name assignedName = getEntry().getName();
 
         if (assignedName.getNamespaceURI() != null && !assignedName.equals(name)) {
             SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
@@ -407,7 +407,7 @@ public class GeogigFeatureSource extends ContentFeatureSource {
      */
     public NodeRef getTypeRef() {
         GeoGigDataStore dataStore = getDataStore();
-        Name name = getName();
+        org.opengis.feature.type.Name name = getName();
         Transaction transaction = getTransaction();
         return dataStore.findTypeRef(name, transaction);
     }

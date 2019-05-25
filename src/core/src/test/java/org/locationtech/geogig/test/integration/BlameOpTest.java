@@ -15,6 +15,7 @@ import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.BlameException;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.porcelain.BlameOp;
 import org.locationtech.geogig.porcelain.BlameReport;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ValueAndCommit;
-import org.opengis.feature.Feature;
 
 public class BlameOpTest extends RepositoryTestCase {
 
@@ -80,9 +80,9 @@ public class BlameOpTest extends RepositoryTestCase {
         assertEquals(secondCommit, changes.get("sp").commit);
         assertEquals(firstCommit, changes.get("ip").commit);
         assertEquals(firstCommit, changes.get("pp").commit);
-        assertEquals(pointsModified.getProperty("sp").getValue(), changes.get("sp").value.get());
-        assertEquals(points1.getProperty("ip").getValue(), changes.get("ip").value.get());
-        assertEquals(points1.getProperty("pp").getValue(), changes.get("pp").value.get());
+        assertEquals(pointsModified.getAttribute("sp"), changes.get("sp").value.get());
+        assertEquals(points1.getAttribute("ip"), changes.get("ip").value.get());
+        assertEquals(points1.getAttribute("pp"), changes.get("pp").value.get());
 
         report = geogig.command(BlameOp.class).setPath(path).setCommit(firstCommit.getId()).call();
         changes = report.getChanges();

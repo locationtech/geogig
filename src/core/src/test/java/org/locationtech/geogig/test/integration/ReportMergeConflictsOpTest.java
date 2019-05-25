@@ -12,8 +12,10 @@ package org.locationtech.geogig.test.integration;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.geotools.data.DataUtilities;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
@@ -28,8 +30,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.collect.Lists;
 
@@ -307,9 +307,8 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         geogig.command(AddOp.class).call();
         RevCommit masterCommit = geogig.command(CommitOp.class).call();
         geogig.command(CheckoutOp.class).setSource("TestBranch").call();
-        String modifiedPointsTypeSpecB = "sp:String,ip:Integer,pp:Point:srid=4326,extraB:String";
-        SimpleFeatureType modifiedPointsTypeB = DataUtilities.createType(pointsNs, pointsName,
-                modifiedPointsTypeSpecB);
+        FeatureType modifiedPointsTypeB = FeatureTypes.createType(pointsNs + "#" + pointsName,
+                "sp:String", "ip:Integer", "pp:Point:srid=4326", "extraB:String");
         geogig.getRepository().workingTree().updateTypeTree(pointsName, modifiedPointsTypeB);
         insert(points1B);
         geogig.command(AddOp.class).call();

@@ -1,12 +1,17 @@
-package org.locationtech.geogig.feature;
+package org.locationtech.geogig.crs;
 
-import lombok.Builder;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Value;
 
-public @Value @Builder class CoordinateReferenceSystem {
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+public @Value class CoordinateReferenceSystem {
 
     public static final CoordinateReferenceSystem NULL = new CoordinateReferenceSystem(
             "urn:ogc:def:crs:EPSG::0", null);
+
+    public static final CoordinateReferenceSystem WGS84 = new CoordinateReferenceSystem("EPSG:4326",
+            null);
 
     private String srsIdentifier;
 

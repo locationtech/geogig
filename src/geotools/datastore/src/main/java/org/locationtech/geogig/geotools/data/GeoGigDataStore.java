@@ -27,7 +27,8 @@ import org.geotools.data.store.ContentState;
 import org.geotools.feature.NameImpl;
 import org.geotools.util.logging.Logging;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
-import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -50,6 +51,7 @@ import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.Name;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -253,7 +255,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return context;
     }
 
-    public Name getDescriptorName(NodeRef treeRef) {
+    public org.opengis.feature.type.Name getDescriptorName(NodeRef treeRef) {
         Preconditions.checkNotNull(treeRef);
         Preconditions.checkArgument(TYPE.TREE.equals(treeRef.getType()));
         Preconditions.checkArgument(!treeRef.getMetadataId().isNull(),
@@ -289,7 +291,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     }
 
     @Override
-    protected List<Name> createTypeNames() throws IOException {
+    protected List<org.opengis.feature.type.Name> createTypeNames() throws IOException {
         List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT);
         return typeTrees.stream().map(this::getDescriptorName).collect(Collectors.toList());
     }
@@ -347,7 +349,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
             tx.command(CheckoutOp.class).setForce(true).setSource(branch).call();
             // now we can use the transaction working tree with the correct branch checked out
             WorkingTree workingTree = tx.workingTree();
-            workingTree.createTypeTree(treePath, featureType);
+            FeatureType gigFeatureType = GT.adapt(featureType);
+            workingTree.createTypeTree(treePath, gigFeatureType);
             tx.command(AddOp.class).addPattern(treePath).call();
             tx.command(CommitOp.class).setMessage("Created feature type tree " + treePath).call();
             tx.commit();

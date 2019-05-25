@@ -477,7 +477,7 @@ public class HashObjectFunnelsTest {
 
             @Override
             public Name getName() {
-                return new Name("http://geogig.points", "Points");
+                return Name.valueOf("http://geogig.points", "Points");
             }
         };
 

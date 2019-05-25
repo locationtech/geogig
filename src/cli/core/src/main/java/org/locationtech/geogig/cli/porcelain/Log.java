@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
-import org.geotools.util.Range;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
@@ -52,6 +51,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 
 /**
  * Shows the commit logs.
@@ -168,7 +168,7 @@ public class Log extends AbstractCommand implements CLICommand {
                             "Cannot specify 'until' commit when listing all branches");
                 }
             }
-            op.setTimeRange(new Range<Date>(Date.class, since, until));
+            op.setTimeRange(Range.closed(since, until));
         }
         if (!args.sinceUntilPaths.isEmpty()) {
             List<String> sinceUntil = ImmutableList

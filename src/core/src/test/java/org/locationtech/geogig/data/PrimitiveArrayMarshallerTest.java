@@ -17,35 +17,34 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Array;
 import java.util.List;
 
-import org.geotools.util.Converters;
 import org.junit.Test;
 
 import com.google.common.base.Splitter;
 
 /**
- * Test suite for {@link PrimitiveArrayToStringConverterFactory}
+ * Test suite for {@link PrimitiveArrayMarshaller}
  */
-public class PrimitiveArrayToStringConverterFactoryTest {
+public class PrimitiveArrayMarshallerTest {
 
     @Test
     public void testNull() {
-        assertNull(Converters.convert(null, String.class));
-        assertNull(Converters.convert(null, int[].class));
-        assertNull(Converters.convert("", boolean[].class));
-        assertNull(Converters.convert("", byte[].class));
-        assertNull(Converters.convert("", short[].class));
-        assertNull(Converters.convert("", int[].class));
-        assertNull(Converters.convert("", long[].class));
-        assertNull(Converters.convert("", float[].class));
-        assertNull(Converters.convert("", double[].class));
+        assertNull(StringConverters.marshall(null));
+        assertNull(StringConverters.unmarshall(null, int[].class));
+        assertNull(StringConverters.unmarshall("", boolean[].class));
+        assertNull(StringConverters.unmarshall("", byte[].class));
+        assertNull(StringConverters.unmarshall("", short[].class));
+        assertNull(StringConverters.unmarshall("", int[].class));
+        assertNull(StringConverters.unmarshall("", long[].class));
+        assertNull(StringConverters.unmarshall("", float[].class));
+        assertNull(StringConverters.unmarshall("", double[].class));
 
-        assertNull(Converters.convert(" ", boolean[].class));
-        assertNull(Converters.convert(" ", byte[].class));
-        assertNull(Converters.convert(" ", short[].class));
-        assertNull(Converters.convert(" ", int[].class));
-        assertNull(Converters.convert(" ", long[].class));
-        assertNull(Converters.convert(" ", float[].class));
-        assertNull(Converters.convert(" ", double[].class));
+        assertNull(StringConverters.unmarshall(" ", boolean[].class));
+        assertNull(StringConverters.unmarshall(" ", byte[].class));
+        assertNull(StringConverters.unmarshall(" ", short[].class));
+        assertNull(StringConverters.unmarshall(" ", int[].class));
+        assertNull(StringConverters.unmarshall(" ", long[].class));
+        assertNull(StringConverters.unmarshall(" ", float[].class));
+        assertNull(StringConverters.unmarshall(" ", double[].class));
     }
 
     @Test
@@ -96,7 +95,7 @@ public class PrimitiveArrayToStringConverterFactoryTest {
 
     private void roundtripTest(Object value) {
 
-        String converted = Converters.convert(value, String.class);
+        String converted = StringConverters.marshall(value);
         assertNotNull(converted);
         int length = Array.getLength(value);
         if (0 == length) {
@@ -110,7 +109,7 @@ public class PrimitiveArrayToStringConverterFactoryTest {
                     .splitToList(plain);
             assertEquals(length, elems.size());
         }
-        Object roundTripped = Converters.convert(converted, value.getClass());
+        Object roundTripped = StringConverters.unmarshall(converted, value.getClass());
 
         assertNotNull(roundTripped);
         assertTrue(roundTripped.getClass().isArray());

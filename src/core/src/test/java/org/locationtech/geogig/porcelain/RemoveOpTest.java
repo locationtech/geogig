@@ -17,6 +17,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Feature;
 
 public class RemoveOpTest extends RepositoryTestCase {
 
@@ -45,7 +45,7 @@ public class RemoveOpTest extends RepositoryTestCase {
     public void testSingleFeatureRemoval() throws Exception {
         populate(false, points1, points2, points3);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         String path = NodeRef.appendChild(pointsName, featureId);
         DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(path).call();
         assertEquals(1, result.getFeaturesRemoved());
@@ -62,9 +62,9 @@ public class RemoveOpTest extends RepositoryTestCase {
     public void testMultipleRemoval() throws Exception {
         populate(false, points1, points2, points3);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         String path = NodeRef.appendChild(pointsName, featureId);
-        String featureId2 = points2.getIdentifier().getID();
+        String featureId2 = points2.getId();
         String path2 = NodeRef.appendChild(pointsName, featureId2);
 
         DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(path)
@@ -159,9 +159,9 @@ public class RemoveOpTest extends RepositoryTestCase {
     public void testRemovalOfAllFeaturesOfAGivenType() throws Exception {
         List<RevCommit> commits = populate(false, points1, points2, points3, lines1, lines2);
 
-        String featureId = lines1.getIdentifier().getID();
+        String featureId = lines1.getId();
         String path = NodeRef.appendChild(linesName, featureId);
-        String featureId2 = lines2.getIdentifier().getID();
+        String featureId2 = lines2.getId();
         String path2 = NodeRef.appendChild(linesName, featureId2);
 
         DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(path)

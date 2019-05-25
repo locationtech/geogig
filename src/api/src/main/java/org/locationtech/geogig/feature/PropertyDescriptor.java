@@ -1,7 +1,6 @@
 package org.locationtech.geogig.feature;
 
-import java.util.Optional;
-
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Geometry;
 
 import lombok.Builder;
@@ -24,10 +23,6 @@ public @Value @Builder class PropertyDescriptor {
 
     private CoordinateReferenceSystem coordinateReferenceSystem;
 
-    public Optional<CoordinateReferenceSystem> getCoordinateReferenceSystem() {
-        return Optional.ofNullable(coordinateReferenceSystem);
-    }
-
     public @NonNull CoordinateReferenceSystem coordinateReferenceSystem() {
         return this.coordinateReferenceSystem == null ? CoordinateReferenceSystem.NULL
                 : this.coordinateReferenceSystem;
@@ -39,5 +34,20 @@ public @Value @Builder class PropertyDescriptor {
 
     public @NonNull Name getTypeName() {
         return typeName == null ? name : typeName;
+    }
+
+    public @NonNull String getLocalName() {
+        return getName().getLocalPart();
+    }
+
+    public static class PropertyDescriptorBuilder {
+        public PropertyDescriptor build() {
+            CoordinateReferenceSystem crs = this.coordinateReferenceSystem;
+            if (Geometry.class.isAssignableFrom(this.binding) && crs == null) {
+                crs = CoordinateReferenceSystem.NULL;
+            }
+            return new PropertyDescriptor(name, typeName, binding, nillable, minOccurs, maxOccurs,
+                    crs);
+        }
     }
 }

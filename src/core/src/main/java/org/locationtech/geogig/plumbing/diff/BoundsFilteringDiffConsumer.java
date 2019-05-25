@@ -9,24 +9,15 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
-import org.locationtech.geogig.storage.ObjectStore;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * A {@link Consumer} decorator that filters {@link Node nodes} by a bounding box intersection check
@@ -34,15 +25,11 @@ import org.opengis.referencing.operation.TransformException;
  */
 public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsumer {
 
-    private final ReferencedEnvelope boundsFilter;
+    private final Envelope boundsFilter;
 
-    private ObjectStore ftypeSource;
-
-    public BoundsFilteringDiffConsumer(ReferencedEnvelope bounds,
-            PreOrderDiffWalk.Consumer delegate, ObjectStore ftypeSource) {
+    public BoundsFilteringDiffConsumer(Envelope bounds, PreOrderDiffWalk.Consumer delegate) {
         super(delegate);
         this.boundsFilter = bounds;
-        this.ftypeSource = ftypeSource;
     }
 
     @Override
@@ -108,36 +95,14 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
         if (metadataId.isNull()) {
             return true;
         }
-        ReferencedEnvelope nativeCrsFilter = getProjectedFilter(metadataId);
+        Envelope nativeCrsFilter = getProjectedFilter(metadataId);
         boolean intersects = node.intersects(nativeCrsFilter);
         return intersects;
     }
 
-    private ConcurrentMap<ObjectId, ReferencedEnvelope> filtersByMetadataId = new ConcurrentHashMap<>();
-
-    private ReferencedEnvelope getProjectedFilter(final ObjectId metadataId) {
-        ReferencedEnvelope projectedFilter = filtersByMetadataId.get(metadataId);
-        if (projectedFilter == null) {
-            projectedFilter = createProjectedFilter(metadataId);
-            filtersByMetadataId.putIfAbsent(metadataId, projectedFilter);
-        }
-        return projectedFilter;
-    }
-
-    private ReferencedEnvelope createProjectedFilter(ObjectId metadataId) {
-        final ReferencedEnvelope boundsFilter = this.boundsFilter;
-        RevFeatureType featureType = ftypeSource.getFeatureType(metadataId);
-        CoordinateReferenceSystem nativeCrs = featureType.type().getCoordinateReferenceSystem();
-        if (null == nativeCrs || nativeCrs instanceof DefaultEngineeringCRS) {
-            return boundsFilter;
-        }
-        ReferencedEnvelope transformedFilter;
-        try {
-            transformedFilter = boundsFilter.transform(nativeCrs, true);
-        } catch (TransformException | FactoryException e) {
-            throw new RuntimeException(e);
-        }
-        return transformedFilter;
+    private Envelope getProjectedFilter(final ObjectId metadataId) {
+        // REVISIT: support reprojection?
+        return this.boundsFilter;
     }
 
 }

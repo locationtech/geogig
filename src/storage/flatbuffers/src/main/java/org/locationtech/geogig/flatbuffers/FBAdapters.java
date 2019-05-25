@@ -9,15 +9,16 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.locationtech.geogig.feature.AttributeType;
+import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.crs.CRS;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
 import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.flatbuffers.generated.v1.QualifiedName;
 import org.locationtech.geogig.flatbuffers.generated.v1.SHA;
 import org.locationtech.geogig.flatbuffers.generated.v1.SimpleAttributeDescriptor;
@@ -25,21 +26,11 @@ import org.locationtech.geogig.flatbuffers.generated.v1.values.Bounds;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.FeatureTypeFactory;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.google.common.base.Strings;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 final @UtilityClass class FBAdapters {
-
-    private static final FeatureTypeFactory ftfactory = CommonFactoryFinder
-            .getFeatureTypeFactory(null);
 
     public static ObjectId toId(@NonNull SHA id) {
         return ObjectId.create(id.h1(), id.h2(), id.h3());
@@ -77,10 +68,11 @@ final @UtilityClass class FBAdapters {
     public static org.locationtech.geogig.feature.FeatureType toFeatureType(
             @NonNull org.locationtech.geogig.flatbuffers.generated.v1.SimpleFeatureType t) {
 
-        SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder(ftfactory);
-        featureTypeBuilder.setName(toName(t.name()));
+        FeatureTypeBuilder featureTypeBuilder = FeatureType.builder();
+        featureTypeBuilder.name(toName(t.name()));
         final @Nullable String defaultGeometryName = t.defaultGeometryName();
-        featureTypeBuilder.setDefaultGeometry(defaultGeometryName);
+        // TODO: implement default geometry setting in geogig's feature model
+        // featureTypeBuilder.setDefaultGeometry(defaultGeometryName);
 
         final int size = t.attributesLength();
         for (int i = 0; i < size; i++) {
@@ -98,51 +90,39 @@ final @UtilityClass class FBAdapters {
 
             final Name descriptorName = toName(descriptor.name());
             final Name attributeTypeName = toName(type.name());
-            final AttributeDescriptor attributeDescriptor;
-            if (geometric) {
-                final @Nullable CoordinateReferenceSystem crs = resolveCrs(type);
-                GeometryType attributeType = ftfactory.createGeometryType(attributeTypeName,
-                        binding, crs, type.identified(), false, null, null, null);
-                Object defaultValue = null;
-                attributeDescriptor = ftfactory.createGeometryDescriptor(attributeType,
-                        descriptorName, minOccurs, maxOccurs, nillable, defaultValue);
-            } else {
-                AttributeType attributeType = ftfactory.createAttributeType(attributeTypeName,
-                        binding, type.identified(), false, null, null, null);
-                Object defaultValue = null;
-                attributeDescriptor = ftfactory.createAttributeDescriptor(attributeType,
-                        descriptorName, minOccurs, maxOccurs, nillable, defaultValue);
-            }
+            final @Nullable CoordinateReferenceSystem crs = geometric ? resolveCrs(type) : null;
+
+            final PropertyDescriptor attributeDescriptor = PropertyDescriptor.builder()
+                    .name(descriptorName).typeName(attributeTypeName).binding(binding)
+                    .minOccurs(minOccurs).maxOccurs(maxOccurs).nillable(nillable)
+                    .coordinateReferenceSystem(crs).build();
             featureTypeBuilder.add(attributeDescriptor);
         }
-        return featureTypeBuilder.buildFeatureType();
+        return featureTypeBuilder.build();
     }
 
     private static CoordinateReferenceSystem resolveCrs(
             final org.locationtech.geogig.flatbuffers.generated.v1.AttributeType type) {
         String authorityCode = type.crsAuthorityCode();
         String wkt = type.crsWkt();
-        CoordinateReferenceSystem coordSys;
-        try {
-            if (authorityCode != null) {
-                coordSys = org.geotools.referencing.CRS.decode(authorityCode);
-            } else if (wkt != null) {
-                coordSys = org.geotools.referencing.CRS.parseWKT(wkt);
-            } else {
-                coordSys = null;
+        CoordinateReferenceSystem coordSys = null;
+        if (authorityCode != null) {
+            try {
+                coordSys = CRS.decode(authorityCode);
+            } catch (NoSuchElementException unknown) {
+                unknown.printStackTrace();
             }
-        } catch (FactoryException e) {
-            throw new RuntimeException(e);
         }
+        if (coordSys == null && wkt != null) {
+            coordSys = CRS.fromWKT(wkt);
+        }
+
         return coordSys;
     }
 
     public static org.locationtech.geogig.feature.Name toName(@NonNull QualifiedName qname) {
         String namespaceUri = qname.namespaceUri();
         String localName = qname.localName();
-        if (Strings.isNullOrEmpty(namespaceUri)) {
-            return new NameImpl(localName);
-        }
-        return new NameImpl(namespaceUri, localName);
+        return Name.valueOf(namespaceUri, localName);
     }
 }

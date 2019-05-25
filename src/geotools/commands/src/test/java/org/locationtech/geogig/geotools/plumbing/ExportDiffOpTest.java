@@ -18,11 +18,11 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.junit.Test;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 
@@ -30,8 +30,11 @@ import com.google.common.base.Objects;
 
 public class ExportDiffOpTest extends RepositoryTestCase {
 
+    SimpleFeatureType gtPointsType;
+
     @Override
     protected void setUpInternal() throws Exception {
+        gtPointsType = GT.adapt(pointsType);
     }
 
     @Test
@@ -39,26 +42,26 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         final RevCommit insertCommit = geogig.command(CommitOp.class).setAll(true).call();
 
-        final String featureId = points1.getIdentifier().getID();
-        final Feature modifiedFeature = feature((SimpleFeatureType) points1.getType(), featureId,
-                "changedProp", new Integer(1500), "POINT(1 1)");
+        final String featureId = points1.getId();
+        final org.locationtech.geogig.feature.Feature modifiedFeature = feature(points1.getType(),
+                featureId, "changedProp", new Integer(1500), "POINT(1 1)");
         insertAndAdd(modifiedFeature, points2);
         final RevCommit changeCommit = geogig.command(CommitOp.class).setAll(true).call();
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.add("changetype", String.class);
-        for (AttributeDescriptor descriptor : pointsType.getAttributeDescriptors()) {
+        for (AttributeDescriptor descriptor : gtPointsType.getAttributeDescriptors()) {
             builder.add(descriptor);
         }
-        builder.setName(pointsType.getName());
-        builder.setCRS(pointsType.getCoordinateReferenceSystem());
+        builder.setName(gtPointsType.getName());
+        builder.setCRS(gtPointsType.getCoordinateReferenceSystem());
         SimpleFeatureType outputFeatureType = builder.buildFeatureType();
 
-        final Feature outputFeature1 = feature(outputFeatureType, featureId, "M", "changedProp",
-                new Integer(1500), "POINT(1 1)");
-        final Feature outputFeature2 = feature(outputFeatureType, points2.getIdentifier().getID(),
-                "A", "StringProp1_2", new Integer(2000), "POINT(2 2)");
-        Feature[] points = new Feature[] { outputFeature1, outputFeature2 };
+        FeatureType gigOutputFeatureType = GT.adapt(outputFeatureType);
+        final org.locationtech.geogig.feature.Feature outputFeature1 = feature(gigOutputFeatureType,
+                featureId, "M", "changedProp", new Integer(1500), "POINT(1 1)");
+        final org.locationtech.geogig.feature.Feature outputFeature2 = feature(gigOutputFeatureType,
+                points2.getId(), "A", "StringProp1_2", new Integer(2000), "POINT(2 2)");
 
         MemoryDataStore dataStore = new MemoryDataStore(outputFeatureType);
         final String typeName = dataStore.getTypeNames()[0];
@@ -70,9 +73,9 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
-        assertEquals(featureCollection.size(), points.length);
+        assertEquals(2, featureCollection.size());
         SimpleFeatureIterator features = featureCollection.features();
-        assertTrue(collectionsAreEqual(features, points));
+        assertTrue(collectionsAreEqual(features, outputFeature1, outputFeature2));
     }
 
     @Test
@@ -80,24 +83,24 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         final RevCommit insertCommit = geogig.command(CommitOp.class).setAll(true).call();
 
-        final String featureId = points1.getIdentifier().getID();
-        final Feature modifiedFeature = feature((SimpleFeatureType) points1.getType(), featureId,
-                "changedProp", new Integer(1500));
+        final String featureId = points1.getId();
+        final org.locationtech.geogig.feature.Feature modifiedFeature = feature(points1.getType(),
+                featureId, "changedProp", new Integer(1500));
         insertAndAdd(modifiedFeature, points2);
         final RevCommit changeCommit = geogig.command(CommitOp.class).setAll(true).call();
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.add(ExportDiffOp.CHANGE_TYPE_NAME, String.class);
-        for (AttributeDescriptor descriptor : pointsType.getAttributeDescriptors()) {
+        for (AttributeDescriptor descriptor : gtPointsType.getAttributeDescriptors()) {
             builder.add(descriptor);
         }
-        builder.setName(pointsType.getName());
-        builder.setCRS(pointsType.getCoordinateReferenceSystem());
+        builder.setName(gtPointsType.getName());
+        builder.setCRS(gtPointsType.getCoordinateReferenceSystem());
         SimpleFeatureType outputFeatureType = builder.buildFeatureType();
 
-        final Feature outputFeature1 = feature(outputFeatureType, featureId, "M", "StringProp1_1",
-                new Integer(1000), "POINT(1 1)");
-        Feature[] points = new Feature[] { outputFeature1 };
+        final org.locationtech.geogig.feature.Feature outputFeature1 = feature(
+                GT.adapt(outputFeatureType), featureId, "M", "StringProp1_1", new Integer(1000),
+                "POINT(1 1)");
 
         MemoryDataStore dataStore = new MemoryDataStore(outputFeatureType);
         final String typeName = dataStore.getTypeNames()[0];
@@ -109,12 +112,13 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
-        assertEquals(featureCollection.size(), points.length);
+        assertEquals(1, featureCollection.size());
         SimpleFeatureIterator features = featureCollection.features();
-        assertTrue(collectionsAreEqual(features, points));
+        assertTrue(collectionsAreEqual(features, outputFeature1));
     }
 
-    private boolean collectionsAreEqual(SimpleFeatureIterator features, Feature[] points) {
+    private boolean collectionsAreEqual(SimpleFeatureIterator features,
+            org.locationtech.geogig.feature.Feature... points) {
         // features are not iterated in the same order as the original set, so
         // we just do pairwise comparison to check that all the original features
         // are represented in the exported feature store
@@ -123,7 +127,7 @@ public class ExportDiffOpTest extends RepositoryTestCase {
             List<Object> attributesExported = features.next().getAttributes();
             for (int i = 0; i < points.length; i++) {
                 found = true;
-                List<Object> attributesOriginal = ((SimpleFeature) points[i]).getAttributes();
+                List<Object> attributesOriginal = points[i].getAttributes();
                 for (int j = 0; j < attributesExported.size() - 1; j++) {
                     Object attributeExported = attributesExported.get(j);
                     Object attributeOriginal = attributesOriginal.get(j);

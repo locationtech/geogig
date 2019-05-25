@@ -638,15 +638,15 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createFeatureTypeNamesWithNamespaces() {
-        Name attName1 = new Name("http://geogig.org/test/att1", "int_Type");
-        Name attName2 = new Name("http://geogig.org/test/att2", "string_Type");
+        Name attName1 = Name.valueOf("http://geogig.org/test/att1", "int_Type");
+        Name attName2 = Name.valueOf("http://geogig.org/test/att2", "string_Type");
         Class<?> binding = Integer.class;
         int minOccurs = 0;
         int maxOccurs = 1;
         boolean isNillable = false;
 
-        Name propName1 = new Name("http://geogig.org/test/prop1", "int_Property");
-        Name propName2 = new Name("http://geogig.org/test/prop2", "string_Property");
+        Name propName1 = Name.valueOf("http://geogig.org/test/prop1", "int_Property");
+        Name propName2 = Name.valueOf("http://geogig.org/test/prop2", "string_Property");
 
         PropertyDescriptor descriptor1 = PropertyDescriptor.builder().name(propName1)
                 .typeName(attName1).binding(binding).minOccurs(minOccurs).maxOccurs(maxOccurs)
@@ -655,7 +655,7 @@ public abstract class RevObjectFactoryConformanceTest {
                 .typeName(attName2).binding(binding).minOccurs(minOccurs).maxOccurs(maxOccurs)
                 .nillable(isNillable).build();
 
-        Name typeName = new Name("http://geogig.org/test/type", "QualifiedTypeName");
+        Name typeName = Name.valueOf("http://geogig.org/test/type", "QualifiedTypeName");
         FeatureTypeBuilder sftb = FeatureType.builder().name(typeName)
                 .descriptors(Arrays.asList(descriptor1, descriptor2));
         FeatureType featureType = sftb.build();

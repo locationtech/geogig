@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.DiffEntry;
@@ -43,6 +42,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +64,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     private final List<String> pathFilters = Lists.newLinkedList();
 
-    private ReferencedEnvelope boundsFilter;
+    private Envelope boundsFilter;
 
     private ChangeType changeTypeFilter;
 
@@ -210,7 +210,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         return this;
     }
 
-    public DiffTree setBoundsFilter(@Nullable ReferencedEnvelope bounds) {
+    public DiffTree setBoundsFilter(@Nullable Envelope bounds) {
         this.boundsFilter = bounds;
         return this;
     }
@@ -318,8 +318,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                     consumer = new ChangeTypeFilteringDiffConsumer(changeTypeFilter, consumer);
                 }
                 if (boundsFilter != null) {
-                    consumer = new BoundsFilteringDiffConsumer(boundsFilter, consumer,
-                            objectDatabase());
+                    consumer = new BoundsFilteringDiffConsumer(boundsFilter, consumer);
                 }
                 if (!pathFilters.isEmpty()) {// evaluated the former
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);

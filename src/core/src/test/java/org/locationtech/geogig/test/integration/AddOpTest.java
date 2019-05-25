@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.opengis.feature.Feature;
 
 import com.google.common.collect.Lists;
 
@@ -152,7 +152,7 @@ public class AddOpTest extends RepositoryTestCase {
         List<DiffEntry> unstaged = toList(repo.workingTree().getUnstaged(null));
         assertEquals(2, unstaged.size());
         assertEquals(linesName, unstaged.get(0).newName());
-        assertEquals(lines1.getIdentifier().getID(), unstaged.get(1).newName());
+        assertEquals(lines1.getId(), unstaged.get(1).newName());
     }
 
     @Test

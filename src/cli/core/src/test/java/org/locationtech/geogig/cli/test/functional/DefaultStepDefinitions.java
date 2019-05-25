@@ -44,6 +44,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -73,7 +74,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.Feature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -654,9 +654,9 @@ public class DefaultStepDefinitions {
     @Given("^I have a patch file$")
     public void I_have_a_patch_file() throws Throwable {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1.getProperty("sp").getValue();
+        Object oldValue = points1.getAttribute("sp");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
         FeatureDiff feaureDiff = new FeatureDiff(path, map,

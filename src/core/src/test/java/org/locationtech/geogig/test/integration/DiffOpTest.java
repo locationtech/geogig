@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -29,8 +30,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
@@ -113,7 +112,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertNull(de.getOldObject());
         assertNotNull(de.getNewObject());
 
-        String expectedPath = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String expectedPath = NodeRef.appendChild(pointsName, points1.getId());
         assertEquals(expectedPath, de.newPath());
 
         assertEquals(DiffEntry.ChangeType.ADDED, de.changeType());
@@ -157,7 +156,7 @@ public class DiffOpTest extends RepositoryTestCase {
         List<DiffEntry> difflist = toList(
                 diffOp.setOldVersion(addCommit.getId()).setNewVersion(deleteCommit.getId()).call());
 
-        final String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        final String path = NodeRef.appendChild(pointsName, points1.getId());
 
         assertNotNull(difflist);
         assertEquals(1, difflist.size());
@@ -184,7 +183,7 @@ public class DiffOpTest extends RepositoryTestCase {
         List<DiffEntry> difflist = toList(
                 diffOp.setOldVersion(deleteCommit.getId()).setNewVersion(addCommit.getId()).call());
 
-        final String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        final String path = NodeRef.appendChild(pointsName, points1.getId());
 
         // then the diff should report an ADD instead of a DELETE
         assertNotNull(difflist);
@@ -216,7 +215,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertNotNull(difflist);
         assertEquals(1, difflist.size());
         DiffEntry de = difflist.get(0);
-        String expectedPath = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String expectedPath = NodeRef.appendChild(pointsName, points1.getId());
         assertEquals(expectedPath, de.newPath());
 
         assertEquals(DiffEntry.ChangeType.MODIFIED, de.changeType());
@@ -295,7 +294,7 @@ public class DiffOpTest extends RepositoryTestCase {
         // filter on feature1_1, it didn't change between commit2 and commit1
 
         diffOp.setOldVersion(commit1.getId()).setNewVersion(commit2.getId());
-        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getIdentifier().getID()));
+        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getId()));
 
         try (AutoCloseableIterator<DiffEntry> diffs = diffOp.call()) {
             assertFalse(diffs.hasNext());
@@ -310,12 +309,12 @@ public class DiffOpTest extends RepositoryTestCase {
         insertAndAdd(lines1);
         final RevCommit commit2 = geogig.command(CommitOp.class).setAll(true).call();
 
-        ((SimpleFeature) points1).setAttribute("sp", "modified");
+        ((Feature) points1).setAttribute("sp", "modified");
         final ObjectId modifiedOid = insertAndAdd(points1);
         final RevCommit commit3 = geogig.command(CommitOp.class).setAll(true).call();
 
         diffOp.setOldVersion(commit1.getId()).setNewVersion(commit3.getId());
-        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getIdentifier().getID()));
+        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getId()));
 
         List<DiffEntry> diffs;
         DiffEntry diff;
@@ -330,7 +329,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertTrue(deleteAndAdd(points1));
         final RevCommit commit4 = geogig.command(CommitOp.class).setAll(true).call();
         diffOp.setOldVersion(commit2.getId()).setNewVersion(commit4.getId());
-        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getIdentifier().getID()));
+        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getId()));
         diffs = toList(diffOp.call());
         assertEquals(1, diffs.size());
         diff = diffs.get(0);
@@ -340,7 +339,7 @@ public class DiffOpTest extends RepositoryTestCase {
 
         // invert the order of old and new commit
         diffOp.setOldVersion(commit4.getId()).setNewVersion(commit1.getId());
-        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getIdentifier().getID()));
+        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getId()));
         diffs = toList(diffOp.call());
         assertEquals(1, diffs.size());
         diff = diffs.get(0);
@@ -350,7 +349,7 @@ public class DiffOpTest extends RepositoryTestCase {
 
         // different commit range
         diffOp.setOldVersion(commit4.getId()).setNewVersion(commit3.getId());
-        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getIdentifier().getID()));
+        diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getId()));
         diffs = toList(diffOp.call());
         assertEquals(1, diffs.size());
         diff = diffs.get(0);

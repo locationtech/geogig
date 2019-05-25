@@ -14,12 +14,13 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.locationtech.geogig.data.FeatureBuilder;
-import org.locationtech.geogig.feature.AttributeType;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
@@ -31,12 +32,6 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.internal.ObjectStoreDiffObjectIterator;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.FeatureTypeFactory;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import lombok.NonNull;
 
@@ -44,12 +39,11 @@ import lombok.NonNull;
  * This is the main entry class for retrieving features from GeoGIG.
  *
  * It comes in 3 flavors; a) getGeoGIGFeatures - (low level) this returns FeatureInfos for the
- * requested NodeRefs b) getGeoToolsFeatures - (high level) this returns SimpleFeatures for the
- * requested NodeRefs. The FeatureType Metadata is retrieved from the ObjectDB to construct the
- * Features.
+ * requested NodeRefs b) getGeoToolsFeatures - (high level) this returns Features for the requested
+ * NodeRefs. The FeatureType Metadata is retrieved from the ObjectDB to construct the Features.
  *
- * c) getGeoToolsFeatures w/Schema - (high level) this returns SimpleFeatures for the requested
- * NodeRefs. It ignores the FeatureType Metadata and uses the supplied schema to construct features.
+ * c) getGeoToolsFeatures w/Schema - (high level) this returns Features for the requested NodeRefs.
+ * It ignores the FeatureType Metadata and uses the supplied schema to construct features.
  */
 public class BulkFeatureRetriever {
     static final String FLATTENED_ATTNAME_PREFIX_NEW = "new_";
@@ -105,7 +99,7 @@ public class BulkFeatureRetriever {
     }
 
     /**
-     * Given a bunch of NodeRefs, create SimpleFeatures from the results. The result might be mixed
+     * Given a bunch of NodeRefs, create Features from the results. The result might be mixed
      * FeatureTypes
      *
      * This retrieves FeatureType info from the ObjectDatabase as needed.
@@ -115,14 +109,14 @@ public class BulkFeatureRetriever {
      * @param refs
      * @return
      */
-    public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(Iterator<NodeRef> refs) {
+    public AutoCloseableIterator<Feature> getGeoToolsFeatures(Iterator<NodeRef> refs) {
         AutoCloseableIterator<ObjectInfo<RevFeature>> fis = getGeoGIGFeatures(refs);
         MultiFeatureTypeBuilder builder = new MultiFeatureTypeBuilder(odb);
         return AutoCloseableIterator.transform(fis, builder);
     }
 
     /**
-     * Given a bunch of NodeRefs, create SimpleFeatures from the results. This builds a particular
+     * Given a bunch of NodeRefs, create Features from the results. This builds a particular
      * FeatureType from the ObjectDatabase.
      *
      * This DOES NOT retrieves FeatureType info from the ObjectDatabase.
@@ -134,17 +128,13 @@ public class BulkFeatureRetriever {
      * @param geometryFactory the geometry factory to create geometry attributes with
      * @return
      */
-    public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(
-            AutoCloseableIterator<NodeRef> refs, RevFeatureType nativeType,
-            @Nullable Name typeNameOverride, GeometryFactory geometryFactory) {
-
-        // builder for this particular schema
-        FeatureBuilder featureBuilder = new FeatureBuilder(nativeType, typeNameOverride);
+    public AutoCloseableIterator<Feature> getGeoToolsFeatures(AutoCloseableIterator<NodeRef> refs,
+            RevFeatureType nativeType, @Nullable Name typeNameOverride,
+            GeometryFactory geometryFactory) {
 
         // function that converts the FeatureInfo a feature of the given schema
-        Function<ObjectInfo<RevFeature>, SimpleFeature> funcBuildFeature = (input -> MultiFeatureTypeBuilder
-                .build(featureBuilder, input, geometryFactory));
-
+        Function<ObjectInfo<RevFeature>, Feature> funcBuildFeature = info -> Feature
+                .build(info.node().getName(), nativeType, info.object());
         AutoCloseableIterator<ObjectInfo<RevFeature>> fis = getGeoGIGFeatures(refs);
 
         return AutoCloseableIterator.transform(fis, funcBuildFeature);
@@ -182,71 +172,63 @@ public class BulkFeatureRetriever {
         return new ObjectStoreDiffObjectIterator<>(refs, type, leftDb, odb);
     }
 
-    public AutoCloseableIterator<SimpleFeature> getGeoToolsDiffFeatures(//@formatter:off
+    public AutoCloseableIterator<Feature> getGeoToolsDiffFeatures(//@formatter:off
             AutoCloseableIterator<DiffEntry> refs, 
             RevFeatureType nativeType, Name typeName,
             boolean flattenSchema, 
             @Nullable GeometryFactory geometryFactory) {//@formatter:on
 
-        SimpleFeatureType diffType;
+        FeatureType diffType;
         if (flattenSchema) {
-            diffType = buildFlattenedDiffFeatureType(typeName,
-                    (SimpleFeatureType) nativeType.type());
+            diffType = buildFlattenedDiffFeatureType(typeName, (FeatureType) nativeType.type());
         } else {
-            diffType = buildDiffFeatureType(typeName, (SimpleFeatureType) nativeType.type());
+            diffType = buildDiffFeatureType(typeName, (FeatureType) nativeType.type());
         }
         return getGeoToolsDiffFeatures(refs, nativeType, diffType, geometryFactory);
     }
 
-    public AutoCloseableIterator<SimpleFeature> getGeoToolsDiffFeatures(//@formatter:off
+    public AutoCloseableIterator<Feature> getGeoToolsDiffFeatures(//@formatter:off
             AutoCloseableIterator<DiffEntry> refs, 
             RevFeatureType nativeType,
-            SimpleFeatureType diffType, 
+            FeatureType diffType, 
             @Nullable GeometryFactory geometryFactory) {//@formatter:on
 
         boolean flattenedType = !isDiffFeatureType(diffType);
-        Function<DiffObjectInfo<RevFeature>, SimpleFeature> builder;
+        Function<DiffObjectInfo<RevFeature>, Feature> builder;
         if (flattenedType) {
-            builder = new DiffFeatureFlattenedBuilder(diffType, nativeType);
+            builder = new DiffFeatureFlattenedBuilder(diffType, nativeType.type());
         } else {
-
-            // builder for the "old" and "new" versions of each feature
-            FeatureBuilder featureBuilder = new FeatureBuilder(nativeType, null);
-
-            builder = new DiffFeatureBuilder(diffType, featureBuilder, geometryFactory);
+            builder = new DiffFeatureBuilder(diffType, nativeType.type(), geometryFactory);
         }
         AutoCloseableIterator<DiffObjectInfo<RevFeature>> fis = getDiffFeatures(refs);
 
         return AutoCloseableIterator.transform(fis, builder);
     }
 
-    private boolean isDiffFeatureType(SimpleFeatureType type) {
+    private boolean isDiffFeatureType(FeatureType type) {
         return isFeatureDescriptor(type.getDescriptor("old"))
                 && isFeatureDescriptor(type.getDescriptor("new"));
     }
 
-    private boolean isFeatureDescriptor(AttributeDescriptor descriptor) {
+    private boolean isFeatureDescriptor(PropertyDescriptor descriptor) {
         if (descriptor == null) {
             return false;
         }
-        AttributeType type = descriptor.getType();
-        boolean isFeature = type instanceof FeatureType;
-        return isFeature;
+        Class<?> binding = descriptor.getBinding();
+        return Feature.class.equals(binding);
     }
 
-    public static SimpleFeatureType buildFlattenedDiffFeatureType(Name typeName,
-            SimpleFeatureType nativeFeatureType) {
+    public static FeatureType buildFlattenedDiffFeatureType(Name typeName,
+            FeatureType nativeFeatureType) {
 
-        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        builder.setName(typeName);
+        FeatureTypeBuilder builder = FeatureType.builder().name(typeName);
         builder.add(DIFF_FEATURE_CHANGETYPE_ATTNAME, Integer.class);
-        List<AttributeDescriptor> atts = nativeFeatureType.getAttributeDescriptors();
-        for (AttributeDescriptor att : atts) {
+        List<PropertyDescriptor> atts = nativeFeatureType.getDescriptors();
+        for (PropertyDescriptor att : atts) {
             String name = att.getLocalName();
-            Class<?> binding = att.getType().getBinding();
-            if (att instanceof GeometryDescriptor) {
-                CoordinateReferenceSystem crs = ((GeometryDescriptor) att)
-                        .getCoordinateReferenceSystem();
+            Class<?> binding = att.getBinding();
+            if (att.isGeometryDescriptor()) {
+                CoordinateReferenceSystem crs = att.coordinateReferenceSystem();
                 builder.add(FLATTENED_ATTNAME_PREFIX_OLD + name, binding, crs);
                 builder.add(FLATTENED_ATTNAME_PREFIX_NEW + name, binding, crs);
             } else {
@@ -255,29 +237,30 @@ public class BulkFeatureRetriever {
             }
         }
 
-        SimpleFeatureType diffFeatureType = builder.buildFeatureType();
+        FeatureType diffFeatureType = builder.build();
         return diffFeatureType;
 
     }
 
-    public static SimpleFeatureType buildDiffFeatureType(Name typeName,
-            SimpleFeatureType nativeFeatureType) {
+    public static FeatureType buildDiffFeatureType(Name typeName, FeatureType nativeFeatureType) {
 
-        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        FeatureTypeFactory typeFactory = builder.getFeatureTypeFactory();
+        FeatureTypeBuilder builder = FeatureTypes.builder(nativeFeatureType);
         builder.add(DIFF_FEATURE_CHANGETYPE_ATTNAME, Integer.class);
 
-        AttributeDescriptor oldValDescriptor;
-        AttributeDescriptor newValDescriptor;
-        oldValDescriptor = typeFactory.createAttributeDescriptor(nativeFeatureType,
-                new NameImpl("old"), 1, 1, true, null);
-        newValDescriptor = typeFactory.createAttributeDescriptor(nativeFeatureType,
-                new NameImpl("new"), 1, 1, true, null);
+        PropertyDescriptor oldValDescriptor;
+        Name oldName = new Name("old");
+        oldValDescriptor = PropertyDescriptor.builder().name(oldName).typeName(oldName)
+                .binding(Feature.class).minOccurs(1).maxOccurs(1).nillable(true).build();
+
+        PropertyDescriptor newValDescriptor;
+        Name newName = new Name("new");
+        newValDescriptor = PropertyDescriptor.builder().name(newName).typeName(newName)
+                .binding(Feature.class).minOccurs(1).maxOccurs(1).nillable(true).build();
 
         builder.add(oldValDescriptor);
         builder.add(newValDescriptor);
-        builder.setName(typeName);
-        SimpleFeatureType diffFeatureType = builder.buildFeatureType();
+        builder.name(typeName);
+        FeatureType diffFeatureType = builder.build();
         return diffFeatureType;
     }
 

@@ -14,27 +14,34 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import org.geotools.util.Converters;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
 /**
- * Test suite for {@link MapToStringConverterFactory}
+ * Test suite for {@link MapMarshaller}
  *
  */
-public class MapToStringConverterFactoryTest {
+public class MapMarshallerTest {
 
     @Test
     public void nullTest() {
-        assertNull(Converters.convert(null, Map.class));
-        assertNull(Converters.convert("", Map.class));
-        assertNull(Converters.convert(" ", Map.class));
+        assertNull(StringConverters.unmarshall(null, Map.class));
+        assertNull(StringConverters.unmarshall("", Map.class));
+        assertNull(StringConverters.unmarshall("    ", Map.class));
+    }
+
+    @Test
+    public void emptyTest() {
+        assertEquals(Collections.emptyMap(), StringConverters.unmarshall("{}", Map.class));
+        assertEquals(Collections.emptyMap(), StringConverters.unmarshall(" {} ", Map.class));
+        assertEquals(Collections.emptyMap(), StringConverters.unmarshall(" {  } ", Map.class));
     }
 
     @Test
@@ -48,13 +55,13 @@ public class MapToStringConverterFactoryTest {
         map.put("arrayval", new double[] { Math.PI, Double.MIN_VALUE, Double.MAX_VALUE });
         map.put("submap", ImmutableMap.of("submap1", "subvalue1", "submap2", new Long(789)));
 
-        assertNull(Converters.convert(map, Integer.class));
+        // assertNull(StringConverters.marshall(map, Integer.class));
 
-        String converted = Converters.convert(map, String.class);
+        String converted = StringConverters.marshall(map);
         assertNotNull(converted);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> roundTripped = Converters.convert(converted, Map.class);
+        Map<String, Object> roundTripped = StringConverters.unmarshall(converted, Map.class);
         assertNotNull(roundTripped);
 
         assertEquals(map.size(), roundTripped.size());

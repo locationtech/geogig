@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.NodeRef;
@@ -45,7 +46,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestPlatform;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -191,8 +191,7 @@ public class CLIContext {
             String parentPath = name.getLocalPart();
             RevFeatureType rft = RevFeatureType.builder().type(newType).build();
             geogig.getRepository().objectDatabase().put(rft);
-            String path = NodeRef.appendChild(parentPath,
-                    points1_FTmodified.getIdentifier().getID());
+            String path = NodeRef.appendChild(parentPath, points1_FTmodified.getId());
             FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(points1_FTmodified),
                     rft.getId(), path);
             workTree.insert(fi);
@@ -246,7 +245,7 @@ public class CLIContext {
                 FeatureType ft = f.getType();
                 RevFeatureType rft = types.get(ft);
                 String parentPath = ft.getName().getLocalPart();
-                String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
+                String path = NodeRef.appendChild(parentPath, f.getId());
                 FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(),
                         path);
                 workTree.insert(fi);
@@ -281,7 +280,7 @@ public class CLIContext {
             final WorkingTree workTree = geogig.getRepository().workingTree();
             Name name = f.getType().getName();
             String localPart = name.getLocalPart();
-            String id = f.getIdentifier().getID();
+            String id = f.getId();
             boolean existed = workTree.delete(localPart, id);
             return existed;
         } finally {

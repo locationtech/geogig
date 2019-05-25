@@ -2,18 +2,32 @@ package org.locationtech.geogig.geotools.adapt;
 
 import static org.geotools.referencing.crs.DefaultGeographicCRS.WGS84;
 
+import java.util.NoSuchElementException;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.geotools.referencing.wkt.Formattable;
 import org.locationtech.geogig.feature.Name;
+import org.locationtech.jts.geom.Envelope;
+import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import lombok.NonNull;
 
 class BaseAdapter {
+
+    public Envelope adapt(BoundingBox opengisBbox) {
+        if (opengisBbox == null) {
+            return null;
+        }
+        return new Envelope(opengisBbox.getMinX(), opengisBbox.getMaxX(), opengisBbox.getMinY(),
+                opengisBbox.getMaxY());
+    }
+
     public @NonNull org.opengis.feature.type.Name adapt(
             @NonNull org.locationtech.geogig.feature.Name name) {
         return new NameImpl(name.getNamespaceURI(), name.getLocalPart());
@@ -21,14 +35,18 @@ class BaseAdapter {
 
     public @NonNull org.locationtech.geogig.feature.Name adapt(
             @NonNull org.opengis.feature.type.Name name) {
-        return new Name(name.getNamespaceURI(), name.getLocalPart());
+        return Name.valueOf(name.getNamespaceURI(), name.getLocalPart());
     }
 
     public @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem adapt(
-            @NonNull org.locationtech.geogig.feature.CoordinateReferenceSystem crs) {
-
+            org.locationtech.geogig.crs.CoordinateReferenceSystem crs) {
+        if (crs == null) {
+            return null;
+        }
         CoordinateReferenceSystem opengisCrs = null;
-
+        if (crs.isNull()) {
+            return DefaultEngineeringCRS.GENERIC_2D;
+        }
         if (crs.getSrsIdentifier() != null) {
             try {
                 opengisCrs = CRS.decode(crs.getSrsIdentifier(), true);
@@ -51,32 +69,40 @@ class BaseAdapter {
     // To compensate that, we replace any instance of it with a CRS built using the
     // EPSG:4326 code, which works consistently when storing it and later recovering it from
     // the database.
-    public @NonNull org.locationtech.geogig.feature.CoordinateReferenceSystem adapt(
-            @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem crs) {
+    public @NonNull org.locationtech.geogig.crs.CoordinateReferenceSystem adapt(
+            @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem gtCrs) {
 
+        if (gtCrs == null) {
+            return null;
+        }
         String srsName = null;
         String wkt = null;
-        if (crs != null) {
-            final boolean compareMetadata = false;
-            if (crs instanceof AbstractIdentifiedObject
-                    && WGS84.equals((AbstractIdentifiedObject) crs, compareMetadata)) {
-                srsName = "EPSG:4326";
-            } else {
-                srsName = CRS.toSRS(crs);
-                if (srsName == null) {
-                    // fall back to WKT
-                    if (crs instanceof Formattable) {
-                        wkt = ((Formattable) crs).toWKT(Formattable.SINGLE_LINE);
-                    } else {
-                        wkt = crs.toWKT();
-                    }
+        final boolean compareMetadata = false;
+        if (gtCrs instanceof AbstractIdentifiedObject
+                && WGS84.equals((AbstractIdentifiedObject) gtCrs, compareMetadata)) {
+            srsName = "EPSG:4326";
+        } else {
+            srsName = CRS.toSRS(gtCrs);
+            if (srsName == null) {
+                // fall back to WKT
+                if (gtCrs instanceof Formattable) {
+                    wkt = ((Formattable) gtCrs).toWKT(Formattable.SINGLE_LINE);
+                } else {
+                    wkt = gtCrs.toWKT();
                 }
             }
-
         }
-        return org.locationtech.geogig.feature.CoordinateReferenceSystem.builder()
-                .srsIdentifier(srsName).WKT(wkt).build();
-
+        org.locationtech.geogig.crs.CoordinateReferenceSystem crs;
+        if (srsName == null) {
+            crs = org.locationtech.geogig.crs.CRS.fromWKT(wkt);
+        } else {
+            try {
+                crs = org.locationtech.geogig.crs.CRS.decode(srsName);
+            } catch (NoSuchElementException e) {
+                crs = org.locationtech.geogig.crs.CRS.fromWKT(wkt);
+            }
+        }
+        return crs;
     }
 
 }

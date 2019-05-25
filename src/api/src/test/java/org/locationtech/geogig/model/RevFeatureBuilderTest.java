@@ -15,13 +15,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.feature.Feature;
-import org.locationtech.geogig.feature.Feature.FeatureBuilder;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.jts.geom.Geometry;
@@ -40,8 +36,7 @@ public class RevFeatureBuilderTest {
     }
 
     protected Feature feature(FeatureType type, String id, Object... values) {
-        FeatureBuilder builder = Feature.builder().type(type);
-        List<Object> vs = new ArrayList<>();
+        Feature f = Feature.build(id, type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
             if (type.getDescriptor(i).isGeometryDescriptor()) {
@@ -49,9 +44,9 @@ public class RevFeatureBuilderTest {
                     value = geom((String) value);
                 }
             }
-            vs.add(value);
+            f.setAttribute(i, value);
         }
-        return builder.id(id).values(vs).build();
+        return f;
     }
 
     protected Geometry geom(String wkt) {
@@ -69,7 +64,7 @@ public class RevFeatureBuilderTest {
             fail("expected NullPointerException on null feature");
         } catch (NullPointerException e) {
             assertTrue(e.getMessage(),
-                    e.getMessage().contains("feature is marked @NonNull but is null"));
+                    e.getMessage().contains("feature is marked non-null but is null"));
         }
     }
 
@@ -107,7 +102,7 @@ public class RevFeatureBuilderTest {
         RevFeature feature = RevFeature.builder().build(f);
 
         RevFeatureBuilder b = RevFeature.builder();
-        b.addAll(f.getValues());
+        f.forEach(b::addValue);
         RevFeature built = b.build();
         assertEquals(feature, built);
 
@@ -124,7 +119,8 @@ public class RevFeatureBuilderTest {
         RevFeatureBuilder b = RevFeature.builder();
         b.addValue(1000);
         b.addValue("str");
-        b.reset().addAll(f.getValues());
+        b.reset();
+        f.forEach(b::addValue);
         RevFeature built = b.build();
         assertEquals(feature, built);
 
@@ -139,13 +135,17 @@ public class RevFeatureBuilderTest {
         RevFeature feature = RevFeature.builder().build(f);
 
         RevFeatureBuilder b = RevFeature.builder();
-        b.addAll(f.getValues());
+        f.forEach(b::addValue);
 
         RevFeature builtWithList = b.build();
         assertEquals(feature, builtWithList);
 
         b.reset();
-        b.addAll(f.getValues().toArray(new Object[f.getAttributeCount()]));
+        Object[] array = new Object[f.getAttributeCount()];
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            array[i] = f.getAttribute(i);
+        }
+        b.addAll(array);
         RevFeature builtWithArray = b.build();
         assertEquals(feature, builtWithArray);
 

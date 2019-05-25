@@ -83,7 +83,7 @@ public class SimpleFeatureTypeAdapter extends BaseAdapter {
         AttributeType superType = null;
         InternationalString description = null;
         if (d.isGeometryDescriptor()) {
-            CoordinateReferenceSystem crs = adapt(d.getCoordinateReferenceSystem().get());
+            CoordinateReferenceSystem crs = adapt(d.getCoordinateReferenceSystem());
             return FTF.createGeometryType(name, binding, crs, isIdentifiable, isAbstract,
                     restrictions, superType, description);
         }
@@ -101,7 +101,7 @@ public class SimpleFeatureTypeAdapter extends BaseAdapter {
                 .nillable(d.isNillable()).typeName(adapt(type.getName()))
                 .binding(type.getBinding());
 
-        org.locationtech.geogig.feature.CoordinateReferenceSystem crs = null;
+        org.locationtech.geogig.crs.CoordinateReferenceSystem crs = null;
         if (d instanceof GeometryDescriptor) {
             crs = adapt(((GeometryDescriptor) d).getCoordinateReferenceSystem());
         }

@@ -23,29 +23,39 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.junit.Test;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import lombok.NonNull;
+
 public class ExportOpTest extends RepositoryTestCase {
+
+    SimpleFeatureType gtPointsType;
 
     @Override
     protected void setUpInternal() throws Exception {
+        gtPointsType = GT.adapt(pointsType);
     }
 
     @Test
     public void testExportFromWorkingTree() throws Exception {
-        Feature[] points = new Feature[] { points1, points2, points3 };
-        for (Feature feature : points) {
+        org.locationtech.geogig.feature.Feature[] points = new org.locationtech.geogig.feature.Feature[] {
+                points1, points2, points3 };
+        for (org.locationtech.geogig.feature.Feature feature : points) {
             insert(feature);
         }
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -60,13 +70,14 @@ public class ExportOpTest extends RepositoryTestCase {
 
     @Test
     public void testExportFromHEAD() throws Exception {
-        Feature[] points = new Feature[] { points1, points2, points3 };
-        for (Feature feature : points) {
+        org.locationtech.geogig.feature.Feature[] points = new org.locationtech.geogig.feature.Feature[] {
+                points1, points2, points3 };
+        for (org.locationtech.geogig.feature.Feature feature : points) {
             insert(feature);
         }
         geogig.command(AddOp.class).call();
         geogig.command(CommitOp.class).setAll(true).call();
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -82,20 +93,25 @@ public class ExportOpTest extends RepositoryTestCase {
 
     @Test
     public void testExportWithBBOXFilter() throws Exception {
-        Feature[] points = new Feature[] { points1, points2, points3 };
-        for (Feature feature : points) {
+        org.locationtech.geogig.feature.Feature[] points = new org.locationtech.geogig.feature.Feature[] {
+                points1, points2, points3 };
+        for (org.locationtech.geogig.feature.Feature feature : points) {
             insert(feature);
         }
         geogig.command(AddOp.class).call();
         geogig.command(CommitOp.class).setAll(true).call();
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
 
-        ReferencedEnvelope bbox = (ReferencedEnvelope) points1.getBounds();
+        @NonNull
+        Envelope bbox = points1.getDefaultGeometryBounds();
+        ReferencedEnvelope refBbox = new ReferencedEnvelope(
+                gtPointsType.getCoordinateReferenceSystem());
+        refBbox.init(bbox);
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath("HEAD:" + pointsName)
-                .setBBoxFilter(bbox).call();
+                .setBBoxFilter(refBbox).call();
 
         featureSource = dataStore.getFeatureSource(typeName);
         assertEquals(1, featureSource.getCount(Query.ALL));
@@ -107,23 +123,18 @@ public class ExportOpTest extends RepositoryTestCase {
         // does not contain the integer attribute.
         String simplifiedPointsName = "simplifiedPoints";
         String simplifiedPointsTypeSpec = "sp:String,pp:Point:srid=4326";
-        SimpleFeatureType simplifiedPointsType = DataUtilities.createType(pointsNs,
-                simplifiedPointsName, simplifiedPointsTypeSpec);
+        FeatureType simplifiedPointsType = FeatureTypes.createType(
+                pointsNs + "#" + simplifiedPointsName, simplifiedPointsTypeSpec.split(","));
 
-        Feature simplifiedPoints1 = feature(simplifiedPointsType, ((SimpleFeature) points1).getID(),
-                ((SimpleFeature) points1).getAttribute(0),
-                ((SimpleFeature) points1).getAttribute(2));
-        Feature simplifiedPoints2 = feature(simplifiedPointsType, ((SimpleFeature) points2).getID(),
-                ((SimpleFeature) points2).getAttribute(0),
-                ((SimpleFeature) points2).getAttribute(2));
-        Feature simplifiedPoints3 = feature(simplifiedPointsType, ((SimpleFeature) points3).getID(),
-                ((SimpleFeature) points3).getAttribute(0),
-                ((SimpleFeature) points3).getAttribute(2));
+        org.locationtech.geogig.feature.Feature simplifiedPoints1 = feature(simplifiedPointsType,
+                points1.getId(), points1.getAttribute(0), points1.getAttribute(2));
+        org.locationtech.geogig.feature.Feature simplifiedPoints2 = feature(simplifiedPointsType,
+                points2.getId(), points2.getAttribute(0), points2.getAttribute(2));
+        org.locationtech.geogig.feature.Feature simplifiedPoints3 = feature(simplifiedPointsType,
+                points3.getId(), points3.getAttribute(0), points3.getAttribute(2));
 
-        Feature[] simplifiedPoints = new Feature[] { simplifiedPoints1, simplifiedPoints2,
-                simplifiedPoints3 };
-
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(simplifiedPointsType);
+        SimpleFeatureType gtSimplifiedType = GT.adapt(simplifiedPointsType);
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(gtSimplifiedType);
         final Function<Feature, Optional<Feature>> function = (feature) -> {
             SimpleFeature simpleFeature = (SimpleFeature) feature;
             featureBuilder.add(simpleFeature.getAttribute(0));
@@ -131,11 +142,9 @@ public class ExportOpTest extends RepositoryTestCase {
             return Optional.of((Feature) featureBuilder.buildFeature(null));
         };
 
-        Feature[] points = new Feature[] { points1, points2, points3 };
-        for (Feature feature : points) {
-            insert(feature);
-        }
-        MemoryDataStore dataStore = new MemoryDataStore(simplifiedPointsType);
+        insert(points1, points2, points3);
+
+        MemoryDataStore dataStore = new MemoryDataStore(gtSimplifiedType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -144,9 +153,10 @@ public class ExportOpTest extends RepositoryTestCase {
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
-        assertEquals(featureCollection.size(), points.length);
+        assertEquals(3, featureCollection.size());
         SimpleFeatureIterator features = featureCollection.features();
-        assertTrue(collectionsAreEqual(features, simplifiedPoints));
+        assertTrue(collectionsAreEqual(features, simplifiedPoints1, simplifiedPoints2,
+                simplifiedPoints3));
 
         // check for exceptions when using a function that returns features with a wrong featuretype
         try {
@@ -171,7 +181,8 @@ public class ExportOpTest extends RepositoryTestCase {
 
     }
 
-    private boolean collectionsAreEqual(SimpleFeatureIterator features, Feature[] points) {
+    private boolean collectionsAreEqual(SimpleFeatureIterator features,
+            org.locationtech.geogig.feature.Feature... points) {
         // features are not iterated in the same order as the original set, so
         // we just do pairwise comparison to check that all the original features
         // are represented in the exported feature store
@@ -180,7 +191,7 @@ public class ExportOpTest extends RepositoryTestCase {
             List<Object> attributesExported = features.next().getAttributes();
             for (int i = 0; i < points.length; i++) {
                 found = true;
-                List<Object> attributesOriginal = ((SimpleFeature) points[i]).getAttributes();
+                List<Object> attributesOriginal = points[i].getAttributes();
                 for (int j = 0; j < attributesExported.size(); j++) {
                     Object attributeExported = attributesExported.get(j);
                     Object attributeOriginal = attributesOriginal.get(j);
@@ -202,7 +213,7 @@ public class ExportOpTest extends RepositoryTestCase {
 
     @Test
     public void testExportFromWrongFeatureType() throws Exception {
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -218,12 +229,10 @@ public class ExportOpTest extends RepositoryTestCase {
     @Test
     public void testExportFromTreeWithSeveralFeatureTypesUsingDefaultFeatureType()
             throws Exception {
-        Feature[] points = new Feature[] { points2, points1B, points3 };
-        for (Feature feature : points) {
-            insert(feature);
-        }
-        Feature[] expectedPoints = new Feature[] { points2, points3 };
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+
+        insert(points2, points1B, points3);
+
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -232,18 +241,16 @@ public class ExportOpTest extends RepositoryTestCase {
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
-        assertEquals(featureCollection.size(), expectedPoints.length);
+        assertEquals(2, featureCollection.size());
         SimpleFeatureIterator features = featureCollection.features();
-        assertTrue(collectionsAreEqual(features, expectedPoints));
+        assertTrue(collectionsAreEqual(features, points2, points3));
     }
 
     @Test
     public void testExportWithAlterUsingDefaultFeatureType() throws Exception {
-        Feature[] points = new Feature[] { points2, points1B, points3 };
-        for (Feature feature : points) {
-            insert(feature);
-        }
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        insert(points2, points1B, points3);
+
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -252,18 +259,17 @@ public class ExportOpTest extends RepositoryTestCase {
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
-        assertEquals(featureCollection.size(), points.length);
+        assertEquals(3, featureCollection.size());
         SimpleFeatureIterator features = featureCollection.features();
-        assertTrue(collectionsAreEqual(features, points));
+        assertTrue(collectionsAreEqual(features, points2, points1B, points3));
     }
 
     @Test
     public void testExportWithAlterUsingFeatureTypeId() throws Exception {
-        Feature[] points = new Feature[] { points2, points1B, points3 };
-        for (Feature feature : points) {
-            insert(feature);
-        }
-        MemoryDataStore dataStore = new MemoryDataStore(modifiedPointsType);
+        insert(points2, points1B, points3);
+
+        SimpleFeatureType gtModifiedPointsType = GT.adapt(modifiedPointsType);
+        MemoryDataStore dataStore = new MemoryDataStore(gtModifiedPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -274,7 +280,7 @@ public class ExportOpTest extends RepositoryTestCase {
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
-        assertEquals(featureCollection.size(), points.length);
+        assertEquals(3, featureCollection.size());
         SimpleFeatureIterator features = featureCollection.features();
         while (features.hasNext()) {
             List<Object> attributes = features.next().getAttributes();
@@ -285,12 +291,9 @@ public class ExportOpTest extends RepositoryTestCase {
 
     @Test
     public void testExportFromTreeWithSeveralFeatureTypesUsingFeatureTypeId() throws Exception {
-        Feature[] points = new Feature[] { points2, points1B, points3 };
-        for (Feature feature : points) {
-            insert(feature);
-        }
-        Feature[] expectedPoints = new Feature[] { points1B };
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        insert(points2, points1B, points3);
+
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -301,18 +304,16 @@ public class ExportOpTest extends RepositoryTestCase {
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
-        assertEquals(expectedPoints.length, featureCollection.size());
+        assertEquals(1, featureCollection.size());
         SimpleFeatureIterator features = featureCollection.features();
-        assertTrue(collectionsAreEqual(features, expectedPoints));
+        assertTrue(collectionsAreEqual(features, points1B));
     }
 
     @Test
     public void testExportFromTreeWithSeveralFeatureTypesUsingNonexistantTypeId() throws Exception {
-        Feature[] points = new Feature[] { points2, points1B, points3 };
-        for (Feature feature : points) {
-            insert(feature);
-        }
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        insert(points2, points1B, points3);
+
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
@@ -328,11 +329,9 @@ public class ExportOpTest extends RepositoryTestCase {
 
     @Test
     public void testExportFromTreeWithSeveralFeatureTypes() throws Exception {
-        Feature[] points = new Feature[] { points2, points1B, points3 };
-        for (Feature feature : points) {
-            insert(feature);
-        }
-        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        insert(points2, points1B, points3);
+
+        MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;

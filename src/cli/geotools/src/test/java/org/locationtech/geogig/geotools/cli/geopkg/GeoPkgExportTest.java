@@ -32,6 +32,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.geotools.geopkg.AuditTable;
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
 import org.locationtech.geogig.model.ObjectId;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.collect.Lists;
@@ -95,7 +95,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         // Verify GeoPackage
         DataStore store = store(geoPkgFile);
         try {
-            assertFeatures(store, pointsType.getTypeName(), points1, points2, points3);
+            assertFeatures(store, pointsType.getName().getLocalPart(), points1, points2, points3);
         } finally {
             store.dispose();
         }
@@ -140,8 +140,8 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         // Verify GeoPackage
         DataStore store = store(geoPkgFile);
         try {
-            assertFeatures(store, pointsType.getTypeName(), points1, points2, points3);
-            assertFeatures(store, linesType.getTypeName(), lines1, lines2, lines3);
+            assertFeatures(store, pointsType.getName().getLocalPart(), points1, points2, points3);
+            assertFeatures(store, linesType.getName().getLocalPart(), lines1, lines2, lines3);
         } finally {
             store.dispose();
         }
@@ -175,7 +175,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         // Verify GeoPackage
         DataStore store = store(geoPkgFile);
         try {
-            assertFeatures(store, pointsType.getTypeName(), lines1, lines2, lines3);
+            assertFeatures(store, pointsType.getName().getLocalPart(), lines1, lines2, lines3);
         } finally {
             store.dispose();
         }
@@ -198,7 +198,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         // Verify GeoPackage
         JDBCDataStore store = (JDBCDataStore) store(geoPkgFile);
         try {
-            assertFeatures(store, pointsType.getTypeName(), points1, points2, points3);
+            assertFeatures(store, pointsType.getName().getLocalPart(), points1, points2, points3);
 
             Transaction gttx = new DefaultTransaction();
             try (Connection connection = store.getConnection(gttx);
@@ -225,8 +225,8 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         return support.createDataStore(result);
     }
 
-    private void assertFeatures(DataStore store, String typeName, Feature... expected)
-            throws Exception {
+    private void assertFeatures(DataStore store, String typeName,
+            org.locationtech.geogig.feature.Feature... expected) throws Exception {
         try (Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
                 GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
             Map<String, String> mappings = metadata.getFidMappings(typeName);
@@ -234,10 +234,10 @@ public class GeoPkgExportTest extends RepositoryTestCase {
             SimpleFeatureSource source = store.getFeatureSource(typeName);
             SimpleFeatureCollection features = source.getFeatures();
 
-            Map<String, Feature> expectedFeatures;
+            Map<String, org.locationtech.geogig.feature.Feature> expectedFeatures;
             {
-                List<Feature> list = Lists.newArrayList(expected);
-                expectedFeatures = Maps.uniqueIndex(list, (f) -> ((SimpleFeature) f).getID());
+                List<org.locationtech.geogig.feature.Feature> list = Lists.newArrayList(expected);
+                expectedFeatures = Maps.uniqueIndex(list, Feature::getId);
             }
             Set<String> actualFeatureIDs = new HashSet<String>();
             {

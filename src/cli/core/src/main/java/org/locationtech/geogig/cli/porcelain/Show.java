@@ -23,6 +23,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.RevCommit;
@@ -37,9 +38,6 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -103,11 +101,9 @@ public class Show extends AbstractCommand implements CLICommand {
                         Optional<Object> value = feature.get(i);
                         PropertyDescriptor attrib = attribs.get(i);
                         ansi.a(attrib.getName()).newline();
-                        PropertyType attrType = attrib.getType();
-                        String typeName = FieldType.forBinding(attrType.getBinding()).name();
-                        if (attrType instanceof GeometryType) {
-                            GeometryType gt = (GeometryType) attrType;
-                            CoordinateReferenceSystem crs = gt.getCoordinateReferenceSystem();
+                        String typeName = FieldType.forBinding(attrib.getBinding()).name();
+                        if (attrib.isGeometryDescriptor()) {
+                            CoordinateReferenceSystem crs = attrib.coordinateReferenceSystem();
                             String crsText = CrsTextSerializer.serialize(crs);
                             ansi.a(typeName).a(" ").a(crsText).newline();
                         } else {
@@ -237,7 +233,7 @@ public class Show extends AbstractCommand implements CLICommand {
         ansi.a(useDefaultKeyword ? "DEFAULT " : "").a("FEATURE TYPE ATTRIBUTES").newline();
         for (PropertyDescriptor attrib : attribs) {
             ansi.fg(Color.YELLOW).a(attrib.getName() + ": ").reset()
-                    .a("<" + FieldType.forBinding(attrib.getType().getBinding()) + ">").newline();
+                    .a("<" + FieldType.forBinding(attrib.getBinding()) + ">").newline();
         }
     }
 

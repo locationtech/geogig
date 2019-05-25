@@ -32,17 +32,16 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.jts.WKTReader2;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
+import org.locationtech.geogig.feature.FeatureTypes;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
@@ -66,9 +65,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -102,7 +99,7 @@ public abstract class RevObjectSerializerConformanceTest {
             "timestamp:java.sql.Timestamp," + //
             "uuid:java.util.UUID";
 
-    protected SimpleFeatureType featureType1;
+    protected FeatureType featureType1;
 
     protected Feature feature1_1;
 
@@ -111,7 +108,7 @@ public abstract class RevObjectSerializerConformanceTest {
             + "bint:java.math.BigInteger," + "pp:Point:srid=4326," + "lng:java.lang.Long,"
             + "uuid:java.util.UUID";
 
-    private SimpleFeatureType featureType;
+    private FeatureType featureType;
 
     private RevTree tree1_leaves;
 
@@ -134,7 +131,7 @@ public abstract class RevObjectSerializerConformanceTest {
                 RevObjectTestSupport.hashString("first parent"));
 
         /* now we will setup our feature types and test features. */
-        featureType1 = DataUtilities.createType(namespace, typeName, typeSpec1);
+        featureType1 = FeatureTypes.createType(namespace + "#" + typeName, typeSpec1.split(","));
         // have to store timestamp in a variable since the nanos field is only accessible via setter
         // and getter
         java.sql.Timestamp timestamp = new java.sql.Timestamp(1264396155228L);
@@ -156,7 +153,7 @@ public abstract class RevObjectSerializerConformanceTest {
                 new java.sql.Time(57355228L), //
                 timestamp, //
                 UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"));
-        featureType = DataUtilities.createType(namespace, typeName, typeSpec);
+        featureType = FeatureTypes.createType(namespace + "#" + typeName, typeSpec.split(","));
 
         ImmutableList<Node> features = ImmutableList.of(RevObjectFactory.defaultInstance()
                 .createNode("foo", RevObjectTestSupport.hashString("nodeid"),
@@ -358,29 +355,28 @@ public abstract class RevObjectSerializerConformanceTest {
     }
 
     private Geometry geom(String wkt) throws ParseException {
-        Geometry value = new WKTReader2().read(wkt);
+        Geometry value = new WKTReader().read(wkt);
         return value;
     }
 
-    protected Feature feature(SimpleFeatureType type, String id, Object... values)
-            throws ParseException {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    protected Feature feature(FeatureType type, String id, Object... values) throws ParseException {
+        Feature feature = Feature.build(id, type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
+            if (type.getDescriptor(i).isGeometryDescriptor()) {
                 if (value instanceof String) {
                     value = geom((String) value);
                 }
             }
-            builder.set(i, value);
+            feature.setAttribute(i, value);
         }
-        return builder.buildFeature(id);
+        return feature;
     }
 
     @Test
     public void testLargeStringValue() throws Exception {
 
-        SimpleFeatureType type = DataUtilities.createType("LongStringType", "clob:String");
+        FeatureType type = FeatureTypes.createType("LongStringType", "clob:String");
 
         final int length = 256 * 1024;
         final String largeString = Strings.repeat("a", length);
@@ -410,8 +406,8 @@ public abstract class RevObjectSerializerConformanceTest {
     @Test
     public void testFeatureMapAttribute() throws Exception {
 
-        SimpleFeatureType featureType = DataUtilities.createType("http://geogig.org/test",
-                "TestType", "str:String, map:java.util.Map");
+        FeatureType featureType = FeatureTypes.createType("http://geogig.org/test#TestType",
+                "str:String", "map:java.util.Map");
 
         Map<String, Object> map1, map2, map3;
         map1 = new HashMap<>();
@@ -511,26 +507,26 @@ public abstract class RevObjectSerializerConformanceTest {
         RevFeatureType rft = (RevFeatureType) serializer.read(revFeatureType.getId(), input);
 
         assertNotNull(rft);
-        SimpleFeatureType serializedFeatureType = (SimpleFeatureType) rft.type();
+        FeatureType serializedFeatureType = (FeatureType) rft.type();
         assertEquals(serializedFeatureType.getDescriptors().size(),
                 featureType.getDescriptors().size());
 
         for (int i = 0; i < featureType.getDescriptors().size(); i++) {
-            assertEquals(featureType.getDescriptor(i), serializedFeatureType.getDescriptor(i));
+            PropertyDescriptor expected = featureType.getDescriptor(i);
+            PropertyDescriptor actual = serializedFeatureType.getDescriptor(i);
+            assertEquals(expected, actual);
         }
 
         assertEquals(featureType.getGeometryDescriptor(),
                 serializedFeatureType.getGeometryDescriptor());
-        assertEquals(featureType.getCoordinateReferenceSystem(),
-                serializedFeatureType.getCoordinateReferenceSystem());
     }
 
     @Test
     public void testFeatureTypeSerializationWGS84() throws Exception {
-        SimpleFeatureTypeBuilder ftb = new SimpleFeatureTypeBuilder();
-        ftb.add("geom", Polygon.class, DefaultGeographicCRS.WGS84);
-        ftb.setName("type");
-        SimpleFeatureType ftype = ftb.buildFeatureType();
+        FeatureTypeBuilder ftb = FeatureType.builder();
+        ftb.add("geom", Polygon.class, CoordinateReferenceSystem.WGS84);
+        ftb.localName("type");
+        FeatureType ftype = ftb.build();
         RevFeatureType revFeatureType = RevFeatureType.builder().type(ftype).build();
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -545,7 +541,8 @@ public abstract class RevObjectSerializerConformanceTest {
         assertNotNull(rft);
         FeatureType serializedFeatureType = rft.type();
 
-        assertEquals("EPSG:4326", CRS.toSRS(serializedFeatureType.getCoordinateReferenceSystem()));
+        assertEquals("EPSG:4326", serializedFeatureType.getGeometryDescriptor().get()
+                .coordinateReferenceSystem().getSrsIdentifier());
 
     }
 

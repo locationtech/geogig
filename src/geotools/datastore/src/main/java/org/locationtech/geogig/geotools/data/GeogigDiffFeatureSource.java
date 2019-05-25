@@ -35,7 +35,9 @@ import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderAdapter;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
@@ -120,18 +122,18 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
     protected @Override SimpleFeatureType buildFeatureType() throws IOException {
 
         RevFeatureType nativeType = getNativeType();
-        SimpleFeatureType featureType = (SimpleFeatureType) nativeType.type();
+        FeatureType featureType = nativeType.type();
 
-        final Name assignedName = getEntry().getName();
+        final Name assignedName = GT.adapt(getEntry().getName());
 
-        final SimpleFeatureType diffFeatureType;
+        final FeatureType diffFeatureType;
         if (flattenSchema) {
             diffFeatureType = BulkFeatureRetriever.buildFlattenedDiffFeatureType(assignedName,
                     featureType);
         } else {
             diffFeatureType = BulkFeatureRetriever.buildDiffFeatureType(assignedName, featureType);
         }
-        return diffFeatureType;
+        return GT.adapt(diffFeatureType);
     }
 
     /**
@@ -191,7 +193,7 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
      * Overrides {@link ContentFeatureSource#getName()} to restore back the original meaning of
      * {@link FeatureSource#getName()}
      */
-    public @Override Name getName() {
+    public @Override org.opengis.feature.type.Name getName() {
         return getEntry().getName();
     }
 
@@ -352,7 +354,7 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
         // hints.get(Hints.GEOMETRY_SIMPLIFICATION);
         final @Nullable ScreenMap screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
         final @Nullable String[] propertyNames = query.getPropertyNames();
-        final Name assignedName = getEntry().getName();
+        final org.opengis.feature.type.Name assignedName = getEntry().getName();
 
         final Filter filter = query.getFilter();
 
@@ -397,9 +399,9 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(leftContext.objectDatabase(),
                     rightContext.objectDatabase());
 
-            AutoCloseableIterator<SimpleFeature> diffFeatures;
-            diffFeatures = retriever.getGeoToolsDiffFeatures(entries, nativeType, diffType,
-                    geometryFactory);
+            AutoCloseableIterator<org.locationtech.geogig.feature.Feature> diffFeatures;
+            diffFeatures = retriever.getGeoToolsDiffFeatures(entries, nativeType,
+                    GT.adapt(diffType), geometryFactory);
 
             if (screenMap != null) {
                 DiffFeatureScreenMapPredicate screenMapPredicate;
@@ -414,8 +416,7 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
                 });
             }
 
-            FeatureReaderAdapter<SimpleFeatureType, SimpleFeature> featureReader;
-            featureReader = FeatureReaderAdapter.of(diffType, diffFeatures);
+            FeatureReaderAdapter featureReader = FeatureReaderAdapter.adapt(diffType, diffFeatures);
 
             if (query.getHints().containsKey(GeogigFeatureSource.WALK_INFO_KEY)) {
                 GeogigFeatureSource.WALK_INFO.set(diffWalkInfo);
@@ -460,7 +461,7 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
      */
     public NodeRef getTypeRef() {
         GeoGigDataStore dataStore = getDataStore();
-        Name name = getName();
+        org.opengis.feature.type.Name name = getName();
         Transaction transaction = getTransaction();
         return dataStore.findTypeRef(name, transaction);
     }

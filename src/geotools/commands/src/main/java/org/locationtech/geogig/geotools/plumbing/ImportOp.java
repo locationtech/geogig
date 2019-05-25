@@ -10,7 +10,6 @@
 package org.locationtech.geogig.geotools.plumbing;
 
 import static org.geotools.data.DataUtilities.attributeNames;
-import static org.locationtech.geogig.repository.impl.SpatialOps.findIdentifier;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -30,12 +29,12 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.FeatureIteratorIterator;
 import org.geotools.feature.DecoratingFeature;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.NameImpl;
-import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
@@ -47,10 +46,10 @@ import org.locationtech.geogig.data.ForwardingFeatureIterator;
 import org.locationtech.geogig.data.ForwardingFeatureSource;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.PropertyDescriptor;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.NodeRef;
-import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureBuilder;
@@ -60,7 +59,6 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.porcelain.CRSException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -74,7 +72,6 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.identity.FeatureId;
-import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -242,24 +239,26 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
             featureType = overrideGeometryName(featureType);
             featureType = tryForceKnownCRS(featureType);
+            final FeatureType gigType = GT.adapt(featureType);
 
-            featureSource = new ForceTypeAndFidFeatureSource<FeatureType, Feature>(featureSource,
-                    featureType, fidPrefix);
+            featureSource = new ForceTypeAndFidFeatureSource<org.opengis.feature.type.FeatureType, Feature>(
+                    featureSource, featureType, fidPrefix);
 
             boolean hasPrimaryKey = hasPrimaryKey(typeName);
             boolean forbidSorting = !usePaging || !hasPrimaryKey;
             ((ForceTypeAndFidFeatureSource) featureSource).setForbidSorting(forbidSorting);
 
             if (destPathFeatureType != null && adaptToDefaultFeatureType && !alter) {
-                featureSource = new FeatureTypeAdapterFeatureSource<FeatureType, Feature>(
-                        featureSource, destPathFeatureType.type());
+                SimpleFeatureType destPathSimpleFeatureType = GT.adapt(destPathFeatureType.type());
+                featureSource = new FeatureTypeAdapterFeatureSource<SimpleFeatureType, SimpleFeature>(
+                        featureSource, destPathSimpleFeatureType);
             }
 
             ProgressListener taskProgress = subProgress(100.f / typeNames.length);
             if (overwrite) {
                 try {
                     workTree.delete(path);
-                    workTree.createTypeTree(path, featureType);
+                    workTree.createTypeTree(path, gigType);
                 } catch (Exception e) {
                     throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_INSERT);
                 }
@@ -267,11 +266,11 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
             if (alter) {
                 // first we modify the feature type and the existing features, if needed
-                workTree.updateTypeTree(path, featureType);
-                Iterator<Feature> transformedIterator = transformFeatures(featureType, path);
-                RevFeatureType type = RevFeatureType.builder().type(featureType).build();
+                workTree.updateTypeTree(path, gigType);
+                Iterator<Feature> transformedIterator = transformFeatures(gigType, path);
+                RevFeatureType type = RevFeatureType.builder().type(gigType).build();
                 objectDatabase().put(type);
-                insert(workTree, path, transformedIterator, taskProgress, type.getId());
+                insert(workTree, path, transformedIterator, taskProgress, type);
             }
             if (!createSchemaOnly) {
                 insert(workTree, path, featureSource, taskProgress);
@@ -284,7 +283,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     }
 
     private boolean hasPrimaryKey(String typeName) {
-        FeatureSource featureSource;
+        SimpleFeatureSource featureSource;
         try {
             featureSource = dataStore.getFeatureSource(typeName);
         } catch (Exception e) {
@@ -306,12 +305,9 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             return orig;
         }
         try {
-            crs = findIdentifier(geometryDescriptor);
+            crs = GT.findKnownCrs(crs);
             return DataUtilities.createSubType(orig, null, crs);
-        } catch (CRSException e) {
-            LOG.warn(e.getMessage());
-            return orig;
-        } catch (FactoryException | SchemaException e) {
+        } catch (Exception e) {
             LOG.warn("Error looking for known identifier for CRS " + crs, e);
             return orig;
         }
@@ -362,28 +358,14 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         return featureType;
     }
 
-    private Iterator<Feature> transformFeatures(SimpleFeatureType featureType, String path) {
+    private Iterator<Feature> transformFeatures(FeatureType gigType, String path) {
         String refspec = Ref.WORK_HEAD + ":" + path;
         Iterator<NodeRef> oldFeatures = command(LsTreeOp.class).setReference(refspec)
                 .setStrategy(Strategy.FEATURES_ONLY).call();
 
-        RevFeatureType revFeatureType = RevFeatureType.builder().type(featureType).build();
+        RevFeatureType revFeatureType = RevFeatureType.builder().type(gigType).build();
         Iterator<Feature> transformedIterator = transformIterator(oldFeatures, revFeatureType);
         return transformedIterator;
-    }
-
-    private Integer collectionSize(@SuppressWarnings("rawtypes") FeatureSource featureSource) {
-        final Integer collectionSize;
-        {
-            int fastCount;
-            try {
-                fastCount = featureSource.getCount(Query.ALL);
-            } catch (IOException e) {
-                throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_GET_FEATURES);
-            }
-            collectionSize = -1 == fastCount ? null : Integer.valueOf(fastCount);
-        }
-        return collectionSize;
     }
 
     private String[] checkPreconditions() {
@@ -450,7 +432,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                     @Override
                     public FeatureIterator features() {
 
-                        final FeatureType featureType = getSchema();
+                        final org.opengis.feature.type.FeatureType featureType = getSchema();
                         final String fidPrefix = featureType.getName().getLocalPart() + ".";
 
                         FeatureIterator iterator = delegate.features();
@@ -526,9 +508,9 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void insert(final WorkingTree workTree, final String treePath,
-            @SuppressWarnings("rawtypes") final FeatureSource featureSource,
-            final ProgressListener taskProgress) {
+            final FeatureSource featureSource, final ProgressListener taskProgress) {
 
         final Query query = new Query();
         query.setFilter(filter);
@@ -536,14 +518,14 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         query.getHints().add(new Hints(Hints.JTS_COORDINATE_SEQUENCE_FACTORY, coordSeq));
 
         try (FeatureIterator fit = featureSource.getFeatures(query).features()) {
-            FeatureType schema = featureSource.getSchema();
-            RevFeatureType featureType = RevFeatureType.builder().type(schema).build();
+            org.opengis.feature.type.FeatureType schema = featureSource.getSchema();
+            FeatureType gigSchema = GT.adapt(schema);
+            RevFeatureType featureType = RevFeatureType.builder().type(gigSchema).build();
             objectDatabase().put(featureType);
-            ObjectId featureTypeId = featureType.getId();
 
             if (fit.hasNext()) {
                 Iterator<Feature> features = new FeatureIteratorIterator<>(fit);
-                insert(workTree, treePath, features, taskProgress, featureTypeId);
+                insert(workTree, treePath, features, taskProgress, featureType);
             }
         } catch (IOException e) {
             LOG.warn("Unable to insert into " + treePath, e);
@@ -553,7 +535,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
     private void insert(final WorkingTree workTree, final String treePath,
             Iterator<Feature> features, final ProgressListener taskProgress,
-            ObjectId featureTypeId) {
+            RevFeatureType featureType) {
         try {
 
             // RevFeature rf = RevFeature.builder().build(f);
@@ -561,10 +543,12 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             // return FeatureInfo.insert(rf, featureTypeId, path);
             Function<Feature, FeatureInfo> fn = new Function<Feature, FeatureInfo>() {
                 @Override
-                public FeatureInfo apply(Feature f) {
-                    RevFeature rf = RevFeature.builder().build(f);
+                public FeatureInfo apply(org.opengis.feature.Feature f) {
+                    org.locationtech.geogig.feature.Feature gigFeature = GT
+                            .adapt(featureType.type(), (SimpleFeature) f);
+                    RevFeature rf = RevFeature.builder().build(gigFeature);
                     String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
-                    return FeatureInfo.insert(rf, featureTypeId, path);
+                    return FeatureInfo.insert(rf, featureType.getId(), path);
                 }
             };
 

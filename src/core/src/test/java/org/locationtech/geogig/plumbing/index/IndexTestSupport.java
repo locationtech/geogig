@@ -18,8 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.SchemaException;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -42,7 +42,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.collect.Lists;
 
@@ -152,20 +151,17 @@ public class IndexTestSupport {
         return nodes;
     }
 
-    public static SimpleFeatureType featureType = null;
+    public static FeatureType featureType = null;
 
     public static NodeRef createWorldPointsLayer(Repository repository) {
         if (featureType == null) {
-            String typeSpec = "geom:Point:srid=4326,x:Double,y:Double,xystr:String";
-            try {
-                featureType = DataUtilities.createType("worldpoints", typeSpec);
-            } catch (SchemaException e) {
-                throw new RuntimeException(e);
-            }
+            featureType = FeatureTypes.createType("worldpoints", "geom:Point:srid=4326", "x:Double",
+                    "y:Double", "xystr:String");
         }
         RevTree tree = createWorldPointsTree(repository);
         WorkingTree workingTree = repository.workingTree();
-        NodeRef typeTreeRef = workingTree.createTypeTree(featureType.getTypeName(), featureType);
+        NodeRef typeTreeRef = workingTree.createTypeTree(featureType.getName().getLocalPart(),
+                featureType);
 
         ObjectStore store = repository.objectDatabase();
         CanonicalTreeBuilder newRootBuilder = CanonicalTreeBuilder.create(store,

@@ -14,7 +14,7 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.identity.FeatureIdVersionedImpl;
-import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -55,10 +55,11 @@ public class FeatureBuilder {
      * @param typeNameOverride if provided, the resulting feature type for the features will be
      *        renamed as this
      */
-    public FeatureBuilder(RevFeatureType type, @Nullable Name typeNameOverride) {
+    public FeatureBuilder(RevFeatureType type,
+            @Nullable org.opengis.feature.type.Name typeNameOverride) {
         this.type = type;
         this.attNameToRevTypeIndex = GeogigSimpleFeature.buildAttNameToRevTypeIndex(type);
-        SimpleFeatureType nativeType = (SimpleFeatureType) type.type();
+        SimpleFeatureType nativeType = GT.adapt(type.type());
         if (null == typeNameOverride) {
             this.featureType = nativeType;
         } else {

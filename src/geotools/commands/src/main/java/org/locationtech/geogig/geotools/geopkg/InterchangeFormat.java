@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -41,6 +42,8 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.geom.GeoPkgGeomReader;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -65,10 +68,6 @@ import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.GeometryDescriptor;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
@@ -76,9 +75,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import lombok.NonNull;
 
 /**
  * Class for augmenting a geopackage with additional tables to enable smooth import/export
@@ -482,8 +482,7 @@ public class InterchangeFormat {
 
         return new AbstractIterator<InterchangeFormat.Change>() {
 
-            private final RecordToFeature recordToFeature = new RecordToFeature(
-                    (SimpleFeatureType) featureType.type());
+            private final RecordToFeature recordToFeature = new RecordToFeature(featureType.type());
 
             @Override
             protected Change computeNext() {
@@ -542,25 +541,24 @@ public class InterchangeFormat {
      */
     private static class RecordToFeature implements Function<ResultSet, RevFeature> {
 
-        private SimpleFeatureBuilder builder;
-
         private final List<String> attNames;
 
         private final String geometryAttribute;
 
-        RecordToFeature(SimpleFeatureType type) {
-            this.builder = new SimpleFeatureBuilder(type);
-            this.builder.setValidating(false);
-            List<AttributeDescriptor> descriptors = type.getAttributeDescriptors();
-            this.attNames = Lists.transform(descriptors, AttributeDescriptor::getLocalName);
-            GeometryDescriptor geometryDescriptor = type.getGeometryDescriptor();
-            this.geometryAttribute = geometryDescriptor == null ? null
-                    : geometryDescriptor.getLocalName();
+        private final org.locationtech.geogig.feature.FeatureType type;
+
+        RecordToFeature(@NonNull org.locationtech.geogig.feature.FeatureType type) {
+            this.type = type;
+            this.attNames = type.getDescriptors().stream()
+                    .map(org.locationtech.geogig.feature.PropertyDescriptor::getLocalName)
+                    .collect(Collectors.toList());
+            this.geometryAttribute = type.getGeometryDescriptor()
+                    .map(PropertyDescriptor::getLocalName).orElse(null);
         }
 
         @Override
         public RevFeature apply(ResultSet rs) {
-            builder.reset();
+            Feature feature = Feature.build("fakeId", this.type);
             try {
                 for (String attName : attNames) {
                     Object value = rs.getObject(attName);
@@ -568,10 +566,8 @@ public class InterchangeFormat {
                         byte[] bytes = (byte[]) value;
                         value = new GeoPkgGeomReader(bytes).get();
                     }
-                    builder.set(attName, value);
+                    feature.setAttribute(attName, value);
                 }
-
-                SimpleFeature feature = builder.buildFeature("fakeId");
                 return RevFeature.builder().build(feature);
             } catch (SQLException | IOException e) {
                 throw new RuntimeException(e);

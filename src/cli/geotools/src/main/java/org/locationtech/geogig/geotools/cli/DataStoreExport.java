@@ -28,6 +28,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.model.NodeRef;
@@ -117,9 +118,8 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
                         .call();
                 checkParameter(type.equals(TYPE.FEATURETYPE),
                         "Provided reference does not resolve to a feature type: ", sFeatureTypeId);
-                outputFeatureType = (SimpleFeatureType) cli.getGeogig()
-                        .command(RevObjectParse.class).setObjectId(id.get())
-                        .call(RevFeatureType.class).get().type();
+                outputFeatureType = GT.adapt(cli.getGeogig().command(RevObjectParse.class)
+                        .setObjectId(id.get()).call(RevFeatureType.class).get().type());
                 featureTypeId = id.get();
             } else {
                 outputFeatureType = getFeatureType(cli, sourceTreeIsh, tableName);
@@ -236,16 +236,10 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();
-            if (revFeatureType.type() instanceof SimpleFeatureType) {
-                SimpleFeatureType sft = (SimpleFeatureType) revFeatureType.type();
-                return new SimpleFeatureTypeImpl(new NameImpl(tableName),
-                        sft.getAttributeDescriptors(), sft.getGeometryDescriptor(),
-                        sft.isAbstract(), sft.getRestrictions(), sft.getSuper(),
-                        sft.getDescription());
-            } else {
-                throw new InvalidParameterException(
-                        "Cannot find feature type for the specified path");
-            }
+            SimpleFeatureType sft = GT.adapt(revFeatureType.type());
+            return new SimpleFeatureTypeImpl(new NameImpl(tableName), sft.getAttributeDescriptors(),
+                    sft.getGeometryDescriptor(), sft.isAbstract(), sft.getRestrictions(),
+                    sft.getSuper(), sft.getDescription());
         } else {
             throw new InvalidParameterException("Cannot find feature type for the specified path");
         }

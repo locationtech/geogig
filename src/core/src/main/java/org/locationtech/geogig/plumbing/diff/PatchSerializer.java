@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.locationtech.geogig.feature.PropertyDescriptor;
@@ -141,12 +142,14 @@ public class PatchSerializer {
     private static void addDifference(String s, Map<PropertyDescriptor, AttributeDiff> map,
             RevFeatureType oldRevFeatureType, RevFeatureType newRevFeatureType) {
         String[] tokens = s.split("\t");
-        PropertyDescriptor descriptor = oldRevFeatureType.type().getDescriptor(tokens[0]);
-        if (descriptor == null) {
+        PropertyDescriptor descriptor;
+        try {
+            descriptor = oldRevFeatureType.type().getDescriptor(tokens[0]);
+        } catch (NoSuchElementException e) {
             descriptor = newRevFeatureType.type().getDescriptor(tokens[0]);
         }
-        AttributeDiff ad = AttributeDiffFactory.attributeDiffFromText(
-                descriptor.getType().getBinding(), s.substring(s.indexOf("\t") + 1));
+        AttributeDiff ad = AttributeDiffFactory.attributeDiffFromText(descriptor.getBinding(),
+                s.substring(s.indexOf("\t") + 1));
         map.put(descriptor, ad);
     }
 

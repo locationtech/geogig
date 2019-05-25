@@ -17,6 +17,7 @@ import java.util.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
-import org.opengis.feature.Feature;
 
 public class CheckoutOpTest extends RepositoryTestCase {
     @Rule
@@ -79,9 +79,8 @@ public class CheckoutOpTest extends RepositoryTestCase {
         ObjectId oID4 = insertAndAdd(lines3);
         geogig.command(CommitOp.class).setMessage("commit for modified points1").call();
 
-        List<String> paths = Arrays.asList(
-                NodeRef.appendChild(pointsName, points1.getIdentifier().getID()),
-                NodeRef.appendChild(linesName, lines1.getIdentifier().getID()));
+        List<String> paths = Arrays.asList(NodeRef.appendChild(pointsName, points1.getId()),
+                NodeRef.appendChild(linesName, lines1.getId()));
 
         RevTree root = repo.workingTree().getTree();
 
@@ -92,11 +91,11 @@ public class CheckoutOpTest extends RepositoryTestCase {
         assertEquals(oID2, featureBlob2.get().getObjectId());
 
         Optional<Node> featureBlob3 = repo.getTreeChild(root,
-                NodeRef.appendChild(linesName, lines2.getIdentifier().getID()));
+                NodeRef.appendChild(linesName, lines2.getId()));
         assertEquals(oID3, featureBlob3.get().getObjectId());
 
         Optional<Node> featureBlob4 = repo.getTreeChild(root,
-                NodeRef.appendChild(linesName, lines3.getIdentifier().getID()));
+                NodeRef.appendChild(linesName, lines3.getId()));
         assertEquals(oID4, featureBlob4.get().getObjectId());
 
         geogig.command(CheckoutOp.class).setSource("master").addPaths(paths).call();
@@ -109,12 +108,10 @@ public class CheckoutOpTest extends RepositoryTestCase {
         featureBlob2 = repo.getTreeChild(root, paths.get(1));
         assertEquals(oID2, featureBlob2.get().getObjectId());
 
-        featureBlob3 = repo.getTreeChild(root,
-                NodeRef.appendChild(linesName, lines2.getIdentifier().getID()));
+        featureBlob3 = repo.getTreeChild(root, NodeRef.appendChild(linesName, lines2.getId()));
         assertEquals(oID3, featureBlob3.get().getObjectId());
 
-        featureBlob4 = repo.getTreeChild(root,
-                NodeRef.appendChild(linesName, lines3.getIdentifier().getID()));
+        featureBlob4 = repo.getTreeChild(root, NodeRef.appendChild(linesName, lines3.getId()));
         assertEquals(oID4, featureBlob4.get().getObjectId());
 
     }

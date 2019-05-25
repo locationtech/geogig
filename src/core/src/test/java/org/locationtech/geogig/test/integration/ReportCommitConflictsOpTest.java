@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.opengis.feature.Feature;
 
 public class ReportCommitConflictsOpTest extends RepositoryTestCase {
 

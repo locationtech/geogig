@@ -23,14 +23,13 @@ import org.geotools.filter.identity.FeatureIdImpl;
 import org.locationtech.geogig.data.ForwardingFeatureCollection;
 import org.locationtech.geogig.data.ForwardingFeatureIterator;
 import org.locationtech.geogig.data.ForwardingFeatureSource;
-import org.locationtech.geogig.feature.FeatureType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.sort.SortBy;
 
-class ForceTypeAndFidFeatureSource<T extends FeatureType, F extends Feature>
+class ForceTypeAndFidFeatureSource<T extends org.opengis.feature.type.FeatureType, F extends org.opengis.feature.Feature>
         extends ForwardingFeatureSource<T, F> {
 
     private T forceType;

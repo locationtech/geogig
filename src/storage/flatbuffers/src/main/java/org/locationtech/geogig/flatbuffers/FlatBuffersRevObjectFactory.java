@@ -36,7 +36,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.model.impl.RevObjectFactoryImpl;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
@@ -136,7 +135,7 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
             @NonNull FeatureType ftype) {
         Collection<PropertyDescriptor> descriptors = ftype.getDescriptors();
         descriptors.forEach(d -> {
-            Class<?> binding = d.getType().getBinding();
+            Class<?> binding = d.getBinding();
             Objects.requireNonNull(binding,
                     "got null binding for attribute " + d.getName().getLocalPart());
             FieldType fieldType = FieldType.forBinding(binding);
@@ -150,7 +149,7 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
         });
 
         FlatBufferBuilder fbb = newBuilder();
-        int objOffset = encoder.writeSimpleFeatureType(fbb, (SimpleFeatureType) ftype);
+        int objOffset = encoder.writeSimpleFeatureType(fbb, ftype);
         encoder.writeRevisionObject(ObjectType.SimpleFeatureType, objOffset, fbb);
         return (RevFeatureType) encoder.decode(id, copy(fbb.dataBuffer()));
     }

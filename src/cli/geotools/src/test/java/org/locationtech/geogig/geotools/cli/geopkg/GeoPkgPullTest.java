@@ -117,8 +117,8 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
                 (nr) -> nr.name());
         assertEquals(5, nodeList.size());
-        assertTrue(nodeList.contains(pointsType.getTypeName()));
-        nodeList.remove(pointsType.getTypeName());
+        assertTrue(nodeList.contains(pointsType.getName().getLocalPart()));
+        nodeList.remove(pointsType.getName().getLocalPart());
         assertTrue(nodeList.contains(idP1));
         nodeList.remove(idP1);
         assertTrue(nodeList.contains(idP2));
@@ -186,16 +186,16 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
                 (nr) -> nr.name());
         assertEquals(9, nodeList.size());
-        assertTrue(nodeList.contains(pointsType.getTypeName()));
-        nodeList.remove(pointsType.getTypeName());
+        assertTrue(nodeList.contains(pointsType.getName().getLocalPart()));
+        nodeList.remove(pointsType.getName().getLocalPart());
         assertTrue(nodeList.contains(idP1));
         nodeList.remove(idP1);
         assertTrue(nodeList.contains(idP2));
         nodeList.remove(idP2);
         assertTrue(nodeList.contains(idP3));
         nodeList.remove(idP3);
-        assertTrue(nodeList.contains(linesType.getTypeName()));
-        nodeList.remove(linesType.getTypeName());
+        assertTrue(nodeList.contains(linesType.getName().getLocalPart()));
+        nodeList.remove(linesType.getName().getLocalPart());
         assertTrue(nodeList.contains(idL1));
         nodeList.remove(idL1);
         assertTrue(nodeList.contains(idL2));

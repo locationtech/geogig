@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.JTS;
 import org.junit.Assert;
 import org.junit.rules.ExternalResource;
 import org.locationtech.geogig.model.Node;
@@ -35,6 +34,7 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.jts.geom.Coordinate;
@@ -205,9 +205,9 @@ public class QuadTreeTestSupport extends ExternalResource {
 
         if (!quadBounds.contains(nodeBounds)) {
             GeometryFactory gf = new GeometryFactory();
-            Polygon qgeom = JTS.toGeometry(quadBounds, gf);
+            Polygon qgeom = SpatialOps.toGeometry(quadBounds);
             ArrayList<Geometry> pointGeoms = Lists.newArrayList(gf.createPoint(center),
-                    JTS.toGeometry(nodeBounds, gf));
+                    SpatialOps.toGeometry(nodeBounds));
             Geometry point = gf.buildGeometry(pointGeoms);
             String msg = qgeom + " does not contain " + point;
             Assert.fail(msg);

@@ -9,15 +9,12 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.WKTReader2;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
+import org.locationtech.jts.io.WKTReader;
 
 public final class TestFeatures {
 
@@ -41,11 +38,11 @@ public final class TestFeatures {
 
     public static final String modifiedPointsTypeSpec = "sp:String,ip:Integer,pp:Point:srid=4326,extra:String";
 
-    public static final Name pointsTypeName = new NameImpl("http://geogig.points", pointsName);
+    public static final Name pointsTypeName = Name.valueOf("http://geogig.points", pointsName);
 
-    public static SimpleFeatureType pointsType;
+    public static FeatureType pointsType;
 
-    public static SimpleFeatureType modifiedPointsType;
+    public static FeatureType modifiedPointsType;
 
     public static Feature points1;
 
@@ -63,9 +60,9 @@ public final class TestFeatures {
 
     protected static final String linesTypeSpec = "sp:String,ip:Integer,pp:LineString:srid=4326";
 
-    protected static final Name linesTypeName = new NameImpl("http://geogig.lines", linesName);
+    protected static final Name linesTypeName = Name.valueOf("http://geogig.lines", linesName);
 
-    public static SimpleFeatureType linesType;
+    public static FeatureType linesType;
 
     public static Feature lines1;
 
@@ -79,8 +76,9 @@ public final class TestFeatures {
         if (created) {
             return;
         }
-        pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
-        modifiedPointsType = DataUtilities.createType(pointsNs, pointsName, modifiedPointsTypeSpec);
+        pointsType = FeatureTypes.createType(pointsTypeName, pointsTypeSpec.split(","));
+        modifiedPointsType = FeatureTypes.createType(pointsTypeName,
+                modifiedPointsTypeSpec.split(","));
 
         points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
         points1_modified = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
@@ -90,7 +88,7 @@ public final class TestFeatures {
         points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
         points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
 
-        linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
+        linesType = FeatureTypes.createType(linesTypeName, linesTypeSpec.split(","));
 
         lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
                 "LINESTRING (1 1, 2 2)");
@@ -101,19 +99,19 @@ public final class TestFeatures {
         created = true;
     }
 
-    public static Feature feature(SimpleFeatureType type, String id, Object... values)
+    public static Feature feature(FeatureType type, String id, Object... values)
             throws ParseException {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        Feature feature = Feature.build(id, type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
+            if (type.getDescriptor(i).isGeometryDescriptor()) {
                 if (value instanceof String) {
-                    value = new WKTReader2().read((String) value);
+                    value = new WKTReader().read((String) value);
                 }
             }
-            builder.set(i, value);
+            feature.setAttribute(i, value);
         }
-        return builder.buildFeature(id);
+        return feature;
     }
 
 }

@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +16,6 @@ import java.util.Optional;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.locationtech.geogig.feature.Name;
-import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -65,14 +62,14 @@ public class DescribeOp extends AbstractGeoGigOp<Optional<Map<String, String>>> 
 
         boolean foundTable = false;
 
-        List<Name> typeNames;
+        List<org.opengis.feature.type.Name> typeNames;
         try {
             typeNames = dataStore.getNames();
         } catch (Exception e) {
             throw new GeoToolsOpException(StatusCode.UNABLE_TO_GET_NAMES);
         }
 
-        for (Name typeName : typeNames) {
+        for (org.opengis.feature.type.Name typeName : typeNames) {
             if (!table.equals(typeName.toString()))
                 continue;
 
@@ -87,8 +84,8 @@ public class DescribeOp extends AbstractGeoGigOp<Optional<Map<String, String>>> 
 
             SimpleFeatureType featureType = featureSource.getSchema();
 
-            Collection<PropertyDescriptor> descriptors = featureType.getDescriptors();
-            for (PropertyDescriptor descriptor : descriptors) {
+            for (org.opengis.feature.type.PropertyDescriptor descriptor : featureType
+                    .getDescriptors()) {
                 propertyMap.put(descriptor.getName().toString(),
                         descriptor.getType().getBinding().getSimpleName());
             }

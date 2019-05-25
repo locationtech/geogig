@@ -23,8 +23,6 @@ import org.geotools.referencing.AbstractReferenceSystem;
 import org.locationtech.geogig.data.ForwardingFeatureCollection;
 import org.locationtech.geogig.data.ForwardingFeatureIterator;
 import org.locationtech.geogig.data.ForwardingFeatureSource;
-import org.locationtech.geogig.feature.FeatureType;
-import org.locationtech.geogig.feature.Name;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
@@ -33,7 +31,7 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.sort.SortBy;
 
-class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature>
+class FeatureTypeAdapterFeatureSource<T extends org.opengis.feature.type.FeatureType, F extends org.opengis.feature.Feature>
         extends ForwardingFeatureSource<T, F> {
 
     private T featureType;
@@ -151,11 +149,12 @@ class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature>
         public F next() {
             F next = super.next();
             String fid = ((SimpleFeature) next).getID();
-            Name geometryAttributeName = builder.getFeatureType().getGeometryDescriptor().getName();
+            org.opengis.feature.type.Name geometryAttributeName = builder.getFeatureType()
+                    .getGeometryDescriptor().getName();
             builder.set(geometryAttributeName, next.getDefaultGeometryProperty().getValue());
             for (AttributeDescriptor attribute : builder.getFeatureType()
                     .getAttributeDescriptors()) {
-                Name name = attribute.getName();
+                org.opengis.feature.type.Name name = attribute.getName();
                 if (!name.equals(geometryAttributeName)) {
                     Property property = next.getProperty(name);
                     if (property == null) {

@@ -31,7 +31,7 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.NameImpl;
 import org.geotools.geometry.jts.GeometryBuilder;
 import org.junit.Test;
-import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -85,7 +85,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     @Test
     public void testCreateSchema() throws IOException {
-        final SimpleFeatureType featureType = super.linesType;
+        final SimpleFeatureType featureType = GT.adapt(super.linesType);
         dataStore.createSchema(featureType);
 
         List<String> typeNames;
@@ -93,7 +93,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         assertEquals(1, typeNames.size());
         assertEquals(linesName, typeNames.get(0));
 
-        dataStore.createSchema(super.pointsType);
+        dataStore.createSchema(GT.adapt(super.pointsType));
 
         typeNames = getTypeNames(Ref.HEAD);
         assertEquals(2, typeNames.size());
@@ -101,7 +101,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         assertTrue(typeNames.contains(pointsName));
 
         try {
-            dataStore.createSchema(super.pointsType);
+            dataStore.createSchema(GT.adapt(super.pointsType));
             fail("Expected IOException on existing type");
         } catch (IOException e) {
             assertTrue(e.getMessage().contains("already exists"));
@@ -114,7 +114,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         geogig.command(BranchCreateOp.class).setName(branchName).setOrphan(true).call();
 
         dataStore.setHead(branchName);
-        final SimpleFeatureType featureType = super.linesType;
+        final SimpleFeatureType featureType = GT.adapt(super.linesType);
         dataStore.createSchema(featureType);
 
         List<String> typeNames;
@@ -125,7 +125,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         assertEquals(1, typeNames.size());
         assertEquals(linesName, typeNames.get(0));
 
-        dataStore.createSchema(super.pointsType);
+        dataStore.createSchema(GT.adapt(super.pointsType));
 
         typeNames = getTypeNames(Ref.HEAD);
         assertTrue(typeNames.isEmpty());
@@ -153,7 +153,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
         assertEquals(2, dataStore.getNames().size());
 
-        List<Name> names = dataStore.getNames();
+        List<org.opengis.feature.type.Name> names = dataStore.getNames();
         // ContentDataStore doesn't support native namespaces
         // assertTrue(names.contains(RepositoryTestCase.linesTypeName));
         // assertTrue(names.contains(RepositoryTestCase.pointsTypeName));
@@ -187,7 +187,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     @Test
     public void testGetSchemaName() throws Exception {
         try {
-            dataStore.getSchema(RepositoryTestCase.linesTypeName);
+            dataStore.getSchema(GT.adapt(RepositoryTestCase.linesTypeName));
             fail("Expected IOException");
         } catch (IOException e) {
             assertTrue(e.getMessage(), e.getMessage().contains("does not exist"));
@@ -195,17 +195,17 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
         insertAndAdd(lines1);
         try {
-            dataStore.getSchema(RepositoryTestCase.linesTypeName);
+            dataStore.getSchema(GT.adapt(RepositoryTestCase.linesTypeName));
             fail("Expected IOE as type hasn't been committed");
         } catch (IOException e) {
             assertTrue(e.getMessage().contains("does not exist"));
         }
         commit();
-        SimpleFeatureType lines = dataStore.getSchema(RepositoryTestCase.linesTypeName);
-        assertEquals(super.linesType, lines);
+        SimpleFeatureType lines = dataStore.getSchema(GT.adapt(RepositoryTestCase.linesTypeName));
+        assertEquals(GT.adapt(super.linesType), lines);
 
         try {
-            dataStore.getSchema(RepositoryTestCase.pointsTypeName);
+            dataStore.getSchema(GT.adapt(RepositoryTestCase.pointsTypeName));
             fail("Expected IOException");
         } catch (IOException e) {
             assertTrue(true);
@@ -213,8 +213,8 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
         insertAndAdd(points1);
         commit();
-        SimpleFeatureType points = dataStore.getSchema(RepositoryTestCase.pointsTypeName);
-        assertEquals(super.pointsType, points);
+        SimpleFeatureType points = dataStore.getSchema(GT.adapt(RepositoryTestCase.pointsTypeName));
+        assertEquals(GT.adapt(super.pointsType), points);
     }
 
     private ObjectId commit() {
@@ -228,16 +228,18 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         dataStore.setNamespaceURI(namespace);
         insertAndAdd(lines1);
         commit();
-        SimpleFeatureType lines = dataStore.getSchema(RepositoryTestCase.linesTypeName);
-        Name expectedName = new NameImpl(namespace, linesName);
+        SimpleFeatureType lines = dataStore.getSchema(GT.adapt(RepositoryTestCase.linesTypeName));
+        NameImpl expectedName = new NameImpl(namespace, linesName);
         assertEquals(expectedName, lines.getName());
-        assertEquals(super.linesType.getAttributeDescriptors(), lines.getAttributeDescriptors());
+        assertEquals(GT.adapt(super.linesType).getAttributeDescriptors(),
+                lines.getAttributeDescriptors());
 
         insertAndAdd(points1);
         commit();
-        SimpleFeatureType points = dataStore.getSchema(RepositoryTestCase.pointsTypeName);
+        SimpleFeatureType points = dataStore.getSchema(GT.adapt(RepositoryTestCase.pointsTypeName));
         assertEquals(new NameImpl(namespace, pointsName), points.getName());
-        assertEquals(super.pointsType.getAttributeDescriptors(), points.getAttributeDescriptors());
+        assertEquals(GT.adapt(super.pointsType).getAttributeDescriptors(),
+                points.getAttributeDescriptors());
     }
 
     @Test
@@ -248,7 +250,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         commit();
         SimpleFeatureSource lines;
         lines = dataStore.getFeatureSource(linesName);
-        Name expectedName = new NameImpl(namespace, linesName);
+        NameImpl expectedName = new NameImpl(namespace, linesName);
 
         assertEquals(expectedName, lines.getName());
         SimpleFeatureType schema = lines.getSchema();
@@ -274,7 +276,8 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         insertAndAdd(lines1);
         commit();
         SimpleFeatureType lines = dataStore.getSchema(RepositoryTestCase.linesName);
-        assertEquals(super.linesType.getAttributeDescriptors(), lines.getAttributeDescriptors());
+        assertEquals(GT.adapt(super.linesType).getAttributeDescriptors(),
+                lines.getAttributeDescriptors());
 
         try {
             dataStore.getSchema(RepositoryTestCase.pointsName);
@@ -286,7 +289,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         insertAndAdd(points1);
         commit();
         SimpleFeatureType points = dataStore.getSchema(RepositoryTestCase.pointsName);
-        assertEquals(super.pointsType, points);
+        assertEquals(GT.adapt(super.pointsType), points);
     }
 
     @Test
@@ -355,7 +358,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     @Test
     public void testFeatureWriterAppend() throws Exception {
-        dataStore.createSchema(linesType);
+        dataStore.createSchema(GT.adapt(linesType));
 
         Transaction tx = new DefaultTransaction();
         FeatureWriter<SimpleFeatureType, SimpleFeature> fw = dataStore
@@ -388,7 +391,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     }
 
     public @Test void testFindTypeRef() throws Exception {
-        Name typeName = new NameImpl(pointsName);
+        NameImpl typeName = new NameImpl(pointsName);
         final Transaction autoCommit = Transaction.AUTO_COMMIT;
         final Transaction tx = new DefaultTransaction();
         try {
@@ -397,7 +400,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         } catch (NoSuchElementException e) {
             assertTrue(true);
         }
-        dataStore.createSchema(pointsType);
+        dataStore.createSchema(GT.adapt(pointsType));
 
         final NodeRef firstRef = dataStore.findTypeRef(typeName, autoCommit);
         assertNotNull(firstRef);
@@ -412,7 +415,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
         SimpleFeatureStore store = (SimpleFeatureStore) dataStore.getFeatureSource(typeName);
         store.setTransaction(tx);
-        store.addFeatures(DataUtilities.collection((SimpleFeature) points2));
+        store.addFeatures(DataUtilities.collection(GT.adapt(points2)));
 
         assertEquals(secondRef, dataStore.findTypeRef(typeName, autoCommit));
         final NodeRef txRef = dataStore.findTypeRef(typeName, tx);

@@ -28,6 +28,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.ExportDiffOp;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
@@ -200,12 +201,7 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();
-            if (revFeatureType.type() instanceof SimpleFeatureType) {
-                return (SimpleFeatureType) revFeatureType.type();
-            } else {
-                throw new InvalidParameterException(
-                        "Cannot find feature type for the specified path");
-            }
+            return GT.adapt(revFeatureType.type());
         } else {
             throw new InvalidParameterException("Cannot find feature type for the specified path");
         }

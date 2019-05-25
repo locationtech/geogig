@@ -94,14 +94,14 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
 
         String path = NodeRef.appendChild(pointsName, featureId);
         Optional<Node> featureBlobId = repo.getTreeChild(root, path);
         assertTrue(featureBlobId.isPresent());
         assertEquals(oid1, featureBlobId.get().getObjectId());
 
-        featureId = points2.getIdentifier().getID();
+        featureId = points2.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
         assertEquals(oid2, featureBlobId.get().getObjectId());
@@ -230,13 +230,13 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         Optional<Node> featureBlobId = repo.getTreeChild(root,
                 NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
         assertEquals(oid1, featureBlobId.get().getObjectId());
 
-        featureId = points2.getIdentifier().getID();
+        featureId = points2.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
         assertEquals(oid2, featureBlobId.get().getObjectId());
@@ -305,7 +305,7 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         Optional<Node> featureBlobId = repo.getTreeChild(root,
                 NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
@@ -349,13 +349,13 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         Optional<Node> featureBlobId = repo.getTreeChild(root,
                 NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
         assertEquals(oid, featureBlobId.get().getObjectId());
 
-        featureId = points2.getIdentifier().getID();
+        featureId = points2.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(pointsName, featureId));
         assertFalse(featureBlobId.isPresent());
 
@@ -749,16 +749,16 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         Optional<Node> featureBlobId = repo.getTreeChild(root,
                 NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
 
-        featureId = points2.getIdentifier().getID();
+        featureId = points2.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
 
-        featureId = points3.getIdentifier().getID();
+        featureId = points3.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
 
@@ -767,15 +767,15 @@ public class CommitOpTest extends RepositoryTestCase {
         typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
 
-        featureId = lines1.getIdentifier().getID();
+        featureId = lines1.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(linesName, featureId));
         assertTrue(featureBlobId.isPresent());
 
-        featureId = lines2.getIdentifier().getID();
+        featureId = lines2.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(linesName, featureId));
         assertFalse(featureBlobId.isPresent());
 
-        featureId = lines3.getIdentifier().getID();
+        featureId = lines3.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(linesName, featureId));
         assertTrue(featureBlobId.isPresent());
     }
@@ -811,16 +811,16 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         Optional<Node> featureBlobId = repo.getTreeChild(root,
                 NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
 
-        featureId = points2.getIdentifier().getID();
+        featureId = points2.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(pointsName, featureId));
         assertTrue(featureBlobId.isPresent());
 
-        featureId = points3.getIdentifier().getID();
+        featureId = points3.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(pointsName, featureId));
         assertFalse(featureBlobId.isPresent());
 
@@ -829,15 +829,15 @@ public class CommitOpTest extends RepositoryTestCase {
         typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
 
-        featureId = lines1.getIdentifier().getID();
+        featureId = lines1.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(linesName, featureId));
         assertTrue(featureBlobId.isPresent());
 
-        featureId = lines2.getIdentifier().getID();
+        featureId = lines2.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(linesName, featureId));
         assertFalse(featureBlobId.isPresent());
 
-        featureId = lines3.getIdentifier().getID();
+        featureId = lines3.getId();
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(linesName, featureId));
         assertTrue(featureBlobId.isPresent());
     }

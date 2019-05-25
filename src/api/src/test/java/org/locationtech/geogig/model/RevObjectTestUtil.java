@@ -17,8 +17,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevObject.TYPE;

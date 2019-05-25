@@ -16,8 +16,6 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.SortedSet;
 
-import javax.annotation.Nonnegative;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.PropertyDescriptor;
@@ -120,8 +118,8 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
         return new NodeTree(id, size, childTreeCount, array);
     }
 
-    public @Override Bucket createBucket(final @NonNull ObjectId bucketTree,
-            @Nonnegative int bucketIndex, final @Nullable Envelope bounds) {
+    public @Override Bucket createBucket(final @NonNull ObjectId bucketTree, int bucketIndex,
+            final @Nullable Envelope bounds) {
         if (bucketIndex < 0) {
             throw new IllegalArgumentException(
                     "Bucket cannot have a negative index: " + bucketIndex);

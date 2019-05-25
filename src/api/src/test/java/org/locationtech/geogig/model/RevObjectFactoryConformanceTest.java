@@ -26,8 +26,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnegative;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
@@ -296,13 +294,12 @@ public abstract class RevObjectFactoryConformanceTest {
         return actual;
     }
 
-    private RevTree testCreateTree(ObjectId id, @Nonnegative long size, int childTreeCount,
-            Bucket... buckets) {
+    private RevTree testCreateTree(ObjectId id, long size, int childTreeCount, Bucket... buckets) {
         SortedSet<Bucket> set = buckets == null ? null : new TreeSet<>(Arrays.asList(buckets));
         return testCreateTree(id, size, childTreeCount, set);
     }
 
-    private RevTree testCreateTree(ObjectId id, @Nonnegative long size, int childTreeCount,
+    private RevTree testCreateTree(ObjectId id, long size, int childTreeCount,
             SortedSet<Bucket> buckets) {
 
         RevTree actual = factory.createTree(id, size, childTreeCount, buckets);

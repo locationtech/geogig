@@ -17,8 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.impl.Float32Bounds;
 import org.locationtech.jts.geom.Envelope;

@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;

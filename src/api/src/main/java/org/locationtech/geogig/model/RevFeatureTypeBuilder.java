@@ -9,8 +9,7 @@
  */
 package org.locationtech.geogig.model;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 
 import lombok.NonNull;

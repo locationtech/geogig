@@ -10,8 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
 import org.locationtech.geogig.feature.PropertyDescriptor.PropertyDescriptorBuilder;
 import org.locationtech.jts.geom.Geometry;

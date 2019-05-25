@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
-import javax.annotation.Nonnegative;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -59,11 +57,11 @@ public interface RevObjectFactory extends PriorityService {
      * @throws IllegalArgumentException if any element in {@code trees} or {@code features} is not
      *         of the expected {@link TYPE type}
      */
-    public @NonNull RevTree createTree(@NonNull ObjectId id, @Nonnegative long size,
-            @NonNull List<Node> trees, @NonNull List<Node> features);
+    public @NonNull RevTree createTree(@NonNull ObjectId id, long size, @NonNull List<Node> trees,
+            @NonNull List<Node> features);
 
-    public @NonNull RevTree createTree(@NonNull ObjectId id, @Nonnegative long size,
-            @Nonnegative int childTreeCount, @NonNull SortedSet<Bucket> buckets);
+    public @NonNull RevTree createTree(@NonNull ObjectId id, long size, int childTreeCount,
+            @NonNull SortedSet<Bucket> buckets);
 
     public @NonNull Node createNode(final @NonNull String name, final @NonNull ObjectId objectId,
             final @NonNull ObjectId metadataId, final @NonNull TYPE type, @Nullable Envelope bounds,

@@ -2,8 +2,7 @@ package org.locationtech.geogig.geotools.adapt;
 
 import static org.geotools.referencing.crs.DefaultGeographicCRS.WGS84;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.CRS;

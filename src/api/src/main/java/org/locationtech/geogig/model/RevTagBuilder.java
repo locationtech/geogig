@@ -1,6 +1,6 @@
 package org.locationtech.geogig.model;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import lombok.NonNull;
 import lombok.Setter;

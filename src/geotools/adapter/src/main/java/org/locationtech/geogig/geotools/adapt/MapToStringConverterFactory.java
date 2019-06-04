@@ -55,7 +55,7 @@ public class MapToStringConverterFactory implements ConverterFactory {
 
     private static Converter TO_STRING = new Converter() {
         public @Override <T> T convert(Object source, Class<T> target) throws Exception {
-            return target.cast(org.locationtech.geogig.data.StringConverters.marshall(source));
+            return target.cast(FieldType.marshall(source));
         }
     };
 
@@ -63,8 +63,7 @@ public class MapToStringConverterFactory implements ConverterFactory {
         public @Override <T> T convert(Object source, Class<T> target) throws Exception {
             Preconditions.checkArgument(source == null || source.getClass().equals(String.class));
             Preconditions.checkArgument(Map.class.isAssignableFrom(target));
-            return target.cast(org.locationtech.geogig.data.StringConverters
-                    .unmarshall((String) source, Map.class));
+            return target.cast(FieldType.unmarshall((String) source, Map.class));
         }
 
     };

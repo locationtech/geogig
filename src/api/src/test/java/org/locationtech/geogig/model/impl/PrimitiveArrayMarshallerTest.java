@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.data;
+package org.locationtech.geogig.model.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -18,6 +18,7 @@ import java.lang.reflect.Array;
 import java.util.List;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.FieldType;
 
 import com.google.common.base.Splitter;
 
@@ -28,23 +29,23 @@ public class PrimitiveArrayMarshallerTest {
 
     @Test
     public void testNull() {
-        assertNull(StringConverters.marshall(null));
-        assertNull(StringConverters.unmarshall(null, int[].class));
-        assertNull(StringConverters.unmarshall("", boolean[].class));
-        assertNull(StringConverters.unmarshall("", byte[].class));
-        assertNull(StringConverters.unmarshall("", short[].class));
-        assertNull(StringConverters.unmarshall("", int[].class));
-        assertNull(StringConverters.unmarshall("", long[].class));
-        assertNull(StringConverters.unmarshall("", float[].class));
-        assertNull(StringConverters.unmarshall("", double[].class));
+        assertNull(FieldType.marshall(null));
+        assertNull(FieldType.unmarshall(null, int[].class));
+        assertNull(FieldType.unmarshall("", boolean[].class));
+        assertNull(FieldType.unmarshall("", byte[].class));
+        assertNull(FieldType.unmarshall("", short[].class));
+        assertNull(FieldType.unmarshall("", int[].class));
+        assertNull(FieldType.unmarshall("", long[].class));
+        assertNull(FieldType.unmarshall("", float[].class));
+        assertNull(FieldType.unmarshall("", double[].class));
 
-        assertNull(StringConverters.unmarshall(" ", boolean[].class));
-        assertNull(StringConverters.unmarshall(" ", byte[].class));
-        assertNull(StringConverters.unmarshall(" ", short[].class));
-        assertNull(StringConverters.unmarshall(" ", int[].class));
-        assertNull(StringConverters.unmarshall(" ", long[].class));
-        assertNull(StringConverters.unmarshall(" ", float[].class));
-        assertNull(StringConverters.unmarshall(" ", double[].class));
+        assertNull(FieldType.unmarshall(" ", boolean[].class));
+        assertNull(FieldType.unmarshall(" ", byte[].class));
+        assertNull(FieldType.unmarshall(" ", short[].class));
+        assertNull(FieldType.unmarshall(" ", int[].class));
+        assertNull(FieldType.unmarshall(" ", long[].class));
+        assertNull(FieldType.unmarshall(" ", float[].class));
+        assertNull(FieldType.unmarshall(" ", double[].class));
     }
 
     @Test
@@ -95,7 +96,7 @@ public class PrimitiveArrayMarshallerTest {
 
     private void roundtripTest(Object value) {
 
-        String converted = StringConverters.marshall(value);
+        String converted = FieldType.marshall(value);
         assertNotNull(converted);
         int length = Array.getLength(value);
         if (0 == length) {
@@ -109,7 +110,7 @@ public class PrimitiveArrayMarshallerTest {
                     .splitToList(plain);
             assertEquals(length, elems.size());
         }
-        Object roundTripped = StringConverters.unmarshall(converted, value.getClass());
+        Object roundTripped = FieldType.unmarshall(converted, value.getClass());
 
         assertNotNull(roundTripped);
         assertTrue(roundTripped.getClass().isArray());

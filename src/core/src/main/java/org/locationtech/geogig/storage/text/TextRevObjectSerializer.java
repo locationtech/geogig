@@ -31,7 +31,6 @@ import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
-import org.locationtech.geogig.data.StringConverters;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
 import org.locationtech.geogig.feature.Name;
@@ -196,7 +195,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             writeBBox(w, node, envHelper);
             Map<String, Object> extraData = node.getExtraData();
             if (!extraData.isEmpty()) {
-                String extraDataAsString = StringConverters.marshall(extraData);
+                String extraDataAsString = FieldType.MAP.toString(extraData);
                 print(w, "\t");
                 print(w, extraDataAsString);
             }
@@ -504,7 +503,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             Map<String, Object> extraData = null;
             if (numTokens == 7) {
                 String extraDataAsString = tokens.get(6);
-                extraData = StringConverters.unmarshall(extraDataAsString, Map.class);
+                extraData = FieldType.unmarshall(extraDataAsString, Map.class);
             }
 
             return org.locationtech.geogig.model.RevObjectFactory.defaultInstance().createNode(name,

@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.data;
+package org.locationtech.geogig.model.internal;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,14 +36,6 @@ class MapMarshaller implements Marshaller {
 
     private static final char ENTRY_SEPARATOR = '|';
 
-    public @Override Class<?> getValueType() {
-        return null;
-    }
-
-    public @Override boolean canHandle(@NonNull Class<?> valueClass) {
-        return Map.class.isAssignableFrom(valueClass);
-    }
-
     @SuppressWarnings("unchecked")
     public @Override @NonNull String marshall(@NonNull Object object) {
         Map<String, Object> map = (Map<String, Object>) object;
@@ -54,7 +46,7 @@ class MapMarshaller implements Marshaller {
             String key = e.getKey();
             Object value = e.getValue();
             FieldType valueType = FieldType.forValue(value);
-            String convertedValue = StringConverters.marshall(value);
+            String convertedValue = valueType.toString(value);
             sb.append(key);
             sb.append(KEY_VALUE_SEPARATOR);
             sb.append(valueType).append(VALUE_START).append(convertedValue).append(VALUE_END);
@@ -94,9 +86,8 @@ class MapMarshaller implements Marshaller {
                                 key, value),
                         e);
             }
-            Class<?> valueBinding = valueFieldType.getBinding();
 
-            Object finalValue = StringConverters.unmarshall(stringValue, valueBinding);
+            Object finalValue = valueFieldType.unmarshall(stringValue);
 
             map.put(key, finalValue);
         }

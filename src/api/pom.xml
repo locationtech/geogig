@@ -35,6 +35,10 @@
       <artifactId>guava</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.jdt</groupId>
       <artifactId>org.eclipse.jdt.annotation</artifactId>
     </dependency>
@@ -54,18 +58,14 @@
       <artifactId>slf4j-simple</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- 
     <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-epsg-hsql</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-main</artifactId>
-      <scope>test</scope>
-    </dependency>
-     -->
+    <!-- <dependency> <groupId>org.geotools</groupId> <artifactId>gt-epsg-hsql</artifactId> <scope>test</scope> </dependency> 
+      <dependency> <groupId>org.geotools</groupId> <artifactId>gt-main</artifactId> <scope>test</scope> </dependency> -->
   </dependencies>
 
   <build>

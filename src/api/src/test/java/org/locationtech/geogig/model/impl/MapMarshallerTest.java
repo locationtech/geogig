@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.data;
+package org.locationtech.geogig.model.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.FieldType;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -32,16 +33,16 @@ public class MapMarshallerTest {
 
     @Test
     public void nullTest() {
-        assertNull(StringConverters.unmarshall(null, Map.class));
-        assertNull(StringConverters.unmarshall("", Map.class));
-        assertNull(StringConverters.unmarshall("    ", Map.class));
+        assertNull(FieldType.unmarshall(null, Map.class));
+        assertNull(FieldType.unmarshall("", Map.class));
+        assertNull(FieldType.unmarshall("    ", Map.class));
     }
 
     @Test
     public void emptyTest() {
-        assertEquals(Collections.emptyMap(), StringConverters.unmarshall("{}", Map.class));
-        assertEquals(Collections.emptyMap(), StringConverters.unmarshall(" {} ", Map.class));
-        assertEquals(Collections.emptyMap(), StringConverters.unmarshall(" {  } ", Map.class));
+        assertEquals(Collections.emptyMap(), FieldType.unmarshall("{}", Map.class));
+        assertEquals(Collections.emptyMap(), FieldType.unmarshall(" {} ", Map.class));
+        assertEquals(Collections.emptyMap(), FieldType.unmarshall(" {  } ", Map.class));
     }
 
     @Test
@@ -57,11 +58,11 @@ public class MapMarshallerTest {
 
         // assertNull(StringConverters.marshall(map, Integer.class));
 
-        String converted = StringConverters.marshall(map);
+        String converted = FieldType.marshall(map);
         assertNotNull(converted);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> roundTripped = StringConverters.unmarshall(converted, Map.class);
+        Map<String, Object> roundTripped = FieldType.unmarshall(converted, Map.class);
         assertNotNull(roundTripped);
 
         assertEquals(map.size(), roundTripped.size());

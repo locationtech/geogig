@@ -7,20 +7,14 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.data;
+package org.locationtech.geogig.model.internal;
 
 import lombok.NonNull;
 
 /**
  * A simple value marshalling/unmarshalling interface
  */
-interface Marshaller {
-
-    public Class<?> getValueType();
-
-    public default boolean canHandle(@NonNull Class<?> valueClass) {
-        return valueClass.equals(getValueType());
-    }
+public interface Marshaller {
 
     public @NonNull String marshall(@NonNull Object value);
 

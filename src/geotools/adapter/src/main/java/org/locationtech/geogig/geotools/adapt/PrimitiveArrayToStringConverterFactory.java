@@ -53,7 +53,7 @@ public class PrimitiveArrayToStringConverterFactory implements ConverterFactory 
 
     private static Converter TO_STRING = new Converter() {
         public @Override <T> T convert(Object source, Class<T> target) throws Exception {
-            return target.cast(org.locationtech.geogig.data.StringConverters.marshall(source));
+            return target.cast(FieldType.marshall(source));
         }
     };
 
@@ -62,8 +62,7 @@ public class PrimitiveArrayToStringConverterFactory implements ConverterFactory 
             Preconditions.checkArgument(source == null || source.getClass().equals(String.class));
             Preconditions.checkArgument(target.isArray());
             Preconditions.checkArgument(target.getComponentType().isPrimitive());
-            return target.cast(org.locationtech.geogig.data.StringConverters
-                    .unmarshall((String) source, target));
+            return target.cast(FieldType.unmarshall((String) source, target));
         }
     };
 

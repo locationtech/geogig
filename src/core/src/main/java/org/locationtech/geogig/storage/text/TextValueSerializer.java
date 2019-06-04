@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.data.StringConverters;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -52,7 +51,7 @@ public class TextValueSerializer {
         @Override
         public String toString(Object value) {
             if (value.getClass().getComponentType().isPrimitive()) {
-                return StringConverters.marshall(value);
+                return FieldType.marshall(value);
             }
             return "[" + Joiner.on(" ").join((Object[]) value) + "]";
         }
@@ -292,12 +291,12 @@ public class TextValueSerializer {
 
             @Override
             public String toString(Object value) {
-                return StringConverters.marshall(value);
+                return FieldType.marshall(value);
             }
 
             @Override
             public Object fromString(String in) throws ParseException {
-                return StringConverters.unmarshall(in, Map.class);
+                return FieldType.unmarshall(in, Map.class);
             }
         });
     }

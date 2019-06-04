@@ -32,7 +32,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.data.StringConverters;
+import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
@@ -229,13 +229,13 @@ public class PGConfigDatabase implements ConfigDatabase {
     }
 
     <T> T convert(String value, Class<T> clazz) {
-        Object v = StringConverters.unmarshall(value, clazz);
+        Object v = FieldType.unmarshall(value, clazz);
         checkArgument(v != null, "Can't convert %s to %s", value, clazz.getName());
         return clazz.cast(v);
     }
 
     void put(Entry entry, Object value, final int repositoryPK) {
-        put(entry, StringConverters.marshall(value), repositoryPK);
+        put(entry, FieldType.marshall(value), repositoryPK);
     }
 
     protected static class Entry {

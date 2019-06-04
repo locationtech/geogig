@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.data;
+package org.locationtech.geogig.model.internal;
 
 import java.lang.reflect.Array;
 import java.util.List;
@@ -27,14 +27,6 @@ import lombok.NonNull;
  */
 class PrimitiveArrayMarshaller implements Marshaller {
 
-    public @Override Class<?> getValueType() {
-        return null;
-    }
-
-    public @Override boolean canHandle(@NonNull Class<?> valueClass) {
-        return valueClass.isArray() && valueClass.getComponentType().isPrimitive();
-    }
-
     public @Override @NonNull String marshall(@NonNull Object val) {
         Preconditions.checkArgument(val.getClass().isArray());
         final int length = Array.getLength(val);
@@ -53,7 +45,8 @@ class PrimitiveArrayMarshaller implements Marshaller {
 
     public Object unmarshall(@NonNull String source, @NonNull Class<?> target) {
         Preconditions.checkArgument(target.isArray());
-        Preconditions.checkArgument(target.getComponentType().isPrimitive());
+        Preconditions.checkArgument(target.getComponentType().isPrimitive()
+                || char[].class.equals(target.getComponentType()));
 
         final FieldType arrayType = FieldType.forBinding(target);
         Preconditions.checkState(arrayType.getBinding().isArray());
@@ -92,6 +85,9 @@ class PrimitiveArrayMarshaller implements Marshaller {
                 break;
             case DOUBLE_ARRAY:
                 Array.setDouble(array, i, Double.parseDouble(val));
+                break;
+            case CHAR_ARRAY:
+                Array.setChar(array, i, val.charAt(0));
                 break;
             default:
                 throw new IllegalArgumentException();

@@ -70,10 +70,6 @@
       <artifactId>guice</artifactId>
       <classifier>no_aop</classifier>
     </dependency>
-    <dependency>
-      <groupId>com.google.inject.extensions</groupId>
-      <artifactId>guice-multibindings</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>com.ning</groupId>

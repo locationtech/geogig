@@ -112,6 +112,10 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
+            <manifest>
+              <mainClass>org.locationtech.geogig.cli.app.CLI</mainClass>
+              <addClasspath>true</addClasspath>
+            </manifest>
             <manifestEntries>
               <Automatic-Module-Name>geogig.cli.app</Automatic-Module-Name>
             </manifestEntries>

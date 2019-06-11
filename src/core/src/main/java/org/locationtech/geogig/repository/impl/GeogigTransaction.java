@@ -34,7 +34,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.locationtech.geogig.storage.impl.TransactionBlobStoreImpl;
@@ -88,7 +87,7 @@ public class GeogigTransaction implements Context {
     }
 
     public void create() {
-        transactionRefDatabase.create();
+        transactionRefDatabase.open();
     }
 
     public void close() {
@@ -219,11 +218,6 @@ public class GeogigTransaction implements Context {
     @Override
     public Repository repository() {
         return context.repository();
-    }
-
-    @Override
-    public PluginDefaults pluginDefaults() {
-        return context.pluginDefaults();
     }
 
     public List<ChangedRef> changedRefs() {

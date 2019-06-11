@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -22,18 +23,35 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
+import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGConflictsDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGIndexDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
+import org.locationtech.geogig.storage.postgresql.v9.PGRefDatabase;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 import lombok.NonNull;
 
-public class PGRepositoryResolver extends RepositoryResolver {
+public class PGRepositoryResolver implements RepositoryResolver {
+    /**
+     * Format name used for configuration.
+     */
+    public static final String FORMAT_NAME = "postgres";
+
+    /**
+     * Implementation version.
+     */
+    public static final String VERSION = "1";
 
     @Override
     public boolean canHandle(URI repoURI) {
@@ -73,8 +91,14 @@ public class PGRepositoryResolver extends RepositoryResolver {
         PGStorage.createNewRepo(config);
     }
 
+    private PGConfigDatabase resolvedConfigDb;
+
     @Override
-    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext, boolean rootUri) {
+    public ConfigDatabase resolveConfigDatabase(URI repoURI, /* unused */Context repoContext,
+            boolean rootUri) {
+        if (resolvedConfigDb != null) {
+            return resolvedConfigDb;
+        }
         final Environment config;
         if (rootUri) {
             Properties properties = EnvironmentBuilder.getRootURIProperties(repoURI);
@@ -85,27 +109,28 @@ public class PGRepositoryResolver extends RepositoryResolver {
         }
         PGConfigDatabase configDb = new PGConfigDatabase(config);
         if (config.getRepositoryName() != null && PGStorage.repoExists(config)) {
-            Optional<String> configEntry = configDb.get(PGStorageProvider.FORMAT_NAME + ".version");
+            Optional<String> configEntry = configDb.get(FORMAT_NAME + ".version");
             if (!configEntry.isPresent()) {
-                configDb.put(PGStorageProvider.FORMAT_NAME + ".version", PGStorageProvider.VERSION);
+                configDb.put(FORMAT_NAME + ".version", VERSION);
             }
             configEntry = configDb.get("storage.refs");
             if (!configEntry.isPresent()) {
-                configDb.put("storage.refs", PGStorageProvider.FORMAT_NAME);
+                configDb.put("storage.refs", FORMAT_NAME);
             }
             configEntry = configDb.get("storage.objects");
             if (!configEntry.isPresent()) {
-                configDb.put("storage.objects", PGStorageProvider.FORMAT_NAME);
+                configDb.put("storage.objects", FORMAT_NAME);
             }
             configEntry = configDb.get("storage.index");
             if (!configEntry.isPresent()) {
-                configDb.put("storage.index", PGStorageProvider.FORMAT_NAME);
+                configDb.put("storage.index", FORMAT_NAME);
             }
             configEntry = configDb.get("storage.graph");
             if (!configEntry.isPresent()) {
-                configDb.put("storage.graph", PGStorageProvider.FORMAT_NAME);
+                configDb.put("storage.graph", FORMAT_NAME);
             }
         }
+        this.resolvedConfigDb = configDb;
         return configDb;
     }
 
@@ -159,6 +184,41 @@ public class PGRepositoryResolver extends RepositoryResolver {
             return cc.toURIMaskPassword().toString();
         } catch (IllegalArgumentException e) {
             return e.getMessage();
+        }
+    }
+
+    public @Override ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI, Hints hints) {
+        ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null);
+        try {
+            return new PGObjectDatabase(configDatabase, hints);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public @Override IndexDatabase resolveIndexDatabase(@NonNull URI repoURI, Hints hints) {
+        ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null);
+        try {
+            return new PGIndexDatabase(configDatabase, hints);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public @Override RefDatabase resolveRefDatabase(@NonNull URI repoURI, Hints hints) {
+        ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null);
+        try {
+            return new PGRefDatabase(configDatabase, hints);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public @Override ConflictsDatabase resolveConflictsDatabase(@NonNull URI repoURI, Hints hints) {
+        try {
+            return new PGConflictsDatabase(hints);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 }

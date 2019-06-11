@@ -30,31 +30,31 @@ public class CleanRefsOpTest extends RepositoryTestCase {
     @Test
     public void testClean() throws Exception {
         // Set up some refs to clean up
-        geogig.command(UpdateRef.class).setName(Ref.MERGE_HEAD).setNewValue(ObjectId.NULL).call();
-        geogig.command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(ObjectId.NULL).call();
-        geogig.command(UpdateRef.class).setName(Ref.CHERRY_PICK_HEAD).setNewValue(ObjectId.NULL)
+        repo.command(UpdateRef.class).setName(Ref.MERGE_HEAD).setNewValue(ObjectId.NULL).call();
+        repo.command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(ObjectId.NULL).call();
+        repo.command(UpdateRef.class).setName(Ref.CHERRY_PICK_HEAD).setNewValue(ObjectId.NULL)
                 .call();
 
-        geogig.getRepository().blobStore().putBlob(MergeOp.MERGE_MSG, "Merge message".getBytes());
+        repo.blobStore().putBlob(MergeOp.MERGE_MSG, "Merge message".getBytes());
 
-        ImmutableList<String> cleanedUp = geogig.command(CleanRefsOp.class).call();
+        ImmutableList<String> cleanedUp = repo.command(CleanRefsOp.class).call();
         assertEquals(4, cleanedUp.size());
         assertTrue(cleanedUp.contains(Ref.MERGE_HEAD));
         assertTrue(cleanedUp.contains(Ref.ORIG_HEAD));
         assertTrue(cleanedUp.contains(Ref.CHERRY_PICK_HEAD));
         assertTrue(cleanedUp.contains(MergeOp.MERGE_MSG));
 
-        Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
+        Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
-        ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        ref = repo.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
         assertFalse(ref.isPresent());
-        ref = geogig.command(RefParse.class).setName(Ref.CHERRY_PICK_HEAD).call();
+        ref = repo.command(RefParse.class).setName(Ref.CHERRY_PICK_HEAD).call();
         assertFalse(ref.isPresent());
-        Optional<byte[]> mergeMsg = geogig.getRepository().blobStore().getBlob(MergeOp.MERGE_MSG);
+        Optional<byte[]> mergeMsg = repo.blobStore().getBlob(MergeOp.MERGE_MSG);
         assertFalse(mergeMsg.isPresent());
 
         // Running it again should result in nothing being cleaned up.
-        cleanedUp = geogig.command(CleanRefsOp.class).call();
+        cleanedUp = repo.command(CleanRefsOp.class).call();
 
         assertEquals(0, cleanedUp.size());
     }

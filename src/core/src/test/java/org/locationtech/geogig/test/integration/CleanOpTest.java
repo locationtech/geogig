@@ -35,8 +35,8 @@ public class CleanOpTest extends RepositoryTestCase {
 
         insert(points1, points2, points3);
 
-        geogig.command(CleanOp.class).call();
-        try (AutoCloseableIterator<DiffEntry> deleted = geogig.command(DiffWorkTree.class).call()) {
+        repo.command(CleanOp.class).call();
+        try (AutoCloseableIterator<DiffEntry> deleted = repo.command(DiffWorkTree.class).call()) {
             ArrayList<DiffEntry> list = Lists.newArrayList(deleted);
             // Check that all the features have been deleted
             assertEquals(0, list.size());
@@ -48,8 +48,8 @@ public class CleanOpTest extends RepositoryTestCase {
 
         insert(points1, points2, points3, lines1);
 
-        geogig.command(CleanOp.class).setPath(pointsName).call();
-        try (AutoCloseableIterator<DiffEntry> deleted = geogig.command(DiffWorkTree.class).call()) {
+        repo.command(CleanOp.class).setPath(pointsName).call();
+        try (AutoCloseableIterator<DiffEntry> deleted = repo.command(DiffWorkTree.class).call()) {
             ArrayList<DiffEntry> list = Lists.newArrayList(deleted);
             // Check that all the point features have been deleted but not the line one
             assertEquals(1, list.size());
@@ -63,7 +63,7 @@ public class CleanOpTest extends RepositoryTestCase {
         populate(false, points1, points2, points3);
 
         try {
-            geogig.command(CleanOp.class).setPath(linesName).call();
+            repo.command(CleanOp.class).setPath(linesName).call();
             fail("expected IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertTrue(true);

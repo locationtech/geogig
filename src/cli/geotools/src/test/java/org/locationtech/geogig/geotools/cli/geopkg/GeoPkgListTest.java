@@ -41,7 +41,7 @@ public class GeoPkgListTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = spy(new GeogigCLI(consoleReader));
 
-        cli.setGeogig(geogig);
+        cli.setGeogig(repo);
 
         support = new GeoPackageTestSupport();
     }

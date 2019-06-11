@@ -9,16 +9,13 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,7 +23,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
@@ -47,14 +44,11 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.FeatureToDelete;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
-import org.locationtech.geogig.test.TestPlatform;
+import org.locationtech.geogig.test.TestRepository;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -149,50 +143,35 @@ public abstract class RepositoryTestCase extends Assert {
 
     public Feature poly3;
 
-    protected GeoGIG geogig;
-
     protected Repository repo;
+
+    public @Rule TestRepository testRepository = new TestRepository();
 
     // prevent recursion
     private boolean setup = false;
 
-    protected File repositoryDirectory;
-
-    protected Context injector;
-
-    @Rule
-    public TemporaryFolder repositoryTempFolder = new TemporaryFolder();
+    public @Rule TestName testName = new TestName();
 
     @Before
     public final void setUp() throws Exception {
         if (setup) {
             throw new IllegalStateException("Are you calling super.setUp()!?");
         }
-
         setup = true;
         doSetUp();
     }
 
-    /**
-     * In rare occasions a test fail for unknown reasons and it's definitely related to the
-     * temporary folder somehow resolving to the same directory in two different tests, which I
-     * thought was impossible and the whole point of {@link TemporaryFolder}. So although I didn't
-     * get to the root cause of the issue, appending a randon number to the repository directory
-     * name makes the trick for the time being.
-     */
-    private static final Random RANDOM = new Random();
+    @After
+    public final void tearDown() throws Exception {
+        setup = false;
+        tearDownInternal();
+        TestRepository.closeAndDelete(repo);
+    }
 
     protected final void doSetUp() throws IOException, ParseException, Exception {
-        repositoryDirectory = repositoryTempFolder.newFolder("repo" + RANDOM.nextInt());
-
-        injector = createInjector();
-
-        geogig = new GeoGIG(injector);
-        repo = geogig.getOrCreateRepository();
-        assertNotNull(repo);
+        repo = testRepository.repository();
         assertTrue(repo.isOpen());
         assertNotNull(repo.configDatabase());
-        assertSame(injector, repo.context());
         assertNotNull(repo.objectDatabase());
         assertNotNull(repo.graphDatabase());
         assertNotNull(repo.conflictsDatabase());
@@ -250,29 +229,6 @@ public abstract class RepositoryTestCase extends Assert {
         setUpInternal();
     }
 
-    protected Context createInjector() {
-        Platform platform = createPlatform();
-        URI uri = repositoryDirectory.getAbsoluteFile().toURI();
-        Hints hints = new Hints().uri(uri).platform(platform);
-        return new TestContextBuilder().build(hints);
-    }
-
-    protected Platform createPlatform() {
-        Platform testPlatform = new TestPlatform(repositoryDirectory);
-        return testPlatform;
-    }
-
-    @After
-    public final void tearDown() throws Exception {
-        setup = false;
-        tearDownInternal();
-        if (repo != null) {
-            repo.close();
-        }
-        repo = null;
-        injector = null;
-    }
-
     /**
      * Called as the last step in {@link #setUp()}
      */
@@ -287,10 +243,6 @@ public abstract class RepositoryTestCase extends Assert {
 
     public Repository getRepository() {
         return repo;
-    }
-
-    public GeoGIG getGeogig() {
-        return geogig;
     }
 
     public FeatureInfo featureInfo(Feature f) {
@@ -393,7 +345,7 @@ public abstract class RepositoryTestCase extends Assert {
         if (transaction != null) {
             transaction.command(AddOp.class).call();
         } else {
-            geogig.command(AddOp.class).call();
+            repo.command(AddOp.class).call();
         }
         return objectId;
     }
@@ -450,7 +402,7 @@ public abstract class RepositoryTestCase extends Assert {
 
     public void insertAndAdd(GeogigTransaction transaction, Feature... features) throws Exception {
         insert(transaction, features);
-        geogig.command(AddOp.class).call();
+        repo.command(AddOp.class).call();
     }
 
     public void insert(Feature... features) throws Exception {
@@ -488,7 +440,7 @@ public abstract class RepositoryTestCase extends Assert {
             if (transaction != null) {
                 transaction.command(AddOp.class).call();
             } else {
-                geogig.command(AddOp.class).call();
+                repo.command(AddOp.class).call();
             }
         }
 

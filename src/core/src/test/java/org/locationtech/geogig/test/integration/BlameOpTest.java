@@ -38,9 +38,9 @@ public class BlameOpTest extends RepositoryTestCase {
     @Test
     public void testBlameChangedByASingleCommit() throws Exception {
         insertAndAdd(points1);
-        RevCommit firstCommit = geogig.command(CommitOp.class).call();
+        RevCommit firstCommit = repo.command(CommitOp.class).call();
         String path = NodeRef.appendChild(pointsName, idP1);
-        BlameReport report = geogig.command(BlameOp.class).setPath(path).call();
+        BlameReport report = repo.command(BlameOp.class).setPath(path).call();
         Map<String, ValueAndCommit> changes = report.getChanges();
         assertEquals(3, changes.size());
         Collection<ValueAndCommit> commits = changes.values();
@@ -52,11 +52,11 @@ public class BlameOpTest extends RepositoryTestCase {
     @Test
     public void testBlameChangedByLastCommit() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
         insertAndAdd(points1_modified);
-        RevCommit secondCommit = geogig.command(CommitOp.class).call();
+        RevCommit secondCommit = repo.command(CommitOp.class).call();
         String path = NodeRef.appendChild(pointsName, idP1);
-        BlameReport report = geogig.command(BlameOp.class).setPath(path).call();
+        BlameReport report = repo.command(BlameOp.class).setPath(path).call();
         Map<String, ValueAndCommit> changes = report.getChanges();
         assertEquals(3, changes.size());
         Collection<ValueAndCommit> commits = changes.values();
@@ -68,13 +68,13 @@ public class BlameOpTest extends RepositoryTestCase {
     @Test
     public void testBlameChangedByTwoCommits() throws Exception {
         insertAndAdd(points1);
-        RevCommit firstCommit = geogig.command(CommitOp.class).call();
+        RevCommit firstCommit = repo.command(CommitOp.class).call();
         Feature pointsModified = feature(pointsType, idP1, "StringProp1_3", new Integer(1000),
                 "POINT(1 1)");
         insertAndAdd(pointsModified);
-        RevCommit secondCommit = geogig.command(CommitOp.class).call();
+        RevCommit secondCommit = repo.command(CommitOp.class).call();
         String path = NodeRef.appendChild(pointsName, idP1);
-        BlameReport report = geogig.command(BlameOp.class).setPath(path).call();
+        BlameReport report = repo.command(BlameOp.class).setPath(path).call();
         Map<String, ValueAndCommit> changes = report.getChanges();
         assertEquals(3, changes.size());
         assertEquals(secondCommit, changes.get("sp").commit);
@@ -84,7 +84,7 @@ public class BlameOpTest extends RepositoryTestCase {
         assertEquals(points1.getAttribute("ip"), changes.get("ip").value.get());
         assertEquals(points1.getAttribute("pp"), changes.get("pp").value.get());
 
-        report = geogig.command(BlameOp.class).setPath(path).setCommit(firstCommit.getId()).call();
+        report = repo.command(BlameOp.class).setPath(path).setCommit(firstCommit.getId()).call();
         changes = report.getChanges();
         assertEquals(3, changes.size());
         Collection<ValueAndCommit> commits = changes.values();
@@ -96,13 +96,13 @@ public class BlameOpTest extends RepositoryTestCase {
     @Test
     public void testBlameRemovedAndAdded() throws Exception {
         insertAndAdd(points1);
-        RevCommit firstCommit = geogig.command(CommitOp.class).call();
+        RevCommit firstCommit = repo.command(CommitOp.class).call();
         deleteAndAdd(points1);
-        RevCommit secondCommit = geogig.command(CommitOp.class).call();
+        RevCommit secondCommit = repo.command(CommitOp.class).call();
         insertAndAdd(points1);
-        RevCommit thirdCommit = geogig.command(CommitOp.class).call();
+        RevCommit thirdCommit = repo.command(CommitOp.class).call();
         String path = NodeRef.appendChild(pointsName, idP1);
-        BlameReport report = geogig.command(BlameOp.class).setPath(path).call();
+        BlameReport report = repo.command(BlameOp.class).setPath(path).call();
         Map<String, ValueAndCommit> changes = report.getChanges();
         assertEquals(3, changes.size());
         Collection<ValueAndCommit> commits = changes.values();
@@ -111,14 +111,14 @@ public class BlameOpTest extends RepositoryTestCase {
         }
 
         try {
-            report = geogig.command(BlameOp.class).setPath(path).setCommit(secondCommit.getId())
+            report = repo.command(BlameOp.class).setPath(path).setCommit(secondCommit.getId())
                     .call();
             fail();
         } catch (BlameException e) {
             assertTrue(e.statusCode == StatusCode.FEATURE_NOT_FOUND);
         }
 
-        report = geogig.command(BlameOp.class).setPath(path).setCommit(firstCommit.getId()).call();
+        report = repo.command(BlameOp.class).setPath(path).setCommit(firstCommit.getId()).call();
         changes = report.getChanges();
         assertEquals(3, changes.size());
         commits = changes.values();
@@ -130,9 +130,9 @@ public class BlameOpTest extends RepositoryTestCase {
     @Test
     public void testBlameWithWrongFeaturePath() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
         try {
-            geogig.command(BlameOp.class).setPath("wrongpath").call();
+            repo.command(BlameOp.class).setPath("wrongpath").call();
             fail();
         } catch (BlameException e) {
             assertTrue(e.statusCode == StatusCode.FEATURE_NOT_FOUND);
@@ -143,9 +143,9 @@ public class BlameOpTest extends RepositoryTestCase {
     @Test
     public void testBlameWithFeatureType() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
         try {
-            geogig.command(BlameOp.class).setPath(pointsName).call();
+            repo.command(BlameOp.class).setPath(pointsName).call();
             fail();
         } catch (BlameException e) {
             assertTrue(e.statusCode == StatusCode.PATH_NOT_FEATURE);

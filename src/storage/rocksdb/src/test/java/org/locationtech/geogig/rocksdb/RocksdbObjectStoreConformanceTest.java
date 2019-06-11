@@ -10,33 +10,20 @@
 package org.locationtech.geogig.rocksdb;
 
 import java.io.File;
+import java.io.IOException;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
-import org.locationtech.geogig.test.TestPlatform;
 
 public class RocksdbObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 
     public @Rule TemporaryFolder folder = new TemporaryFolder();
 
-    private TestPlatform platform;
-
-    public @Before @Override void setUp() throws Exception {
-        File root = folder.getRoot();
-        folder.newFolder(".geogig");
-        File home = folder.newFolder("home");
-        platform = new TestPlatform(root);
-        platform.setUserHome(home);
-        super.setUp();
-    }
-
-    protected @Override RocksdbObjectStore createOpen() {
-        Hints hints = new Hints();
-        RocksdbObjectStore database = new RocksdbObjectStore(platform, hints);
-        database.open();
-        return database;
+    protected @Override RocksdbObjectStore createOpen() throws IOException {
+        File dbdir = folder.newFolder(".geogig");
+        RocksdbObjectStore store = new RocksdbObjectStore(dbdir, false);
+        store.open();
+        return store;
     }
 }

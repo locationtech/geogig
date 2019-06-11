@@ -9,8 +9,11 @@
  */
 package org.locationtech.geogig.rocksdb.performance;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.rocksdb.RocksdbObjectDatabase;
+import org.locationtech.geogig.rocksdb.RocksdbObjectStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.performance.AbstractObjectStoreStressTest;
@@ -19,8 +22,13 @@ public class RocksdbObjectStoreStressTest extends AbstractObjectStoreStressTest 
 
     @Override
     protected ObjectStore createDb(Platform platform, ConfigDatabase config) {
-        RocksdbObjectDatabase database = new RocksdbObjectDatabase(platform, null, config);
-        return database;
+        File dbdir;
+        try {
+            dbdir = super.tmp.newFolder();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new RocksdbObjectStore(dbdir, false);
     }
 
 }

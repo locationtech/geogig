@@ -40,13 +40,13 @@ public class ExportDiffOpTest extends RepositoryTestCase {
     @Test
     public void testExportDiff() throws Exception {
         insertAndAdd(points1);
-        final RevCommit insertCommit = geogig.command(CommitOp.class).setAll(true).call();
+        final RevCommit insertCommit = repo.command(CommitOp.class).setAll(true).call();
 
         final String featureId = points1.getId();
         final org.locationtech.geogig.feature.Feature modifiedFeature = feature(points1.getType(),
                 featureId, "changedProp", new Integer(1500), "POINT(1 1)");
         insertAndAdd(modifiedFeature, points2);
-        final RevCommit changeCommit = geogig.command(CommitOp.class).setAll(true).call();
+        final RevCommit changeCommit = repo.command(CommitOp.class).setAll(true).call();
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.add("changetype", String.class);
@@ -67,7 +67,7 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportDiffOp.class).setFeatureStore(featureStore).setPath(pointsName)
+        repo.command(ExportDiffOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setNewRef(changeCommit.getId().toString())
                 .setOldRef(insertCommit.getId().toString()).call();
         featureSource = dataStore.getFeatureSource(typeName);
@@ -81,13 +81,13 @@ public class ExportDiffOpTest extends RepositoryTestCase {
     @Test
     public void testExportDiffUsingOldVersion() throws Exception {
         insertAndAdd(points1);
-        final RevCommit insertCommit = geogig.command(CommitOp.class).setAll(true).call();
+        final RevCommit insertCommit = repo.command(CommitOp.class).setAll(true).call();
 
         final String featureId = points1.getId();
         final org.locationtech.geogig.feature.Feature modifiedFeature = feature(points1.getType(),
                 featureId, "changedProp", new Integer(1500));
         insertAndAdd(modifiedFeature, points2);
-        final RevCommit changeCommit = geogig.command(CommitOp.class).setAll(true).call();
+        final RevCommit changeCommit = repo.command(CommitOp.class).setAll(true).call();
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.add(ExportDiffOp.CHANGE_TYPE_NAME, String.class);
@@ -106,7 +106,7 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportDiffOp.class).setFeatureStore(featureStore).setPath(pointsName)
+        repo.command(ExportDiffOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setNewRef(changeCommit.getId().toString())
                 .setOldRef(insertCommit.getId().toString()).setUseOld(true).call();
         featureSource = dataStore.getFeatureSource(typeName);

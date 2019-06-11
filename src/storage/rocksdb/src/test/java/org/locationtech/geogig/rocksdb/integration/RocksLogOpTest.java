@@ -10,11 +10,13 @@
 package org.locationtech.geogig.rocksdb.integration;
 
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.test.integration.LogOpTest;
 
 public class RocksLogOpTest extends LogOpTest {
 
     protected @Override Context createInjector() {
-        return RocksStorageModule.createContext(repositoryDirectory);
+        return new PluginsContextBuilder().build(new Hints().platform(super.createPlatform()));
     }
 }

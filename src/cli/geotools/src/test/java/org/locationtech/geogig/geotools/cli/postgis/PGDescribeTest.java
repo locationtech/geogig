@@ -44,7 +44,7 @@ public class PGDescribeTest extends RepositoryTestCase {
         consoleReader = spy(new Console().disableAnsi());
         cli = spy(new GeogigCLI(consoleReader));
 
-        cli.setGeogig(geogig);
+        cli.setGeogig(repo);
     }
 
     @After

@@ -44,7 +44,6 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
     public @Override synchronized void close() {
         if (conflicts != null) {
             conflicts.clear();
-            conflicts = null;
         }
     }
 

@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -36,7 +37,7 @@ public class LocalRemoteResolver implements RemoteResolver {
         final URI fetchURI = URI.create(fetchURL);
         final String scheme = fetchURI.getScheme();
         Preconditions.checkNotNull(scheme, "Fetch URI doesn't declare scheme: %s", fetchURL);
-        if (RepositoryResolver.resolverAvailableForURIScheme(scheme)) {
+        if (RepositoryFinder.INSTANCE.resolverAvailableForURIScheme(scheme)) {
             IRemoteRepo remoteRepo = null;
 
             if (remote.getMapped()) {

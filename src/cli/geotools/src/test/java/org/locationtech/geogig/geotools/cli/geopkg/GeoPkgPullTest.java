@@ -61,7 +61,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(geogig);
+        cli.setGeogig(repo);
 
         support = new GeoPackageTestSupport();
     }
@@ -78,7 +78,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         insertAndAdd(points2);
         insertAndAdd(points3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         GeopkgExport exportCommand = new GeopkgExport();
         File geoPkgFile = support.newFile();
@@ -128,7 +128,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         // last node was the newly added one, it'll have a randomly generated fid
         assertTrue(nodeList.get(0).startsWith("fid-"));
 
-        RevCommit latestCommit = geogig.command(RevObjectParse.class).setRefSpec("HEAD")
+        RevCommit latestCommit = repo.command(RevObjectParse.class).setRefSpec("HEAD")
                 .call(RevCommit.class).get();
         assertEquals(pullCommand.commitMessage, latestCommit.getMessage());
     }
@@ -140,7 +140,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         insertAndAdd(points2);
         insertAndAdd(points3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         GeopkgExport exportCommand = new GeopkgExport();
         File geoPkgFile = support.newFile();
@@ -155,7 +155,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         insertAndAdd(lines2);
         insertAndAdd(lines3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         DataStore gpkgStore = store(geoPkgFile);
 
@@ -205,7 +205,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         // last node was the newly added one, it'll have a randomly generated fid
         assertTrue(nodeList.get(0).startsWith("fid-"));
 
-        RevCommit latestCommit = geogig.command(RevObjectParse.class).setRefSpec("HEAD")
+        RevCommit latestCommit = repo.command(RevObjectParse.class).setRefSpec("HEAD")
                 .call(RevCommit.class).get();
         assertEquals("Merge: " + pullCommand.commitMessage, latestCommit.getMessage());
     }
@@ -217,7 +217,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         insertAndAdd(points2);
         insertAndAdd(points3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         GeopkgExport exportCommand = new GeopkgExport();
         File geoPkgFile = support.newFile();
@@ -230,7 +230,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         // Add lines
         deleteAndAdd(points1);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         DataStore gpkgStore = store(geoPkgFile);
 

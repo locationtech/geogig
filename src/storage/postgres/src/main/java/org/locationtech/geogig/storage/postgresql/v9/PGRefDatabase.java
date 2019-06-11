@@ -12,8 +12,6 @@ package org.locationtech.geogig.storage.postgresql.v9;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newConnection;
 
@@ -35,7 +33,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
@@ -43,7 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class PGRefDatabase implements RefDatabase {
 
@@ -59,34 +57,41 @@ public class PGRefDatabase implements RefDatabase {
 
     private static ThreadLocal<Connection> LockConnection = new ThreadLocal<>();
 
-    @Inject
-    public PGRefDatabase(ConfigDatabase configDB, Hints hints) throws URISyntaxException {
-        this(configDB, Environment.get(hints));
-    }
+    public PGRefDatabase(@NonNull ConfigDatabase configDB, @NonNull Hints hints)
+            throws URISyntaxException {
+        Environment config = Environment.get(hints);
 
-    public PGRefDatabase(ConfigDatabase configDB, Environment config) {
-        Preconditions.checkNotNull(configDB);
-        Preconditions.checkNotNull(config);
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
         Preconditions.checkState(config.isRepositorySet());
+
         this.configDB = configDB;
         this.config = config;
         this.refsTableName = config.getTables().refs();
     }
 
+    // public static PGRefDatabase create(ConfigDatabase configDB, Environment config) {
+    // Preconditions.checkNotNull(configDB);
+    // Preconditions.checkNotNull(config);
+    // Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
+    // config.getRepositoryName());
+    // Preconditions.checkState(config.isRepositorySet());
+    // this.configDB = configDB;
+    // this.config = config;
+    // this.refsTableName = config.getTables().refs();
+    // }
+
     @Override
     public void configure() throws RepositoryConnectionException {
-        StorageType.OBJECT.configure(configDB, FORMAT_NAME, VERSION);
     }
 
     @Override
     public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.OBJECT.verify(configDB, FORMAT_NAME, VERSION);
+        return true;
     }
 
     @Override
-    public synchronized void create() {
+    public synchronized void open() {
         if (dataSource != null) {
             return;
         }

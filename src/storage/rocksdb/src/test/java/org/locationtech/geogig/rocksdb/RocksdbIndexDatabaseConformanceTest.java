@@ -14,34 +14,22 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
-import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.storage.impl.IndexDatabaseConformanceTest;
-import org.locationtech.geogig.test.TestPlatform;
 
 public class RocksdbIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest {
 
     public @Rule TemporaryFolder folder = new TemporaryFolder();
 
-    private TestPlatform platform;
+    private File dbdir;
 
     public @Before @Override void setUp() throws Exception {
-        File root = folder.getRoot();
-        folder.newFolder(".geogig");
-        File home = folder.newFolder("home");
-        platform = new TestPlatform(root);
-        platform.setUserHome(home);
+        this.dbdir = folder.newFolder(".geogig");
         super.setUp();
     }
 
     @Override
     protected IndexDatabase createIndexDatabase(boolean readOnly) {
-        Hints hints = new Hints();
-        hints.set(Hints.OBJECTS_READ_ONLY, readOnly);
-        ConfigDatabase configDB = new IniFileConfigDatabase(platform);
-        IndexDatabase database = new RocksdbIndexDatabase(platform, hints, configDB);
-        return database;
+        return new RocksdbIndexDatabase(dbdir, readOnly);
     }
 }

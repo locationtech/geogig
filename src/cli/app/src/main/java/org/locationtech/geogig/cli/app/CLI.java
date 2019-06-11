@@ -28,7 +28,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.impl.FileRepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -72,7 +72,7 @@ public class CLI {
             // FileRepositoryResolver doesn't fail regardless of the argument value, but other
             // implementations might.
             final boolean resolveAsRootURI = false;
-            try (ConfigDatabase config = FileRepositoryResolver
+            try (ConfigDatabase config = RepositoryFinder.INSTANCE
                     .resolveConfigDatabase(platform.pwd().toURI(), context, resolveAsRootURI)) {
                 Optional<String> ansiEnabled = config.getGlobal("ansi.enabled");
                 if (ansiEnabled.isPresent()) {

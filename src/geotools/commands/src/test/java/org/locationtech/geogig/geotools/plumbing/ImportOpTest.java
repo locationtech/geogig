@@ -68,7 +68,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testNullDataStore() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setTable("table1");
         exception.expect(GeoToolsOpException.class);
         importOp.call();
@@ -76,7 +76,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testNullTableNotAll() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
@@ -86,7 +86,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyTableNotAll() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setTable("");
         importOp.setAll(false);
         importOp.setDataStore(
@@ -97,7 +97,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyTableAndAll() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setTable("");
         importOp.setAll(true);
         importOp.setDataStore(
@@ -107,7 +107,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testTableAndAll() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setTable("table1");
         importOp.setAll(true);
         importOp.setDataStore(
@@ -118,7 +118,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testTableNotFound() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
@@ -129,7 +129,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testNoFeaturesFound() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(true);
@@ -139,7 +139,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testTypeNameException() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(TestHelper.createFactoryWithGetNamesException()
                 .createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
@@ -150,7 +150,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testGetFeatureSourceException() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(TestHelper.createFactoryWithGetFeatureSourceException()
                 .createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
@@ -161,18 +161,18 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testImportTable() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
         importOp.setTable("table1");
 
         RevTree newWorkingTree = importOp.call();
-        Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
+        Optional<NodeRef> ref = repo.command(FindTreeChild.class).setParent(newWorkingTree)
                 .setChildPath("table1/feature1").call();
         assertTrue(ref.isPresent());
 
-        ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
+        ref = repo.command(FindTreeChild.class).setParent(newWorkingTree)
                 .setChildPath("table1/feature2").call();
         assertTrue(ref.isPresent());
     }
@@ -180,50 +180,50 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testImportTableWithNoFeatures() throws Exception {
 
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
         importOp.setTable("table4");
         importOp.call();
 
-        geogig.command(AddOp.class).call();
-        Optional<RevObject> ft = geogig.command(RevObjectParse.class).setRefSpec("WORK_HEAD:table4")
+        repo.command(AddOp.class).call();
+        Optional<RevObject> ft = repo.command(RevObjectParse.class).setRefSpec("WORK_HEAD:table4")
                 .call();
         assertTrue(ft.isPresent());
     }
 
     @Test
     public void testImportAll() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(true);
 
         RevTree newWorkingTree = importOp.call();
-        Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
+        Optional<NodeRef> ref = repo.command(FindTreeChild.class).setParent(newWorkingTree)
                 .setChildPath("table1/feature1").call();
         assertTrue(ref.isPresent());
 
-        ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
+        ref = repo.command(FindTreeChild.class).setParent(newWorkingTree)
                 .setChildPath("table1/feature2").call();
         assertTrue(ref.isPresent());
 
-        ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
+        ref = repo.command(FindTreeChild.class).setParent(newWorkingTree)
                 .setChildPath("table2/feature3").call();
         assertTrue(ref.isPresent());
     }
 
     @Test
     public void testImportAllWithDifferentFeatureTypesAndDestPath() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(true);
         importOp.setDestinationPath("dest");
         importOp.setAdaptToDefaultFeatureType(false);
         importOp.call();
-        Iterator<NodeRef> features = geogig.command(LsTreeOp.class)
+        Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         ArrayList<NodeRef> list = Lists.newArrayList(features);
         assertEquals(4, list.size());
@@ -233,7 +233,7 @@ public class ImportOpTest extends RepositoryTestCase {
         }
         assertEquals(4, set.size());
         for (ObjectId metadataId : set) {
-            Optional<RevFeatureType> ft = geogig.command(RevObjectParse.class)
+            Optional<RevFeatureType> ft = repo.command(RevObjectParse.class)
                     .setObjectId(metadataId).call(RevFeatureType.class);
             assertTrue(ft.isPresent());
             assertEquals("dest", ft.get().getName().getLocalPart());
@@ -253,9 +253,9 @@ public class ImportOpTest extends RepositoryTestCase {
                 new Object[] { gf.createPoint(new Coordinate(0, 0)), "feature0" }, "feature");
 
         FeatureInfo fi = featureInfo("dest", GT.adapt(feature));
-        WorkingTree workingTree = geogig.getRepository().workingTree();
+        WorkingTree workingTree = repo.getRepository().workingTree();
         workingTree.insert(fi);
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(true);
@@ -263,14 +263,14 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setDestinationPath("dest");
         importOp.setAdaptToDefaultFeatureType(false);
         importOp.call();
-        Iterator<NodeRef> features = geogig.command(LsTreeOp.class)
+        Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         ArrayList<NodeRef> list = Lists.newArrayList(features);
         assertEquals(5, list.size());
         TreeSet<ObjectId> set = Sets.newTreeSet();
         ArrayList<RevFeatureType> ftlist = new ArrayList<RevFeatureType>();
         for (NodeRef node : list) {
-            Optional<RevFeatureType> ft = geogig.command(RevObjectParse.class)
+            Optional<RevFeatureType> ft = repo.command(RevObjectParse.class)
                     .setObjectId(node.getMetadataId()).call(RevFeatureType.class);
             assertTrue(ft.isPresent());
             ftlist.add(ft.get());
@@ -281,13 +281,13 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testAddUsingOriginalFeatureType() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setTable("table1");
         importOp.call();
 
-        importOp = geogig.command(ImportOp.class);
+        importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setTable("table2");
@@ -295,7 +295,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setDestinationPath("table1");
         importOp.setOverwrite(false);
         importOp.call();
-        Iterator<NodeRef> features = geogig.command(LsTreeOp.class)
+        Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         ArrayList<NodeRef> list = Lists.newArrayList(features);
         assertEquals(3, list.size());
@@ -308,7 +308,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testAlter() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setTable("table1");
@@ -317,11 +317,11 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setDestinationPath("table1");
         importOp.setAlter(true);
         importOp.call();
-        Iterator<NodeRef> features = geogig.command(LsTreeOp.class)
+        Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         ArrayList<NodeRef> list = Lists.newArrayList(features);
         assertEquals(3, list.size());
-        Optional<RevFeature> feature = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> feature = repo.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:table1/feature1").call(RevFeature.class);
         assertTrue(feature.isPresent());
         List<Optional<Object>> values = feature.get().getValues();
@@ -333,7 +333,7 @@ public class ImportOpTest extends RepositoryTestCase {
             set.add(node.getMetadataId());
         }
         assertEquals(1, set.size());
-        Optional<RevFeatureType> featureType = geogig.command(RevObjectParse.class)
+        Optional<RevFeatureType> featureType = repo.command(RevObjectParse.class)
                 .setObjectId(set.iterator().next()).call(RevFeatureType.class);
         assertTrue(featureType.isPresent());
         assertEquals("table1", featureType.get().getName().getLocalPart());
@@ -342,17 +342,17 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testImportWithOverriddenGeomName() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setTable("table1");
         importOp.setGeometryNameOverride("my_geom_name");
         importOp.call();
-        Iterator<NodeRef> features = geogig.command(LsTreeOp.class)
+        Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         ArrayList<NodeRef> list = Lists.newArrayList(features);
         assertEquals(2, list.size());
-        Optional<RevFeatureType> featureType = geogig.command(RevObjectParse.class)
+        Optional<RevFeatureType> featureType = repo.command(RevObjectParse.class)
                 .setObjectId(list.get(0).getMetadataId()).call(RevFeatureType.class);
         assertTrue(featureType.isPresent());
         assertEquals("table1", featureType.get().getName().getLocalPart());
@@ -362,7 +362,7 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testImportWithOverriddenGeomNameAlredyInUse() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setTable("table1");
@@ -377,14 +377,14 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testImportWithFid() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setTable("table3");
         importOp.setDestinationPath("table3");
         importOp.setFidAttribute("number");
         importOp.call();
-        Optional<RevFeature> feature = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> feature = repo.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:table3/1000").call(RevFeature.class);
         assertTrue(feature.isPresent());
     }
@@ -406,23 +406,23 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testAdaptFeatureType() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setTable("shpLikeTable");
         importOp.setDestinationPath("table");
         importOp.call();
-        Optional<RevFeature> feature = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> feature = repo.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:table/feature1").call(RevFeature.class);
         assertTrue(feature.isPresent());
-        RevFeatureType originalFeatureType = geogig.command(ResolveFeatureType.class)
+        RevFeatureType originalFeatureType = repo.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:table/feature1").call().get();
         importOp.setTable("shpLikeTable2");
         importOp.call();
-        feature = geogig.command(RevObjectParse.class).setRefSpec("WORK_HEAD:table/feature1")
+        feature = repo.command(RevObjectParse.class).setRefSpec("WORK_HEAD:table/feature1")
                 .call(RevFeature.class);
         assertTrue(feature.isPresent());
-        RevFeatureType featureType = geogig.command(ResolveFeatureType.class)
+        RevFeatureType featureType = repo.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:table/feature1").call().get();
         assertEquals(originalFeatureType.getId(), featureType.getId());
         GeometryFactory gf = new GeometryFactory();
@@ -432,10 +432,10 @@ public class ImportOpTest extends RepositoryTestCase {
         assertEquals(values.get(2).get(), 1100.0);
         importOp.setTable("GeoJsonLikeTable");
         importOp.call();
-        feature = geogig.command(RevObjectParse.class).setRefSpec("WORK_HEAD:table/feature1")
+        feature = repo.command(RevObjectParse.class).setRefSpec("WORK_HEAD:table/feature1")
                 .call(RevFeature.class);
         assertTrue(feature.isPresent());
-        featureType = geogig.command(ResolveFeatureType.class)
+        featureType = repo.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:table/feature1").call().get();
         assertEquals(originalFeatureType.getId(), featureType.getId());
         values = feature.get().getValues();
@@ -446,13 +446,13 @@ public class ImportOpTest extends RepositoryTestCase {
 
     @Test
     public void testCannotAdaptFeatureTypeIfCRSChanges() throws Exception {
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setTable("GeoJsonLikeTable");
         importOp.setDestinationPath("table");
         importOp.call();
-        Optional<RevFeature> feature = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> feature = repo.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:table/feature1").call(RevFeature.class);
         assertTrue(feature.isPresent());
         importOp.setTable("GeoJsonLikeTable2");
@@ -491,15 +491,15 @@ public class ImportOpTest extends RepositoryTestCase {
         MemoryDataStore dataStore = new MemoryDataStore();
         dataStore.createSchema(type);
 
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(dataStore);
         importOp.setTable(typeName);
         importOp.call();
 
-        Optional<RevFeatureType> typeRef = geogig.command(ResolveFeatureType.class)
+        Optional<RevFeatureType> typeRef = repo.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:" + typeName).call();
         assertTrue(typeRef.isPresent());
-        Optional<RevFeatureType> revType = geogig.command(RevObjectParse.class)
+        Optional<RevFeatureType> revType = repo.command(RevObjectParse.class)
                 .setRefSpec(typeRef.get().getId().toString()).call(RevFeatureType.class);
         assertTrue(revType.isPresent());
 
@@ -526,15 +526,15 @@ public class ImportOpTest extends RepositoryTestCase {
         MemoryDataStore dataStore = new MemoryDataStore();
         dataStore.createSchema(type);
 
-        ImportOp importOp = geogig.command(ImportOp.class);
+        ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(dataStore);
         importOp.setTable(typeName);
         importOp.call();
 
-        Optional<RevFeatureType> typeRef = geogig.command(ResolveFeatureType.class)
+        Optional<RevFeatureType> typeRef = repo.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:" + typeName).call();
         assertTrue(typeRef.isPresent());
-        Optional<RevFeatureType> revType = geogig.command(RevObjectParse.class)
+        Optional<RevFeatureType> revType = repo.command(RevObjectParse.class)
                 .setRefSpec(typeRef.get().getId().toString()).call(RevFeatureType.class);
         assertTrue(revType.isPresent());
 

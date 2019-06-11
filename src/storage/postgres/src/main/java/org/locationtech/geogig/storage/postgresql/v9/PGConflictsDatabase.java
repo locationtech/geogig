@@ -44,7 +44,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
-import com.google.inject.Inject;
 
 /**
  * {@link ConflictsDatabase} implementation for PostgreSQL.
@@ -91,7 +90,6 @@ public class PGConflictsDatabase implements ConflictsDatabase {
      * @throws IllegalArgumentException if {@link Hints#REPOSITORY_URL} is not given in hints
      * @throws URISyntaxException
      */
-    @Inject
     public PGConflictsDatabase(Hints hints) throws IllegalArgumentException, URISyntaxException {
         checkNotNull(hints);
         environment = Environment.get(hints);

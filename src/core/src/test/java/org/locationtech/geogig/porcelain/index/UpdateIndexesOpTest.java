@@ -85,7 +85,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
     }
 
     private IndexInfo createIndex(boolean indexHistory, @Nullable String... extraAttributes) {
-        Index index = geogig.command(CreateQuadTree.class)//
+        Index index = repo.command(CreateQuadTree.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setGeometryAttributeName("geom")//
                 .setExtraAttributes(Lists.newArrayList(extraAttributes))//
@@ -99,11 +99,11 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         IndexInfo indexInfo = createIndex(true, "x");
 
         String fid = IndexTestSupport.getPointFid(5, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit commit = commit("deleted 5, 5");
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit.getId() + ":" + worldPointsLayer.getName());
 
         // New index tree should be automatically created for pre-exising index.
@@ -111,7 +111,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId(), "x");
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId(),
+                "x");
     }
 
     @Test
@@ -119,11 +120,11 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         IndexInfo indexInfo = createIndex(true, "x", "y");
 
         String fid = IndexTestSupport.getPointFid(5, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit commit = commit("deleted 5, 5");
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit.getId() + ":" + worldPointsLayer.getName());
 
         // New index tree should be automatically created for pre-exising index.
@@ -131,38 +132,38 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId(), "x",
-                "y");
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId(),
+                "x", "y");
 
         branch("testbranch1");
         checkout("testbranch1");
 
         fid = IndexTestSupport.getPointFid(10, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         commit = commit("deleted 10, 5");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit.getId() + ":" + worldPointsLayer.getName());
 
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId(), "x",
-                "y");
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId(),
+                "x", "y");
     }
 
     @Test
     public void testUpdateIndexesHookBranchNoFullHistory() {
 
         String fid = getPointFid(5, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit commit1 = commit("deleted 5, 5");
 
         fid = getPointFid(10, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit commit2 = commit("deleted 10, 5");
@@ -170,29 +171,29 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         IndexInfo indexInfo = createIndex(false);
 
         // New index tree should be created for head commit.
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit2.getId() + ":" + worldPointsLayer.getName());
         Optional<ObjectId> commitIndex = indexdb.resolveIndexedTree(indexInfo,
                 featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
 
         // There shouldn't be an index for the first commit
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit1.getId() + ":" + worldPointsLayer.getName());
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertFalse(commitIndex.isPresent());
 
         // Create a branch on the first commit
-        geogig.command(BranchCreateOp.class).setName("testbranch1")
+        repo.command(BranchCreateOp.class).setName("testbranch1")
                 .setSource(commit1.getId().toString()).call();
 
         // Index should be created for new branch commit
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
     }
 
     @Test
@@ -202,11 +203,11 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         branch("testbranch1");
 
         String fid = IndexTestSupport.getPointFid(5, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit commit = commit("deleted 5, 5");
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit.getId() + ":" + worldPointsLayer.getName());
 
         // New index tree should be automatically created for pre-exising index.
@@ -214,34 +215,34 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
 
         checkout("testbranch1");
 
         fid = IndexTestSupport.getPointFid(10, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         commit = commit("deleted 10, 5");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit.getId() + ":" + worldPointsLayer.getName());
 
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
 
         checkout("master");
 
-        MergeReport report = geogig.command(MergeOp.class).addCommit(commit.getId())
+        MergeReport report = repo.command(MergeOp.class).addCommit(commit.getId())
                 .setMessage("merged branch1").call();
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 report.getMergeCommit().getId() + ":" + worldPointsLayer.getName());
 
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
     }
 
     @Test
@@ -255,7 +256,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 new Double(1), "1,1");
         insertAndAdd(modified);
         RevCommit commit = commit("modified 10, 5");
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit.getId() + ":" + worldPointsLayer.getName());
 
         // New index tree should be automatically created for pre-exising index.
@@ -263,26 +264,26 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
 
         checkout("testbranch1");
 
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         commit = commit("deleted 10, 5");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit.getId() + ":" + worldPointsLayer.getName());
 
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
 
         checkout("master");
 
         try {
-            geogig.command(MergeOp.class).addCommit(commit.getId()).setMessage("merged branch1")
+            repo.command(MergeOp.class).addCommit(commit.getId()).setMessage("merged branch1")
                     .call();
             fail();
         } catch (MergeConflictsException e) {
@@ -295,14 +296,14 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         insertAndAdd(resolved);
 
         // commit
-        RevCommit mergeCommit = geogig.command(CommitOp.class).call();
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        RevCommit mergeCommit = repo.command(CommitOp.class).call();
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 mergeCommit.getId() + ":" + worldPointsLayer.getName());
 
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
     }
 
     @Test
@@ -312,11 +313,11 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         branch("testbranch1");
 
         String fid = IndexTestSupport.getPointFid(5, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit masterCommit = commit("deleted 5, 5");
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 masterCommit.getId() + ":" + worldPointsLayer.getName());
 
         // New index tree should be automatically created for pre-exising index.
@@ -324,45 +325,46 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 featureTree.getObjectId());
         assertTrue(masterIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, masterIndex.get(), featureTree.getObjectId(), "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), masterIndex.get(), featureTree.getObjectId(),
+                "xystr");
 
         checkout("testbranch1");
 
         fid = IndexTestSupport.getPointFid(10, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit branchCommit = commit("deleted 10, 5");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 branchCommit.getId() + ":" + worldPointsLayer.getName());
 
         Optional<ObjectId> branchIndex = indexdb.resolveIndexedTree(indexInfo,
                 featureTree.getObjectId());
         assertTrue(branchIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, branchIndex.get(), featureTree.getObjectId(), "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), branchIndex.get(), featureTree.getObjectId(),
+                "xystr");
 
         fid = IndexTestSupport.getPointFid(10, 10);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit branchCommit2 = commit("deleted 10, 10");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 branchCommit2.getId() + ":" + worldPointsLayer.getName());
 
         Optional<ObjectId> branchIndex2 = indexdb.resolveIndexedTree(indexInfo,
                 featureTree.getObjectId());
         assertTrue(branchIndex2.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, branchIndex2.get(), featureTree.getObjectId(),
+        IndexTestSupport.verifyIndex(repo.context(), branchIndex2.get(), featureTree.getObjectId(),
                 "xystr");
 
         // rebase branch1 onto master
-        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(masterCommit.getId()))
-                .call();
+        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(masterCommit.getId())).call();
 
         // verify that both rebased commits were indexed
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "testbranch1~1:" + worldPointsLayer.getName());
 
         Optional<ObjectId> rebasedBranchIndex = indexdb.resolveIndexedTree(indexInfo,
@@ -371,10 +373,10 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         assertNotEquals(branchIndex.get(), rebasedBranchIndex.get());
 
-        IndexTestSupport.verifyIndex(geogig, rebasedBranchIndex.get(), featureTree.getObjectId(),
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), rebasedBranchIndex.get(),
+                featureTree.getObjectId(), "xystr");
 
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "testbranch1:" + worldPointsLayer.getName());
 
         Optional<ObjectId> rebasedBranchIndex2 = indexdb.resolveIndexedTree(indexInfo,
@@ -383,8 +385,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         assertNotEquals(branchIndex2.get(), rebasedBranchIndex2.get());
 
-        IndexTestSupport.verifyIndex(geogig, rebasedBranchIndex2.get(), featureTree.getObjectId(),
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), rebasedBranchIndex2.get(),
+                featureTree.getObjectId(), "xystr");
     }
 
     @Test
@@ -398,7 +400,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 new Double(1), "1,1");
         insertAndAdd(modified);
         RevCommit masterCommit = commit("modified 10, 5");
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 masterCommit.getId() + ":" + worldPointsLayer.getName());
 
         // New index tree should be automatically created for pre-exising index.
@@ -406,41 +408,43 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 featureTree.getObjectId());
         assertTrue(masterIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, masterIndex.get(), featureTree.getObjectId(), "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), masterIndex.get(), featureTree.getObjectId(),
+                "xystr");
 
         checkout("testbranch1");
 
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit branchCommit = commit("deleted 10, 5");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 branchCommit.getId() + ":" + worldPointsLayer.getName());
 
         Optional<ObjectId> branchIndex = indexdb.resolveIndexedTree(indexInfo,
                 featureTree.getObjectId());
         assertTrue(branchIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, branchIndex.get(), featureTree.getObjectId(), "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), branchIndex.get(), featureTree.getObjectId(),
+                "xystr");
 
         fid = getPointFid(10, 10);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit branchCommit2 = commit("deleted 10, 10");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 branchCommit2.getId() + ":" + worldPointsLayer.getName());
 
         Optional<ObjectId> branchIndex2 = indexdb.resolveIndexedTree(indexInfo,
                 featureTree.getObjectId());
         assertTrue(branchIndex2.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, branchIndex2.get(), featureTree.getObjectId(),
+        IndexTestSupport.verifyIndex(repo.context(), branchIndex2.get(), featureTree.getObjectId(),
                 "xystr");
 
         // rebase branch1 onto master
         try {
-            geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(masterCommit.getId()))
+            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(masterCommit.getId()))
                     .call();
             fail();
         } catch (RebaseConflictsException e) {
@@ -454,9 +458,9 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         insertAndAdd(resolved);
 
         // continue rebase
-        geogig.command(RebaseOp.class).setContinue(true).call();
+        repo.command(RebaseOp.class).setContinue(true).call();
 
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "testbranch1~1:" + worldPointsLayer.getName());
 
         Optional<ObjectId> rebasedBranchIndex = indexdb.resolveIndexedTree(indexInfo,
@@ -465,10 +469,10 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         assertNotEquals(branchIndex.get(), rebasedBranchIndex.get());
 
-        IndexTestSupport.verifyIndex(geogig, rebasedBranchIndex.get(), featureTree.getObjectId(),
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), rebasedBranchIndex.get(),
+                featureTree.getObjectId(), "xystr");
 
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "testbranch1:" + worldPointsLayer.getName());
 
         Optional<ObjectId> rebasedBranchIndex2 = indexdb.resolveIndexedTree(indexInfo,
@@ -477,8 +481,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         assertNotEquals(branchIndex2.get(), rebasedBranchIndex2.get());
 
-        IndexTestSupport.verifyIndex(geogig, rebasedBranchIndex2.get(), featureTree.getObjectId(),
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), rebasedBranchIndex2.get(),
+                featureTree.getObjectId(), "xystr");
     }
 
     @Test
@@ -488,11 +492,11 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         branch("testbranch1");
 
         String fid = getPointFid(5, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit commit1 = commit("deleted 5, 5");
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit1.getId() + ":" + worldPointsLayer.getName());
 
         // New index tree should be automatically created for pre-exising index.
@@ -500,41 +504,41 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
 
         checkout("testbranch1");
 
         fid = getPointFid(10, 5);
-        geogig.command(RemoveOp.class)
+        repo.command(RemoveOp.class)
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid)).call();
         add();
         RevCommit commit2 = commit("deleted 10, 5");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 commit2.getId() + ":" + worldPointsLayer.getName());
 
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
 
         checkout("master");
 
-        RevCommit cherryPicked = geogig.command(CherryPickOp.class)
+        RevCommit cherryPicked = repo.command(CherryPickOp.class)
                 .setCommit(Suppliers.ofInstance(commit2.getId())).call();
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 cherryPicked.getId() + ":" + worldPointsLayer.getName());
 
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId());
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId());
     }
 
     @Test
     public void testUpdateIndexesHookTransaction() {
         IndexInfo indexInfo = createIndex(true, "x");
 
-        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
 
         String fid = getPointFid(5, 5);
         transaction.command(RemoveOp.class)
@@ -553,15 +557,16 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 "x");
 
         // end the transaction
-        geogig.command(TransactionEnd.class).setTransaction(transaction).call();
+        repo.command(TransactionEnd.class).setTransaction(transaction).call();
 
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "HEAD:" + worldPointsLayer.getName());
 
         // New index tree should be automatically created for pre-exising index.
         commitIndex = indexdb.resolveIndexedTree(indexInfo, featureTree.getObjectId());
         assertTrue(commitIndex.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, commitIndex.get(), featureTree.getObjectId(), "x");
+        IndexTestSupport.verifyIndex(repo.context(), commitIndex.get(), featureTree.getObjectId(),
+                "x");
     }
 }

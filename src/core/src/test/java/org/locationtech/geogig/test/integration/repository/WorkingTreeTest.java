@@ -31,11 +31,9 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.FeatureToDelete;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.collect.Iterators;
@@ -49,18 +47,6 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
-    @Override
-    protected Platform createPlatform() {
-        @SuppressWarnings("serial")
-        Platform testPlatform = new TestPlatform(repositoryDirectory) {
-            @Override
-            public int availableProcessors() {
-                return 2;
-            }
-        };
-        return testPlatform;
-    }
 
     @Override
     protected void setUpInternal() throws Exception {
@@ -437,7 +423,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
         String path = NodeRef.appendChild(pointsName, points1.getId());
-        Optional<NodeRef> featureBlobId = geogig.command(FindTreeChild.class).setParent(root)
+        Optional<NodeRef> featureBlobId = repo.command(FindTreeChild.class).setParent(root)
                 .setChildPath(path).call();
         assertTrue(featureBlobId.isPresent());
         assertEquals(RevFeatureType.builder().type(modifiedPointsType).build().getId(),
@@ -509,7 +495,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
     }
 
     private Optional<Node> findTreeChild(RevTree root, String pathRemove) {
-        Optional<NodeRef> nodeRef = geogig.command(FindTreeChild.class).setParent(root)
+        Optional<NodeRef> nodeRef = repo.command(FindTreeChild.class).setParent(root)
                 .setChildPath(pathRemove).call();
         Optional<Node> node = Optional.empty();
         if (nodeRef.isPresent()) {

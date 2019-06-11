@@ -55,7 +55,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        dataStore = new GeoGigDataStore(geogig.getRepository());
+        dataStore = new GeoGigDataStore(repo.getRepository());
         dataStore.createSchema(GT.adapt(super.pointsType));
         dataStore.createSchema(GT.adapt(super.linesType));
         dataStore.createSchema(GT.adapt(super.polyType));
@@ -109,7 +109,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     @Test
     public void testAddFeaturesOnASeparateBranch() throws Exception {
         final String branchName = "addtest";
-        final Ref branchRef = geogig.command(BranchCreateOp.class).setName(branchName).call();
+        final Ref branchRef = repo.command(BranchCreateOp.class).setName(branchName).call();
         dataStore.setHead(branchName);
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
@@ -141,7 +141,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     @Test
     public void testAddFeaturesWhileNotOnABranch() throws Exception {
         boolean gotIllegalStateException = false;
-        final ObjectId head = geogig.command(RevParse.class).setRefSpec("HEAD").call().get();
+        final ObjectId head = repo.command(RevParse.class).setRefSpec("HEAD").call().get();
         dataStore.setHead(head.toString());
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
@@ -247,7 +247,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         // add features circumventing FeatureStore.addFeatures to keep the test
         // independent of the addFeatures functionality
         insertAndAdd(lines1, lines2, lines3, points1, points2, points3);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
         Transaction tx = new DefaultTransaction();
@@ -287,7 +287,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     @Test
     public void testModifyFeaturesIncompatibleGeometryType() throws Exception {
         insertAndAdd(points1, points2, points3);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
 
@@ -299,7 +299,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     @Test
     public void testModifyFeaturesIncompatibleValueType() throws Exception {
         insertAndAdd(points1, points2, points3);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
 
@@ -314,7 +314,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         // independent of the addFeatures functionality
         insertAndAdd(lines1, lines2, lines3);
         insertAndAdd(points1, points2, points3);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
         Transaction tx = new DefaultTransaction();
@@ -370,7 +370,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             tx.close();
         }
 
-        List<RevCommit> commits = toList(geogig.command(LogOp.class).call());
+        List<RevCommit> commits = toList(repo.command(LogOp.class).call());
         assertFalse(commits.isEmpty());
         assertTrue(commits.get(0).getAuthor().getName().isPresent());
         assertEquals("John Doe", commits.get(0).getAuthor().getName().get());
@@ -403,7 +403,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             tx.close();
         }
 
-        List<RevCommit> commits = toList(geogig.command(LogOp.class).call());
+        List<RevCommit> commits = toList(repo.command(LogOp.class).call());
         assertFalse(commits.isEmpty());
         assertTrue(commits.get(0).getAuthor().getName().isPresent());
         assertEquals("John Doe", commits.get(0).getAuthor().getName().orElse(null));

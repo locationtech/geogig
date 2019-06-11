@@ -46,7 +46,6 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
@@ -81,7 +80,6 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         }
     }
 
-    @VisibleForTesting
     public RocksdbConflictsDatabase(File baseDirectory) {
         checkNotNull(baseDirectory);
         checkArgument(baseDirectory.exists() && baseDirectory.canWrite());

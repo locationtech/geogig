@@ -23,7 +23,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
@@ -140,11 +139,6 @@ public class GuiceContext implements Context {
     @Override
     public Repository repository() {
         return getDecoratedInstance(Repository.class);
-    }
-
-    @Override
-    public PluginDefaults pluginDefaults() {
-        return getDecoratedInstance(PluginDefaults.class);
     }
 
     @Override

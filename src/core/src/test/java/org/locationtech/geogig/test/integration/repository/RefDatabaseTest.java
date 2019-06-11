@@ -55,7 +55,7 @@ public abstract class RefDatabaseTest {
         File userHomeDirectory = tmpFolder.newFolder("home");
         Platform platform = new TestPlatform(workingDirectory, userHomeDirectory);
         refDb = createDatabase(platform);
-        refDb.create();
+        refDb.open();
     }
 
     @After

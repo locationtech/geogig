@@ -41,8 +41,8 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        injector.configDatabase().put("user.name", "groldan");
-        injector.configDatabase().put("user.email", "groldan@boundlessgeo.com");
+        repo.configDatabase().put("user.name", "groldan");
+        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test
@@ -52,12 +52,12 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // make a commit
         insertAndAdd(points1);
-        RevCommit commit = geogig.command(CommitOp.class).call();
+        RevCommit commit = repo.command(CommitOp.class).call();
         expectedMain.addFirst(commit);
         expectedTransaction.addFirst(commit);
 
         // start a transaction
-        GeogigTransaction t = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction t = repo.command(TransactionBegin.class).call();
 
         // perform a commit in the transaction
         insertAndAdd(t, points2);
@@ -65,7 +65,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         expectedTransaction.addFirst(commit);
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         List<RevCommit> logged = new ArrayList<RevCommit>();
         for (; logs.hasNext();) {
             logged.add(logs.next());
@@ -83,10 +83,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertEquals(expectedTransaction, logged);
 
         // Commit the transaction
-        geogig.command(TransactionEnd.class).setTransaction(t).setRebase(true).call();
+        repo.command(TransactionEnd.class).setTransaction(t).setRebase(true).call();
 
         // Verify that the base repository has the changes from the transaction
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         logged = new ArrayList<RevCommit>();
         for (; logs.hasNext();) {
             logged.add(logs.next());
@@ -98,9 +98,9 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
     @Test
     public void testResolveTransaction() throws Exception {
-        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction tx = repo.command(TransactionBegin.class).call();
 
-        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+        Optional<GeogigTransaction> txNew = repo.command(TransactionResolve.class)
                 .setId(tx.getTransactionId()).call();
 
         assertTrue(txNew.isPresent());
@@ -108,7 +108,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
     @Test
     public void testResolveNonexistentTransaction() throws Exception {
-        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+        Optional<GeogigTransaction> txNew = repo.command(TransactionResolve.class)
                 .setId(UUID.randomUUID()).call();
 
         assertFalse(txNew.isPresent());
@@ -121,12 +121,12 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // make a commit
         insertAndAdd(points1);
-        RevCommit firstCommit = geogig.command(CommitOp.class).call();
+        RevCommit firstCommit = repo.command(CommitOp.class).call();
         expectedMain.addFirst(firstCommit);
         expectedTransaction.addFirst(firstCommit);
 
         // start a transaction
-        GeogigTransaction t = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction t = repo.command(TransactionBegin.class).call();
 
         // perform a commit in the transaction
         insertAndAdd(t, points2);
@@ -135,11 +135,11 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // perform a commit on the repo
         insertAndAdd(points3);
-        RevCommit repoCommit = geogig.command(CommitOp.class).call();
+        RevCommit repoCommit = repo.command(CommitOp.class).call();
         expectedMain.addFirst(repoCommit);
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         List<RevCommit> logged = new ArrayList<RevCommit>();
         for (; logs.hasNext();) {
             logged.add(logs.next());
@@ -157,10 +157,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertEquals(expectedTransaction, logged);
 
         // Commit the transaction
-        geogig.command(TransactionEnd.class).setTransaction(t).call();
+        repo.command(TransactionEnd.class).setTransaction(t).call();
 
         // Verify that a merge commit was created
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertFalse(lastCommit.equals(repoCommit));
         assertTrue(lastCommit.getMessage().contains("Merge commit"));
@@ -180,12 +180,12 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // make a commit
         insertAndAdd(points1);
-        RevCommit firstCommit = geogig.command(CommitOp.class).call();
+        RevCommit firstCommit = repo.command(CommitOp.class).call();
         expectedMain.addFirst(firstCommit);
         expectedTransaction.addFirst(firstCommit);
 
         // start a transaction
-        GeogigTransaction t = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction t = repo.command(TransactionBegin.class).call();
 
         t.setAuthor("Transaction Author", "transaction@author.com");
 
@@ -196,11 +196,11 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // perform a commit on the repo
         insertAndAdd(points3);
-        RevCommit repoCommit = geogig.command(CommitOp.class).call();
+        RevCommit repoCommit = repo.command(CommitOp.class).call();
         expectedMain.addFirst(repoCommit);
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         List<RevCommit> logged = new ArrayList<RevCommit>();
         for (; logs.hasNext();) {
             logged.add(logs.next());
@@ -221,7 +221,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         t.commitSyncTransaction();
 
         // Verify that a merge commit was created
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertFalse(lastCommit.equals(repoCommit));
         assertTrue(lastCommit.getMessage().contains("Merge commit"));
@@ -241,10 +241,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // make a commit
         insertAndAdd(points1);
-        RevCommit mainCommit = geogig.command(CommitOp.class).setMessage("Commit1").call();
+        RevCommit mainCommit = repo.command(CommitOp.class).setMessage("Commit1").call();
 
         // start the first transaction
-        GeogigTransaction transaction1 = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction transaction1 = repo.command(TransactionBegin.class).call();
 
         // perform a commit in the transaction
         insertAndAdd(transaction1, points2);
@@ -252,7 +252,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
                 .call();
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
@@ -263,7 +263,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // start the second transaction
-        GeogigTransaction transaction2 = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction transaction2 = repo.command(TransactionBegin.class).call();
 
         // perform a commit in the transaction
         insertAndAdd(transaction2, points3);
@@ -271,7 +271,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
                 .call();
 
         // Verify that the base repository is unchanged
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
@@ -282,19 +282,19 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // Commit the first transaction
-        geogig.command(TransactionEnd.class).setTransaction(transaction1).setRebase(true).call();
+        repo.command(TransactionEnd.class).setTransaction(transaction1).setRebase(true).call();
 
         // Verify that the base repository has the changes from the transaction
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         assertEquals(transaction1Commit, logs.next());
         assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         // Now try to commit the second transaction
-        geogig.command(TransactionEnd.class).setTransaction(transaction2).setRebase(true).call();
+        repo.command(TransactionEnd.class).setTransaction(transaction2).setRebase(true).call();
 
         // Verify that the base repository has the changes from the transaction
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertFalse(lastCommit.equals(transaction2Commit));
         assertEquals(lastCommit.getMessage(), transaction2Commit.getMessage());
@@ -312,15 +312,15 @@ public class GeogigTransactionTest extends RepositoryTestCase {
     @Test
     public void testConflictIsolation() throws Exception {
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("foo").call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(CommitOp.class).setMessage("foo").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points1);
-        RevCommit mainCommit = geogig.command(CommitOp.class).setMessage("Commit1").call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        RevCommit mainCommit = repo.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points1_modified);
-        RevCommit modifiedCommit = geogig.command(CommitOp.class).setMessage("Commit2").call();
+        RevCommit modifiedCommit = repo.command(CommitOp.class).setMessage("Commit2").call();
         assertNotNull(modifiedCommit);
-        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction tx = repo.command(TransactionBegin.class).call();
         try {
             tx.command(MergeOp.class).addCommit(mainCommit.getId()).call();
             fail("Expected a merge conflict!");
@@ -328,7 +328,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
             // expected.
         }
         long txConflicts = tx.command(ConflictsCountOp.class).call().longValue();
-        long baseConflicts = geogig.command(ConflictsCountOp.class).call().longValue();
+        long baseConflicts = repo.command(ConflictsCountOp.class).call().longValue();
         assertTrue("There should be no conflicts outside the transaction", baseConflicts == 0);
         assertTrue("There should be conflicts in the transaction", txConflicts > 0);
     }
@@ -338,10 +338,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // make a commit
         insertAndAdd(points1);
-        RevCommit mainCommit = geogig.command(CommitOp.class).setMessage("Commit1").call();
+        RevCommit mainCommit = repo.command(CommitOp.class).setMessage("Commit1").call();
 
         // start the first transaction
-        GeogigTransaction transaction1 = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction transaction1 = repo.command(TransactionBegin.class).call();
 
         // make a new branch
         transaction1.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
@@ -352,7 +352,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
                 .call();
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         assertEquals(logs.next(), mainCommit);
         assertFalse(logs.hasNext());
 
@@ -363,7 +363,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // start the second transaction
-        GeogigTransaction transaction2 = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction transaction2 = repo.command(TransactionBegin.class).call();
 
         // make a new branch
         transaction2.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
@@ -374,7 +374,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
                 .call();
 
         // Verify that the base repository is unchanged
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         assertEquals(logs.next(), mainCommit);
         assertFalse(logs.hasNext());
 
@@ -385,24 +385,24 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertFalse(logs.hasNext());
 
         // Commit the first transaction
-        geogig.command(TransactionEnd.class).setTransaction(transaction1).setRebase(true).call();
+        repo.command(TransactionEnd.class).setTransaction(transaction1).setRebase(true).call();
 
         // Verify that the base repository has the changes from the transaction
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         assertEquals(logs.next(), mainCommit);
         assertFalse(logs.hasNext());
 
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
-        logs = geogig.command(LogOp.class).call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
+        logs = repo.command(LogOp.class).call();
         assertEquals(logs.next(), transaction1Commit);
         assertEquals(logs.next(), mainCommit);
         assertFalse(logs.hasNext());
 
         // Now try to commit the second transaction
-        geogig.command(TransactionEnd.class).setTransaction(transaction2).setRebase(true).call();
+        repo.command(TransactionEnd.class).setTransaction(transaction2).setRebase(true).call();
 
         // Verify that the base repository has the changes from the transaction
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertFalse(lastCommit.equals(transaction2Commit));
         assertEquals(lastCommit.getMessage(), transaction2Commit.getMessage());
@@ -422,10 +422,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // make a commit
         insertAndAdd(points1);
-        RevCommit mainCommit = geogig.command(CommitOp.class).setMessage("Commit1").call();
+        RevCommit mainCommit = repo.command(CommitOp.class).setMessage("Commit1").call();
 
         // start the transaction
-        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
 
         // perform a commit in the transaction
         insertAndAdd(transaction, points1_modified);
@@ -433,7 +433,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
                 .call();
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         assertEquals(logs.next(), mainCommit);
         assertFalse(logs.hasNext());
 
@@ -445,23 +445,23 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // remove the feature in the base repository
         deleteAndAdd(points1);
-        RevCommit mainCommit2 = geogig.command(CommitOp.class).setMessage("Commit3").call();
+        RevCommit mainCommit2 = repo.command(CommitOp.class).setMessage("Commit3").call();
 
         // commit the transaction
         try {
-            geogig.command(TransactionEnd.class).setTransaction(transaction).call();
+            repo.command(TransactionEnd.class).setTransaction(transaction).call();
             fail("Expected a conflict!");
         } catch (ConflictsException e) {
             // expected
         }
 
         long txConflicts = transaction.command(ConflictsCountOp.class).call().longValue();
-        long baseConflicts = geogig.command(ConflictsCountOp.class).call().longValue();
+        long baseConflicts = repo.command(ConflictsCountOp.class).call().longValue();
         assertTrue("There should be no conflicts outside the transaction", baseConflicts == 0);
         assertTrue("There should be conflicts in the transaction", txConflicts == 1);
 
         // make sure the transaction is still resolvable
-        Optional<GeogigTransaction> resolvedTransaction = geogig.command(TransactionResolve.class)
+        Optional<GeogigTransaction> resolvedTransaction = repo.command(TransactionResolve.class)
                 .setId(transaction.getTransactionId()).call();
         assertTrue(resolvedTransaction.isPresent());
 
@@ -470,10 +470,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         RevCommit resolvedCommit = transaction.command(CommitOp.class)
                 .setMessage("Resolved Conflict").call();
 
-        geogig.command(TransactionEnd.class).setTransaction(transaction).call();
+        repo.command(TransactionEnd.class).setTransaction(transaction).call();
 
         // Verify that the base repository has the changes from the transaction
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertTrue(lastCommit.equals(resolvedCommit));
         assertEquals(lastCommit.getMessage(), resolvedCommit.getMessage());
@@ -493,18 +493,18 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // make a commit
         insertAndAdd(points1);
-        RevCommit commit = geogig.command(CommitOp.class).call();
+        RevCommit commit = repo.command(CommitOp.class).call();
         expectedMain.addFirst(commit);
 
         // start a transaction
-        GeogigTransaction t = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction t = repo.command(TransactionBegin.class).call();
 
         // perform a commit in the transaction
         insertAndAdd(t, points2);
         commit = t.command(CommitOp.class).call();
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         List<RevCommit> logged = new ArrayList<RevCommit>();
         for (; logs.hasNext();) {
             logged.add(logs.next());
@@ -513,10 +513,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertEquals(expectedMain, logged);
 
         // Cancel the transaction
-        geogig.command(TransactionEnd.class).setCancel(true).setTransaction(t).call();
+        repo.command(TransactionEnd.class).setCancel(true).setTransaction(t).call();
 
         // Verify that the base repository is unchanged
-        logs = geogig.command(LogOp.class).call();
+        logs = repo.command(LogOp.class).call();
         logged = new ArrayList<RevCommit>();
         for (; logs.hasNext();) {
             logged.add(logs.next());
@@ -529,17 +529,17 @@ public class GeogigTransactionTest extends RepositoryTestCase {
     @Test
     public void testEndNoTransaction() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        geogig.command(TransactionEnd.class).call();
+        repo.command(TransactionEnd.class).call();
     }
 
     @Test
     public void testEndWithinTransaction() throws Exception {
         // make a commit
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         // start a transaction
-        GeogigTransaction t = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction t = repo.command(TransactionBegin.class).call();
 
         // perform a commit in the transaction
         insertAndAdd(t, points2);
@@ -555,10 +555,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
     public void testBeginWithinTransaction() throws Exception {
         // make a commit
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         // start a transaction
-        GeogigTransaction t = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction t = repo.command(TransactionBegin.class).call();
 
         // start a transaction within the transaction
         exception.expect(IllegalStateException.class);
@@ -570,20 +570,20 @@ public class GeogigTransactionTest extends RepositoryTestCase {
     public void testCommitUpdatesRemoteRefs() throws Exception {
         // make a commit
         insertAndAdd(points1);
-        RevCommit headCommit = geogig.command(CommitOp.class).call();
+        RevCommit headCommit = repo.command(CommitOp.class).call();
 
         final String remoteRef = "refs/remotes/upstream/master";
         final String unchangedRemoteRef = "refs/remotes/upstream/testbranch";
 
-        Ref remoteHead = geogig.command(UpdateRef.class).setName(remoteRef)
+        Ref remoteHead = repo.command(UpdateRef.class).setName(remoteRef)
                 .setNewValue(headCommit.getId()).call().get();
         assertEquals(headCommit.getId(), remoteHead.getObjectId());
 
-        geogig.command(UpdateRef.class).setName(unchangedRemoteRef).setNewValue(headCommit.getId())
+        repo.command(UpdateRef.class).setName(unchangedRemoteRef).setNewValue(headCommit.getId())
                 .call().get();
 
         // start a transaction
-        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction tx = repo.command(TransactionBegin.class).call();
 
         // make a commit
         insertAndAdd(tx, points2);
@@ -595,27 +595,27 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // commit transaction
         tx.commit();
-        txRemoteHead = geogig.command(RefParse.class).setName(remoteRef).call().get();
+        txRemoteHead = repo.command(RefParse.class).setName(remoteRef).call().get();
         assertEquals(newcommit.getId(), txRemoteHead.getObjectId());
 
-        txRemoteHead = geogig.command(RefParse.class).setName(unchangedRemoteRef).call().get();
+        txRemoteHead = repo.command(RefParse.class).setName(unchangedRemoteRef).call().get();
         assertEquals(headCommit.getId(), txRemoteHead.getObjectId());
     }
 
     @Test
     public void testEndTransactionFromTransactionId() throws Exception {
-        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+        GeogigTransaction tx = repo.command(TransactionBegin.class).call();
 
         // Use transaction id from the TransactionBegin to create another transaction that
         // can be used to perform other actions such as pull, push, and end. The web api
         // for example needs a way to retrieve/recreate a transaction object using a transactionId
         // without calling GeogigTransaction.create() since the transaction was previously created.
-        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+        Optional<GeogigTransaction> txNew = repo.command(TransactionResolve.class)
                 .setId(tx.getTransactionId()).call();
 
         assertTrue(txNew.isPresent());
 
-        TransactionEnd endTransaction = geogig.command(TransactionEnd.class);
+        TransactionEnd endTransaction = repo.command(TransactionEnd.class);
         boolean closed = endTransaction.setCancel(false).setTransaction(txNew.get()).call();
         assertTrue(closed);
     }

@@ -57,7 +57,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        dataStore = new GeoGigDataStore(geogig.getRepository());
+        dataStore = new GeoGigDataStore(repo.getRepository());
     }
 
     @Override
@@ -68,14 +68,14 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     @Test
     public void testDispose() {
-        assertTrue(geogig.isOpen());
+        assertTrue(repo.isOpen());
         dataStore.dispose();
-        assertFalse(geogig.isOpen());
+        assertFalse(repo.isOpen());
     }
 
     private List<String> getTypeNames(String head) {
 
-        Iterator<NodeRef> typeTrees = geogig.command(LsTreeOp.class)
+        Iterator<NodeRef> typeTrees = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.TREES_ONLY).setReference(head).call();
 
         List<String> typeNames = Lists
@@ -111,7 +111,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     @Test
     public void testCreateSchemaOnBranch() throws IOException {
         final String branchName = "testBranch";
-        geogig.command(BranchCreateOp.class).setName(branchName).setOrphan(true).call();
+        repo.command(BranchCreateOp.class).setName(branchName).setOrphan(true).call();
 
         dataStore.setHead(branchName);
         final SimpleFeatureType featureType = GT.adapt(super.linesType);
@@ -218,7 +218,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     }
 
     private ObjectId commit() {
-        org.locationtech.geogig.model.RevCommit c = geogig.command(CommitOp.class).call();
+        org.locationtech.geogig.model.RevCommit c = repo.command(CommitOp.class).call();
         return c.getId();
     }
 

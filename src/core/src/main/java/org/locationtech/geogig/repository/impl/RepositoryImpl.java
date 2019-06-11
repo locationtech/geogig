@@ -117,7 +117,7 @@ public class RepositoryImpl implements Repository {
         if (!context.indexDatabase().checkConfig()) {
             context.indexDatabase().configure();
         }
-        context.refDatabase().create();
+        context.refDatabase().open();
         context.objectDatabase().open();
         context.indexDatabase().open();
         context.conflictsDatabase().open();

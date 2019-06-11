@@ -37,6 +37,10 @@ public class HeapConfigDatabase implements ConfigDatabase {
 
     private ConcurrentMap<String, String> local = new ConcurrentHashMap<>();
 
+    public static void clearGlobal() {
+        global.clear();
+    }
+
     public HeapConfigDatabase() {
 
     }

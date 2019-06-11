@@ -50,7 +50,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.inject.Inject;
 
 /**
  * Base class for PostgreSQL based graph database.
@@ -71,7 +70,6 @@ public class PGGraphDatabase implements GraphDatabase {
 
     private Version serverVersion;
 
-    @Inject
     public PGGraphDatabase(Hints hints) throws URISyntaxException {
         this(Environment.get(hints));
     }

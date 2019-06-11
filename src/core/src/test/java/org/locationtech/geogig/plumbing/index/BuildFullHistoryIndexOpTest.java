@@ -92,84 +92,84 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
     @Test
     public void testBuildFullHistory() {
         indexInfo = createIndex();
-        int treesUpdated = geogig.command(BuildFullHistoryIndexOp.class)//
+        int treesUpdated = repo.command(BuildFullHistoryIndexOp.class)//
                 .setTreeRefSpec(indexInfo.getTreeName())//
                 .setAttributeName(indexInfo.getAttributeName())//
                 .call();
 
         assertEquals(4, treesUpdated);
 
-        ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        ObjectId canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD:" + worldPointsLayer.getName()).call().get();
         Optional<ObjectId> indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
                 canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId);
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId);
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId);
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId);
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD~2:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId);
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId);
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("branch1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId);
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId);
     }
 
     @Test
     public void testBuildFullHistoryNoAttributeName() {
         indexInfo = createIndex("x", "xystr");
-        int treesUpdated = geogig.command(BuildFullHistoryIndexOp.class)//
+        int treesUpdated = repo.command(BuildFullHistoryIndexOp.class)//
                 .setTreeRefSpec(indexInfo.getTreeName())//
                 .call();
 
         assertEquals(4, treesUpdated);
 
-        ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        ObjectId canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD:" + worldPointsLayer.getName()).call().get();
         Optional<ObjectId> indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
                 canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x",
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId,
+                "x", "xystr");
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x",
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId,
+                "x", "xystr");
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD~2:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x",
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId,
+                "x", "xystr");
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("branch1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x",
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId,
+                "x", "xystr");
     }
 
     @Test
@@ -178,14 +178,14 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Tree ref spec not provided");
-        geogig.command(BuildFullHistoryIndexOp.class).call();
+        repo.command(BuildFullHistoryIndexOp.class).call();
     }
 
     @Test
     public void testBuildFullHistoryNoIndex() {
         exception.expect(IllegalStateException.class);
         exception.expectMessage("A matching index could not be found.");
-        geogig.command(BuildFullHistoryIndexOp.class)//
+        repo.command(BuildFullHistoryIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .call();
     }
@@ -195,7 +195,7 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
         indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
         exception.expect(IllegalStateException.class);
         exception.expectMessage("A matching index could not be found.");
-        geogig.command(BuildFullHistoryIndexOp.class)//
+        repo.command(BuildFullHistoryIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setAttributeName("y")//
                 .call();
@@ -208,7 +208,7 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
                 "Multiple indexes were found for the specified tree, please specify the attribute.");
-        geogig.command(BuildFullHistoryIndexOp.class)//
+        repo.command(BuildFullHistoryIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .call();
     }
@@ -224,42 +224,42 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
             Future<?> future = executor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    geogig.command(BuildFullHistoryIndexOp.class)//
+                    repo.command(BuildFullHistoryIndexOp.class)//
                             .setTreeRefSpec(indexInfo.getTreeName())//
                             .setAttributeName(indexInfo.getAttributeName())//
                             .call();
 
-                    ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+                    ObjectId canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                             .setTreeish("HEAD:" + worldPointsLayer.getName()).call().get();
                     Optional<ObjectId> indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
                             canonicalFeatureTreeId);
                     assertTrue(indexedTreeId.isPresent());
 
-                    IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(),
+                    IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(),
                             canonicalFeatureTreeId);
 
-                    canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+                    canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                             .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
                     indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
                     assertTrue(indexedTreeId.isPresent());
 
-                    IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(),
+                    IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(),
                             canonicalFeatureTreeId);
 
-                    canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+                    canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                             .setTreeish("HEAD~2:" + worldPointsLayer.getName()).call().get();
                     indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
                     assertTrue(indexedTreeId.isPresent());
 
-                    IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(),
+                    IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(),
                             canonicalFeatureTreeId);
 
-                    canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+                    canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                             .setTreeish("branch1:" + worldPointsLayer.getName()).call().get();
                     indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
                     assertTrue(indexedTreeId.isPresent());
 
-                    IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(),
+                    IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(),
                             canonicalFeatureTreeId);
                 }
             });

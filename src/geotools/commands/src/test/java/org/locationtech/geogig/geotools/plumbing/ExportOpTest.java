@@ -59,7 +59,7 @@ public class ExportOpTest extends RepositoryTestCase {
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).call();
+        repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
@@ -75,13 +75,13 @@ public class ExportOpTest extends RepositoryTestCase {
         for (org.locationtech.geogig.feature.Feature feature : points) {
             insert(feature);
         }
-        geogig.command(AddOp.class).call();
-        geogig.command(CommitOp.class).setAll(true).call();
+        repo.command(AddOp.class).call();
+        repo.command(CommitOp.class).setAll(true).call();
         MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath("HEAD:" + pointsName)
+        repo.command(ExportOp.class).setFeatureStore(featureStore).setPath("HEAD:" + pointsName)
                 .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
@@ -98,8 +98,8 @@ public class ExportOpTest extends RepositoryTestCase {
         for (org.locationtech.geogig.feature.Feature feature : points) {
             insert(feature);
         }
-        geogig.command(AddOp.class).call();
-        geogig.command(CommitOp.class).setAll(true).call();
+        repo.command(AddOp.class).call();
+        repo.command(CommitOp.class).setAll(true).call();
         MemoryDataStore dataStore = new MemoryDataStore(gtPointsType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
@@ -110,7 +110,7 @@ public class ExportOpTest extends RepositoryTestCase {
         ReferencedEnvelope refBbox = new ReferencedEnvelope(
                 gtPointsType.getCoordinateReferenceSystem());
         refBbox.init(bbox);
-        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath("HEAD:" + pointsName)
+        repo.command(ExportOp.class).setFeatureStore(featureStore).setPath("HEAD:" + pointsName)
                 .setBBoxFilter(refBbox).call();
 
         featureSource = dataStore.getFeatureSource(typeName);
@@ -148,7 +148,7 @@ public class ExportOpTest extends RepositoryTestCase {
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
+        repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setFeatureTypeConversionFunction(function).call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
@@ -172,7 +172,7 @@ public class ExportOpTest extends RepositoryTestCase {
                 return Optional.of((Feature) wrongFeatureBuilder.buildFeature(null));
             };
 
-            geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
+            repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                     .setFeatureTypeConversionFunction(wrongFunction).call();
             fail();
         } catch (GeoToolsOpException e) {
@@ -218,7 +218,7 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         try {
-            geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).call();
+            repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).call();
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(true);
@@ -236,7 +236,7 @@ public class ExportOpTest extends RepositoryTestCase {
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
+        repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .exportDefaultFeatureType().call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
@@ -254,7 +254,7 @@ public class ExportOpTest extends RepositoryTestCase {
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
+        repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setAlter(true).call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
@@ -273,7 +273,7 @@ public class ExportOpTest extends RepositoryTestCase {
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
+        repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setAlter(true).setFilterFeatureTypeId(
                         RevFeatureType.builder().type(modifiedPointsType).build().getId())
                 .call();
@@ -297,7 +297,7 @@ public class ExportOpTest extends RepositoryTestCase {
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
+        repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setFilterFeatureTypeId(
                         RevFeatureType.builder().type(modifiedPointsType).build().getId())
                 .call();
@@ -318,7 +318,7 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         try {
-            geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
+            repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                     .setFilterFeatureTypeId(RevObjectTestSupport.hashString("fake")).call();
             fail();
         } catch (IllegalArgumentException e) {
@@ -336,7 +336,7 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         try {
-            geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).call();
+            repo.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).call();
             fail();
         } catch (GeoToolsOpException e) {
             assertEquals(GeoToolsOpException.StatusCode.MIXED_FEATURE_TYPES, e.statusCode);

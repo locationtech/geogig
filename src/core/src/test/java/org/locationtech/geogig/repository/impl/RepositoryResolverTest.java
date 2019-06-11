@@ -23,14 +23,23 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.RepositoryResolverTestUtil;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
+import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.test.MemoryRepositoryResolver;
+
+import lombok.NonNull;
 
 public class RepositoryResolverTest {
 
-    public static class TestResolver extends RepositoryResolver {
+    public static class TestResolver implements RepositoryResolver {
 
         @Override
         public boolean canHandle(URI repoURI) {
@@ -59,7 +68,7 @@ public class RepositoryResolverTest {
         }
 
         @Override
-        public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext,
+        public ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext,
                 boolean globalOnly) {
             throw new UnsupportedOperationException();
         }
@@ -84,6 +93,23 @@ public class RepositoryResolverTest {
             throw new UnsupportedOperationException();
         }
 
+        public @Override ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI, Hints hints) {
+            throw new UnsupportedOperationException();
+        }
+
+        public @Override IndexDatabase resolveIndexDatabase(@NonNull URI repoURI, Hints hints) {
+            throw new UnsupportedOperationException();
+        }
+
+        public @Override RefDatabase resolveRefDatabase(@NonNull URI repoURI, Hints hints) {
+            throw new UnsupportedOperationException();
+        }
+
+        public @Override ConflictsDatabase resolveConflictsDatabase(@NonNull URI repoURI,
+                Hints hints) {
+            throw new UnsupportedOperationException();
+        }
+
     }
 
     @Before
@@ -96,16 +122,16 @@ public class RepositoryResolverTest {
     @Test
     public void testLookup() throws URISyntaxException {
         URI uri = new URI("test://somerepo");
-        RepositoryResolver initializer = RepositoryResolver.lookup(uri);
+        RepositoryResolver initializer = RepositoryFinder.INSTANCE.lookup(uri);
         assertNotNull(initializer);
         assertTrue(initializer instanceof TestResolver);
     }
 
     @Test
     public void testCanHandleURIScheme() {
-        boolean canHandleScheme = RepositoryResolver.resolverAvailableForURIScheme("test");
+        boolean canHandleScheme = RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("test");
         assertTrue(canHandleScheme);
-        canHandleScheme = RepositoryResolver.resolverAvailableForURIScheme("unknown");
+        canHandleScheme = RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("unknown");
         assertFalse(canHandleScheme);
     }
 
@@ -113,16 +139,17 @@ public class RepositoryResolverTest {
         if (isAvailable) {
             // assert Resolver is available for "test" scheme
             assertTrue("TestResolver should be available",
-                    RepositoryResolver.resolverAvailableForURIScheme("test"));
+                    RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("test"));
             // assert Resolver can be looked up for URI
-            assertNotNull("TestResolver should be available", RepositoryResolver.lookup(uri));
+            assertNotNull("TestResolver should be available",
+                    RepositoryFinder.INSTANCE.lookup(uri));
         } else {
             // assert Resolver is not available for "test" scheme
             assertFalse("TestResolver should not be available",
-                    RepositoryResolver.resolverAvailableForURIScheme("test"));
+                    RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("test"));
             // assert Resolver can not be looked up for URI
             try {
-                RepositoryResolver.lookup(uri);
+                RepositoryFinder.INSTANCE.lookup(uri);
                 fail("TestResolver should not be available");
             } catch (IllegalArgumentException iae) {
                 // expected
@@ -136,18 +163,18 @@ public class RepositoryResolverTest {
     private void verifyFileRepositoryResolver(final boolean isAvailable, final URI uri) {
         if (isAvailable) {
             // assert Resolver is available for "test" scheme
-            assertTrue("FileRepositoryResolver should be available",
-                    RepositoryResolver.resolverAvailableForURIScheme("file"));
+            assertTrue("MemoryRepositoryResolver should be available",
+                    RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("memory"));
             // assert Resolver can be looked up for URI
-            assertNotNull("FileRepositoryResolver should be available",
-                    RepositoryResolver.lookup(uri));
+            assertNotNull("MemoryRepositoryResolver should be available",
+                    RepositoryFinder.INSTANCE.INSTANCE.lookup(uri));
         } else {
             // assert Resolver is not available for "test" scheme
-            assertFalse("FileRepositoryResolver should not be available",
-                    RepositoryResolver.resolverAvailableForURIScheme("file"));
+            assertFalse("MemoryRepositoryResolver should not be available",
+                    RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("memory"));
             // assert Resolver can not be looked up for URI
             try {
-                RepositoryResolver.lookup(uri);
+                RepositoryFinder.INSTANCE.lookup(uri);
                 fail("FileRepositoryResolver should not be available");
             } catch (IllegalArgumentException iae) {
                 // expected
@@ -162,7 +189,7 @@ public class RepositoryResolverTest {
     public void testCanHandleAndLookupWithDisabledResolvers() throws URISyntaxException {
         // test URIs for lookup
         final URI testUri = new URI("test://someRepo");
-        final URI fileUri = new URI("file:/someFileRepo");
+        final URI fileUri = new URI("memory://someFileRepo");
 
         // by default, both the TestResolver and the FileRepositoryResolver should be available
         // during tests.
@@ -178,8 +205,8 @@ public class RepositoryResolverTest {
         verifyFileRepositoryResolver(true, fileUri);
 
         // now disable the FileRepositoryResolver
-        RepositoryResolverTestUtil.setDisabledResolvers(
-                Arrays.asList("org.locationtech.geogig.repository.impl.FileRepositoryResolver"));
+        RepositoryResolverTestUtil
+                .setDisabledResolvers(Arrays.asList(MemoryRepositoryResolver.class.getName()));
 
         // Verify the TestResolver is available again
         verifyTestResolver(true, testUri);
@@ -188,7 +215,7 @@ public class RepositoryResolverTest {
         // now disable both TestResolver and FileRepositoryResolver
         RepositoryResolverTestUtil.setDisabledResolvers(Arrays.asList(
                 "org.locationtech.geogig.repository.impl.RepositoryResolverTest$TestResolver",
-                "org.locationtech.geogig.repository.impl.FileRepositoryResolver"));
+                MemoryRepositoryResolver.class.getName()));
 
         // Verify neither the TestResolver nor the FileRepositoryResolver are available
         verifyTestResolver(false, testUri);

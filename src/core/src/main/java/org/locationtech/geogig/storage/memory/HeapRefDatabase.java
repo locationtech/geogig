@@ -40,7 +40,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * Creates the reference database.
      */
     @Override
-    public void create() {
+    public void open() {
         if (refs == null) {
             refs = new ConcurrentHashMap<>();
         }

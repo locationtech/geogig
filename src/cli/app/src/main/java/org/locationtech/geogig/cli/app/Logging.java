@@ -11,27 +11,18 @@ package org.locationtech.geogig.cli.app;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.DefaultPlatform;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
+//import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
 
 /**
  * Utility class for the CLI applications to configure logging using the default logback logger
@@ -52,60 +43,62 @@ class Logging {
 
     static void tryConfigureLogging(Platform platform, @Nullable final String repoURI) {
         System.setProperty("hsqldb.reconfig_logging", "false"); // stop hsql from reseting logging
-        // instantiate and call ResolveGeogigDir directly to avoid calling getGeogig() and hence get
-        // some logging events before having configured logging
-        Hints hints = new Hints();
-        try {
-            if (repoURI != null) {
-                URI uri = new URI(repoURI);
-                hints.set(Hints.REPOSITORY_URL, uri);
-            }
-        } catch (URISyntaxException ignore) {
-            // not our call to do anything with a wrong URI here
-        }
-        final Optional<URI> geogigDirUrl = new ResolveGeogigURI(platform, hints).call();
-        if (!geogigDirUrl.isPresent() || !"file".equalsIgnoreCase(geogigDirUrl.get().getScheme())) {
-            // redirect java.util.logging to SLF4J anyways
-            SLF4JBridgeHandler.removeHandlersForRootLogger();
-            SLF4JBridgeHandler.install();
-            return;
-        }
-
-        final File geogigDir = new File(geogigDirUrl.get());
-
-        if (repoURI == null && geogigDir.equals(geogigDirLoggingConfiguration)) {
-            return;
-        }
-
-        if (!geogigDir.exists() || !geogigDir.isDirectory()) {
-            return;
-        }
-        final URL loggingFile = getOrCreateLoggingConfigFile(geogigDir);
-
-        if (loggingFile == null) {
-            return;
-        }
-
-        try {
-            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-            loggerContext.reset();
-            /*
-             * Set the geogigdir variable for the config file can resolve the default location
-             * ${geogigdir}/log/geogig.log
-             */
-            loggerContext.putProperty("geogigdir", geogigDir.getAbsolutePath());
-            JoranConfigurator configurator = new JoranConfigurator();
-            configurator.setContext(loggerContext);
-            configurator.doConfigure(loggingFile);
-
-            // redirect java.util.logging to SLF4J
-            SLF4JBridgeHandler.removeHandlersForRootLogger();
-            SLF4JBridgeHandler.install();
-            geogigDirLoggingConfiguration = geogigDir;
-        } catch (JoranException e) {
-            LOGGER.error("Error configuring logging from file {}. '{}'", loggingFile,
-                    e.getMessage(), e);
-        }
+        // // instantiate and call ResolveGeogigDir directly to avoid calling getGeogig() and hence
+        // get
+        // // some logging events before having configured logging
+        // Hints hints = new Hints();
+        // try {
+        // if (repoURI != null) {
+        // URI uri = new URI(repoURI);
+        // hints.set(Hints.REPOSITORY_URL, uri);
+        // }
+        // } catch (URISyntaxException ignore) {
+        // // not our call to do anything with a wrong URI here
+        // }
+        // final Optional<URI> geogigDirUrl = new ResolveGeogigURI(platform, hints).call();
+        // if (!geogigDirUrl.isPresent() ||
+        // !"file".equalsIgnoreCase(geogigDirUrl.get().getScheme())) {
+        // // redirect java.util.logging to SLF4J anyways
+        // SLF4JBridgeHandler.removeHandlersForRootLogger();
+        // SLF4JBridgeHandler.install();
+        // return;
+        // }
+        //
+        // final File geogigDir = new File(geogigDirUrl.get());
+        //
+        // if (repoURI == null && geogigDir.equals(geogigDirLoggingConfiguration)) {
+        // return;
+        // }
+        //
+        // if (!geogigDir.exists() || !geogigDir.isDirectory()) {
+        // return;
+        // }
+        // final URL loggingFile = getOrCreateLoggingConfigFile(geogigDir);
+        //
+        // if (loggingFile == null) {
+        // return;
+        // }
+        //
+        // try {
+        // LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        // loggerContext.reset();
+        // /*
+        // * Set the geogigdir variable for the config file can resolve the default location
+        // * ${geogigdir}/log/geogig.log
+        // */
+        // loggerContext.putProperty("geogigdir", geogigDir.getAbsolutePath());
+        // JoranConfigurator configurator = new JoranConfigurator();
+        // configurator.setContext(loggerContext);
+        // configurator.doConfigure(loggingFile);
+        //
+        // // redirect java.util.logging to SLF4J
+        // SLF4JBridgeHandler.removeHandlersForRootLogger();
+        // SLF4JBridgeHandler.install();
+        // geogigDirLoggingConfiguration = geogigDir;
+        // } catch (JoranException e) {
+        // LOGGER.error("Error configuring logging from file {}. '{}'", loggingFile,
+        // e.getMessage(), e);
+        // }
     }
 
     @Nullable

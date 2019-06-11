@@ -61,120 +61,119 @@ public class RevParseTest extends RepositoryTestCase {
     @Before
     public void setUpRepo() throws Exception {
         poId1 = insertAndAdd(points1);
-        RevCommit commit = geogig.command(CommitOp.class).setMessage("Commit1").call();
+        RevCommit commit = repo.command(CommitOp.class).setMessage("Commit1").call();
         commitId1 = commit.getId();
         treeId = commit.getTreeId();
 
         insertAndAdd(points2);
-        commit = geogig.command(CommitOp.class).setMessage("Commit2").call();
+        commit = repo.command(CommitOp.class).setMessage("Commit2").call();
         commitId2 = commit.getId();
 
         insertAndAdd(points3);
-        commit = geogig.command(CommitOp.class).setMessage("Commit3").call();
+        commit = repo.command(CommitOp.class).setMessage("Commit3").call();
         commitId3 = commit.getId();
 
-        geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
+        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
 
         loId1 = insertAndAdd(lines1);
-        commit = geogig.command(CommitOp.class).setMessage("Commit4").call();
+        commit = repo.command(CommitOp.class).setMessage("Commit4").call();
         commitId4 = commit.getId();
 
         insertAndAdd(lines2);
-        commit = geogig.command(CommitOp.class).setMessage("Commit5").call();
+        commit = repo.command(CommitOp.class).setMessage("Commit5").call();
         commit.getId();
 
         insertAndAdd(lines3);
-        commit = geogig.command(CommitOp.class).setMessage("Commit6").call();
+        commit = repo.command(CommitOp.class).setMessage("Commit6").call();
         commit.getId();
 
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
     }
 
     @Override
     protected void setUpInternal() throws Exception {
-        injector.configDatabase().put("user.name", "groldan");
-        injector.configDatabase().put("user.email", "groldan@boundlessgeo.com");
+        repo.configDatabase().put("user.name", "groldan");
+        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test
     public void testRevParseWithNoRefSpec() {
         exception.expect(IllegalStateException.class);
-        geogig.command(RevParse.class).call();
+        repo.command(RevParse.class).call();
     }
 
     @Test
     public void testRevParse() {
-        Optional<ObjectId> objectId = geogig.command(RevParse.class).setRefSpec("master").call();
+        Optional<ObjectId> objectId = repo.command(RevParse.class).setRefSpec("master").call();
         assertEquals(commitId3, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("WORK_HEAD:Points/Points.1").call();
+        objectId = repo.command(RevParse.class).setRefSpec("WORK_HEAD:Points/Points.1").call();
         assertEquals(poId1, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("branch1:Lines/Lines.1").call();
+        objectId = repo.command(RevParse.class).setRefSpec("branch1:Lines/Lines.1").call();
         assertEquals(loId1, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("branch1^1^1").call();
+        objectId = repo.command(RevParse.class).setRefSpec("branch1^1^1").call();
         assertEquals(commitId4, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("branch1^^").call();
+        objectId = repo.command(RevParse.class).setRefSpec("branch1^^").call();
         assertEquals(commitId4, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("master~2").call();
+        objectId = repo.command(RevParse.class).setRefSpec("master~2").call();
         assertEquals(commitId1, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("branch1^2").call();
+        objectId = repo.command(RevParse.class).setRefSpec("branch1^2").call();
         assertEquals(Optional.empty(), objectId);
 
-        objectId = geogig.command(RevParse.class).setRefSpec("master^").call();
+        objectId = repo.command(RevParse.class).setRefSpec("master^").call();
         assertEquals(commitId2, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("master^0").call();
+        objectId = repo.command(RevParse.class).setRefSpec("master^0").call();
         assertEquals(commitId3, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("HEAD").call();
+        objectId = repo.command(RevParse.class).setRefSpec("HEAD").call();
         assertEquals(commitId3, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "^1").call();
+        objectId = repo.command(RevParse.class).setRefSpec(commitId1.toString() + "^1").call();
         assertEquals(Optional.empty(), objectId);
 
-        objectId = geogig.command(RevParse.class).setRefSpec(ObjectId.NULL.toString() + "^").call();
+        objectId = repo.command(RevParse.class).setRefSpec(ObjectId.NULL.toString() + "^").call();
         assertEquals(Optional.empty(), objectId);
 
-        objectId = geogig.command(RevParse.class).setRefSpec(ObjectId.NULL.toString()).call();
+        objectId = repo.command(RevParse.class).setRefSpec(ObjectId.NULL.toString()).call();
         assertEquals(ObjectId.NULL, objectId.get());
-        objectId = geogig.command(RevParse.class).setRefSpec(
+        objectId = repo.command(RevParse.class).setRefSpec(
                 ObjectId.NULL.toString().substring(0, ObjectId.NULL.toString().length() - 10))
                 .call();
         assertEquals(ObjectId.NULL, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "~1").call();
+        objectId = repo.command(RevParse.class).setRefSpec(commitId1.toString() + "~1").call();
         assertEquals(Optional.empty(), objectId);
 
-        objectId = geogig.command(RevParse.class)
+        objectId = repo.command(RevParse.class)
                 .setRefSpec(commitId1.toString().substring(0, commitId1.toString().length() - 2))
                 .call();
         assertEquals(commitId1, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "~a").call();
+        objectId = repo.command(RevParse.class).setRefSpec(commitId1.toString() + "~a").call();
         assertEquals(Optional.empty(), objectId);
 
-        objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "^{commit}")
+        objectId = repo.command(RevParse.class).setRefSpec(commitId1.toString() + "^{commit}")
                 .call();
         assertEquals(commitId1, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec(poId1.toString() + "^{feature}")
-                .call();
+        objectId = repo.command(RevParse.class).setRefSpec(poId1.toString() + "^{feature}").call();
         assertEquals(poId1, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec(treeId.toString() + "^{tree}").call();
+        objectId = repo.command(RevParse.class).setRefSpec(treeId.toString() + "^{tree}").call();
         assertEquals(treeId, objectId.get());
 
-        objectId = geogig.command(RevParse.class).setRefSpec("master^{commit}").call();
+        objectId = repo.command(RevParse.class).setRefSpec("master^{commit}").call();
         assertEquals(commitId3, objectId.get());
 
         // TODO: Make a case for Tags when they actually do something
 
-        objectId = geogig.command(RevParse.class)
+        objectId = repo.command(RevParse.class)
                 .setRefSpec(RevObjectTestSupport.hashString("NotAFeature").toString()).call();
         assertEquals(Optional.empty(), objectId);
     }
@@ -182,32 +181,32 @@ public class RevParseTest extends RepositoryTestCase {
     @Test
     public void testRevParseWithFeatureObjectIdAndDelimiter() {
         exception.expect(IllegalArgumentException.class);
-        geogig.command(RevParse.class).setRefSpec(loId1.toString() + "^").call();
+        repo.command(RevParse.class).setRefSpec(loId1.toString() + "^").call();
     }
 
     @Test
     public void testRevParseWithFeatureCheckIfCommit() {
         exception.expect(IllegalArgumentException.class);
-        geogig.command(RevParse.class).setRefSpec(loId1.toString() + "^0").call();
+        repo.command(RevParse.class).setRefSpec(loId1.toString() + "^0").call();
     }
 
     @Test
     public void testRevParseWithInvalidRefSpec() {
-        Optional<ObjectId> oid = geogig.command(RevParse.class)
-                .setRefSpec("WORK_HEAD:Lines/Lines.1").call();
+        Optional<ObjectId> oid = repo.command(RevParse.class).setRefSpec("WORK_HEAD:Lines/Lines.1")
+                .call();
         assertFalse(oid.isPresent());
     }
 
     @Test
     public void testRevParseVerifyToWrongType() {
         exception.expect(IllegalArgumentException.class);
-        geogig.command(RevParse.class).setRefSpec(poId1.toString() + "^{commit}").call();
+        repo.command(RevParse.class).setRefSpec(poId1.toString() + "^{commit}").call();
     }
 
     @Test
     public void testRevParseVerifyWithInvalidType() {
         exception.expect(IllegalArgumentException.class);
-        geogig.command(RevParse.class).setRefSpec(poId1.toString() + "^{blah}").call();
+        repo.command(RevParse.class).setRefSpec(poId1.toString() + "^{blah}").call();
     }
 
     @Test

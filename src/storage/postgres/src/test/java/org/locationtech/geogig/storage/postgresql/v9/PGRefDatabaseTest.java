@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.postgresql.v9;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -22,6 +23,7 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -48,7 +50,9 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
         PGStorage.createNewRepo(mainEnvironment);
         closeConfigDb();
         configdb = new PGConfigDatabase(mainEnvironment);
-        return new PGRefDatabase(configdb, mainEnvironment);
+        URI uri = mainEnvironment.toURI();
+        Hints hints = new Hints().uri(uri);
+        return new PGRefDatabase(configdb, hints);
     }
 
     @After
@@ -115,8 +119,10 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
                 mainEnvironment.getTables().getPrefix());
         PGStorage.createNewRepo(secondEnvironment);
         PGConfigDatabase secondConfigDb = new PGConfigDatabase(secondEnvironment);
-        PGRefDatabase secondRefDb = new PGRefDatabase(secondConfigDb, secondEnvironment);
-        secondRefDb.create();
+
+        PGRefDatabase secondRefDb = new PGRefDatabase(secondConfigDb,
+                new Hints().uri(secondEnvironment.toURI()));
+        secondRefDb.open();
         PGRefDatabase firstRefDb = PGRefDatabase.class.cast(refDb);
         Callable<Long> lockFirstRepo = new Callable<Long>() {
             @Override

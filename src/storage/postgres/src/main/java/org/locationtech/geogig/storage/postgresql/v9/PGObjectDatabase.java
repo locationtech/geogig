@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
-
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,13 +23,11 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 
 import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
 
 /**
  * PostgreSQL implementation for {@link ObjectDatabase}.
@@ -45,7 +40,6 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     private PGGraphDatabase graph;
 
-    @Inject
     public PGObjectDatabase(final ConfigDatabase configdb, final Hints hints)
             throws URISyntaxException {
         this(configdb, Environment.get(hints), readOnly(hints));
@@ -67,12 +61,11 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
     public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
+        return true;
     }
 
     @Override

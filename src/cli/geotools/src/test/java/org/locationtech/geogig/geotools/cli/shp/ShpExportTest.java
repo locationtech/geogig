@@ -35,21 +35,21 @@ public class ShpExportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(geogig);
+        cli.setGeogig(repo);
 
         // Add points
         insertAndAdd(points1);
         insertAndAdd(points2);
         insertAndAdd(points3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         // Add lines
         insertAndAdd(lines1);
         insertAndAdd(lines2);
         insertAndAdd(lines3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
     }
 
     @Override
@@ -60,9 +60,9 @@ public class ShpExportTest extends RepositoryTestCase {
     @Test
     public void testExportWithDifferentFeatureTypes() throws Exception {
         insertAndAdd(points1B);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
         ShpExport exportCommand = new ShpExport();
-        String shapeFileName = new File(geogig.getPlatform().pwd(), "TestPoints.shp")
+        String shapeFileName = new File(repo.getPlatform().pwd(), "TestPoints.shp")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
@@ -93,7 +93,7 @@ public class ShpExportTest extends RepositoryTestCase {
     @Test
     public void testExport() throws Exception {
         ShpExport exportCommand = new ShpExport();
-        String shapeFileName = new File(geogig.getPlatform().pwd(), "TestPoints.shp")
+        String shapeFileName = new File(repo.getPlatform().pwd(), "TestPoints.shp")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
@@ -105,7 +105,7 @@ public class ShpExportTest extends RepositoryTestCase {
     @Test
     public void testExportWithNullFeatureType() throws Exception {
         ShpExport exportCommand = new ShpExport();
-        String shapeFileName = new File(geogig.getPlatform().pwd(), "TestPoints.shp")
+        String shapeFileName = new File(repo.getPlatform().pwd(), "TestPoints.shp")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList(null, shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
@@ -116,7 +116,7 @@ public class ShpExportTest extends RepositoryTestCase {
     @Test
     public void testExportWithInvalidFeatureType() throws Exception {
         ShpExport exportCommand = new ShpExport();
-        String shapeFileName = new File(geogig.getPlatform().pwd(), "TestPoints.shp")
+        String shapeFileName = new File(repo.getPlatform().pwd(), "TestPoints.shp")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("invalidType", shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
@@ -127,7 +127,7 @@ public class ShpExportTest extends RepositoryTestCase {
     @Test
     public void testExportWithFeatureNameInsteadOfType() throws Exception {
         ShpExport exportCommand = new ShpExport();
-        String shapeFileName = new File(geogig.getPlatform().pwd(), "TestPoints.shp")
+        String shapeFileName = new File(repo.getPlatform().pwd(), "TestPoints.shp")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("Points/Points.1", shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
@@ -144,7 +144,7 @@ public class ShpExportTest extends RepositoryTestCase {
     @Test
     public void testExportToFileThatAlreadyExists() throws Exception {
         ShpExport exportCommand = new ShpExport();
-        String shapeFileName = new File(geogig.getPlatform().pwd(), "TestPoints.shp")
+        String shapeFileName = new File(repo.getPlatform().pwd(), "TestPoints.shp")
                 .getAbsolutePath();
         ;
         exportCommand.args = Arrays.asList("WORK_HEAD:Points", shapeFileName);
@@ -174,7 +174,7 @@ public class ShpExportTest extends RepositoryTestCase {
     @Test
     public void testExportToFileThatAlreadyExistsWithOverwrite() throws Exception {
         ShpExport exportCommand = new ShpExport();
-        String shapeFileName = new File(geogig.getPlatform().pwd(), "TestPoints.shp")
+        String shapeFileName = new File(repo.getPlatform().pwd(), "TestPoints.shp")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();

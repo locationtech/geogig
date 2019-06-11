@@ -41,20 +41,20 @@ public class TagTest extends RepositoryTestCase {
     @Test
     public void testInvalidTagName() throws Exception {
         insertAndAdd(points1);
-        RevCommit commit = geogig.command(CommitOp.class).call();
+        RevCommit commit = repo.command(CommitOp.class).call();
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
-        geogig.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag..1").call();
+        repo.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag..1").call();
     }
 
     @Test
     public void testTagCreation() throws Exception {
         insertAndAdd(points1);
-        RevCommit commit = geogig.command(CommitOp.class).call();
-        RevTag tag = geogig.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag1")
+        RevCommit commit = repo.command(CommitOp.class).call();
+        RevTag tag = repo.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag1")
                 .call();
-        Optional<RevTag> databaseTag = geogig.command(RevObjectParse.class).setRefSpec("Tag1")
+        Optional<RevTag> databaseTag = repo.command(RevObjectParse.class).setRefSpec("Tag1")
                 .call(RevTag.class);
         assertTrue(databaseTag.isPresent());
         assertEquals(tag, databaseTag.get());
@@ -63,15 +63,15 @@ public class TagTest extends RepositoryTestCase {
     @Test
     public void testTagRemoval() throws Exception {
         insertAndAdd(points1);
-        RevCommit commit = geogig.command(CommitOp.class).call();
-        RevTag tag = geogig.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag1")
+        RevCommit commit = repo.command(CommitOp.class).call();
+        RevTag tag = repo.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag1")
                 .call();
-        Optional<RevTag> databaseTag = geogig.command(RevObjectParse.class).setRefSpec("Tag1")
+        Optional<RevTag> databaseTag = repo.command(RevObjectParse.class).setRefSpec("Tag1")
                 .call(RevTag.class);
         assertTrue(databaseTag.isPresent());
-        RevTag removedTag = geogig.command(TagRemoveOp.class).setName("Tag1").call();
+        RevTag removedTag = repo.command(TagRemoveOp.class).setName("Tag1").call();
         assertEquals(tag, removedTag);
-        Optional<ObjectId> databaseTagId = geogig.command(RevParse.class).setRefSpec("Tag1").call();
+        Optional<ObjectId> databaseTagId = repo.command(RevParse.class).setRefSpec("Tag1").call();
         assertFalse(databaseTagId.isPresent());
 
     }

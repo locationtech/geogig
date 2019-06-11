@@ -1,2 +1,2 @@
-org.locationtech.geogig.repository.impl.FileRepositoryResolver
+org.locationtech.geogig.test.MemoryRepositoryResolver
 org.locationtech.geogig.repository.impl.RepositoryResolverTest$TestResolver

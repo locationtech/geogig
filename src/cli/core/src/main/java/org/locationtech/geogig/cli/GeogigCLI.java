@@ -43,7 +43,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.impl.FileRepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -605,7 +605,7 @@ public class GeogigCLI {
             globalOnly = true;
         } else {
             try {
-                uri = RepositoryResolver.resolveRepoUriFromString(platform, repoURI);
+                uri = RepositoryFinder.INSTANCE.resolveRepoUriFromString(platform, repoURI);
                 globalOnly = false;
             } catch (URISyntaxException e) {
                 uri = platform.getUserHome().toURI();
@@ -616,9 +616,9 @@ public class GeogigCLI {
         Optional<String> unaliased = Optional.empty();
 
         final Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
-        final RepositoryResolver resolver = RepositoryResolver.lookup(uri);
+        final RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(uri);
         final boolean repoExists = resolver.repoExists(uri);
-        try (ConfigDatabase config = resolver.getConfigDatabase(uri, context, globalOnly)) {
+        try (ConfigDatabase config = resolver.resolveConfigDatabase(uri, context, globalOnly)) {
             if (!globalOnly && repoExists) {
                 unaliased = config.get(configParam);
             }
@@ -638,7 +638,7 @@ public class GeogigCLI {
         if (!unaliased.isPresent()) {
             // see if we can fall back to a file global config
             if (repoURI == null || !"file".equals(uri.getScheme())) {
-                try (ConfigDatabase global = FileRepositoryResolver
+                try (ConfigDatabase global = RepositoryFinder.INSTANCE
                         .resolveConfigDatabase(platform.pwd().toURI(), context, true)) {
                     unaliased = global.getGlobal(configParam);
                 } catch (IOException e) {

@@ -25,7 +25,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.collect.ImmutableMap;
@@ -186,7 +186,7 @@ public @Data @Builder class PR {
     Repository openRemote() {
         Repository repository;
         try {
-            repository = RepositoryResolver.load(remote);
+            repository = RepositoryFinder.INSTANCE.load(remote);
         } catch (RepositoryConnectionException e) {
             throw new IllegalStateException("Unable to open pull request issuer repository", e);
         }

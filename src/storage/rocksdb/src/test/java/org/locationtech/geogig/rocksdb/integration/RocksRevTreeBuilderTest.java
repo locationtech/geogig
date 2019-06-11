@@ -15,10 +15,8 @@ import java.io.IOException;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilderTest;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.RocksdbObjectStore;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.test.TestPlatform;
 
 public class RocksRevTreeBuilderTest extends CanonicalTreeBuilderTest {
 
@@ -27,13 +25,13 @@ public class RocksRevTreeBuilderTest extends CanonicalTreeBuilderTest {
 
     @Override
     protected ObjectStore createObjectStore() {
-        File workingDirectory;
+        File dbdir;
         try {
-            workingDirectory = tmp.newFolder(".geogig");
+            dbdir = tmp.newFolder(".geogig");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Platform platform = new TestPlatform(workingDirectory);
-        return new RocksdbObjectStore(platform, null);
+        RocksdbObjectStore store = new RocksdbObjectStore(dbdir, false);
+        return store;
     }
 }

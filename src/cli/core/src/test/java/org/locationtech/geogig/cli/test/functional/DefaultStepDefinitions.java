@@ -69,7 +69,7 @@ import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
@@ -292,7 +292,7 @@ public class DefaultStepDefinitions {
         String location = output.get(0);
         assertNotNull(location);
         URI repoURI = resolveURI(location);
-        boolean repoExists = RepositoryResolver.lookup(repoURI).repoExists(repoURI);
+        boolean repoExists = RepositoryFinder.INSTANCE.lookup(repoURI).repoExists(repoURI);
         assertTrue("Repository not found: " + repoURI, repoExists);
     }
 
@@ -300,7 +300,7 @@ public class DefaultStepDefinitions {
     public void the_repository_at_shall_exist(String repoUri) throws Throwable {
         repoUri = replaceKnownVariables(repoUri);
         URI uri = resolveURI(repoUri);
-        boolean exists = RepositoryResolver.lookup(uri).repoExists(uri);
+        boolean exists = RepositoryFinder.INSTANCE.lookup(uri).repoExists(uri);
         assertTrue("Repository does not exist: " + uri, exists);
     }
 
@@ -308,7 +308,7 @@ public class DefaultStepDefinitions {
     public void the_repository_at_shall_not_exist(String repoUri) throws Throwable {
         repoUri = replaceKnownVariables(repoUri);
         URI uri = resolveURI(repoUri);
-        boolean exists = RepositoryResolver.lookup(uri).repoExists(uri);
+        boolean exists = RepositoryFinder.INSTANCE.lookup(uri).repoExists(uri);
         assertFalse("Repository exists: " + uri, exists);
     }
 

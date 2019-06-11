@@ -34,21 +34,21 @@ public class PGExportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(geogig);
+        cli.setGeogig(repo);
 
         // Add points
         insertAndAdd(points1);
         insertAndAdd(points2);
         insertAndAdd(points3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         // Add lines
         insertAndAdd(lines1);
         insertAndAdd(lines2);
         insertAndAdd(lines3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
     }
 
     @Override

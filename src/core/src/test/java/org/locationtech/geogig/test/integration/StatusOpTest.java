@@ -22,7 +22,7 @@ public class StatusOpTest extends RepositoryTestCase {
 
     @Test
     public void testNothingToChange() {
-        StatusSummary summary = geogig.command(StatusOp.class).call();
+        StatusSummary summary = repo.command(StatusOp.class).call();
         assertAllFieldsNotNull(summary);
         assertEquals(0, summary.getCountStaged());
         assertEquals(0, summary.getCountUnstaged());
@@ -36,7 +36,7 @@ public class StatusOpTest extends RepositoryTestCase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        StatusSummary summary = geogig.command(StatusOp.class).call();
+        StatusSummary summary = repo.command(StatusOp.class).call();
         assertAllFieldsNotNull(summary);
         assertEquals(2, summary.getCountUnstaged());
     }
@@ -48,7 +48,7 @@ public class StatusOpTest extends RepositoryTestCase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        StatusSummary summary = geogig.command(StatusOp.class).call();
+        StatusSummary summary = repo.command(StatusOp.class).call();
         assertAllFieldsNotNull(summary);
         assertEquals(2, summary.getCountStaged());
     }
@@ -61,7 +61,7 @@ public class StatusOpTest extends RepositoryTestCase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        StatusSummary summary = geogig.command(StatusOp.class).call();
+        StatusSummary summary = repo.command(StatusOp.class).call();
         assertAllFieldsNotNull(summary);
         assertEquals(3, summary.getCountStaged());
     }

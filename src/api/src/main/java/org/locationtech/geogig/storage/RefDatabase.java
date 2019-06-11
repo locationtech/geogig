@@ -47,9 +47,9 @@ public interface RefDatabase extends Closeable {
     public abstract void unlock();
 
     /**
-     * Creates the reference database.
+     * Opens the reference database.
      */
-    public abstract void create();
+    public abstract void open();
 
     /**
      * Closes the reference database.

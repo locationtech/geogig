@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static java.util.Optional.empty;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -32,20 +30,23 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.PluginDefaults;
-import org.locationtech.geogig.storage.VersionedFormat;
 import org.locationtech.geogig.storage.impl.Blobs;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.inject.Inject;
+
+import lombok.AccessLevel;
+import lombok.Setter;
 
 /**
  * Creates or "initializes" a repository in the {@link Platform#pwd() working directory}.
@@ -63,6 +64,8 @@ import com.google.inject.Inject;
  */
 @CanRunDuringConflict
 public class InitOp extends AbstractGeoGigOp<Repository> {
+
+    private @Setter(value = AccessLevel.PACKAGE) @VisibleForTesting RepositoryFinder repositoryFinder = RepositoryFinder.INSTANCE;
 
     private Map<String, String> config;
 
@@ -119,7 +122,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
         URI repoURI = resolvedURI.get();
 
-        final RepositoryResolver repoInitializer = RepositoryResolver.lookup(repoURI);
+        final RepositoryResolver repoInitializer = repositoryFinder.lookup(repoURI);
         final boolean repoExisted = repoInitializer.repoExists(repoURI);
 
         repoInitializer.initialize(repoURI, context());
@@ -150,10 +153,8 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         try {
             if (!repoExisted) {
                 // use a config database appropriate for the kind of repo URI
-                try (ConfigDatabase configDB = repoInitializer.getConfigDatabase(repoURI,
+                try (ConfigDatabase configDB = repoInitializer.resolveConfigDatabase(repoURI,
                         context)) {
-                    PluginDefaults defaults = context.pluginDefaults();
-                    addDefaults(configDB, defaults, effectiveConfigBuilder);
                     if (config != null) {
                         effectiveConfigBuilder.putAll(config);
                     }
@@ -195,30 +196,6 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             createDefaultRefs();
         }
         return repository;
-    }
-
-    private void addDefaults(ConfigDatabase configDB, PluginDefaults defaults,
-            Map<String, String> configProps) {
-
-        final String refsKey = "storage.refs";
-        final String objectsKey = "storage.objects";
-
-        final Map<String, String> providedConfig = configDB.getAll();
-
-        Optional<VersionedFormat> refs;
-        Optional<VersionedFormat> objects;
-
-        refs = providedConfig.containsKey(refsKey) ? empty() : defaults.getRefs();
-        objects = providedConfig.containsKey(objectsKey) ? empty() : defaults.getObjects();
-
-        if (refs.isPresent()) {
-            configProps.put(refsKey, refs.get().getFormat());
-            configProps.put(refs.get().getFormat() + ".version", refs.get().getVersion());
-        }
-        if (objects.isPresent()) {
-            configProps.put(objectsKey, objects.get().getFormat());
-            configProps.put(objects.get().getFormat() + ".version", objects.get().getVersion());
-        }
     }
 
     private void createDefaultRefs() {

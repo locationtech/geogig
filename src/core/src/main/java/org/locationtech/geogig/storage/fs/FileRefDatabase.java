@@ -18,19 +18,12 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 
 import com.google.common.base.Preconditions;
@@ -38,7 +31,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 /**
  * Provides an implementation of a GeoGig ref database that utilizes the file system for the storage
@@ -48,47 +42,36 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     private static final Charset CHARSET = Charset.forName("UTF-8");
 
-    private final Platform platform;
+    private final File refsDirectory;
 
-    private final Hints hints;
-
-    private final ConfigDatabase configDB;
-
-    private File envHome;
+    private boolean readOnly;
 
     /**
-     * Constructs a new {@code FileRefDatabase} with the given platform.
-     * 
-     * @param platform the platform to use
+     * Constructs a new {@code FileRefDatabase} with the given base directory (e.g.
+     * {@code /repo/.geogig/refs}).
      */
-    @Inject
-    public FileRefDatabase(Platform platform, ConfigDatabase configDB, Hints hints) {
-        this.platform = platform;
-        this.configDB = configDB;
-        this.hints = hints;
+    public FileRefDatabase(@NonNull File refsDirectory) {
+        this(refsDirectory, false);
+    }
+
+    public FileRefDatabase(@NonNull File refsDirectory, boolean readOnly) {
+        this.refsDirectory = refsDirectory;
+        this.readOnly = readOnly;
     }
 
     /**
      * Creates the reference database.
      */
     @Override
-    public void create() {
-        Optional<URI> envHome = new ResolveGeogigURI(platform, hints).call();
-        checkState(envHome.isPresent(), "Not inside a geogig directory");
-
-        final URI envURL = envHome.get();
-        if (!"file".equals(envURL.getScheme())) {
-            throw new UnsupportedOperationException(
-                    "This References Database works only against file system repositories. "
-                            + "Repository location: " + envURL);
+    public void open() {
+        File refs = this.refsDirectory;
+        if (!refs.isDirectory()) {
+            checkWritable();
+            if (!refs.mkdir()) {
+                throw new IllegalStateException(
+                        "Cannot create refs directory '" + refs.getAbsolutePath() + "'");
+            }
         }
-        File repoDir = new File(envURL);
-        File refs = new File(repoDir, "refs");
-        if (!refs.exists() && !refs.mkdir()) {
-            throw new IllegalStateException(
-                    "Cannot create refs directory '" + refs.getAbsolutePath() + "'");
-        }
-        this.envHome = repoDir;
     }
 
     /**
@@ -155,6 +138,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     public void putRef(String refName, String refValue) {
         checkNotNull(refName);
         checkNotNull(refValue);
+        checkWritable();
         try {
             ObjectId.valueOf(refValue);
         } catch (IllegalArgumentException e) {
@@ -175,6 +159,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
         checkArgument(!name.equals(val), "Trying to store cyclic symbolic ref: %s", name);
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, val);
+        checkWritable();
         val = "ref: " + val;
         store(name, val);
     }
@@ -187,6 +172,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     @Override
     public String remove(String refName) {
         checkNotNull(refName);
+        checkWritable();
         File refFile = toFile(refName);
         String oldRef;
         if (refFile.exists()) {
@@ -211,7 +197,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     private File toFile(String refPath) {
         String[] path = refPath.split("/");
 
-        File file = this.envHome;
+        File file = this.refsDirectory;
         for (String subpath : path) {
             file = new File(file, subpath);
         }
@@ -293,7 +279,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     @Override
     public Map<String, String> getAll(String namespace) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
-        File refsRoot = this.envHome;
+        File refsRoot = this.refsDirectory;
         if (namespace.endsWith("/")) {
             namespace = namespace.substring(0, namespace.length() - 1);
         }
@@ -338,6 +324,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     @Override
     public Map<String, String> removeAll(String namespace) {
         Preconditions.checkNotNull(namespace, "provided namespace is null");
+        checkWritable();
         Map<String, String> oldvalues = getAll(namespace);
         final File file = toFile(namespace);
         if (file.exists() && file.isDirectory()) {
@@ -371,16 +358,22 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        StorageType.REF.configure(configDB, "file", "1.0");
     }
 
     @Override
     public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.REF.verify(configDB, "file", "1.0");
+        return true;
     }
 
     @Override
     public String toString() {
-        return String.format("%s[geogig dir: %s]", getClass().getSimpleName(), envHome);
+        return String.format("%s[geogig dir: %s]", getClass().getSimpleName(), refsDirectory);
     }
+
+    protected void checkWritable() {
+        if (readOnly) {
+            throw new IllegalStateException("db is read only.");
+        }
+    }
+
 }

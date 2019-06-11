@@ -9,10 +9,8 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
-
 import java.io.DataInput;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,16 +19,12 @@ import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.IndexInfoSerializer;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
@@ -43,7 +37,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 /**
  * 
@@ -53,26 +48,21 @@ import com.google.inject.Inject;
  */
 public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDatabase {
 
-    private final ConfigDatabase configdb;
-
     private ColumnFamilyHandle indexMetadataColumn;
 
     private ColumnFamilyHandle indexMappingsColumn;
 
-    @Inject
-    public RocksdbIndexDatabase(Platform platform, Hints hints, ConfigDatabase configdb) {
-        super(platform, hints, "index.rocksdb");
-        this.configdb = configdb;
+    public RocksdbIndexDatabase(@NonNull File dbdir, boolean readOnly) {
+        super(dbdir, readOnly);
     }
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        StorageType.INDEX.configure(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
     public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.INDEX.verify(configdb, FORMAT_NAME, VERSION);
+        return true;
     }
 
     @Override

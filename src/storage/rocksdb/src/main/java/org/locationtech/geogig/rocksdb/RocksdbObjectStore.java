@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
@@ -21,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,9 +37,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -66,7 +61,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class RocksdbObjectStore extends AbstractObjectStore implements ObjectStore {
 
@@ -74,7 +70,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     private volatile boolean open;
 
-    protected final String path;
+    protected final @NonNull File dbDirectory;
 
     protected final boolean readOnly;
 
@@ -82,26 +78,9 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     private ReadOptions bulkReadOptions;
 
-    protected final Platform platform;
-
-    protected final @Nullable Hints hints;
-
-    @Inject
-    public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
-        this(platform, hints, "objects.rocksdb");
-    }
-
-    public RocksdbObjectStore(Platform platform, @Nullable Hints hints, String databaseName) {
-        checkNotNull(platform);
-        this.platform = platform;
-        this.hints = hints;
-        Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
-        checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
-        URI uri = repoUriOpt.get();
-        checkArgument("file".equals(uri.getScheme()));
-        this.path = new File(new File(uri), databaseName).getAbsolutePath();
-
-        this.readOnly = hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
+    public RocksdbObjectStore(@NonNull File dbdir, boolean readOnly) {
+        this.dbDirectory = dbdir;
+        this.readOnly = readOnly;
     }
 
     @Override
@@ -114,9 +93,10 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             return;
         }
         Map<String, String> defaultMetadata = ImmutableMap.of("version",
-                RocksdbStorageProvider.VERSION, "serializer", "proxy");
+                RocksdbRepositoryResolver.VERSION, "serializer", "proxy");
 
-        DBConfig address = new DBConfig(path, readOnly, defaultMetadata, columnFamilyNames);
+        DBConfig address = new DBConfig(dbDirectory.getAbsolutePath(), readOnly, defaultMetadata,
+                columnFamilyNames);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(address);
 
         this.bulkReadOptions = new ReadOptions();

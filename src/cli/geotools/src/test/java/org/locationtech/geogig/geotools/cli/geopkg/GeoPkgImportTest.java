@@ -42,7 +42,7 @@ public class GeoPkgImportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(geogig);
+        cli.setGeogig(repo);
 
         support = new GeoPackageTestSupport();
     }

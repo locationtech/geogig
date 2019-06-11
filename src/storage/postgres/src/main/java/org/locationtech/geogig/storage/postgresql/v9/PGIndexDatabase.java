@@ -10,8 +10,6 @@
 package org.locationtech.geogig.storage.postgresql.v9;
 
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.rollbackAndRethrow;
 
@@ -43,7 +41,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.IndexDuplicator;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 import org.locationtech.geogig.storage.datastream.ValueSerializer;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
@@ -56,7 +53,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
 
 /**
  * PostgreSQL implementation for {@link IndexDatabase}.
@@ -69,7 +65,6 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
     private final ValueSerializer valueEncoder = DataStreamValueSerializerV2.INSTANCE;
 
-    @Inject
     public PGIndexDatabase(final ConfigDatabase configdb, final Hints hints)
             throws URISyntaxException {
         this(configdb, Environment.get(hints), readOnly(hints));
@@ -112,12 +107,11 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        StorageType.INDEX.configure(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
     public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.INDEX.verify(configdb, FORMAT_NAME, VERSION);
+        return true;
     }
 
     @Override

@@ -42,7 +42,7 @@ public class CatObjectTest extends RepositoryTestCase {
     public void TestCatTreeWithoutBucketsObject() throws Exception {
         int numChildren = CanonicalNodeNameOrder.normalizedSizeLimit(0) / 2;
         RevTree tree = createTree(numChildren);
-        CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
+        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
                 .call();
         String[] lines = desc.toString().split("\n");
         assertEquals(numChildren + 4, lines.length);
@@ -57,7 +57,7 @@ public class CatObjectTest extends RepositoryTestCase {
     public void TestCatTreeWithBucketsObject() throws Exception {
         int numChildren = CanonicalNodeNameOrder.normalizedSizeLimit(0) * 2;
         RevTree tree = createTree(numChildren);
-        CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
+        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
                 .call();
         String[] lines = desc.toString().split("\n");
         assertEquals(tree.bucketsSize() + 4, lines.length);
@@ -81,7 +81,7 @@ public class CatObjectTest extends RepositoryTestCase {
     @Test
     public void TestCatFeatureObject() {
         RevFeature feature = RevFeature.builder().build(points1);
-        CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(feature))
+        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(feature))
                 .call();
         String[] lines = desc.toString().split("\n");
 

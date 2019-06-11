@@ -17,6 +17,8 @@ import java.util.Optional;
 
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
+
 /**
  * Hints that guice created dependencies can accept on their constructors, contains flags to
  * enable/disable operational modes on databases. In the future may provide other kind of hints to
@@ -134,6 +136,11 @@ public class Hints implements Serializable {
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.FALSE);
         hints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
         return hints;
+    }
+
+    public static Hints repository(@NonNull URI repoURI) {
+        Hints hints = new Hints();
+        return hints.uri(repoURI);
     }
 
     /**

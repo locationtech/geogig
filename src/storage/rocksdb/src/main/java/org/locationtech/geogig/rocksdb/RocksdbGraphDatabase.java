@@ -13,7 +13,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,15 +20,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.datastream.Varint;
@@ -52,7 +47,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class RocksdbGraphDatabase implements GraphDatabase {
 
@@ -68,19 +64,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
 
     private DBHandle dbhandle;
 
-    @Inject
-    public RocksdbGraphDatabase(Platform platform, Hints hints) {
-        this.readOnly = hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
-        Optional<URI> uri = new ResolveGeogigURI(platform, hints).call();
-        Preconditions.checkArgument(uri.isPresent(), "not in a geogig directory");
-        Preconditions.checkArgument("file".equals(uri.get().getScheme()),
-                "Repository URI is not file://");
-
-        File basedir = new File(uri.get());
-        this.dbdir = new File(basedir, "graph.rocksdb");
-    }
-
-    RocksdbGraphDatabase(File dbdir, boolean readOnly) {
+    public RocksdbGraphDatabase(@NonNull File dbdir, boolean readOnly) {
         this.dbdir = dbdir;
         this.readOnly = readOnly;
     }

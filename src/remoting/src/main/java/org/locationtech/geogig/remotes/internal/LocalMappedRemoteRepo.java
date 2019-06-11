@@ -38,7 +38,7 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -79,7 +79,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
     @Override
     public void open() throws RepositoryConnectionException {
         if (remoteRepo == null) {
-            remoteRepo = RepositoryResolver.load(remoteRepoLocation);
+            remoteRepo = RepositoryFinder.INSTANCE.load(remoteRepoLocation);
         }
     }
 

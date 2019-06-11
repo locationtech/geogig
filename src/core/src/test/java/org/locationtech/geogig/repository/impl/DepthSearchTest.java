@@ -19,16 +19,15 @@ import static org.locationtech.geogig.model.RevObject.TYPE.TREE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Optional;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.di.HintsModule;
+import org.junit.rules.TestName;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -40,24 +39,18 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.test.MemoryModule;
-import org.locationtech.geogig.test.TestPlatform;
-
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
+import org.locationtech.geogig.test.TestRepository;
 
 /**
  *
  */
 public class DepthSearchTest {
 
-    @Rule
-    public final TemporaryFolder tempFolder = new TemporaryFolder();
+    public @Rule TestName testName = new TestName();
 
-    private GeoGIG fakeGeogig;
+    private Repository repository;
 
     private ObjectDatabase odb;
 
@@ -69,16 +62,12 @@ public class DepthSearchTest {
 
     @Before
     public void setUp() throws IOException {
-        File envHome = tempFolder.getRoot();
-        Platform testPlatform = new TestPlatform(envHome);
-        Context injector = Guice
-                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
-                        new HintsModule(new Hints().platform(testPlatform))))
-                .getInstance(Context.class);
-
-        fakeGeogig = new GeoGIG(injector);
-        Repository fakeRepo = fakeGeogig.getOrCreateRepository();
-        odb = fakeRepo.objectDatabase();
+        URI uri = URI.create(String.format("memory://%s/%s", getClass().getSimpleName(),
+                testName.getMethodName()));
+        Hints hints = Hints.repository(uri);
+        Context context = new PluginsContextBuilder().build(hints);
+        repository = new GeoGIG(context).getOrCreateRepository();
+        odb = repository.objectDatabase();
         search = new DepthSearch(odb);
 
         RevTree root = RevTree.EMPTY;
@@ -87,6 +76,10 @@ public class DepthSearchTest {
         root = addTree(root, "tree3", "node31", "node32", "node33");
 
         rootTreeId = root.getId();
+    }
+
+    public @After void after() {
+        TestRepository.closeAndDelete(repository);
     }
 
     private RevTree addTree(RevTree root, final String treePath, String... singleNodeNames) {
@@ -107,7 +100,7 @@ public class DepthSearchTest {
 
         RevTree subtree = subTreeBuilder.build();
         NodeRef childTreeNode = NodeRef.tree(treePath, subtree.getId(), fakeTreeMetadataId);
-        RevTree newRoot = fakeGeogig.command(UpdateTree.class).setRoot(root).setChild(childTreeNode)
+        RevTree newRoot = repository.command(UpdateTree.class).setRoot(root).setChild(childTreeNode)
                 .call();
         return newRoot;
     }

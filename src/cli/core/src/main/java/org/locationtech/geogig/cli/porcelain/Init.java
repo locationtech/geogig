@@ -25,7 +25,7 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
@@ -104,7 +104,7 @@ public class Init extends AbstractCommand implements CLICommand {
             }
         }
 
-        final boolean repoExisted = RepositoryResolver.lookup(targetURI).repoExists(targetURI);
+        final boolean repoExisted = RepositoryFinder.INSTANCE.lookup(targetURI).repoExists(targetURI);
 
         // let cli set up Hints with the appropriate URI
         Hints hints = new Hints();

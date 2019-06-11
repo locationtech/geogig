@@ -25,13 +25,13 @@ public class RepositoryResolverTestUtil {
      *        File/Directory resolver for URI scheme "file".
      */
     public static void setDisabledResolvers(List<String> disabledResolvers) {
-        RepositoryResolver.setDisabledResolvers(disabledResolvers);
+        RepositoryFinder.INSTANCE.setDisabledResolvers(disabledResolvers);
     }
 
     /**
      * Clears the list of disabled RepositoryResolvers.
      */
     public static void clearDisabledResolverList() {
-        RepositoryResolver.clearDisabledResolvers();
+        RepositoryFinder.INSTANCE.clearDisabledResolvers();
     }
 }

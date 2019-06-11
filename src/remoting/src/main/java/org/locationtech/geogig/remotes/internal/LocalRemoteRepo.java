@@ -48,7 +48,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -87,7 +87,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
     }
 
     /**
-     * @param geogig manually set a geogig for this remote repository
+     * @param repo manually set a geogig for this remote repository
      */
     @VisibleForTesting
     void setRepository(Repository remoteRepo) {
@@ -97,7 +97,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
     @Override
     public void open() throws RepositoryConnectionException {
         if (remoteRepository == null) {
-            remoteRepository = RepositoryResolver.load(remoteRepoURI);
+            remoteRepository = RepositoryFinder.INSTANCE.load(remoteRepoURI);
         }
     }
 

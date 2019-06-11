@@ -23,15 +23,16 @@ public class ResolveRepositoryNameTest extends RepositoryTestCase {
 
     @Test
     public void testDefault() throws Exception {
-        String repoName = geogig.command(ResolveRepositoryName.class).call();
-        assertEquals(repositoryDirectory.getName(), repoName);
+        String expected = super.testName.getMethodName();
+        String resolved = repo.command(ResolveRepositoryName.class).call();
+        assertEquals(expected, resolved);
     }
 
     @Test
     public void testConfiguredName() throws Exception {
         final String configRepoName = "myConfiguredRepoName";
         getRepository().configDatabase().put("repo.name", configRepoName);
-        String repoName = geogig.command(ResolveRepositoryName.class).call();
+        String repoName = repo.command(ResolveRepositoryName.class).call();
         assertEquals(configRepoName, repoName);
     }
 

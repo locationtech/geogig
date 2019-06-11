@@ -16,7 +16,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.ContextBuilder;
-import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.inject.AbstractModule;
@@ -43,9 +42,9 @@ public class CLITestContextBuilder extends ContextBuilder {
     public Context build(Hints hints) {
         FunctionalTestModule functionalTestModule = new FunctionalTestModule(platform.clone());
 
-        Context context = Guice.createInjector(Modules
-                .override(new GeogigModule(), new HintsModule(hints)).with(new PluginsModule(),
-                        new PluginsContextBuilder.DefaultPlugins(), functionalTestModule))
+        Context context = Guice
+                .createInjector(Modules.override(new GeogigModule(), new HintsModule(hints))
+                        .with(new PluginsModule(), functionalTestModule))
                 .getInstance(Context.class);
         return context;
     }

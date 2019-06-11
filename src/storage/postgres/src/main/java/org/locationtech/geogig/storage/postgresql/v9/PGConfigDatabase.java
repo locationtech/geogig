@@ -46,7 +46,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
 
 /**
  * PostgreSQL based config database.
@@ -83,7 +82,6 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     private Version _serverVersion;
 
-    @Inject
     public PGConfigDatabase(Hints hints) throws URISyntaxException {
         this(Environment.get(hints));
     }

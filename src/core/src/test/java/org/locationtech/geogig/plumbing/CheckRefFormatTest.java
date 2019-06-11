@@ -66,8 +66,8 @@ public class CheckRefFormatTest extends RepositoryTestCase {
     private void testRefException(String ref, boolean allowOneLevel, String expectedMessage) {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(expectedMessage);
-        geogig.command(CheckRefFormat.class).setThrowsException(true)
-                .setAllowOneLevel(allowOneLevel).setRef(ref).call();
+        repo.command(CheckRefFormat.class).setThrowsException(true).setAllowOneLevel(allowOneLevel)
+                .setRef(ref).call();
     }
 
     private boolean testRef(String ref) {
@@ -75,7 +75,7 @@ public class CheckRefFormatTest extends RepositoryTestCase {
     }
 
     private boolean testRef(String ref, boolean allowOneLevel) {
-        return geogig.command(CheckRefFormat.class).setAllowOneLevel(allowOneLevel).setRef(ref)
+        return repo.command(CheckRefFormat.class).setAllowOneLevel(allowOneLevel).setRef(ref)
                 .call();
     }
 }

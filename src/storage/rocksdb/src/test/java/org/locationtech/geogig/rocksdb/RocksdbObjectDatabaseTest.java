@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -21,13 +20,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
-import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
-import org.locationtech.geogig.test.TestPlatform;
 
 /**
  * Test suite for {@link RocksdbObjectDatabase} methods that are not par of {@link ObjectStore}
@@ -39,24 +34,13 @@ public class RocksdbObjectDatabaseTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    private TestPlatform platform;
-
-    private IniFileConfigDatabase configDB;
-
-    private Hints hints;
-
     protected RocksdbObjectDatabase db;
 
-    @Before
-    public void setUp() throws IOException {
-        File root = folder.getRoot();
-        folder.newFolder(".geogig");
-        File home = folder.newFolder("home");
-        platform = new TestPlatform(root);
-        platform.setUserHome(home);
-        hints = new Hints();
-        configDB = new IniFileConfigDatabase(platform);
-        db = new RocksdbObjectDatabase(platform, hints, configDB);
+    private File dbdir;
+
+    public @Before void setUp() throws Exception {
+        this.dbdir = folder.newFolder(".geogig");
+        db = new RocksdbObjectDatabase(dbdir, false);
         db.open();
     }
 
@@ -64,9 +48,6 @@ public class RocksdbObjectDatabaseTest {
     public void closeDbs() throws IOException {
         if (db != null) {
             db.close();
-        }
-        if (configDB != null) {
-            configDB.close();
         }
     }
 
@@ -81,7 +62,6 @@ public class RocksdbObjectDatabaseTest {
     @Test
     public void testNoHints() {
         db.close();
-        db = new RocksdbObjectDatabase(platform, null, configDB);
         db.open();
         db.checkWritable();
     }
@@ -91,18 +71,6 @@ public class RocksdbObjectDatabaseTest {
         assertFalse(db.isReadOnly());
         BlobStore blobStore = db.getBlobStore();
         assertTrue(blobStore instanceof RocksdbBlobStore);
-    }
-
-    @Test
-    public void testConfigure() throws Exception {
-        db.configure();
-        assertEquals(RocksdbStorageProvider.VERSION,
-                configDB.get(RocksdbStorageProvider.FORMAT_NAME + ".version").get());
-        assertEquals(RocksdbStorageProvider.FORMAT_NAME,
-                configDB.get("storage." + StorageType.OBJECT.key).get());
-
-        assertTrue(db.checkConfig());
-
     }
 
     @Test

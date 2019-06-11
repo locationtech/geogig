@@ -11,27 +11,26 @@ package org.locationtech.geogig.plumbing;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.di.HintsModule;
+import org.junit.rules.TestName;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.test.MemoryModule;
+import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.test.TestPlatform;
-
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
+import org.locationtech.geogig.test.TestRepository;
 
 /**
  *
@@ -49,36 +48,35 @@ public class ParseTimestampTest extends Assert {
         }
     }
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    public @Rule ExpectedException exception = ExpectedException.none();
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    public @Rule TestName testName = new TestName();
 
     private ParseTimestamp command;
 
-    private GeoGIG fakeGeogig;
+    private Repository repo;
 
     @Before
     public void setUp() throws IOException {
-
-        File workingDirectory = tempFolder.newFolder("mockWorkingDir");
+        URI uri = URI.create(String.format("memory://%s/%s", getClass().getSimpleName(),
+                testName.getMethodName()));
+        File tmp = new File(System.getProperty("java.io.tmpdir"));
         @SuppressWarnings("serial")
-        Platform testPlatform = new TestPlatform(workingDirectory) {
+        Platform testPlatform = new TestPlatform(tmp, tmp) {
             @Override
             public long currentTimeMillis() {
                 return REFERENCE_DATE.getTime();
             }
         };
 
-        Context injector = Guice
-                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
-                        new HintsModule(new Hints().platform(testPlatform))))
-                .getInstance(Context.class);
+        Hints hints = Hints.repository(uri).platform(testPlatform);
+        Context context = new PluginsContextBuilder().build(hints);
+        repo = new GeoGIG(context).getOrCreateRepository();
+        command = repo.command(ParseTimestamp.class);
+    }
 
-        fakeGeogig = new GeoGIG(injector);
-        assertNotNull(fakeGeogig.getOrCreateRepository());
-        command = fakeGeogig.command(ParseTimestamp.class);
+    public @After void after() {
+        TestRepository.closeAndDelete(repo);
     }
 
     @Test

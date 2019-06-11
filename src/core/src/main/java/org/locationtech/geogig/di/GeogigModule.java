@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.di;
 
-import org.locationtech.geogig.hooks.CommandHooksDecorator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
@@ -29,10 +28,8 @@ import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Binder;
 import com.google.inject.Provider;
 import com.google.inject.Scopes;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Providers;
 
 /**
@@ -60,7 +57,6 @@ public class GeogigModule extends AbstractModule {
     protected void configure() {
         bind(Context.class).to(GuiceContext.class).in(Scopes.SINGLETON);
 
-        Multibinder.newSetBinder(binder(), Decorator.class);
         bind(DecoratorProvider.class).in(Scopes.SINGLETON);
 
         bind(Platform.class).toProvider(new PlatformProvider(binder().getProvider(Hints.class)))
@@ -76,10 +72,6 @@ public class GeogigModule extends AbstractModule {
         bind(ObjectDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(IndexDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(ConflictsDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
-
-        bindConflictCheckingInterceptor();
-
-        bindDecorator(binder(), new CommandHooksDecorator());
     }
 
     private static class PlatformProvider implements Provider<Platform> {
@@ -99,15 +91,5 @@ public class GeogigModule extends AbstractModule {
             }
             return resolved;
         }
-    }
-
-    private void bindConflictCheckingInterceptor() {
-        bindDecorator(binder(), new ConflictInterceptor());
-    }
-
-    public static void bindDecorator(Binder binder, Decorator decorator) {
-
-        Multibinder.newSetBinder(binder, Decorator.class).addBinding().toInstance(decorator);
-
     }
 }

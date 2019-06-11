@@ -82,11 +82,11 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        dataStore = new GeoGigDataStore(geogig.getRepository());
+        dataStore = new GeoGigDataStore(repo.getRepository());
         dataStore.createSchema(GT.adapt(super.pointsType));
         dataStore.createSchema(GT.adapt(super.linesType));
         insertAndAdd(points1, points2, points3, lines1, lines2, lines3);
-        geogig.command(CommitOp.class).setAuthor("yo", "yo@test.com")
+        repo.command(CommitOp.class).setAuthor("yo", "yo@test.com")
                 .setCommitter("me", "me@test.com").setMessage("initial import").call();
 
         pointsSource = (GeogigFeatureStore) dataStore.getFeatureSource(pointsName);
@@ -457,7 +457,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         // point it contains) doesn't write to the ScreenMap
         deleteAndAdd(points2);
         deleteAndAdd(points3);
-        geogig.command(CommitOp.class).setMessage("drop to 1 point").call();
+        repo.command(CommitOp.class).setMessage("drop to 1 point").call();
         Query query = new Query(pointsName);
         ScreenMap screenMap = new ScreenMap(-180, -90, 360, 180);
         screenMap.setSpans(1.0, 1.0);
@@ -543,11 +543,11 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     private void createQuadTree(String tree) throws IOException {
 
         Map<String, NodeRef> all = Maps.uniqueIndex(
-                geogig.command(FindFeatureTypeTrees.class).setRootTreeRef("HEAD").call(),
+                repo.command(FindFeatureTypeTrees.class).setRootTreeRef("HEAD").call(),
                 (r) -> r.path());
         NodeRef typeTreeRef = all.get(tree);
         assertNotNull(typeTreeRef);
-        CreateQuadTree command = geogig.command(CreateQuadTree.class);
+        CreateQuadTree command = repo.command(CreateQuadTree.class);
         command.setTypeTreeRef(typeTreeRef);
         command.call();
     }

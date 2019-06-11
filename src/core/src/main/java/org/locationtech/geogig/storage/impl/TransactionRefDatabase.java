@@ -53,8 +53,8 @@ import com.google.common.collect.Maps;
  * {@link WorkingTree} , are given this instance of {@code RefDatabase} and can do its work without
  * ever noticing its "running inside a transaction". For the command nothing changes.
  * <p>
- * {@link TransactionRefDatabase#create() create()} shall be called before this decorator gets used
- * in order for the transaction refs namespace to be created and all original references copied in
+ * {@link TransactionRefDatabase#open() create()} shall be called before this decorator gets used in
+ * order for the transaction refs namespace to be created and all original references copied in
  * there, and {@link TransactionRefDatabase#close() close()} for the transaction refs namespace to
  * be deleted.
  * 
@@ -96,8 +96,8 @@ public class TransactionRefDatabase implements RefDatabase {
     }
 
     @Override
-    public void create() {
-        refDb.create();
+    public void open() {
+        refDb.open();
 
         // copy HEADS
         copyIfPresent(Ref.HEAD, Ref.WORK_HEAD, Ref.STAGE_HEAD, Ref.CHERRY_PICK_HEAD, Ref.MERGE_HEAD,

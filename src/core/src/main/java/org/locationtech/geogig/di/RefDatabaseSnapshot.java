@@ -42,9 +42,9 @@ class RefDatabaseSnapshot implements RefDatabase {
     }
 
     @Override
-    public void create() {
-        actual.create();
-        snapshot.create();
+    public void open() {
+        actual.open();
+        snapshot.open();
         snapshot.putAll(actual.getAll());
     }
 

@@ -27,7 +27,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testNullName() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         exception.expect(RemoteException.class);
         remoteAdd.setName(null).setURL("http://test.com").call();
@@ -35,7 +35,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyName() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         exception.expect(RemoteException.class);
         remoteAdd.setName("").setURL("http://test.com").call();
@@ -43,7 +43,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testInvalidName() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
@@ -52,7 +52,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testNullURL() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         exception.expect(RemoteException.class);
         remoteAdd.setName("myremote").setURL(null).call();
@@ -60,7 +60,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyURL() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         exception.expect(RemoteException.class);
         remoteAdd.setName("myremote").setURL("").call();
@@ -68,7 +68,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testAddRemoteNullBranch() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -83,7 +83,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testAddRemoteEmptyBranch() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -99,7 +99,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testAddRemoteWithBranch() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -116,7 +116,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testAddRemoteThatExists() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -134,7 +134,7 @@ public class RemoteAddOpTest extends RepositoryTestCase {
 
     @Test
     public void testAddMultipleRemotes() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName1 = "myremote";
         String remoteURL1 = "http://test.com";

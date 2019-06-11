@@ -42,12 +42,12 @@ public class DiffBoundsTest extends RepositoryTestCase {
         Feature p1ModifiedAgain = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
                 "POINT(10 20)");// used to be POINT(1 2)
         insertAndAdd(p1ModifiedAgain);
-        commits.add(geogig.command(CommitOp.class).call());
+        commits.add(repo.command(CommitOp.class).call());
 
         points1B_modified = feature(pointsType, idP1, "StringProp1B_1a", new Integer(2000),
                 "POINT(10 220)");
         insertAndAdd(points1B_modified);
-        commits.add(geogig.command(CommitOp.class).call());
+        commits.add(repo.command(CommitOp.class).call());
 
         l1Modified = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
                 "LINESTRING (1 1, -2 -2)");// used to be LINESTRING (1 1, 2 2)
@@ -61,7 +61,7 @@ public class DiffBoundsTest extends RepositoryTestCase {
         String oldRefSpec = "HEAD~3";
         String newRefSpec = "HEAD";
 
-        DiffSummary<Envelope, Envelope> diffBounds = geogig.command(DiffBounds.class)
+        DiffSummary<Envelope, Envelope> diffBounds = repo.command(DiffBounds.class)
                 .setOldVersion(oldRefSpec).setNewVersion(newRefSpec).call();
 
         Envelope bounds = diffBounds.getMergedResult().get();
@@ -76,7 +76,7 @@ public class DiffBoundsTest extends RepositoryTestCase {
         String oldRefSpec = "HEAD";
         String newRefSpec = "HEAD";
 
-        DiffSummary<Envelope, Envelope> diffBounds = geogig.command(DiffBounds.class)
+        DiffSummary<Envelope, Envelope> diffBounds = repo.command(DiffBounds.class)
                 .setOldVersion(oldRefSpec).setNewVersion(newRefSpec).call();
         assertTrue(diffBounds.getLeft().isNull());
         assertTrue(diffBounds.getRight().isNull());
@@ -86,7 +86,7 @@ public class DiffBoundsTest extends RepositoryTestCase {
     @Test
     public void testPathFiltering() throws Exception {
         insertAndAdd(l1Modified);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
         insert(l2Modified);
 
         testPathFiltering("HEAD~3", "HEAD", l1Modified.getDefaultGeometryBounds(), linesName);
@@ -109,7 +109,7 @@ public class DiffBoundsTest extends RepositoryTestCase {
 
         List<String> filter = ImmutableList.<String> copyOf(pathFilters);
 
-        DiffSummary<Envelope, Envelope> result = geogig.command(DiffBounds.class)//
+        DiffSummary<Envelope, Envelope> result = repo.command(DiffBounds.class)//
                 .setOldVersion(oldVersion)//
                 .setNewVersion(newVersion)//
                 .setPathFilters(filter)//

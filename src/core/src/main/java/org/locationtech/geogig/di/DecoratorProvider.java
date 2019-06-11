@@ -11,13 +11,14 @@ package org.locationtech.geogig.di;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.locationtech.geogig.hooks.CommandHooksDecorator;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
 
 class DecoratorProvider {
 
@@ -25,9 +26,10 @@ class DecoratorProvider {
 
     private Map<Class<?>, Object> singletonDecorators = Maps.newConcurrentMap();
 
-    @Inject
-    public DecoratorProvider(Set<Decorator> decorators) {
-        this.decorators = decorators;
+    public DecoratorProvider() {
+        this.decorators = new HashSet<>();
+        decorators.add(new CommandHooksDecorator());
+        decorators.add(new ConflictInterceptor());
     }
 
     @SuppressWarnings("unchecked")

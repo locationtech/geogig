@@ -209,8 +209,7 @@ public class Environment implements Cloneable {
     }
 
     public URI toURI() {
-        // TODO Auto-generated method stub
-        return null;
+        return connectionConfig.toURI();
     }
 
 }

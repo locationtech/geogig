@@ -30,8 +30,7 @@ import javax.sql.DataSource;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
@@ -41,15 +40,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import lombok.NonNull;
-
-public class PGRefDatabase implements RefDatabase {
+public class PGRefDatabase extends AbstractStore implements RefDatabase {
 
     private static final Logger LOG = LoggerFactory.getLogger(PGRefDatabase.class);
 
     private Environment config;
-
-    private ConfigDatabase configDB;
 
     private DataSource dataSource;
 
@@ -57,15 +52,14 @@ public class PGRefDatabase implements RefDatabase {
 
     private static ThreadLocal<Connection> LockConnection = new ThreadLocal<>();
 
-    public PGRefDatabase(@NonNull ConfigDatabase configDB, @NonNull Hints hints)
-            throws URISyntaxException {
+    public PGRefDatabase(Hints hints) throws URISyntaxException {
+        super(Hints.isRepoReadOnly(hints));
         Environment config = Environment.get(hints);
 
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
         Preconditions.checkState(config.isRepositorySet());
 
-        this.configDB = configDB;
         this.config = config;
         this.refsTableName = config.getTables().refs();
     }
@@ -82,24 +76,16 @@ public class PGRefDatabase implements RefDatabase {
     // }
 
     @Override
-    public void configure() throws RepositoryConnectionException {
-    }
-
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return true;
-    }
-
-    @Override
     public synchronized void open() {
-        if (dataSource != null) {
-            return;
+        if (!isOpen()) {
+            dataSource = PGStorage.newDataSource(config);
+            super.open();
         }
-        dataSource = PGStorage.newDataSource(config);
     }
 
     @Override
     public synchronized void close() {
+        super.close();
         if (dataSource != null) {
             try {
                 PGStorage.closeDataSource(dataSource);

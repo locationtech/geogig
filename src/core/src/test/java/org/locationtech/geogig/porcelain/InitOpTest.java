@@ -32,6 +32,7 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -180,6 +181,7 @@ public class InitOpTest {
     }
 
     @Test
+    @Ignore
     public void testReinitializeExistingRepo() throws Exception {
         when(injector.repository()).thenReturn(mockRepo);
         Optional<Ref> absent = Optional.empty();

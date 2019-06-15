@@ -79,7 +79,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
     @Override
     public void open() throws RepositoryConnectionException {
         if (remoteRepo == null) {
-            remoteRepo = RepositoryFinder.INSTANCE.load(remoteRepoLocation);
+            remoteRepo = RepositoryFinder.INSTANCE.open(remoteRepoLocation);
         }
     }
 

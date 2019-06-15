@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage;
 
-import java.io.Closeable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,23 +31,7 @@ import com.google.common.annotations.Beta;
  *
  * @since 1.0
  */
-public interface ObjectStore extends Closeable {
-
-    /**
-     * Opens the database. It's safe to call this method multiple times, and only the first call
-     * shall take effect.
-     */
-    public void open();
-
-    /**
-     * Closes the database. This method is idempotent.
-     */
-    public void close();
-
-    /**
-     * @return {@code true} if the database is open, false otherwise
-     */
-    public boolean isOpen();
+public interface ObjectStore extends Store {
 
     /**
      * Determines if the given {@link ObjectId} exists in the object database.

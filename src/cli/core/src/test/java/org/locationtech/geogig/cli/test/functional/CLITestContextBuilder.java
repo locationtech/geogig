@@ -15,7 +15,7 @@ import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.impl.ContextBuilder;
+import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.inject.AbstractModule;
@@ -23,14 +23,14 @@ import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
 /**
- * Repository {@link ContextBuilder} used by functional tests to enforce the repository's
+ * Repository {@link ContextBuilderImpl} used by functional tests to enforce the repository's
  * {@link Platform} be a {@link TestPlatform} in order to ensure the user's home directory (where
  * the {@code .getogigconfig} config file is looked for) points to the test's temporary folder
  * instead of the actual home directory of the user running the test suite. This ensures the actual
  * {@code .geogigconfig} is not overwritten by the tests that call {@code configure --global}
  *
  */
-public class CLITestContextBuilder extends ContextBuilder {
+public class CLITestContextBuilder extends ContextBuilderImpl {
 
     private TestPlatform platform;
 

@@ -60,6 +60,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -89,7 +90,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * <p>
  * TODO: document/force use of {@code SET constraint_exclusion=ON}
  */
-public class PGObjectStore implements ObjectStore {
+public class PGObjectStore extends AbstractStore implements ObjectStore {
 
     static final Logger LOG = LoggerFactory.getLogger(PGObjectStore.class);
 
@@ -115,10 +116,9 @@ public class PGObjectStore implements ObjectStore {
 
     private SharedResourceReference resources;
 
-    protected final boolean readOnly;
-
     public PGObjectStore(final ConfigDatabase configdb, final Environment config,
             boolean readOnly) {
+        super(readOnly);
         Preconditions.checkNotNull(configdb);
         Preconditions.checkNotNull(config);
         Preconditions.checkNotNull(config.getRepositoryName(), "Repository id not provided");
@@ -127,12 +127,11 @@ public class PGObjectStore implements ObjectStore {
                 config.getRepositoryName());
         this.configdb = configdb;
         this.config = config;
-        this.readOnly = readOnly;
     }
 
     @Override
     public void open() {
-        if (dataSource != null) {
+        if (isOpen()) {
             return;
         }
         dataSource = PGStorage.newDataSource(config);
@@ -170,6 +169,7 @@ public class PGObjectStore implements ObjectStore {
         resources.trySetThreadPoolSize(threadPoolSize);
 
         this.sharedCache = CacheManager.INSTANCE.acquire(getCacheIdentifier(connectionConfig));
+        super.open();
     }
 
     /**
@@ -184,28 +184,23 @@ public class PGObjectStore implements ObjectStore {
     }
 
     @Override
-    public boolean isOpen() {
-        return dataSource != null;
-    }
-
-    @Override
     public void close() {
-        if (this.dataSource == null) {
-            return;
-        }
-        DataSource ds = this.dataSource;
-        SharedResourceReference res = this.resources;
-        ObjectCache sharedCache = this.sharedCache;
-        this.dataSource = null;
-        this.resources = null;
-        this.sharedCache = null;
-        try {
-            PGStorage.closeDataSource(ds);
-        } finally {
-            if (res != null) {
-                SHARED_RESOURCES.release(res);
+        if (isOpen()) {
+            super.close();
+            DataSource ds = this.dataSource;
+            SharedResourceReference res = this.resources;
+            ObjectCache sharedCache = this.sharedCache;
+            this.dataSource = null;
+            this.resources = null;
+            this.sharedCache = null;
+            try {
+                PGStorage.closeDataSource(ds);
+            } finally {
+                if (res != null) {
+                    SHARED_RESOURCES.release(res);
+                }
+                CacheManager.INSTANCE.release(sharedCache);
             }
-            CacheManager.INSTANCE.release(sharedCache);
         }
     }
 
@@ -930,17 +925,6 @@ public class PGObjectStore implements ObjectStore {
             }
         }
         return count;
-    }
-
-    protected void checkOpen() {
-        Preconditions.checkState(isOpen(), "Database is closed");
-    }
-
-    protected void checkWritable() {
-        checkOpen();
-        if (readOnly) {
-            throw new IllegalStateException("db is read only.");
-        }
     }
 
     private static class SharedResourceReference {

@@ -33,7 +33,7 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.test.MemoryRepositoryResolver;
+import org.locationtech.geogig.storage.memory.MemoryRepositoryResolver;
 
 import lombok.NonNull;
 
@@ -41,55 +41,49 @@ public class RepositoryResolverTest {
 
     public static class TestResolver implements RepositoryResolver {
 
-        @Override
-        public boolean canHandle(URI repoURI) {
+        public @Override boolean canHandle(URI repoURI) {
             String scheme = repoURI.getScheme();
             return canHandleURIScheme(scheme);
         }
 
-        @Override
-        public boolean canHandleURIScheme(String scheme) {
+        public @Override boolean canHandleURIScheme(String scheme) {
             return "test".equals(scheme);
         }
 
-        @Override
-        public boolean repoExists(URI repoURI) {
+        public @Override boolean repoExists(URI repoURI) {
             return false;
         }
 
-        @Override
-        public String getName(URI repoURI) {
+        public @Override String getName(URI repoURI) {
             return "test";
         }
 
-        @Override
-        public void initialize(URI repoURI, Context repoContext) {
+        public @Override void initialize(URI repoURI, Context repoContext) {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext,
+        public @Override ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext,
                 boolean globalOnly) {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public Repository open(URI repositoryLocation) {
+        public @Override Repository open(@NonNull URI repositoryURI) {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public boolean delete(URI repositoryLocation) throws Exception {
+        public @Override Repository open(URI repositoryLocation, Hints hints) {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public URI buildRepoURI(URI rootRepoURI, String repoId) {
+        public @Override boolean delete(URI repositoryLocation) throws Exception {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
+        public @Override URI buildRepoURI(URI rootRepoURI, String repoId) {
+            throw new UnsupportedOperationException();
+        }
+
+        public @Override List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
             throw new UnsupportedOperationException();
         }
 

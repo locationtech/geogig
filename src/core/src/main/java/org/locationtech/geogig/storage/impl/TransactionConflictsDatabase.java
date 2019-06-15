@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.impl;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -55,7 +54,7 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
         database.open();
     }
 
-    public @Override void close() throws IOException {
+    public @Override void close() {
         database.close();
     }
 
@@ -135,5 +134,15 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
     @Override
     public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
         database.removeByPrefix(txNamespace, pathPrefix);
+    }
+
+    @Override
+    public boolean isOpen() {
+        return database.isOpen();
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return database.isReadOnly();
     }
 }

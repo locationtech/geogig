@@ -122,10 +122,18 @@ public class Hints implements Serializable {
      * @return a new {@code Hints} object with the hints for a read only repository
      */
     public static Hints readOnly() {
+        return new Hints().readOnly(true);
+    }
+
+    public Hints readOnly(boolean ro) {
         Hints hints = new Hints();
-        hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
-        hints.set(Hints.REMOTES_READ_ONLY, Boolean.TRUE);
+        hints.set(Hints.OBJECTS_READ_ONLY, ro);
+        hints.set(Hints.REMOTES_READ_ONLY, ro);
         return hints;
+    }
+
+    public static boolean isRepoReadOnly(Hints hints) {
+        return hints == null ? false : hints.getBoolean(OBJECTS_READ_ONLY);
     }
 
     /**

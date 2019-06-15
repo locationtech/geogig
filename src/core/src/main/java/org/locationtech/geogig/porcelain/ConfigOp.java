@@ -20,6 +20,7 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 /**
  * Get and set repository or global options
@@ -84,6 +85,7 @@ public class ConfigOp extends AbstractGeoGigOp<Optional<Map<String, String>>> {
      */
     @Override
     protected Optional<Map<String, String>> _call() {
+        Preconditions.checkState(action != null, "No config action specified");
         final ConfigDatabase config = configDatabase();
         switch (action) {
         case CONFIG_GET: {

@@ -14,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.RefDatabase;
 
 /**
@@ -21,9 +22,13 @@ import org.locationtech.geogig.storage.RefDatabase;
  * 
  * @see RefDatabase
  */
-public abstract class AbstractRefDatabase implements RefDatabase {
+public abstract class AbstractRefDatabase extends AbstractStore implements RefDatabase {
 
     Lock lock = new ReentrantLock();
+
+    public AbstractRefDatabase(boolean ro) {
+        super(ro);
+    }
 
     /**
      * Locks access to the main repository refs.

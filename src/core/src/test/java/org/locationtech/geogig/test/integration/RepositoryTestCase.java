@@ -150,8 +150,6 @@ public abstract class RepositoryTestCase extends Assert {
     // prevent recursion
     private boolean setup = false;
 
-    public @Rule TestName testName = new TestName();
-
     @Before
     public final void setUp() throws Exception {
         if (setup) {

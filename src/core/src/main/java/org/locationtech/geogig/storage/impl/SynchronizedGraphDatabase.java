@@ -30,16 +30,19 @@ public class SynchronizedGraphDatabase implements GraphDatabase {
         }
     }
 
-    public boolean isOpen() {
-        synchronized (delegate) {
-            return delegate.isOpen();
-        }
-    }
-
     public void close() {
         synchronized (delegate) {
             delegate.close();
         }
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return delegate.isReadOnly();
+    }
+
+    public boolean isOpen() {
+        return delegate.isOpen();
     }
 
     public boolean exists(final ObjectId commitId) {

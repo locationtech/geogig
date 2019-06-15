@@ -9,10 +9,12 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.function.Function;
 
 import javax.sql.DataSource;
 
@@ -25,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-public class PGTemporaryTestConfig extends ExternalResource {
+public class PGTemporaryTestConfig extends ExternalResource implements Function<String, URI> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PGTemporaryTestConfig.class);
 
@@ -50,6 +52,10 @@ public class PGTemporaryTestConfig extends ExternalResource {
         this.repositoryName = repositoryId;
         this.dataSourceProvider = dataSourceProvider;
         this.externalDataSource = true;
+    }
+
+    public @Override URI apply(String repositoryName) {
+        return newRepoURI(repositoryName);
     }
 
     @Override
@@ -192,16 +198,17 @@ public class PGTemporaryTestConfig extends ExternalResource {
         return getRepoURI(env);
     }
 
-    public String newRepoURI(String repositoryName) {
+    public URI newRepoURI(String repositoryName) {
         Environment env = getEnvironment();
         PGTestProperties props = dataSourceProvider.getTestProperties();
         String url = props.buildRepoURL(repositoryName, env.getTables().getPrefix());
-        return url;
+        return URI.create(url);
     }
 
     public String getRepoURI(Environment env) {
+        String repoName = env.getRepositoryName();
         PGTestProperties props = dataSourceProvider.getTestProperties();
-        String url = props.buildRepoURL(env.getRepositoryName(), env.getTables().getPrefix());
+        String url = props.buildRepoURL(repoName, env.getTables().getPrefix());
         return url;
     }
 

@@ -9,87 +9,35 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import java.net.URI;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 
 /**
  * Provides an default in memory implementation of a GeoGig Graph Database.
  */
-public class HeapGraphDatabase implements GraphDatabase {
+public class HeapGraphDatabase extends AbstractStore implements GraphDatabase {
 
-    private static final Map<URI, Ref> graphs = Maps.newConcurrentMap();
+    private final Graph graph = new Graph();
 
-    private final @Nullable Platform platform;
-
-    Graph graph;
-
-    public HeapGraphDatabase(@Nullable Platform platform) {
-        this.platform = platform;
+    public HeapGraphDatabase() {
+        super(false);
     }
 
-    @Override
-    public void open() {
-        if (isOpen()) {
-            return;
-        }
-
-        Optional<URI> url = platform == null ? Optional.empty()
-                : new ResolveGeogigURI(platform, null).call();
-        if (url.isPresent()) {
-            synchronized (graphs) {
-                URI key = url.get();
-                if (!graphs.containsKey(key)) {
-                    graphs.put(key, new Ref(new Graph()));
-                }
-                graph = graphs.get(key).acquire();
-            }
-        } else {
-            graph = new Graph();
-        }
-
-    }
-
-    @Override
-    public boolean isOpen() {
-        return graph != null;
-    }
-
-    @Override
-    public void close() {
-        if (!isOpen()) {
-            return;
-        }
-        graph = null;
-        Optional<URI> url = platform == null ? Optional.empty()
-                : new ResolveGeogigURI(platform, null).call();
-        if (url.isPresent()) {
-            synchronized (graphs) {
-                URI key = url.get();
-                Ref ref = graphs.get(key);
-                if (ref != null && ref.release() <= -1) {
-                    ref.destroy();
-                    graphs.remove(key);
-                }
-            }
-        }
+    public HeapGraphDatabase(boolean ro) {
+        super(ro);
     }
 
     @Override

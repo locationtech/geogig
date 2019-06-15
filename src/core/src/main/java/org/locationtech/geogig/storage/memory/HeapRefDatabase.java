@@ -34,27 +34,14 @@ import com.google.common.collect.Maps;
  */
 public class HeapRefDatabase extends AbstractRefDatabase {
 
-    private ConcurrentMap<String, String> refs;
+    private final ConcurrentMap<String, String> refs = new ConcurrentHashMap<>();
 
-    /**
-     * Creates the reference database.
-     */
-    @Override
-    public void open() {
-        if (refs == null) {
-            refs = new ConcurrentHashMap<>();
-        }
+    public HeapRefDatabase() {
+        this(false);
     }
 
-    /**
-     * Closes the reference database.
-     */
-    @Override
-    public void close() {
-        if (refs != null) {
-            refs.clear();
-            refs = null;
-        }
+    public HeapRefDatabase(boolean readOnly) {
+        super(readOnly);
     }
 
     /**
@@ -195,16 +182,6 @@ public class HeapRefDatabase extends AbstractRefDatabase {
             refs.remove(key);
         }
         return removed;
-    }
-
-    @Override
-    public void configure() {
-        // No-op
-    }
-
-    @Override
-    public boolean checkConfig() {
-        return true;
     }
 
     public void putAll(Map<String, String> all) {

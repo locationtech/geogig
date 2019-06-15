@@ -35,7 +35,8 @@ public interface RepositoryResolver {
      * @param repoName the repository name
      * @return the URI of the repository
      */
-    URI buildRepoURI(URI rootRepoURI, String repoName);
+    @NonNull
+    URI buildRepoURI(@NonNull URI rootRepoURI, @NonNull String repoName);
 
     /**
      * List all repositories under the root URI. The list will contain the names of all the
@@ -44,13 +45,21 @@ public interface RepositoryResolver {
      * @param rootRepoURI the root URI
      * @return a list of repository names under the root URI.
      */
-    List<String> listRepoNamesUnderRootURI(URI rootRepoURI);
+    @NonNull
+    List<String> listRepoNamesUnderRootURI(@NonNull URI rootRepoURI);
 
-    String getName(URI repoURI);
+    @NonNull
+    String getName(@NonNull URI repoURI);
 
-    void initialize(URI repoURI, Context repoContext) throws IllegalArgumentException;
+    void initialize(@NonNull URI repoURI, @NonNull Context repoContext)
+            throws IllegalArgumentException;
 
-    Repository open(URI repositoryLocation) throws RepositoryConnectionException;
+    @NonNull
+    Repository open(@NonNull URI repositoryLocation) throws RepositoryConnectionException;
+
+    @NonNull
+    Repository open(@NonNull URI repositoryLocation, @NonNull Hints hints)
+            throws RepositoryConnectionException;
 
     /**
      * Deletes the repository addressed by the given URI.
@@ -63,7 +72,7 @@ public interface RepositoryResolver {
      * @throws Exception if an error happens while deleting the repository, in which case it may
      *         have left in an inconsistent state.
      */
-    boolean delete(URI repositoryLocation) throws Exception;
+    boolean delete(@NonNull URI repositoryLocation) throws Exception;
 
     /**
      * Gets a config database for the given URI.
@@ -74,7 +83,9 @@ public interface RepositoryResolver {
      *        repositories
      * @return the config database
      */
-    ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext, boolean rootUri);
+    @NonNull
+    ConfigDatabase resolveConfigDatabase(@NonNull URI repoURI, @NonNull Context repoContext,
+            boolean rootUri);
 
     /**
      * Gets a config database for a single repository.
@@ -83,20 +94,21 @@ public interface RepositoryResolver {
      * @param repoContext the repository context
      * @return the config database
      */
-    public default ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext) {
+    public @NonNull default ConfigDatabase resolveConfigDatabase(@NonNull URI repoURI,
+            @NonNull Context repoContext) {
         return resolveConfigDatabase(repoURI, repoContext, false);
     }
 
+    @NonNull
     ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI, Hints hints);
 
+    @NonNull
     IndexDatabase resolveIndexDatabase(@NonNull URI repoURI, Hints hints);
 
+    @NonNull
     RefDatabase resolveRefDatabase(@NonNull URI repoURI, Hints hints);
 
+    @NonNull
     ConflictsDatabase resolveConflictsDatabase(@NonNull URI repoURI, Hints hints);
-
-    public default boolean isReadOnly(Hints hints) {
-        return hints != null && hints.getBoolean(Hints.OBJECTS_READ_ONLY);
-    }
 
 }

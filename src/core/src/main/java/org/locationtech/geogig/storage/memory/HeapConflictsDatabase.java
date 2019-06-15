@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Predicate;
@@ -29,22 +30,16 @@ import com.google.common.collect.Maps;
 /**
  * Volatile implementation of a GeoGig {@link ConflictsDatabase} that utilizes the heap for storage.
  */
-public class HeapConflictsDatabase implements ConflictsDatabase {
+public class HeapConflictsDatabase extends AbstractStore implements ConflictsDatabase {
 
-    private ConcurrentHashMap<String, ConcurrentHashMap<String, Conflict>> conflicts;
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, Conflict>> conflicts = new ConcurrentHashMap<>();
 
     public HeapConflictsDatabase() {
-        conflicts = new ConcurrentHashMap<>();
+        super(false);
     }
 
-    public @Override void open() {
-        // no-op
-    }
-
-    public @Override synchronized void close() {
-        if (conflicts != null) {
-            conflicts.clear();
-        }
+    public HeapConflictsDatabase(boolean ro) {
+        super(ro);
     }
 
     private String namespace(@Nullable String namespace) {

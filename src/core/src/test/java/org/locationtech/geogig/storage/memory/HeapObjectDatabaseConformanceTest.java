@@ -9,21 +9,26 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import org.locationtech.geogig.repository.DefaultPlatform;
+import java.net.URI;
+
+import org.junit.Rule;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.impl.ObjectDatabaseConformanceTest;
+import org.locationtech.geogig.test.TestRepository;
 
 public class HeapObjectDatabaseConformanceTest extends ObjectDatabaseConformanceTest {
 
+    private MemoryRepositoryResolver resolver = new MemoryRepositoryResolver();
+
+    public @Rule TestRepository testSupport = new TestRepository();
+
     @Override
-    protected HeapObjectDatabase createOpen(boolean readOnly) {
-        Platform platform = new DefaultPlatform();
-        Hints hints = new Hints();
-        hints.set(Hints.OBJECTS_READ_ONLY, readOnly);
-        HeapObjectDatabase store = new HeapObjectDatabase(platform, hints);
-        store.open();
-        return store;
+    protected ObjectDatabase createOpen(boolean readOnly) {
+        URI repoURI = testSupport.getRepoURI();
+        ObjectDatabase db = resolver.resolveObjectDatabase(repoURI, new Hints().readOnly(readOnly));
+        db.open();
+        return db;
     }
 
 }

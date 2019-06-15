@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +27,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.RevObjectSerializer;
@@ -35,20 +35,27 @@ import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
 
 import com.google.common.io.Closeables;
 
+import lombok.NonNull;
+
 /**
  * Provides a base implementation for different representations of the {@link ObjectStore}.
  * 
  * @see ObjectStore
  */
-public abstract class AbstractObjectStore implements ObjectStore {
+public abstract class AbstractObjectStore extends AbstractStore implements ObjectStore {
 
     private RevObjectSerializer serializer;
 
     public AbstractObjectStore() {
-        this(new RevObjectSerializerProxy());
+        this(false);
     }
 
-    public AbstractObjectStore(final RevObjectSerializer serializer) {
+    public AbstractObjectStore(boolean readOnly) {
+        this(new RevObjectSerializerProxy(), readOnly);
+    }
+
+    public AbstractObjectStore(final @NonNull RevObjectSerializer serializer, boolean readOnly) {
+        super(readOnly);
         checkNotNull(serializer);
         this.serializer = serializer;
     }
@@ -74,7 +81,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
         checkNotNull(partialId, "argument partialId is null");
         checkArgument(partialId.length() > 7, "partial id must be at least 8 characters long: ",
                 partialId);
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         byte[] raw = ObjectId.toRaw(partialId);
 
@@ -106,7 +113,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
     @Override
     public RevObject get(ObjectId id) {
         checkNotNull(id, "argument id is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         return get(id, true);
     }
@@ -114,7 +121,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
     @Override
     public @Nullable RevObject getIfPresent(ObjectId id) {
         checkNotNull(id, "argument id is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         return get(id, false);
     }
@@ -132,7 +139,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
     public <T extends RevObject> T get(final ObjectId id, final Class<T> clazz) {
         checkNotNull(id, "argument id is null");
         checkNotNull(clazz, "argument class is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         RevObject obj = null;
         try {
@@ -150,7 +157,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
             throws IllegalArgumentException {
         checkNotNull(id, "argument id is null");
         checkNotNull(clazz, "argument class is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
         try {
             return clazz.cast(get(id, false));
         } catch (ClassCastException e) {
@@ -214,7 +221,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
     public boolean put(final RevObject object) {
         checkNotNull(object, "argument object is null");
         checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         writeObject(object, rawOut);
@@ -232,7 +239,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
     public void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         while (objects.hasNext()) {
@@ -268,7 +275,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids) {
-        checkState(isOpen(), "db is closed");
+        checkOpen();
         return getAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
@@ -279,7 +286,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
 
     @Override
     public void deleteAll(Iterator<ObjectId> ids) {
-        checkState(isOpen(), "db is closed");
+        checkOpen();
         deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 }

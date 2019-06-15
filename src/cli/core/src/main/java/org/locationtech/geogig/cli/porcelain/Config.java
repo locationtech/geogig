@@ -134,10 +134,10 @@ public class Config extends AbstractCommand implements CLICommand {
 
             if (rootUri != null) {
                 try {
-                    URI repoURI = RepositoryFinder.INSTANCE.resolveRepoUriFromString(geogig.getPlatform(),
-                            rootUri);
-                    ConfigDatabase configDb = RepositoryFinder.INSTANCE.resolveConfigDatabase(repoURI,
-                            geogig.getContext(), true);
+                    URI repoURI = RepositoryFinder.INSTANCE
+                            .resolveRepoUriFromString(geogig.getPlatform(), rootUri);
+                    ConfigDatabase configDb = RepositoryFinder.INSTANCE
+                            .resolveConfigDatabase(repoURI, geogig.getContext(), true);
                     configOp.setConfigDatabase(configDb);
                 } catch (URISyntaxException e) {
                     throw new IllegalArgumentException("Unable to parse global config URI.", e);

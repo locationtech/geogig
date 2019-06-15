@@ -34,6 +34,7 @@ import javax.sql.DataSource;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
@@ -72,7 +73,7 @@ import com.google.common.collect.Maps;
  * @implNote {@link #putGlobal(String, Object) global} values are stored under the {@code -1} key
  *           for the {@code repository} column.
  */
-public class PGConfigDatabase implements ConfigDatabase {
+public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
 
     static final Logger LOG = LoggerFactory.getLogger(PGConfigDatabase.class);
 
@@ -87,6 +88,7 @@ public class PGConfigDatabase implements ConfigDatabase {
     }
 
     public PGConfigDatabase(Environment environment) {
+        super(false);
         this.config = environment;
     }
 
@@ -500,6 +502,7 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     @Override
     public synchronized void close() {
+        super.close();
         if (dataSource != null) {
             PGStorage.closeDataSource(dataSource);
             dataSource = null;

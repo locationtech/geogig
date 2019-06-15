@@ -39,7 +39,9 @@ import java.util.stream.IntStream;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
@@ -84,6 +86,8 @@ import com.google.common.collect.Sets;
 public abstract class ObjectStoreConformanceTest {
 
     protected ObjectStore db;
+
+    public @Rule ExpectedException ex = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -145,21 +149,15 @@ public abstract class ObjectStoreConformanceTest {
     }
 
     private void checkClosed(Runnable op) {
-        try {
-            op.run();
-            fail("Expected IAE on closed database");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("closed"));
-        }
+        ex.expect(IllegalStateException.class);
+        ex.expectMessage("closed");
+        op.run();
     }
 
     private void checkNullArgument(Runnable op) {
-        try {
-            op.run();
-            fail("Expected NPE on null argument");
-        } catch (NullPointerException e) {
-            assertTrue(e.getMessage().contains("is null"));
-        }
+        ex.expect(NullPointerException.class);
+        ex.expectMessage("is null");
+        op.run();
     }
 
     @Test

@@ -71,8 +71,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        remoteRepo = remoteGeogig.repo;
-        cloneRepo = localGeogig.repo;
+        remoteRepo = super.originRepo;
+        cloneRepo = super.localRepo;
     }
 
     @Test
@@ -104,8 +104,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         CloneOp clone = cloneOp();
         clone.setDepth(0);
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
 
         // Make sure the local repository got all of the commits
         logged = newArrayList(cloneRepo.command(LogOp.class).call());
@@ -139,8 +138,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
         TestSupport.verifySameContents(remoteRepo, cloneRepo);
     }
@@ -211,8 +209,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         CloneOp clone = cloneOp();
         clone.setDepth(0);
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
 
         // Make sure the local repository got all of the commits
         logged = newArrayList(cloneRepo.command(LogOp.class).call());
@@ -237,8 +234,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
 
         logged = newArrayList(cloneRepo.command(LogOp.class).call());
         assertEquals(commits, logged);
@@ -292,8 +288,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setProgressListener(SIMPLE_PROGRESS)//
                 .call();
 
@@ -315,8 +311,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setProgressListener(SIMPLE_PROGRESS)//
                 .call();
 
@@ -342,8 +338,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setProgressListener(SIMPLE_PROGRESS)//
                 .call();
 
@@ -422,8 +418,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         CloneOp clone = cloneOp();
         clone.setDepth(0);
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
         TestSupport.verifySameContents(remoteRepo, cloneRepo);
 
@@ -502,8 +497,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setBranch("master").call();
 
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
@@ -567,8 +562,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setBranch("Branch1")//
                 .call();
         // TestSupport.verifySameContents(remoteRepo, cloneRepo);
@@ -594,8 +589,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     public void testCloneEmptyRepo() throws Exception {
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
         TestSupport.verifyRepositoryContents(cloneRepo);
     }
 

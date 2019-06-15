@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
@@ -28,7 +29,7 @@ import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
-public class IniFileConfigDatabase implements ConfigDatabase {
+public class IniFileConfigDatabase extends AbstractStore implements ConfigDatabase {
 
     /**
      * Access it through {@link #local()}, not directly.
@@ -53,6 +54,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
 
     public IniFileConfigDatabase(final Platform platform, final Hints hints,
             final boolean globalOnly) {
+        super(Hints.isRepoReadOnly(hints));
         this.globalOnly = globalOnly;
         {
             final Optional<URI> repoURI = new ResolveGeogigURI(platform, hints).call();
@@ -341,12 +343,6 @@ public class IniFileConfigDatabase implements ConfigDatabase {
         int splitAt = qualifiedKey.lastIndexOf(".");
         return new String[] { qualifiedKey.substring(0, splitAt),
                 qualifiedKey.substring(splitAt + 1) };
-    }
-
-    @Override
-    public void close() throws IOException {
-        this.local = null;
-        this.global = null;
     }
 
     /**

@@ -64,8 +64,8 @@ public class PushOpTest extends RemoteRepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         // Commit several features to the remote
-        remoteRepo = remoteGeogig.repo;
-        localRepo = localGeogig.repo;
+        remoteRepo = super.originRepo;
+        localRepo = super.localRepo;
 
         expectedMaster = new LinkedList<RevCommit>();
         expectedBranch = new LinkedList<RevCommit>();
@@ -114,7 +114,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("Branch1").call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits
         logged = newArrayList(localRepo.command(LogOp.class).call());

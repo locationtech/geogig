@@ -21,7 +21,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.IndexDatabase;
@@ -57,34 +56,14 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     @Override
-    public void configure() throws RepositoryConnectionException {
-    }
-
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return true;
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return super.readOnly;
-    }
-
-    @Override
     public synchronized void open() {
-        if (isOpen()) {
-            return;
+        if (!isOpen()) {
+            super.open(Sets.newHashSet("indexMetadata", "indexMappings"));
+            this.indexMetadataColumn = super.dbhandle.getColumnFamily("indexMetadata");
+            this.indexMappingsColumn = super.dbhandle.getColumnFamily("indexMappings");
+            Preconditions.checkState(this.indexMetadataColumn != null);
+            Preconditions.checkState(this.indexMappingsColumn != null);
         }
-        super.open(Sets.newHashSet("indexMetadata", "indexMappings"));
-        this.indexMetadataColumn = super.dbhandle.getColumnFamily("indexMetadata");
-        this.indexMappingsColumn = super.dbhandle.getColumnFamily("indexMappings");
-        Preconditions.checkState(this.indexMetadataColumn != null);
-        Preconditions.checkState(this.indexMappingsColumn != null);
-    }
-
-    @Override
-    public synchronized void close() {
-        super.close();
     }
 
     private static byte[] indexKey(String treeName, @Nullable String attributeName) {

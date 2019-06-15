@@ -186,7 +186,7 @@ public @Data @Builder class PR {
     Repository openRemote() {
         Repository repository;
         try {
-            repository = RepositoryFinder.INSTANCE.load(remote);
+            repository = RepositoryFinder.INSTANCE.open(remote);
         } catch (RepositoryConnectionException e) {
             throw new IllegalStateException("Unable to open pull request issuer repository", e);
         }

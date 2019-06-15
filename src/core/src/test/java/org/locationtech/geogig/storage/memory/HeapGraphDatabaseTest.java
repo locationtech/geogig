@@ -16,7 +16,7 @@ public class HeapGraphDatabaseTest extends GraphDatabaseTest {
 
     @Override
     protected HeapGraphDatabase createDatabase(Platform platform) {
-        return new HeapGraphDatabase(platform);
+        return new HeapGraphDatabase();
     }
 
 }

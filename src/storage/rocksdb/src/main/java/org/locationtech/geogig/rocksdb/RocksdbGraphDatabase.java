@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.datastream.Varint;
 import org.rocksdb.ReadOptions;
@@ -50,7 +51,7 @@ import com.google.common.io.ByteStreams;
 
 import lombok.NonNull;
 
-public class RocksdbGraphDatabase implements GraphDatabase {
+public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbGraphDatabase.class);
 
@@ -58,41 +59,30 @@ public class RocksdbGraphDatabase implements GraphDatabase {
 
     private final File dbdir;
 
-    private final boolean readOnly;
-
-    private boolean open;
-
     private DBHandle dbhandle;
 
     public RocksdbGraphDatabase(@NonNull File dbdir, boolean readOnly) {
+        super(readOnly);
         this.dbdir = dbdir;
-        this.readOnly = readOnly;
-    }
-
-    @Override
-    public boolean isOpen() {
-        return open;
     }
 
     @Override
     public synchronized void open() {
-        if (isOpen()) {
-            return;
+        if (!isOpen()) {
+            String dbpath = dbdir.getAbsolutePath();
+            DBConfig opts = new DBConfig(dbpath, isReadOnly());
+            this.dbhandle = RocksConnectionManager.INSTANCE.acquire(opts);
+            super.open();
         }
-        String dbpath = dbdir.getAbsolutePath();
-        DBConfig opts = new DBConfig(dbpath, readOnly);
-        this.dbhandle = RocksConnectionManager.INSTANCE.acquire(opts);
-        this.open = true;
     }
 
     @Override
     public synchronized void close() {
-        if (!isOpen()) {
-            return;
+        if (isOpen()) {
+            super.close();
+            RocksConnectionManager.INSTANCE.release(dbhandle);
+            this.dbhandle = null;
         }
-        this.open = false;
-        RocksConnectionManager.INSTANCE.release(dbhandle);
-        this.dbhandle = null;
     }
 
     private static final byte[] NODATA = new byte[0];

@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import static org.locationtech.geogig.model.Ref.HEAD;
+import static org.locationtech.geogig.model.Ref.MASTER;
+import static org.locationtech.geogig.model.Ref.STAGE_HEAD;
+import static org.locationtech.geogig.model.Ref.WORK_HEAD;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -38,7 +43,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -165,8 +169,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                             configDB.put(key, value);
                         }
                         repository = repository();
-                        repository.configure();
-                    } catch (RepositoryConnectionException e) {
+                    } catch (Exception e) {
                         throw new IllegalStateException(
                                 "Unable to initialize repository for the first time: "
                                         + e.getMessage(),
@@ -192,34 +195,40 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             throw new IllegalStateException("Can't access repository at '" + repoURI + "'", e);
         }
 
-        if (!repoExisted) {
-            createDefaultRefs();
-        }
+        createDefaultRefs();
         return repository;
     }
 
     private void createDefaultRefs() {
-        Optional<Ref> master = command(RefParse.class).setName(Ref.MASTER).call();
-        Preconditions.checkState(!master.isPresent(), Ref.MASTER + " was already initialized.");
-        command(UpdateRef.class).setName(Ref.MASTER).setNewValue(ObjectId.NULL)
-                .setReason("Repository initialization").call();
+        Optional<Ref> master = getRef(MASTER);
+        Optional<Ref> head = getRef(HEAD);
+        Optional<Ref> workhead = command(RefParse.class).setName(WORK_HEAD).call();
+        Optional<Ref> stagehead = command(RefParse.class).setName(STAGE_HEAD).call();
 
-        Optional<Ref> head = command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions.checkState(!head.isPresent(), Ref.HEAD + " was already initialized.");
-        command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(Ref.MASTER)
-                .setReason("Repository initialization").call();
+        if (!master.isPresent())
+            setRef(MASTER, ObjectId.NULL);
 
-        Optional<Ref> workhead = command(RefParse.class).setName(Ref.WORK_HEAD).call();
-        Preconditions.checkState(!workhead.isPresent(),
-                Ref.WORK_HEAD + " was already initialized.");
-        command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(RevTree.EMPTY.getId())
-                .setReason("Repository initialization").call();
+        if (!head.isPresent())
+            setSymRef(HEAD, MASTER);
 
-        Optional<Ref> stagehead = command(RefParse.class).setName(Ref.STAGE_HEAD).call();
-        Preconditions.checkState(!stagehead.isPresent(),
-                Ref.STAGE_HEAD + " was already initialized.");
-        command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(RevTree.EMPTY.getId())
-                .setReason("Repository initialization").call();
+        if (!workhead.isPresent())
+            setRef(WORK_HEAD, RevTree.EMPTY_TREE_ID);
 
+        if (!stagehead.isPresent())
+            setRef(STAGE_HEAD, RevTree.EMPTY_TREE_ID);
+    }
+
+    private void setRef(String name, ObjectId value) {
+        command(UpdateRef.class).setName(name).setNewValue(value)
+                .setReason("Repository initialization").call();
+    }
+
+    private void setSymRef(String name, String target) {
+        command(UpdateSymRef.class).setName(name).setNewValue(target)
+                .setReason("Repository initialization").call();
+    }
+
+    private Optional<Ref> getRef(String name) {
+        return command(RefParse.class).setName(name).call();
     }
 }

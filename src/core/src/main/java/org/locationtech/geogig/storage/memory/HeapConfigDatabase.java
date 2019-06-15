@@ -24,30 +24,31 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Sets;
 
-public class HeapConfigDatabase implements ConfigDatabase {
+public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase {
 
     private static final ConcurrentMap<String, String> global = new ConcurrentHashMap<>();
 
     private ConcurrentMap<String, String> local = new ConcurrentHashMap<>();
 
-    public static void clearGlobal() {
+    public @VisibleForTesting static void clearGlobal() {
         global.clear();
     }
 
     public HeapConfigDatabase() {
-
+        super(false);
     }
 
-    @Override
-    public void close() {
-        local.clear();
+    public HeapConfigDatabase(boolean readOnly) {
+        super(readOnly);
     }
 
     @Override

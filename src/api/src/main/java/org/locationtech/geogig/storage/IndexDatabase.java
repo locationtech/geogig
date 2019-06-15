@@ -17,7 +17,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import lombok.Value;
 
@@ -34,24 +33,6 @@ public interface IndexDatabase extends ObjectStore {
 
         public final ObjectId indexTree;
     }
-
-    /**
-     * Performs any setup required before first open, including setting default configuration.
-     */
-    public void configure() throws RepositoryConnectionException;
-
-    /**
-     * @return {@code true} if the {@code IndexDatabase} is read-only
-     */
-    public boolean isReadOnly();
-
-    /**
-     * Verify the configuration before opening the database.
-     * 
-     * @return {@code true} if the config was set, {@code false} otherwise
-     * @throws RepositoryConnectionException if the config is incompatible
-     */
-    public boolean checkConfig() throws RepositoryConnectionException;
 
     /**
      * Create an index on the given feature type tree using the provided attribute name and indexing

@@ -9,14 +9,14 @@
  */
 package org.locationtech.geogig.rocksdb.integration;
 
-import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
+import org.junit.Before;
+import org.junit.Rule;
 import org.locationtech.geogig.test.integration.LogOpTest;
 
 public class RocksLogOpTest extends LogOpTest {
+    public @Rule RocksdbTestRepositoryURIBuilder uriBuilder = new RocksdbTestRepositoryURIBuilder();
 
-    protected @Override Context createInjector() {
-        return new PluginsContextBuilder().build(new Hints().platform(super.createPlatform()));
+    public @Before void before() {
+        testRepository.setURIBuilder(uriBuilder);
     }
 }

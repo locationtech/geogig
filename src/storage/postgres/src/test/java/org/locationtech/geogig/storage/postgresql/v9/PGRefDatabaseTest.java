@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage.postgresql.v9;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -19,13 +18,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
@@ -40,31 +37,15 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    ConfigDatabase configdb;
-
     Environment mainEnvironment;
 
     @Override
     protected RefDatabase createDatabase(Platform platform) throws Exception {
         mainEnvironment = testConfig.getEnvironment();
         PGStorage.createNewRepo(mainEnvironment);
-        closeConfigDb();
-        configdb = new PGConfigDatabase(mainEnvironment);
         URI uri = mainEnvironment.toURI();
         Hints hints = new Hints().uri(uri);
-        return new PGRefDatabase(configdb, hints);
-    }
-
-    @After
-    public void closeConfigDb() {
-        if (configdb != null) {
-            try {
-                configdb.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            configdb = null;
-        }
+        return new PGRefDatabase(hints);
     }
 
     @Test
@@ -118,10 +99,8 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
                 mainEnvironment.getPassword(), getClass().getSimpleName() + "2",
                 mainEnvironment.getTables().getPrefix());
         PGStorage.createNewRepo(secondEnvironment);
-        PGConfigDatabase secondConfigDb = new PGConfigDatabase(secondEnvironment);
 
-        PGRefDatabase secondRefDb = new PGRefDatabase(secondConfigDb,
-                new Hints().uri(secondEnvironment.toURI()));
+        PGRefDatabase secondRefDb = new PGRefDatabase(new Hints().uri(secondEnvironment.toURI()));
         secondRefDb.open();
         PGRefDatabase firstRefDb = PGRefDatabase.class.cast(refDb);
         Callable<Long> lockFirstRepo = new Callable<Long>() {
@@ -169,7 +148,6 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
         firstThread.shutdown();
         secondThread.shutdown();
 
-        secondConfigDb.close();
         secondRefDb.close();
 
     }

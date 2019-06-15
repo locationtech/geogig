@@ -368,12 +368,12 @@ public class TransactionRefDatabase implements RefDatabase {
     }
 
     @Override
-    public void configure() {
-        // No-op
+    public boolean isOpen() {
+        return refDb.isOpen();
     }
 
     @Override
-    public boolean checkConfig() {
-        return true;
+    public boolean isReadOnly() {
+        return refDb.isReadOnly();
     }
 }

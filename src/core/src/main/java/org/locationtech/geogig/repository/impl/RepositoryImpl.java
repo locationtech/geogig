@@ -55,6 +55,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /**
  * A repository is a collection of commits, each of which is an archive of what the project's
  * working tree looked like at a past date, whether on your machine or someone else's.
@@ -66,6 +69,7 @@ import com.google.inject.Inject;
  * 
  * @see WorkingTree
  */
+@Accessors(fluent = true)
 public class RepositoryImpl implements Repository {
     private static Logger LOGGER = LoggerFactory.getLogger(RepositoryImpl.class);
 
@@ -76,6 +80,18 @@ public class RepositoryImpl implements Repository {
     private URI repositoryLocation;
 
     private volatile boolean open;
+
+    private @Getter ConfigDatabase configDatabase;
+
+    private @Getter RefDatabase refDatabase;
+
+    private @Getter ObjectDatabase objectDatabase;
+
+    private @Getter IndexDatabase indexDatabase;
+
+    private @Getter GraphDatabase graphDatabase;
+
+    private @Getter ConflictsDatabase conflictsDatabase;
 
     @Inject
     public RepositoryImpl(Context context) {
@@ -90,37 +106,32 @@ public class RepositoryImpl implements Repository {
     }
 
     @Override
-    public void configure() throws RepositoryConnectionException {
-        context.refDatabase().configure();
-        context.objectDatabase().configure();
-        context.indexDatabase().configure();
-    }
-
-    @Override
     public boolean isOpen() {
         return open;
     }
 
     @Override
     public void open() throws RepositoryConnectionException {
-
+        if (isOpen()) {
+            return;
+        }
         Optional<URI> repoUrl = command(ResolveGeogigURI.class).call();
         Preconditions.checkState(repoUrl.isPresent(), "Repository URL can't be located");
         this.repositoryLocation = repoUrl.get();
+        configDatabase = context.configDatabase();
+        refDatabase = context.refDatabase();
+        objectDatabase = context.objectDatabase();
+        indexDatabase = context.indexDatabase();
+        conflictsDatabase = context.conflictsDatabase();
+        graphDatabase = objectDatabase.getGraphDatabase();
 
-        if (!context.refDatabase().checkConfig()) {
-            context.refDatabase().configure();
-        }
-        if (!context.objectDatabase().checkConfig()) {
-            context.objectDatabase().configure();
-        }
-        if (!context.indexDatabase().checkConfig()) {
-            context.indexDatabase().configure();
-        }
-        context.refDatabase().open();
-        context.objectDatabase().open();
-        context.indexDatabase().open();
-        context.conflictsDatabase().open();
+        configDatabase.open();
+        refDatabase.open();
+        objectDatabase.open();
+        indexDatabase.open();
+        conflictsDatabase.open();
+        graphDatabase.open();
+
         for (RepositoryListener l : listeners) {
             l.opened(this);
         }
@@ -132,12 +143,15 @@ public class RepositoryImpl implements Repository {
      */
     @Override
     public synchronized void close() {
+        if (!isOpen()) {
+            return;
+        }
         open = false;
         close(context.refDatabase());
         close(context.objectDatabase());
         close(context.indexDatabase());
-        close(context.configDatabase());
         close(context.conflictsDatabase());
+        close(context.configDatabase());
         for (RepositoryListener l : listeners) {
             try {// don't let a broken listener mess us up
                 l.closed();
@@ -375,57 +389,19 @@ public class RepositoryImpl implements Repository {
         return context;
     }
 
-    // @Override
     @Override
     public WorkingTree workingTree() {
         return context.workingTree();
     }
 
-    // @Override
     @Override
     public StagingArea index() {
         return context.stagingArea();
     }
 
-    // @Override
-    @Override
-    public RefDatabase refDatabase() {
-        return context.refDatabase();
-    }
-
-    // @Override
     @Override
     public Platform platform() {
         return context.platform();
-    }
-
-    // @Override
-    @Override
-    public ObjectDatabase objectDatabase() {
-        return context.objectDatabase();
-    }
-
-    @Override
-    public IndexDatabase indexDatabase() {
-        return context.indexDatabase();
-    }
-
-    // @Override
-    @Override
-    public ConflictsDatabase conflictsDatabase() {
-        return context.conflictsDatabase();
-    }
-
-    // @Override
-    @Override
-    public ConfigDatabase configDatabase() {
-        return context.configDatabase();
-    }
-
-    // @Override
-    @Override
-    public GraphDatabase graphDatabase() {
-        return context.graphDatabase();
     }
 
     @Override

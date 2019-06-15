@@ -36,6 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
@@ -55,7 +56,7 @@ import com.google.common.collect.Lists;
  * Base class for PostgreSQL based graph database.
  * 
  */
-public class PGGraphDatabase implements GraphDatabase {
+public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
     static Logger LOG = LoggerFactory.getLogger(PGGraphDatabase.class);
 
     private final String EDGES;
@@ -71,10 +72,11 @@ public class PGGraphDatabase implements GraphDatabase {
     private Version serverVersion;
 
     public PGGraphDatabase(Hints hints) throws URISyntaxException {
-        this(Environment.get(hints));
+        this(Environment.get(hints), Hints.isRepoReadOnly(hints));
     }
 
-    public PGGraphDatabase(Environment config) {
+    public PGGraphDatabase(Environment config, boolean readOnly) {
+        super(readOnly);
         Preconditions.checkNotNull(config);
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
@@ -90,16 +92,13 @@ public class PGGraphDatabase implements GraphDatabase {
         if (dataSource == null) {
             dataSource = newDataSource(config);
             serverVersion = PGStorage.getServerVersion(config);
+            super.open();
         }
     }
 
     @Override
-    public boolean isOpen() {
-        return dataSource != null;
-    }
-
-    @Override
     public synchronized void close() {
+        super.close();
         if (dataSource != null) {
             closeDataSource(dataSource);
             dataSource = null;

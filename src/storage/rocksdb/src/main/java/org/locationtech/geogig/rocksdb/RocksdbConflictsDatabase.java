@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -37,6 +36,7 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -55,7 +55,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
-public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
+public class RocksdbConflictsDatabase extends AbstractStore implements ConflictsDatabase {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbConflictsDatabase.class);
 
@@ -66,6 +66,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
     private ConcurrentMap<String/* TxID */, DBHandle> dbsByTransaction = new ConcurrentHashMap<>();
 
     public @Inject RocksdbConflictsDatabase(Platform platform, @Nullable Hints hints) {
+        super(Hints.isRepoReadOnly(hints));
         checkNotNull(platform);
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
@@ -81,16 +82,14 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
     }
 
     public RocksdbConflictsDatabase(File baseDirectory) {
+        super(false);
         checkNotNull(baseDirectory);
         checkArgument(baseDirectory.exists() && baseDirectory.canWrite());
         this.baseDirectory = baseDirectory;
     }
 
-    public @Override synchronized void open() {
-        // no-op
-    }
-
     public @Override synchronized void close() {
+        super.close();
         try {
             for (DBHandle db : dbsByTransaction.values()) {
                 RocksConnectionManager.INSTANCE.release(db);

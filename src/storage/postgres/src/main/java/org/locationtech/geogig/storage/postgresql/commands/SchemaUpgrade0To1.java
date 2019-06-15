@@ -78,7 +78,7 @@ public class SchemaUpgrade0To1 {
             URI repoURI = env.connectionConfig.toURI(repoName);
             Repository repo;
             try {
-                repo = RepositoryFinder.INSTANCE.load(repoURI);
+                repo = RepositoryFinder.INSTANCE.open(repoURI);
             } catch (RepositoryConnectionException e) {
                 throw new IllegalStateException("Unable to connnect to repo " + repoName, e);
             }

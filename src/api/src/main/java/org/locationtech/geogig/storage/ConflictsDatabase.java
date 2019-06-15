@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage;
 
-import java.io.Closeable;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -22,14 +21,7 @@ import org.locationtech.geogig.repository.Conflict;
  * 
  * @since 1.0
  */
-public interface ConflictsDatabase extends Closeable {
-
-    /**
-     * Initializes/opens the database. It's safe to call this method multiple times, and only the
-     * first call shall take effect.
-     */
-    public void open();
-
+public interface ConflictsDatabase extends Store {
     /**
      * Checks whether there are conflicts for the given transaction namesapce.
      * 

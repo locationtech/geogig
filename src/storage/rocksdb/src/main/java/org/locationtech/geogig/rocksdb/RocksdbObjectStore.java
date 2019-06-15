@@ -68,19 +68,15 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbObjectStore.class);
 
-    private volatile boolean open;
-
     protected final @NonNull File dbDirectory;
-
-    protected final boolean readOnly;
 
     protected DBHandle dbhandle;
 
     private ReadOptions bulkReadOptions;
 
     public RocksdbObjectStore(@NonNull File dbdir, boolean readOnly) {
+        super(readOnly);
         this.dbDirectory = dbdir;
-        this.readOnly = readOnly;
     }
 
     @Override
@@ -95,8 +91,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         Map<String, String> defaultMetadata = ImmutableMap.of("version",
                 RocksdbRepositoryResolver.VERSION, "serializer", "proxy");
 
-        DBConfig address = new DBConfig(dbDirectory.getAbsolutePath(), readOnly, defaultMetadata,
-                columnFamilyNames);
+        DBConfig address = new DBConfig(dbDirectory.getAbsolutePath(), isReadOnly(),
+                defaultMetadata, columnFamilyNames);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(address);
 
         this.bulkReadOptions = new ReadOptions();
@@ -116,35 +112,17 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             serializer = new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2.INSTANCE);
         }
         super.setSerializationFactory(serializer);
-        open = true;
+        super.open();
     }
 
     @Override
     public synchronized void close() {
-        if (!open) {
-            return;
-        }
-        open = false;
-
-        final DBHandle dbhandle = this.dbhandle;
-        this.dbhandle = null;
-        this.bulkReadOptions.close();
-        RocksConnectionManager.INSTANCE.release(dbhandle);
-    }
-
-    @Override
-    public boolean isOpen() {
-        return open;
-    }
-
-    protected void checkOpen() {
-        Preconditions.checkState(isOpen(), "Database is closed");
-    }
-
-    protected void checkWritable() {
-        checkOpen();
-        if (readOnly) {
-            throw new IllegalStateException("db is read only.");
+        if (isOpen()) {
+            super.close();
+            final DBHandle dbhandle = this.dbhandle;
+            this.dbhandle = null;
+            this.bulkReadOptions.close();
+            RocksConnectionManager.INSTANCE.release(dbhandle);
         }
     }
 

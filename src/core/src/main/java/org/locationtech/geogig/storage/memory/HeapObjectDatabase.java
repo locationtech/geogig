@@ -16,7 +16,6 @@ import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
 import static java.util.Spliterators.spliteratorUnknownSize;
 
-import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -25,16 +24,12 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.impl.ConnectionManager;
-import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
+import org.locationtech.geogig.storage.decorator.ForwardingObjectStore;
 import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
-
-import com.google.inject.Inject;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
@@ -44,32 +39,18 @@ import com.google.inject.Inject;
  */
 public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectDatabase {
 
-    static HeapObjectDatabaseConnectionManager CONN_MANAGER = new HeapObjectDatabaseConnectionManager();
+    private final HeapBlobStore blobs;
 
-    private HeapBlobStore blobs;
-
-    private HeapGraphDatabase graph;
-
-    private Platform platform;
+    private final HeapGraphDatabase graph;
 
     public HeapObjectDatabase() {
-        super(new HeapObjectStore(), false);
+        this(null);
     }
 
-    @Inject
-    public HeapObjectDatabase(Platform platform, Hints hints) {
-        super(connect(platform), readOnly(hints));
-        this.platform = platform;
-    }
-
-    private static HeapObjectStore connect(Platform platform) {
-        Path path = platform.pwd().toPath();
-        HeapObjectStore store = CONN_MANAGER.acquire(path);
-        return store;
-    }
-
-    private static boolean readOnly(Hints hints) {
-        return hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
+    public HeapObjectDatabase(Hints hints) {
+        super(new HeapObjectStore(Hints.isRepoReadOnly(hints)));
+        blobs = new HeapBlobStore();
+        graph = new HeapGraphDatabase(isReadOnly());
     }
 
     /**
@@ -79,10 +60,9 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
      */
     @Override
     public void close() {
-        super.close();
-        if (graph != null) {
+        if (isOpen()) {
+            super.close();
             graph.close();
-            graph = null;
         }
     }
 
@@ -95,14 +75,7 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
             return;
         }
         super.open();
-        blobs = new HeapBlobStore();
-        graph = new HeapGraphDatabase(platform);
         graph.open();
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return !super.canWrite;
     }
 
     @Override
@@ -113,16 +86,6 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public GraphDatabase getGraphDatabase() {
         return new SynchronizedGraphDatabase(graph);
-    }
-
-    @Override
-    public void configure() {
-        // No-op
-    }
-
-    @Override
-    public boolean checkConfig() {
-        return true;
     }
 
     public @Override boolean put(RevObject object) {
@@ -165,20 +128,5 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public String toString() {
         return getClass().getSimpleName();
-    }
-
-    private static class HeapObjectDatabaseConnectionManager
-            extends ConnectionManager<Path, HeapObjectStore> {
-
-        @Override
-        protected HeapObjectStore connect(Path address) {
-            return new HeapObjectStore();
-        }
-
-        @Override
-        protected void disconnect(HeapObjectStore c) {
-            c.close();
-        }
-
     }
 }

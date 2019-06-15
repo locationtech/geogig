@@ -20,7 +20,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -39,20 +38,6 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
 
     public RocksdbObjectDatabase(@NonNull File dbdir, boolean readOnly) {
         super(dbdir, readOnly);
-    }
-
-    @Override
-    public void configure() throws RepositoryConnectionException {
-    }
-
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return true;
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return super.readOnly;
     }
 
     @Override
@@ -76,8 +61,8 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
             File graphDir = new File(super.dbDirectory.getParentFile(), "graph.rocksdb");
             blobsDir.mkdir();
             graphDir.mkdir();
-            this.blobs = new RocksdbBlobStore(blobsDir, super.readOnly);
-            this.graph = new RocksdbGraphDatabase(graphDir, super.readOnly);
+            this.blobs = new RocksdbBlobStore(blobsDir, isReadOnly());
+            this.graph = new RocksdbGraphDatabase(graphDir, isReadOnly());
             this.graph.open();
         } catch (RuntimeException e) {
             close();

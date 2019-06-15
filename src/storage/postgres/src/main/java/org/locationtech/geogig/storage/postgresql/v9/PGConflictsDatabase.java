@@ -34,6 +34,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
@@ -70,7 +71,7 @@ import com.google.common.collect.Iterables;
  * conflicts are encountered, and default to the empty string if the conflicts are on the
  * repository's head instead of inside a transaction.
  */
-public class PGConflictsDatabase implements ConflictsDatabase {
+public class PGConflictsDatabase extends AbstractStore implements ConflictsDatabase {
 
     final static Logger LOG = LoggerFactory.getLogger(PGConflictsDatabase.class);
 
@@ -91,6 +92,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
      * @throws URISyntaxException
      */
     public PGConflictsDatabase(Hints hints) throws IllegalArgumentException, URISyntaxException {
+        super(Hints.isRepoReadOnly(hints));
         checkNotNull(hints);
         environment = Environment.get(hints);
         Preconditions.checkNotNull(environment.getRepositoryName(), "Repository id not provided");
@@ -100,6 +102,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
 
     @VisibleForTesting
     PGConflictsDatabase(DataSource mockSource) {
+        super(false);
         dataSource = mockSource;
         environment = null;
         conflictsTable = "geogig_conflicts";
@@ -115,10 +118,12 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                         environment.getRepositoryName()));
             }
             repositoryId = environment.getRepositoryId();
+            super.open();
         }
     }
 
     public @Override synchronized void close() {
+        super.close();
         if (dataSource != null) {
             try {
                 PGStorage.closeDataSource(dataSource);

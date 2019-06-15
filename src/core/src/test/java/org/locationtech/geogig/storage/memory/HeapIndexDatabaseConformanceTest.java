@@ -9,9 +9,7 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.impl.IndexDatabaseConformanceTest;
 
@@ -19,10 +17,9 @@ public class HeapIndexDatabaseConformanceTest extends IndexDatabaseConformanceTe
 
     @Override
     protected IndexDatabase createIndexDatabase(boolean readOnly) {
-        Platform platform = new DefaultPlatform();
         Hints hints = new Hints();
         hints.set(Hints.OBJECTS_READ_ONLY, readOnly);
-        HeapIndexDatabase heapIndexDatabase = new HeapIndexDatabase(platform, hints);
+        HeapIndexDatabase heapIndexDatabase = new HeapIndexDatabase(hints);
         return heapIndexDatabase;
     }
 

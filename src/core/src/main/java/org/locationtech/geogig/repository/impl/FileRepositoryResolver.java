@@ -189,7 +189,12 @@ public abstract class FileRepositoryResolver implements RepositoryResolver {
         }
     }
 
-    public @Override Repository open(@NonNull URI repositoryLocation)
+    public @Override Repository open(@NonNull URI repositoryURI)
+            throws RepositoryConnectionException {
+        return open(repositoryURI, Hints.readWrite());
+    }
+
+    public @Override Repository open(@NonNull URI repositoryLocation, @NonNull Hints hints)
             throws RepositoryConnectionException {
         Preconditions.checkArgument(canHandle(repositoryLocation), "Not a file repository: %s",
                 repositoryLocation.getScheme());
@@ -199,7 +204,7 @@ public abstract class FileRepositoryResolver implements RepositoryResolver {
                     "The provided location is not a geogig repository");
         }
 
-        Context context = GlobalContextBuilder.builder().build(new Hints().uri(repositoryLocation));
+        Context context = GlobalContextBuilder.builder().build(hints.uri(repositoryLocation));
         GeoGIG geoGIG = new GeoGIG(context);
 
         Repository repository = geoGIG.getRepository();

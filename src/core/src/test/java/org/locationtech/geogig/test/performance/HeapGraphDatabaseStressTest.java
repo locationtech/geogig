@@ -17,7 +17,7 @@ public class HeapGraphDatabaseStressTest extends AbstractGraphDatabaseStressTest
 
     @Override
     protected GraphDatabase createDatabase(TestPlatform platform) {
-        return new HeapGraphDatabase(platform);
+        return new HeapGraphDatabase();
     }
 
 }

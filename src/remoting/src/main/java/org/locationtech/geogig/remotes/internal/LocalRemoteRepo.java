@@ -97,7 +97,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
     @Override
     public void open() throws RepositoryConnectionException {
         if (remoteRepository == null) {
-            remoteRepository = RepositoryFinder.INSTANCE.load(remoteRepoURI);
+            remoteRepository = RepositoryFinder.INSTANCE.open(remoteRepoURI);
         }
     }
 

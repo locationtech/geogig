@@ -104,7 +104,8 @@ public class Init extends AbstractCommand implements CLICommand {
             }
         }
 
-        final boolean repoExisted = RepositoryFinder.INSTANCE.lookup(targetURI).repoExists(targetURI);
+        final boolean repoExisted = RepositoryFinder.INSTANCE.lookup(targetURI)
+                .repoExists(targetURI);
 
         // let cli set up Hints with the appropriate URI
         Hints hints = new Hints();

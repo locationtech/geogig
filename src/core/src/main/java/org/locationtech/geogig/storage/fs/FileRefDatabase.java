@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 
 import com.google.common.base.Preconditions;
@@ -44,8 +43,6 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     private final File refsDirectory;
 
-    private boolean readOnly;
-
     /**
      * Constructs a new {@code FileRefDatabase} with the given base directory (e.g.
      * {@code /repo/.geogig/refs}).
@@ -55,8 +52,8 @@ public class FileRefDatabase extends AbstractRefDatabase {
     }
 
     public FileRefDatabase(@NonNull File refsDirectory, boolean readOnly) {
+        super(readOnly);
         this.refsDirectory = refsDirectory;
-        this.readOnly = readOnly;
     }
 
     /**
@@ -64,6 +61,9 @@ public class FileRefDatabase extends AbstractRefDatabase {
      */
     @Override
     public void open() {
+        if (isOpen()) {
+            return;
+        }
         File refs = this.refsDirectory;
         if (!refs.isDirectory()) {
             checkWritable();
@@ -72,14 +72,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
                         "Cannot create refs directory '" + refs.getAbsolutePath() + "'");
             }
         }
-    }
-
-    /**
-     * Closes the reference database.
-     */
-    @Override
-    public void close() {
-        // nothing to close
+        super.open();
     }
 
     /**
@@ -357,23 +350,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     }
 
     @Override
-    public void configure() throws RepositoryConnectionException {
-    }
-
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return true;
-    }
-
-    @Override
     public String toString() {
         return String.format("%s[geogig dir: %s]", getClass().getSimpleName(), refsDirectory);
     }
-
-    protected void checkWritable() {
-        if (readOnly) {
-            throw new IllegalStateException("db is read only.");
-        }
-    }
-
 }

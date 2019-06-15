@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import org.locationtech.geogig.model.ServiceFinder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -40,6 +41,24 @@ public class RepositoryFinder {
     }
 
     public static RepositoryFinder INSTANCE = new RepositoryFinder();
+
+    public @NonNull Repository createRepository(@NonNull URI uri)
+            throws RepositoryConnectionException {
+        return createRepository(uri, Hints.readWrite());
+    }
+
+    public @NonNull Repository createRepository(final @NonNull URI uri, @NonNull Hints hints)
+            throws RepositoryConnectionException {
+
+        hints.uri(uri);
+        RepositoryResolver resolver = lookup(uri);
+        ContextBuilder contextBuilder = new ServiceFinder().lookupService(ContextBuilder.class);
+        Context context = contextBuilder.build(hints);
+        resolver.initialize(uri, context);
+        Repository repository = context.repository();
+        repository.open();
+        return repository;
+    }
 
     /**
      * Finds a {@code RepositoryResolver} that {@link #canHandle(URI) can handle} the given URI, or
@@ -145,16 +164,22 @@ public class RepositoryFinder {
     }
 
     /**
-     * @param repositoryLocation the URI with the location of the repository to load
+     * @param repositoryURI the URI with the location of the repository to load
      * @return a {@link Repository} loaded from the given URI, already {@link Repository#open()
      *         open}
      * @throws IllegalArgumentException if no registered {@link RepositoryResolver} implementation
      *         can load the repository at the given location
      * @throws RepositoryConnectionException if the repository can't be opened
      */
-    public Repository load(URI repositoryLocation) throws RepositoryConnectionException {
-        RepositoryResolver initializer = RepositoryFinder.INSTANCE.lookup(repositoryLocation);
-        Repository repository = initializer.open(repositoryLocation);
+    public @NonNull Repository open(@NonNull URI repositoryURI)
+            throws RepositoryConnectionException {
+        return open(repositoryURI, Hints.readWrite());
+    }
+
+    public @NonNull Repository open(@NonNull URI repositoryURI, @NonNull Hints hints)
+            throws RepositoryConnectionException {
+        RepositoryResolver initializer = RepositoryFinder.INSTANCE.lookup(repositoryURI);
+        Repository repository = initializer.open(repositoryURI, hints);
         return repository;
     }
 

@@ -159,17 +159,13 @@ public class FetchOpWithIndexTest extends FetchOpTest {
      * </pre>
      */
     public @Test void testMergeCommitIndexesFetchedWhenInSync() throws Exception {
-        GeogigContainer c1 = new GeogigContainer("repo1");
-        GeogigContainer c2 = new GeogigContainer("repo2");
-
-        Repository repo1 = c1.repo;
-        Repository repo2 = c2.repo;
+        Repository repo1 = repositorySupport.createAndInitRepository("repo1");
+        Repository repo2 = repositorySupport.createAndInitRepository("repo2");
         repos.put(repo1.getLocation().toString(), repo1);
         repos.put(repo2.getLocation().toString(), repo2);
 
         Remote remote = repo2.command(RemoteAddOp.class).setURL(repo1.getLocation().toString())
                 .setName("repo1").call();
-        c2.addRemoteOverride(remote, repo1);
 
         TestData support = new TestData(repo1);
         support.loadDefaultData();
@@ -219,17 +215,13 @@ public class FetchOpWithIndexTest extends FetchOpTest {
      * </pre>
      */
     public @Test void testMergeCommitIndexesFetchedWhenNotInSync() throws Exception {
-        GeogigContainer c1 = new GeogigContainer("repo1");
-        GeogigContainer c2 = new GeogigContainer("repo2");
-
-        Repository repo1 = c1.repo;
-        Repository repo2 = c2.repo;
+        Repository repo1 = repositorySupport.createAndInitRepository("repo1");
+        Repository repo2 = repositorySupport.createAndInitRepository("repo2");
         repos.put(repo1.getLocation().toString(), repo1);
         repos.put(repo2.getLocation().toString(), repo2);
 
         Remote remote = repo2.command(RemoteAddOp.class).setURL(repo1.getLocation().toString())
                 .setName("repo1").call();
-        c2.addRemoteOverride(remote, repo1);
 
         TestData support = new TestData(repo1);
         support.loadDefaultData();

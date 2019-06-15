@@ -47,19 +47,19 @@ public class RocksdbRepositoryResolver extends FileRepositoryResolver {
 
     public @Override ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI, Hints hints) {
         File dbdir = new File(resolveDotGeogigDirectory(repoURI), "objects.rocksdb");
-        boolean readOnly = isReadOnly(hints);
+        boolean readOnly = Hints.isRepoReadOnly(hints);
         return new RocksdbObjectDatabase(dbdir, readOnly);
     }
 
     public @Override IndexDatabase resolveIndexDatabase(@NonNull URI repoURI, Hints hints) {
         File dbdir = new File(resolveDotGeogigDirectory(repoURI), "index.rocksdb");
-        boolean readOnly = isReadOnly(hints);
+        boolean readOnly = Hints.isRepoReadOnly(hints);
         return new RocksdbIndexDatabase(dbdir, readOnly);
     }
 
     public @Override RefDatabase resolveRefDatabase(@NonNull URI repoURI, Hints hints) {
         File refsdir = new File(resolveDotGeogigDirectory(repoURI), "refs");
-        boolean readOnly = isReadOnly(hints);
+        boolean readOnly = Hints.isRepoReadOnly(hints);
         return new FileRefDatabase(refsdir, readOnly);
     }
 

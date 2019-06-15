@@ -42,8 +42,8 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.RepositoryFinder;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -625,7 +625,7 @@ public class GeogigCLI {
             if (!unaliased.isPresent()) {
                 unaliased = config.getGlobal(configParam);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             String msg = "Unable to acquire config to check alias for " + aliasedCommand;
             LOGGER.error(msg, e);
             try {
@@ -641,7 +641,8 @@ public class GeogigCLI {
                 try (ConfigDatabase global = RepositoryFinder.INSTANCE
                         .resolveConfigDatabase(platform.pwd().toURI(), context, true)) {
                     unaliased = global.getGlobal(configParam);
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    Throwables.throwIfUnchecked(e);
                     throw new RuntimeException(e);
                 }
             }

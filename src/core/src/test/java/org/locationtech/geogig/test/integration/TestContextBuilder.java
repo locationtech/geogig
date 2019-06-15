@@ -17,7 +17,7 @@ import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.impl.ContextBuilder;
+import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.test.MemoryModule;
 
 import com.google.common.collect.Lists;
@@ -25,7 +25,7 @@ import com.google.inject.Guice;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-public class TestContextBuilder extends ContextBuilder {
+public class TestContextBuilder extends ContextBuilderImpl {
 
     private Platform platform;
 

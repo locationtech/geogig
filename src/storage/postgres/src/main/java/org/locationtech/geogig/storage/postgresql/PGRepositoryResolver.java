@@ -147,12 +147,18 @@ public class PGRepositoryResolver implements RepositoryResolver {
         return config;
     }
 
+    public @Override Repository open(@NonNull URI repositoryURI)
+            throws RepositoryConnectionException {
+        return open(repositoryURI, Hints.readWrite());
+    }
+
     @Override
-    public Repository open(URI repositoryLocation) throws RepositoryConnectionException {
+    public Repository open(@NonNull URI repositoryLocation, @NonNull Hints hints)
+            throws RepositoryConnectionException {
         Preconditions.checkArgument(canHandle(repositoryLocation), "Not a PostgreSQL URI: %s",
                 maskPassword(repositoryLocation));
-        Hints hints = new Hints();
-        hints.set(Hints.REPOSITORY_URL, repositoryLocation.toString());
+
+        hints = hints.uri(repositoryLocation);
         Context context = GlobalContextBuilder.builder().build(hints);
         Repository repository = new GeoGIG(context).getRepository();
         // Ensure the repository exists. If it's null, we might have a non-existing repo URI
@@ -206,9 +212,8 @@ public class PGRepositoryResolver implements RepositoryResolver {
     }
 
     public @Override RefDatabase resolveRefDatabase(@NonNull URI repoURI, Hints hints) {
-        ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null);
         try {
-            return new PGRefDatabase(configDatabase, hints);
+            return new PGRefDatabase(hints);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

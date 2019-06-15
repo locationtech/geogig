@@ -23,7 +23,7 @@ public class ResolveRepositoryNameTest extends RepositoryTestCase {
 
     @Test
     public void testDefault() throws Exception {
-        String expected = super.testName.getMethodName();
+        String expected = super.testRepository.getTestMethodName();
         String resolved = repo.command(ResolveRepositoryName.class).call();
         assertEquals(expected, resolved);
     }

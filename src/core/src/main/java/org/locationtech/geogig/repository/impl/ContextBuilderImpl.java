@@ -12,12 +12,14 @@ package org.locationtech.geogig.repository.impl;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.ContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 
 import com.google.inject.Guice;
 
-public class ContextBuilder {
+public class ContextBuilderImpl implements ContextBuilder {
 
+    @Override
     public final Context build() {
         return build(new Hints());
     }
@@ -26,9 +28,15 @@ public class ContextBuilder {
      * @param hints a set of hints to pass over to the injector to be injected into components that
      *        can make use of it
      */
+    @Override
     public Context build(Hints hints) {
         return Guice.createInjector(new GeogigModule(), new HintsModule(hints))
                 .getInstance(org.locationtech.geogig.repository.Context.class);
+    }
+
+    @Override
+    public int getPriority() {
+        return 0;
     }
 
 }

@@ -58,109 +58,106 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         expectedMaster = new LinkedList<RevCommit>();
         expectedBranch = new LinkedList<RevCommit>();
 
-        insertAndAdd(remoteGeogig.geogig, points1);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, points1);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
         expectedBranch.addFirst(commit);
 
         // Create and checkout branch1
-        remoteGeogig.geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("Branch1")
-                .call();
+        originRepo.command(BranchCreateOp.class).setAutoCheckout(true).setName("Branch1").call();
 
         // Commit some changes to branch1
-        insertAndAdd(remoteGeogig.geogig, points2);
-        commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, points2);
+        commit = originRepo.command(CommitOp.class).call();
         expectedBranch.addFirst(commit);
 
-        insertAndAdd(remoteGeogig.geogig, points3);
-        commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, points3);
+        commit = originRepo.command(CommitOp.class).call();
         expectedBranch.addFirst(commit);
 
         // Make sure Branch1 has all of the commits
-        List<RevCommit> logged = log(remoteGeogig.repo);
+        List<RevCommit> logged = log(originRepo);
         assertEquals(expectedBranch, logged);
 
         // Checkout master and commit some changes
-        remoteGeogig.geogig.command(CheckoutOp.class).setSource("master").call();
+        originRepo.command(CheckoutOp.class).setSource("master").call();
 
-        insertAndAdd(remoteGeogig.geogig, lines1);
-        commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines1);
+        commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
-        insertAndAdd(remoteGeogig.geogig, lines2);
-        commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines2);
+        commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
         // Make sure master has all of the commits
-        logged = log(remoteGeogig.repo);
+        logged = log(originRepo);
         assertEquals(expectedMaster, logged);
 
         // Make sure the local repository has no commits prior to clone
-        logged = log(localGeogig.repo);
+        logged = log(localRepo);
         assertTrue(logged.isEmpty());
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("Branch1").call();
+        clone.setRemoteURI(originRepo.getLocation()).setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits
-        logged = log(localGeogig.repo);
+        logged = log(localRepo);
         assertEquals(expectedBranch, logged);
 
         // Make sure the local master matches the remote
-        localGeogig.geogig.command(CheckoutOp.class).setSource("master").call();
+        localRepo.command(CheckoutOp.class).setSource("master").call();
 
-        logged = log(localGeogig.repo);
+        logged = log(localRepo);
         assertEquals(expectedMaster, logged);
     }
 
     @Test
     public void testPullRebase() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
         // Pull the commit
         PullOp pull = pullOp();
         pull.setRebase(true).setAll(true).call();
 
-        List<RevCommit> logged = log(localGeogig.repo);
+        List<RevCommit> logged = log(localRepo);
         assertEquals(expectedMaster, logged);
     }
 
     @Test
     public void testPullNullCurrentBranch() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
-        localGeogig.geogig.command(UpdateRef.class).setName("master").setNewValue(ObjectId.NULL)
-                .call();
-        localGeogig.geogig.command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue("master")
-                .call();
+        localRepo.command(UpdateRef.class).setName("master").setNewValue(ObjectId.NULL).call();
+        localRepo.command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue("master").call();
 
         // Pull the commit
         PullOp pull = pullOp();
         pull.setRebase(true).call();
 
-        List<RevCommit> logged = log(localGeogig.repo);
+        List<RevCommit> logged = log(localRepo);
         assertEquals(expectedMaster, logged);
     }
 
     @Test
     public void testPullMerge() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = commit(remoteGeogig.repo, "lines3");
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = commit(originRepo, "lines3");
         expectedMaster.addFirst(commit);
 
         // Pull the commit
         PullOp pull = pullOp();
         pull.setRemote("origin").call();
 
-        List<RevCommit> logged = log(localGeogig.repo);
+        List<RevCommit> logged = log(localRepo);
 
         assertEquals(expectedMaster, logged);
     }
@@ -168,8 +165,8 @@ public class PullOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testPullMergeNothingToFetch() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = commit(remoteGeogig.repo, "lines3");
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = commit(originRepo, "lines3");
         expectedMaster.addFirst(commit);
 
         // call fetch first so the missing objects are already in the local repo
@@ -179,7 +176,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         PullOp pull = pullOp();
         pull.setRemote("origin").call();
 
-        List<RevCommit> logged = log(localGeogig.repo);
+        List<RevCommit> logged = log(localRepo);
 
         assertEquals(expectedMaster, logged);
     }
@@ -189,36 +186,34 @@ public class PullOpTest extends RemoteRepositoryTestCase {
      */
     public @Test void testPullMergeNonPersistedRemote() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
-        Remote removedOrigin = localGeogig.geogig.command(RemoteRemoveOp.class).setName("origin")
-                .call();
-        assertFalse(localGeogig.geogig.command(RemoteResolve.class).setName("origin").call()
-                .isPresent());
+        Remote removedOrigin = localRepo.command(RemoteRemoveOp.class).setName("origin").call();
+        assertFalse(localRepo.command(RemoteResolve.class).setName("origin").call().isPresent());
         // Pull the commit
         PullOp pull = pullOp();
 
         pull.setRemote(removedOrigin).call();
 
-        List<RevCommit> logged = log(localGeogig.repo);
+        List<RevCommit> logged = log(localRepo);
         assertEquals(expectedMaster, logged);
     }
 
     @Test
     public void testPullRefspecs() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
-        checkout(localGeogig.repo, "Branch1");
-        List<RevCommit> logged = log(localGeogig.repo);
+        checkout(localRepo, "Branch1");
+        List<RevCommit> logged = log(localRepo);
         assertEquals(3, logged.size());
 
-        assertFalse(getRef(localGeogig.repo, "refs/remotes/origin/newbranch").isPresent());
-        assertTrue(getRef(localGeogig.repo, "refs/remotes/origin/Branch1").isPresent());
+        assertFalse(getRef(localRepo, "refs/remotes/origin/newbranch").isPresent());
+        assertTrue(getRef(localRepo, "refs/remotes/origin/Branch1").isPresent());
 
         // Pull the commit
         PullOp pull = pullOp();
@@ -226,18 +221,18 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         pull.addRefSpec("Branch1");
         PullResult result = pull.setRebase(true).call();
 
-        assertTrue(getRef(localGeogig.repo, "refs/remotes/origin/newbranch").isPresent());
-        assertTrue(getRef(localGeogig.repo, "refs/remotes/origin/Branch1").isPresent());
+        assertTrue(getRef(localRepo, "refs/remotes/origin/newbranch").isPresent());
+        assertTrue(getRef(localRepo, "refs/remotes/origin/Branch1").isPresent());
 
-        logged = log(localGeogig.repo);
+        logged = log(localRepo);
         assertEquals(8, logged.size());
     }
 
     @Test
     public void testPullRefspecForce() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
         // Pull the commit
@@ -246,10 +241,10 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         pull.addRefSpec("+master:newbranch");
         PullResult result = pull.setRebase(true).call();
 
-        Optional<Ref> fetchedToRef = getRef(localGeogig.repo, "refs/remotes/origin/newbranch");
+        Optional<Ref> fetchedToRef = getRef(localRepo, "refs/remotes/origin/newbranch");
         assertTrue(fetchedToRef.isPresent());
 
-        List<RevCommit> logged = log(localGeogig.repo);
+        List<RevCommit> logged = log(localRepo);
         assertEquals(expectedMaster, logged);
 
         Ref oldRef = result.getOldRef();
@@ -262,21 +257,21 @@ public class PullOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testPullMultipleRefspecs() throws Exception {
         // Add a commit to the remote
-        checkout(remoteGeogig.repo, "master");
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        checkout(originRepo, "master");
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
         Feature points4 = feature(pointsType, "Points.4", "4", new Integer(4), "POINT(4 4)");
-        checkout(remoteGeogig.repo, "Branch1");
-        insertAndAdd(remoteGeogig.repo, points4);
-        commit(remoteGeogig.repo, "Points.4");
+        checkout(originRepo, "Branch1");
+        insertAndAdd(originRepo, points4);
+        commit(originRepo, "Points.4");
 
-        assertFalse(getRef(localGeogig.repo, "refs/remotes/origin/newbranch").isPresent());
-        assertFalse(getRef(localGeogig.repo, "refs/remotes/origin/newbranch2").isPresent());
+        assertFalse(getRef(localRepo, "refs/remotes/origin/newbranch").isPresent());
+        assertFalse(getRef(localRepo, "refs/remotes/origin/newbranch2").isPresent());
 
-        checkout(localGeogig.repo, "Branch1");
-        List<RevCommit> logged = log(localGeogig.repo);
+        checkout(localRepo, "Branch1");
+        List<RevCommit> logged = log(localRepo);
         assertEquals(3, logged.size());
 
         // Pull the commit
@@ -285,25 +280,23 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         pull.addRefSpec("Branch1:newbranch2");
         pull.setRebase(true).call();
 
-        assertTrue(getRef(localGeogig.repo, "refs/remotes/origin/newbranch").isPresent());
-        assertTrue(getRef(localGeogig.repo, "refs/remotes/origin/newbranch2").isPresent());
+        assertTrue(getRef(localRepo, "refs/remotes/origin/newbranch").isPresent());
+        assertTrue(getRef(localRepo, "refs/remotes/origin/newbranch2").isPresent());
 
-        logged = log(localGeogig.repo);
+        logged = log(localRepo);
         assertEquals(9, logged.size());
     }
 
     @Test
     public void testPullMultipleRefspecsNonPersistedRemote() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
         // remove the remote
-        Remote removedOrigin = localGeogig.geogig.command(RemoteRemoveOp.class).setName("origin")
-                .call();
-        assertFalse(localGeogig.geogig.command(RemoteResolve.class).setName("origin").call()
-                .isPresent());
+        Remote removedOrigin = localRepo.command(RemoteRemoveOp.class).setName("origin").call();
+        assertFalse(localRepo.command(RemoteResolve.class).setName("origin").call().isPresent());
 
         // Pull the commit
         PullOp pull = pullOp();
@@ -312,17 +305,17 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         pull.addRefSpec("Branch1:newbranch2");
         pull.call();
 
-        assertTrue(getRef(localGeogig.repo, "refs/remotes/origin/newbranch").isPresent());
-        assertTrue(getRef(localGeogig.repo, "refs/remotes/origin/newbranch2").isPresent());
+        assertTrue(getRef(localRepo, "refs/remotes/origin/newbranch").isPresent());
+        assertTrue(getRef(localRepo, "refs/remotes/origin/newbranch2").isPresent());
 
-        assertEquals(7, log(localGeogig.repo).size());
+        assertEquals(7, log(localRepo).size());
     }
 
     @Test
     public void testPullTooManyRefs() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
         // Pull the commit
@@ -335,28 +328,26 @@ public class PullOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testPullToCurrentBranch() throws Exception {
         // Add a commit to the remote
-        insertAndAdd(remoteGeogig.geogig, lines3);
-        RevCommit commit = remoteGeogig.geogig.command(CommitOp.class).call();
+        insertAndAdd(originRepo, lines3);
+        RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
         // Make sure the local master matches the remote
-        localGeogig.geogig.command(BranchCreateOp.class).setName("mynewbranch")
-                .setAutoCheckout(true).call();
+        localRepo.command(BranchCreateOp.class).setName("mynewbranch").setAutoCheckout(true).call();
 
         // Pull the commit
         PullOp pull = pullOp();
         pull.addRefSpec("master");
         pull.setRebase(true).call();
 
-        final Optional<Ref> currHead = localGeogig.geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call();
+        final Optional<Ref> currHead = localRepo.command(RefParse.class).setName(Ref.HEAD).call();
         assertTrue(currHead.isPresent());
         assertTrue(currHead.get() instanceof SymRef);
         final SymRef headRef = (SymRef) currHead.get();
         final String currentBranch = Ref.localName(headRef.getTarget());
         assertEquals("mynewbranch", currentBranch);
 
-        List<RevCommit> logged = log(localGeogig.repo);
+        List<RevCommit> logged = log(localRepo);
         assertEquals(expectedMaster, logged);
     }
 
@@ -370,9 +361,9 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         // | o - TestBranch - Points 1 modified and points 2 added
         // |
         // o - master - HEAD - Points 1 modifiedB
-        Repository local = localGeogig.repo;
+        Repository local = localRepo;
         {// set up a merge conflict scenario
-            insertAndAdd(localGeogig.geogig, points1, points3);
+            insertAndAdd(localRepo, points1, points3);
             local.command(CommitOp.class).call();
             local.command(BranchCreateOp.class).setName("TestBranch").call();
             Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),

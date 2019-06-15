@@ -18,7 +18,7 @@ import org.locationtech.geogig.repository.Hints;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
-public class PluginsContextBuilder extends ContextBuilder {
+public class PluginsContextBuilder extends ContextBuilderImpl {
 
     @Override
     public Context build(Hints hints) {

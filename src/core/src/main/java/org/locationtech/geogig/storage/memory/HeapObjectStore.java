@@ -21,6 +21,7 @@ import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -34,6 +35,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectInfo;
@@ -43,7 +45,6 @@ import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
@@ -51,41 +52,16 @@ import com.google.common.collect.Maps;
  * 
  * @see AbstractObjectStore
  */
-public class HeapObjectStore implements ObjectStore {
+public class HeapObjectStore extends AbstractStore implements ObjectStore {
 
-    private ConcurrentMap<ObjectId, RevObject> objects;
+    private final ConcurrentMap<ObjectId, RevObject> objects = new ConcurrentHashMap<>();
 
     public HeapObjectStore() {
-        //
+        super(false);
     }
 
-    /**
-     * Closes the database.
-     * 
-     * @see org.locationtech.geogig.storage.ObjectDatabase#close()
-     */
-    public @Override void close() {
-        if (objects != null) {
-            objects.clear();
-            objects = null;
-        }
-    }
-
-    /**
-     * @return true if the database is open, false otherwise
-     */
-    public @Override boolean isOpen() {
-        return objects != null;
-    }
-
-    /**
-     * Opens the database for use by GeoGig.
-     */
-    public @Override void open() {
-        if (isOpen()) {
-            return;
-        }
-        objects = Maps.newConcurrentMap();
+    public HeapObjectStore(boolean ro) {
+        super(ro);
     }
 
     /**

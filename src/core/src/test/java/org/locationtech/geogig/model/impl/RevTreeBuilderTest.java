@@ -60,11 +60,6 @@ public abstract class RevTreeBuilderTest {
 
     protected abstract RevTreeBuilder createBuiler(RevTree original);
 
-    @SuppressWarnings("deprecation")
-    protected LegacyTreeBuilder createLegacyBuilder(RevTree original) {
-        return new LegacyTreeBuilder(objectStore, original);
-    }
-
     protected ObjectStore createObjectStore() {
         return new HeapObjectStore();
     }

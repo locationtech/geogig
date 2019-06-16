@@ -400,27 +400,10 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     /**
      * @param all if {@code true}, fetch from all remotes.
      * @return {@code this}
-     * @deprecated use {@link #setAllRemotes} instead
-     */
-    public FetchOp setAll(final boolean all) {
-        argsBuilder.allRemotes = all;
-        return this;
-    }
-
-    /**
-     * @param all if {@code true}, fetch from all remotes.
-     * @return {@code this}
      */
     public FetchOp setAllRemotes(final boolean all) {
         argsBuilder.allRemotes = all;
         return this;
-    }
-
-    /**
-     * @deprecated use {@link #isAllRemotes} instead
-     */
-    public boolean isAll() {
-        return argsBuilder.allRemotes;
     }
 
     public boolean isAllRemotes() {

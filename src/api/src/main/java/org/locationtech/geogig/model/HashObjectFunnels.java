@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -100,22 +99,6 @@ public class HashObjectFunnels {
     public static void tree(@NonNull PrimitiveSink into, @NonNull List<Node> trees,
             @NonNull List<Node> features, @NonNull Iterable<Bucket> buckets) {
         TreeFunnel.INSTANCE.funnel(into, trees, features, buckets);
-    }
-
-    @Deprecated
-    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
-            @Nullable SortedMap<Integer, Bucket> buckets) {
-
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        trees = trees == null ? Collections.emptyList() : trees;
-        features = features == null ? Collections.emptyList() : features;
-        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
-        HashObjectFunnels.tree(hasher, trees, features, buckets.values());
-
-        final byte[] rawKey = hasher.hash().asBytes();
-        final ObjectId id = ObjectId.create(rawKey);
-
-        return id;
     }
 
     public static ObjectId hashTag(@NonNull String name, @NonNull ObjectId commitId,
@@ -302,20 +285,6 @@ public class HashObjectFunnels {
                 Funnels.integerFunnel().funnel(bucket.getIndex(), into);
                 ObjectIdFunnel.funnel(bucket.getObjectId(), into);
             });
-        }
-
-        @Deprecated
-        public void funnel(PrimitiveSink into, List<Node> trees, List<Node> features,
-                SortedMap<Integer, Bucket> buckets) {
-
-            RevObjectTypeFunnel.funnel(TYPE.TREE, into);
-            trees.forEach(n -> NodeFunnel.funnel(n, into));
-            features.forEach(n -> NodeFunnel.funnel(n, into));
-
-            for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
-                Funnels.integerFunnel().funnel(entry.getKey(), into);
-                ObjectIdFunnel.funnel(entry.getValue().getObjectId(), into);
-            }
         }
 
         public void funnel(PrimitiveSink into, List<Node> trees, List<Node> features,

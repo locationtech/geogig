@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;
@@ -88,15 +87,6 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
         } else {
             this.pathFilters = ImmutableList.copyOf(pathFilters);
         }
-        return this;
-    }
-
-    /**
-     * @deprecated coordinate reprojection no longer supported at this stage
-     * @param crs the CRS to compute the bounds in. Defaults to {@code EPSG:4326} with long/lat axis
-     *        order if not set.
-     */
-    public DiffBounds setCRS(@Nullable CoordinateReferenceSystem crs) {
         return this;
     }
 

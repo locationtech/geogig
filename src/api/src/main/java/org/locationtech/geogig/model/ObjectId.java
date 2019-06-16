@@ -122,13 +122,6 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         return h;
     }
 
-    /**
-     * @deprecated use #create
-     */
-    public static ObjectId createNoClone(byte[] rawHash) {
-        return new ObjectId(rawHash);
-    }
-
     public static ObjectId create(byte[] raw) {
         return new ObjectId(raw);
     }

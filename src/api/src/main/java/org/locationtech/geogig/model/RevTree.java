@@ -13,9 +13,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.locationtech.geogig.storage.ObjectStore;
@@ -109,10 +107,6 @@ public interface RevTree extends RevObject {
 
         public @Override List<Node> features() {
             return Collections.emptyList();
-        }
-
-        public @Override SortedMap<Integer, Bucket> buckets() {
-            return Collections.emptySortedMap();
         }
 
         public @Override boolean equals(Object o) {
@@ -258,12 +252,7 @@ public interface RevTree extends RevObject {
      * {@link CanonicalNodeNameOrder} defines a split factor based on the bucket's
      * {@link CanonicalNodeNameOrder#maxBucketsForLevel(int) depth), while a tree built to represent
      * a quad-tree would always be split into four subtrees to represent the next set of quadrants.
-     * 
-     * @apiNote the returned map does not contain {@code null} keys nor values
-     * @deprecated
      */
-    public SortedMap<Integer, Bucket> buckets();
-
     public Iterable<Bucket> getBuckets();
 
     /**
@@ -277,14 +266,9 @@ public interface RevTree extends RevObject {
      * Performs the given action for each element of the {@link #buckets} collection respecting its
      * iteration order, which is the order of the bucket index.
      * 
-     * @deprecated
      * @param consumer a consumer that accepts a tuple given by the bucket index and the bucket
      *        itself
      */
-    public default void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
-        getBuckets().forEach(b -> consumer.accept(Integer.valueOf(b.getIndex()), b));
-    }
-
     public default void forEachBucket(Consumer<Bucket> consumer) {
         getBuckets().forEach(consumer);
     }

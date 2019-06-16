@@ -14,7 +14,6 @@ import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
 import static org.locationtech.geogig.model.Ref.append;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
@@ -266,38 +264,6 @@ public class TransactionRefDatabase implements RefDatabase {
         // deleted refs
         difference.entriesOnlyOnLeft().forEach((k, v) -> changes.add(ChangedRef.of(k, v, null)));
         return changes;
-    }
-
-    /**
-     * The names of the refs that either have changed from their original value or didn't exist at
-     * the time this method is called
-     */
-    public @Deprecated ImmutableSet<String> getChangedRefs() {
-        Map<String, String> externalOriginals;
-        Map<String, String> externalChanged;
-        {
-            Map<String, String> originals = refDb.getAll(this.txOrigNamespace);
-            Map<String, String> changed = refDb.getAll(this.txChangedNamespace);
-
-            externalOriginals = toExternal(originals);
-            externalChanged = toExternal(changed);
-        }
-        MapDifference<String, String> difference;
-        difference = Maps.difference(externalOriginals, externalChanged);
-
-        Map<String, String> changes = new HashMap<>();
-        // include all new refs
-        changes.putAll(difference.entriesOnlyOnRight());
-
-        // include all changed refs, with the new values
-        for (Map.Entry<String, ValueDifference<String>> e : difference.entriesDiffering()
-                .entrySet()) {
-            String name = e.getKey();
-            ValueDifference<String> valueDifference = e.getValue();
-            String newValue = valueDifference.rightValue();
-            changes.put(name, newValue);
-        }
-        return ImmutableSet.copyOf(changes.keySet());
     }
 
     public @Override Map<String, String> removeAll(String namespace) {

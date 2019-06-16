@@ -9,15 +9,11 @@
  */
 package org.locationtech.geogig.repository.impl;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -42,7 +38,6 @@ import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.locationtech.geogig.storage.impl.TransactionStagingArea;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Provides a method of performing concurrent operations on a single Geogig repository.
@@ -117,11 +112,6 @@ public class GeogigTransaction implements Context {
 
     public @Override WorkingTree workingTree() {
         return transactionWorkTree;
-    }
-
-    @Deprecated
-    public @Override StagingArea index() {
-        return stagingArea();
     }
 
     public @Override StagingArea stagingArea() {
@@ -208,20 +198,6 @@ public class GeogigTransaction implements Context {
 
     public List<ChangedRef> changedRefs() {
         return transactionRefDatabase.changedRefs();
-    }
-
-    /**
-     * The set of refs that have either changed since, or didn't exist at, the time the transaction
-     * was created.
-     */
-    public @Deprecated ImmutableSet<Ref> getChangedRefs() {
-        Set<String> changedRefNames = transactionRefDatabase.getChangedRefs();
-        Set<Ref> changedRefs = new HashSet<Ref>();
-        for (String name : changedRefNames) {
-            Ref ref = this.command(RefParse.class).setName(name).call().get();
-            changedRefs.add(ref);
-        }
-        return ImmutableSet.copyOf(changedRefs);
     }
 
     public @Override Context snapshot() {

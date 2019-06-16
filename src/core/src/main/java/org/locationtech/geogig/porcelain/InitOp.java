@@ -95,14 +95,6 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         return this;
     }
 
-    /**
-     * @deprecated must provide repository URI in {@link Hints} instead
-     */
-    @Deprecated
-    public InitOp setTarget(File targetRepoDirectory) {
-        return this;
-    }
-
     public InitOp setFilterFile(String filterFile) {
         this.filterFile = filterFile;
         return this;

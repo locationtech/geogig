@@ -43,10 +43,6 @@ public class DelegatingContext implements Context {
         return new WorkingTreeImpl(this);
     }
 
-    public @Override StagingArea index() {
-        return stagingArea();
-    }
-
     public @Override StagingArea stagingArea() {
         return new StagingAreaImpl(this);
     }

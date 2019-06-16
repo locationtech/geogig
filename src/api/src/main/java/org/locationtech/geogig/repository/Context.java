@@ -33,11 +33,6 @@ public interface Context extends CommandFactory {
     public WorkingTree workingTree();
 
     /**
-     * @deprecated use {@link #stagingArea()} instead
-     */
-    public StagingArea index();
-
-    /**
      * @return the {@link StagingArea} for this context
      */
     public StagingArea stagingArea();

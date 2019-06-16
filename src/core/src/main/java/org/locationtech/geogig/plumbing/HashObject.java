@@ -17,7 +17,6 @@ import static org.locationtech.geogig.model.RevObject.TYPE.TREE;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -88,18 +87,6 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
 
     public static ObjectId hashFeature(List<Object> values) {
         return hash(h -> HashObjectFunnels.feature(h, values));
-    }
-
-    @Deprecated
-    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
-            @Nullable SortedMap<Integer, Bucket> buckets) {
-
-        final List<Node> t = trees == null ? Collections.emptyList() : trees;
-        final List<Node> f = features == null ? Collections.emptyList() : features;
-        final Iterable<Bucket> b = buckets == null ? Collections.emptySet() : buckets.values();
-
-        return hash(h -> HashObjectFunnels.tree(h, t, f, b));
-
     }
 
     public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,

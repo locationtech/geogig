@@ -100,20 +100,4 @@ public class ConflictTest {
         assertTrue(conflictStr.contains(id3.toString()));
     }
 
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testValueOf() {
-        ObjectId id1 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
-        ObjectId id2 = ObjectId.valueOf("abc123000000000000001234567890abcdef0001");
-        ObjectId id3 = ObjectId.valueOf("abc123000000000000001234567890abcdef0002");
-        Conflict conflict = Conflict.valueOf(
-                "Points/1\t" + id1.toString() + "\t" + id2.toString() + "\t" + id3.toString());
-        assertEquals("Points/1", conflict.getPath());
-        assertEquals(id1, conflict.getAncestor());
-        assertEquals(id2, conflict.getOurs());
-        assertEquals(id3, conflict.getTheirs());
-
-        exception.expect(IllegalArgumentException.class);
-        Conflict.valueOf("Not a valid conflict format");
-    }
 }

@@ -16,8 +16,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
-import lombok.NonNull;
-
 /**
  * An identifier->object id mapping for an object
  * 
@@ -100,32 +98,5 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
         return RevObjectFactory.defaultInstance().createNode(getName(), newId, mdId, getType(),
                 newBounds, getExtraData());
-    }
-
-    /**
-     * @deprecated use {@link RevObjectFactory#createNode}
-     */
-    public static Node tree(final String name, final ObjectId oid, final ObjectId metadataId) {
-        return create(name, oid, metadataId, TYPE.TREE, null);
-    }
-
-    /**
-     * @deprecated use {@link RevObjectFactory#createNode}
-     */
-    public static Node create(final String name, final ObjectId oid, final ObjectId metadataId,
-            final TYPE type, @Nullable final Envelope bounds) {
-
-        return create(name, oid, metadataId, type, bounds, null);
-    }
-
-    /**
-     * @deprecated use {@link RevObjectFactory#createNode}
-     */
-    public static Node create(final @NonNull String name, final @NonNull ObjectId oid,
-            final @NonNull ObjectId metadataId, final @NonNull TYPE type, @Nullable Envelope bounds,
-            @Nullable Map<String, Object> extraData) {
-
-        return RevObjectFactory.defaultInstance().createNode(name, oid, metadataId, type, bounds,
-                extraData);
     }
 }

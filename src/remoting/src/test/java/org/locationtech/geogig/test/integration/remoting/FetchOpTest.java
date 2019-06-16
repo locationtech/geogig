@@ -203,7 +203,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     public void testFetchAll() throws Exception {
         // fetch from the remote
         FetchOp fetch = fetchOp();
-        TransferSummary summary = fetch.setAll(true).call();
+        TransferSummary summary = fetch.setAllRemotes(true).call();
         assertEquals(2, summary.getRefDiffs().size());
         assertTrue(summary.getRefDiffs().containsKey(origin.getFetchURL()));
         assertTrue(summary.getRefDiffs().containsKey(upstream.getFetchURL()));

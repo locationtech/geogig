@@ -101,13 +101,6 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     private boolean closeOnDispose = true;
 
-    /**
-     * Indicates if layers from this datastore should automatically index time/elevation dimension
-     * attributes
-     **/
-    @Deprecated
-    private boolean autoIndexing;
-
     public GeoGigDataStore(@NonNull Repository repository) {
         super();
         this.repository = repository;
@@ -539,24 +532,6 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         Index index = command.setTreeRefSpec(featureTreePath).setExtraAttributes(indexAttributes)
                 .setIndexHistory(true).call();
         return Optional.of(index.info().getId());
-    }
-
-    /**
-     * @deprecated autoindexing is a geoserver only parameter and is handled by the geogig geoserver
-     *             plugin by inspecting the datastore configuration. Scheduled for removal at 1.2
-     */
-    @Deprecated
-    public void setAutoIndexing(boolean autoIndexing) {
-        this.autoIndexing = autoIndexing;
-    }
-
-    /**
-     * @deprecated autoindexing is a geoserver only parameter and is handled by the geogig geoserver
-     *             plugin by inspecting the datastore configuration. Scheduled for removal at 1.2
-     */
-    @Deprecated
-    public boolean getAutoIndexing() {
-        return this.autoIndexing;
     }
 
     Repository getRepository() {

@@ -85,11 +85,6 @@ public class GuiceContext implements Context {
         return getDecoratedInstance(WorkingTree.class);
     }
 
-    @Deprecated
-    public @Override StagingArea index() {
-        return stagingArea();
-    }
-
     public @Override StagingArea stagingArea() {
         return getDecoratedInstance(StagingArea.class);
     }
@@ -122,7 +117,6 @@ public class GuiceContext implements Context {
         return getDecoratedInstance(objectDatabase().getGraphDatabase());
     }
 
-    @Deprecated
     public @Override Repository repository() {
         return getDecoratedInstance(Repository.class);
     }

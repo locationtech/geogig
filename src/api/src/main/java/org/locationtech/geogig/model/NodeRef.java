@@ -162,14 +162,6 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     }
 
     /**
-     * @deprecated use {@link #getObjectId()} instead
-     */
-    @Deprecated
-    public ObjectId objectId() {
-        return node.getObjectId();
-    }
-
-    /**
      * @return the {@link ObjectId} of the {@code Node} this object points to
      */
     public @Override ObjectId getObjectId() {

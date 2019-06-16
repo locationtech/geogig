@@ -28,8 +28,6 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableSortedMap;
-
 public class RevTreeTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -83,10 +81,6 @@ public class RevTreeTest {
                 return new ArrayList<>(features);
             }
 
-            public @Override SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.copyOf(buckets);
-            }
-
             public @Override Iterable<Bucket> getBuckets() {
                 return buckets.values();
             }
@@ -128,10 +122,6 @@ public class RevTreeTest {
                 return Collections.emptyList();
             }
 
-            public @Override SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.of();
-            }
-
             public @Override Iterable<Bucket> getBuckets() {
                 return Collections.emptySet();
             }
@@ -163,10 +153,6 @@ public class RevTreeTest {
 
             public @Override List<Node> features() {
                 return Collections.emptyList();
-            }
-
-            public @Override SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.of();
             }
 
             public @Override Iterable<Bucket> getBuckets() {
@@ -216,10 +202,6 @@ public class RevTreeTest {
 
             public @Override List<Node> features() {
                 return new ArrayList<>(features);
-            }
-
-            public @Override SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.of();
             }
 
             public @Override Iterable<Bucket> getBuckets() {

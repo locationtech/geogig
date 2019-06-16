@@ -11,7 +11,6 @@ package org.locationtech.geogig.flatbuffers;
 
 import java.util.Collections;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.locationtech.geogig.flatbuffers.generated.v1.LeafTree;
@@ -22,7 +21,6 @@ import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableSortedMap;
 
 import lombok.NonNull;
 
@@ -81,10 +79,6 @@ final class FBLeafTree extends FBRevObject<LeafTree> implements RevTree {
         return 0;
     }
 
-    public @Deprecated @Override ImmutableSortedMap<Integer, Bucket> buckets() {
-        return ImmutableSortedMap.of();
-    }
-
     public @Override Iterable<Bucket> getBuckets() {
         return Collections.emptySet();
     }
@@ -102,10 +96,6 @@ final class FBLeafTree extends FBRevObject<LeafTree> implements RevTree {
         for (int nodeIndex = treesSize; nodeIndex < numNodes; nodeIndex++) {
             consumer.accept(FBNode.featureNode(getTable(), nodeIndex));
         }
-    }
-
-    public @Deprecated @Override void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
-        // no-op
     }
 
     public @Override void forEachBucket(Consumer<Bucket> consumer) {

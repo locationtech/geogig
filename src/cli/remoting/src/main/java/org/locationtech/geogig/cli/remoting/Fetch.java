@@ -81,7 +81,7 @@ public class Fetch extends AbstractCommand implements CLICommand {
         try {
             FetchOp fetch = cli.getGeogig().command(FetchOp.class);
             fetch.setProgressListener(cli.getProgressListener());
-            fetch.setAll(all).setPrune(prune).setFullDepth(fulldepth);
+            fetch.setAllRemotes(all).setPrune(prune).setFullDepth(fulldepth);
             fetch.setDepth(depth);
             fetch.setFetchIndexes(withIndexes);
 

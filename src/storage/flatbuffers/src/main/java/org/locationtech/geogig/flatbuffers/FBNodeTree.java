@@ -10,7 +10,6 @@
 package org.locationtech.geogig.flatbuffers;
 
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -21,7 +20,6 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 
 import lombok.NonNull;
 
@@ -67,15 +65,6 @@ final class FBNodeTree extends FBRevObject<NodeTree> implements RevTree {
         return getTable().bucketsLength();
     }
 
-    public @Deprecated @Override ImmutableSortedMap<Integer, Bucket> buckets() {
-        if (getTable().bucketsLength() == 0) {
-            return ImmutableSortedMap.of();
-        }
-        ImmutableSortedMap.Builder<Integer, Bucket> builder = ImmutableSortedMap.naturalOrder();
-        forEachBucket(bucket -> builder.put(bucket.getIndex(), bucket));
-        return builder.build();
-    }
-
     public @Override Iterable<Bucket> getBuckets() {
         final int size = bucketsSize();
         return () -> IntStream.range(0, size).mapToObj(this::getByIndex).iterator();
@@ -96,10 +85,6 @@ final class FBNodeTree extends FBRevObject<NodeTree> implements RevTree {
 
     public @Override void forEachBucket(Consumer<Bucket> consumer) {
         getBuckets().forEach(consumer);
-    }
-
-    public @Deprecated @Override void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
-        getBuckets().forEach(b -> consumer.accept(Integer.valueOf(b.getIndex()), b));
     }
 
     public @Override Optional<Bucket> getBucket(final int bucketIndex) {

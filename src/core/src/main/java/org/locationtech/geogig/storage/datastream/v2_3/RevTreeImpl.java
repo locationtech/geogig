@@ -16,7 +16,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.AbstractRevObject;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 
 import lombok.NonNull;
 
@@ -63,12 +62,7 @@ class RevTreeImpl implements RevTree {
         return RevTreeFormat.features(data);
     }
 
-    @Deprecated
-    public @Override ImmutableSortedMap<Integer, Bucket> buckets() {
-        return RevTreeFormat.buckets(data);
-    }
-
     public @Override Iterable<Bucket> getBuckets() {
-        return buckets().values();
+        return RevTreeFormat.buckets(data).values();
     }
 }

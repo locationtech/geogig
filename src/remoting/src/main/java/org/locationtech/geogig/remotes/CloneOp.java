@@ -153,12 +153,6 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
         return cloneRepo;
     }
 
-    @Deprecated
-    public CloneOp setRepositoryURL(String uri) {
-        this.remoteURI = URI.create(uri);
-        return this;
-    }
-
     /**
      * @param remoteName the name to assign to the remote repository; defaults to {@code origin}
      */

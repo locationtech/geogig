@@ -41,7 +41,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
@@ -182,10 +181,6 @@ public class HashObjectFunnelsTest {
                 return ImmutableList.copyOf(features);
             }
 
-            public @Override SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.copyOf(buckets);
-            }
-
             public @Override Iterable<Bucket> getBuckets() {
                 return buckets.values();
             }
@@ -214,7 +209,7 @@ public class HashObjectFunnelsTest {
 
         assertNotSame(id1, id2);
 
-        ObjectId treeHash = HashObjectFunnels.hashTree(trees, features, buckets);
+        ObjectId treeHash = HashObjectFunnels.hashTree(trees, features, buckets.values());
 
         assertEquals(treeHash, id2);
 

@@ -42,7 +42,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
-import org.locationtech.geogig.model.impl.LegacyTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
@@ -184,11 +183,11 @@ public abstract class CanonicalClusteringStrategyTest {
         final List<Node> addedNodes = nodes.subList(5_000, nodes.size());
         final RevTree original;
         {
-            LegacyTreeBuilder legacyBuilder = new LegacyTreeBuilder(store);
+            RevTreeBuilder builder = RevTreeBuilder.builder(store);
             for (Node n : origNodes) {
-                legacyBuilder.put(n);
+                builder.put(n);
             }
-            original = legacyBuilder.build();
+            original = builder.build();
         }
         // original = manuallyCreateBucketsTree();
         store.put(original);
@@ -219,11 +218,11 @@ public abstract class CanonicalClusteringStrategyTest {
         final List<Node> addedNodes = nodes.subList(3_000, nodes.size());
         final RevTree original;
         {
-            LegacyTreeBuilder legacyBuilder = new LegacyTreeBuilder(store);
+            RevTreeBuilder builder = RevTreeBuilder.builder(store);
             for (Node n : origNodes) {
-                legacyBuilder.put(n);
+                builder.put(n);
             }
-            original = legacyBuilder.build();
+            original = builder.build();
         }
         // original = manuallyCreateBucketsTree();
         store.put(original);
@@ -299,11 +298,11 @@ public abstract class CanonicalClusteringStrategyTest {
         final List<Node> removeNodes = nodes.subList(100, 500);
         final RevTree original;
         {
-            LegacyTreeBuilder legacyBuilder = new LegacyTreeBuilder(store);
+            RevTreeBuilder builder = RevTreeBuilder.builder(store);
             for (Node n : nodes) {
-                legacyBuilder.put(n);
+                builder.put(n);
             }
-            original = legacyBuilder.build();
+            original = builder.build();
         }
         // original = manuallyCreateBucketsTree();
         store.put(original);
@@ -336,11 +335,11 @@ public abstract class CanonicalClusteringStrategyTest {
         final List<Node> removeNodes = nodes.subList(100, 32700);
         final RevTree original;
         {
-            LegacyTreeBuilder legacyBuilder = new LegacyTreeBuilder(store);
+            RevTreeBuilder builder = RevTreeBuilder.builder(store);
             for (Node n : nodes) {
-                legacyBuilder.put(n);
+                builder.put(n);
             }
-            original = legacyBuilder.build();
+            original = builder.build();
         }
         // original = manuallyCreateBucketsTree();
         store.put(original);

@@ -80,17 +80,10 @@ Scenario: Show diff between working tree and index, for a single feature whose f
 Scenario: Show diff between working tree and index with bounds
     Given I have a repository
       And I stage 6 features   
-     When I run the command "diff --bounds --crs EPSG:2163"
+     When I run the command "diff --bounds"
      Then the response should contain "right: 1.000000,1.000000,6.000000,6.000000"
       And the response should contain "both:  1.000000,1.000000,6.000000,6.000000"
-      And the response should contain "CRS:   EPSG:2163"
       
-Scenario: Show diff between working tree and index with bounds
-    Given I have a repository
-      And I stage 6 features   
-     When I run the command "diff --bounds --crs EPSG:71738191"
-     Then the response should contain "Unrecognized CRS: 'EPSG:71738191'"
-
 Scenario: Show diff between working tree and index with the count argument
     Given I have a repository
       And I stage 6 features   

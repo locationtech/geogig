@@ -111,4 +111,6 @@ public interface RepositoryResolver {
     @NonNull
     ConflictsDatabase resolveConflictsDatabase(@NonNull URI repoURI, Hints hints);
 
+    URI getRootURI(URI repoURI);
+
 }

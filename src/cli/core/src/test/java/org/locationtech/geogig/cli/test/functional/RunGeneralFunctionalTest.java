@@ -24,5 +24,5 @@ import cucumber.api.junit.Cucumber;
         , strict = true//
         , features = { "src/test/resources/features/general" })
 @RunWith(Cucumber.class)
-public class RunGenralFunctionalTest {
+public class RunGeneralFunctionalTest {
 }

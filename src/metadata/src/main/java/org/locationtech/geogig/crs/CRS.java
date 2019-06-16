@@ -113,11 +113,11 @@ public class CRS {
 
     private static Map<Integer, CoordinateReferenceSystem> load(BufferedReader reader,
             String authorityPrefix) {
-        long now = System.currentTimeMillis();
+        // long now = System.currentTimeMillis();
         Map<Integer, CoordinateReferenceSystem> map = reader.lines().collect(
                 Collectors.toMap(CRS::parseCode, line -> CRS.parseCrs(authorityPrefix, line)));
-        long t = System.currentTimeMillis() - now;
-        System.err.printf("Loaded %d %s CRS's in %,dms\n", map.size(), authorityPrefix, t);
+        // long t = System.currentTimeMillis() - now;
+        // System.err.printf("Loaded %d %s CRS's in %,dms\n", map.size(), authorityPrefix, t);
         return map;
     }
 

@@ -3,12 +3,14 @@ Feature: "init" command
     As a repository Owner
     I want to create a new repository on a directory of my choice
 
+  @FileSystemReposOnly
   Scenario: Create repository in the current empty directory
     Given I am in an empty directory
      When I run the command "init"
      Then it should answer "Initialized empty Geogig repository in ${currentdir}/.geogig"
       And the repository shall exist
 
+  @FileSystemReposOnly
   Scenario: Create repository specifying initial configuration
     Given I am in an empty directory
      When I run the command "init --config foo.bar=baz"
@@ -16,6 +18,7 @@ Feature: "init" command
      When I run the command "config foo.bar"
      Then it should answer "baz"
 
+  @FileSystemReposOnly
   Scenario: Create repository specifying the target directory
     Given I am in an empty directory
      When I run the command "init roads"

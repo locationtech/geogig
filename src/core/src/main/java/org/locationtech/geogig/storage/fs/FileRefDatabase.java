@@ -64,7 +64,8 @@ public class FileRefDatabase extends AbstractRefDatabase {
         }
         File refs = this.refsDirectory;
         if (!refs.isDirectory()) {
-            checkWritable();
+            Preconditions.checkState(!isReadOnly(),
+                    "Database does not exist and readOnly access requested");
             if (!refs.mkdir()) {
                 throw new IllegalStateException(
                         "Cannot create refs directory '" + refs.getAbsolutePath() + "'");

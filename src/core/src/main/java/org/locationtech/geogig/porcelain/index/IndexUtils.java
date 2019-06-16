@@ -104,9 +104,12 @@ public class IndexUtils {
         final FeatureType type = featureType.type();
         final String typeName = type.getName().getLocalPart();
         for (String attname : atts) {
-            PropertyDescriptor descriptor = type.getDescriptor(attname);
-            checkArgument(null != descriptor, "FeatureType %s does not define attribute '%s'",
-                    typeName, attname);
+            try {
+                type.getDescriptor(attname);
+            } catch (NoSuchElementException e) {
+                throw new IllegalArgumentException(String.format(
+                        "FeatureType %s does not define attribute '%s'", typeName, attname));
+            }
         }
         return atts;
     }

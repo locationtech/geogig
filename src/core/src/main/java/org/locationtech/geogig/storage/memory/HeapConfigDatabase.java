@@ -58,6 +58,7 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
     }
 
     public @Override Optional<String> getGlobal(String key) {
+        checkKeyFormat(key);
         return ofNullable(global.get(key));
     }
 
@@ -204,7 +205,7 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         }
         int firstQualifierIndex = qualifiedKey.indexOf('.');
         if (firstQualifierIndex < 1) {
-            throw new ConfigException(StatusCode.SECTION_OR_NAME_NOT_PROVIDED);
+            throw new ConfigException(StatusCode.SECTION_OR_KEY_INVALID);
         }
         if (qualifiedKey.length() == firstQualifierIndex + 1) {
             throw new ConfigException(StatusCode.SECTION_OR_NAME_NOT_PROVIDED);

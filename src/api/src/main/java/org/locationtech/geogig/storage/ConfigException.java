@@ -47,4 +47,5 @@ public class ConfigException extends RuntimeException {
         super(e);
         this.statusCode = statusCode;
     }
+
 }

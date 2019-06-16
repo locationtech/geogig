@@ -120,13 +120,14 @@ public class RepositoryImpl implements Repository {
         objectDatabase = context.objectDatabase();
         indexDatabase = context.indexDatabase();
         conflictsDatabase = context.conflictsDatabase();
-        graphDatabase = objectDatabase.getGraphDatabase();
 
         configDatabase.open();
         refDatabase.open();
         objectDatabase.open();
         indexDatabase.open();
         conflictsDatabase.open();
+
+        graphDatabase = objectDatabase.getGraphDatabase();
         graphDatabase.open();
 
         for (RepositoryListener l : listeners) {

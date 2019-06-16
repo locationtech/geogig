@@ -69,7 +69,7 @@ Scenario: Try to show the description of a feature using only its path
      When I run the command "show HEAD:Points/Points.1 --raw"          
      Then the response should contain "STRING"
       And the response should contain "INTEGER"
-      And the response should contain "POINT urn:ogc:def:crs:EPSG::4326"
+      And the response should contain "POINT EPSG:4326"
       And the response should contain "sp"
       And the response should contain "pp"
       And the response should contain "ip"

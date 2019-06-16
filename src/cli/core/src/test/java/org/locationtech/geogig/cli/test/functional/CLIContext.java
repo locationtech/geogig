@@ -68,7 +68,7 @@ public class CLIContext {
      * If non null, {@link #configureRepository()} will use it as the repository URI, otherwise
      * it'll use the platform's current directory
      */
-    public final URI repositoryURI;
+    private final URI repositoryURI;
 
     public final TestPlatform platform;
 
@@ -109,7 +109,7 @@ public class CLIContext {
 
     public void configureRepository() throws Exception {
         geogigCLI.close();
-        URI uri = repositoryURI;
+        URI uri = getRepositoryURI();
         Preconditions.checkState(uri != null, "repository URI not set");
 
         geogigCLI.setPlatform(platform);
@@ -307,5 +307,9 @@ public class CLIContext {
             features.put(index ? "index" : ref.getParentPath(), ref.name());
         }
         return features;
+    }
+
+    public URI getRepositoryURI() {
+        return repositoryURI;
     }
 }

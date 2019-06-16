@@ -29,6 +29,7 @@ import org.opengis.filter.Filter;
 
 import com.google.common.base.Preconditions;
 
+import cucumber.api.Scenario;
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
 
@@ -46,17 +47,17 @@ public class GeoPkgStepDefinitions {
     private TemporaryFolder tempFolder;
 
     @cucumber.api.java.Before
-    public void before() throws Throwable {
+    public void before(Scenario scenario) throws Throwable {
         contextProvider = CLIContextProvider.get();
-        contextProvider.before();
+        contextProvider.before(scenario);
         this.localRepo = contextProvider.getOrCreateRepositoryContext("localrepo");
         tempFolder = new TemporaryFolder();
         tempFolder.create();
     }
 
     @cucumber.api.java.After
-    public void after() {
-        contextProvider.after();
+    public void after(Scenario scenario) {
+        contextProvider.after(scenario);
         tempFolder.delete();
     }
 

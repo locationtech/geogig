@@ -9,10 +9,12 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
-import java.io.File;
 import java.net.URI;
 
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.memory.MemoryRepositoryResolver;
+
+import cucumber.api.Scenario;
 
 /**
  * A repository URI builder for functional tests to create repos of a specific storage backend kind.
@@ -29,14 +31,18 @@ public abstract class TestRepoURIBuilder {
     /**
      * Called before a test suite is run, may be used to set up temporary resources needed by the
      * storage backend, like connection pools, temporary folders, etc.
+     * 
+     * @param scenario
      */
-    public abstract void before() throws Throwable;
+    public abstract void before(Scenario scenario) throws Throwable;
 
     /**
      * Called once the test case finished to release any potential temporary resource created by
      * this URI builder.
+     * 
+     * @param scenario
      */
-    public abstract void after();
+    public abstract void after(Scenario scenario);
 
     /**
      * Creates a repository URI named {@code name} for the specific kind of storage backend the CLI
@@ -55,19 +61,22 @@ public abstract class TestRepoURIBuilder {
     }
 
     private static final class DefaultTestRepoURIBuilder extends TestRepoURIBuilder {
-        public @Override void before() {
 
+        private String contextName;
+
+        public @Override void before(Scenario scenario) {
+            this.contextName = scenario.getName();
         }
 
-        public @Override void after() {
-
+        public @Override void after(Scenario scenario) {
+            MemoryRepositoryResolver.reset();
         }
 
         public @Override URI newRepositoryURI(String name, Platform platform) {
-            final File dir = new File(platform.pwd(), name);
-            // dir.mkdir();
-            // platform.setWorkingDir(dir);
-            return dir.toURI();
+            MemoryRepositoryResolver resolver = new MemoryRepositoryResolver();
+            URI root = resolver.createRootURI(this.contextName);
+            URI repoURI = resolver.buildRepoURI(root, name);
+            return repoURI;
         }
 
         public @Override URI buildRootURI(Platform platform) {

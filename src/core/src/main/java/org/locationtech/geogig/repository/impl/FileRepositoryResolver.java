@@ -248,6 +248,11 @@ public abstract class FileRepositoryResolver implements RepositoryResolver {
         }
     }
 
+    public @Override URI getRootURI(@NonNull URI repoURI) {
+        File dotgig = resolveDotGeogigDirectory(repoURI);
+        return dotgig.getParentFile().getParentFile().toURI();
+    }
+
     protected File resolveDotGeogigDirectory(@NonNull URI repoURI) {
         File dir = toFile(repoURI);
         if (!".geogig".equals(dir.getName())) {

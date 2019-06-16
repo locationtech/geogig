@@ -8,7 +8,7 @@ Feature: "index update" command
       And I have several commits
      When I run the command "index create --tree Points"
      Then the response should contain "Index created successfully"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:
@@ -20,7 +20,7 @@ Feature: "index update" command
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
       And the response should contain the index ID for tree "Points"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:
@@ -40,7 +40,7 @@ Feature: "index update" command
       And I have several branches
      When I run the command "index create --tree Points"
      Then the response should contain "Index created successfully"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:
@@ -53,7 +53,7 @@ Feature: "index update" command
       And the response should contain "Size: 3"
       And the response should contain "Size: 2"
       And the response should contain the index ID for tree "Points"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:
@@ -84,7 +84,7 @@ Feature: "index update" command
       And I have several commits
      When I run the command "index create --tree Points --extra-attributes ip"
      Then the response should contain "Index created successfully"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repository's "HEAD:Points" index should track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:
@@ -96,7 +96,7 @@ Feature: "index update" command
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
       And the response should contain the index ID for tree "Points"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repository's "HEAD:Points" index should track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:
@@ -110,7 +110,7 @@ Feature: "index update" command
       And I have several commits
      When I run the command "index create --tree Points --extra-attributes ip"
      Then the response should contain "Index created successfully"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repository's "HEAD:Points" index should track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:
@@ -122,7 +122,7 @@ Feature: "index update" command
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
       And the response should contain the index ID for tree "Points"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:
@@ -231,7 +231,7 @@ Feature: "index update" command
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 1"
       And the response should contain the index ID for tree "Points"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:

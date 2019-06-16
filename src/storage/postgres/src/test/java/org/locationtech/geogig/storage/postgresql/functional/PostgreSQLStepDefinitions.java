@@ -20,6 +20,7 @@ import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 
 import com.google.common.collect.Lists;
 
+import cucumber.api.Scenario;
 import cucumber.runtime.java.StepDefAnnotation;
 
 /**
@@ -41,11 +42,11 @@ public class PostgreSQLStepDefinitions {
     static final class PGTestRepoURIBuilder extends TestRepoURIBuilder {
         private List<PGTemporaryTestConfig> testConfigs = Lists.newArrayList();
 
-        public @Override void before() throws Throwable {
+        public @Override void before(Scenario scenario) throws Throwable {
             // nothing to do
         }
 
-        public @Override void after() {
+        public @Override void after(Scenario scenario) {
             for (PGTemporaryTestConfig testConfig : testConfigs) {
                 if (testConfig != null) {
                     testConfig.after();

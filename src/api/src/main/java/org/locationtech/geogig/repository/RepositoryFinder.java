@@ -80,7 +80,7 @@ public class RepositoryFinder {
         for (RepositoryResolver resolverImpl : resolvers) {
             final String resolverClassName = resolverImpl.getClass().getName();
             if (!DISABLED_RESOLVERS.contains(resolverClassName)
-                    && resolverImpl.canHandle(repoURI)) {
+                    && resolverImpl.canHandleURIScheme(repoURI.getScheme())) {
                 resolver = resolverImpl;
                 break;
             }
@@ -88,6 +88,10 @@ public class RepositoryFinder {
         Preconditions.checkArgument(resolver != null,
                 "No repository initializer found capable of handling this kind of URI: %s",
                 repoURI.getScheme());
+
+        Preconditions.checkArgument(resolver.canHandle(repoURI),
+                "RepositoryResolver %s can't handle the provided URI",
+                resolver.getClass().getSimpleName());
         return resolver;
     }
 

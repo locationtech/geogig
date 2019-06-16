@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.test.functional;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.feature;
@@ -41,6 +42,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.hamcrest.core.StringContains;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
@@ -70,6 +72,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryFinder;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
@@ -113,53 +116,43 @@ public class DefaultStepDefinitions {
             s = s.replace("\"", "");
         }
         if (s.contains("${repoURI}")) {
-            URI uri = localRepo.repositoryURI;
+            URI uri = localRepo.getRepositoryURI();
             s = s.replace("${repoURI}", uri.toString());
         }
         if (s.contains("${localrepo}")) {
-            URI uri = localRepo.repositoryURI;
+            URI uri = localRepo.getRepositoryURI();
             s = s.replace("${localrepo}", uri.toString());
         }
         if (s.contains("${remoterepo}")) {
             CLIContext remote = contextProvider.getRepositoryContext("remoterepo");
-            URI remoteURI = remote.repositoryURI;
+            URI remoteURI = remote.getRepositoryURI();
             s = s.replace("${remoterepo}", remoteURI.toString());
         }
         if (s.contains("${remote repo}")) {
             CLIContext remote = contextProvider.getRepositoryContext("remote repo");
-            URI remoteURI = remote.repositoryURI;
+            URI remoteURI = remote.getRepositoryURI();
             s = s.replace("${remote repo}", remoteURI.toString());
         }
         if (s.contains("${rootRepoURI}")) {
-            URI rootRepoURI = contextProvider.getURIBuilder().buildRootURI(localRepo.platform);
+            URI repoURI = localRepo.getRepositoryURI();
+            RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(repoURI);
+            URI rootRepoURI = resolver.getRootURI(repoURI);
             s = s.replace("${rootRepoURI}", rootRepoURI.toString());
         }
         return s;
     }
 
-    /**
-     * Initialized method for cucumber tests/scenarios annotated with {@code @FileSystemReposOnly};
-     * runs after {@link #before()} and replaces the {@link TestRepoURIBuilder} potentially
-     * overwritten by another steps definition class by the default one that sets up {@code file://}
-     * URI's.
-     */
-    @cucumber.api.java.Before(value = "@FileSystemReposOnly", order = 2)
-    public void beforeFileOnlyTest() throws Throwable {
-        // force using file based repos only
-        CLIContextProvider provider = CLIContextProvider.get();
-        provider.setURIBuilder(TestRepoURIBuilder.createDefault());
-    }
-
-    @cucumber.api.java.Before(order = 1000) // order = 1000 to make sure it runs the latest if the
-                                            // @Before annotated methods
+    // order = 1000 to make sure it runs the latest if the
+    // @Before annotated methods
+    @cucumber.api.java.Before(order = 1000)
     public void before(Scenario scenario) throws Throwable {
         contextProvider = CLIContextProvider.get();
         if (contextProvider.getURIBuilder() == null) {
             contextProvider.setURIBuilder(TestRepoURIBuilder.createDefault());
         }
-        LOG.info("'{}': Using URIBuilder {}", scenario.getName(),
+        LOG.debug("'{}': Using URIBuilder {}", scenario.getName(),
                 contextProvider.getURIBuilder().getClass().getSimpleName());
-        contextProvider.before();
+        contextProvider.before(scenario);
         this.localRepo = contextProvider.getOrCreateRepositoryContext("localrepo");
 
         RevFeatureType rft = RevFeatureType.builder().type(TestFeatures.pointsType).build();
@@ -170,8 +163,8 @@ public class DefaultStepDefinitions {
     }
 
     @cucumber.api.java.After
-    public void after() {
-        contextProvider.after();
+    public void after(Scenario scenario) {
+        contextProvider.after(scenario);
     }
 
     private URI resolveURI(String repoParam) {
@@ -228,8 +221,7 @@ public class DefaultStepDefinitions {
         // .replaceAll("\\\\", "/");
         expected = replaceKnownVariables(expected).toLowerCase();
 
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/").trim().toLowerCase();
+        String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/").trim().toLowerCase();
         assertEquals(expected, actual);
     }
 
@@ -237,26 +229,22 @@ public class DefaultStepDefinitions {
     public void the_response_should_contain(String expected) throws Throwable {
 
         expected = replaceKnownVariables(expected);
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/");
-        System.err.println(actual);
-        assertTrue("'" + actual + "' does not contain '" + expected + "'",
-                actual.contains(expected));
+        String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/");
+
+        assertThat(actual, StringContains.containsString(expected));
     }
 
     @Then("^the response should not contain \"([^\"]*)\"$")
     public void the_response_should_not_contain(String expected) throws Throwable {
         expected = replaceKnownVariables(expected);
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/");
+        String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/");
         assertFalse(actual, actual.contains(expected));
     }
 
     @Then("^the response should contain variable \"([^\"]*)\"$")
     public void checkResponseTextContains(String substring) {
         substring = replaceVariables(substring);
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/");
+        String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/");
         assertTrue("'" + actual + "' does not contain '" + substring + "'",
                 actual.contains(substring));
     }
@@ -264,8 +252,7 @@ public class DefaultStepDefinitions {
     @Then("^the response should not contain variable \"([^\"]*)\"$")
     public void checkResponseTextDoesNotContain(String substring) {
         substring = replaceVariables(substring);
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/");
+        String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/");
         assertFalse(actual, actual.contains(substring));
     }
 
@@ -279,7 +266,7 @@ public class DefaultStepDefinitions {
     @Then("^the response should start with \"([^\"]*)\"$")
     public void the_response_should_start_with(String expected) throws Throwable {
         expected = replaceKnownVariables(expected);
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "");
+        String actual = localRepo.stdOut.toString();
         Assert.assertThat(actual, StringStartsWith.startsWith(expected));
         // assertTrue(actual, actual.startsWith(expected));
     }
@@ -339,7 +326,8 @@ public class DefaultStepDefinitions {
         List<String> output = localRepo.runAndParseCommand(true, "init");
         assertEquals(output.toString(), 1, output.size());
         assertNotNull(output.get(0));
-        assertTrue(output.get(0), output.get(0).startsWith("Initialized"));
+        String alloutput = output.toString();
+        assertThat(alloutput, StringContains.containsString("Initialized"));
     }
 
     @Given("^I have a merge conflict state$")
@@ -392,7 +380,7 @@ public class DefaultStepDefinitions {
 
     @Given("^I set up a hook$")
     public void I_set_up_a_hook() throws Throwable {
-        URI uri = localRepo.repositoryURI;
+        URI uri = localRepo.getRepositoryURI();
         if (!"file".equals(uri.getScheme())) {
             throw new RuntimeException(
                     "Script hooks are only supported for file repositories: " + uri);
@@ -411,8 +399,8 @@ public class DefaultStepDefinitions {
     public void i_clone_a_remote_repository() throws Throwable {
         there_is_a_remote_repository();
         CLIContext remoteRepo = contextProvider.getRepositoryContext("remoterepo");
-        URI remote = remoteRepo.repositoryURI;
-        URI local = localRepo.repositoryURI;
+        URI remote = remoteRepo.getRepositoryURI();
+        URI local = localRepo.getRepositoryURI();
         localRepo.runCommand(true, "clone", remote.toString(), local.toString());
         localRepo.runCommand(true, "config", "--global", "user.name", "John Doe");
         localRepo.runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
@@ -484,8 +472,7 @@ public class DefaultStepDefinitions {
         remoteRepo.runCommand(true, "commit -m Commit5");
         remoteRepo.runCommand(true, "tag " + tagName + " -m Created_" + tagName + "");
 
-        String actual = remoteRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/").trim().toLowerCase();
+        String actual = remoteRepo.stdOut.toString().replaceAll("\\\\", "/").trim().toLowerCase();
         assertTrue(actual, actual.startsWith("created tag " + tagName));
 
     }
@@ -508,7 +495,7 @@ public class DefaultStepDefinitions {
     public void I_have_a_repository_with_a_remote() throws Throwable {
         I_have_an_unconfigured_repository();
         CLIContext remoteRepo = createRemote("remoterepo");
-        final URI remoteURI = remoteRepo.repositoryURI;
+        final URI remoteURI = remoteRepo.getRepositoryURI();
 
         localRepo.runCommand(true, "config", "--global", "user.name", "John Doe");
         localRepo.runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
@@ -594,6 +581,17 @@ public class DefaultStepDefinitions {
         localRepo.runCommand(true, "commit -m Commit3");
         localRepo.insertAndAdd(points1_modified);
         localRepo.runCommand(true, "commit -m Commit4");
+    }
+
+    @Given("^I have ([0-9]*) commits$")
+    public void I_have_N_commits(final int ncommits) throws Throwable {
+        for (int c = 1; c <= ncommits; c++) {
+            Feature f = points1.createCopy("Points." + c);
+            f.setAttribute("sp", "Feature " + c);
+            localRepo.insertAndAdd(f);
+            localRepo.runCommand(true, "commit -m Commit-" + c);
+            System.err.println(localRepo.stdOut.toString());
+        }
     }
 
     @Given("^I have several branches")
@@ -696,8 +694,7 @@ public class DefaultStepDefinitions {
     @Given("^I create a detached branch")
     public void I_create_a_detached_branch() throws Throwable {
         localRepo.runCommand(true, "log --oneline");
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/");
+        String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/");
         String[] commitId = actual.split(" ");
         localRepo.runCommand(true, "checkout " + commitId[0]);
     }
@@ -718,8 +715,7 @@ public class DefaultStepDefinitions {
             fail();
         }
         String indexId = indexedTree.get().toString();
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/");
+        String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/");
         assertTrue("'" + actual + "' does not contain ID '" + indexId.substring(0, 8),
                 actual.contains(indexId.toString().substring(0, 8)));
     }
@@ -734,8 +730,7 @@ public class DefaultStepDefinitions {
             oid = indexInfo.get().getId();
         }
 
-        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
-                .replaceAll("\\\\", "/");
+        String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/");
         if (oid == null) {
             fail();
         } else {

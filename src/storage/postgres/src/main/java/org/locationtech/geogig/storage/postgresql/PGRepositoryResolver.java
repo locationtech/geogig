@@ -74,6 +74,13 @@ public class PGRepositoryResolver implements RepositoryResolver {
         return EnvironmentBuilder.buildRepoURI(properties, repoName);
     }
 
+    public @Override URI getRootURI(@NonNull URI repoURI) {
+        Preconditions.checkArgument(canHandle(repoURI));
+        Properties properties = EnvironmentBuilder.getRootURIProperties(repoURI);
+        URI rootURI = new EnvironmentBuilder(properties).build().toURI();
+        return rootURI;
+    }
+
     public @Override List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
         Properties properties = EnvironmentBuilder.getRootURIProperties(rootRepoURI);
         EnvironmentBuilder builder = new EnvironmentBuilder(properties);

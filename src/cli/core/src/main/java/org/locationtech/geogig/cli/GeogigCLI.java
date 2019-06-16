@@ -638,7 +638,9 @@ public class GeogigCLI {
 
         if (!unaliased.isPresent()) {
             // see if we can fall back to a file global config
-            if (repoURI == null || !"file".equals(uri.getScheme())) {
+            if (repoURI == null || !"file".equals(uri.getScheme())
+                    && RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("file")) {
+
                 try (ConfigDatabase global = RepositoryFinder.INSTANCE
                         .resolveConfigDatabase(platform.pwd().toURI(), context, true)) {
                     unaliased = global.getGlobal(configParam);

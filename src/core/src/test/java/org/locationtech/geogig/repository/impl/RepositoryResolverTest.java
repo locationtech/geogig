@@ -46,6 +46,10 @@ public class RepositoryResolverTest {
             return canHandleURIScheme(scheme);
         }
 
+        public @Override URI getRootURI(@NonNull URI repoURI) {
+            throw new UnsupportedOperationException();
+        }
+
         public @Override boolean canHandleURIScheme(String scheme) {
             return "test".equals(scheme);
         }

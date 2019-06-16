@@ -11,11 +11,15 @@ package org.locationtech.geogig.storage.memory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
@@ -24,6 +28,8 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -71,8 +77,8 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
             refs.open();
         }
 
-        public ConfigDatabase config(boolean readOnly) {
-            return new ConfigDatabaseDecorator(config, readOnly);
+        public ConfigDatabase config(boolean readOnly, boolean globalOnly) {
+            return new ConfigDatabaseDecorator(config, readOnly, globalOnly);
         }
 
         public ObjectDatabase objects(boolean readOnly) {
@@ -106,7 +112,9 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
     }
 
     public @Override boolean canHandle(@NonNull URI repoURI) {
-        return canHandleURIScheme(repoURI.getScheme()) && !Strings.isNullOrEmpty(repoURI.getHost());
+        String scheme = repoURI.getScheme();
+        String host = repoURI.getHost();
+        return canHandleURIScheme(scheme) && !Strings.isNullOrEmpty(host);
     }
 
     public @Override boolean canHandleURIScheme(String scheme) {
@@ -121,18 +129,54 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
         try {
             String base = new URI(rootRepoURI.getScheme(), rootRepoURI.getHost(),
                     rootRepoURI.getPath(), null).toString() + "/";
+            repoName = URLEncoder.encode(repoName, "UTF-8");
             return URI.create(base + repoName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public URI createRootURI(@NonNull String contextName) {
+        final URI base;
+        try {
+            String scheme = "memory";
+            String host = "local";
+            String path = "/" + URLEncoder.encode(contextName, "UTF-8").replace('+', '_');
+            String fragment = null;
+            base = new URI(scheme, host, path, fragment);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return base;
+    }
+
+    public @Override URI getRootURI(@NonNull URI repoURI) {
+        Preconditions.checkArgument(canHandleURIScheme(repoURI.getScheme()));
+        final URI base;
+        try {
+            String scheme = repoURI.getScheme();
+            String host = repoURI.getHost();
+            String path = repoURI.getPath();
+            String fragment = repoURI.getFragment();
+
+            String parentPath = NodeRef.parentPath(path);
+
+            base = new URI(scheme, host, parentPath, fragment);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+        return base;
     }
 
     public @Override List<String> listRepoNamesUnderRootURI(@NonNull URI rootRepoURI) {
         Preconditions.checkArgument(canHandleURIScheme(rootRepoURI.getScheme()));
         final String base;
         try {
-            base = new URI(rootRepoURI.getScheme(), rootRepoURI.getHost(), rootRepoURI.getPath(),
-                    null).toString() + "/";
+            String scheme = rootRepoURI.getScheme();
+            String host = rootRepoURI.getHost();
+            String path = rootRepoURI.getPath();
+            String fragment = rootRepoURI.getFragment();
+            base = new URI(scheme, host, path, fragment).toString() + "/";
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -190,7 +234,7 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
 
     public @Override ConfigDatabase resolveConfigDatabase(@NonNull URI repoURI,
             @NonNull Context repoContext, boolean rootUri) {
-        return getStores(repoURI).config(false);
+        return getStores(repoURI).config(false, rootUri);
     }
 
     public @Override ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI, Hints hints) {
@@ -207,31 +251,6 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
 
     public @Override ConflictsDatabase resolveConflictsDatabase(@NonNull URI repoURI, Hints hints) {
         return getStores(repoURI).conflicts(Hints.isRepoReadOnly(hints));
-    }
-
-    private static class ConfigDatabaseDecorator extends ForwardingConfigDatabase {
-        private boolean open, ro;
-
-        public ConfigDatabaseDecorator(@NonNull ConfigDatabase odb, boolean readOnly) {
-            super(odb);
-            this.ro = readOnly;
-        }
-
-        public @Override boolean isReadOnly() {
-            return ro;
-        }
-
-        public @Override boolean isOpen() {
-            return open;
-        }
-
-        public @Override void open() {
-            open = true;
-        }
-
-        public @Override void close() {
-            open = false;
-        }
     }
 
     private static class ObjectDatabaseDecorator extends ForwardingObjectDatabase {
@@ -331,4 +350,82 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
         }
     }
 
+    private static class ConfigDatabaseDecorator extends ForwardingConfigDatabase {
+        private boolean open, ro, globalOnly;
+
+        public ConfigDatabaseDecorator(@NonNull ConfigDatabase odb, boolean readOnly,
+                boolean globalOnly) {
+            super(odb);
+            this.ro = readOnly;
+            this.globalOnly = globalOnly;
+        }
+
+        private void checkLocal() {
+            if (this.globalOnly) {
+                throw new ConfigException(StatusCode.INVALID_LOCATION);
+            }
+        }
+
+        public @Override boolean isReadOnly() {
+            return ro;
+        }
+
+        public @Override boolean isOpen() {
+            return open;
+        }
+
+        public @Override void open() {
+            open = true;
+        }
+
+        public @Override void close() {
+            open = false;
+        }
+
+        public @Override Optional<String> get(String key) {
+            checkLocal();
+            return super.get(key);
+        }
+
+        public @Override <T> Optional<T> get(String key, Class<T> c) {
+            checkLocal();
+            return super.get(key, c);
+        }
+
+        public @Override Map<String, String> getAll() {
+            checkLocal();
+            return super.getAll();
+        }
+
+        public @Override Map<String, String> getAllSection(String section) {
+            checkLocal();
+            return super.getAllSection(section);
+        }
+
+        public @Override List<String> getAllSubsections(String section) {
+            checkLocal();
+            return super.getAllSubsections(section);
+        }
+
+        public @Override void put(String key, Object value) {
+            checkLocal();
+            super.put(key, value);
+        }
+
+        public @Override void putSection(@NonNull String section,
+                @NonNull Map<String, String> kvp) {
+            checkLocal();
+            super.putSection(section, kvp);
+        }
+
+        public @Override void remove(String key) {
+            checkLocal();
+            super.remove(key);
+        }
+
+        public @Override void removeSection(String key) {
+            checkLocal();
+            super.removeSection(key);
+        }
+    }
 }

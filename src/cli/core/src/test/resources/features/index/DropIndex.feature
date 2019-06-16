@@ -8,7 +8,7 @@ Feature: "index drop" command
       And I have several commits
      When I run the command "index create --tree Points"
      Then the response should contain "Index created successfully"
-      And the repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repository's "HEAD:Points" index should have the following features:

@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Optional;
 
@@ -18,6 +17,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
 
 import com.google.common.base.MoreObjects;
+
+import lombok.NonNull;
 
 /**
  * Represents the state of a {@link Ref} at two different points in time
@@ -43,19 +44,15 @@ public class RefDiff {
         this.newRef = newRef;
     }
 
-    public static RefDiff added(Ref ref) {
-        checkNotNull(ref);
+    public static RefDiff added(@NonNull Ref ref) {
         return new RefDiff(null, ref);
     }
 
-    public static RefDiff removed(Ref ref) {
-        checkNotNull(ref);
+    public static RefDiff removed(@NonNull Ref ref) {
         return new RefDiff(ref, null);
     }
 
-    public static RefDiff updated(Ref oldRef, Ref newRef) {
-        checkNotNull(oldRef);
-        checkNotNull(newRef);
+    public static RefDiff updated(@NonNull Ref oldRef, @NonNull Ref newRef) {
         return new RefDiff(oldRef, newRef);
     }
 

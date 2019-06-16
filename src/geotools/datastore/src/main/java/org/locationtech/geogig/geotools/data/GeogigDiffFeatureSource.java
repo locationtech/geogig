@@ -10,7 +10,6 @@
 package org.locationtech.geogig.geotools.data;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -67,6 +66,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 /**
  *
  */
@@ -85,18 +86,16 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
     /**
      * <b>Precondition</b>: {@code entry.getDataStore() instanceof GeoGigDataStore}
      */
-    public GeogigDiffFeatureSource(ContentEntry entry, String oldRoot) {
+    public GeogigDiffFeatureSource(@NonNull ContentEntry entry, @NonNull String oldRoot) {
         super(entry, Query.ALL);
-        checkNotNull(oldRoot);
         this.oldRoot = oldRoot;
         this.oldContext = null;
         checkArgument(entry.getDataStore() instanceof GeoGigDataStore);
     }
 
-    public GeogigDiffFeatureSource(ContentEntry entry, String oldRoot, Context oldContext) {
+    public GeogigDiffFeatureSource(@NonNull ContentEntry entry, @NonNull String oldRoot,
+            @NonNull Context oldContext) {
         super(entry, Query.ALL);
-        checkNotNull(oldRoot);
-        checkNotNull(oldContext);
         this.oldRoot = oldRoot;
         this.oldContext = oldContext;
         checkArgument(entry.getDataStore() instanceof GeoGigDataStore);

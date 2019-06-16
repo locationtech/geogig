@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.notNull;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
@@ -200,12 +199,9 @@ public class FeatureReaderBuilder {
         return builder(repo, repo, nativeType, typeRef);
     }
 
-    public static FeatureReaderBuilder builder(Context leftRepo, Context rightRepo,
-            RevFeatureType nativeType, NodeRef typeRef) {
-        checkNotNull(leftRepo);
-        checkNotNull(rightRepo);
-        checkNotNull(nativeType);
-        checkNotNull(typeRef);
+    public static FeatureReaderBuilder builder(@NonNull Context leftRepo,
+            @NonNull Context rightRepo, @NonNull RevFeatureType nativeType,
+            @NonNull NodeRef typeRef) {
         return new FeatureReaderBuilder(leftRepo, rightRepo, nativeType, typeRef);
     }
 
@@ -214,14 +210,12 @@ public class FeatureReaderBuilder {
         return this;
     }
 
-    public FeatureReaderBuilder changeType(ChangeType changeType) {
-        checkNotNull(changeType);
+    public FeatureReaderBuilder changeType(@NonNull ChangeType changeType) {
         this.changeType = changeType;
         return this;
     }
 
-    public FeatureReaderBuilder headRef(String headRef) {
-        checkNotNull(headRef);
+    public FeatureReaderBuilder headRef(@NonNull String headRef) {
         this.headRef = headRef;
         return this;
     }
@@ -235,8 +229,7 @@ public class FeatureReaderBuilder {
         return this;
     }
 
-    public FeatureReaderBuilder filter(Filter filter) {
-        checkNotNull(filter);
+    public FeatureReaderBuilder filter(@NonNull Filter filter) {
         this.filter = filter;
         return this;
     }

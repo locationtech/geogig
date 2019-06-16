@@ -30,6 +30,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
+import lombok.NonNull;
+
 /**
  * Default {@link TransactionBlobStore} implementation, stores blobs directly inside the
  * {@code .geogig/} directory named after the {@link #putBlob} {@code path} arguments, inside the
@@ -153,8 +155,7 @@ public class FileBlobStore implements TransactionBlobStore {
     }
 
     @Override
-    public void removeBlobs(String namespace) {
-        Preconditions.checkNotNull(namespace);
+    public void removeBlobs(@NonNull String namespace) {
         Path namespacePath = repositoryDirectory.toPath().resolve(namespace);
         File namespaceDir = namespacePath.toFile();
         if (namespaceDir.exists() && namespaceDir.isDirectory()) {
@@ -181,9 +182,7 @@ public class FileBlobStore implements TransactionBlobStore {
         }
     }
 
-    private File toFile(String namespace, String path) {
-        Preconditions.checkNotNull(namespace);
-        Preconditions.checkNotNull(path);
+    private File toFile(@NonNull String namespace, @NonNull String path) {
         Path filePath = repositoryDirectory.toPath().resolve(namespace).resolve(path);
         File file = filePath.toFile().getAbsoluteFile();
         return file;

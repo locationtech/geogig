@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes.pack;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,8 @@ import org.locationtech.geogig.repository.Remote;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+
+import lombok.NonNull;
 
 public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
 
@@ -146,14 +147,12 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
         return localRemoteRef;
     }
 
-    public UpdateRemoteRefOp add(RefDiff diff) {
-        checkNotNull(diff);
+    public UpdateRemoteRefOp add(@NonNull RefDiff diff) {
         refUpdates.add(diff);
         return this;
     }
 
-    public UpdateRemoteRefOp addAll(Iterable<RefDiff> diffs) {
-        checkNotNull(diffs);
+    public UpdateRemoteRefOp addAll(@NonNull Iterable<RefDiff> diffs) {
         diffs.forEach((r) -> add(r));
         return this;
     }

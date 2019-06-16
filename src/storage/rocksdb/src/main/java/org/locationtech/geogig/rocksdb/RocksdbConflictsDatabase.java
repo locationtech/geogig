@@ -10,7 +10,6 @@
 package org.locationtech.geogig.rocksdb;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.DataInput;
@@ -55,6 +54,8 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
+import lombok.NonNull;
+
 public class RocksdbConflictsDatabase extends AbstractStore implements ConflictsDatabase {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbConflictsDatabase.class);
@@ -65,9 +66,8 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
 
     private ConcurrentMap<String/* TxID */, DBHandle> dbsByTransaction = new ConcurrentHashMap<>();
 
-    public @Inject RocksdbConflictsDatabase(Platform platform, @Nullable Hints hints) {
+    public @Inject RocksdbConflictsDatabase(@NonNull Platform platform, @Nullable Hints hints) {
         super(Hints.isRepoReadOnly(hints));
-        checkNotNull(platform);
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
         URI uri = repoUriOpt.get();
@@ -81,9 +81,8 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         }
     }
 
-    public RocksdbConflictsDatabase(File baseDirectory) {
+    public RocksdbConflictsDatabase(@NonNull File baseDirectory) {
         super(false);
-        checkNotNull(baseDirectory);
         checkArgument(baseDirectory.exists() && baseDirectory.canWrite());
         this.baseDirectory = baseDirectory;
     }

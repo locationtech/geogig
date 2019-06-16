@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
 
 import java.util.HashMap;
@@ -27,6 +26,8 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 /**
  * Provides an implementation of a GeoGig ref database that utilizes the heap for the storage of
@@ -68,9 +69,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
     @Override
-    public void putRef(String name, String value) {
-        checkNotNull(name);
-        checkNotNull(value);
+    public void putRef(@NonNull String name, @NonNull String value) {
         ObjectId.valueOf(value);
         refs.put(name, value);
     }
@@ -81,8 +80,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * @return the value of the ref before removing it, or {@code null} if it didn't exist
      */
     @Override
-    public String remove(String refName) {
-        checkNotNull(refName);
+    public String remove(@NonNull String refName) {
         String oldValue = refs.remove(refName);
         if (oldValue != null && oldValue.startsWith("ref: ")) {
             oldValue = unmask(oldValue);
@@ -95,8 +93,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * @return the ref, or {@code null} if it doesn't exist
      */
     @Override
-    public String getSymRef(String name) {
-        checkNotNull(name);
+    public String getSymRef(@NonNull String name) {
         String value = refs.get(name);
         if (value == null) {
             return null;
@@ -120,9 +117,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
     @Override
-    public void putSymRef(String name, String val) {
-        checkNotNull(name);
-        checkNotNull(val);
+    public void putSymRef(@NonNull String name, @NonNull String val) {
         val = "ref: " + val;
         refs.put(name, val);
     }

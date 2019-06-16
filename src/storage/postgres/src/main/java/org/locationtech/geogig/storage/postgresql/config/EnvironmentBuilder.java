@@ -30,6 +30,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
+import lombok.NonNull;
+
 public class EnvironmentBuilder {
 
     private Environment config;
@@ -71,9 +73,8 @@ public class EnvironmentBuilder {
         return shortKeys;
     }
 
-    private void init(URI repoUrl, boolean forceBaseURL) {
+    private void init(@NonNull URI repoUrl, boolean forceBaseURL) {
         // postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>
-        Preconditions.checkNotNull(repoUrl);
         final String uriScheme = repoUrl.getScheme();
         Preconditions.checkArgument("postgresql".equals(uriScheme),
                 "Wrong URL protocol. Expected postgresql, got ", uriScheme);
@@ -172,9 +173,8 @@ public class EnvironmentBuilder {
      * @param rootRepoURI the root URI
      * @return the extracted properties
      */
-    public static Properties getRootURIProperties(final URI rootRepoURI) {
+    public static Properties getRootURIProperties(final @NonNull URI rootRepoURI) {
         // postgresql://<server>[:<port>]/database[/<schema>]?user=<username>&password=<pwd>
-        Preconditions.checkNotNull(rootRepoURI);
         final String uriScheme = rootRepoURI.getScheme();
         Preconditions.checkArgument("postgresql".equals(uriScheme),
                 "Wrong URL protocol. Expected postgresql, got ", uriScheme);

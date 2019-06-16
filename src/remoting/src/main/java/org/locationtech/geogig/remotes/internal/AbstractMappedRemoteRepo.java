@@ -39,6 +39,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 
+import lombok.NonNull;
+
 /**
  * Abstract base implementation for mapped (sparse) clone.
  */
@@ -48,8 +50,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
     private final Remote remote;
 
-    protected AbstractMappedRemoteRepo(Remote remote) {
-        Preconditions.checkNotNull(remote);
+    protected AbstractMappedRemoteRepo(@NonNull Remote remote) {
         this.remote = remote;
     }
 

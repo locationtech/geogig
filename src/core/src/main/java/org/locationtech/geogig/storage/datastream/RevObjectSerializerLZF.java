@@ -18,12 +18,13 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 
-import com.google.common.base.Preconditions;
 import com.ning.compress.lzf.ChunkDecoder;
 import com.ning.compress.lzf.LZFDecoder;
 import com.ning.compress.lzf.LZFInputStream;
 import com.ning.compress.lzf.LZFOutputStream;
 import com.ning.compress.lzf.util.ChunkDecoderFactory;
+
+import lombok.NonNull;
 
 /**
  * Wrapper Factory that deflates/inflates data written to/read from streams using LZF compression.
@@ -38,8 +39,7 @@ public class RevObjectSerializerLZF implements RevObjectSerializer {
      */
     private static final ChunkDecoder CHUNK_DECODER = ChunkDecoderFactory.optimalInstance();
 
-    public RevObjectSerializerLZF(final RevObjectSerializer factory) {
-        Preconditions.checkNotNull(factory);
+    public RevObjectSerializerLZF(final @NonNull RevObjectSerializer factory) {
         this.factory = factory;
     }
 

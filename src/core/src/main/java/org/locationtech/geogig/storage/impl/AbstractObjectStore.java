@@ -56,12 +56,10 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
 
     public AbstractObjectStore(final @NonNull RevObjectSerializer serializer, boolean readOnly) {
         super(readOnly);
-        checkNotNull(serializer);
         this.serializer = serializer;
     }
 
-    protected void setSerializationFactory(RevObjectSerializer serializer) {
-        checkNotNull(serializer);
+    protected void setSerializationFactory(@NonNull RevObjectSerializer serializer) {
         this.serializer = serializer;
     }
 

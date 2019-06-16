@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.RevObject.TYPE.COMMIT;
 import static org.locationtech.geogig.model.RevObject.TYPE.FEATURE;
 import static org.locationtech.geogig.model.RevObject.TYPE.FEATURETYPE;
@@ -36,6 +35,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.PrimitiveSink;
+
+import lombok.NonNull;
 
 /**
  * Hashes a RevObject and returns the ObjectId.
@@ -118,8 +119,7 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
         return hash(h -> HashObjectFunnels.tag(h, name, commitId, message, tagger));
     }
 
-    public static ObjectId hashFeatureType(FeatureType featureType) {
-        checkNotNull(featureType);
+    public static ObjectId hashFeatureType(@NonNull FeatureType featureType) {
         return hash(h -> HashObjectFunnels.featureType(h, featureType));
     }
 

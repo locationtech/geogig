@@ -10,7 +10,6 @@
 package org.locationtech.geogig.geotools.cli.geopkg;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines3;
@@ -61,6 +60,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 /**
  * @see TestData
  */
@@ -72,8 +73,7 @@ public class GeoPackageTestSupport {
         this(new File(System.getProperty("java.io.tmpdir")));
     }
 
-    public GeoPackageTestSupport(final File tmpFolder) {
-        checkNotNull(tmpFolder);
+    public GeoPackageTestSupport(final @NonNull File tmpFolder) {
         checkArgument(tmpFolder.exists() && tmpFolder.isDirectory() && tmpFolder.canWrite());
         this.tmpFolder = tmpFolder;
     }

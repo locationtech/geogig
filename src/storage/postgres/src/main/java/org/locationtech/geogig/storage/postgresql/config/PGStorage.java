@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage.postgresql.config;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 
@@ -33,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import lombok.NonNull;
 
 /**
  * Utility class for PostgreSQL storage.
@@ -116,8 +117,8 @@ public class PGStorage {
         throw new RuntimeException(e);
     }
 
-    public static boolean repoExists(final Environment config) throws IllegalArgumentException {
-        checkNotNull(config);
+    public static boolean repoExists(final @NonNull Environment config)
+            throws IllegalArgumentException {
         checkArgument(config.getRepositoryName() != null, "no repository name provided");
 
         Optional<Integer> repoPK;
@@ -179,8 +180,7 @@ public class PGStorage {
      * @param config the environment
      * @return the list of repository names
      */
-    public static List<String> listRepos(final Environment config) {
-        checkNotNull(config);
+    public static List<String> listRepos(final @NonNull Environment config) {
         final DataSource dataSource = PGStorage.newDataSource(config);
         TableNames tables = config.getTables();
 
@@ -193,10 +193,8 @@ public class PGStorage {
         }
     }
 
-    public static List<String> listRepos(final Connection cx, TableNames tables)
+    public static List<String> listRepos(final @NonNull Connection cx, @NonNull TableNames tables)
             throws SQLException {
-        checkNotNull(cx);
-        checkNotNull(tables);
         List<String> repoNames = new ArrayList<>();
         final String repoNamesView = tables.repositoryNamesView();
         if (!tableExists(cx, repoNamesView)) {
@@ -222,8 +220,8 @@ public class PGStorage {
      * 
      * @return {@code true} if the repository was created, {@code false} if it already exists
      */
-    public static boolean createNewRepo(final Environment config) throws IllegalArgumentException {
-        checkNotNull(config);
+    public static boolean createNewRepo(final @NonNull Environment config)
+            throws IllegalArgumentException {
         checkArgument(config.getRepositoryName() != null, "no repository name provided");
         createTables(config);
 

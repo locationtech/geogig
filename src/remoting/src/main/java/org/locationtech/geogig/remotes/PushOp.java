@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -31,6 +30,8 @@ import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
 
 /**
  * Update remote refs along with associated objects.
@@ -75,8 +76,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * @param remoteName the name or URL of a remote repository to push to
      * @return {@code this}
      */
-    public PushOp setRemote(final String remoteName) {
-        checkNotNull(remoteName);
+    public PushOp setRemote(final @NonNull String remoteName) {
         this.remoteName = remoteName;
         return this;
     }

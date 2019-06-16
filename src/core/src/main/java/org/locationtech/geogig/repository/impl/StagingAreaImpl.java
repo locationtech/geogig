@@ -54,11 +54,12 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 /**
  * Default implementation of {@link StagingArea}
@@ -68,8 +69,7 @@ public class StagingAreaImpl implements StagingArea {
     private Context context;
 
     @Inject
-    public StagingAreaImpl(final Context context) {
-        Preconditions.checkNotNull(context);
+    public StagingAreaImpl(final @NonNull Context context) {
         this.context = context;
     }
 

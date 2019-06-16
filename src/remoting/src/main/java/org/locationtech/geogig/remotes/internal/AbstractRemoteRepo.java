@@ -22,7 +22,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /**
  * Provides a base implementation for different representations of the {@link IRemoteRepo}.
@@ -33,8 +33,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
 
     private final Remote remote;
 
-    protected AbstractRemoteRepo(Remote remote) {
-        Preconditions.checkNotNull(remote);
+    protected AbstractRemoteRepo(@NonNull Remote remote) {
         this.remote = remote;
     }
 

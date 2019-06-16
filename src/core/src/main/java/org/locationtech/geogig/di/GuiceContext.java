@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.di;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
@@ -28,6 +26,8 @@ import org.locationtech.geogig.storage.RefDatabase;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+
+import lombok.NonNull;
 
 /**
  * Provides a method for finding and creating instances of GeoGig operations.
@@ -63,8 +63,7 @@ public class GuiceContext implements Context {
         return command;
     }
 
-    private <T> T getInstance(final Class<T> type) {
-        checkNotNull(type);
+    private <T> T getInstance(final @NonNull Class<T> type) {
         Provider<T> provider = guiceInjector.getProvider(type);
         T instance = provider.get();
         return instance;
@@ -76,10 +75,9 @@ public class GuiceContext implements Context {
         return getDecoratedInstance(undecorated);
     }
 
-    private <T> T getDecoratedInstance(T undecorated) {
-        checkNotNull(undecorated);
-        DecoratorProvider decoratorProvider = guiceInjector.getInstance(DecoratorProvider.class);
-        checkNotNull(decoratorProvider);
+    private <T> T getDecoratedInstance(@NonNull T undecorated) {
+        final @NonNull DecoratorProvider decoratorProvider = guiceInjector
+                .getInstance(DecoratorProvider.class);
         T decoratedInstance = decoratorProvider.get(undecorated);
         return decoratedInstance;
     }

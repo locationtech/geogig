@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.model.Bounded;
@@ -34,6 +33,8 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
 
 /**
  * Computes the bounds of the difference between the two trees instead of the actual diffs.
@@ -165,15 +166,13 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
         @Nullable
         private DiffSummary<Envelope, Envelope> diffBoundsResult;
 
-        @NonNull
         private ThreadSafeEnvelope leftEnv;
 
-        @NonNull
         private ThreadSafeEnvelope rightEnv;
 
         private final ObjectStore leftSource, rightSource;
 
-        public BoundsWalk(ObjectStore leftSource, ObjectStore rightSource) {
+        public BoundsWalk(@NonNull ObjectStore leftSource, @NonNull ObjectStore rightSource) {
             this.leftSource = leftSource;
             this.rightSource = rightSource;
             leftEnv = new ThreadSafeEnvelope();

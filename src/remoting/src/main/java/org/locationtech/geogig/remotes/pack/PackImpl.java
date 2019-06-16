@@ -45,6 +45,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
+
 class PackImpl implements Pack {
 
     private final Repository source;
@@ -60,13 +62,9 @@ class PackImpl implements Pack {
 
     private final List<RevTag> missingTags;
 
-    protected PackImpl(Repository source, List<RevTag> missingTags,
-            LinkedHashMap<RefRequest, List<RevCommit>> missingCommits,
-            LinkedHashMap<RefRequest, List<IndexDef>> missingIndexes) {
-        checkNotNull(source);
-        checkNotNull(missingTags);
-        checkNotNull(missingCommits);
-        checkNotNull(missingIndexes);
+    protected PackImpl(@NonNull Repository source, @NonNull List<RevTag> missingTags,
+            @NonNull LinkedHashMap<RefRequest, List<RevCommit>> missingCommits,
+            @NonNull LinkedHashMap<RefRequest, List<IndexDef>> missingIndexes) {
 
         this.source = source;
         this.missingTags = missingTags;
@@ -74,10 +72,8 @@ class PackImpl implements Pack {
         this.missingIndexes = missingIndexes;
     }
 
-    public @Override List<RefDiff> applyTo(PackProcessor target, ProgressListener progress) {
-        checkNotNull(target);
-        checkNotNull(progress);
-
+    public @Override List<RefDiff> applyTo(@NonNull PackProcessor target,
+            @NonNull ProgressListener progress) {
         progress.started();
 
         List<RefDiff> appliedDiffs = new ArrayList<>();

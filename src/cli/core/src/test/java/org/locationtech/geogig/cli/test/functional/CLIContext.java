@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assert.assertNotNull;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
@@ -55,6 +54,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.CharSource;
 
+import lombok.NonNull;
+
 /**
  * The "context" for a specific repository when running the CLI functional tests.
  * <p>
@@ -85,9 +86,7 @@ public class CLIContext {
 
     public Console consoleReader;
 
-    public CLIContext(URI repoURI, TestPlatform platform) {
-        checkNotNull(repoURI);
-        checkNotNull(platform);
+    public CLIContext(@NonNull URI repoURI, @NonNull TestPlatform platform) {
         this.repositoryURI = repoURI;
         this.platform = platform;
 
@@ -226,7 +225,6 @@ public class CLIContext {
     public List<ObjectId> insert(Feature... features) throws Exception {
         geogigCLI.close();
         GeoGIG geogig = geogigCLI.newGeoGIG(Hints.readWrite());
-        Preconditions.checkNotNull(geogig);
         List<ObjectId> ids = Lists.newArrayListWithCapacity(features.length);
         Map<FeatureType, RevFeatureType> types = new HashMap<>();
         for (Feature f : features) {

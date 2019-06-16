@@ -48,6 +48,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
+
 /**
  * PostgreSQL based config database.
  * <p>
@@ -168,9 +170,8 @@ public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
         put(new Entry(key), value, global());
     }
 
-    public @Override void putSection(final String section, final Map<String, String> kvp) {
-        checkNotNull(section);
-        checkNotNull(kvp);
+    public @Override void putSection(final @NonNull String section,
+            final @NonNull Map<String, String> kvp) {
         Map<Entry, String> entries = new HashMap<>();
         kvp.forEach((k, v) -> entries.put(new Entry(String.format("%s.%s", section, k)), v));
         put(entries, local());

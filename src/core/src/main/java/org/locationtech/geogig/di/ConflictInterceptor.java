@@ -13,7 +13,7 @@ import org.locationtech.geogig.plumbing.merge.ConflictsCheckOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /**
  * Intercepts all {@link AbstractGeoGigOp commands} to avoid incompatible running commands while
@@ -35,8 +35,7 @@ class ConflictInterceptor implements Decorator {
 
     @SuppressWarnings("unchecked")
     @Override
-    public AbstractGeoGigOp<?> decorate(Object subject) {
-        Preconditions.checkNotNull(subject);
+    public AbstractGeoGigOp<?> decorate(@NonNull Object subject) {
         AbstractGeoGigOp<?> operation = (AbstractGeoGigOp<?>) subject;
 
         Boolean conflicts = operation.command(ConflictsCheckOp.class).call();

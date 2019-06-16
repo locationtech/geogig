@@ -64,8 +64,6 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    <!-- <dependency> <groupId>org.geotools</groupId> <artifactId>gt-epsg-hsql</artifactId> <scope>test</scope> </dependency> 
-      <dependency> <groupId>org.geotools</groupId> <artifactId>gt-main</artifactId> <scope>test</scope> </dependency> -->
   </dependencies>
 
   <build>

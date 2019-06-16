@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,6 +24,8 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 /**
  * Volatile implementation of a GeoGig {@link ConflictsDatabase} that utilizes the heap for storage.
@@ -149,8 +149,7 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
 
         private String treePath;
 
-        PathFilter(final String treePath) {
-            checkNotNull(treePath);
+        PathFilter(final @NonNull String treePath) {
             this.prefix = treePath + "/";
             this.treePath = treePath;
         }
@@ -164,9 +163,7 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
     }
 
     @Override
-    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
-        checkNotNull(paths);
-
+    public Set<String> findConflicts(@Nullable String namespace, @NonNull Set<String> paths) {
         Map<String, Conflict> nsmap = get(namespace);
         Set<String> matches = new HashSet<>();
         if (!nsmap.isEmpty()) {

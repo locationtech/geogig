@@ -25,7 +25,7 @@ import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 public class PGTemporaryTestConfig extends ExternalResource implements Function<String, URI> {
 
@@ -39,16 +39,14 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
 
     private final boolean externalDataSource;
 
-    public PGTemporaryTestConfig(String repositoryId) {
-        Preconditions.checkNotNull(repositoryId);
+    public PGTemporaryTestConfig(@NonNull String repositoryId) {
         this.repositoryName = repositoryId;
         this.dataSourceProvider = new PGTestDataSourceProvider();
         this.externalDataSource = false;
     }
 
-    public PGTemporaryTestConfig(String repositoryId, PGTestDataSourceProvider dataSourceProvider) {
-        Preconditions.checkNotNull(repositoryId);
-        Preconditions.checkNotNull(dataSourceProvider);
+    public PGTemporaryTestConfig(@NonNull String repositoryId,
+            @NonNull PGTestDataSourceProvider dataSourceProvider) {
         this.repositoryName = repositoryId;
         this.dataSourceProvider = dataSourceProvider;
         this.externalDataSource = true;

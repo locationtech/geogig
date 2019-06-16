@@ -46,6 +46,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 
+import lombok.NonNull;
+
 /**
  * {@link ConflictsDatabase} implementation for PostgreSQL.
  * <p>
@@ -91,9 +93,9 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
      * @throws IllegalArgumentException if {@link Hints#REPOSITORY_URL} is not given in hints
      * @throws URISyntaxException
      */
-    public PGConflictsDatabase(Hints hints) throws IllegalArgumentException, URISyntaxException {
+    public PGConflictsDatabase(@NonNull Hints hints)
+            throws IllegalArgumentException, URISyntaxException {
         super(Hints.isRepoReadOnly(hints));
-        checkNotNull(hints);
         environment = Environment.get(hints);
         Preconditions.checkNotNull(environment.getRepositoryName(), "Repository id not provided");
         conflictsTable = environment.getTables().conflicts();
@@ -134,8 +136,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
     }
 
     @Override
-    public void addConflict(@Nullable String ns, final Conflict conflict) {
-        Preconditions.checkNotNull(conflict);
+    public void addConflict(@Nullable String ns, final @NonNull Conflict conflict) {
         final String path = conflict.getPath();
         Preconditions.checkNotNull(path);
 
@@ -174,8 +175,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
     }
 
     @Override
-    public void addConflicts(@Nullable String ns, Iterable<Conflict> conflicts) {
-        Preconditions.checkNotNull(conflicts);
+    public void addConflicts(@Nullable String ns, @NonNull Iterable<Conflict> conflicts) {
         final String namespace = namespace(ns);
 
         final String sql = format(
@@ -216,8 +216,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
     }
 
     @Override
-    public Optional<Conflict> getConflict(@Nullable String namespace, String path) {
-        checkNotNull(path);
+    public Optional<Conflict> getConflict(@Nullable String namespace, @NonNull String path) {
         namespace = namespace(namespace);
         final String sql;
         {

@@ -35,6 +35,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 /**
  * 
  * Apply the changes introduced by an existing commit.
@@ -53,9 +55,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
      * @param onto a supplier for the commit id
      * @return {@code this}
      */
-    public CherryPickOp setCommit(final Supplier<ObjectId> commit) {
-        Preconditions.checkNotNull(commit);
-
+    public CherryPickOp setCommit(final @NonNull Supplier<ObjectId> commit) {
         this.commit = commit.get();
         return this;
     }

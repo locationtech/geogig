@@ -69,6 +69,8 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
 
+import lombok.NonNull;
+
 /**
  * Provides a means to "walk" the differences between two {@link RevTree trees} in in-order order
  * and emit diff events to a {@link Consumer}, which can choose to skip parts of the walk when it
@@ -136,18 +138,14 @@ public class PreOrderDiffWalk {
         /**
          * Creates a root bucket index
          */
-        private BucketIndex(RevTree left, RevTree right) {
-            checkNotNull(left);
-            checkNotNull(right);
+        private BucketIndex(@NonNull RevTree left, @NonNull RevTree right) {
             this.indexPath = new int[0];
             this.left = left;
             this.right = right;
         }
 
-        private BucketIndex(final int[] parentPath, final int index, RevTree left, RevTree right) {
-            checkNotNull(parentPath);
-            checkNotNull(left);
-            checkNotNull(right);
+        private BucketIndex(final @NonNull int[] parentPath, final int index, @NonNull RevTree left,
+                @NonNull RevTree right) {
             int[] path = new int[parentPath.length + 1];
             System.arraycopy(parentPath, 0, path, 0, parentPath.length);
             path[parentPath.length] = index;
@@ -412,8 +410,7 @@ public class PreOrderDiffWalk {
             forkJoinPool.shutdown(); // private pool needs cleaning
     }
 
-    public void nodeOrder(NodeOrdering nodeOrder) {
-        checkNotNull(nodeOrder);
+    public void nodeOrder(@NonNull NodeOrdering nodeOrder) {
         this.ORDER = nodeOrder;
     }
 
@@ -443,10 +440,9 @@ public class PreOrderDiffWalk {
             this(walkInfo, BucketIndex.EMPTY);
         }
 
-        WalkAction(WalkInfo info, final BucketIndex bucketIndex) {
+        WalkAction(@NonNull WalkInfo info, final @NonNull BucketIndex bucketIndex) {
             checkArgument(info.left.parentRef != null || info.right.parentRef != null,
                     "leftParent and rightParent can't be null at the same time");
-            checkNotNull(bucketIndex);
             this.info = info;
             this.bucketIndex = bucketIndex;
         }
@@ -794,11 +790,9 @@ public class PreOrderDiffWalk {
 
         private final RevTree left, right;
 
-        public TraverseTreeContents(WalkInfo info, RevTree left, RevTree right,
+        public TraverseTreeContents(WalkInfo info, @NonNull RevTree left, @NonNull RevTree right,
                 BucketIndex bucketIndex) {
             super(info, bucketIndex);
-            checkNotNull(left);
-            checkNotNull(right);
             this.left = left;
             this.right = right;
         }
@@ -1286,8 +1280,7 @@ public class PreOrderDiffWalk {
             this.delegate = delegate;
         }
 
-        public void setDelegate(Consumer delegate) {
-            Preconditions.checkNotNull(delegate);
+        public void setDelegate(@NonNull Consumer delegate) {
             this.delegate = delegate;
         }
 

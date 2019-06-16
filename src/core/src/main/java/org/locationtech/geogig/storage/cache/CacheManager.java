@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage.cache;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.lang.management.ManagementFactory;
@@ -293,9 +292,7 @@ public class CacheManager implements CacheManagerBean {
      * 
      * @param uniqueCacheIdentifier a client defined identifier for the objectcache
      */
-    public ObjectCache acquire(final String uniqueCacheIdentifier) {
-        checkNotNull(uniqueCacheIdentifier);
-
+    public ObjectCache acquire(final @NonNull String uniqueCacheIdentifier) {
         CacheIdentifier prefix = CACHE_IDS.get(uniqueCacheIdentifier);
         if (prefix == null) {
             prefix = new CacheIdentifier(CACHE_ID_SEQ.incrementAndGet());

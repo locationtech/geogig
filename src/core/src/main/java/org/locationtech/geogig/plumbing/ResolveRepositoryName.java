@@ -13,8 +13,8 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.RepositoryFinder;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.inject.Inject;

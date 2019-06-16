@@ -57,6 +57,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 /**
  * A GeoTools {@link DataStore} that serves and edits {@link SimpleFeature}s in a geogig repository.
  * <p>
@@ -106,18 +108,14 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     @Deprecated
     private boolean autoIndexing;
 
-    public GeoGigDataStore(Repository repository) {
+    public GeoGigDataStore(@NonNull Repository repository) {
         super();
-        Preconditions.checkNotNull(repository);
-
         this.repository = repository;
         this._liveContext = repository.context();
     }
 
-    public GeoGigDataStore(Context context) {
+    public GeoGigDataStore(@NonNull Context context) {
         super();
-        Preconditions.checkNotNull(context);
-
         this.repository = context.repository();
         Preconditions.checkNotNull(repository);
         this._liveContext = context;
@@ -255,8 +253,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return context;
     }
 
-    public org.opengis.feature.type.Name getDescriptorName(NodeRef treeRef) {
-        Preconditions.checkNotNull(treeRef);
+    public org.opengis.feature.type.Name getDescriptorName(@NonNull NodeRef treeRef) {
         Preconditions.checkArgument(TYPE.TREE.equals(treeRef.getType()));
         Preconditions.checkArgument(!treeRef.getMetadataId().isNull(),
                 "NodeRef '%s' is not a feature type reference", treeRef.path());
@@ -264,9 +261,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return new NameImpl(getNamespaceURI(), NodeRef.nodeFromPath(treeRef.path()));
     }
 
-    public NodeRef findTypeRef(Name typeName, @Nullable Transaction tx)
+    public NodeRef findTypeRef(@NonNull Name typeName, @Nullable Transaction tx)
             throws NoSuchElementException {
-        Preconditions.checkNotNull(typeName);
 
         final String localName = typeName.getLocalPart();
         List<NodeRef> typeRefs = findTypeRefs(tx);

@@ -17,6 +17,8 @@ import org.locationtech.geogig.model.ObjectId;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
+
 /**
  * In memory directed graph implementation.
  * <p>
@@ -60,8 +62,7 @@ class Graph {
      * 
      * @param id The id of the new node.
      */
-    public Node newNode(ObjectId id) {
-        Preconditions.checkNotNull(id);
+    public Node newNode(@NonNull ObjectId id) {
         Preconditions.checkState(nodes.get(id) == null);
         Node n = new Node(id);
         Node prev = nodes.putIfAbsent(id, n);

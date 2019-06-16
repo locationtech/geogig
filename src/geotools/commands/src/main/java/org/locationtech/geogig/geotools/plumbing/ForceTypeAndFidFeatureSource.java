@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 
 import org.geotools.data.FeatureSource;
@@ -28,6 +26,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.sort.SortBy;
+
+import lombok.NonNull;
 
 class ForceTypeAndFidFeatureSource<T extends org.opengis.feature.type.FeatureType, F extends org.opengis.feature.Feature>
         extends ForwardingFeatureSource<T, F> {
@@ -117,11 +117,9 @@ class ForceTypeAndFidFeatureSource<T extends org.opengis.feature.type.FeatureTyp
 
         private SimpleFeatureType forcedType;
 
-        public FidPrefixRemovingIterator(final FeatureIterator<F> iterator, final String fidPrefix,
-                SimpleFeatureType forcedType) {
+        public FidPrefixRemovingIterator(final @NonNull FeatureIterator<F> iterator,
+                final @NonNull String fidPrefix, @NonNull SimpleFeatureType forcedType) {
             super(iterator);
-            checkNotNull(fidPrefix);
-            checkNotNull(forcedType);
             this.fidPrefix = fidPrefix;
             this.forcedType = forcedType;
         }

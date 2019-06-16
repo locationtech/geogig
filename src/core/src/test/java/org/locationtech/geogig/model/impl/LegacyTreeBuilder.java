@@ -10,7 +10,6 @@
 package org.locationtech.geogig.model.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -150,13 +149,9 @@ public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuild
     /**
      * Copy constructor
      */
-    private LegacyTreeBuilder(final ObjectStore obSotre, @Nullable final RevTree copy,
-            final int depth, final Map<ObjectId, RevTree> pendingWritesCache,
+    private LegacyTreeBuilder(final @NonNull ObjectStore obSotre, @Nullable final RevTree copy,
+            final int depth, final @NonNull Map<ObjectId, RevTree> pendingWritesCache,
             final int normalizationThreshold) {
-
-        checkNotNull(obSotre);
-        checkNotNull(pendingWritesCache);
-
         this.obStore = obSotre;
         this.normalizationThreshold = normalizationThreshold;
         this.depth = depth;
@@ -365,10 +360,8 @@ public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuild
         return tree;
     }
 
-    public static RevTree createLeafTree(long size, Collection<Node> features,
-            Collection<Node> trees) {
-        Preconditions.checkNotNull(features);
-        Preconditions.checkNotNull(trees);
+    public static RevTree createLeafTree(long size, @NonNull Collection<Node> features,
+            @NonNull Collection<Node> trees) {
 
         ImmutableList<Node> featuresList = ImmutableList.of();
         ImmutableList<Node> treesList = ImmutableList.of();

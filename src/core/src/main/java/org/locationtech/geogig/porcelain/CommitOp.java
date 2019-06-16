@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -42,6 +41,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
 
 /**
  * Commits the staged changed in the index to the repository, creating a new commit pointing to the
@@ -133,8 +134,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      * @param committerName the committer's name
      * @param committerEmail the committer's email
      */
-    public CommitOp setCommitter(String committerName, @Nullable String committerEmail) {
-        checkNotNull(committerName);
+    public CommitOp setCommitter(@NonNull String committerName, @Nullable String committerEmail) {
         this.committerName = committerName;
         this.committerEmail = Optional.ofNullable(committerEmail);
         return this;

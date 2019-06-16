@@ -23,8 +23,8 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.RepositoryFinder;
+import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.base.Preconditions;
 

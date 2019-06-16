@@ -38,11 +38,12 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.hash.HashCode;
+
+import lombok.NonNull;
 
 public class RevObjectTestSupport {
 
@@ -216,8 +217,7 @@ public class RevObjectTestSupport {
      * @param strToHash
      * @return the {@code ObjectId} generated from the string
      */
-    public static ObjectId hashString(final String strToHash) {
-        Preconditions.checkNotNull(strToHash);
+    public static ObjectId hashString(final @NonNull String strToHash) {
         HashCode hashCode = ObjectId.HASH_FUNCTION.hashString(strToHash, Charset.forName("UTF-8"));
         return ObjectId.create(hashCode.asBytes());
     }

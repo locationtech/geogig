@@ -21,8 +21,8 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 
 import com.google.common.annotations.Beta;
-import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
 import net.jpountz.lz4.LZ4BlockInputStream;
 import net.jpountz.lz4.LZ4BlockOutputStream;
 import net.jpountz.lz4.LZ4Compressor;
@@ -52,8 +52,7 @@ public class RevObjectSerializerLZ4 implements RevObjectSerializer {
 
     private final RevObjectSerializer factory;
 
-    public RevObjectSerializerLZ4(final RevObjectSerializer factory) {
-        Preconditions.checkNotNull(factory);
+    public RevObjectSerializerLZ4(final @NonNull RevObjectSerializer factory) {
         this.factory = factory;
     }
 

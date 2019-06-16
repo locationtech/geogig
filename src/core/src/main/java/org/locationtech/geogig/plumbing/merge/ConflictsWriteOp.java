@@ -14,6 +14,8 @@ import org.locationtech.geogig.repository.Conflict;
 
 import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
+
 public class ConflictsWriteOp extends AbstractGeoGigOp<Void> {
 
     private Iterable<Conflict> conflicts;
@@ -26,7 +28,7 @@ public class ConflictsWriteOp extends AbstractGeoGigOp<Void> {
 
     }
 
-    public ConflictsWriteOp setConflicts(Iterable<Conflict> conflicts) {
+    public ConflictsWriteOp setConflicts(@NonNull Iterable<Conflict> conflicts) {
         this.conflicts = conflicts;
         return this;
     }

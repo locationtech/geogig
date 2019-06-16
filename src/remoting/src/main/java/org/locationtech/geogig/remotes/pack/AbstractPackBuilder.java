@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.LinkedHashMap;
@@ -62,8 +61,7 @@ public abstract class AbstractPackBuilder implements PackBuilder {
     }
 
     @Override
-    public void start(Set<RevTag> tags) {
-        checkNotNull(tags);
+    public void start(@NonNull Set<RevTag> tags) {
         require(Status.IDLE);
         this.missingCommits = new LinkedHashMap<>();
         this.missingIndexes = new LinkedHashMap<>();
@@ -72,8 +70,7 @@ public abstract class AbstractPackBuilder implements PackBuilder {
     }
 
     @Override
-    public void startRefResponse(RefRequest req) {
-        checkNotNull(req);
+    public void startRefResponse(@NonNull RefRequest req) {
         requireAndSet(Status.READY, Status.PROCESS_REF);
         this.currentRef = req;
         this.currentRefCommits = new LinkedList<>();
@@ -81,8 +78,7 @@ public abstract class AbstractPackBuilder implements PackBuilder {
     }
 
     @Override
-    public void addCommit(RevCommit commit) {
-        checkNotNull(commit);
+    public void addCommit(@NonNull RevCommit commit) {
         require(Status.PROCESS_REF);
         this.currentRefCommits.addFirst(commit);
     }

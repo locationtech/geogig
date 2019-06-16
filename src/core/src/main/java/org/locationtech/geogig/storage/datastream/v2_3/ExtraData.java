@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.storage.datastream.v2_3;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.Map;
@@ -20,12 +18,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.datastream.ValueSerializer;
 import org.locationtech.geogig.storage.datastream.v2_3.NodeSet.NodesetHeader;
 
+import lombok.NonNull;
+
 class ExtraData {
 
-    public static void encode(Map<String, Object> extraData, InternalDataOutput inline,
+    public static void encode(@NonNull Map<String, Object> extraData, InternalDataOutput inline,
             StringTable stringTable) throws IOException {
-        checkNotNull(extraData);
-
         ValueSerializer writer = DataStreamValueSerializerV2_3.create(() -> stringTable);
         writer.writeMap(extraData, inline);
     }

@@ -43,6 +43,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
+import lombok.NonNull;
+
 /**
  * Operation to query the commits logs.
  * <p>
@@ -197,8 +199,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      * @param path
      * @return {@code this}
      */
-    public LogOp addPath(final String path) {
-        Preconditions.checkNotNull(path);
+    public LogOp addPath(final @NonNull String path) {
 
         if (this.paths == null) {
             this.paths = new HashSet<String>();
@@ -550,10 +551,9 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * @param commiter the regexp pattern to filter author names
          * @param author the regexp pattern to filter commiter names
          */
-        public LogFilter(final ObjectId oldestCommitId, final Range<Date> timeRange,
-                final Set<String> paths, Pattern author, Pattern commiter) {
-            Preconditions.checkNotNull(oldestCommitId);
-            Preconditions.checkNotNull(timeRange);
+        public LogFilter(final @NonNull ObjectId oldestCommitId,
+                final @NonNull Range<Date> timeRange, final Set<String> paths, Pattern author,
+                Pattern commiter) {
             this.oldestCommitId = oldestCommitId;
             this.timeRange = timeRange;
             this.author = author;

@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +33,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+
+import lombok.NonNull;
 
 /**
  * Incorporates changes from a remote repository into the current branch.
@@ -150,13 +151,11 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
      * @param remoteName the name or URL of a remote repository to fetch from
      * @return {@code this}
      */
-    public PullOp setRemote(final String remoteName) {
-        checkNotNull(remoteName);
+    public PullOp setRemote(final @NonNull String remoteName) {
         return setRemote(command(RemoteResolve.class).setName(remoteName));
     }
 
-    public PullOp setRemote(final Remote remote) {
-        checkNotNull(remote);
+    public PullOp setRemote(final @NonNull Remote remote) {
         return setRemote(Suppliers.ofInstance(Optional.of(remote)));
     }
 
@@ -164,8 +163,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
      * @param remoteSupplier the remote repository to fetch from
      * @return {@code this}
      */
-    public PullOp setRemote(Supplier<Optional<Remote>> remoteSupplier) {
-        checkNotNull(remoteSupplier);
+    public PullOp setRemote(@NonNull Supplier<Optional<Remote>> remoteSupplier) {
         remote = remoteSupplier;
 
         return this;

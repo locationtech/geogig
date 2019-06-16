@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.model.Ref.append;
 
@@ -80,9 +79,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @return the ref, or {@code null} if it doesn't exist
      */
     @Override
-    public String getRef(String name) {
-        checkNotNull(name);
-
+    public String getRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -100,8 +97,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @return the ref, or {@code null} if it doesn't exist
      */
     @Override
-    public String getSymRef(String name) {
-        checkNotNull(name);
+    public String getSymRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -128,9 +124,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
     @Override
-    public void putRef(String refName, String refValue) {
-        checkNotNull(refName);
-        checkNotNull(refValue);
+    public void putRef(@NonNull String refName, @NonNull String refValue) {
         checkWritable();
         try {
             ObjectId.valueOf(refValue);
@@ -146,9 +140,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
     @Override
-    public void putSymRef(String name, String val) {
-        checkNotNull(name);
-        checkNotNull(val);
+    public void putSymRef(@NonNull String name, @NonNull String val) {
         checkArgument(!name.equals(val), "Trying to store cyclic symbolic ref: %s", name);
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, val);
@@ -163,8 +155,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @return the value of the ref before removing it, or {@code null} if it didn't exist
      */
     @Override
-    public String remove(String refName) {
-        checkNotNull(refName);
+    public String remove(@NonNull String refName) {
         checkWritable();
         File refFile = toFile(refName);
         String oldRef;

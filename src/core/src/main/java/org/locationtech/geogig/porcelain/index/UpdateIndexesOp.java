@@ -25,6 +25,7 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,8 +43,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
      * @param branchRef the refSpec that resolves to a root tree
      * @return {@code this}
      */
-    public UpdateIndexesOp setRef(final Ref branchRef) {
-        checkNotNull(branchRef);
+    public UpdateIndexesOp setRef(final @NonNull Ref branchRef) {
         checkArgument(!(branchRef instanceof SymRef),
                 "Update indexes does not support symbolic references");
         checkArgument(branchRef.getName().startsWith(Ref.REFS_PREFIX),

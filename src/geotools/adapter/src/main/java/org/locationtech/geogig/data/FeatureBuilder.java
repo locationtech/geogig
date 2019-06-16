@@ -23,7 +23,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.identity.FeatureId;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /**
  * Provides a method of building features from {@link RevFeature} objects that have the type
@@ -81,9 +81,7 @@ public class FeatureBuilder {
      * @param revFeature the {@code RevFeature} with the property values for the feature
      * @return the constructed {@code Feature}
      */
-    public Feature build(final String id, final RevFeature revFeature) {
-        Preconditions.checkNotNull(id);
-        Preconditions.checkNotNull(revFeature);
+    public Feature build(final @NonNull String id, final @NonNull RevFeature revFeature) {
 
         final FeatureId fid = new LazyVersionedFeatureId(id, revFeature.getId());
 
@@ -92,10 +90,8 @@ public class FeatureBuilder {
         return feature;
     }
 
-    public Feature build(final String id, final RevFeature revFeature,
+    public Feature build(final @NonNull String id, final @NonNull RevFeature revFeature,
             final @Nullable GeometryFactory geometryFactory) {
-        Preconditions.checkNotNull(id);
-        Preconditions.checkNotNull(revFeature);
 
         final FeatureId fid = new LazyVersionedFeatureId(id, revFeature.getId());
 

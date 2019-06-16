@@ -25,6 +25,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
+import lombok.NonNull;
+
 /**
  * Resolves the location of the {@code .geogig} repository directory relative to the
  * {@link Platform#pwd() current directory}.
@@ -40,8 +42,7 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
     private @Nullable Hints hints;
 
     @Inject
-    public ResolveGeogigURI(Platform platform, @Nullable Hints hints) {
-        Preconditions.checkNotNull(platform);
+    public ResolveGeogigURI(@NonNull Platform platform, @Nullable Hints hints) {
         this.platform = platform;
         this.hints = hints;
     }

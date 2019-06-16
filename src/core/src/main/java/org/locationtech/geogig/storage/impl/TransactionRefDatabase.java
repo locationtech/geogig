@@ -41,6 +41,8 @@ import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
+
 /**
  * A {@link RefDatabase} decorator for a specific {@link GeogigTransaction transaction}.
  * <p>
@@ -239,8 +241,7 @@ public class TransactionRefDatabase implements RefDatabase {
             this.newValue = newv;
         }
 
-        static ChangedRef of(String name, String oldv, String newv) {
-            Preconditions.checkNotNull(name);
+        static ChangedRef of(@NonNull String name, String oldv, String newv) {
             Preconditions.checkArgument(oldv != null || newv != null);
             Preconditions.checkArgument(!Objects.equals(oldv, newv));
             return new ChangedRef(name, oldv, newv);

@@ -60,6 +60,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * An implementation of a remote repository that exists on the local machine.
@@ -80,9 +81,8 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
         this.remoteRepoURI = remoteRepoURI;
     }
 
-    LocalRemoteRepo(Remote remote, Repository remoteRepo) {
+    LocalRemoteRepo(@NonNull Remote remote, @NonNull Repository remoteRepo) {
         super(remote);
-        checkNotNull(remoteRepo);
         this.remoteRepository = remoteRepo;
     }
 
@@ -253,13 +253,9 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
         }
     }
 
-    private void copyNewObjects(RevTree oldTree, RevTree newTree, final ObjectDatabase fromDb,
-            final ObjectDatabase toDb, final ProgressListener progress) {
-        checkNotNull(oldTree);
-        checkNotNull(newTree);
-        checkNotNull(fromDb);
-        checkNotNull(toDb);
-        checkNotNull(progress);
+    private void copyNewObjects(@NonNull RevTree oldTree, @NonNull RevTree newTree,
+            @NonNull final ObjectDatabase fromDb, final @NonNull ObjectDatabase toDb,
+            final @NonNull ProgressListener progress) {
 
         // the diff walk uses fromDb as both left and right data source since we're comparing what
         // we have in the "origin" database against trees on the same repository

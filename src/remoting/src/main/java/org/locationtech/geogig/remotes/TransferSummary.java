@@ -20,6 +20,8 @@ import org.locationtech.geogig.repository.Remote;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ArrayListMultimap;
 
+import lombok.NonNull;
+
 /**
  * A summary changes performed to a repository after calling {@link FetchOp} or {@link PushOp}
  * grouped by each {@link Remote} the command acted upon.
@@ -32,15 +34,11 @@ public class TransferSummary {
         return refDiffs.asMap();
     }
 
-    public void add(final String remoteURL, final RefDiff changeResult) {
-        checkNotNull(remoteURL);
-        checkNotNull(changeResult);
+    public void add(final @NonNull String remoteURL, final @NonNull RefDiff changeResult) {
         refDiffs.put(remoteURL, changeResult);
     }
 
-    public void addAll(final String remoteURL, final List<RefDiff> changes) {
-        checkNotNull(remoteURL);
-        checkNotNull(changes);
+    public void addAll(final @NonNull String remoteURL, final @NonNull List<RefDiff> changes) {
         for (RefDiff cr : changes) {
             checkNotNull(cr);
         }

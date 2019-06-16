@@ -10,7 +10,6 @@
 package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
@@ -29,6 +28,8 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+
+import lombok.NonNull;
 
 /**
  * Resolves the reference given by a ref spec to the {@link ObjectId} it finally points to,
@@ -191,8 +192,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
         return resolved;
     }
 
-    private Optional<ObjectId> resolveParent(final ObjectId objectId, final int parentN) {
-        checkNotNull(objectId);
+    private Optional<ObjectId> resolveParent(final @NonNull ObjectId objectId, final int parentN) {
         checkArgument(parentN > -1);
         if (objectId.isNull()) {
             return Optional.empty();

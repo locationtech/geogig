@@ -10,7 +10,6 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Optional.ofNullable;
 
 import java.util.ArrayList;
@@ -32,6 +31,8 @@ import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Sets;
+
+import lombok.NonNull;
 
 public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase {
 
@@ -111,9 +112,8 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         return getAllSection(global, section);
     }
 
-    private Map<String, String> getAllSection(ConcurrentMap<String, String> config,
-            String section) {
-        checkNotNull(section);
+    private Map<String, String> getAllSection(@NonNull ConcurrentMap<String, String> config,
+            @NonNull String section) {
         CharMatcher matcher = CharMatcher.is('.');
         final int numSections = 1 + matcher.countIn(section);
         final String prefix = section + ".";
@@ -139,8 +139,8 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         return getAllSubSection(global, section);
     }
 
-    private List<String> getAllSubSection(ConcurrentMap<String, String> config, String section) {
-        checkNotNull(section);
+    private List<String> getAllSubSection(@NonNull ConcurrentMap<String, String> config,
+            @NonNull String section) {
         CharMatcher matcher = CharMatcher.is('.');
         final int numSections = 2 + matcher.countIn(section); // one separator for subsection and
                                                               // one for the leaf key
@@ -201,8 +201,8 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         removeSection(global, section);
     }
 
-    private void removeSection(ConcurrentMap<String, String> config, String section) {
-        checkNotNull(section);
+    private void removeSection(@NonNull ConcurrentMap<String, String> config,
+            @NonNull String section) {
         final String prefix = section + ".";
         Set<String> matching = new HashSet<>(
                 Sets.filter(config.keySet(), (k) -> k.startsWith(prefix)));

@@ -46,6 +46,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
  * objects.
@@ -129,12 +131,10 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
      * @param partialId the partial id to search for
      * @return a list of matching results
      */
-    public @Override List<ObjectId> lookUp(final String partialId) {
-        checkNotNull(partialId, "partialId is null");
+    public @Override List<ObjectId> lookUp(final @NonNull String partialId) {
         Preconditions.checkArgument(partialId.length() > 7,
                 "partial id must be at least 8 characters long: ", partialId);
         checkState(isOpen(), "db is closed");
-        Preconditions.checkNotNull(partialId);
         List<ObjectId> matches = Lists.newLinkedList();
         for (ObjectId id : objects.keySet()) {
             if (id.toString().startsWith(partialId)) {

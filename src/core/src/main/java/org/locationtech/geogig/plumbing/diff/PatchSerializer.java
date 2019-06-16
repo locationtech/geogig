@@ -30,9 +30,10 @@ import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 /**
  * Serializes the differences between two versions of the repository, in plain text format
@@ -51,8 +52,7 @@ public class PatchSerializer {
      * @param reader the read from where to read the patch description
      * @return a Patch
      */
-    public static Patch read(BufferedReader reader) {
-        Preconditions.checkNotNull(reader);
+    public static Patch read(@NonNull BufferedReader reader) {
 
         Patch patch = new Patch();
         List<String> subset = Lists.newArrayList();

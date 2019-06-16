@@ -31,8 +31,9 @@ import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 
-import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
+
+import lombok.NonNull;
 
 /**
  * Serialization factory for serial version 2
@@ -51,8 +52,7 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
         this(FormatCommonV2.INSTANCE);
     }
 
-    protected DataStreamRevObjectSerializerV2(FormatCommonV2 format) {
-        Preconditions.checkNotNull(format);
+    protected DataStreamRevObjectSerializerV2(@NonNull FormatCommonV2 format) {
         this.format = format;
         serializers[TYPE.COMMIT.ordinal()] = new CommitSerializer(format);
         serializers[TYPE.FEATURE.ordinal()] = new FeatureSerializer(format);

@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -24,6 +23,8 @@ import org.locationtech.geogig.repository.Remote;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
 
 /**
  * Receives a list of refs for a remote and converts them either from local namespace to remotes
@@ -84,8 +85,7 @@ public class MapRef extends AbstractGeoGigOp<List<Ref>> {
         return localRef;
     }
 
-    public MapRef add(Ref ref) {
-        checkNotNull(ref);
+    public MapRef add(@NonNull Ref ref) {
         refs.add(ref);
         return this;
     }
@@ -97,8 +97,7 @@ public class MapRef extends AbstractGeoGigOp<List<Ref>> {
         return this;
     }
 
-    public MapRef setRemote(Remote remote) {
-        checkNotNull(remote);
+    public MapRef setRemote(@NonNull Remote remote) {
         this.remote = remote;
         return this;
     }

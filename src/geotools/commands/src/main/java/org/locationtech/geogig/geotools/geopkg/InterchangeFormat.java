@@ -10,7 +10,6 @@
 package org.locationtech.geogig.geotools.geopkg;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_DELETE;
@@ -93,15 +92,12 @@ public class InterchangeFormat {
 
     private File geopackageDbFile;
 
-    public InterchangeFormat(final File geopackageDbFile, final Context context) {
-        checkNotNull(geopackageDbFile);
-        checkNotNull(context);
+    public InterchangeFormat(final @NonNull File geopackageDbFile, final @NonNull Context context) {
         this.geopackageDbFile = geopackageDbFile;
         this.context = context;
     }
 
-    public InterchangeFormat setProgressListener(ProgressListener progressListener) {
-        checkNotNull(progressListener);
+    public InterchangeFormat setProgressListener(@NonNull ProgressListener progressListener) {
         this.progressListener = progressListener;
         return this;
     }

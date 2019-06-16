@@ -1,7 +1,5 @@
 package org.locationtech.geogig.tempstorage.rocksdb;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -29,6 +27,7 @@ import org.locationtech.geogig.storage.datastream.Varint;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 final @UtilityClass class DAGSerializer {
@@ -138,10 +137,7 @@ final @UtilityClass class DAGSerializer {
         return new DAG(id, treeId, childCount, state, children, buckets);
     }
 
-    public static void write(NodeId id, DataOutput out) {
-        checkNotNull(id);
-        checkNotNull(out);
-
+    public static void write(@NonNull NodeId id, @NonNull DataOutput out) {
         final String name = id.name();
         @Nullable
         final Object value = id.value();

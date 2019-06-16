@@ -14,15 +14,12 @@ import java.util.List;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.storage.GraphDatabase;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class SynchronizedGraphDatabase implements GraphDatabase {
-    private final GraphDatabase delegate;
-
-    public SynchronizedGraphDatabase(GraphDatabase delegate) {
-        Preconditions.checkNotNull(delegate);
-        this.delegate = delegate;
-    }
+    private final @NonNull GraphDatabase delegate;
 
     public void open() {
         synchronized (delegate) {

@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Function;
@@ -32,6 +30,8 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
+
+import lombok.NonNull;
 
 /**
  * An iterator over a {@link RevTree} that can return different results depending on the
@@ -101,13 +101,8 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         }
     };
 
-    public DepthTreeIterator(final String treePath, final ObjectId metadataId, RevTree tree,
-            ObjectStore source, Strategy strategy) {
-        checkNotNull(treePath);
-        checkNotNull(metadataId);
-        checkNotNull(tree);
-        checkNotNull(source);
-        checkNotNull(strategy);
+    public DepthTreeIterator(final @NonNull String treePath, final @NonNull ObjectId metadataId,
+            @NonNull RevTree tree, @NonNull ObjectStore source, @NonNull Strategy strategy) {
 
         this.tree = tree;
         this.treePath = treePath;

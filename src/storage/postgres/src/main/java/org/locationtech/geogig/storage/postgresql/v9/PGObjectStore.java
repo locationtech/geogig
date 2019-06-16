@@ -85,6 +85,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import lombok.NonNull;
+
 /**
  * PostgreSQL implementation for {@link ObjectStore}.
  * <p>
@@ -116,11 +118,9 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
 
     private SharedResourceReference resources;
 
-    public PGObjectStore(final ConfigDatabase configdb, final Environment config,
+    public PGObjectStore(final @NonNull ConfigDatabase configdb, final @NonNull Environment config,
             boolean readOnly) {
         super(readOnly);
-        Preconditions.checkNotNull(configdb);
-        Preconditions.checkNotNull(config);
         Preconditions.checkNotNull(config.getRepositoryName(), "Repository id not provided");
         // REVISIT: the following check should be done at open() instead?
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",

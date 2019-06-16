@@ -50,6 +50,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
+import lombok.NonNull;
+
 public class QuadTreeTestSupport extends ExternalResource {
 
     public static Envelope wgs84Bounds() {
@@ -297,8 +299,7 @@ public class QuadTreeTestSupport extends ExternalResource {
         return nodeBounds;
     }
 
-    public Node putNode(QuadTreeClusteringStrategy quad, Quadrant... location) {
-        Preconditions.checkNotNull(location);
+    public Node putNode(QuadTreeClusteringStrategy quad, @NonNull Quadrant... location) {
         long fnumb = quad.root == null ? 0 : quad.root.getTotalChildCount();
         String quadInfo = Arrays.toString(location);
 
@@ -309,14 +310,12 @@ public class QuadTreeTestSupport extends ExternalResource {
     }
 
     public List<Node> putNodes(int numNodes, QuadTreeClusteringStrategy quad,
-            List<Quadrant> location) {
-        Preconditions.checkNotNull(location);
+            @NonNull List<Quadrant> location) {
         return putNodes(numNodes, quad, location.toArray(new Quadrant[location.size()]));
     }
 
     public List<Node> putNodes(int numNodes, QuadTreeClusteringStrategy quad,
-            Quadrant... location) {
-        Preconditions.checkNotNull(location);
+            @NonNull Quadrant... location) {
         Preconditions.checkArgument(location.length > 0);
         List<Node> result = new ArrayList<>(numNodes);
         for (int t = 0; t < numNodes; t++) {

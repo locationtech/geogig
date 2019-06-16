@@ -10,7 +10,6 @@
 package org.locationtech.geogig.porcelain;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
@@ -55,6 +54,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
+import lombok.NonNull;
+
 /**
  * Updates objects in the working tree to match the version in the index or the specified tree. If
  * no {@link #addPath paths} are given, will also update {@link Ref#HEAD HEAD} to set the specified
@@ -90,8 +91,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         return this;
     }
 
-    public CheckoutOp addPath(final CharSequence path) {
-        checkNotNull(path);
+    public CheckoutOp addPath(final @NonNull CharSequence path) {
         paths.add(path.toString());
         return this;
     }
@@ -106,8 +106,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         return this;
     }
 
-    public CheckoutOp addPaths(final Collection<? extends CharSequence> paths) {
-        checkNotNull(paths);
+    public CheckoutOp addPaths(final @NonNull Collection<? extends CharSequence> paths) {
         for (CharSequence path : paths) {
             addPath(path);
         }

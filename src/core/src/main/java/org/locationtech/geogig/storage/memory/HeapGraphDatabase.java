@@ -25,6 +25,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Streams;
 
+import lombok.NonNull;
+
 /**
  * Provides an default in memory implementation of a GeoGig Graph Database.
  */
@@ -98,8 +100,7 @@ public class HeapGraphDatabase extends AbstractStore implements GraphDatabase {
     }
 
     @Override
-    public int getDepth(ObjectId commitId) {
-        Preconditions.checkNotNull(commitId);
+    public int getDepth(@NonNull ObjectId commitId) {
         Optional<Node> nodeOpt = graph.get(commitId);
         Preconditions.checkArgument(nodeOpt.isPresent(), "No graph entry for commit %s on %s",
                 commitId, this.toString());

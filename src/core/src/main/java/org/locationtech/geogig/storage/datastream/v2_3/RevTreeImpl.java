@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.storage.datastream.v2_3;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -20,15 +18,15 @@ import org.locationtech.geogig.model.impl.AbstractRevObject;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 
+import lombok.NonNull;
+
 class RevTreeImpl implements RevTree {
 
     private final ObjectId id;
 
     final DataBuffer data;
 
-    public RevTreeImpl(ObjectId id, DataBuffer dataBuffer) {
-        checkNotNull(id);
-        checkNotNull(dataBuffer);
+    public RevTreeImpl(@NonNull ObjectId id, @NonNull DataBuffer dataBuffer) {
         this.id = id;
         this.data = dataBuffer;
     }

@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage.postgresql.v9;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newConnection;
@@ -39,6 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+
+import lombok.NonNull;
 
 public class PGRefDatabase extends AbstractStore implements RefDatabase {
 
@@ -158,9 +159,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
     }
 
     @Override
-    public String getRef(String name) {
-        checkNotNull(name);
-
+    public String getRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -174,8 +173,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
     }
 
     @Override
-    public String getSymRef(String name) {
-        checkNotNull(name);
+    public String getSymRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -228,9 +226,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
     }
 
     @Override
-    public void putSymRef(String name, String value) {
-        checkNotNull(name);
-        checkNotNull(value);
+    public void putSymRef(@NonNull String name, @NonNull String value) {
         checkArgument(!name.equals(value), "Trying to store cyclic symbolic ref: %s", name);
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, value);

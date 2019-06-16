@@ -52,6 +52,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 /**
  * Base class for PostgreSQL based graph database.
  * 
@@ -75,9 +77,8 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
         this(Environment.get(hints), Hints.isRepoReadOnly(hints));
     }
 
-    public PGGraphDatabase(Environment config, boolean readOnly) {
+    public PGGraphDatabase(@NonNull Environment config, boolean readOnly) {
         super(readOnly);
-        Preconditions.checkNotNull(config);
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
         this.config = config;

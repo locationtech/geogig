@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 
 import org.geotools.data.FeatureSource;
@@ -30,6 +28,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.sort.SortBy;
+
+import lombok.NonNull;
 
 class FeatureTypeAdapterFeatureSource<T extends org.opengis.feature.type.FeatureType, F extends org.opengis.feature.Feature>
         extends ForwardingFeatureSource<T, F> {
@@ -137,10 +137,9 @@ class FeatureTypeAdapterFeatureSource<T extends org.opengis.feature.type.Feature
 
         private SimpleFeatureBuilder builder;
 
-        public FeatureTypeConverterIterator(final FeatureIterator<F> iterator,
-                SimpleFeatureBuilder builder) {
+        public FeatureTypeConverterIterator(final @NonNull FeatureIterator<F> iterator,
+                @NonNull SimpleFeatureBuilder builder) {
             super(iterator);
-            checkNotNull(builder);
             this.builder = builder;
         }
 

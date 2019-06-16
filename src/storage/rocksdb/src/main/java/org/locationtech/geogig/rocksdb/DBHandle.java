@@ -21,6 +21,8 @@ import org.rocksdb.RocksDBException;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
+
 class DBHandle {
 
     final org.rocksdb.DBOptions options;
@@ -114,9 +116,7 @@ class DBHandle {
         }
     }
 
-    public void setMetadata(String key, String value) {
-        Preconditions.checkNotNull(key);
-        Preconditions.checkNotNull(value);
+    public void setMetadata(@NonNull String key, @NonNull String value) {
         Preconditions.checkState(!closed, "db is closed");
         Preconditions.checkState(!config.isReadOnly(), "db is read only");
         Preconditions.checkNotNull(metadata);
@@ -130,8 +130,7 @@ class DBHandle {
         }
     }
 
-    public Optional<String> getMetadata(final String key) {
-        Preconditions.checkNotNull(key);
+    public Optional<String> getMetadata(final @NonNull String key) {
         String value = null;
         if (metadata != null) {
             try (RocksDBReference dbRef = getReference()) {

@@ -26,6 +26,8 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
+
 class ContentIdsProducer implements java.util.function.Consumer<ObjectId>, Runnable {
 
     public static ContentIdsProducer forCommits(ObjectStore source, List<ObjectId[]> diffTreeIds,
@@ -36,8 +38,9 @@ class ContentIdsProducer implements java.util.function.Consumer<ObjectId>, Runna
                 reportFeatures);
     }
 
-    public static ContentIdsProducer forIndex(IndexInfo indexInfo, IndexDatabase sourceStore,
-            List<ObjectId[]> treeIds, Deduplicator deduplicator, ObjectReporter objectReport) {
+    public static ContentIdsProducer forIndex(@NonNull IndexInfo indexInfo,
+            @NonNull IndexDatabase sourceStore, @NonNull List<ObjectId[]> treeIds,
+            @NonNull Deduplicator deduplicator, @NonNull ObjectReporter objectReport) {
 
         Envelope maxBounds = IndexInfo.getMaxBounds(indexInfo);
         Preconditions.checkNotNull(maxBounds);
@@ -184,7 +187,7 @@ class ContentIdsProducer implements java.util.function.Consumer<ObjectId>, Runna
                 return false;
             }
 
-            private void addMetadataId(ObjectReporter progress, NodeRef right) {
+            private void addMetadataId(@NonNull ObjectReporter progress, @NonNull NodeRef right) {
                 if (right.getNode().getMetadataId().isPresent()) {
                     ObjectId md = right.getNode().getMetadataId().get();
                     if (consume(md)) {
@@ -193,10 +196,8 @@ class ContentIdsProducer implements java.util.function.Consumer<ObjectId>, Runna
                 }
             }
 
-            private boolean addBucket(ObjectReporter progress, ObjectId left, Bucket right) {
-                Preconditions.checkNotNull(progress);
-                Preconditions.checkNotNull(left);
-                Preconditions.checkNotNull(right);
+            private boolean addBucket(@NonNull ObjectReporter progress, @NonNull ObjectId left,
+                    @NonNull Bucket right) {
                 if (visitPair(left, right.getObjectId())) {
                     if (consume(right.getObjectId())) {
                         progress.addBucket();

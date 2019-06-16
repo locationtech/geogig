@@ -67,6 +67,8 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 
+import lombok.NonNull;
+
 /**
  * A working tree is the collection of Features for a single FeatureType in GeoServer that has a
  * repository associated with it (and hence is subject of synchronization).
@@ -314,8 +316,7 @@ public class WorkingTreeImpl implements WorkingTree {
     }
 
     @Override
-    public ObjectId insert(FeatureInfo featureInfo) {
-        checkNotNull(featureInfo);
+    public ObjectId insert(@NonNull FeatureInfo featureInfo) {
         return insert(Iterators.singletonIterator(featureInfo), DefaultProgressListener.NULL);
     }
 
@@ -411,11 +412,10 @@ public class WorkingTreeImpl implements WorkingTree {
     }
 
     @Nullable
-    private RevTreeBuilder getTreeBuilder(final Map<String, NodeRef> currentTrees,
-            final Map<String, RevTreeBuilder> treeBuilders, final String treePath,
+    private RevTreeBuilder getTreeBuilder(final @NonNull Map<String, NodeRef> currentTrees,
+            final @NonNull Map<String, RevTreeBuilder> treeBuilders, final @NonNull String treePath,
             final @Nullable ObjectId featureMetadataId) {
 
-        checkNotNull(treePath);
         RevTreeBuilder builder = treeBuilders.get(treePath);
         if (builder == null) {
             NodeRef treeRef = currentTrees.get(treePath);

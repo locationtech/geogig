@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.datastream.Varint.readUnsignedVarInt;
 import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVarInt;
@@ -39,6 +38,8 @@ import org.locationtech.jts.geom.Envelope;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
 
 class NodeSet {
 
@@ -308,8 +309,8 @@ class NodeSet {
         return oidIdx;
     }
 
-    public static NodeSet decode(final DataBuffer data, final int offset, final TYPE type) {
-        checkNotNull(data);
+    public static NodeSet decode(final @NonNull DataBuffer data, final int offset,
+            final @NonNull TYPE type) {
         checkArgument(offset >= 0);
         checkArgument(type == TYPE.FEATURE || type == TYPE.TREE);
 

@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 class Index<T extends Comparable<T>> {
 
@@ -25,8 +25,7 @@ class Index<T extends Comparable<T>> {
 
     private AtomicInteger sequence = new AtomicInteger();
 
-    public int getOrAdd(T value) {
-        Preconditions.checkNotNull(value);
+    public int getOrAdd(@NonNull T value) {
         Integer index = valueMap.get(value);
         if (index == null) {
             index = sequence.getAndIncrement();
@@ -36,8 +35,7 @@ class Index<T extends Comparable<T>> {
         return index.intValue();
     }
 
-    public int indexOf(T value) {
-        Preconditions.checkNotNull(value);
+    public int indexOf(@NonNull T value) {
         Integer index = valueMap.get(value);
         return index == null ? -1 : index.intValue();
     }

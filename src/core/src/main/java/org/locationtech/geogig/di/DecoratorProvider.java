@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.di;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +17,8 @@ import org.locationtech.geogig.hooks.CommandHooksDecorator;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 class DecoratorProvider {
 
@@ -33,8 +33,7 @@ class DecoratorProvider {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(final T undecorated) {
-        checkNotNull(undecorated);
+    public <T> T get(@NonNull final T undecorated) {
         T decorated = undecorated;
         Class<? extends Object> undecoratedClass = decorated.getClass();
         {

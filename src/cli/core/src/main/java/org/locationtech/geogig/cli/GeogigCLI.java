@@ -68,6 +68,8 @@ import com.google.inject.Guice;
 import com.google.inject.Key;
 import com.google.inject.Module;
 
+import lombok.NonNull;
+
 /**
  * Command Line Interface for geogig.
  * <p>
@@ -137,8 +139,7 @@ public class GeogigCLI {
      * @param platform the platform to use
      * @see Platform
      */
-    public void setPlatform(Platform platform) {
-        checkNotNull(platform);
+    public void setPlatform(@NonNull Platform platform) {
         this.platform = platform;
     }
 
@@ -263,7 +264,7 @@ public class GeogigCLI {
      * try opening, if present, may return null Repository but the GeoGIG instance is still valid
      * and may being used to init a repo;
      */
-    public GeoGIG newGeoGIG(Hints hints) {
+    public @NonNull GeoGIG newGeoGIG(Hints hints) {
         Context inj = newGeogigInjector(hints);
 
         GeoGIG geogig = new GeoGIG(inj);

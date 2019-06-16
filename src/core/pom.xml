@@ -104,16 +104,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <profiles>
-    <profile>
-      <id>experimental</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.locationtech.geogig</groupId>
-          <artifactId>geogig-flatbuffers</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
 </project>

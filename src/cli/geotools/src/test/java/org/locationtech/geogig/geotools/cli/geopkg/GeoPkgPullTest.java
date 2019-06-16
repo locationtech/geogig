@@ -33,6 +33,7 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
@@ -61,7 +62,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(repo);
+        cli.setGeogig(new GeoGIG(repo));
 
         support = new GeoPackageTestSupport();
     }

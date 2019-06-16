@@ -23,6 +23,7 @@ class FeatureImpl extends Feature {
     }
 
     public @Override void setAttribute(int index, Object value) {
+        value = validate(index, value);
         this.values[index] = value;
     }
 

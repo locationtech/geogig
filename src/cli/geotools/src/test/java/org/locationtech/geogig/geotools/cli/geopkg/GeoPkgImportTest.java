@@ -21,6 +21,7 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.collect.Lists;
@@ -42,7 +43,7 @@ public class GeoPkgImportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(repo);
+        cli.setGeogig(new GeoGIG(repo));
 
         support = new GeoPackageTestSupport();
     }

@@ -233,8 +233,8 @@ public class ImportOpTest extends RepositoryTestCase {
         }
         assertEquals(4, set.size());
         for (ObjectId metadataId : set) {
-            Optional<RevFeatureType> ft = repo.command(RevObjectParse.class)
-                    .setObjectId(metadataId).call(RevFeatureType.class);
+            Optional<RevFeatureType> ft = repo.command(RevObjectParse.class).setObjectId(metadataId)
+                    .call(RevFeatureType.class);
             assertTrue(ft.isPresent());
             assertEquals("dest", ft.get().getName().getLocalPart());
         }
@@ -253,7 +253,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 new Object[] { gf.createPoint(new Coordinate(0, 0)), "feature0" }, "feature");
 
         FeatureInfo fi = featureInfo("dest", GT.adapt(feature));
-        WorkingTree workingTree = repo.getRepository().workingTree();
+        WorkingTree workingTree = repo.workingTree();
         workingTree.insert(fi);
         ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(
@@ -435,8 +435,8 @@ public class ImportOpTest extends RepositoryTestCase {
         feature = repo.command(RevObjectParse.class).setRefSpec("WORK_HEAD:table/feature1")
                 .call(RevFeature.class);
         assertTrue(feature.isPresent());
-        featureType = repo.command(ResolveFeatureType.class)
-                .setRefSpec("WORK_HEAD:table/feature1").call().get();
+        featureType = repo.command(ResolveFeatureType.class).setRefSpec("WORK_HEAD:table/feature1")
+                .call().get();
         assertEquals(originalFeatureType.getId(), featureType.getId());
         values = feature.get().getValues();
         assertEquals(values.get(0).get(), gf.createPoint(new Coordinate(0, 8)));

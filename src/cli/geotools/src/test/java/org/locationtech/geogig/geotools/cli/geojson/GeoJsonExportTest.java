@@ -20,6 +20,7 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class GeoJsonExportTest extends RepositoryTestCase {
@@ -34,7 +35,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(repo);
+        cli.setGeogig(new GeoGIG(repo));
 
         // Add points
         insertAndAdd(points1);
@@ -59,7 +60,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
     @Test
     public void testExport() throws Exception {
         GeoJsonExport exportCommand = new GeoJsonExport();
-        String geoJsonFileName = new File(repo.getPlatform().pwd(), "TestPoints.geojson")
+        String geoJsonFileName = new File(testRepository.getPlatform().pwd(), "TestPoints.geojson")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", geoJsonFileName);
         exportCommand.run(cli);
@@ -70,7 +71,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
     @Test
     public void testExportWithNullFeatureType() throws Exception {
         GeoJsonExport exportCommand = new GeoJsonExport();
-        String geoJsonFileName = new File(repo.getPlatform().pwd(), "TestPoints.geojson")
+        String geoJsonFileName = new File(testRepository.getPlatform().pwd(), "TestPoints.geojson")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList(null, geoJsonFileName);
         exception.expect(InvalidParameterException.class);
@@ -80,7 +81,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
     @Test
     public void testExportWithInvalidFeatureType() throws Exception {
         GeoJsonExport exportCommand = new GeoJsonExport();
-        String geoJsonFileName = new File(repo.getPlatform().pwd(), "TestPoints.geojson")
+        String geoJsonFileName = new File(testRepository.getPlatform().pwd(), "TestPoints.geojson")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("invalidType", geoJsonFileName);
         exception.expect(InvalidParameterException.class);
@@ -90,7 +91,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
     @Test
     public void testExportToFileThatAlreadyExists() throws Exception {
         GeoJsonExport exportCommand = new GeoJsonExport();
-        String geoJsonFileName = new File(repo.getPlatform().pwd(), "TestPoints.geojson")
+        String geoJsonFileName = new File(testRepository.getPlatform().pwd(), "TestPoints.geojson")
                 .getAbsolutePath();
 
         exportCommand.args = Arrays.asList("WORK_HEAD:Points", geoJsonFileName);
@@ -118,7 +119,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
     @Test
     public void testExportToFileThatAlreadyExistsWithOverwrite() throws Exception {
         GeoJsonExport exportCommand = new GeoJsonExport();
-        String geoJsonFileName = new File(repo.getPlatform().pwd(), "TestPoints.geojson")
+        String geoJsonFileName = new File(testRepository.getPlatform().pwd(), "TestPoints.geojson")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", geoJsonFileName);
         exportCommand.run(cli);

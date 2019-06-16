@@ -57,7 +57,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        dataStore = new GeoGigDataStore(repo.getRepository());
+        dataStore = new GeoGigDataStore(repo);
     }
 
     @Override
@@ -75,8 +75,8 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     private List<String> getTypeNames(String head) {
 
-        Iterator<NodeRef> typeTrees = repo.command(LsTreeOp.class)
-                .setStrategy(Strategy.TREES_ONLY).setReference(head).call();
+        Iterator<NodeRef> typeTrees = repo.command(LsTreeOp.class).setStrategy(Strategy.TREES_ONLY)
+                .setReference(head).call();
 
         List<String> typeNames = Lists
                 .newArrayList(Iterators.transform(typeTrees, (ref) -> ref.name()));

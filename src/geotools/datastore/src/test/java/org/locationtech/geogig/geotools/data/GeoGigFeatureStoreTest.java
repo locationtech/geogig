@@ -13,13 +13,17 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.util.factory.Hints;
+import org.hamcrest.core.IsInstanceOf;
+import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,6 +39,7 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.Feature;
+import org.opengis.feature.IllegalAttributeException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.FilterFactory2;
@@ -55,7 +60,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        dataStore = new GeoGigDataStore(repo.getRepository());
+        dataStore = new GeoGigDataStore(repo);
         dataStore.createSchema(GT.adapt(super.pointsType));
         dataStore.createSchema(GT.adapt(super.linesType));
         dataStore.createSchema(GT.adapt(super.polyType));
@@ -70,12 +75,17 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         points = null;
     }
 
+    private SimpleFeatureCollection collection(
+            org.locationtech.geogig.feature.Feature... gigFeatures) {
+        List<SimpleFeature> simpleFeatures = Arrays.asList(gigFeatures).stream().map(GT::adapt)
+                .collect(Collectors.toList());
+        SimpleFeatureCollection collection = DataUtilities.collection(simpleFeatures);
+        return collection;
+    }
+
     @Test
     public void testAddFeatures() throws Exception {
-
-        FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) points3));
+        SimpleFeatureCollection collection = collection(points1, points2, points3);
 
         Transaction tx = new DefaultTransaction();
         points.setTransaction(tx);
@@ -303,9 +313,13 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
 
-        expected.expect(IOException.class);
-        expected.expectMessage("Unable to convert");
-        points.modifyFeatures("pp", "1200", filter);
+        try {
+            points.modifyFeatures("pp", "1200", filter);
+            fail("Expected IOException");
+        } catch (IOException e) {
+            assertThat(e.getMessage(), StringContains.containsString("Unable to convert"));
+            assertThat(e.getCause(), IsInstanceOf.instanceOf(IllegalAttributeException.class));
+        }
     }
 
     @Test
@@ -412,15 +426,13 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
     public @Test void testAddFeaturesWrongTypeName() throws Exception {
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
         SimpleFeatureType newType = DataUtilities.createType("http://geogig.someType", "someType",
                 "sp:String,ip:Integer");
 
-        Feature newFeature = GT.adapt(newType,
-                feature(GT.adapt(newType), "someType.1", "StringProp1", new Integer(1000)));
+        org.locationtech.geogig.feature.Feature newFeature = feature(GT.adapt(newType),
+                "someType.1", "StringProp1", new Integer(1000));
 
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) newFeature));
+        SimpleFeatureCollection collection = collection(points1, points2, newFeature);
 
         expected.expect(IOException.class);
         expected.expectMessage("Tried to insert features of type 'someType' into 'Points'");
@@ -449,18 +461,16 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         final FeatureType original = pointsType;
         final String typeSpec = pointsTypeSpec + ",notInOriginalProp:String";
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
-
         final SimpleFeatureType newType = DataUtilities.createType(
                 original.getName().getNamespaceURI(), original.getName().getLocalPart(), typeSpec);
 
         FeatureType gigType = GT.adapt(newType);
 
-        Feature newFeature = GT.adapt(newType, feature(gigType, "someid", "StringProp1",
-                new Integer(1000), (Geometry) null, "value of att not in target schema"));
+        org.locationtech.geogig.feature.Feature newFeature = feature(gigType, "someid",
+                "StringProp1", new Integer(1000), (Geometry) null,
+                "value of att not in target schema");
 
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) newFeature));
+        SimpleFeatureCollection collection = collection(points1, points2, newFeature);
 
         expected.expect(IOException.class);
         expected.expectMessage("No such attribute:notInOriginalProp");

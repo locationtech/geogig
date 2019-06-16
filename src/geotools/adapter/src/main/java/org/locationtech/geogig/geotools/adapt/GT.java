@@ -1,6 +1,7 @@
 package org.locationtech.geogig.geotools.adapt;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
@@ -15,12 +16,16 @@ import lombok.experimental.UtilityClass;
 
 public @UtilityClass class GT {
 
-    private static final SimpleFeatureTypeAdapter SFT = new SimpleFeatureTypeAdapter();
+    private static final GTSimpleFeatureTypeAdapter SFT = new GTSimpleFeatureTypeAdapter();
 
-    private static final SimpleFeatureAdapter SF = new SimpleFeatureAdapter();
+    private static final GTSimpleFeatureAdapter SF = new GTSimpleFeatureAdapter();
 
     public static Envelope adapt(BoundingBox opengisBbox) {
         return SFT.adapt(opengisBbox);
+    }
+
+    public ReferencedEnvelope adapt(CoordinateReferenceSystem ogcCrs, Envelope env) {
+        return SFT.adapt(ogcCrs, env);
     }
 
     public static @NonNull org.locationtech.geogig.feature.Feature adapt(

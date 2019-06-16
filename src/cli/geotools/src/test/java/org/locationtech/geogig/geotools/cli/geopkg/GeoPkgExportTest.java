@@ -39,6 +39,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -59,7 +60,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(repo);
+        cli.setGeogig(new GeoGIG(repo));
 
         // Add points
         insertAndAdd(points1);

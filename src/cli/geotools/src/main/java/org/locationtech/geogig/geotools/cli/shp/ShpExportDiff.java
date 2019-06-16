@@ -22,6 +22,7 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.ValidatingFeatureFactoryImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.locationtech.geogig.cli.CLICommand;
@@ -164,7 +165,8 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
 
         Function<Feature, Optional<Feature>> function = (feature) -> {
 
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType,
+                    new ValidatingFeatureFactoryImpl());
             for (Property property : feature.getProperties()) {
                 if (property instanceof GeometryAttribute) {
                     builder.set(featureType.getGeometryDescriptor().getName(), property.getValue());

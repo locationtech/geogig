@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
@@ -26,6 +27,15 @@ class BaseAdapter {
         }
         return new Envelope(opengisBbox.getMinX(), opengisBbox.getMaxX(), opengisBbox.getMinY(),
                 opengisBbox.getMaxY());
+    }
+
+    public ReferencedEnvelope adapt(CoordinateReferenceSystem ogcCrs, Envelope env) {
+        if (env == null) {
+            return null;
+        }
+        ReferencedEnvelope envelope = new ReferencedEnvelope(ogcCrs);
+        envelope.init(env);
+        return envelope;
     }
 
     public @NonNull org.opengis.feature.type.Name adapt(

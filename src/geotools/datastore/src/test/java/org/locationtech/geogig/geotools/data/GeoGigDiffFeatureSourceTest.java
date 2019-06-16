@@ -46,7 +46,7 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
     protected @Override void setUpInternal() throws Exception {
         masterBranchCommits = new ArrayList<>();
         branch1Commits = new ArrayList<>();
-        dataStore = new GeoGigDataStore(repo.getRepository());
+        dataStore = new GeoGigDataStore(repo);
         dataStore.createSchema(GT.adapt(super.pointsType));
         dataStore.createSchema(GT.adapt(super.linesType));
 

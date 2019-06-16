@@ -83,7 +83,7 @@ public class CLI {
                         console.disableAnsi();
                     }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 console.println(format("Unable to obtain global config: " + e.getMessage()));
                 System.exit(-1);
             }

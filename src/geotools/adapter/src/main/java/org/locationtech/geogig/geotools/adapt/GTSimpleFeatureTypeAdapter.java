@@ -23,7 +23,7 @@ import org.opengis.util.InternationalString;
 
 import lombok.NonNull;
 
-public class SimpleFeatureTypeAdapter extends BaseAdapter {
+public class GTSimpleFeatureTypeAdapter extends BaseAdapter {
 
     private static final FeatureTypeFactory FTF = CommonFactoryFinder.getFeatureTypeFactory(null);
 

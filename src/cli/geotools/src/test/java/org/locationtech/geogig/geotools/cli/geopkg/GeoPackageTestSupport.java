@@ -43,6 +43,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.ValidatingFeatureFactoryImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
@@ -184,7 +185,8 @@ public class GeoPackageTestSupport {
     }
 
     private SimpleFeature transformFeatureId(SimpleFeature feature) {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(feature.getFeatureType());
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(feature.getFeatureType(),
+                new ValidatingFeatureFactoryImpl());
         for (Property property : feature.getProperties()) {
             if (property instanceof GeometryAttribute) {
                 builder.set(feature.getFeatureType().getGeometryDescriptor().getName(),

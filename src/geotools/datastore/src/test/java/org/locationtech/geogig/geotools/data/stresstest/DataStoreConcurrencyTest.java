@@ -10,11 +10,7 @@
 package org.locationtech.geogig.geotools.data.stresstest;
 
 import static com.google.common.collect.ImmutableList.copyOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,23 +32,12 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.porcelain.ConfigOp;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.test.TestPlatform;
-import org.locationtech.geogig.test.integration.TestContextBuilder;
+import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -62,9 +47,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-public class DataStoreConcurrencyTest {
-
-    private Context context;
+public class DataStoreConcurrencyTest extends RepositoryTestCase {
 
     private GeoGigDataStore store;
 
@@ -84,9 +67,6 @@ public class DataStoreConcurrencyTest {
 
     private final int writeThreadCount = 4, readThreadCount = 4;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
-
     private int initialCommitCount;
 
     // Feature insert counter
@@ -95,26 +75,9 @@ public class DataStoreConcurrencyTest {
     // List of Feature counts read by ReadTask instances
     private static final ArrayList<Integer> READ_COUNT_LIST = new ArrayList<>(4);
 
-    @Before
-    public void beforeTest() throws Exception {
-
-        File workingDirectory = tmp.newFolder("repo");
-        File userHomeDirectory = tmp.newFolder("home");
-        TestPlatform platform = new TestPlatform(workingDirectory);
-        platform.setUserHome(userHomeDirectory);
-
-        GlobalContextBuilder.builder(new TestContextBuilder(platform));
-        context = GlobalContextBuilder.builder().build(new Hints().platform(platform));
-
-        GeoGIG repo = new GeoGIG(context);
-        repo.command(InitOp.class).call();
-        repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
-                .setValue("gabriel").call();
-        repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                .setValue("gabriel@roldan.example.com").call();
-
-        store = new GeoGigDataStore(repo.getRepository());
-
+    @Override
+    protected void setUpInternal() throws Exception {
+        store = new GeoGigDataStore(repo);
         store.createSchema(pointType);
 
         editThreads = Executors.newFixedThreadPool(writeThreadCount,
@@ -122,7 +85,7 @@ public class DataStoreConcurrencyTest {
 
         readThreads = Executors.newFixedThreadPool(readThreadCount,
                 new ThreadFactoryBuilder().setNameFormat("read-thread-%d").build());
-        initialCommitCount = copyOf(context.command(LogOp.class).call()).size();
+        initialCommitCount = copyOf(repo.command(LogOp.class).call()).size();
 
         // reset Insert counter each scenario
         CONCURRENT_INSERT_COUNT.set(0);
@@ -151,7 +114,7 @@ public class DataStoreConcurrencyTest {
             assertEquals(insertsPerTask, f.get().intValue());
         }
 
-        List<RevCommit> commits = copyOf(context.command(LogOp.class).call());
+        List<RevCommit> commits = copyOf(repo.command(LogOp.class).call());
         final int expectedCommitCount = initialCommitCount + insertsPerTask * writeThreadCount;
         assertEquals(expectedCommitCount, commits.size());
     }
@@ -220,7 +183,7 @@ public class DataStoreConcurrencyTest {
                     READ_COUNT_LIST.contains(readCount));
         }
 
-        List<RevCommit> commits = copyOf(context.command(LogOp.class).call());
+        List<RevCommit> commits = copyOf(repo.command(LogOp.class).call());
         final int expectedCommitCount = insertsPerTask + initialCommitCount
                 + insertsPerTask * writeThreadCount;
         assertEquals(expectedCommitCount, commits.size());
@@ -344,27 +307,11 @@ public class DataStoreConcurrencyTest {
             int count = 0;
             while (features.hasNext()) {
                 SimpleFeature next = features.next();
+                assertNotNull(next);
                 count++;
             }
             features.close();
             return count;
-        }
-    }
-
-    public static void main(String args[]) {
-        DataStoreConcurrencyTest test = new DataStoreConcurrencyTest();
-        try {
-            test.tmp.create();
-            test.beforeTest();
-            test.testConcurrentEditsAndReads();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                test.afterTest();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 }

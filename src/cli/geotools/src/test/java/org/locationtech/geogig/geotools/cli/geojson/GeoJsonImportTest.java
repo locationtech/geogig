@@ -32,6 +32,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.DescribeFeatureType;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.LineString;
@@ -52,7 +53,7 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = spy(new GeogigCLI(consoleReader));
 
-        cli.setGeogig(repo);
+        cli.setGeogig(new GeoGIG(repo));
     }
 
     @After

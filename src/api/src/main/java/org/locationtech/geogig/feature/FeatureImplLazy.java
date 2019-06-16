@@ -53,6 +53,7 @@ class FeatureImplLazy extends Feature {
 
     @SuppressWarnings("unchecked")
     public @Override void setAttribute(int index, Object value) {
+        value = validate(index, value);
         if (!mutable()) {
             this.mutatedValues = new Optional[this.immutableValues.size()];
         }

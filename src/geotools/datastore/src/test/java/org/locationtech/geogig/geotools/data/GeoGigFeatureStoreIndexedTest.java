@@ -83,7 +83,7 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
             polygonsInitialIndex = createIndex(typeRef, "sp", "ip");
             ObjectId indexTreeId = polygonsInitialIndex.indexTreeId();
             ObjectId canonicalTreeId = typeRef.getObjectId();
-            IndexTestSupport.verifyIndex(repo, indexTreeId, canonicalTreeId, "sp", "ip");
+            IndexTestSupport.verifyIndex(repo.context(), indexTreeId, canonicalTreeId, "sp", "ip");
         }
 
         final Geometry unpromotable = geom("POLYGON((-1 -1,-1 1,1 1,1 -1,-1 -1))");
@@ -195,7 +195,7 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
 
         Set<String> extraAttributes = IndexInfo.getMaterializedAttributeNames(indexInfo);
         String[] extraAtts = new ArrayList<>(extraAttributes).toArray(new String[0]);
-        IndexTestSupport.verifyIndex(repo, indexTreeId, canonicalTreeId, extraAtts);
+        IndexTestSupport.verifyIndex(repo.context(), indexTreeId, canonicalTreeId, extraAtts);
 
         List<SimpleFeature> contents = DataUtilities.list(source.getFeatures());
 

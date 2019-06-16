@@ -399,7 +399,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
 
             workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
-            throw new IOException(e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 

@@ -40,18 +40,18 @@ public class QLDeleteIntegrationTest extends RepositoryTestCase {
         insertAndAdd(lines1);
         insertAndAdd(lines2);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         insertAndAdd(points3);
         insertAndAdd(lines3);
 
         insertAndAdd(points1_modified);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
     }
 
     private Supplier<DiffObjectCount> delete(String query) {
-        return geogig.command(QLDelete.class).setStatement(query).call();
+        return repo.command(QLDelete.class).setStatement(query).call();
     }
 
     @Test
@@ -73,8 +73,8 @@ public class QLDeleteIntegrationTest extends RepositoryTestCase {
     }
 
     public Set<String> lsTree(String treeIsh) {
-        List<NodeRef> nodes = Lists.newArrayList(geogig.command(LsTreeOp.class)
-                .setReference(treeIsh).setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call());
+        List<NodeRef> nodes = Lists.newArrayList(repo.command(LsTreeOp.class).setReference(treeIsh)
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call());
         Set<String> ids = new HashSet<>(Lists.transform(nodes, (n) -> n.name()));
         return ids;
     }

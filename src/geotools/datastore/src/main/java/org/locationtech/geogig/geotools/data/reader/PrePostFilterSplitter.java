@@ -205,18 +205,15 @@ final class PrePostFilterSplitter {
             return tuple(pre, post);
         }
 
-        @Override
-        public Filter[] visit(ExcludeFilter filter, Object extraData) {
+        public @Override Filter[] visit(ExcludeFilter filter, Object extraData) {
             return tuple(filter, filter);
         }
 
-        @Override
-        public Filter[] visit(IncludeFilter filter, Object extraData) {
+        public @Override Filter[] visit(IncludeFilter filter, Object extraData) {
             return tuple(filter, filter);
         }
 
-        @Override
-        public Filter[] visit(And filter, Object extraData) {
+        public @Override Filter[] visit(And filter, Object extraData) {
             List<Filter> children = filter.getChildren();
             List<Filter> pre = new ArrayList<>(children.size());
             List<Filter> post = new ArrayList<>(children.size());
@@ -235,8 +232,7 @@ final class PrePostFilterSplitter {
             return tuple(prefilter, postfilter);
         }
 
-        @Override
-        public Filter[] visit(Or filter, Object extraData) {
+        public @Override Filter[] visit(Or filter, Object extraData) {
             List<Filter> children = filter.getChildren();
             List<Filter> pre = new ArrayList<>(children.size());
             List<Filter> post = new ArrayList<>(children.size());
@@ -256,13 +252,11 @@ final class PrePostFilterSplitter {
             return tuple(preFilter, postFilter);
         }
 
-        @Override
-        public Filter[] visit(Id filter, Object extraData) {
+        public @Override Filter[] visit(Id filter, Object extraData) {
             return tuple(filter, INCLUDE);
         }
 
-        @Override
-        public Filter[] visit(Not filter, Object extraData) {
+        public @Override Filter[] visit(Not filter, Object extraData) {
             Filter negated = filter.getFilter();
 
             Filter[] tuple = (Filter[]) negated.accept(this, null);
@@ -277,8 +271,7 @@ final class PrePostFilterSplitter {
             return tuple(pre, post);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsBetween filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsBetween filter, Object extraData) {
             final Expression[] expression = visit(filter.getExpression());
             final Expression[] lowerBoundary = visit(filter.getLowerBoundary());
             final Expression[] upperBoundary = visit(filter.getUpperBoundary());
@@ -290,38 +283,31 @@ final class PrePostFilterSplitter {
             return tuple(pre, post);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsEqualTo filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsEqualTo filter, Object extraData) {
             return visitBinaryComparisonOperator(filter);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsNotEqualTo filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsNotEqualTo filter, Object extraData) {
             return visitBinaryComparisonOperator(filter);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsGreaterThan filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsGreaterThan filter, Object extraData) {
             return visitBinaryComparisonOperator(filter);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsGreaterThanOrEqualTo filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsGreaterThanOrEqualTo filter, Object extraData) {
             return visitBinaryComparisonOperator(filter);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsLessThan filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsLessThan filter, Object extraData) {
             return visitBinaryComparisonOperator(filter);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsLessThanOrEqualTo filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsLessThanOrEqualTo filter, Object extraData) {
             return visitBinaryComparisonOperator(filter);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsLike filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsLike filter, Object extraData) {
             Expression[] expression = visit(filter.getExpression());
             final boolean supported = isPreSupported(expression);
 
@@ -330,8 +316,7 @@ final class PrePostFilterSplitter {
             return tuple(pre, post);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsNull filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsNull filter, Object extraData) {
             Expression[] expression = visit(filter.getExpression());
             final boolean supported = isPreSupported(expression);
 
@@ -340,8 +325,7 @@ final class PrePostFilterSplitter {
             return tuple(pre, post);
         }
 
-        @Override
-        public Filter[] visit(PropertyIsNil filter, Object extraData) {
+        public @Override Filter[] visit(PropertyIsNil filter, Object extraData) {
             Expression[] expression = visit(filter.getExpression());
             final boolean supported = isPreSupported(expression);
 
@@ -350,8 +334,7 @@ final class PrePostFilterSplitter {
             return tuple(pre, post);
         }
 
-        @Override
-        public Filter[] visit(BBOX filter, Object extraData) {
+        public @Override Filter[] visit(BBOX filter, Object extraData) {
             Expression metaProperty = toBoundsExpression(filter.getExpression1(), false);
             BBOX bbox = ff.bbox(metaProperty, filter.getBounds());
             return tuple(bbox, INCLUDE);
@@ -378,138 +361,113 @@ final class PrePostFilterSplitter {
             return expression;
         }
 
-        @Override
-        public Filter[] visit(Contains filter, Object extraData) {
+        public @Override Filter[] visit(Contains filter, Object extraData) {
             return boundedOp(filter, (g1, g2) -> ff.contains(g1, g2), false);
         }
 
-        @Override
-        public Filter[] visit(Crosses filter, Object extraData) {
+        public @Override Filter[] visit(Crosses filter, Object extraData) {
             // simplify to a bounds intersects filter, the post-filter shall do the rest
             return boundedOp(filter, (g1, g2) -> ff.intersects(g1, g2), false);
         }
 
-        @Override
-        public Filter[] visit(Equals filter, Object extraData) {
+        public @Override Filter[] visit(Equals filter, Object extraData) {
             // pre filter checks are a downgrade to an envelope intersects, to account for possibly
             // floating point rounding errors in the bounds saved on the tree Nodes
             return boundedOp(filter, (g1, g2) -> ff.intersects(g1, g2), true);
         }
 
-        @Override
-        public Filter[] visit(Intersects filter, Object extraData) {
+        public @Override Filter[] visit(Intersects filter, Object extraData) {
             return boundedOp(filter, (g1, g2) -> ff.intersects(g1, g2), false);
         }
 
-        @Override
-        public Filter[] visit(Overlaps filter, Object extraData) {
+        public @Override Filter[] visit(Overlaps filter, Object extraData) {
             // simplify to a bounds intersects filter, the post-filter shall do the rest
             return boundedOp(filter, (g1, g2) -> ff.intersects(g1, g2), false);
         }
 
-        @Override
-        public Filter[] visit(Touches filter, Object extraData) {
+        public @Override Filter[] visit(Touches filter, Object extraData) {
             return boundedOp(filter, (g1, g2) -> ff.intersects(g1, g2), false);
         }
 
-        @Override
-        public Filter[] visit(Within filter, Object extraData) {
+        public @Override Filter[] visit(Within filter, Object extraData) {
             // simplify to a nodebounds.within(within) filter, the post-filter shall do the rest
             return boundedOp(filter, (g1, g2) -> ff.within(g1, g2), false);
         }
 
-        @Override
-        public Filter[] visit(Disjoint filter, Object extraData) {
+        public @Override Filter[] visit(Disjoint filter, Object extraData) {
             // simplify to a bounds intersects filter, the post-filter shall do the rest
             return boundedOp(filter, (g1, g2) -> ff.intersects(g1, g2), true);
         }
 
-        @Override
-        public Filter[] visit(DWithin filter, Object extraData) {
+        public @Override Filter[] visit(DWithin filter, Object extraData) {
             return boundedOp(filter,
                     (g1, g2) -> ff.dwithin(g1, g2, filter.getDistance(), filter.getDistanceUnits()),
                     false);
         }
 
-        @Override
-        public Filter[] visit(Beyond filter, Object extraData) {
+        public @Override Filter[] visit(Beyond filter, Object extraData) {
             return boundedOp(filter,
                     (g1, g2) -> ff.beyond(g1, g2, filter.getDistance(), filter.getDistanceUnits()),
                     false);
         }
 
-        @Override
-        public Filter[] visit(After after, Object extraData) {
+        public @Override Filter[] visit(After after, Object extraData) {
             return visitBinaryTemporalOperator(after);
         }
 
-        @Override
-        public Filter[] visit(AnyInteracts anyInteracts, Object extraData) {
+        public @Override Filter[] visit(AnyInteracts anyInteracts, Object extraData) {
             return visitBinaryTemporalOperator(anyInteracts);
         }
 
-        @Override
-        public Filter[] visit(Before before, Object extraData) {
+        public @Override Filter[] visit(Before before, Object extraData) {
             return visitBinaryTemporalOperator(before);
         }
 
-        @Override
-        public Filter[] visit(Begins begins, Object extraData) {
+        public @Override Filter[] visit(Begins begins, Object extraData) {
             return visitBinaryTemporalOperator(begins);
         }
 
-        @Override
-        public Filter[] visit(BegunBy begunBy, Object extraData) {
+        public @Override Filter[] visit(BegunBy begunBy, Object extraData) {
             return visitBinaryTemporalOperator(begunBy);
         }
 
-        @Override
-        public Filter[] visit(During during, Object extraData) {
+        public @Override Filter[] visit(During during, Object extraData) {
             return visitBinaryTemporalOperator(during);
         }
 
-        @Override
-        public Filter[] visit(EndedBy endedBy, Object extraData) {
+        public @Override Filter[] visit(EndedBy endedBy, Object extraData) {
             return visitBinaryTemporalOperator(endedBy);
         }
 
-        @Override
-        public Filter[] visit(Ends ends, Object extraData) {
+        public @Override Filter[] visit(Ends ends, Object extraData) {
             return visitBinaryTemporalOperator(ends);
         }
 
-        @Override
-        public Filter[] visit(Meets meets, Object extraData) {
+        public @Override Filter[] visit(Meets meets, Object extraData) {
             return visitBinaryTemporalOperator(meets);
         }
 
-        @Override
-        public Filter[] visit(MetBy metBy, Object extraData) {
+        public @Override Filter[] visit(MetBy metBy, Object extraData) {
             return visitBinaryTemporalOperator(metBy);
         }
 
-        @Override
-        public Filter[] visit(OverlappedBy overlappedBy, Object extraData) {
+        public @Override Filter[] visit(OverlappedBy overlappedBy, Object extraData) {
             return visitBinaryTemporalOperator(overlappedBy);
         }
 
-        @Override
-        public Filter[] visit(TContains contains, Object extraData) {
+        public @Override Filter[] visit(TContains contains, Object extraData) {
             return visitBinaryTemporalOperator(contains);
         }
 
-        @Override
-        public Filter[] visit(TEquals equals, Object extraData) {
+        public @Override Filter[] visit(TEquals equals, Object extraData) {
             return visitBinaryTemporalOperator(equals);
         }
 
-        @Override
-        public Filter[] visit(TOverlaps overlaps, Object extraData) {
+        public @Override Filter[] visit(TOverlaps overlaps, Object extraData) {
             return visitBinaryTemporalOperator(overlaps);
         }
 
-        @Override
-        public Object visitNullFilter(Object extraData) {
+        public @Override Object visitNullFilter(Object extraData) {
             throw new UnsupportedOperationException();
         }
 

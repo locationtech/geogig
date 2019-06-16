@@ -23,8 +23,7 @@ public class RocksRevTreeBuilderTest extends CanonicalTreeBuilderTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    @Override
-    protected ObjectStore createObjectStore() {
+    protected @Override ObjectStore createObjectStore() {
         File dbdir;
         try {
             dbdir = tmp.newFolder(".geogig");

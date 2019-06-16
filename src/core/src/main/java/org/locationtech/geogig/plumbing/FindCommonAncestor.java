@@ -89,8 +89,7 @@ public class FindCommonAncestor extends AbstractGeoGigOp<Optional<ObjectId>> {
      * @return an {@link Optional} of the ancestor commit, or {@link Optional#empty()} if no common
      *         ancestor was found
      */
-    @Override
-    protected Optional<ObjectId> _call() {
+    protected @Override Optional<ObjectId> _call() {
         Preconditions.checkState(left != null, "Left commit has not been set.");
         Preconditions.checkState(right != null, "Right commit has not been set.");
 

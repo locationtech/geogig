@@ -58,8 +58,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     /**
      * Creates the reference database.
      */
-    @Override
-    public void open() {
+    public @Override void open() {
         if (isOpen()) {
             return;
         }
@@ -78,8 +77,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @param name the name of the ref (e.g. {@code "refs/remotes/origin"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
      */
-    @Override
-    public String getRef(@NonNull String name) {
+    public @Override String getRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -96,8 +94,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @param name the name of the symbolic ref (e.g. {@code "HEAD"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
      */
-    @Override
-    public String getSymRef(@NonNull String name) {
+    public @Override String getSymRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -123,8 +120,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @param refValue the value of the ref, must be the hex encoding of an {@link ObjectId}
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
-    @Override
-    public void putRef(@NonNull String refName, @NonNull String refValue) {
+    public @Override void putRef(@NonNull String refName, @NonNull String refValue) {
         checkWritable();
         try {
             ObjectId.valueOf(refValue);
@@ -139,8 +135,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @param val the value of the symbolic ref
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
-    @Override
-    public void putSymRef(@NonNull String name, @NonNull String val) {
+    public @Override void putSymRef(@NonNull String name, @NonNull String val) {
         checkArgument(!name.equals(val), "Trying to store cyclic symbolic ref: %s", name);
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, val);
@@ -154,8 +149,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      *        {@code "refs/remotes/origin"}, etc).
      * @return the value of the ref before removing it, or {@code null} if it didn't exist
      */
-    @Override
-    public String remove(@NonNull String refName) {
+    public @Override String remove(@NonNull String refName) {
         checkWritable();
         File refFile = toFile(refName);
         String oldRef;
@@ -228,8 +222,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
         }
     }
 
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
         Builder<String, String> builder = ImmutableMap.<String, String> builder();
 
         builder.putAll(getAll(Ref.HEADS_PREFIX));
@@ -260,8 +253,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     /**
      * @return all references under the specified namespace
      */
-    @Override
-    public Map<String, String> getAll(String namespace) {
+    public @Override Map<String, String> getAll(String namespace) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
         File refsRoot = this.refsDirectory;
         if (namespace.endsWith("/")) {
@@ -305,8 +297,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
         }
     }
 
-    @Override
-    public Map<String, String> removeAll(String namespace) {
+    public @Override Map<String, String> removeAll(String namespace) {
         Preconditions.checkNotNull(namespace, "provided namespace is null");
         checkWritable();
         Map<String, String> oldvalues = getAll(namespace);
@@ -340,8 +331,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
         }
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return String.format("%s[geogig dir: %s]", getClass().getSimpleName(), refsDirectory);
     }
 }

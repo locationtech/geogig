@@ -37,23 +37,19 @@ import org.opengis.feature.simple.SimpleFeatureType;
  */
 public class MemoryDataStoreWithProvidedFIDSupport extends MemoryDataStore {
 
-    @Override
-    protected ContentFeatureSource createFeatureSource(ContentEntry entry, Query query) {
+    protected @Override ContentFeatureSource createFeatureSource(ContentEntry entry, Query query) {
 
         return new MemoryFeatureStore(entry, query) {
-            @Override
-            protected QueryCapabilities buildQueryCapabilities() {
+            protected @Override QueryCapabilities buildQueryCapabilities() {
                 return new QueryCapabilities() {
-                    @Override
-                    public boolean isUseProvidedFIDSupported() {
+                    public @Override boolean isUseProvidedFIDSupported() {
                         return true;
                     }
                 };
             }
 
-            @Override
-            protected FeatureWriter<SimpleFeatureType, SimpleFeature> getWriterInternal(Query query,
-                    int flags) throws IOException {
+            protected @Override FeatureWriter<SimpleFeatureType, SimpleFeature> getWriterInternal(
+                    Query query, int flags) throws IOException {
                 return new MemoryFeatureWriterWithProvidedFIDSupport(getState(), query);
             }
 
@@ -61,8 +57,7 @@ public class MemoryDataStoreWithProvidedFIDSupport extends MemoryDataStore {
 
     }
 
-    @Override
-    public void dispose() {
+    public @Override void dispose() {
         // don't dispose the store, it will wipe the in-memory contents
     }
 

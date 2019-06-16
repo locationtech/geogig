@@ -94,15 +94,13 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
         this.remoteRepository = remoteRepo;
     }
 
-    @Override
-    public void open() throws RepositoryConnectionException {
+    public @Override void open() throws RepositoryConnectionException {
         if (remoteRepository == null) {
             remoteRepository = RepositoryFinder.INSTANCE.open(remoteRepoURI);
         }
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         if (remoteRepository != null) {
             try {
                 remoteRepository.close();
@@ -115,19 +113,16 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
     /**
      * @return the remote's HEAD {@link Ref}.
      */
-    @Override
-    public Optional<Ref> headRef() {
+    public @Override Optional<Ref> headRef() {
         final Optional<Ref> currHead = remoteRepository.command(RefParse.class).setName(Ref.HEAD)
                 .call();
         return currHead;
     }
 
-    @Override
-    public ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
+    public @Override ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
             final boolean getTags) {
         Predicate<Ref> filter = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref input) {
+            public @Override boolean apply(Ref input) {
                 boolean keep = false;
                 if (getHeads) {
                     keep = input.getName().startsWith(Ref.HEADS_PREFIX);
@@ -142,8 +137,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
         return remoteRepository.command(ForEachRef.class).setFilter(filter).call();
     }
 
-    @Override
-    public void fetchNewData(Repository local, Ref ref, Optional<Integer> fetchLimit,
+    public @Override void fetchNewData(Repository local, Ref ref, Optional<Integer> fetchLimit,
             ProgressListener progress) {
 
         CommitTraverser traverser = getFetchTraverser(local, fetchLimit);
@@ -159,8 +153,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
 
     }
 
-    @Override
-    public void pushNewData(final Repository local, final Ref ref, final String refspec,
+    public @Override void pushNewData(final Repository local, final Ref ref, final String refspec,
             final ProgressListener progress) throws SynchronizationException {
 
         Optional<Ref> remoteRef = remoteRepository.command(RefParse.class).setName(refspec).call();
@@ -201,8 +194,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
      * 
      * @param refspec the refspec to delete
      */
-    @Override
-    public Optional<Ref> deleteRef(String refspec) {
+    public @Override Optional<Ref> deleteRef(String refspec) {
         Optional<Ref> deletedRef = remoteRepository.command(UpdateRef.class).setName(refspec)
                 .setDelete(true).call();
         return deletedRef;
@@ -270,8 +262,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
         // that are already present in the target db
         Predicate<Bounded> filter = new Predicate<Bounded>() {
 
-            @Override
-            public boolean apply(@Nullable Bounded b) {
+            public @Override boolean apply(@Nullable Bounded b) {
                 if (b == null) {
                     return false;
                 }
@@ -307,14 +298,12 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
              */
             final Set<ObjectId> insertedMetadataIds = Sets.newConcurrentHashSet();
 
-            @Override
-            public void feature(@Nullable NodeRef left, NodeRef right) {
+            public @Override void feature(@Nullable NodeRef left, NodeRef right) {
                 // add(left);
                 add(right);
             }
 
-            @Override
-            public void tree(@Nullable NodeRef left, NodeRef right) {
+            public @Override void tree(@Nullable NodeRef left, NodeRef right) {
                 // add(left);
                 add(right);
             }
@@ -340,8 +329,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
                 checkLimitAndCopy();
             }
 
-            @Override
-            public void bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
+            public @Override void bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
                     @Nullable Bucket left, Bucket right) {
                 // if (left != null) {
                 // ids.add(left.getObjectId());
@@ -393,8 +381,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
             return;
         }
         BulkOpListener countingListener = new BulkOpListener() {
-            @Override
-            public void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
+            public @Override void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
                 progress.setProgress(progress.getProgress() + 1);
             }
         };
@@ -404,13 +391,11 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
     /**
      * @return the {@link RepositoryWrapper} for this remote
      */
-    @Override
-    public RepositoryWrapper getRemoteWrapper() {
+    public @Override RepositoryWrapper getRemoteWrapper() {
         return new LocalRepositoryWrapper(remoteRepository);
     }
 
-    @Override
-    public Optional<Integer> getDepth() {
+    public @Override Optional<Integer> getDepth() {
         return remoteRepository.getDepth();
     }
 

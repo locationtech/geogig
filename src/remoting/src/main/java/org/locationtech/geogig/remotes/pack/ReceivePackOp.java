@@ -35,8 +35,7 @@ public class ReceivePackOp extends AbstractGeoGigOp<List<RefDiff>> {
 
     private Pack pack;
 
-    @Override
-    protected List<RefDiff> _call() {
+    protected @Override List<RefDiff> _call() {
         checkState(pack != null, "No pack supplied");
 
         PackProcessor processor = getPackProcessor();

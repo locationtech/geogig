@@ -123,8 +123,7 @@ public class ScreenMapPredicate implements Predicate<Bounded> {
         return stats;
     }
 
-    @Override
-    public boolean apply(@Nullable Bounded b) {
+    public @Override boolean apply(@Nullable Bounded b) {
         if (b == null) {
             return false;
         }

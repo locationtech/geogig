@@ -33,8 +33,7 @@ public class StagingDbCompositionHelper {
         final int limit = 10000;
 
         final BulkOpListener stagingListener = new BulkOpListener.ForwardingListener(listener) {
-            @Override
-            public void notFound(ObjectId id) {
+            public @Override void notFound(ObjectId id) {
                 missingInStaging.add(id);
             }
         };
@@ -45,8 +44,7 @@ public class StagingDbCompositionHelper {
 
             Iterator<RevObject> forwardedToObjectDb = Collections.emptyIterator();
 
-            @Override
-            protected RevObject computeNext() {
+            protected @Override RevObject computeNext() {
                 if (forwardedToObjectDb.hasNext()) {
                     return forwardedToObjectDb.next();
                 }

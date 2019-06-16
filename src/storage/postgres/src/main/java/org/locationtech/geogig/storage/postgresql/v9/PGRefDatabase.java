@@ -76,16 +76,14 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
     // this.refsTableName = config.getTables().refs();
     // }
 
-    @Override
-    public synchronized void open() {
+    public @Override synchronized void open() {
         if (!isOpen()) {
             dataSource = PGStorage.newDataSource(config);
             super.open();
         }
     }
 
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
         super.close();
         if (dataSource != null) {
             try {
@@ -96,8 +94,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         }
     }
 
-    @Override
-    public void lock() throws TimeoutException {
+    public @Override void lock() throws TimeoutException {
         lockWithTimeout(30);
     }
 
@@ -133,8 +130,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         }
     }
 
-    @Override
-    public void unlock() {
+    public @Override void unlock() {
         final int repo = config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c != null) {
@@ -158,8 +154,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         }
     }
 
-    @Override
-    public String getRef(@NonNull String name) {
+    public @Override String getRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -172,8 +167,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         return value;
     }
 
-    @Override
-    public String getSymRef(@NonNull String name) {
+    public @Override String getSymRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -220,13 +214,11 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         }
     }
 
-    @Override
-    public void putRef(String name, String value) {
+    public @Override void putRef(String name, String value) {
         putInternal(name, value);
     }
 
-    @Override
-    public void putSymRef(@NonNull String name, @NonNull String value) {
+    public @Override void putSymRef(@NonNull String name, @NonNull String value) {
         checkArgument(!name.equals(value), "Trying to store cyclic symbolic ref: %s", name);
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, value);
@@ -276,8 +268,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         }
     }
 
-    @Override
-    public String remove(final String refName) {
+    public @Override String remove(final String refName) {
         final int repo = config.getRepositoryId();
         final String path = Ref.parentPath(refName) + "/";
         final String localName = Ref.simpleName(refName);
@@ -317,13 +308,11 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         }
     }
 
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
         return getAll("/", Ref.HEADS_PREFIX, Ref.TAGS_PREFIX, Ref.REMOTES_PREFIX);
     }
 
-    @Override
-    public Map<String, String> getAll(final String prefix) {
+    public @Override Map<String, String> getAll(final String prefix) {
         Preconditions.checkNotNull(prefix, "namespace can't be null");
         return getAll(new String[] { prefix });
     }
@@ -368,8 +357,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         return all;
     }
 
-    @Override
-    public Map<String, String> removeAll(final String namespace) {
+    public @Override Map<String, String> removeAll(final String namespace) {
         Preconditions.checkNotNull(namespace, "provided namespace is null");
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);

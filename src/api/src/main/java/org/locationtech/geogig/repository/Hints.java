@@ -92,16 +92,14 @@ public class Hints implements Serializable {
     /**
      * @return the String representation of the hints
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return hintsMap.toString();
     }
 
     /**
      * Determines if this {@code Hints} object is equal to another one.
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o == this) {
             return true;
         }

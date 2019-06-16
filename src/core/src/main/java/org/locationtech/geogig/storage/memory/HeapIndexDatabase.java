@@ -49,8 +49,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         super(new HeapObjectDatabase(hints));
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return getClass().getSimpleName();
     }
 
@@ -63,17 +62,15 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         }
     }
 
-    @Override
-    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
-            @Nullable Map<String, Object> metadata) {
+    public @Override IndexInfo createIndexInfo(String treeName, String attributeName,
+            IndexType strategy, @Nullable Map<String, Object> metadata) {
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         addIndex(index);
         return index;
     }
 
-    @Override
-    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
-            Map<String, Object> metadata) {
+    public @Override IndexInfo updateIndexInfo(String treeName, String attributeName,
+            IndexType strategy, Map<String, Object> metadata) {
         IndexInfo newIndexInfo = new IndexInfo(treeName, attributeName, strategy, metadata);
         Optional<IndexInfo> oldIndexInfo = getIndexInfo(treeName, attributeName);
         Preconditions.checkState(oldIndexInfo.isPresent());
@@ -83,8 +80,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         return newIndexInfo;
     }
 
-    @Override
-    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
+    public @Override Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         if (indexes.containsKey(treeName)) {
             for (IndexInfo index : indexes.get(treeName)) {
                 if (index.getAttributeName().equals(attributeName)) {
@@ -95,16 +91,14 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         return Optional.empty();
     }
 
-    @Override
-    public List<IndexInfo> getIndexInfos(String treeName) {
+    public @Override List<IndexInfo> getIndexInfos(String treeName) {
         if (indexes.containsKey(treeName)) {
             return indexes.get(treeName);
         }
         return Lists.newArrayList();
     }
 
-    @Override
-    public List<IndexInfo> getIndexInfos() {
+    public @Override List<IndexInfo> getIndexInfos() {
         List<IndexInfo> indexInfos = Lists.newLinkedList();
         for (List<IndexInfo> treeInfos : indexes.values()) {
             indexInfos.addAll(treeInfos);
@@ -112,8 +106,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         return indexInfos;
     }
 
-    @Override
-    public boolean dropIndex(IndexInfo index) {
+    public @Override boolean dropIndex(IndexInfo index) {
         List<IndexInfo> treeIndexes = indexes.get(index.getTreeName());
         if (treeIndexes != null) {
             if (treeIndexes.contains(index)) {
@@ -125,21 +118,19 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         return false;
     }
 
-    @Override
-    public void clearIndex(IndexInfo index) {
+    public @Override void clearIndex(IndexInfo index) {
         indexTreeMappings.remove(index.getId());
     }
 
-    @Override
-    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
+    public @Override void addIndexedTree(IndexInfo index, ObjectId originalTree,
+            ObjectId indexedTree) {
         if (!indexTreeMappings.containsKey(index.getId())) {
             indexTreeMappings.put(index.getId(), new ConcurrentHashMap<ObjectId, ObjectId>());
         }
         indexTreeMappings.get(index.getId()).put(originalTree, indexedTree);
     }
 
-    @Override
-    public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
+    public @Override Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
         Map<ObjectId, ObjectId> indexMappings = indexTreeMappings.get(index.getId());
         if (indexMappings != null) {
             return Optional.ofNullable(indexMappings.get(treeId));

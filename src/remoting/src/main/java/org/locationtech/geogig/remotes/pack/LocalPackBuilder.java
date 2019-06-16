@@ -24,8 +24,7 @@ public class LocalPackBuilder extends AbstractPackBuilder {
         this.localRepo = localRepo;
     }
 
-    @Override
-    public Pack build() {
+    public @Override Pack build() {
         PackImpl pack = new PackImpl(localRepo, tags, missingCommits, missingIndexes);
         return pack;
     }

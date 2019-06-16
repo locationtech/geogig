@@ -40,18 +40,15 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
         super(dbdir, readOnly);
     }
 
-    @Override
-    public RocksdbBlobStore getBlobStore() {
+    public @Override RocksdbBlobStore getBlobStore() {
         return blobs;
     }
 
-    @Override
-    public GraphDatabase getGraphDatabase() {
+    public @Override GraphDatabase getGraphDatabase() {
         return new SynchronizedGraphDatabase(graph);
     }
 
-    @Override
-    public synchronized void open() {
+    public @Override synchronized void open() {
         if (isOpen()) {
             return;
         }
@@ -70,8 +67,7 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
         }
     }
 
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
         if (!isOpen()) {
             return;
         }

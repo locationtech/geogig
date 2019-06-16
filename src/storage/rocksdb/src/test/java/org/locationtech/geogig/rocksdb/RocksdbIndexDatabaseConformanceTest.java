@@ -28,8 +28,7 @@ public class RocksdbIndexDatabaseConformanceTest extends IndexDatabaseConformanc
         super.setUp();
     }
 
-    @Override
-    protected IndexDatabase createIndexDatabase(boolean readOnly) {
+    protected @Override IndexDatabase createIndexDatabase(boolean readOnly) {
         return new RocksdbIndexDatabase(dbdir, readOnly);
     }
 }

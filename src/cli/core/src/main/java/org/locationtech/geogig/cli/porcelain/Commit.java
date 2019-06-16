@@ -83,8 +83,7 @@ public class Commit extends AbstractCommand implements CLICommand {
      * @param cli
      * @see org.locationtech.geogig.cli.AbstractCommand#runInternal(org.locationtech.geogig.cli.GeogigCLI)
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         final GeoGIG geogig = cli.getGeogig();
 

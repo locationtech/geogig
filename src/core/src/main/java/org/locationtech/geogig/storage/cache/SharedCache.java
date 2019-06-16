@@ -41,8 +41,7 @@ public interface SharedCache {
      * argument
      */
     static final SharedCache NO_CACHE = new SharedCache() {
-        @Override
-        public void setEncoder(RevObjectSerializer encoder) {
+        public @Override void setEncoder(RevObjectSerializer encoder) {
             // nothing to do
         }
     };

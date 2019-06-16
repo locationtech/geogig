@@ -20,8 +20,7 @@ import org.locationtech.geogig.test.performance.AbstractObjectStoreStressTest;
 
 public class RocksdbObjectStoreStressTest extends AbstractObjectStoreStressTest {
 
-    @Override
-    protected ObjectStore createDb(Platform platform, ConfigDatabase config) {
+    protected @Override ObjectStore createDb(Platform platform, ConfigDatabase config) {
         File dbdir;
         try {
             dbdir = super.tmp.newFolder();

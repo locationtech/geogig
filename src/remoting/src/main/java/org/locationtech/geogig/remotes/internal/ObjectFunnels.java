@@ -45,14 +45,12 @@ public class ObjectFunnels {
             this.serializer = serializer;
         }
 
-        @Override
-        public void funnel(RevObject object) throws IOException {
+        public @Override void funnel(RevObject object) throws IOException {
             out.write(object.getId().getRawValue());
             serializer.write(object, out);
         }
 
-        @Override
-        public void close() throws IOException {
+        public @Override void close() throws IOException {
             OutputStream out = this.out;
             this.out = null;
             if (out != null) {
@@ -78,8 +76,7 @@ public class ObjectFunnels {
             this.byteSoftLimit = byteSoftLimit;
         }
 
-        @Override
-        public void funnel(RevObject object) throws IOException {
+        public @Override void funnel(RevObject object) throws IOException {
             OutputStream out = getCurrentTarget();
             out.write(object.getId().getRawValue());
             serializer.write(object, out);
@@ -100,8 +97,7 @@ public class ObjectFunnels {
             return currentTarget;
         }
 
-        @Override
-        public void close() throws IOException {
+        public @Override void close() throws IOException {
             OutputStream currentTarget = this.currentTarget;
             this.currentTarget = null;
             if (currentTarget != null) {

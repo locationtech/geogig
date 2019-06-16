@@ -43,8 +43,7 @@ class FeatureTypeAdapterFeatureSource<T extends org.opengis.feature.type.Feature
         this.featureType = featureType;
     }
 
-    @Override
-    public T getSchema() {
+    public @Override T getSchema() {
         return featureType;
     }
 
@@ -56,43 +55,36 @@ class FeatureTypeAdapterFeatureSource<T extends org.opengis.feature.type.Feature
         this.forbidSorting = forbidSorting;
     }
 
-    @Override
-    public QueryCapabilities getQueryCapabilities() {
+    public @Override QueryCapabilities getQueryCapabilities() {
         final QueryCapabilities capabilities = super.getQueryCapabilities();
         if (!forbidSorting) {
             return capabilities;
         }
         return new QueryCapabilities() {
-            @Override
-            public boolean isOffsetSupported() {
+            public @Override boolean isOffsetSupported() {
                 return false;
             }
 
-            @Override
-            public boolean supportsSorting(SortBy[] sortAttributes) {
+            public @Override boolean supportsSorting(SortBy[] sortAttributes) {
                 return false;
             }
 
-            @Override
-            public boolean isReliableFIDSupported() {
+            public @Override boolean isReliableFIDSupported() {
                 return capabilities.isReliableFIDSupported();
             }
 
-            @Override
-            public boolean isUseProvidedFIDSupported() {
+            public @Override boolean isUseProvidedFIDSupported() {
                 return capabilities.isUseProvidedFIDSupported();
             }
         };
     }
 
-    @Override
-    public FeatureCollection<T, F> getFeatures(Query query) throws IOException {
+    public @Override FeatureCollection<T, F> getFeatures(Query query) throws IOException {
 
         final FeatureCollection<T, F> features = super.getFeatures(query);
         return new ForwardingFeatureCollection<T, F>(features) {
 
-            @Override
-            public FeatureIterator<F> features() {
+            public @Override FeatureIterator<F> features() {
                 if (((T) delegate.getSchema()).getDescriptors().size() != featureType
                         .getDescriptors().size()) {
                     throw new GeoToolsOpException(
@@ -125,8 +117,7 @@ class FeatureTypeAdapterFeatureSource<T extends org.opengis.feature.type.Feature
                         (SimpleFeatureBuilder) builder);
             }
 
-            @Override
-            public T getSchema() {
+            public @Override T getSchema() {
                 return featureType;
             }
         };
@@ -144,8 +135,7 @@ class FeatureTypeAdapterFeatureSource<T extends org.opengis.feature.type.Feature
         }
 
         @SuppressWarnings("unchecked")
-        @Override
-        public F next() {
+        public @Override F next() {
             F next = super.next();
             String fid = ((SimpleFeature) next).getID();
             org.opengis.feature.type.Name geometryAttributeName = builder.getFeatureType()

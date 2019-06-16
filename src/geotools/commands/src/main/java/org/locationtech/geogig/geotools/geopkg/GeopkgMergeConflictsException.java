@@ -30,8 +30,7 @@ public class GeopkgMergeConflictsException extends MergeConflictsException
         this.importResult = importResult;
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         importResult.close();
     }
 }

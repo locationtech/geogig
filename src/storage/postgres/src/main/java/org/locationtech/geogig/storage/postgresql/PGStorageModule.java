@@ -32,8 +32,7 @@ public class PGStorageModule extends AbstractModule {
 
     static Logger LOG = LoggerFactory.getLogger(PGStorageModule.class);
 
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
         bind(ConfigDatabase.class).to(PGConfigDatabase.class).in(Scopes.SINGLETON);
         bind(RefDatabase.class).to(PGRefDatabase.class).in(Scopes.SINGLETON);
         bind(ObjectDatabase.class).to(PGObjectDatabase.class).in(Scopes.SINGLETON);

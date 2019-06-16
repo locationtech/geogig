@@ -62,8 +62,7 @@ public class Init extends AbstractCommand implements CLICommand {
     /**
      * Executes the init command.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         final String providedUri = location.isEmpty() ? null : location.get(0);
 
         final URI targetURI;

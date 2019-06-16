@@ -59,8 +59,7 @@ class NodeSet {
 
         private SoftReference<CoordinateSequence> seq;
 
-        @Override
-        public CoordinateSequence get() {
+        public @Override CoordinateSequence get() {
             if (seq == null || seq.get() == null) {
                 CoordinateSequence coords = parseBoundsCoordinates();
                 seq = new SoftReference<CoordinateSequence>(coords);

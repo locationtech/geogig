@@ -44,8 +44,7 @@ public class PGExport extends DataStoreExport implements CLICommand {
 
     final PGSupport support = new PGSupport();
 
-    @Override
-    protected DataStore getDataStore() {
+    protected @Override DataStore getDataStore() {
         return support.getDataStore(commonArgs);
     }
 
@@ -55,8 +54,7 @@ public class PGExport extends DataStoreExport implements CLICommand {
      * @param featureType the feature type of the features to transform
      * @return the transforming function
      */
-    @Override
-    protected Function<Feature, Optional<Feature>> getTransformingFunction(
+    protected @Override Function<Feature, Optional<Feature>> getTransformingFunction(
             final SimpleFeatureType featureType) {
         Function<Feature, Optional<Feature>> function = (feature) -> {
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType,

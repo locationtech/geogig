@@ -61,8 +61,7 @@ public class ScreenMapGeometryReplacer implements Function<SimpleFeature, Simple
      * @param feature
      * @return
      */
-    @Override
-    public SimpleFeature apply(SimpleFeature feature) {
+    public @Override SimpleFeature apply(SimpleFeature feature) {
         Geometry g = (Geometry) feature.getDefaultGeometry();
         if (g == null || g instanceof Point) {
             return feature; // cannot simplify a point

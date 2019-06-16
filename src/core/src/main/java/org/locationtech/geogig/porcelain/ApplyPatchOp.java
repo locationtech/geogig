@@ -111,8 +111,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
      * 
      * @return the modified {@link WorkingTree working tree}.
      */
-    @Override
-    protected Patch _call() throws RuntimeException {
+    protected @Override Patch _call() throws RuntimeException {
         Preconditions.checkArgument(patch != null, "No patch file provided");
 
         VerifyPatchResults verify = command(VerifyPatchOp.class).setPatch(patch).setReverse(reverse)

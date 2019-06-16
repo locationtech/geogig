@@ -315,15 +315,13 @@ public class PGObjectDatabaseStressTest {
         Preconditions.checkArgument(from >= 0 && count > 0);
 
         return new Iterable<ObjectId>() {
-            @Override
-            public Iterator<ObjectId> iterator() {
+            public @Override Iterator<ObjectId> iterator() {
                 return new AbstractIterator<ObjectId>() {
                     int c = from;
 
                     final int to = from + count;
 
-                    @Override
-                    protected ObjectId computeNext() {
+                    protected @Override ObjectId computeNext() {
                         if (c == to) {
                             return endOfData();
                         }

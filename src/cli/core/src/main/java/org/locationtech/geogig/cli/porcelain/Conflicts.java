@@ -68,8 +68,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
 
     private GeoGIG geogig;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(!(idsOnly && previewDiff),
                 "Cannot use --diff and --ids-only at the same time");
         checkParameter(!(refspecsOnly && previewDiff),

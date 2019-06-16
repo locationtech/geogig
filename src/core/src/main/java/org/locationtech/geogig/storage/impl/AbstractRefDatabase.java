@@ -35,8 +35,7 @@ public abstract class AbstractRefDatabase extends AbstractStore implements RefDa
      * 
      * @throws TimeoutException
      */
-    @Override
-    public final void lock() throws TimeoutException {
+    public @Override final void lock() throws TimeoutException {
         try {
             if (!lock.tryLock(30, TimeUnit.SECONDS)) {
                 throw new TimeoutException("The attempt to lock the database timed out.");
@@ -49,8 +48,7 @@ public abstract class AbstractRefDatabase extends AbstractStore implements RefDa
     /**
      * Unlocks access to the main repository refs.
      */
-    @Override
-    public final void unlock() {
+    public @Override final void unlock() {
         lock.unlock();
     }
 

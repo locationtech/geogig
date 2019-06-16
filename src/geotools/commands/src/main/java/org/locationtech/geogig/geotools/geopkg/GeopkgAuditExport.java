@@ -42,8 +42,7 @@ public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
         return this;
     }
 
-    @Override
-    protected Void _call() {
+    protected @Override Void _call() {
         checkNotNull(databaseFile, "GeoPackage file not provided");
         checkState(databaseFile.exists(), "GeoPackage file %s does not exist", databaseFile);
 

@@ -90,8 +90,7 @@ public class RevParseTest extends RepositoryTestCase {
         repo.command(CheckoutOp.class).setSource("master").call();
     }
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         repo.configDatabase().put("user.name", "groldan");
         repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }

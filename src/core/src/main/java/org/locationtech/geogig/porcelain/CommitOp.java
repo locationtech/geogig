@@ -247,8 +247,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      * @throws NothingToCommitException if there are no staged changes by comparing the index
      *         staging tree and the repository HEAD tree.
      */
-    @Override
-    protected RevCommit _call() throws RuntimeException {
+    protected @Override RevCommit _call() throws RuntimeException {
         String commitMessage = message;
 
         getProgressListener().started();
@@ -390,8 +389,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
     private Supplier<RevTree> resolveOldRoot() {
         Supplier<RevTree> supplier = new Supplier<RevTree>() {
-            @Override
-            public RevTree get() {
+            public @Override RevTree get() {
                 Optional<ObjectId> head = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
                 if (!head.isPresent() || head.get().isNull()) {
                     return RevTree.EMPTY;

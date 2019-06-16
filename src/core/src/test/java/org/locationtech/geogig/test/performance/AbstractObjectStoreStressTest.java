@@ -167,8 +167,7 @@ public abstract class AbstractObjectStoreStressTest {
             }
             final Iterator<RevObject> objects = asObjects(sequentialIds(from, jobSize).iterator());
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     db.putAll(objects, listener);
                 }
             });
@@ -256,15 +255,13 @@ public abstract class AbstractObjectStoreStressTest {
         Preconditions.checkArgument(from >= 0 && count > 0);
 
         return new Iterable<ObjectId>() {
-            @Override
-            public Iterator<ObjectId> iterator() {
+            public @Override Iterator<ObjectId> iterator() {
                 return new AbstractIterator<ObjectId>() {
                     int c = from;
 
                     final int to = from + count;
 
-                    @Override
-                    protected ObjectId computeNext() {
+                    protected @Override ObjectId computeNext() {
                         if (c == to) {
                             return endOfData();
                         }
@@ -278,8 +275,7 @@ public abstract class AbstractObjectStoreStressTest {
     private Iterable<ObjectId> randomIds(final int count, final int total) {
         return new Iterable<ObjectId>() {
 
-            @Override
-            public Iterator<ObjectId> iterator() {
+            public @Override Iterator<ObjectId> iterator() {
                 return new AbstractIterator<ObjectId>() {
 
                     final BloomFilter<Integer> bloomFilter = BloomFilter
@@ -289,8 +285,7 @@ public abstract class AbstractObjectStoreStressTest {
 
                     int c = 0;
 
-                    @Override
-                    protected ObjectId computeNext() {
+                    protected @Override ObjectId computeNext() {
                         if (c == count) {
                             return endOfData();
                         }

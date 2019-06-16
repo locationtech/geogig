@@ -59,8 +59,7 @@ public class RemoteAdd extends AbstractCommand implements CLICommand {
     /**
      * Executes the remote add command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) {
+    public @Override void runInternal(GeogigCLI cli) {
         if (params == null || params.size() != 2) {
             printUsage(cli);
             throw new CommandFailedException();

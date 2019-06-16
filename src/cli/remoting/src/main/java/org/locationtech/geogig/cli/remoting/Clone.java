@@ -97,8 +97,7 @@ public class Clone extends AbstractCommand implements CLICommand {
     /**
      * Executes the clone command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(args != null && args.size() > 0, "You must specify a repository to clone.");
         checkParameter(args.size() < 3, "Too many arguments provided.");
         if (filterFile != null) {

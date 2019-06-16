@@ -27,8 +27,7 @@ import com.google.common.collect.ImmutableSortedMap.Builder;
 class BucketSet {
 
     static final BucketSet EMPTY = new BucketSet(0, null, 0) {
-        @Override
-        public ImmutableSortedMap<Integer, Bucket> build() {
+        public @Override ImmutableSortedMap<Integer, Bucket> build() {
             return ImmutableSortedMap.of();
         }
     };

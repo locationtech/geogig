@@ -130,8 +130,7 @@ public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
      * @return an iterator to a set of differences between the two trees
      * @see DiffEntry
      */
-    @Override
-    protected AutoCloseableIterator<DiffEntry> _call() {
+    protected @Override AutoCloseableIterator<DiffEntry> _call() {
         checkArgument(cached && oldRefSpec == null || !cached,
                 String.format(
                         "compare index allows only one revision to check against, got %s / %s",
@@ -175,8 +174,7 @@ public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         return this;
     }
 
-    @Override
-    public AutoCloseableIterator<DiffEntry> iterator() {
+    public @Override AutoCloseableIterator<DiffEntry> iterator() {
         return call();
     }
 

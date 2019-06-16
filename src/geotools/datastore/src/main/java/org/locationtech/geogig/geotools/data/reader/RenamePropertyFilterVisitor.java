@@ -28,8 +28,7 @@ public class RenamePropertyFilterVisitor extends DuplicatingFilterVisitor {
         this.newPropertyName = newPname;
     }
 
-    @Override
-    public Object visit(PropertyName expression, Object extraData) {
+    public @Override Object visit(PropertyName expression, Object extraData) {
         String pName = expression.getPropertyName();
         if ((pName != null) && (pName.equals(originalPropertyName))) {
             return getFactory(extraData).property(newPropertyName,

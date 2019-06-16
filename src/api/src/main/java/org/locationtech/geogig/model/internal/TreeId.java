@@ -64,26 +64,22 @@ public final class TreeId implements Comparable<TreeId>, Serializable {
         return Integer.valueOf(bucketIndicesByDepth[depthIndex] & 0xFF);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         // don't bother checking for instanceof TreeId, this is private and will never be
         // compared to something else
         return (o instanceof TreeId)
                 && Arrays.equals(bucketIndicesByDepth, ((TreeId) o).bucketIndicesByDepth);
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return 31 * Arrays.hashCode(bucketIndicesByDepth);
     }
 
-    @Override
-    public int compareTo(TreeId o) {
+    public @Override int compareTo(TreeId o) {
         return COMPARATOR.compare(bucketIndicesByDepth, o.bucketIndicesByDepth);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return Arrays.toString(bucketIndicesByDepth);
     }
 

@@ -26,8 +26,7 @@ public class DefaultPlatform implements Platform {
     /**
      * @return the working directory
      */
-    @Override
-    public File pwd() {
+    public @Override File pwd() {
         if (workingDir != null) {
             return workingDir;
         }
@@ -38,8 +37,7 @@ public class DefaultPlatform implements Platform {
      * @param workingDir the working directory to use
      * @throws IllegalArgumentException if {@code workingDir} does not exist or is not a directory
      */
-    @Override
-    public void setWorkingDir(File workingDir) {
+    public @Override void setWorkingDir(File workingDir) {
         checkArgument(workingDir == null || workingDir.isDirectory(),
                 "file does not exist or is not a directory: " + workingDir);
         this.workingDir = workingDir;
@@ -48,8 +46,7 @@ public class DefaultPlatform implements Platform {
     /**
      * @see Platform#whoami()
      */
-    @Override
-    public String whoami() {
+    public @Override String whoami() {
         return System.getProperty("user.name", "nobody");
     }
 
@@ -57,31 +54,26 @@ public class DefaultPlatform implements Platform {
      * @return the current time in milliseconds
      * @see org.locationtech.geogig.repository.Platform#currentTimeMillis()
      */
-    @Override
-    public long currentTimeMillis() {
+    public @Override long currentTimeMillis() {
         return System.currentTimeMillis();
     }
 
     /**
      * @return the user home directory
      */
-    @Override
-    public File getUserHome() {
+    public @Override File getUserHome() {
         return new File(System.getProperty("user.home"));
     }
 
-    @Override
-    public int timeZoneOffset(long timeStamp) {
+    public @Override int timeZoneOffset(long timeStamp) {
         return TimeZone.getDefault().getOffset(timeStamp);
     }
 
-    @Override
-    public long nanoTime() {
+    public @Override long nanoTime() {
         return System.nanoTime();
     }
 
-    @Override
-    public int availableProcessors() {
+    public @Override int availableProcessors() {
         return Runtime.getRuntime().availableProcessors();
     }
 

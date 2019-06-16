@@ -13,8 +13,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 public class CanonicalClusteringStrategyHeapStorageTest extends CanonicalClusteringStrategyTest {
 
-    @Override
-    protected HeapDAGStorageProvider createStorageProvider(ObjectStore source) {
+    protected @Override HeapDAGStorageProvider createStorageProvider(ObjectStore source) {
         return new HeapDAGStorageProvider(source);
     }
 

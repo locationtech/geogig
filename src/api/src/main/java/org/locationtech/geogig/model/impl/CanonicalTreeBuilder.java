@@ -61,8 +61,7 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
         return this;
     }
 
-    @Override
-    protected final ClusteringStrategy clusteringStrategy() {
+    protected @Override final ClusteringStrategy clusteringStrategy() {
         return clusteringStrategy;
     }
 

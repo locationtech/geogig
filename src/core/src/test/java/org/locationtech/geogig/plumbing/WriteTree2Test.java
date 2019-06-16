@@ -65,14 +65,12 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private RevTree rightTree;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         command = repo.command(WriteTree2.class);
         objectDb = repo.objectDatabase();
     }
 
-    @Override
-    public void tearDownInternal() {
+    public @Override void tearDownInternal() {
         if (objectDb != null) {
             objectDb.close();
         }

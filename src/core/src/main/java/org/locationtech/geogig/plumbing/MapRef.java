@@ -44,8 +44,7 @@ public class MapRef extends AbstractGeoGigOp<List<Ref>> {
 
     private List<Ref> refs = new ArrayList<>();
 
-    @Override
-    protected List<Ref> _call() {
+    protected @Override List<Ref> _call() {
         checkState(remote != null, "remote not provided");
         checkState(toRemote != null,
                 "must indicate whether to convert refs to local or remotes namespace");

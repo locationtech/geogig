@@ -75,8 +75,7 @@ public class Apply extends AbstractCommand {
             "--summary" }, description = "Do not apply. Just show a summary of changes contained in the patch")
     private boolean summary;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(patchFiles.size() < 2, "Only one single patch file accepted");
         checkParameter(!patchFiles.isEmpty(), "No patch file specified");
 

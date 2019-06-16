@@ -70,8 +70,7 @@ public class GeopkgGeogigMetadata implements AutoCloseable {
         this.cx = connection;
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         fidMappings.values().forEach(RocksdbMap::close);
         fidMappings.clear();
     }

@@ -115,8 +115,7 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
         return this;
     }
 
-    @Override
-    protected T _call() {
+    protected @Override T _call() {
 
         final ProgressListener progress = getProgressListener();
         final Set<String> layerRefSpecs = resolveExportLayerRefSpecs();
@@ -217,8 +216,7 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
 
         // (s) -> commitId + s
         Function<String, String> fn2 = new Function<String, String>() {
-            @Override
-            public String apply(String s) {
+            public @Override String apply(String s) {
                 return commitId + s;
             }
         };

@@ -44,8 +44,7 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
      * @return the created tag
      * 
      */
-    @Override
-    protected RevTag _call() throws RuntimeException {
+    protected @Override RevTag _call() throws RuntimeException {
         checkState(name != null, "tag name was not provided");
         final String tagRefPath = Ref.TAGS_PREFIX + name;
         checkArgument(!command(RefParse.class).setName(tagRefPath).call().isPresent(),

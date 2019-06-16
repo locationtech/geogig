@@ -79,8 +79,7 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
         return this;
     }
 
-    @Override
-    protected void export(final String refSpec, final DataStore targetStore,
+    protected @Override void export(final String refSpec, final DataStore targetStore,
             final String targetTableName, final ProgressListener progress) {
         Preconditions.checkArgument(oldRef != null, "Old ref not specified.");
         Preconditions.checkArgument(getSourceCommitish() != null, "New ref not specified.");
@@ -110,8 +109,7 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
         }
     }
 
-    @Override
-    protected File buildResult(DataStore targetStore) {
+    protected @Override File buildResult(DataStore targetStore) {
         return geopackage;
     }
 
@@ -120,8 +118,7 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
      * @return a transform function to update and keep track of feature id mappings of exported
      *         features
      */
-    @Override
-    protected Function<Feature, Optional<Feature>> getTransformingFunction(
+    protected @Override Function<Feature, Optional<Feature>> getTransformingFunction(
             final SimpleFeatureType featureType) {
         Function<Feature, Optional<Feature>> function = (feature) -> {
             // Return optional.absent for features that were not part of the diff

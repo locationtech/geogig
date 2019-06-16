@@ -23,8 +23,7 @@ public class RevTreeBuilderRocksObjectsPerformanceTest extends RevTreeBuilderPer
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    @Override
-    protected ObjectStore createObjectStore() throws IOException {
+    protected @Override ObjectStore createObjectStore() throws IOException {
         File dbdir = tmp.newFolder(".geogig");
         return new RocksdbObjectStore(dbdir, false);
     }

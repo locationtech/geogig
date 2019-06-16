@@ -47,8 +47,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
 
     private IndexInfo indexInfo;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
         indexdb = repository.indexDatabase();
         worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
@@ -192,8 +191,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         final RevTree newCanonicalTree = worldPointsTree;
         for (int t = 0; t < threadCount; t++) {
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     RevTree indexTree = updateIndex(oldCanonicalTree, newCanonicalTree);
 
                     assertNotEquals(RevTree.EMPTY, indexTree);
@@ -277,8 +275,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         List<Future<?>> futures = new ArrayList<>();
         for (final RevTree branchCanonicalTree : branchTrees) {
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     RevTree indexTree = updateIndex(newCanonicalTree, branchCanonicalTree);
 
                     assertNotEquals(RevTree.EMPTY, indexTree);

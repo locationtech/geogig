@@ -71,8 +71,7 @@ public class IniFileConfigDatabase extends AbstractStore implements ConfigDataba
             this.local = null;
         } else {
             this.local = new INIFile() {
-                @Override
-                public File iniFile() {
+                public @Override File iniFile() {
                     if (repoDirectory == null) {
                         throw new ConfigException(StatusCode.INVALID_LOCATION);
                     }
@@ -84,8 +83,7 @@ public class IniFileConfigDatabase extends AbstractStore implements ConfigDataba
             };
         }
         this.global = new INIFile() {
-            @Override
-            public File iniFile() {
+            public @Override File iniFile() {
                 File home = platform.getUserHome();
                 if (home == null) {
                     throw new ConfigException(StatusCode.USERHOME_NOT_SET);

@@ -50,8 +50,7 @@ public class FetchOpWithIndexTest extends FetchOpTest {
 
     private Map<String, Repository> repos;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         super.setUpInternal();
         repos = new HashMap<>();
         // originRepo, localRepo, upstreamRepo

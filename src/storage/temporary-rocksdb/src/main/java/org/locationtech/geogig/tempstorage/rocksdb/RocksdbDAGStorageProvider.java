@@ -86,8 +86,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
         }
     }
 
-    @Override
-    public void dispose() {
+    public @Override void dispose() {
         if (nodeStore != null) {
             nodeStore.close();
         }
@@ -107,47 +106,39 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
         }
     }
 
-    @Override
-    public TreeCache getTreeCache() {
+    public @Override TreeCache getTreeCache() {
         return treeCache;
     }
 
-    @Override
-    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
+    public @Override List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
         return dagStore.getTrees(ids);
     }
 
-    @Override
-    public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId) {
+    public @Override DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId) {
         return dagStore.getOrCreateTree(treeId, originalTreeId);
     }
 
-    @Override
-    public void save(Map<TreeId, DAG> dags) {
+    public @Override void save(Map<TreeId, DAG> dags) {
         dagStore.save(dags);
     }
 
-    @Override
-    public Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
+    public @Override Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
         Map<NodeId, DAGNode> dagNodes = nodeStore.getAll(nodeIds);
         Map<NodeId, Node> res = new HashMap<>();
         dagNodes.forEach((id, node) -> res.put(id, node.resolve(treeCache)));
         return res;
     }
 
-    @Override
-    public void saveNode(NodeId nodeId, Node node) {
+    public @Override void saveNode(NodeId nodeId, Node node) {
         nodeStore.put(nodeId, DAGNode.of(node));
     }
 
-    @Override
-    public void saveNodes(Map<NodeId, DAGNode> nodeMappings) {
+    public @Override void saveNodes(Map<NodeId, DAGNode> nodeMappings) {
         nodeStore.putAll(nodeMappings);
     }
 
-    @Override
     @Nullable
-    public RevTree getTree(ObjectId originalId) {
+    public @Override RevTree getTree(ObjectId originalId) {
         return objectStore.getTree(originalId);
     }
 }

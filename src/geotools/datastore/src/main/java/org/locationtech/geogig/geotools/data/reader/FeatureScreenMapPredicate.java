@@ -31,8 +31,7 @@ class FeatureScreenMapPredicate implements Predicate<SimpleFeature> {
     /**
      * Filter out small features (<pixel) where that pixel already has a small feature in it.
      */
-    @Override
-    public boolean apply(SimpleFeature feature) {
+    public @Override boolean apply(SimpleFeature feature) {
         Envelope e = ((Geometry) feature.getDefaultGeometry()).getEnvelopeInternal();
         // only do work if its a small geometry
         if (screenMap.canSimplify(e)) {

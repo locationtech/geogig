@@ -149,8 +149,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
         return this;
     }
 
-    @Override
-    protected DiffMergeFeatureResult _call() {
+    protected @Override DiffMergeFeatureResult _call() {
         checkPreconditions(commonAncestor, mergeInto, toMerge);
 
         final Map<ObjectId, RevObject> objects = getObjects();

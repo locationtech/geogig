@@ -87,56 +87,46 @@ public interface RevTree extends RevObject {
      */
     RevTree EMPTY = new RevTree() {
 
-        @Override
-        public ObjectId getId() {
+        public @Override ObjectId getId() {
             return EMPTY_TREE_ID;
         }
 
-        @Override
-        public List<Node> trees() {
+        public @Override List<Node> trees() {
             return Collections.emptyList();
         }
 
-        @Override
-        public long size() {
+        public @Override long size() {
             return 0L;
         }
 
-        @Override
-        public int numTrees() {
+        public @Override int numTrees() {
             return 0;
         }
 
-        @Override
-        public boolean isEmpty() {
+        public @Override boolean isEmpty() {
             return true;
         }
 
-        @Override
-        public List<Node> features() {
+        public @Override List<Node> features() {
             return Collections.emptyList();
         }
 
-        @Override
-        public SortedMap<Integer, Bucket> buckets() {
+        public @Override SortedMap<Integer, Bucket> buckets() {
             return Collections.emptySortedMap();
         }
 
-        @Override
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof RevObject)) {
                 return false;
             }
             return getId().equals(((RevObject) o).getId());
         }
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return "EMPTY TREE[" + getId() + "]";
         }
 
-        @Override
-        public SortedSet<Bucket> getBuckets() {
+        public @Override SortedSet<Bucket> getBuckets() {
             return Collections.emptySortedSet();
         }
     };
@@ -144,8 +134,7 @@ public interface RevTree extends RevObject {
     /**
      * @return {@link TYPE#TREE}
      */
-    @Override
-    public default TYPE getType() {
+    public @Override default TYPE getType() {
         return TYPE.TREE;
     }
 

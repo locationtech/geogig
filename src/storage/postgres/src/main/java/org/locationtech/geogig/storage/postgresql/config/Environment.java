@@ -108,8 +108,7 @@ public class Environment implements Cloneable {
     /**
      * Equality comparison based on driver, server, port, user, and password, and database name.
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof Environment)) {
             return false;
         }
@@ -118,8 +117,7 @@ public class Environment implements Cloneable {
                 && equal(repositoryName, d.repositoryName);
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return Objects.hashCode(connectionConfig, repositoryName);
     }
 

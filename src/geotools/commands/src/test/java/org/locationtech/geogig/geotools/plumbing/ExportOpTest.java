@@ -43,8 +43,7 @@ public class ExportOpTest extends RepositoryTestCase {
 
     SimpleFeatureType gtPointsType;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         gtPointsType = GT.adapt(pointsType);
     }
 

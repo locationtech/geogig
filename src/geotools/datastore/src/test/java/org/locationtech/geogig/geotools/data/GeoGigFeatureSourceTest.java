@@ -80,8 +80,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
     private final String namespace = "http://geogig.org/test";
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(repo);
         dataStore.createSchema(GT.adapt(super.pointsType));
         dataStore.createSchema(GT.adapt(super.linesType));
@@ -93,8 +92,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         linesSource = dataStore.getFeatureSource(linesName);
     }
 
-    @Override
-    protected void tearDownInternal() throws Exception {
+    protected @Override void tearDownInternal() throws Exception {
         dataStore.dispose();
         dataStore = null;
         pointsSource = null;

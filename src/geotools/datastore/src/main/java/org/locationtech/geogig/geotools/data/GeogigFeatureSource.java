@@ -88,8 +88,7 @@ public class GeogigFeatureSource extends ContentFeatureSource {
      * Adds the {@link Hints#FEATURE_DETACHED} hint to the supported hints so the renderer doesn't
      * clone the geometries
      */
-    @Override
-    protected void addHints(Set<Hints.Key> hints) {
+    protected @Override void addHints(Set<Hints.Key> hints) {
         hints.add(Hints.FEATURE_DETACHED);
         // if the user turned off the screenmap, then don't advertise it (the renderer will do its
         // own)
@@ -101,49 +100,41 @@ public class GeogigFeatureSource extends ContentFeatureSource {
         hints.add(SCREENMAP_REPLACE_GEOMETRY_WITH_PX_KEY);
     }
 
-    @Override
-    protected boolean canFilter() {
+    protected @Override boolean canFilter() {
         return true;
     }
 
-    @Override
-    protected boolean canSort() {
+    protected @Override boolean canSort() {
         return false;
     }
 
     /**
      * @return {@code true}
      */
-    @Override
-    protected boolean canRetype() {
+    protected @Override boolean canRetype() {
         return true;
     }
 
-    @Override
-    protected boolean canLimit() {
+    protected @Override boolean canLimit() {
         return true;
     }
 
-    @Override
-    protected boolean canOffset() {
+    protected @Override boolean canOffset() {
         return true;
     }
 
     /**
      * @return {@code true}
      */
-    @Override
-    protected boolean canTransact() {
+    protected @Override boolean canTransact() {
         return true;
     }
 
-    @Override
-    public GeoGigDataStore getDataStore() {
+    public @Override GeoGigDataStore getDataStore() {
         return (GeoGigDataStore) super.getDataStore();
     }
 
-    @Override
-    public ContentState getState() {
+    public @Override ContentState getState() {
         return super.getState();
     }
 
@@ -151,8 +142,7 @@ public class GeogigFeatureSource extends ContentFeatureSource {
      * Overrides {@link ContentFeatureSource#getName()} to restore back the original meaning of
      * {@link FeatureSource#getName()}
      */
-    @Override
-    public org.opengis.feature.type.Name getName() {
+    public @Override org.opengis.feature.type.Name getName() {
         return getEntry().getName();
     }
 
@@ -165,14 +155,12 @@ public class GeogigFeatureSource extends ContentFeatureSource {
      * key/value pair is there an attempt to use the provided id will be made, and the operation
      * will fail if the key cannot be parsed into a valid storage identifier.
      */
-    @Override
-    protected QueryCapabilities buildQueryCapabilities() {
+    protected @Override QueryCapabilities buildQueryCapabilities() {
         return new QueryCapabilities() {
             /**
              * @return {@code true}
              */
-            @Override
-            public boolean isUseProvidedFIDSupported() {
+            public @Override boolean isUseProvidedFIDSupported() {
                 return true;
             }
 
@@ -181,16 +169,14 @@ public class GeogigFeatureSource extends ContentFeatureSource {
              * @return {@code false} by now, will see how/whether we'll support
              *         {@link Query#getVersion()} later
              */
-            @Override
-            public boolean isVersionSupported() {
+            public @Override boolean isVersionSupported() {
                 return false;
             }
 
         };
     }
 
-    @Override
-    protected ReferencedEnvelope getBoundsInternal(Query query) throws IOException {
+    protected @Override ReferencedEnvelope getBoundsInternal(Query query) throws IOException {
         final Filter filter = (Filter) query.getFilter().accept(new SimplifyingFilterVisitor(),
                 null);
         final CoordinateReferenceSystem crs = getSchema().getCoordinateReferenceSystem();
@@ -218,8 +204,7 @@ public class GeogigFeatureSource extends ContentFeatureSource {
         return bounds;
     }
 
-    @Override
-    protected int getCountInternal(Query query) throws IOException {
+    protected @Override int getCountInternal(Query query) throws IOException {
         final Filter filter = (Filter) query.getFilter().accept(new SimplifyingFilterVisitor(),
                 null);
         if (Filter.EXCLUDE.equals(filter)) {
@@ -258,9 +243,8 @@ public class GeogigFeatureSource extends ContentFeatureSource {
         return count;
     }
 
-    @Override
-    protected FeatureReader<SimpleFeatureType, SimpleFeature> getReaderInternal(final Query query)
-            throws IOException {
+    protected @Override FeatureReader<SimpleFeatureType, SimpleFeature> getReaderInternal(
+            final Query query) throws IOException {
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
         featureReader = getNativeReader(query, true);
@@ -358,8 +342,7 @@ public class GeogigFeatureSource extends ContentFeatureSource {
 
     }
 
-    @Override
-    protected SimpleFeatureType buildFeatureType() throws IOException {
+    protected @Override SimpleFeatureType buildFeatureType() throws IOException {
 
         RevFeatureType nativeType = getNativeType();
         SimpleFeatureType featureType = GT.adapt(nativeType.type());

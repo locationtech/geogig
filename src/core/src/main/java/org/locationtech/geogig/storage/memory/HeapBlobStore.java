@@ -29,33 +29,27 @@ public class HeapBlobStore implements TransactionBlobStore {
 
     private ConcurrentHashMap<String, byte[]> blobs = new ConcurrentHashMap<>();
 
-    @Override
-    public Optional<byte[]> getBlob(String path) {
+    public @Override Optional<byte[]> getBlob(String path) {
         return getBlob("", path);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String path) {
         return getBlobAsStream("", path);
     }
 
-    @Override
-    public void putBlob(String path, byte[] blob) {
+    public @Override void putBlob(String path, byte[] blob) {
         putBlob("", path, blob);
     }
 
-    @Override
-    public void putBlob(String path, InputStream blob) {
+    public @Override void putBlob(String path, InputStream blob) {
         putBlob("", path, blob);
     }
 
-    @Override
-    public void removeBlob(String path) {
+    public @Override void removeBlob(String path) {
         removeBlob("", path);
     }
 
-    @Override
-    public Optional<byte[]> getBlob(String namespace, String path) {
+    public @Override Optional<byte[]> getBlob(String namespace, String path) {
         return Optional.ofNullable(blobs.get(key(namespace, path)));
     }
 
@@ -64,8 +58,7 @@ public class HeapBlobStore implements TransactionBlobStore {
                 : new StringBuilder(ns).append('/').append(path).toString();
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String namespace, String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String namespace, String path) {
         Optional<byte[]> blob = getBlob(namespace, path);
         InputStream in = null;
         if (blob.isPresent()) {
@@ -74,13 +67,11 @@ public class HeapBlobStore implements TransactionBlobStore {
         return Optional.ofNullable(in);
     }
 
-    @Override
-    public void putBlob(String namespace, String path, byte[] blob) {
+    public @Override void putBlob(String namespace, String path, byte[] blob) {
         blobs.put(key(namespace, path), blob);
     }
 
-    @Override
-    public void putBlob(String namespace, String path, InputStream blob) {
+    public @Override void putBlob(String namespace, String path, InputStream blob) {
         byte[] bytes;
         try {
             bytes = ByteStreams.toByteArray(blob);
@@ -90,19 +81,16 @@ public class HeapBlobStore implements TransactionBlobStore {
         putBlob(namespace, path, bytes);
     }
 
-    @Override
-    public void removeBlob(String namespace, String path) {
+    public @Override void removeBlob(String namespace, String path) {
         blobs.remove(key(namespace, path));
     }
 
-    @Override
-    public void removeBlobs(final String namespace) {
+    public @Override void removeBlobs(final String namespace) {
         Set<String> all = ImmutableSet.copyOf(blobs.keySet());
         Set<String> filtered = Sets.filter(all, new Predicate<String>() {
             final String prefix = namespace + "/";
 
-            @Override
-            public boolean apply(String key) {
+            public @Override boolean apply(String key) {
                 return key.startsWith(prefix);
             }
         });

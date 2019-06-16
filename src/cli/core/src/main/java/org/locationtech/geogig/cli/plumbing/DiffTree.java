@@ -70,8 +70,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
     /**
      * Executes the diff-tree command with the specified options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         if (refSpec.size() > 2) {
             throw new InvalidParameterException("Tree refspecs list is too long :" + refSpec);
         }

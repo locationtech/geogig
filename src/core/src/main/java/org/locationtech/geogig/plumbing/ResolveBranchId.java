@@ -33,15 +33,13 @@ public class ResolveBranchId extends AbstractGeoGigOp<Optional<Ref>> {
         return this;
     }
 
-    @Override
-    protected Optional<Ref> _call() {
+    protected @Override Optional<Ref> _call() {
         Preconditions.checkState(id != null, "id has not been set.");
         Predicate<Ref> filter = new Predicate<Ref>() {
 
             private ObjectId id = ResolveBranchId.this.id;
 
-            @Override
-            public boolean apply(@Nullable Ref ref) {
+            public @Override boolean apply(@Nullable Ref ref) {
                 String refName = ref.getName();
                 ObjectId refId = ref.getObjectId();
                 return refName.startsWith(Ref.HEADS_PREFIX) && refId.equals(this.id);

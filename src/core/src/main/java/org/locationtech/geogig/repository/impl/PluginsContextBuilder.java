@@ -20,8 +20,7 @@ import com.google.inject.util.Modules;
 
 public class PluginsContextBuilder extends ContextBuilderImpl {
 
-    @Override
-    public Context build(Hints hints) {
+    public @Override Context build(Hints hints) {
         return Guice
                 .createInjector(Modules.override(new GeogigModule(), new HintsModule(hints))
                         .with(new PluginsModule()))

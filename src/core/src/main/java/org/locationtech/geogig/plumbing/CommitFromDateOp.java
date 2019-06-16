@@ -31,8 +31,7 @@ public class CommitFromDateOp extends AbstractGeoGigOp<Optional<RevCommit>> {
         return this;
     }
 
-    @Override
-    protected Optional<RevCommit> _call() {
+    protected @Override Optional<RevCommit> _call() {
         Preconditions.checkState(date != null);
         long time = date.getTime();
         Iterator<RevCommit> iter = command(LogOp.class).setFirstParentOnly(true).call();

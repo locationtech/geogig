@@ -56,8 +56,7 @@ public abstract class CommitTraverser {
         /**
          * Use the hash code of the ObjectId.
          */
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             return objectId.hashCode();
         }
 
@@ -66,8 +65,7 @@ public abstract class CommitTraverser {
          * 
          * @return true if the objects are equal
          */
-        @Override
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (obj == null)
                 return false;
             if (obj == this)

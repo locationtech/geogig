@@ -38,8 +38,7 @@ public class CLITestContextBuilder extends ContextBuilderImpl {
         this.platform = platform;
     }
 
-    @Override
-    public Context build(Hints hints) {
+    public @Override Context build(Hints hints) {
         FunctionalTestModule functionalTestModule = new FunctionalTestModule(platform.clone());
 
         Context context = Guice
@@ -60,8 +59,7 @@ public class CLITestContextBuilder extends ContextBuilderImpl {
             this.testPlatform = testPlatform;
         }
 
-        @Override
-        protected void configure() {
+        protected @Override void configure() {
             if (testPlatform != null) {
                 bind(Platform.class).toInstance(testPlatform);
             }

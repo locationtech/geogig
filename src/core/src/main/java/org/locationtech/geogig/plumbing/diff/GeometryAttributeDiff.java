@@ -87,23 +87,19 @@ public class GeometryAttributeDiff implements AttributeDiff {
 
     }
 
-    @Override
-    public Geometry getOldValue() {
+    public @Override Geometry getOldValue() {
         return oldGeometry;
     }
 
-    @Override
-    public Geometry getNewValue() {
+    public @Override Geometry getNewValue() {
         return newGeometry;
     }
 
-    @Override
-    public TYPE getType() {
+    public @Override TYPE getType() {
         return type;
     }
 
-    @Override
-    public AttributeDiff reversed() {
+    public @Override AttributeDiff reversed() {
         if (type == TYPE.MODIFIED) {
             return new GeometryAttributeDiff(this.diff.reversed());
         } else {
@@ -111,8 +107,7 @@ public class GeometryAttributeDiff implements AttributeDiff {
         }
     }
 
-    @Override
-    public Geometry applyOn(@Nullable Object value) {
+    public @Override Geometry applyOn(@Nullable Object value) {
         Preconditions.checkState(canBeAppliedOn(value));
         switch (type) {
         case ADDED:
@@ -125,8 +120,7 @@ public class GeometryAttributeDiff implements AttributeDiff {
         }
     }
 
-    @Override
-    public boolean canBeAppliedOn(@Nullable Object value) {
+    public @Override boolean canBeAppliedOn(@Nullable Object value) {
         switch (this.type) {
         case ADDED:
             return value == null;
@@ -154,8 +148,7 @@ public class GeometryAttributeDiff implements AttributeDiff {
         }
     }
 
-    @Override
-    public String asText() {
+    public @Override String asText() {
         switch (type) {
         case ADDED:
             return type.name().toCharArray()[0] + "\t" + TextValueSerializer.asString(newGeometry);
@@ -167,8 +160,7 @@ public class GeometryAttributeDiff implements AttributeDiff {
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof GeometryAttributeDiff)) {
             return false;
         }
@@ -188,8 +180,7 @@ public class GeometryAttributeDiff implements AttributeDiff {
         return diff;
     }
 
-    @Override
-    public boolean conflicts(AttributeDiff ad) {
+    public @Override boolean conflicts(AttributeDiff ad) {
         if (!(ad instanceof GeometryAttributeDiff)) {
             return true;
         }

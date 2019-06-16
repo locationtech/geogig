@@ -116,8 +116,7 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
      * 
      * @return an {@link Index} that represents the newly created index
      */
-    @Override
-    protected Index _call() {
+    protected @Override Index _call() {
         checkArgument(typeTreeRef != null || treeRefSpec != null, "No tree was provided.");
 
         final RevTree canonicalTypeTree;

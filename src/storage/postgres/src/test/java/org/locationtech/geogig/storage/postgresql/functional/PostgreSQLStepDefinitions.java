@@ -41,13 +41,11 @@ public class PostgreSQLStepDefinitions {
     static final class PGTestRepoURIBuilder extends TestRepoURIBuilder {
         private List<PGTemporaryTestConfig> testConfigs = Lists.newArrayList();
 
-        @Override
-        public void before() throws Throwable {
+        public @Override void before() throws Throwable {
             // nothing to do
         }
 
-        @Override
-        public void after() {
+        public @Override void after() {
             for (PGTemporaryTestConfig testConfig : testConfigs) {
                 if (testConfig != null) {
                     testConfig.after();
@@ -56,8 +54,8 @@ public class PostgreSQLStepDefinitions {
             testConfigs.clear();
         }
 
-        @Override
-        public URI newRepositoryURI(String repoName, Platform platform) throws URISyntaxException {
+        public @Override URI newRepositoryURI(String repoName, Platform platform)
+                throws URISyntaxException {
             PGTemporaryTestConfig testConfig = PGTestUtil.newTestConfig(repoName);
             testConfig.before();
 
@@ -66,8 +64,7 @@ public class PostgreSQLStepDefinitions {
             return new URI(repoURI);
         }
 
-        @Override
-        public URI buildRootURI(Platform platform) {
+        public @Override URI buildRootURI(Platform platform) {
             PGTemporaryTestConfig testConfig = testConfigs.get(testConfigs.size() - 1);
             String rootURI = testConfig.getRootURI();
             URI rootUri = URI.create(rootURI);

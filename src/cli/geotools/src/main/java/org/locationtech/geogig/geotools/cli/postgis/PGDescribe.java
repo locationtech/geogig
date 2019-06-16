@@ -35,8 +35,7 @@ public class PGDescribe extends DataStoreDescribe implements CLICommand {
 
     final PGSupport support = new PGSupport();
 
-    @Override
-    protected DataStore getDataStore() {
+    protected @Override DataStore getDataStore() {
         return support.getDataStore(commonArgs);
     }
 }

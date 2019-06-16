@@ -99,26 +99,22 @@ public abstract class BulkOpListener {
             return b1;
         }
         return new BulkOpListener() {
-            @Override
-            public void found(ObjectId object, Integer storageSizeBytes) {
+            public @Override void found(ObjectId object, Integer storageSizeBytes) {
                 b1.found(object, storageSizeBytes);
                 b2.found(object, storageSizeBytes);
             }
 
-            @Override
-            public void inserted(ObjectId object, Integer storageSizeBytes) {
+            public @Override void inserted(ObjectId object, Integer storageSizeBytes) {
                 b1.inserted(object, storageSizeBytes);
                 b2.inserted(object, storageSizeBytes);
             }
 
-            @Override
-            public void deleted(ObjectId id) {
+            public @Override void deleted(ObjectId id) {
                 b1.deleted(id);
                 b2.deleted(id);
             }
 
-            @Override
-            public void notFound(ObjectId id) {
+            public @Override void notFound(ObjectId id) {
                 b1.notFound(id);
                 b2.notFound(id);
             }
@@ -136,8 +132,7 @@ public abstract class BulkOpListener {
             this.target = target;
         }
 
-        @Override
-        public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+        public @Override void found(ObjectId object, @Nullable Integer storageSizeBytes) {
             target.found(object, storageSizeBytes);
         }
 
@@ -145,13 +140,11 @@ public abstract class BulkOpListener {
             target.inserted(object, storageSizeBytes);
         }
 
-        @Override
-        public void deleted(ObjectId id) {
+        public @Override void deleted(ObjectId id) {
             target.deleted(id);
         }
 
-        @Override
-        public void notFound(ObjectId id) {
+        public @Override void notFound(ObjectId id) {
             target.notFound(id);
         }
     }
@@ -169,23 +162,19 @@ public abstract class BulkOpListener {
 
         private AtomicInteger notFound = new AtomicInteger();
 
-        @Override
-        public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+        public @Override void found(ObjectId object, @Nullable Integer storageSizeBytes) {
             found.incrementAndGet();
         }
 
-        @Override
-        public void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
+        public @Override void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
             inserted.incrementAndGet();
         }
 
-        @Override
-        public void deleted(ObjectId id) {
+        public @Override void deleted(ObjectId id) {
             deleted.incrementAndGet();
         }
 
-        @Override
-        public void notFound(ObjectId id) {
+        public @Override void notFound(ObjectId id) {
             notFound.incrementAndGet();
         }
 

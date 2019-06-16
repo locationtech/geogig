@@ -42,27 +42,23 @@ public class HeapGraphDatabase extends AbstractStore implements GraphDatabase {
         super(ro);
     }
 
-    @Override
-    public boolean exists(ObjectId commitId) {
+    public @Override boolean exists(ObjectId commitId) {
         return graph.get(commitId).isPresent();
     }
 
-    @Override
-    public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+    public @Override List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         // transform outgoing nodes to id
         // filter for null to skip fake root node
         return graph.get(commitId).map(Node::to).map(Streams::stream).orElse(Stream.empty())
                 .filter(n -> n != null).map(Node::getId).collect(Collectors.toList());
     }
 
-    @Override
-    public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+    public @Override List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
         return graph.get(commitId).map(Node::from).map(Streams::stream).orElse(Stream.empty())
                 .filter(n -> n != null).map(Node::getId).collect(Collectors.toList());
     }
 
-    @Override
-    public boolean put(ObjectId commitId, List<ObjectId> parentIds) {
+    public @Override boolean put(ObjectId commitId, List<ObjectId> parentIds) {
         Node n = graph.getOrAdd(commitId);
         synchronized (n) {
             if (parentIds.isEmpty()) {
@@ -89,18 +85,15 @@ public class HeapGraphDatabase extends AbstractStore implements GraphDatabase {
         return false;
     }
 
-    @Override
-    public void map(ObjectId mapped, ObjectId original) {
+    public @Override void map(ObjectId mapped, ObjectId original) {
         graph.map(mapped, original);
     }
 
-    @Override
-    public ObjectId getMapping(ObjectId commitId) {
+    public @Override ObjectId getMapping(ObjectId commitId) {
         return Optional.ofNullable(graph.getMapping(commitId)).orElse(ObjectId.NULL);
     }
 
-    @Override
-    public int getDepth(@NonNull ObjectId commitId) {
+    public @Override int getDepth(@NonNull ObjectId commitId) {
         Optional<Node> nodeOpt = graph.get(commitId);
         Preconditions.checkArgument(nodeOpt.isPresent(), "No graph entry for commit %s on %s",
                 commitId, this.toString());
@@ -118,14 +111,13 @@ public class HeapGraphDatabase extends AbstractStore implements GraphDatabase {
         return depth;
     }
 
-    @Override
-    public void setProperty(ObjectId commitId, String propertyName, String propertyValue) {
+    public @Override void setProperty(ObjectId commitId, String propertyName,
+            String propertyValue) {
         graph.get(commitId).get().put(propertyName, propertyValue);
         ;
     }
 
-    @Override
-    public void truncate() {
+    public @Override void truncate() {
         graph.clear();
     }
 
@@ -162,13 +154,11 @@ public class HeapGraphDatabase extends AbstractStore implements GraphDatabase {
             this.node = node;
         }
 
-        @Override
-        public ObjectId getIdentifier() {
+        public @Override ObjectId getIdentifier() {
             return node.id;
         }
 
-        @Override
-        public Iterator<GraphEdge> getEdges(final Direction direction) {
+        public @Override Iterator<GraphEdge> getEdges(final Direction direction) {
             Iterator<Edge> nodeEdges;
             switch (direction) {
             case OUT:
@@ -190,15 +180,13 @@ public class HeapGraphDatabase extends AbstractStore implements GraphDatabase {
             return edges.iterator();
         }
 
-        @Override
-        public boolean isSparse() {
+        public @Override boolean isSparse() {
             return node.props != null && node.props.containsKey(SPARSE_FLAG)
                     && Boolean.valueOf(node.props.get(SPARSE_FLAG));
         }
     }
 
-    @Override
-    public GraphNode getNode(ObjectId id) {
+    public @Override GraphNode getNode(ObjectId id) {
         return new HeapGraphNode(graph.get(id).get());
     }
 }

@@ -14,8 +14,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 public class CanonicalClusteringStrategyRocksdbStorageTest extends CanonicalClusteringStrategyTest {
 
-    @Override
-    protected RocksdbDAGStorageProvider createStorageProvider(ObjectStore source) {
+    protected @Override RocksdbDAGStorageProvider createStorageProvider(ObjectStore source) {
         return new RocksdbDAGStorageProvider(source);
     }
 }

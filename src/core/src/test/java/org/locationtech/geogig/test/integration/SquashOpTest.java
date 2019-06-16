@@ -420,8 +420,7 @@ public class SquashOpTest extends RepositoryTestCase {
         }
     }
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
 }

@@ -52,25 +52,21 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         super(readOnly);
     }
 
-    @Override
-    public Optional<String> get(String key) {
+    public @Override Optional<String> get(String key) {
         checkKeyFormat(key);
         return ofNullable(local.get(key));
     }
 
-    @Override
-    public Optional<String> getGlobal(String key) {
+    public @Override Optional<String> getGlobal(String key) {
         return ofNullable(global.get(key));
     }
 
-    @Override
-    public <T> Optional<T> get(String key, Class<T> c) {
+    public @Override <T> Optional<T> get(String key, Class<T> c) {
         Optional<String> val = get(key);
         return cast(c, val);
     }
 
-    @Override
-    public <T> Optional<T> getGlobal(String key, Class<T> c) {
+    public @Override <T> Optional<T> getGlobal(String key, Class<T> c) {
         Optional<String> val = getGlobal(key);
         return cast(c, val);
     }
@@ -92,23 +88,19 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         return ofNullable(val);
     }
 
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
         return new HashMap<>(local);
     }
 
-    @Override
-    public Map<String, String> getAllGlobal() {
+    public @Override Map<String, String> getAllGlobal() {
         return new HashMap<>(global);
     }
 
-    @Override
-    public Map<String, String> getAllSection(String section) {
+    public @Override Map<String, String> getAllSection(String section) {
         return getAllSection(local, section);
     }
 
-    @Override
-    public Map<String, String> getAllSectionGlobal(String section) {
+    public @Override Map<String, String> getAllSectionGlobal(String section) {
         return getAllSection(global, section);
     }
 
@@ -129,13 +121,11 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         return res;
     }
 
-    @Override
-    public List<String> getAllSubsections(String section) {
+    public @Override List<String> getAllSubsections(String section) {
         return getAllSubSection(local, section);
     }
 
-    @Override
-    public List<String> getAllSubsectionsGlobal(String section) {
+    public @Override List<String> getAllSubsectionsGlobal(String section) {
         return getAllSubSection(global, section);
     }
 
@@ -159,8 +149,7 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         return new ArrayList<>(subsections);
     }
 
-    @Override
-    public void put(String key, Object value) {
+    public @Override void put(String key, Object value) {
         checkKeyFormat(key);
         if (value == null) {
             remove(key);
@@ -169,8 +158,7 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         }
     }
 
-    @Override
-    public void putGlobal(String key, Object value) {
+    public @Override void putGlobal(String key, Object value) {
         checkKeyFormat(key);
         if (value == null) {
             removeGlobal(key);
@@ -179,25 +167,21 @@ public class HeapConfigDatabase extends AbstractStore implements ConfigDatabase 
         }
     }
 
-    @Override
-    public void remove(String key) {
+    public @Override void remove(String key) {
         checkKeyFormat(key);
         local.remove(key);
     }
 
-    @Override
-    public void removeGlobal(String key) {
+    public @Override void removeGlobal(String key) {
         checkKeyFormat(key);
         global.remove(key);
     }
 
-    @Override
-    public void removeSection(String section) {
+    public @Override void removeSection(String section) {
         removeSection(local, section);
     }
 
-    @Override
-    public void removeSectionGlobal(String section) {
+    public @Override void removeSectionGlobal(String section) {
         removeSection(global, section);
     }
 

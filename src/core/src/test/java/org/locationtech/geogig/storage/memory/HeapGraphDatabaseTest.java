@@ -14,8 +14,7 @@ import org.locationtech.geogig.storage.impl.GraphDatabaseTest;
 
 public class HeapGraphDatabaseTest extends GraphDatabaseTest {
 
-    @Override
-    protected HeapGraphDatabase createDatabase(Platform platform) {
+    protected @Override HeapGraphDatabase createDatabase(Platform platform) {
         return new HeapGraphDatabase();
     }
 

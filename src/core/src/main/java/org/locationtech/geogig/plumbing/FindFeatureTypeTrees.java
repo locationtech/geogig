@@ -60,8 +60,7 @@ public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
         return this;
     }
 
-    @Override
-    protected List<NodeRef> _call() {
+    protected @Override List<NodeRef> _call() {
         Preconditions.checkArgument(refSpec != null || rootTree != null,
                 "refSpec was not provided");
         if (source == null) {

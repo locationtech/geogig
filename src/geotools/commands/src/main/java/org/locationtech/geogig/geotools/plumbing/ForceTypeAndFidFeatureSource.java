@@ -54,48 +54,40 @@ class ForceTypeAndFidFeatureSource<T extends org.opengis.feature.type.FeatureTyp
         this.forbidSorting = forbidSorting;
     }
 
-    @Override
-    public QueryCapabilities getQueryCapabilities() {
+    public @Override QueryCapabilities getQueryCapabilities() {
         final QueryCapabilities capabilities = super.getQueryCapabilities();
         if (!forbidSorting) {
             return capabilities;
         }
         return new QueryCapabilities() {
-            @Override
-            public boolean isOffsetSupported() {
+            public @Override boolean isOffsetSupported() {
                 return false;
             }
 
-            @Override
-            public boolean supportsSorting(SortBy[] sortAttributes) {
+            public @Override boolean supportsSorting(SortBy[] sortAttributes) {
                 return false;
             }
 
-            @Override
-            public boolean isReliableFIDSupported() {
+            public @Override boolean isReliableFIDSupported() {
                 return capabilities.isReliableFIDSupported();
             }
 
-            @Override
-            public boolean isUseProvidedFIDSupported() {
+            public @Override boolean isUseProvidedFIDSupported() {
                 return capabilities.isUseProvidedFIDSupported();
             }
         };
     }
 
-    @Override
-    public T getSchema() {
+    public @Override T getSchema() {
         return forceType;
     }
 
-    @Override
-    public FeatureCollection<T, F> getFeatures(Query query) throws IOException {
+    public @Override FeatureCollection<T, F> getFeatures(Query query) throws IOException {
 
         final FeatureCollection<T, F> features = super.getFeatures(query);
         return new ForwardingFeatureCollection<T, F>(features) {
 
-            @Override
-            public FeatureIterator<F> features() {
+            public @Override FeatureIterator<F> features() {
 
                 FeatureIterator<F> iterator = delegate.features();
 
@@ -103,8 +95,7 @@ class ForceTypeAndFidFeatureSource<T extends org.opengis.feature.type.FeatureTyp
                         (SimpleFeatureType) forceType);
             }
 
-            @Override
-            public T getSchema() {
+            public @Override T getSchema() {
                 return forceType;
             }
         };
@@ -125,8 +116,7 @@ class ForceTypeAndFidFeatureSource<T extends org.opengis.feature.type.FeatureTyp
         }
 
         @SuppressWarnings("unchecked")
-        @Override
-        public F next() {
+        public @Override F next() {
             F next = super.next();
             String fid = ((SimpleFeature) next).getID();
             if (fid.startsWith(fidPrefix)) {
@@ -149,18 +139,15 @@ class ForceTypeAndFidFeatureSource<T extends org.opengis.feature.type.FeatureTyp
             this.featureType = featureType;
         }
 
-        @Override
-        public SimpleFeatureType getType() {
+        public @Override SimpleFeatureType getType() {
             return featureType;
         }
 
-        @Override
-        public String getID() {
+        public @Override String getID() {
             return fid;
         }
 
-        @Override
-        public FeatureId getIdentifier() {
+        public @Override FeatureId getIdentifier() {
             return new FeatureIdImpl(fid);
         }
     }

@@ -84,8 +84,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
      * 
      * @return a FeatureCollection with the specified features
      */
-    @Override
-    protected SimpleFeatureStore _call() {
+    protected @Override SimpleFeatureStore _call() {
 
         final SimpleFeatureStore targetStore = getTargetStore();
 
@@ -103,8 +102,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 .setNewVersion(newRef).setFilter(path).call()) {
             FeatureCollection<SimpleFeatureType, SimpleFeature> asFeatureCollection = new BaseFeatureCollection<SimpleFeatureType, SimpleFeature>() {
 
-                @Override
-                public FeatureIterator<SimpleFeature> features() {
+                public @Override FeatureIterator<SimpleFeature> features() {
 
                     final Iterator<SimpleFeature> plainFeatures = getFeatures(diffs, old,
                             objectDatabase(), defaultMetadataId, progressListener);

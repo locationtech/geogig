@@ -85,8 +85,7 @@ import com.google.inject.AbstractModule;
  */
 public class BuiltinCommandsModule extends AbstractModule implements CLIModule {
 
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
         bind(RevParse.class);
         bind(Add.class);
         bind(Apply.class);

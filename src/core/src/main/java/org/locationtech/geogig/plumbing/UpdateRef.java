@@ -108,8 +108,7 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
      * 
      * @return the new value of the ref
      */
-    @Override
-    protected Optional<Ref> _call() {
+    protected @Override Optional<Ref> _call() {
         final String name = this.name;
         final boolean delete = this.delete;
         final ObjectId newValue = this.newValue;

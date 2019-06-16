@@ -17,8 +17,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
  */
 public class ResolveRepositoryNameTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test

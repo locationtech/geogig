@@ -50,8 +50,7 @@ public class VerifyPatch extends AbstractCommand {
             "--reverse" }, description = "Check if the patch can be applied in reverse")
     private boolean reverse;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(patchFiles.size() < 2, "Only one single patch file accepted");
         checkParameter(!patchFiles.isEmpty(), "No patch file specified");
 

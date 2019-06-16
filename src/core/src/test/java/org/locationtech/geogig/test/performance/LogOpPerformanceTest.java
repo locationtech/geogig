@@ -33,8 +33,7 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
     @ClassRule
     public static EnablePerformanceTestRule enabler = new EnablePerformanceTestRule();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test

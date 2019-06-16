@@ -59,8 +59,7 @@ public final class PGId {
         return new PGId(h1, h2, h3);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return String.format("ID[%d, %d, %d]", hash1(), hash2(), hash3());
     }
 

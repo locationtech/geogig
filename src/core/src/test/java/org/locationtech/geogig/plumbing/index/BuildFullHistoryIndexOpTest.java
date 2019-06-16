@@ -48,8 +48,7 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
         indexdb = repository.indexDatabase();
         worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
@@ -222,8 +221,7 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
         List<Future<?>> futures = new ArrayList<>();
         for (int t = 0; t < threadCount; t++) {
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     repo.command(BuildFullHistoryIndexOp.class)//
                             .setTreeRefSpec(indexInfo.getTreeName())//
                             .setAttributeName(indexInfo.getAttributeName())//

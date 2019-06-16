@@ -113,8 +113,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         return remote;
     }
 
-    @Override
-    protected TransferSummary _call() {
+    protected @Override TransferSummary _call() {
         checkState(remote != null, "no remote specified");
         checkState(!refsToPush.isEmpty(), "no refs to push specified");
 

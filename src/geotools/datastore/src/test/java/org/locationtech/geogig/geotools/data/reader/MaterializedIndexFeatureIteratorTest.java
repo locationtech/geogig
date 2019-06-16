@@ -40,8 +40,7 @@ public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
 
     private GeometryFactory geometryFactory = new GeometryFactory();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         //
     }
 

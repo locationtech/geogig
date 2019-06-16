@@ -254,8 +254,7 @@ public class FeatureDiff {
         return new FeatureDiff(path, map, newFeatureType, oldFeatureType);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         // TODO: this is a temporary simple comparison. Should be more elaborate
         if (!(o instanceof FeatureDiff)) {
             return false;

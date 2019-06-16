@@ -50,33 +50,27 @@ class LazyNode extends Node {
         this.extraDataRelOffset = extraDataRelOffset;
     }
 
-    @Override
-    public TYPE getType() {
+    public @Override TYPE getType() {
         return set.getType();
     }
 
-    @Override
-    public String getName() {
+    public @Override String getName() {
         return set.getName(nameIndex);
     }
 
-    @Override
-    public ObjectId getObjectId() {
+    public @Override ObjectId getObjectId() {
         return set.getObjectId(oidIndex);
     }
 
-    @Override
-    public Optional<ObjectId> getMetadataId() {
+    public @Override Optional<ObjectId> getMetadataId() {
         return set.getMetadataId(mdIdIndex);
     }
 
-    @Override
-    public Optional<Envelope> bounds() {
+    public @Override Optional<Envelope> bounds() {
         return set.getBounds(nodeIndex, boundsIndex);
     }
 
-    @Override
-    public boolean intersects(Envelope env) {
+    public @Override boolean intersects(Envelope env) {
         Optional<Envelope> bounds = bounds();
         if (bounds.isPresent()) {
             return env.intersects(bounds.get());
@@ -84,16 +78,14 @@ class LazyNode extends Node {
         return false;
     }
 
-    @Override
-    public void expand(Envelope env) {
+    public @Override void expand(Envelope env) {
         Optional<Envelope> bounds = bounds();
         if (bounds.isPresent()) {
             env.expandToInclude(bounds.get());
         }
     }
 
-    @Override
-    public Map<String, Object> getExtraData() {
+    public @Override Map<String, Object> getExtraData() {
         return set.getExtraData(extraDataRelOffset);
     }
 

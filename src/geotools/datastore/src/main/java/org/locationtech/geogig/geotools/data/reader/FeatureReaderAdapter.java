@@ -45,13 +45,11 @@ public class FeatureReaderAdapter implements FeatureReader<SimpleFeatureType, Si
         return new FeatureReaderAdapter(schema, gtFeatures);
     }
 
-    @Override
-    public SimpleFeatureType getFeatureType() {
+    public @Override SimpleFeatureType getFeatureType() {
         return schema;
     }
 
-    @Override
-    public SimpleFeature next() throws NoSuchElementException {
+    public @Override SimpleFeature next() throws NoSuchElementException {
         try {
             return iterator.next();
         } catch (RuntimeException e) {
@@ -60,8 +58,7 @@ public class FeatureReaderAdapter implements FeatureReader<SimpleFeatureType, Si
         }
     }
 
-    @Override
-    public boolean hasNext() throws IOException {
+    public @Override boolean hasNext() throws IOException {
         try {
             return iterator.hasNext();
         } catch (RuntimeException e) {
@@ -70,8 +67,7 @@ public class FeatureReaderAdapter implements FeatureReader<SimpleFeatureType, Si
         }
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         iterator.close();
     }
 

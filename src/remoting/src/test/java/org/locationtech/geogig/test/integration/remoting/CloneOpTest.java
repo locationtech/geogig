@@ -69,8 +69,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
     protected Repository cloneRepo;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         remoteRepo = super.originRepo;
         cloneRepo = super.localRepo;
     }

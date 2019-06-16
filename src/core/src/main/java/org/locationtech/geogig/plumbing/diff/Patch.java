@@ -187,8 +187,7 @@ public class Patch {
         featureTypes.put(featureType.getId(), featureType);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         // TODO: this is a temporary simple comparison. Should be more elaborate
         if (!(o instanceof Patch)) {
             return false;
@@ -206,8 +205,7 @@ public class Patch {
      * serialize the patch, use the {@link PatchSerializer} class instead. Use this method to show
      * patch content in a human-readable format
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         TextRevObjectSerializer serializer = TextRevObjectSerializer.INSTANCE;
         StringBuilder sb = new StringBuilder();
         for (FeatureInfo feature : addedFeatures) {

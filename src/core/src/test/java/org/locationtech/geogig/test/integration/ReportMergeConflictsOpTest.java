@@ -35,8 +35,7 @@ import com.google.common.collect.Lists;
 
 public class ReportMergeConflictsOpTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     private class TestMergeScenarioConsumer extends MergeScenarioConsumer {
@@ -46,23 +45,19 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
 
         public List<FeatureInfo> merged = new ArrayList<FeatureInfo>();
 
-        @Override
-        public void conflicted(Conflict conflict) {
+        public @Override void conflicted(Conflict conflict) {
             conflicted.add(conflict);
         }
 
-        @Override
-        public void unconflicted(DiffEntry diff) {
+        public @Override void unconflicted(DiffEntry diff) {
             unconflicted.add(diff);
         }
 
-        @Override
-        public void merged(FeatureInfo featureInfo) {
+        public @Override void merged(FeatureInfo featureInfo) {
             merged.add(featureInfo);
         }
 
-        @Override
-        public void finished() {
+        public @Override void finished() {
         }
     };
 

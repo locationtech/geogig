@@ -2320,8 +2320,7 @@ public class DiffMatchPatch {
          * 
          * @return Hash value.
          */
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             final int prime = 31;
             int hashCode = (operation == null) ? 0 : operation.hashCode();
             hashCode += prime * ((text == null) ? 0 : text.hashCode());
@@ -2334,8 +2333,7 @@ public class DiffMatchPatch {
          * @param obj Another Diff to compare against.
          * @return true or false.
          */
-        @Override
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -2429,8 +2427,7 @@ public class DiffMatchPatch {
             return unescapeForEncodeUriCompatability(text.toString());
         }
 
-        @Override
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof Patch)) {
                 return false;
             }

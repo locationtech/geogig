@@ -29,8 +29,7 @@ public class PGConflictsDatabaseConformanceTest
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    @Override
-    protected PGConflictsDatabase createConflictsDatabase() throws Exception {
+    protected @Override PGConflictsDatabase createConflictsDatabase() throws Exception {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
 
@@ -41,8 +40,7 @@ public class PGConflictsDatabaseConformanceTest
         return conflicts;
     }
 
-    @Override
-    protected void dispose(@Nullable PGConflictsDatabase conflicts) throws Exception {
+    protected @Override void dispose(@Nullable PGConflictsDatabase conflicts) throws Exception {
         if (conflicts != null) {
             PGStorage.closeDataSource(conflicts.dataSource);
         }

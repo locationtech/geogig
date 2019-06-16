@@ -63,8 +63,7 @@ public class ParseTimestampTest extends Assert {
         File tmp = new File(System.getProperty("java.io.tmpdir"));
         @SuppressWarnings("serial")
         Platform testPlatform = new TestPlatform(tmp, tmp) {
-            @Override
-            public long currentTimeMillis() {
+            public @Override long currentTimeMillis() {
                 return REFERENCE_DATE.getTime();
             }
         };

@@ -60,56 +60,51 @@ public class TransactionStagingArea implements StagingArea {
     /**
      * @return the transaction conflicts database
      */
-    @Override
-    public ConflictsDatabase conflictsDatabase() {
+    public @Override ConflictsDatabase conflictsDatabase() {
         return conflictsDb;
     }
 
     /**
      * Pass through to the original {@link StagingArea}.
      */
-    @Override
-    public void updateStageHead(ObjectId newTree) {
+    public @Override void updateStageHead(ObjectId newTree) {
         index.updateStageHead(newTree);
     }
 
     /**
      * Pass through to the original {@link StagingArea}.
      */
-    @Override
-    public RevTree getTree() {
+    public @Override RevTree getTree() {
         return index.getTree();
     }
 
     /**
      * Pass through to the original {@link StagingArea}.
      */
-    @Override
-    public Optional<Node> findStaged(String path) {
+    public @Override Optional<Node> findStaged(String path) {
         return index.findStaged(path);
     }
 
     /**
      * Pass through to the original {@link StagingArea}.
      */
-    @Override
-    public void stage(ProgressListener progress, Iterator<DiffEntry> unstaged, long numChanges) {
+    public @Override void stage(ProgressListener progress, Iterator<DiffEntry> unstaged,
+            long numChanges) {
         index.stage(progress, unstaged, numChanges);
     }
 
     /**
      * Pass through to the original {@link StagingArea}.
      */
-    @Override
-    public AutoCloseableIterator<DiffEntry> getStaged(@Nullable List<String> pathFilters) {
+    public @Override AutoCloseableIterator<DiffEntry> getStaged(
+            @Nullable List<String> pathFilters) {
         return index.getStaged(pathFilters);
     }
 
     /**
      * Pass through to the original {@link StagingArea}.
      */
-    @Override
-    public DiffObjectCount countStaged(@Nullable List<String> pathFilters) {
+    public @Override DiffObjectCount countStaged(@Nullable List<String> pathFilters) {
         return index.countStaged(pathFilters);
     }
 
@@ -118,8 +113,7 @@ public class TransactionStagingArea implements StagingArea {
      * @return the number of conflicts that match the path filter, or the total number of conflicts
      *         if a path filter was not specified
      */
-    @Override
-    public long countConflicted(@Nullable String pathFilter) {
+    public @Override long countConflicted(@Nullable String pathFilter) {
         return conflictsDb.getCountByPrefix(null, pathFilter);
     }
 
@@ -128,13 +122,11 @@ public class TransactionStagingArea implements StagingArea {
      * @return the conflicts that match the path filter, if no path filter is specified, all
      *         conflicts will be returned
      */
-    @Override
-    public Iterator<Conflict> getConflicted(@Nullable String pathFilter) {
+    public @Override Iterator<Conflict> getConflicted(@Nullable String pathFilter) {
         return conflictsDb.getByPrefix(null, pathFilter);
     }
 
-    @Override
-    public boolean isClean() {
+    public @Override boolean isClean() {
         return index.isClean();
     }
 

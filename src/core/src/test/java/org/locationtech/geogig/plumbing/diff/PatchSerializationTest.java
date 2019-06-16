@@ -30,8 +30,7 @@ import com.google.common.collect.Maps;
 
 public class PatchSerializationTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test

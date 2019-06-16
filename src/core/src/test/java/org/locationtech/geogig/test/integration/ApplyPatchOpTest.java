@@ -40,8 +40,7 @@ import com.google.common.collect.Maps;
 
 public class ApplyPatchOpTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     private Optional<Node> findTreeChild(RevTree root, String pathRemove) {

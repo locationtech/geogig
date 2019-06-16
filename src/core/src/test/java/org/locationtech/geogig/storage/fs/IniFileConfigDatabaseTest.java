@@ -25,8 +25,7 @@ public class IniFileConfigDatabaseTest extends ConfigDatabaseTest<IniFileConfigD
         return new IniFileConfigDatabase(platform);
     }
 
-    @Override
-    protected void destroy(IniFileConfigDatabase config) {
+    protected @Override void destroy(IniFileConfigDatabase config) {
         //
     }
 

@@ -37,8 +37,7 @@ import com.google.common.collect.ImmutableList.Builder;
  */
 public class CleanRefsOp extends AbstractGeoGigOp<ImmutableList<String>> {
 
-    @Override
-    protected ImmutableList<String> _call() {
+    protected @Override ImmutableList<String> _call() {
         Builder<String> cleaned = new ImmutableList.Builder<String>();
         Optional<Ref> ref = command(UpdateRef.class).setDelete(true).setName(Ref.MERGE_HEAD).call();
         if (ref.isPresent()) {

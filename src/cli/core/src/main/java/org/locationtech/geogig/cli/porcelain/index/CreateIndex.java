@@ -49,8 +49,7 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
     @Parameter(names = "--bounds", description = "If specified, the max bounds of the spatial index will be set to this parameter. <minx,miny,maxx,maxy>")
     private String bbox;
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
 
         Repository repo = cli.getGeogig().getRepository();

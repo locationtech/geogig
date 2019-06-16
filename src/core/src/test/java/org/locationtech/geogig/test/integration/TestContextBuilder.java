@@ -44,8 +44,7 @@ public class TestContextBuilder extends ContextBuilderImpl {
         this.additionalOverrides = overrides;
     }
 
-    @Override
-    public Context build(Hints hints) {
+    public @Override Context build(Hints hints) {
         if (!hints.get(Hints.PLATFORM).isPresent() && this.platform != null) {
             hints = hints.platform(platform);
         }

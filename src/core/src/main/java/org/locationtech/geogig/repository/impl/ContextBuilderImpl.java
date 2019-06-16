@@ -19,8 +19,7 @@ import com.google.inject.Guice;
 
 public class ContextBuilderImpl implements ContextBuilder {
 
-    @Override
-    public final Context build() {
+    public @Override final Context build() {
         return build(new Hints());
     }
 
@@ -28,14 +27,12 @@ public class ContextBuilderImpl implements ContextBuilder {
      * @param hints a set of hints to pass over to the injector to be injected into components that
      *        can make use of it
      */
-    @Override
-    public Context build(Hints hints) {
+    public @Override Context build(Hints hints) {
         return Guice.createInjector(new GeogigModule(), new HintsModule(hints))
                 .getInstance(org.locationtech.geogig.repository.Context.class);
     }
 
-    @Override
-    public int getPriority() {
+    public @Override int getPriority() {
         return 0;
     }
 

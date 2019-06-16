@@ -669,8 +669,7 @@ public class GeogigCLI {
             final String commandName) {
         Map<String, JCommander> candidates = Maps.filterEntries(commands,
                 new Predicate<Map.Entry<String, JCommander>>() {
-                    @Override
-                    public boolean apply(@Nullable Entry<String, JCommander> entry) {
+                    public @Override boolean apply(@Nullable Entry<String, JCommander> entry) {
                         char[] s1 = entry.getKey().toCharArray();
                         char[] s2 = commandName.toCharArray();
                         int[] prev = new int[s2.length + 1];
@@ -792,14 +791,12 @@ public class GeogigCLI {
                 // Don't skip the first update
                 private volatile long lastRun = 0;
 
-                @Override
-                public void started() {
+                public @Override void started() {
                     super.started();
                     lastRun = -(delayNanos + 1);
                 }
 
-                @Override
-                public void setDescription(String s, Object... args) {
+                public @Override void setDescription(String s, Object... args) {
                     lastRun = platform.nanoTime();
                     try {
                         console.println();
@@ -810,8 +807,7 @@ public class GeogigCLI {
                     }
                 }
 
-                @Override
-                public synchronized void complete() {
+                public @Override synchronized void complete() {
                     // avoid double logging if caller missbehaves
                     if (super.isCompleted()) {
                         return;
@@ -827,8 +823,7 @@ public class GeogigCLI {
                     }
                 }
 
-                @Override
-                public void setProgress(float percent) {
+                public @Override void setProgress(float percent) {
                     super.setProgress(percent);
                     long nanoTime = platform.nanoTime();
                     if ((nanoTime - lastRun) > delayNanos) {

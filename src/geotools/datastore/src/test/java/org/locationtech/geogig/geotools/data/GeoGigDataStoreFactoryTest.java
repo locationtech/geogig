@@ -32,8 +32,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
     private URI repoURI;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         repoURI = testRepository.getRepoURI();
         factory = new GeoGigDataStoreFactory();
     }

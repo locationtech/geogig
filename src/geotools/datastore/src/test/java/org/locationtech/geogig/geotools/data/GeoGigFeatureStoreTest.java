@@ -58,8 +58,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
     protected GeogigFeatureStore points;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(repo);
         dataStore.createSchema(GT.adapt(super.pointsType));
         dataStore.createSchema(GT.adapt(super.linesType));
@@ -68,8 +67,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         points = (GeogigFeatureStore) dataStore.getFeatureSource(pointsName);
     }
 
-    @Override
-    protected void tearDownInternal() throws Exception {
+    protected @Override void tearDownInternal() throws Exception {
         dataStore.dispose();
         dataStore = null;
         points = null;

@@ -31,8 +31,7 @@ public class ShpExportTest extends RepositoryTestCase {
 
     private GeogigCLI cli;
 
-    @Override
-    public void setUpInternal() throws Exception {
+    public @Override void setUpInternal() throws Exception {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
@@ -53,8 +52,7 @@ public class ShpExportTest extends RepositoryTestCase {
         repo.command(CommitOp.class).call();
     }
 
-    @Override
-    public void tearDownInternal() throws Exception {
+    public @Override void tearDownInternal() throws Exception {
         cli.close();
     }
 

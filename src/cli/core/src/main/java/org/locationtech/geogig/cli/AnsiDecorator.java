@@ -40,28 +40,23 @@ public class AnsiDecorator extends Ansi {
         return ansiDecorator;
     }
 
-    @Override
-    public Ansi a(Attribute ignored) {
+    public @Override Ansi a(Attribute ignored) {
         return this;
     }
 
-    @Override
-    public Ansi bg(Color c) {
+    public @Override Ansi bg(Color c) {
         return this;
     }
 
-    @Override
-    public Ansi bold() {
+    public @Override Ansi bold() {
         return this;
     }
 
-    @Override
-    public Ansi boldOff() {
+    public @Override Ansi boldOff() {
         return this;
     }
 
-    @Override
-    public Ansi fg(Color c) {
+    public @Override Ansi fg(Color c) {
         return this;
     }
 

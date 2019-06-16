@@ -107,8 +107,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
      *         expected type.
      * @return the resolved object id, may be {@link Optional#empty() absent}
      */
-    @Override
-    protected Optional<ObjectId> _call() {
+    protected @Override Optional<ObjectId> _call() {
         checkState(this.refSpec != null, "refSpec was not given");
 
         return revParse(this.refSpec);

@@ -54,8 +54,7 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
 
     private NodeRef ancestorRef;
 
-    @Override
-    protected Feature _call() {
+    protected @Override Feature _call() {
         checkArgument(nodeRefA != null, "first feature version not specified");
         checkArgument(nodeRefB != null, "second feature version not specified");
         checkArgument(ancestorRef != null, "ancestor version not specified");

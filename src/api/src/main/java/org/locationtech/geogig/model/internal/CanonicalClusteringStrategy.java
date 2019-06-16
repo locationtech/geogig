@@ -22,8 +22,7 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
     private static final long serialVersionUID = 1L;
 
     static final Ordering<NodeId> CANONICAL_ORDER = new Ordering<NodeId>() {
-        @Override
-        public int compare(NodeId left, NodeId right) {
+        public @Override int compare(NodeId left, NodeId right) {
             return CanonicalNodeNameOrder.INSTANCE.compare(left.name(), right.name());
         }
     };
@@ -36,8 +35,7 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
      * @return the max number of nodes a leaf tree can hold at depth {@code depthIndex} as mandated
      *         by {@link CanonicalNodeNameOrder}
      */
-    @Override
-    public int normalizedSizeLimit(final int depthIndex) {
+    public @Override int normalizedSizeLimit(final int depthIndex) {
         return CanonicalNodeNameOrder.normalizedSizeLimit(depthIndex);
     }
 
@@ -49,14 +47,12 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
         return canonicalBucket(nodeId, depthIndex);
     }
 
-    @Override
-    public NodeId computeId(Node node) {
+    public @Override NodeId computeId(Node node) {
         String name = node.getName();
         return new NodeId(name);
     }
 
-    @Override
-    protected Comparator<NodeId> getNodeOrdering() {
+    protected @Override Comparator<NodeId> getNodeOrdering() {
         return CANONICAL_ORDER;
     }
 
@@ -64,8 +60,7 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
      * Overrides to only call {@link #put(Node) put(newNode)} since both old and new are guaranteed
      * to fall on the same bucket as mandated by the canonical node order.
      */
-    @Override
-    public int update(Node oldNode, Node newNode) {
+    public @Override int update(Node oldNode, Node newNode) {
         Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));
         int delta = put(newNode);
         if (delta == 0 && !oldNode.equals(newNode)) {

@@ -38,8 +38,7 @@ public class DiffObjectCount {
     /**
      * @return a readable summary of the counters
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         StringBuilder b = new StringBuilder();
         b.append("trees   [ added: ").append(treesAdded).append(", changed: ").append(treesChanged)
                 .append(", removed: ").append(treesRemoved).append("]\n");

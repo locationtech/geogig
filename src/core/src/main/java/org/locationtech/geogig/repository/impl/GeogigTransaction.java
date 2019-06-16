@@ -115,24 +115,20 @@ public class GeogigTransaction implements Context {
         return transactionId;
     }
 
-    @Override
-    public WorkingTree workingTree() {
+    public @Override WorkingTree workingTree() {
         return transactionWorkTree;
     }
 
-    @Override
     @Deprecated
-    public StagingArea index() {
+    public @Override StagingArea index() {
         return stagingArea();
     }
 
-    @Override
-    public StagingArea stagingArea() {
+    public @Override StagingArea stagingArea() {
         return transactionIndex;
     }
 
-    @Override
-    public RefDatabase refDatabase() {
+    public @Override RefDatabase refDatabase() {
         return transactionRefDatabase;
     }
 
@@ -142,15 +138,13 @@ public class GeogigTransaction implements Context {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    @Override
-    public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
         T instance = context.command(commandClass);
         instance.setContext(this);
         return instance;
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return new StringBuilder(getClass().getSimpleName()).append('[').append(transactionId)
                 .append(']').toString();
     }
@@ -179,44 +173,36 @@ public class GeogigTransaction implements Context {
         context.command(TransactionEnd.class).setTransaction(this).setCancel(true).call();
     }
 
-    @Override
-    public Platform platform() {
+    public @Override Platform platform() {
         return context.platform();
     }
 
-    @Override
-    public ObjectDatabase objectDatabase() {
+    public @Override ObjectDatabase objectDatabase() {
         return context.objectDatabase();
     }
 
-    @Override
-    public IndexDatabase indexDatabase() {
+    public @Override IndexDatabase indexDatabase() {
         return context.indexDatabase();
     }
 
-    @Override
-    public ConflictsDatabase conflictsDatabase() {
+    public @Override ConflictsDatabase conflictsDatabase() {
         return transactionIndex != null ? transactionIndex.conflictsDatabase()
                 : context.conflictsDatabase();
     }
 
-    @Override
-    public BlobStore blobStore() {
+    public @Override BlobStore blobStore() {
         return transactionBlobStore;
     }
 
-    @Override
-    public ConfigDatabase configDatabase() {
+    public @Override ConfigDatabase configDatabase() {
         return context.configDatabase();
     }
 
-    @Override
-    public GraphDatabase graphDatabase() {
+    public @Override GraphDatabase graphDatabase() {
         return context.graphDatabase();
     }
 
-    @Override
-    public Repository repository() {
+    public @Override Repository repository() {
         return context.repository();
     }
 
@@ -238,8 +224,7 @@ public class GeogigTransaction implements Context {
         return ImmutableSet.copyOf(changedRefs);
     }
 
-    @Override
-    public Context snapshot() {
+    public @Override Context snapshot() {
         return this;
     }
 

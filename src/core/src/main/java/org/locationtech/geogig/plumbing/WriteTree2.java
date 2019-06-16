@@ -133,8 +133,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
      *         the index and the HEAD, or {@code null} if the operation has been cancelled (as
      *         indicated by the {@link #getProgressListener() progress listener}.
      */
-    @Override
-    protected ObjectId _call() {
+    protected @Override ObjectId _call() {
         final ProgressListener progress = getProgressListener();
 
         if (pathFilters.isEmpty()) {
@@ -338,8 +337,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
             if (!strippedPathFilters.isEmpty()) {
                 final Set<String> expected = Sets.newHashSet(strippedPathFilters);
                 updatedIterator = Iterators.filter(updatedIterator, new Predicate<DiffEntry>() {
-                    @Override
-                    public boolean apply(DiffEntry input) {
+                    public @Override boolean apply(DiffEntry input) {
                         boolean applies;
                         if (input.isDelete()) {
                             applies = expected.contains(input.oldName());

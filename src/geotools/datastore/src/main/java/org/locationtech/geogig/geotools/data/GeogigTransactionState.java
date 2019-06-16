@@ -61,8 +61,7 @@ class GeogigTransactionState implements State {
         return Optional.ofNullable(this.geogigTx);
     }
 
-    @Override
-    public void setTransaction(@Nullable final Transaction transaction) {
+    public @Override void setTransaction(@Nullable final Transaction transaction) {
         Preconditions.checkArgument(!Transaction.AUTO_COMMIT.equals(transaction));
 
         if (transaction != null && this.tx != null) {
@@ -94,13 +93,11 @@ class GeogigTransactionState implements State {
         }
     }
 
-    @Override
-    public void addAuthorization(String AuthID) throws IOException {
+    public @Override void addAuthorization(String AuthID) throws IOException {
         // not required
     }
 
-    @Override
-    public void commit() throws IOException {
+    public @Override void commit() throws IOException {
         Preconditions.checkState(this.geogigTx != null);
         /*
          * This follows suite with the hack set on GeoSever's
@@ -192,8 +189,7 @@ class GeogigTransactionState implements State {
         return msg.toString();
     }
 
-    @Override
-    public void rollback() throws IOException {
+    public @Override void rollback() throws IOException {
         Preconditions.checkState(this.geogigTx != null);
         this.geogigTx.abort();
         this.geogigTx = null;

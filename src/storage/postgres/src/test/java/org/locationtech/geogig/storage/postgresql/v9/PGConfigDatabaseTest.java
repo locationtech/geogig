@@ -34,21 +34,18 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    @Override
-    protected PGConfigDatabase createDatabase(Platform platform) {
+    protected @Override PGConfigDatabase createDatabase(Platform platform) {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
         return new PGConfigDatabase(config);
     }
 
-    @Override
-    protected void destroy(PGConfigDatabase config) {
+    protected @Override void destroy(PGConfigDatabase config) {
         config.close();
     }
 
-    @Override
     @Test
-    public void testNoRepository() {
+    public @Override void testNoRepository() {
 
         PGTestProperties props = new PGTestProperties();
         PGConfigDatabase globalOnlydb = new PGConfigDatabase(props.newConfig(null));
@@ -64,10 +61,9 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
      * Override as a no-op, since the pg config database's global settings don't depend on the
      * {@code $HOME/.geogigconfig} file.
      */
-    @Override
     @Test
     @Ignore
-    public void testNoUserHome() {
+    public @Override void testNoUserHome() {
         // intentionally empty
     }
 

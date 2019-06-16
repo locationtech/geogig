@@ -716,8 +716,7 @@ public class FeatureReaderBuilder {
             final AutoCloseableIterator<DiffEntry> diffs, final ChangeType changeType) {
 
         Function<DiffEntry, NodeRef> fn = new Function<DiffEntry, NodeRef>() {
-            @Override
-            public NodeRef apply(DiffEntry e) {
+            public @Override NodeRef apply(DiffEntry e) {
                 if (e.isAdd()) {
                     return e.getNewObject();
                 }

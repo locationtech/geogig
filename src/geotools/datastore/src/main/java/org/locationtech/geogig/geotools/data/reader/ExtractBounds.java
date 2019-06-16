@@ -26,8 +26,7 @@ class ExtractBounds extends DefaultFilterVisitor {
 
     private List<Envelope> bounds = new ArrayList<>(2);
 
-    @Override
-    public List<Envelope> visit(Literal literal, @Nullable Object data) {
+    public @Override List<Envelope> visit(Literal literal, @Nullable Object data) {
 
         Object value = literal.getValue();
         if (value instanceof Geometry) {

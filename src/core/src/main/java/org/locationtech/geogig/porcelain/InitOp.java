@@ -116,8 +116,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
      *         re-initialized in the current dir or one if its parents as determined by
      *         {@link ResolveGeogigURI}
      */
-    @Override
-    protected Repository _call() {
+    protected @Override Repository _call() {
         final Platform platform = platform();
         Optional<URI> resolvedURI = new ResolveGeogigURI(platform, hints).call();
         if (!resolvedURI.isPresent()) {

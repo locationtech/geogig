@@ -50,8 +50,7 @@ public class Squash extends AbstractCommand implements CLICommand {
     /**
      * Executes the squash command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) {
+    public @Override void runInternal(GeogigCLI cli) {
         checkParameter(commits.size() == 2, "2 commit references must be supplied");
 
         final GeoGIG geogig = cli.getGeogig();

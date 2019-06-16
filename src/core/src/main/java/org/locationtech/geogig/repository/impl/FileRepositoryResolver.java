@@ -84,9 +84,8 @@ public abstract class FileRepositoryResolver implements RepositoryResolver {
         final List<Path> subdirs = new ArrayList<Path>();
         try {
             Files.walkFileTree(basePath, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                        throws IOException {
+                public @Override FileVisitResult preVisitDirectory(Path dir,
+                        BasicFileAttributes attrs) throws IOException {
                     if (dir.equals(basePath)) {
                         return FileVisitResult.CONTINUE;
                     }

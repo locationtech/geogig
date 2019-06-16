@@ -32,8 +32,7 @@ public class DiffBoundsTest extends RepositoryTestCase {
 
     private RevCommit points1_modified_commit;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // create one commit per feature
         ArrayList<RevCommit> commits = Lists
                 .newArrayList(populate(true, points1, points3, points1_modified));

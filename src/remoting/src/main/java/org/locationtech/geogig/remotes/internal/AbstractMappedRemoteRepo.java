@@ -72,21 +72,18 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             this.destination = destination;
         }
 
-        @Override
-        protected Evaluation evaluate(CommitNode commitNode) {
+        protected @Override Evaluation evaluate(CommitNode commitNode) {
             if (destination.graphDatabase().exists(commitNode.getObjectId())) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
             }
             return Evaluation.INCLUDE_AND_CONTINUE;
         }
 
-        @Override
-        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected @Override List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.getParents(commitId);
         }
 
-        @Override
-        protected boolean existsInDestination(ObjectId commitId) {
+        protected @Override boolean existsInDestination(ObjectId commitId) {
             return destination.graphDatabase().exists(commitId);
         }
 
@@ -103,8 +100,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             this.source = source;
         }
 
-        @Override
-        protected Evaluation evaluate(CommitNode commitNode) {
+        protected @Override Evaluation evaluate(CommitNode commitNode) {
             if (!source.graphDatabase().getMapping(commitNode.getObjectId())
                     .equals(ObjectId.NULL)) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
@@ -112,13 +108,11 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             return Evaluation.INCLUDE_AND_CONTINUE;
         }
 
-        @Override
-        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected @Override List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.graphDatabase().getParents(commitId);
         }
 
-        @Override
-        protected boolean existsInDestination(ObjectId commitId) {
+        protected @Override boolean existsInDestination(ObjectId commitId) {
             // If the commit has not been mapped, it hasn't been pushed to the remote yet
             return !source.graphDatabase().getMapping(commitId).equals(ObjectId.NULL);
         }
@@ -130,9 +124,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      */
     protected abstract RepositoryWrapper getRemoteWrapper();
 
-    @Override
-    public final void fetchNewData(Repository local, Ref ref, Optional<Integer> fetchLimit,
-            ProgressListener progress) {
+    public @Override final void fetchNewData(Repository local, Ref ref,
+            Optional<Integer> fetchLimit, ProgressListener progress) {
         Preconditions.checkState(!fetchLimit.isPresent(), "A sparse clone cannot be shallow.");
         FetchCommitGatherer gatherer = new FetchCommitGatherer(getRemoteWrapper(), local);
 
@@ -185,8 +178,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
                 AutoCloseableIterator<DiffEntry> it = AutoCloseableIterator.filter(changes,
                         new Predicate<DiffEntry>() {
-                            @Override
-                            public boolean apply(DiffEntry e) {
+                            public @Override boolean apply(DiffEntry e) {
                                 return true;
                             }
                         });
@@ -262,15 +254,13 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
     protected abstract FilteredDiffIterator getFilteredChanges(final Repository local,
             RevCommit commit);
 
-    @Override
-    public void pushNewData(Repository local, Ref ref, ProgressListener progress)
+    public @Override void pushNewData(Repository local, Ref ref, ProgressListener progress)
             throws SynchronizationException {
         pushNewData(local, ref, ref.getName(), progress);
     }
 
-    @Override
-    public void pushNewData(Repository local, Ref ref, String refspec, ProgressListener progress)
-            throws SynchronizationException {
+    public @Override void pushNewData(Repository local, Ref ref, String refspec,
+            ProgressListener progress) throws SynchronizationException {
         Optional<Ref> remoteRef = getRemoteRef(refspec);
         checkPush(local, ref, remoteRef);
         beginPush();

@@ -95,8 +95,7 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
      * 
      * @return the {@link RevTree} that represents the indexed version of the canonical tree
      */
-    @Override
-    protected RevTree _call() {
+    protected @Override RevTree _call() {
         checkState(index != null, "index to update was not provided");
         checkState(oldCanonicalTree != null, "old canonical version of the tree was not provided");
         checkState(newCanonicalTree != null, "new canonical version of the tree was not provided");

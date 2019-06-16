@@ -73,8 +73,7 @@ public class CheckRefFormat extends AbstractGeoGigOp<Boolean> {
         return this;
     }
 
-    @Override
-    protected Boolean _call() {
+    protected @Override Boolean _call() {
         try {
             Preconditions.checkArgument(ref != null, "Ref was not provided.");
 

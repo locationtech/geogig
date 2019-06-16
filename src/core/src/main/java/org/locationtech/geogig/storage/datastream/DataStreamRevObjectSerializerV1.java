@@ -74,19 +74,16 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
         serializers.put(TYPE.TREE, new TreeSerializer());
     }
 
-    @Override
-    public void write(RevObject o, OutputStream out) throws IOException {
+    public @Override void write(RevObject o, OutputStream out) throws IOException {
         serializer(o.getType()).write(o, out);
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
         return read(id, new ByteArrayInputStream(data, offset, length));
     }
 
-    @Override
-    public RevObject read(ObjectId id, InputStream rawData) throws IOException {
+    public @Override RevObject read(ObjectId id, InputStream rawData) throws IOException {
         DataInput in = new DataInputStream(rawData);
         String header = readToMarker(in, NUL);
         if ("commit".equals(header))
@@ -118,8 +115,8 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
     }
 
     private static class CommitSerializer implements Serializer<RevCommit> {
-        @Override
-        public RevCommit read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
+        public @Override RevCommit read(ObjectId id, InputStream rawData)
+                throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
                 requireHeader(in, "commit");
@@ -130,8 +127,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             }
         }
 
-        @Override
-        public void write(RevCommit commit, OutputStream out) throws IOException {
+        public @Override void write(RevCommit commit, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 FormatCommonV1.writeHeader(data, "commit");
@@ -154,8 +150,8 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
 
     private static class FeatureSerializer implements Serializer<RevFeature> {
 
-        @Override
-        public RevFeature read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
+        public @Override RevFeature read(ObjectId id, InputStream rawData)
+                throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
                 requireHeader(in, "feature");
@@ -165,8 +161,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             }
         }
 
-        @Override
-        public void write(RevFeature feature, OutputStream out) throws IOException {
+        public @Override void write(RevFeature feature, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 writeHeader(data, "feature");
@@ -185,8 +180,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
 
     private static class FeatureTypeSerializer implements Serializer<RevFeatureType> {
 
-        @Override
-        public RevFeatureType read(ObjectId id, InputStream rawData)
+        public @Override RevFeatureType read(ObjectId id, InputStream rawData)
                 throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
@@ -197,8 +191,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             }
         }
 
-        @Override
-        public void write(RevFeatureType object, OutputStream out) throws IOException {
+        public @Override void write(RevFeatureType object, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 writeHeader(data, "featuretype");
@@ -274,8 +267,8 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
 
     private static class TreeSerializer implements Serializer<RevTree> {
 
-        @Override
-        public RevTree read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
+        public @Override RevTree read(ObjectId id, InputStream rawData)
+                throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
                 requireHeader(in, "tree");
@@ -285,8 +278,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             }
         }
 
-        @Override
-        public void write(RevTree tree, OutputStream out) throws IOException {
+        public @Override void write(RevTree tree, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 writeHeader(data, "tree");
@@ -310,8 +302,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
         }
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return "Binary 1.0";
     }
 }

@@ -32,24 +32,21 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
         this.boundsFilter = bounds;
     }
 
-    @Override
-    public boolean tree(NodeRef left, NodeRef right) {
+    public @Override boolean tree(NodeRef left, NodeRef right) {
         if (intersects(left, right)) {
             return super.tree(left, right);
         }
         return false;
     }
 
-    @Override
-    public void endTree(NodeRef left, NodeRef right) {
+    public @Override void endTree(NodeRef left, NodeRef right) {
         if (intersects(left, right)) {
             super.endTree(left, right);
         }
     }
 
-    @Override
-    public boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex, Bucket left,
-            Bucket right) {
+    public @Override boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
+            Bucket left, Bucket right) {
         ObjectId lmd = md(lparent);
         ObjectId rmd = md(rparent);
         if (intersects(left, lmd) || intersects(right, rmd)) {
@@ -58,9 +55,8 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
         return false;
     }
 
-    @Override
-    public void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex, Bucket left,
-            Bucket right) {
+    public @Override void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
+            Bucket left, Bucket right) {
         ObjectId lmd = md(lparent);
         ObjectId rmd = md(rparent);
         if (intersects(left, lmd) || intersects(right, rmd)) {
@@ -68,8 +64,7 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
         }
     }
 
-    @Override
-    public boolean feature(NodeRef left, NodeRef right) {
+    public @Override boolean feature(NodeRef left, NodeRef right) {
         if (intersects(left, right)) {
             return super.feature(left, right);
         }

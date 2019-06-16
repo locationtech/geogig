@@ -26,8 +26,7 @@ public class BranchCreateOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         repo.configDatabase().put("user.name", "groldan");
         repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }

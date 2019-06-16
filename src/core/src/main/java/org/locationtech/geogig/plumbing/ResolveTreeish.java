@@ -70,8 +70,7 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
      * @return an {@link Optional} of the {@link ObjectId} that was resolved, or
      *         {@link Optional#empty()} if it did not resolve.
      */
-    @Override
-    protected Optional<ObjectId> _call() {
+    protected @Override Optional<ObjectId> _call() {
         checkState(treeishRefSpec != null || treeish != null, "tree-ish ref spec not set");
 
         ObjectStore source = this.source == null ? objectDatabase() : this.source;

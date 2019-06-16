@@ -53,8 +53,7 @@ class DBHandle {
             references.incrementAndGet();
         }
 
-        @Override
-        public void close() {
+        public @Override void close() {
             references.decrementAndGet();
         }
 

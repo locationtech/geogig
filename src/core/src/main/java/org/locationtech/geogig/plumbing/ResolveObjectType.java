@@ -48,8 +48,7 @@ public class ResolveObjectType extends AbstractGeoGigOp<RevObject.TYPE> {
      * @return the type of the object specified by the object id.
      * @throws IllegalArgumentException if the object doesn't exist
      */
-    @Override
-    protected TYPE _call() {
+    protected @Override TYPE _call() {
         @SuppressWarnings("resource")
         ObjectStore store = this.source == null ? objectDatabase() : this.source;
         RevObject o = store.get(oid);

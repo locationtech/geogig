@@ -150,8 +150,7 @@ public class ConnectionConfig implements Cloneable {
         return repoURI;
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof ConnectionConfig)) {
             return false;
         }
@@ -160,8 +159,7 @@ public class ConnectionConfig implements Cloneable {
                 && equal(key.tablePrefix, d.key.tablePrefix);
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return Objects.hashCode(key, key.schema, key.tablePrefix);
     }
 

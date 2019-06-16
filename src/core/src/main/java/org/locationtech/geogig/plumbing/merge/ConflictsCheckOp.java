@@ -16,8 +16,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 public class ConflictsCheckOp extends AbstractGeoGigOp<Boolean> {
-    @Override
-    protected Boolean _call() {
+    protected @Override Boolean _call() {
         final Optional<URI> repoUrl = command(ResolveGeogigURI.class).call();
         Boolean hasConflicts = Boolean.FALSE;
 

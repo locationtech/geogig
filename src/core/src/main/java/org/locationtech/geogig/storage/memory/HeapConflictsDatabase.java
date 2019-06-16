@@ -62,14 +62,12 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
      * @param namespace the namespace of the conflict
      * @param conflict the conflict to add
      */
-    @Override
-    public void addConflict(@Nullable String namespace, Conflict conflict) {
+    public @Override void addConflict(@Nullable String namespace, Conflict conflict) {
         ConcurrentHashMap<String, Conflict> map = get(namespace);
         map.put(conflict.getPath(), conflict);
     }
 
-    @Override
-    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
+    public @Override void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
         ConcurrentHashMap<String, Conflict> map = get(namespace);
         map.putAll(Maps.uniqueIndex(conflicts, (c) -> c.getPath()));
     }
@@ -80,14 +78,12 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
      * @param namespace the namespace of the conflict
      * @param path the path of feature whose conflict should be removed
      */
-    @Override
-    public void removeConflict(@Nullable String namespace, String path) {
+    public @Override void removeConflict(@Nullable String namespace, String path) {
         ConcurrentHashMap<String, Conflict> map = get(namespace);
         map.remove(path);
     }
 
-    @Override
-    public void removeConflicts(@Nullable String namespace, Iterable<String> paths) {
+    public @Override void removeConflicts(@Nullable String namespace, Iterable<String> paths) {
         for (String path : paths) {
             removeConflict(namespace, path);
         }
@@ -100,8 +96,7 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
      * @param path the conflict to retrieve
      * @return the conflict, or {@link Optional#empty()} if it was not found
      */
-    @Override
-    public Optional<Conflict> getConflict(@Nullable String namespace, String path) {
+    public @Override Optional<Conflict> getConflict(@Nullable String namespace, String path) {
         ConcurrentHashMap<String, Conflict> map = get(namespace);
         return Optional.ofNullable(map.get(path));
     }
@@ -111,19 +106,16 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
      * 
      * @param namespace the namespace of the conflicts to remove
      */
-    @Override
-    public void removeConflicts(@Nullable String namespace) {
+    public @Override void removeConflicts(@Nullable String namespace) {
         conflicts.remove(namespace(namespace));
     }
 
-    @Override
-    public boolean hasConflicts(String namespace) {
+    public @Override boolean hasConflicts(String namespace) {
         ConcurrentHashMap<String, Conflict> map = get(namespace);
         return !map.isEmpty();
     }
 
-    @Override
-    public Iterator<Conflict> getByPrefix(@Nullable String namespace,
+    public @Override Iterator<Conflict> getByPrefix(@Nullable String namespace,
             @Nullable String prefixFilter) {
 
         ConcurrentHashMap<String, Conflict> map = get(namespace);
@@ -133,8 +125,7 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
         return Maps.filterKeys(map, filter).values().iterator();
     }
 
-    @Override
-    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
+    public @Override long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
         ConcurrentHashMap<String, Conflict> map = get(namespace);
         Predicate<String> filter;
         filter = treePath == null ? Predicates.alwaysTrue() : new PathFilter(treePath);
@@ -154,16 +145,15 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
             this.treePath = treePath;
         }
 
-        @Override
-        public boolean apply(String path) {
+        public @Override boolean apply(String path) {
             boolean matches = treePath.equals(path) || path.startsWith(prefix);
             return matches;
         }
 
     }
 
-    @Override
-    public Set<String> findConflicts(@Nullable String namespace, @NonNull Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String namespace,
+            @NonNull Set<String> paths) {
         Map<String, Conflict> nsmap = get(namespace);
         Set<String> matches = new HashSet<>();
         if (!nsmap.isEmpty()) {
@@ -177,8 +167,7 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
         return matches;
     }
 
-    @Override
-    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
+    public @Override void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
         Iterator<Conflict> matches = getByPrefix(namespace, pathPrefix);
         ConcurrentHashMap<String, Conflict> map = get(namespace);
         while (matches.hasNext()) {

@@ -80,19 +80,16 @@ public class BulkFeatureRetriever {
 
         return new AutoCloseableIterator<ObjectInfo<RevFeature>>() {
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 objects.close();
                 closeableRefs.close();
             }
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return objects.hasNext();
             }
 
-            @Override
-            public ObjectInfo<RevFeature> next() {
+            public @Override ObjectInfo<RevFeature> next() {
                 return objects.next();
             }
         };

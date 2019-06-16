@@ -74,13 +74,11 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
         return new MaterializedIndexFeatureIterator(builder, nodes, geometryFactory, GT.adapt(crs));
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         nodes.close();
     }
 
-    @Override
-    public boolean hasNext() {
+    public @Override boolean hasNext() {
         try {
             return nodes.hasNext();
         } catch (RuntimeException e) {
@@ -89,8 +87,7 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
         }
     }
 
-    @Override
-    public SimpleFeature next() {
+    public @Override SimpleFeature next() {
         try {
             if (!nodes.hasNext()) {
                 throw new NoSuchElementException();
@@ -156,8 +153,7 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
             this.bounds = bounds;
         }
 
-        @Override
-        public BoundingBox getBounds() {
+        public @Override BoundingBox getBounds() {
             return bounds;
         }
 

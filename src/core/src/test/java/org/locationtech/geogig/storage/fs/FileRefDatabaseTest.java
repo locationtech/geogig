@@ -15,8 +15,7 @@ import org.locationtech.geogig.test.integration.repository.RefDatabaseTest;
 
 public class FileRefDatabaseTest extends RefDatabaseTest {
 
-    @Override
-    protected RefDatabase createDatabase(Platform platform) throws Exception {
+    protected @Override RefDatabase createDatabase(Platform platform) throws Exception {
         return new FileRefDatabase(platform.pwd());
     }
 

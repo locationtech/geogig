@@ -28,8 +28,7 @@ public class LsTreeOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         boolean onecComitPerFeature = false;
         populate(onecComitPerFeature, points1, points2, points3, lines1, lines2, lines3);
     }

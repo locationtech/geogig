@@ -15,8 +15,7 @@ class BlockingIterator<T> extends AbstractIterator<T> {
         this.terminalToken = terminalToken;
     }
 
-    @Override
-    protected T computeNext() {
+    protected @Override T computeNext() {
         T object;
         try {
             object = queue.take();

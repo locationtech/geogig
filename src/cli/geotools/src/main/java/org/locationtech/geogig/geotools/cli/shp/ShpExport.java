@@ -93,8 +93,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
     /**
      * Executes the export command using the provided options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         if (args.size() != 2) {
             printUsage(cli);
             throw new CommandFailedException();

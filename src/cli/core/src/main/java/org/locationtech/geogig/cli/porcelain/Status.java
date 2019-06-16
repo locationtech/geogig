@@ -63,8 +63,7 @@ public class Status extends AbstractCommand implements CLICommand {
     /**
      * Executes the status command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(limit >= 0, "Limit must be 0 or greater.");
 
         Console console = cli.getConsole();

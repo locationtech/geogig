@@ -69,16 +69,14 @@ public class QuadTreeTestSupport extends ExternalResource {
 
     private int maxDepth = -1;
 
-    @Override
-    public void before() {
+    public @Override void before() {
         store = new HeapObjectStore();
         store.open();
 
         maxBoundsFloat64 = QuadTreeTestSupport.wgs84Bounds();
     }
 
-    @Override
-    public void after() {
+    public @Override void after() {
         store.close();
     }
 

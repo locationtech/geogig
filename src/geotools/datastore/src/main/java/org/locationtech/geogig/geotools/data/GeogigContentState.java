@@ -29,8 +29,7 @@ class GeogigContentState extends ContentState {
         this.nativeType = state.getNativeType();
     }
 
-    @Override
-    public GeogigContentState copy() {
+    public @Override GeogigContentState copy() {
         return new GeogigContentState(this);
     }
 

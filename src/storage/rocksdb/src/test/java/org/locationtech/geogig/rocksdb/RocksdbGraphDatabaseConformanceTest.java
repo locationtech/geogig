@@ -16,8 +16,7 @@ import org.locationtech.geogig.storage.impl.GraphDatabaseTest;
 
 public class RocksdbGraphDatabaseConformanceTest extends GraphDatabaseTest {
 
-    @Override
-    protected RocksdbGraphDatabase createDatabase(Platform platform) throws Exception {
+    protected @Override RocksdbGraphDatabase createDatabase(Platform platform) throws Exception {
         File dbdir = new File(platform.getUserHome(), "graph.rocksdb");
         boolean readOnly = false;
         RocksdbGraphDatabase db = new RocksdbGraphDatabase(dbdir, readOnly);

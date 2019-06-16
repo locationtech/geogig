@@ -161,13 +161,11 @@ public class RocksdbMap implements Map<String, String> {
 
         return new AutoCloseableIterator<Entry<String, String>>() {
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return it.isValid();
             }
 
-            @Override
-            public java.util.Map.Entry<String, String> next() {
+            public @Override java.util.Map.Entry<String, String> next() {
 
                 byte[] keybytes = it.key();
                 byte[] valuebytes = it.value();
@@ -193,8 +191,7 @@ public class RocksdbMap implements Map<String, String> {
 
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 it.close();
             }
         };

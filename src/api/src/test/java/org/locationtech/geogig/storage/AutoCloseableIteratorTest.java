@@ -41,18 +41,15 @@ public class AutoCloseableIteratorTest {
             this.wasClosed = wasClosed;
         }
 
-        @Override
-        public void close() {
+        public @Override void close() {
             wasClosed.set(true);
         }
 
-        @Override
-        public boolean hasNext() {
+        public @Override boolean hasNext() {
             return source.hasNext();
         }
 
-        @Override
-        public String next() {
+        public @Override String next() {
             return source.next();
         }
 
@@ -101,8 +98,7 @@ public class AutoCloseableIteratorTest {
         TestAutoCloseableIterator testIter = new TestAutoCloseableIterator(closed);
         try (AutoCloseableIterator<String> filtered = AutoCloseableIterator.filter(testIter,
                 new Predicate<String>() {
-                    @Override
-                    public boolean apply(String input) {
+                    public @Override boolean apply(String input) {
                         return input.contains("1");
                     }
                 })) {

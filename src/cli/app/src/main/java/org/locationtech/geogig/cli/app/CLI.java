@@ -178,8 +178,7 @@ public class CLI {
 
             private GeogigCLI geogig = cli;
 
-            @Override
-            public void run() {
+            public @Override void run() {
                 if (cli.isRunning()) {
                     System.err.println("Forced shut down, wait for geogig to be closed...");
                     System.err.flush();

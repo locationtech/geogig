@@ -48,29 +48,26 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
 
     public static final DataStreamValueSerializerV2 INSTANCE = new DataStreamValueSerializerV2();
 
-    @Override
-    public byte[] readByteArray(DataInput in) throws IOException {
+    public @Override byte[] readByteArray(DataInput in) throws IOException {
         final int len = readUnsignedVarInt(in);
         byte[] bytes = new byte[len];
         in.readFully(bytes);
         return bytes;
     }
 
-    @Override
-    public void writeByteArray(byte[] field, DataOutput data) throws IOException {
+    public @Override void writeByteArray(byte[] field, DataOutput data) throws IOException {
         writeUnsignedVarInt(field.length, data);
         data.write(field);
     }
 
-    @Override
-    public void writeGeometry(Geometry field, DataOutput data) throws IOException {
+    public @Override void writeGeometry(Geometry field, DataOutput data) throws IOException {
         WKBWriter wkbWriter = new WKBWriter();
         byte[] bytes = wkbWriter.write(field);
         writeByteArray(bytes, data);
     }
 
-    @Override
-    public Geometry readGeometry(DataInput in, GeometryFactory geomFac) throws IOException {
+    public @Override Geometry readGeometry(DataInput in, GeometryFactory geomFac)
+            throws IOException {
         final int len = readUnsignedVarInt(in);
         final DataInputInStream inStream = new DataInputInStream(in, len);
         WKBReader wkbReader = new WKBReader(geomFac);
@@ -95,8 +92,7 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
 
         }
 
-        @Override
-        public void read(byte[] buf) throws IOException {
+        public @Override void read(byte[] buf) throws IOException {
             read += buf.length;
             if (read > limit) {
                 throw new EOFException(
@@ -107,38 +103,31 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
 
     }
 
-    @Override
-    public Short readShort(DataInput in) throws IOException {
+    public @Override Short readShort(DataInput in) throws IOException {
         return Short.valueOf((short) readSignedVarInt(in));
     }
 
-    @Override
-    public void writeShort(Short field, DataOutput data) throws IOException {
+    public @Override void writeShort(Short field, DataOutput data) throws IOException {
         writeSignedVarInt(((Number) field).intValue(), data);
     }
 
-    @Override
-    public Integer readInt(DataInput in) throws IOException {
+    public @Override Integer readInt(DataInput in) throws IOException {
         return Integer.valueOf(readSignedVarInt(in));
     }
 
-    @Override
-    public void writeInt(Integer field, DataOutput data) throws IOException {
+    public @Override void writeInt(Integer field, DataOutput data) throws IOException {
         writeSignedVarInt(((Number) field).intValue(), data);
     }
 
-    @Override
-    public Long readLong(DataInput in) throws IOException {
+    public @Override Long readLong(DataInput in) throws IOException {
         return Long.valueOf(readSignedVarLong(in));
     }
 
-    @Override
-    public void writeLong(Long field, DataOutput data) throws IOException {
+    public @Override void writeLong(Long field, DataOutput data) throws IOException {
         writeSignedVarLong(field.longValue(), data);
     }
 
-    @Override
-    public String readString(DataInput in) throws IOException {
+    public @Override String readString(DataInput in) throws IOException {
         final int multiStringMarkerOrsingleLength;
         // this is the first thing readUTF() does
         multiStringMarkerOrsingleLength = in.readUnsignedShort();
@@ -167,8 +156,7 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         }
     }
 
-    @Override
-    public void writeString(String value, DataOutput data) throws IOException {
+    public @Override void writeString(String value, DataOutput data) throws IOException {
         // worst case scenario every character is encoded
         // as three bytes and the encoded max length is
         // 65535
@@ -186,8 +174,7 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         }
     }
 
-    @Override
-    public boolean[] readBooleanArray(DataInput in) throws IOException {
+    public @Override boolean[] readBooleanArray(DataInput in) throws IOException {
         final int len = readUnsignedVarInt(in);
         byte[] packed = new byte[(len + 7) / 8]; // we want to round up as long as i % 8 !=
                                                  // 0
@@ -215,8 +202,7 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         return bits;
     }
 
-    @Override
-    public void writeBooleanArray(boolean[] field, DataOutput data) throws IOException {
+    public @Override void writeBooleanArray(boolean[] field, DataOutput data) throws IOException {
         boolean[] bools = (boolean[]) field;
         byte[] bytes = new byte[(bools.length + 7) / 8];
 
@@ -235,8 +221,7 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         data.write(bytes);
     }
 
-    @Override
-    public short[] readShortArray(DataInput in) throws IOException {
+    public @Override short[] readShortArray(DataInput in) throws IOException {
         final int len = readUnsignedVarInt(in);
         short[] shorts = new short[len];
         for (int i = 0; i < len; i++) {
@@ -245,15 +230,13 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         return shorts;
     }
 
-    @Override
-    public void writeShortArray(short[] field, DataOutput data) throws IOException {
+    public @Override void writeShortArray(short[] field, DataOutput data) throws IOException {
         writeUnsignedVarInt(field.length, data);
         for (short s : field)
             data.writeShort(s);
     }
 
-    @Override
-    public int[] readIntArray(DataInput in) throws IOException {
+    public @Override int[] readIntArray(DataInput in) throws IOException {
         final int len = readUnsignedVarInt(in);
         int[] ints = new int[len];
         for (int i = 0; i < len; i++) {
@@ -262,15 +245,13 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         return ints;
     }
 
-    @Override
-    public void writeIntArray(int[] field, DataOutput data) throws IOException {
+    public @Override void writeIntArray(int[] field, DataOutput data) throws IOException {
         writeUnsignedVarInt(field.length, data);
         for (int i : (int[]) field)
             data.writeInt(i);
     }
 
-    @Override
-    public long[] readLongArray(DataInput in) throws IOException {
+    public @Override long[] readLongArray(DataInput in) throws IOException {
         final int len = readUnsignedVarInt(in);
         long[] longs = new long[len];
         for (int i = 0; i < len; i++) {
@@ -279,15 +260,13 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         return longs;
     }
 
-    @Override
-    public void writeLongArray(long[] field, DataOutput data) throws IOException {
+    public @Override void writeLongArray(long[] field, DataOutput data) throws IOException {
         writeUnsignedVarInt(field.length, data);
         for (long l : (long[]) field)
             data.writeLong(l);
     }
 
-    @Override
-    public float[] readFloatArray(DataInput in) throws IOException {
+    public @Override float[] readFloatArray(DataInput in) throws IOException {
         final int len = readUnsignedVarInt(in);
         float[] floats = new float[len];
         for (int i = 0; i < len; i++) {
@@ -296,15 +275,13 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         return floats;
     }
 
-    @Override
-    public void writeFloatArray(float[] field, DataOutput data) throws IOException {
+    public @Override void writeFloatArray(float[] field, DataOutput data) throws IOException {
         writeUnsignedVarInt(field.length, data);
         for (float f : field)
             data.writeFloat(f);
     }
 
-    @Override
-    public double[] readDoubleArray(DataInput in) throws IOException {
+    public @Override double[] readDoubleArray(DataInput in) throws IOException {
         final int len = readUnsignedVarInt(in);
         double[] doubles = new double[len];
         for (int i = 0; i < len; i++) {
@@ -313,15 +290,13 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         return doubles;
     }
 
-    @Override
-    public void writeDoubleArray(double[] field, DataOutput data) throws IOException {
+    public @Override void writeDoubleArray(double[] field, DataOutput data) throws IOException {
         writeUnsignedVarInt(field.length, data);
         for (double d : field)
             data.writeDouble(d);
     }
 
-    @Override
-    public String[] readStringArray(DataInput in) throws IOException {
+    public @Override String[] readStringArray(DataInput in) throws IOException {
         final int len = readUnsignedVarInt(in);
         String[] strings = new String[len];
         for (int i = 0; i < len; i++) {
@@ -330,56 +305,48 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         return strings;
     }
 
-    @Override
-    public void writeStringArray(String[] field, DataOutput data) throws IOException {
+    public @Override void writeStringArray(String[] field, DataOutput data) throws IOException {
         writeUnsignedVarInt(field.length, data);
         for (String s : field)
             writeString(s, data);
     }
 
-    @Override
-    public UUID readUUID(DataInput in) throws IOException {
+    public @Override UUID readUUID(DataInput in) throws IOException {
         long upper = readSignedVarLong(in);
         long lower = readSignedVarLong(in);
         return new java.util.UUID(upper, lower);
     }
 
-    @Override
-    public void writeUUID(UUID field, DataOutput data) throws IOException {
+    public @Override void writeUUID(UUID field, DataOutput data) throws IOException {
         writeSignedVarLong(field.getMostSignificantBits(), data);
         writeSignedVarLong(field.getLeastSignificantBits(), data);
     }
 
-    @Override
-    public BigInteger readBigInteger(DataInput in) throws IOException {
+    public @Override BigInteger readBigInteger(DataInput in) throws IOException {
         byte[] bytes = readByteArray(in);
         return new BigInteger(bytes);
     }
 
-    @Override
-    public void writeBigInteger(BigInteger field, DataOutput data) throws IOException {
+    public @Override void writeBigInteger(BigInteger field, DataOutput data) throws IOException {
         byte[] bytes = field.toByteArray();
         writeByteArray(bytes, data);
     }
 
-    @Override
-    public BigDecimal readBigDecimal(DataInput in) throws IOException {
+    public @Override BigDecimal readBigDecimal(DataInput in) throws IOException {
         int scale = in.readInt();
         BigInteger intValue = readBigInteger(in);
         BigDecimal decValue = new BigDecimal(intValue, scale);
         return decValue;
     }
 
-    @Override
-    public void writeBigDecimal(BigDecimal d, DataOutput data) throws IOException {
+    public @Override void writeBigDecimal(BigDecimal d, DataOutput data) throws IOException {
         int scale = d.scale();
         BigInteger i = d.unscaledValue();
         data.writeInt(scale);
         writeBigInteger(i, data);
     }
 
-    @Override
-    public Map<String, Object> readMap(DataInput in) throws IOException {
+    public @Override Map<String, Object> readMap(DataInput in) throws IOException {
         final int size = readUnsignedVarInt(in);
 
         Map<String, Object> map = new HashMap<>();
@@ -401,8 +368,7 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         return map;
     }
 
-    @Override
-    public void writeMap(Map<String, Object> map, DataOutput out) throws IOException {
+    public @Override void writeMap(Map<String, Object> map, DataOutput out) throws IOException {
         final int size = map.size();
 
         writeUnsignedVarInt(size, out);

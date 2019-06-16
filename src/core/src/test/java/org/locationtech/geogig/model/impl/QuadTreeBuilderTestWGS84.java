@@ -26,8 +26,7 @@ import org.locationtech.jts.geom.Envelope;
 
 public class QuadTreeBuilderTestWGS84 extends QuadTreeBuilderTest {
 
-    @Override
-    protected Envelope createMaxBounds() {
+    protected @Override Envelope createMaxBounds() {
         return RevObjects.makePrecise(QuadTreeTestSupport.wgs84Bounds());
     }
 

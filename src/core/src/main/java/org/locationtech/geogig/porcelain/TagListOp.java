@@ -30,8 +30,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class TagListOp extends AbstractGeoGigOp<ImmutableList<RevTag>> {
 
-    @Override
-    protected ImmutableList<RevTag> _call() {
+    protected @Override ImmutableList<RevTag> _call() {
         List<Ref> refs = newArrayList(
                 command(ForEachRef.class).setPrefixFilter(Ref.TAGS_PREFIX).call());
         List<ObjectId> tagIds = transform(refs, Ref::getObjectId);

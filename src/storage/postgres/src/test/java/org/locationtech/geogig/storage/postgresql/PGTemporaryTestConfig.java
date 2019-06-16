@@ -56,8 +56,7 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
         return newRepoURI(repositoryName);
     }
 
-    @Override
-    public void before() throws AssumptionViolatedException {
+    public @Override void before() throws AssumptionViolatedException {
         if (!externalDataSource) {
             dataSourceProvider.before();
         }
@@ -69,8 +68,7 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
         return dataSourceProvider.isEnabled();
     }
 
-    @Override
-    public void after() {
+    public @Override void after() {
         if (environment == null) {
             return;
         }

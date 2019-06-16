@@ -212,16 +212,14 @@ public abstract class RefDatabaseTest {
 
         removed = refDb.removeAll(txNamespace1);
         assertEquals(Maps.filterKeys(allrefs, new Predicate<String>() {
-            @Override
-            public boolean apply(String key) {
+            public @Override boolean apply(String key) {
                 return key.startsWith(txNamespace1);
             }
         }), removed);
 
         removed = refDb.removeAll(txNamespace2);
         assertEquals(Maps.filterKeys(allrefs, new Predicate<String>() {
-            @Override
-            public boolean apply(String key) {
+            public @Override boolean apply(String key) {
                 return key.startsWith(txNamespace2);
             }
         }), removed);

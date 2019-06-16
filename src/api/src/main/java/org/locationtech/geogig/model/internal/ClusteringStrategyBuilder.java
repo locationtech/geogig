@@ -91,14 +91,12 @@ public abstract class ClusteringStrategyBuilder {
             super(treeStore);
         }
 
-        @Override
-        public CanonicalClusteringStrategyBuilder original(RevTree original) {
+        public @Override CanonicalClusteringStrategyBuilder original(RevTree original) {
             super.original(original);
             return this;
         }
 
-        @Override
-        protected ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider) {
+        protected @Override ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider) {
             return new CanonicalClusteringStrategy(original, dagStoreProvider);
         }
 
@@ -133,14 +131,12 @@ public abstract class ClusteringStrategyBuilder {
             super();
         }
 
-        @Override
-        public QuadTreeClusteringStrategyBuilder original(RevTree original) {
+        public @Override QuadTreeClusteringStrategyBuilder original(RevTree original) {
             super.original(original);
             return this;
         }
 
-        @Override
-        public QuadTreeClusteringStrategy build() {
+        public @Override QuadTreeClusteringStrategy build() {
             return (QuadTreeClusteringStrategy) super.build();
         }
 
@@ -152,8 +148,7 @@ public abstract class ClusteringStrategyBuilder {
                     preciseBounds, maxDepth);
         }
 
-        @Override
-        protected ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider) {
+        protected @Override ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider) {
             checkState(maxBounds != null, "QuadTree max bounds was not set");
             Envelope preciseBounds = RevObjects.makePrecise(maxBounds);
             int maxDepth;

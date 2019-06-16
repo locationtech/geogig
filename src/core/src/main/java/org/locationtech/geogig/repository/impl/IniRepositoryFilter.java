@@ -36,8 +36,7 @@ public class IniRepositoryFilter extends RepositoryFilter {
     public IniRepositoryFilter(BlobStore blobStore, String filterKey) {
         try {
             final INIBlob ini = new INIBlob() {
-                @Override
-                public byte[] iniBytes() throws IOException {
+                public @Override byte[] iniBytes() throws IOException {
                     Optional<byte[]> bytes = blobStore.getBlob(filterKey);
                     if (bytes.isPresent()) {
                         return bytes.get();
@@ -46,8 +45,7 @@ public class IniRepositoryFilter extends RepositoryFilter {
                     }
                 }
 
-                @Override
-                public void setBytes(byte[] bytes) {
+                public @Override void setBytes(byte[] bytes) {
                     blobStore.putBlob(filterKey, bytes);
                 }
             };

@@ -116,8 +116,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
     /**
      * @return the id of the new work tree
      */
-    @Override
-    protected CheckoutResult _call() throws CheckoutException {
+    protected @Override CheckoutResult _call() throws CheckoutException {
 
         checkState(branchOrCommit != null || !paths.isEmpty(),
                 "No branch, tree, or path were specified");

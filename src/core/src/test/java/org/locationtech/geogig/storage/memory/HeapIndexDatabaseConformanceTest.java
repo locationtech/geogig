@@ -15,8 +15,7 @@ import org.locationtech.geogig.storage.impl.IndexDatabaseConformanceTest;
 
 public class HeapIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest {
 
-    @Override
-    protected IndexDatabase createIndexDatabase(boolean readOnly) {
+    protected @Override IndexDatabase createIndexDatabase(boolean readOnly) {
         Hints hints = new Hints();
         hints.set(Hints.OBJECTS_READ_ONLY, readOnly);
         HeapIndexDatabase heapIndexDatabase = new HeapIndexDatabase(hints);

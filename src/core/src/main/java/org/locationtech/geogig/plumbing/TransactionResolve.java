@@ -41,8 +41,7 @@ public class TransactionResolve extends AbstractGeoGigOp<Optional<GeogigTransact
      * @return the resolved {@link GeogigTransaction}, or {@link Optional#empty()} if it could not
      *         be resolved
      */
-    @Override
-    protected Optional<GeogigTransaction> _call() {
+    protected @Override Optional<GeogigTransaction> _call() {
         Preconditions.checkState(!(context instanceof GeogigTransaction),
                 "Cannot resolve a transaction within a transaction!");
         Preconditions.checkArgument(id != null, "No id was specified to resolve!");

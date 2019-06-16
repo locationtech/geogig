@@ -108,8 +108,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         return new PersistedIterable<>(file, serializer, deleteOnClose, flushOnClose, compress);
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         lock.writeLock().lock();
         try {
             if (flushOnClose) {
@@ -215,8 +214,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         return stream;
     }
 
-    @Override
-    public Iterator<T> iterator() {
+    public @Override Iterator<T> iterator() {
 
         Iterator<T> iterator = Collections.emptyIterator();
 
@@ -266,8 +264,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
             this.in = in;
         }
 
-        @Override
-        protected T computeNext() {
+        protected @Override T computeNext() {
             try {
                 T read = serializer.read(in);
                 return read;
@@ -305,8 +302,8 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
 
         private byte[] buffer = new byte[4096];
 
-        @Override
-        public void write(DataOutputStream out, @Nullable String value) throws IOException {
+        public @Override void write(DataOutputStream out, @Nullable String value)
+                throws IOException {
             if (value == null) {
                 Varint.writeSignedVarInt(-1, out);
                 return;
@@ -318,8 +315,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         }
 
         @Nullable
-        @Override
-        public String read(DataInputStream in) throws IOException {
+        public @Override String read(DataInputStream in) throws IOException {
             final int length = Varint.readSignedVarInt(in);
             if (-1 == length) {
                 return null;

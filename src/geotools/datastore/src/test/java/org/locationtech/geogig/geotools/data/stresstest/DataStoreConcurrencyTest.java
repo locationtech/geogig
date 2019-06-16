@@ -75,8 +75,7 @@ public class DataStoreConcurrencyTest extends RepositoryTestCase {
     // List of Feature counts read by ReadTask instances
     private static final ArrayList<Integer> READ_COUNT_LIST = new ArrayList<>(4);
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         store = new GeoGigDataStore(repo);
         store.createSchema(pointType);
 
@@ -227,8 +226,7 @@ public class DataStoreConcurrencyTest extends RepositoryTestCase {
             this.builder = new SimpleFeatureBuilder(pointType);
         }
 
-        @Override
-        public Integer call() {
+        public @Override Integer call() {
             int random;
             synchronized (rnd) {
                 random = rnd.nextInt();
@@ -278,8 +276,7 @@ public class DataStoreConcurrencyTest extends RepositoryTestCase {
             this.numReads = numReads;
         }
 
-        @Override
-        public Integer call() {
+        public @Override Integer call() {
             int readCount = 0;
             try {
                 for (int i = 0; i < numReads; i++) {

@@ -99,8 +99,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * @return {@code null}
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected TransferSummary _call() throws SynchronizationException {
+    protected @Override TransferSummary _call() throws SynchronizationException {
         final String remoteName = this.remoteName == null ? "origin" : this.remoteName;
         final Remote remote = resolveRemote(remoteName);
 
@@ -212,8 +211,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         Predicate<Ref> filter = new Predicate<Ref>() {
             final String prefix = Ref.HEADS_PREFIX;
 
-            @Override
-            public boolean apply(Ref input) {
+            public @Override boolean apply(Ref input) {
                 return !(input instanceof SymRef) && input.getName().startsWith(prefix);
             }
         };

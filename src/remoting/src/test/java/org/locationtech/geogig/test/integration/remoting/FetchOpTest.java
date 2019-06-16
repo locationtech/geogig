@@ -68,8 +68,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
 
     private Optional<Ref> localOriginMaster;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // clone the repository
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();

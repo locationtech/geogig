@@ -107,8 +107,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         return this.fastForward.get();
     }
 
-    @Override
-    public void conflicted(Conflict conflict) {
+    public @Override void conflicted(Conflict conflict) {
         if (!ours) {
             conflictsBuffer.add(conflict);
         }
@@ -120,29 +119,25 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         progress.setProgress(1f + progress.getProgress());
     }
 
-    @Override
-    public void unconflicted(DiffEntry diff) {
+    public @Override void unconflicted(DiffEntry diff) {
         unconflictedBuffer.add(diff);
         changed.set(true);
         fastForward.set(false);
         progress.setProgress(1f + progress.getProgress());
     }
 
-    @Override
-    public void merged(FeatureInfo featureInfo) {
+    public @Override void merged(FeatureInfo featureInfo) {
         mergedBuffer.add(featureInfo);
         changed.set(true);
         fastForward.set(false);
         progress.setProgress(1f + progress.getProgress());
     }
 
-    @Override
-    protected void cancelled() {
+    protected @Override void cancelled() {
         dispose();
     }
 
-    @Override
-    public void finished() {
+    public @Override void finished() {
         progress.complete();
         progress.started();
         try {
@@ -197,13 +192,11 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
 
     static Serializer<ObjectId> OID = new Serializer<ObjectId>() {
 
-        @Override
-        public void write(DataOutputStream out, ObjectId value) throws IOException {
+        public @Override void write(DataOutputStream out, ObjectId value) throws IOException {
             value.writeTo(out);
         }
 
-        @Override
-        public ObjectId read(DataInputStream in) throws IOException {
+        public @Override ObjectId read(DataInputStream in) throws IOException {
             return ObjectId.readFrom(in);
         }
     };

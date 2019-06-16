@@ -20,8 +20,7 @@ public class ConflictsWriteOp extends AbstractGeoGigOp<Void> {
 
     private Iterable<Conflict> conflicts;
 
-    @Override
-    protected Void _call() {
+    protected @Override Void _call() {
         Preconditions.checkNotNull(conflicts);
         conflictsDatabase().addConflicts(null, conflicts);
         return null;

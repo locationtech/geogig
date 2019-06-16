@@ -74,8 +74,7 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      * @return a list of matching results
      * @see org.locationtech.geogig.storage.ObjectDatabase#lookUp(java.lang.String)
      */
-    @Override
-    public List<ObjectId> lookUp(final String partialId) {
+    public @Override List<ObjectId> lookUp(final String partialId) {
         checkNotNull(partialId, "argument partialId is null");
         checkArgument(partialId.length() > 7, "partial id must be at least 8 characters long: ",
                 partialId);
@@ -108,16 +107,14 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      */
     protected abstract List<ObjectId> lookUpInternal(byte[] raw);
 
-    @Override
-    public RevObject get(ObjectId id) {
+    public @Override RevObject get(ObjectId id) {
         checkNotNull(id, "argument id is null");
         checkOpen();
 
         return get(id, true);
     }
 
-    @Override
-    public @Nullable RevObject getIfPresent(ObjectId id) {
+    public @Override @Nullable RevObject getIfPresent(ObjectId id) {
         checkNotNull(id, "argument id is null");
         checkOpen();
 
@@ -133,8 +130,7 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      * @see org.locationtech.geogig.storage.ObjectDatabase#get(org.locationtech.geogig.model.ObjectId,
      *      org.locationtech.geogig.storage.impl.ObjectReader)
      */
-    @Override
-    public <T extends RevObject> T get(final ObjectId id, final Class<T> clazz) {
+    public @Override <T extends RevObject> T get(final ObjectId id, final Class<T> clazz) {
         checkNotNull(id, "argument id is null");
         checkNotNull(clazz, "argument class is null");
         checkOpen();
@@ -150,8 +146,7 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
         }
     }
 
-    @Override
-    public @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> clazz)
+    public @Override @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> clazz)
             throws IllegalArgumentException {
         checkNotNull(id, "argument id is null");
         checkNotNull(clazz, "argument class is null");
@@ -180,28 +175,23 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
         return object;
     }
 
-    @Override
-    public RevTree getTree(ObjectId id) {
+    public @Override RevTree getTree(ObjectId id) {
         return get(id, RevTree.class);
     }
 
-    @Override
-    public RevFeature getFeature(ObjectId id) {
+    public @Override RevFeature getFeature(ObjectId id) {
         return get(id, RevFeature.class);
     }
 
-    @Override
-    public RevFeatureType getFeatureType(ObjectId id) {
+    public @Override RevFeatureType getFeatureType(ObjectId id) {
         return get(id, RevFeatureType.class);
     }
 
-    @Override
-    public RevCommit getCommit(ObjectId id) {
+    public @Override RevCommit getCommit(ObjectId id) {
         return get(id, RevCommit.class);
     }
 
-    @Override
-    public RevTag getTag(ObjectId id) {
+    public @Override RevTag getTag(ObjectId id) {
         return get(id, RevTag.class);
     }
 
@@ -215,8 +205,7 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      */
     protected abstract InputStream getRawInternal(ObjectId id, boolean failIfNotFound);
 
-    @Override
-    public boolean put(final RevObject object) {
+    public @Override boolean put(final RevObject object) {
         checkNotNull(object, "argument object is null");
         checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
         checkOpen();
@@ -233,8 +222,8 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      * This default implementation calls {@link #putInternal(ObjectId, byte[])} for each object;
      * subclasses may override if appropriate.
      */
-    @Override
-    public void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+    public @Override void putAll(Iterator<? extends RevObject> objects,
+            final BulkOpListener listener) {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
         checkOpen();
@@ -271,19 +260,16 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      */
     protected abstract boolean putInternal(ObjectId id, byte[] rawData);
 
-    @Override
-    public Iterator<RevObject> getAll(final Iterable<ObjectId> ids) {
+    public @Override Iterator<RevObject> getAll(final Iterable<ObjectId> ids) {
         checkOpen();
         return getAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
-    @Override
-    public void putAll(Iterator<? extends RevObject> objects) {
+    public @Override void putAll(Iterator<? extends RevObject> objects) {
         putAll(objects, BulkOpListener.NOOP_LISTENER);
     }
 
-    @Override
-    public void deleteAll(Iterator<ObjectId> ids) {
+    public @Override void deleteAll(Iterator<ObjectId> ids) {
         checkOpen();
         deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }

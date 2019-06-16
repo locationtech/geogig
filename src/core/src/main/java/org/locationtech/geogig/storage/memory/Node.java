@@ -94,21 +94,18 @@ class Node {
         return Optional.ofNullable(props != null ? props.get(key) : null);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return id != null ? id.toString() : "null";
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj) {
+    public @Override boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)

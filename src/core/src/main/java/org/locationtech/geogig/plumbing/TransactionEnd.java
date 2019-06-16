@@ -103,8 +103,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
      * 
      * @return Boolean - true if the transaction was successfully closed
      */
-    @Override
-    protected Boolean _call() {
+    protected @Override Boolean _call() {
         Preconditions.checkState(!(context instanceof GeogigTransaction),
                 "Cannot end a transaction within a transaction!");
         Preconditions.checkArgument(transaction != null, "No transaction was specified!");

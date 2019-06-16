@@ -82,8 +82,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
     public GeogigFeatureStore(ContentEntry entry) {
         super(entry, (Query) null);
         delegate = new GeogigFeatureSource(entry) {
-            @Override
-            public void setTransaction(Transaction transaction) {
+            public @Override void setTransaction(Transaction transaction) {
                 super.setTransaction(transaction);
 
                 // keep this feature store in sync
@@ -102,8 +101,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         return true;
     }
 
-    @Override
-    public GeoGigDataStore getDataStore() {
+    public @Override GeoGigDataStore getDataStore() {
         return delegate.getDataStore();
     }
 
@@ -111,38 +109,31 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         return delegate;
     }
 
-    @Override
-    public ContentEntry getEntry() {
+    public @Override ContentEntry getEntry() {
         return delegate.getEntry();
     }
 
-    @Override
-    public ResourceInfo getInfo() {
+    public @Override ResourceInfo getInfo() {
         return delegate.getInfo();
     }
 
-    @Override
-    public org.opengis.feature.type.Name getName() {
+    public @Override org.opengis.feature.type.Name getName() {
         return delegate.getName();
     }
 
-    @Override
-    public QueryCapabilities getQueryCapabilities() {
+    public @Override QueryCapabilities getQueryCapabilities() {
         return delegate.getQueryCapabilities();
     }
 
-    @Override
-    public ContentState getState() {
+    public @Override ContentState getState() {
         return delegate.getState();
     }
 
-    @Override
-    public synchronized Transaction getTransaction() {
+    public @Override synchronized Transaction getTransaction() {
         return delegate.getTransaction();
     }
 
-    @Override
-    public synchronized void setTransaction(Transaction transaction) {
+    public @Override synchronized void setTransaction(Transaction transaction) {
         // we need to set both super and delegate transactions.
         super.setTransaction(transaction);
 
@@ -160,54 +151,44 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         }
     }
 
-    @Override
-    protected SimpleFeatureType buildFeatureType() throws IOException {
+    protected @Override SimpleFeatureType buildFeatureType() throws IOException {
         return delegate.buildFeatureType();
     }
 
-    @Override
-    protected int getCountInternal(Query query) throws IOException {
+    protected @Override int getCountInternal(Query query) throws IOException {
         return delegate.getCount(query);
     }
 
-    @Override
-    protected ReferencedEnvelope getBoundsInternal(Query query) throws IOException {
+    protected @Override ReferencedEnvelope getBoundsInternal(Query query) throws IOException {
         return delegate.getBoundsInternal(query);
     }
 
-    @Override
-    protected boolean canFilter() {
+    protected @Override boolean canFilter() {
         return delegate.canFilter();
     }
 
-    @Override
-    protected boolean canSort() {
+    protected @Override boolean canSort() {
         return delegate.canSort();
     }
 
-    @Override
-    protected boolean canRetype() {
+    protected @Override boolean canRetype() {
         return delegate.canRetype();
     }
 
-    @Override
-    protected boolean canLimit() {
+    protected @Override boolean canLimit() {
         return delegate.canLimit();
     }
 
-    @Override
-    protected boolean canOffset() {
+    protected @Override boolean canOffset() {
         return delegate.canOffset();
     }
 
-    @Override
-    protected boolean canTransact() {
+    protected @Override boolean canTransact() {
         return delegate.canTransact();
     }
 
-    @Override
-    protected FeatureReader<SimpleFeatureType, SimpleFeature> getReaderInternal(Query query)
-            throws IOException {
+    protected @Override FeatureReader<SimpleFeatureType, SimpleFeature> getReaderInternal(
+            Query query) throws IOException {
         return delegate.getReaderInternal(query);
     }
 
@@ -215,9 +196,8 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         return delegate.handleVisitor(query, visitor);
     }
 
-    @Override
-    protected FeatureWriter<SimpleFeatureType, SimpleFeature> getWriterInternal(Query query,
-            final int flags) throws IOException {
+    protected @Override FeatureWriter<SimpleFeatureType, SimpleFeature> getWriterInternal(
+            Query query, final int flags) throws IOException {
 
         Preconditions.checkArgument(flags != 0, "no write flags set");
         Preconditions.checkState(getDataStore().isAllowTransactions(),
@@ -242,8 +222,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         return writer;
     }
 
-    @Override
-    public final List<FeatureId> addFeatures(
+    public @Override final List<FeatureId> addFeatures(
             FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection)
             throws IOException {
 
@@ -277,8 +256,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
             // collection, so lets add the fids in the transformer here
 
             Function<org.locationtech.geogig.feature.Feature, FeatureInfo> fn = new Function<org.locationtech.geogig.feature.Feature, FeatureInfo>() {
-                @Override
-                public FeatureInfo apply(org.locationtech.geogig.feature.Feature f) {
+                public @Override FeatureInfo apply(org.locationtech.geogig.feature.Feature f) {
                     RevFeature feature = RevFeature.builder().build(f);
                     String fid = f.getId();
                     String path = NodeRef.appendChild(treePath, fid);
@@ -330,8 +308,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
             baseId = hasher.hash().toString();
         }
 
-        @Override
-        public org.locationtech.geogig.feature.Feature apply(SimpleFeature input) {
+        public @Override org.locationtech.geogig.feature.Feature apply(SimpleFeature input) {
             final SimpleFeatureType featureType = input.getType();
             final String typeName = featureType.getTypeName();
             Preconditions.checkArgument(nativeTypeName.equals(typeName),
@@ -361,8 +338,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         }
     };
 
-    @Override
-    public void modifyFeatures(org.opengis.feature.type.Name[] names, Object[] values,
+    public @Override void modifyFeatures(org.opengis.feature.type.Name[] names, Object[] values,
             Filter filter) throws IOException {
         Preconditions.checkState(getDataStore().isAllowTransactions(),
                 "Transactions not supported; head is not a local branch");
@@ -388,8 +364,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
             ProgressListener listener = new DefaultProgressListener();
 
             Function<org.locationtech.geogig.feature.Feature, FeatureInfo> fn = new Function<org.locationtech.geogig.feature.Feature, FeatureInfo>() {
-                @Override
-                public FeatureInfo apply(org.locationtech.geogig.feature.Feature f) {
+                public @Override FeatureInfo apply(org.locationtech.geogig.feature.Feature f) {
                     return FeatureInfo.insert(RevFeature.builder().build(f), featureTypeId,
                             NodeRef.appendChild(treePath, f.getId()));
                 }
@@ -434,8 +409,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         return autocloseable;
     }
 
-    @Override
-    public void removeFeatures(Filter filter) throws IOException {
+    public @Override void removeFeatures(Filter filter) throws IOException {
         Preconditions.checkState(getDataStore().isAllowTransactions(),
                 "Transactions not supported; head is not a local branch");
         final WorkingTree workingTree = delegate.getWorkingTree();
@@ -473,8 +447,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
             this.values = values;
         }
 
-        @Override
-        public SimpleFeature apply(SimpleFeature input) {
+        public @Override SimpleFeature apply(SimpleFeature input) {
             for (int i = 0; i < names.length; i++) {
                 org.opengis.feature.type.Name attName = names[i];
                 Object attValue = values[i];

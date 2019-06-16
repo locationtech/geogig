@@ -51,8 +51,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
 
     private LinkedList<RevCommit> expectedBranch;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // Commit several features to the remote
 
         expectedMaster = new LinkedList<RevCommit>();

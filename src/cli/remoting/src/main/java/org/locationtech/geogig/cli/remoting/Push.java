@@ -47,8 +47,7 @@ public class Push extends AbstractCommand implements CLICommand {
     /**
      * Executes the push command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         PushOp push = cli.getGeogig().command(PushOp.class);
         push.setProgressListener(cli.getProgressListener());

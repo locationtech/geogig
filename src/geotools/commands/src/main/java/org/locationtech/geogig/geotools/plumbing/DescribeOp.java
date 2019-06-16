@@ -40,8 +40,7 @@ public class DescribeOp extends AbstractGeoGigOp<Optional<Map<String, String>>> 
      * @return a map that contains all properties and their types from the provided table
      * @see #describe(DataStore, String)
      */
-    @Override
-    protected Optional<Map<String, String>> _call() {
+    protected @Override Optional<Map<String, String>> _call() {
         return DescribeOp.describe(dataStore, table);
     }
 

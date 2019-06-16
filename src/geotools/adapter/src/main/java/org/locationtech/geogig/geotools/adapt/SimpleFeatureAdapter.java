@@ -408,8 +408,7 @@ public class SimpleFeatureAdapter implements SimpleFeature {
             return (GeometryType) super.getType();
         }
 
-        @Override
-        public GeometryDescriptor getDescriptor() {
+        public @Override GeometryDescriptor getDescriptor() {
             return (GeometryDescriptor) super.getDescriptor();
         }
 

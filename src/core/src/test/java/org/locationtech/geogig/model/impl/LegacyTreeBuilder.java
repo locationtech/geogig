@@ -598,8 +598,7 @@ public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuild
         return true;
     }
 
-    @Override
-    public boolean remove(final Node node) {
+    public @Override boolean remove(final Node node) {
         Preconditions.checkNotNull(node, "key can't be null");
         return remove(node.getName());
     }
@@ -646,13 +645,11 @@ public @Accessors(fluent = true) class LegacyTreeBuilder implements RevTreeBuild
         return theEmptyTree;
     }
 
-    @Override
-    public boolean update(Node oldNode, Node newNode) {
+    public @Override boolean update(Node oldNode, Node newNode) {
         return put(newNode);
     }
 
-    @Override
-    public @Nullable RevTree build(BooleanSupplier abortFlag) {
+    public @Override @Nullable RevTree build(BooleanSupplier abortFlag) {
         return build();
     }
 }

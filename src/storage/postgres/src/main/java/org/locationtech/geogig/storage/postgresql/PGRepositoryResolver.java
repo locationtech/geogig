@@ -53,49 +53,43 @@ public class PGRepositoryResolver implements RepositoryResolver {
      */
     public static final String VERSION = "1";
 
-    @Override
-    public boolean canHandle(URI repoURI) {
+    public @Override boolean canHandle(URI repoURI) {
         String scheme = repoURI.getScheme();
         return canHandleURIScheme(scheme);
     }
 
-    @Override
-    public boolean canHandleURIScheme(String scheme) {
+    public @Override boolean canHandleURIScheme(String scheme) {
         return "postgresql".equals(scheme);
     }
 
-    @Override
-    public boolean repoExists(URI repoURI) throws IllegalArgumentException {
+    public @Override boolean repoExists(URI repoURI) throws IllegalArgumentException {
         Environment config = parseConfig(repoURI);
         boolean exists = PGStorage.repoExists(config);
         return exists;
     }
 
-    @Override
-    public URI buildRepoURI(URI rootRepoURI, String repoName) {
+    public @Override URI buildRepoURI(URI rootRepoURI, String repoName) {
         Properties properties = EnvironmentBuilder.getRootURIProperties(rootRepoURI);
 
         return EnvironmentBuilder.buildRepoURI(properties, repoName);
     }
 
-    @Override
-    public List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
+    public @Override List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
         Properties properties = EnvironmentBuilder.getRootURIProperties(rootRepoURI);
         EnvironmentBuilder builder = new EnvironmentBuilder(properties);
         return PGStorage.listRepos(builder.build());
     }
 
-    @Override
-    public void initialize(URI repoURI, Context repoContext) throws IllegalArgumentException {
+    public @Override void initialize(URI repoURI, Context repoContext)
+            throws IllegalArgumentException {
         Environment config = parseConfig(repoURI);
         PGStorage.createNewRepo(config);
     }
 
     private PGConfigDatabase resolvedConfigDb;
 
-    @Override
-    public ConfigDatabase resolveConfigDatabase(URI repoURI, /* unused */Context repoContext,
-            boolean rootUri) {
+    public @Override ConfigDatabase resolveConfigDatabase(URI repoURI,
+            /* unused */Context repoContext, boolean rootUri) {
         if (resolvedConfigDb != null) {
             return resolvedConfigDb;
         }
@@ -152,8 +146,7 @@ public class PGRepositoryResolver implements RepositoryResolver {
         return open(repositoryURI, Hints.readWrite());
     }
 
-    @Override
-    public Repository open(@NonNull URI repositoryLocation, @NonNull Hints hints)
+    public @Override Repository open(@NonNull URI repositoryLocation, @NonNull Hints hints)
             throws RepositoryConnectionException {
         Preconditions.checkArgument(canHandle(repositoryLocation), "Not a PostgreSQL URI: %s",
                 maskPassword(repositoryLocation));
@@ -171,15 +164,13 @@ public class PGRepositoryResolver implements RepositoryResolver {
         return repository;
     }
 
-    @Override
-    public String getName(URI repoURI) {
+    public @Override String getName(URI repoURI) {
         Environment env = parseConfig(repoURI);
         String repositoryId = env.getRepositoryName();
         return repositoryId;
     }
 
-    @Override
-    public boolean delete(URI repositoryLocation) throws Exception {
+    public @Override boolean delete(URI repositoryLocation) throws Exception {
         Environment env = parseConfig(repositoryLocation);
         return PGStorage.deleteRepository(env);
     }

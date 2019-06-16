@@ -132,8 +132,7 @@ public class InitOpTest {
         when(mockRepo.objectDatabase()).thenReturn(objectDatabase);
 
         Mockito.doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
+            public @Override Void answer(InvocationOnMock invocation) throws Throwable {
                 objectDatabase.open();
                 return null;
             }

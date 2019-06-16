@@ -47,8 +47,7 @@ public class DiffCountConsumer extends PreOrderDiffWalk.AbstractConsumer {
         return count;
     }
 
-    @Override
-    public boolean feature(NodeRef left, NodeRef right) {
+    public @Override boolean feature(NodeRef left, NodeRef right) {
         if (left == null) {
             count.addedFeatures(1L);
         } else if (right == null) {
@@ -59,8 +58,7 @@ public class DiffCountConsumer extends PreOrderDiffWalk.AbstractConsumer {
         return true;
     }
 
-    @Override
-    public boolean tree(NodeRef left, NodeRef right) {
+    public @Override boolean tree(NodeRef left, NodeRef right) {
         final NodeRef node = left == null ? right : left;
         if (NodeRef.ROOT.equals(node.name())) {
             // ignore the call on the root tree and follow the traversal
@@ -81,9 +79,8 @@ public class DiffCountConsumer extends PreOrderDiffWalk.AbstractConsumer {
         return true;
     }
 
-    @Override
-    public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-            @Nullable Bucket left, @Nullable Bucket right) {
+    public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+            BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
 
         if (bucketIndex.left().isEmpty() || bucketIndex.right().isEmpty()) {
             Bucket bucket = left == null ? right : left;

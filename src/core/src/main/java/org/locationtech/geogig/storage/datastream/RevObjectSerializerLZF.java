@@ -43,23 +43,20 @@ public class RevObjectSerializerLZF implements RevObjectSerializer {
         this.factory = factory;
     }
 
-    @Override
-    public RevObject read(ObjectId id, InputStream rawData) throws IOException {
+    public @Override RevObject read(ObjectId id, InputStream rawData) throws IOException {
         // decompress the stream
         LZFInputStream inflatedInputeStream = new LZFInputStream(CHUNK_DECODER, rawData);
         return factory.read(id, inflatedInputeStream);
 
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
         byte[] decoded = LZFDecoder.decode(data, offset, length);
         return factory.read(id, decoded, 0, decoded.length);
     }
 
-    @Override
-    public void write(RevObject o, OutputStream out) throws IOException {
+    public @Override void write(RevObject o, OutputStream out) throws IOException {
         // compress the stream
         LZFOutputStream deflatedOutputStream = new LZFOutputStream(out);
         deflatedOutputStream.setFinishBlockOnFlush(true);
@@ -67,8 +64,7 @@ public class RevObjectSerializerLZF implements RevObjectSerializer {
         deflatedOutputStream.flush();
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return factory.getDisplayName() + "/LZF";
     }
 }

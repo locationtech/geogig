@@ -44,8 +44,7 @@ public class MergeBase extends AbstractCommand implements CLICommand {
     @Parameter(description = "<commit> <commit>")
     private List<String> commits = new ArrayList<String>();
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(commits.size() == 2, "Two commit references must be provided");
 
         Console console = cli.getConsole();

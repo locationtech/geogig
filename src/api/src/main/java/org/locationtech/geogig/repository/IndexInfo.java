@@ -85,8 +85,7 @@ public @ToString final class IndexInfo {
         return metadata;
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o instanceof IndexInfo) {
             IndexInfo i = (IndexInfo) o;
             return Objects.equals(getTreeName(), i.getTreeName())
@@ -126,8 +125,7 @@ public @ToString final class IndexInfo {
         return true;
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return Objects.hash(getTreeName(), getAttributeName(), getIndexType(),
                 getMetadata().size());
     }

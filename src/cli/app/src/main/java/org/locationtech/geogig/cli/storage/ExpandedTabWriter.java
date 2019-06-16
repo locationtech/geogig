@@ -100,8 +100,7 @@ public class ExpandedTabWriter extends FilterWriter {
      *
      * @throws IOException If an I/O error occurs.
      */
-    @Override
-    public void write(final int c) throws IOException {
+    public @Override void write(final int c) throws IOException {
         synchronized (lock) {
             switch (c) {
             case '\r': // fall through
@@ -127,8 +126,8 @@ public class ExpandedTabWriter extends FilterWriter {
      * @param length Number of characters to be written
      * @throws IOException If an I/O error occurs.
      */
-    @Override
-    public void write(final char[] buffer, final int offset, int length) throws IOException {
+    public @Override void write(final char[] buffer, final int offset, int length)
+            throws IOException {
         synchronized (lock) {
             int start = offset;
             length += offset;
@@ -163,8 +162,8 @@ public class ExpandedTabWriter extends FilterWriter {
      * @param length Number of characters to be written
      * @throws IOException If an I/O error occurs.
      */
-    @Override
-    public void write(final String string, final int offset, int length) throws IOException {
+    public @Override void write(final String string, final int offset, int length)
+            throws IOException {
         synchronized (lock) {
             int start = offset;
             length += offset;

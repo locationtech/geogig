@@ -109,13 +109,11 @@ public class FeatureBuilder {
             this.version = version;
         }
 
-        @Override
-        public String getFeatureVersion() {
+        public @Override String getFeatureVersion() {
             return version.toString();
         }
 
-        @Override
-        public String getRid() {
+        public @Override String getRid() {
             return new StringBuilder(getID()).append(VERSION_SEPARATOR).append(getFeatureVersion())
                     .toString();
         }

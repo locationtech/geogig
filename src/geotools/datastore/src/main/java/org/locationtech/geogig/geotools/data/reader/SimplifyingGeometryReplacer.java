@@ -32,8 +32,7 @@ public class SimplifyingGeometryReplacer implements Function<SimpleFeature, Simp
         this.geometryFactory = geometryFactory;
     }
 
-    @Override
-    public SimpleFeature apply(SimpleFeature input) {
+    public @Override SimpleFeature apply(SimpleFeature input) {
         Geometry g = (Geometry) input.getDefaultGeometry();
         Geometry newGeometry;
 

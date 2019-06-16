@@ -49,33 +49,27 @@ class PGBlobStore implements TransactionBlobStore {
         this.repositoryId = repositoryId;
     }
 
-    @Override
-    public Optional<byte[]> getBlob(String path) {
+    public @Override Optional<byte[]> getBlob(String path) {
         return getBlob(NO_TRANSACTION, path);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String path) {
         return getBlobAsStream(NO_TRANSACTION, path);
     }
 
-    @Override
-    public void putBlob(String path, byte[] blob) {
+    public @Override void putBlob(String path, byte[] blob) {
         putBlob(NO_TRANSACTION, path, blob);
     }
 
-    @Override
-    public void putBlob(String path, InputStream blob) {
+    public @Override void putBlob(String path, InputStream blob) {
         putBlob(NO_TRANSACTION, path, blob);
     }
 
-    @Override
-    public void removeBlob(String path) {
+    public @Override void removeBlob(String path) {
         removeBlob(NO_TRANSACTION, path);
     }
 
-    @Override
-    public Optional<byte[]> getBlob(final String namespace, final String path) {
+    public @Override Optional<byte[]> getBlob(final String namespace, final String path) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
 
         final String sql = format(
@@ -103,8 +97,8 @@ class PGBlobStore implements TransactionBlobStore {
         return Optional.ofNullable(bytes);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(final String namespace, final String path) {
+    public @Override Optional<InputStream> getBlobAsStream(final String namespace,
+            final String path) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
         Optional<byte[]> blob = getBlob(namespace, path);
         InputStream in = null;
@@ -114,8 +108,7 @@ class PGBlobStore implements TransactionBlobStore {
         return Optional.ofNullable(in);
     }
 
-    @Override
-    public void putBlob(final String namespace, final String path, final byte[] blob) {
+    public @Override void putBlob(final String namespace, final String path, final byte[] blob) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
 
         String delete = format("DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
@@ -151,8 +144,7 @@ class PGBlobStore implements TransactionBlobStore {
         }
     }
 
-    @Override
-    public void putBlob(String namespace, String path, InputStream blob) {
+    public @Override void putBlob(String namespace, String path, InputStream blob) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
         byte[] bytes;
         try {
@@ -163,8 +155,7 @@ class PGBlobStore implements TransactionBlobStore {
         putBlob(namespace, path, bytes);
     }
 
-    @Override
-    public void removeBlob(final String namespace, final String path) {
+    public @Override void removeBlob(final String namespace, final String path) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
         final String delete = format(
                 "LOCK TABLE %s IN SHARE ROW EXCLUSIVE MODE;"
@@ -192,8 +183,7 @@ class PGBlobStore implements TransactionBlobStore {
         }
     }
 
-    @Override
-    public void removeBlobs(final String namespace) {
+    public @Override void removeBlobs(final String namespace) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
         final String delete = format("DELETE FROM %s WHERE repository = ? AND namespace = ?",
                 blobsTable);

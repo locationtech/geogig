@@ -95,8 +95,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             this.metadataId = metadataId;
         }
 
-        @Override
-        public NodeRef apply(Node node) {
+        public @Override NodeRef apply(Node node) {
             return new NodeRef(node, treePath, node.getMetadataId().orElse(metadataId));
         }
     };
@@ -118,8 +117,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         this.boundsFilter = boundsFilter == null ? alwaysTrue : boundsFilter;
     }
 
-    @Override
-    protected NodeRef computeNext() {
+    protected @Override NodeRef computeNext() {
         if (iterator == null) {
             switch (strategy) {
             case CHILDREN:
@@ -177,8 +175,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             currEntryIterator = Collections.emptyIterator();
         }
 
-        @Override
-        protected NodeRef computeNext() {
+        protected @Override NodeRef computeNext() {
             while (!currEntryIterator.hasNext()) {
                 if (myEntries.hasNext()) {
                     currEntryIterator = resolveEntryIterator(myEntries.next());
@@ -225,8 +222,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             }
         }
 
-        @Override
-        protected Node computeNext() {
+        protected @Override Node computeNext() {
             if (children.hasNext()) {
                 return children.next();
             }
@@ -248,8 +244,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             }
         }
 
-        @Override
-        protected Node computeNext() {
+        protected @Override Node computeNext() {
             if (features.hasNext()) {
                 return features.next();
             }
@@ -273,8 +268,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             }
         }
 
-        @Override
-        protected Node computeNext() {
+        protected @Override Node computeNext() {
             if (trees.hasNext()) {
                 return trees.next();
             }
@@ -299,8 +293,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             bucketEntries = RevObjects.children(tree, CanonicalNodeOrder.INSTANCE);
         }
 
-        @Override
-        protected Node computeNext() {
+        protected @Override Node computeNext() {
             while (!bucketEntries.hasNext()) {
                 if (buckets.hasNext()) {
                     Bucket nextBucket = buckets.next();
@@ -334,8 +327,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             super(tree);
         }
 
-        @Override
-        protected Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
+        protected @Override Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
             RevTree bucketTree = source.getTree(bucketId);
             if (bucketTree.numTrees() == 0) {
                 return Collections.emptyIterator();
@@ -359,8 +351,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             super(tree);
         }
 
-        @Override
-        protected Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
+        protected @Override Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
             RevTree bucketTree = source.getTree(bucketId);
             if (bucketTree.bucketsSize() > 0) {
                 return new FeatureBuckets(bucketTree);

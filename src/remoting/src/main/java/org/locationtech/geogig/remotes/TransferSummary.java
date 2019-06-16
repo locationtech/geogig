@@ -45,8 +45,7 @@ public class TransferSummary {
         refDiffs.putAll(remoteURL, changes);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return MoreObjects.toStringHelper(TransferSummary.class) //
                 .addValue(refDiffs) //
                 .toString();

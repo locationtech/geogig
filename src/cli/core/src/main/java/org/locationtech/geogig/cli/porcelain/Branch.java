@@ -112,8 +112,7 @@ public class Branch extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--rename", "-m" }, description = "Rename branch ")
     private boolean rename = false;
 
-    @Override
-    public void runInternal(final GeogigCLI cli) throws IOException {
+    public @Override void runInternal(final GeogigCLI cli) throws IOException {
         final GeoGIG geogig = cli.getGeogig();
 
         final Console console = cli.getConsole();

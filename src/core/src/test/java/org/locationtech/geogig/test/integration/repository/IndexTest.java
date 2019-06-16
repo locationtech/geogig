@@ -44,8 +44,7 @@ public class IndexTest extends RepositoryTestCase {
 
     private StagingArea index;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         index = repo.context().stagingArea();
     }
 
@@ -84,8 +83,7 @@ public class IndexTest extends RepositoryTestCase {
             this.treePath = treePath;
         }
 
-        @Override
-        public boolean apply(NodeRef ref) {
+        public @Override boolean apply(NodeRef ref) {
             TYPE type = ref.getType();
             String path = ref.path();
             return TYPE.TREE.equals(type) && treePath.equals(path);
@@ -196,8 +194,7 @@ public class IndexTest extends RepositoryTestCase {
     private Supplier<RevTree> tree(final ObjectId treeId) {
         Supplier<RevTree> delegate = new Supplier<RevTree>() {
 
-            @Override
-            public RevTree get() {
+            public @Override RevTree get() {
                 if (treeId.isNull()) {
                     return RevTree.EMPTY;
                 }

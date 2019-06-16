@@ -229,8 +229,7 @@ public abstract class INIBlob {
             return Collections.unmodifiableList(values);
         }
 
-        @Override
-        public Optional<String> get(String section, String key) {
+        public @Override Optional<String> get(String section, String key) {
             if (!header.equals(section)) {
                 return Optional.empty();
             } else {
@@ -243,8 +242,7 @@ public abstract class INIBlob {
             }
         }
 
-        @Override
-        public boolean set(String section, String key, String value) {
+        public @Override boolean set(String section, String key, String value) {
             if (!header.equals(section)) {
                 return false;
             } else {
@@ -260,8 +258,7 @@ public abstract class INIBlob {
             }
         }
 
-        @Override
-        public boolean unset(String section, String key) {
+        public @Override boolean unset(String section, String key) {
             if (!header.equals(section)) {
                 return false;
             } else {
@@ -284,8 +281,7 @@ public abstract class INIBlob {
             }
         }
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             StringBuffer buff = new StringBuffer();
             buff.append("[" + header + "]");
             for (KeyAndValue kv : values) {

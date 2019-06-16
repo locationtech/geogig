@@ -23,8 +23,7 @@ import com.google.common.collect.ImmutableList;
 
 public class BranchListOpTest extends RemoteRepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // Commit several features to the remote
 
         insertAndAdd(originRepo, points1);

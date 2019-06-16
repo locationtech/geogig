@@ -68,8 +68,7 @@ public class RevObjectParse extends AbstractGeoGigOp<Optional<RevObject>> {
      * @throws IllegalArgumentException if the provided refspec doesn't resolve to any known object
      * @see RevObject
      */
-    @Override
-    protected Optional<RevObject> _call() throws IllegalArgumentException {
+    protected @Override Optional<RevObject> _call() throws IllegalArgumentException {
         return call(RevObject.class);
     }
 

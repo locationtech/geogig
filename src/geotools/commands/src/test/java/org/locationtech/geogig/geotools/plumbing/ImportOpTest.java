@@ -546,7 +546,6 @@ public class ImportOpTest extends RepositoryTestCase {
         assertEquals(expectedSRS, storedCrs.getSrsIdentifier());
     }
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 }

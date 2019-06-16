@@ -38,8 +38,7 @@ public class GeopkgList extends DataStoreList implements CLICommand {
 
     final GeopkgSupport support = new GeopkgSupport();
 
-    @Override
-    protected DataStore getDataStore() {
+    protected @Override DataStore getDataStore() {
         File databaseFile = new File(commonArgs.database);
         Preconditions.checkArgument(databaseFile.exists(), "Database file not found.");
         return support.getDataStore(commonArgs);

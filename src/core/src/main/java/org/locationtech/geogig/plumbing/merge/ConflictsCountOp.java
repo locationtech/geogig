@@ -20,8 +20,7 @@ import com.google.common.base.Supplier;
  */
 public class ConflictsCountOp extends AbstractGeoGigOp<Long> implements Supplier<Long> {
 
-    @Override
-    protected Long _call() {
+    protected @Override Long _call() {
         long count = 0L;
         if (repository().isOpen()) {
             count = conflictsDatabase().getCountByPrefix(null, null);
@@ -29,8 +28,7 @@ public class ConflictsCountOp extends AbstractGeoGigOp<Long> implements Supplier
         return Long.valueOf(count);
     }
 
-    @Override
-    public Long get() {
+    public @Override Long get() {
         return call();
     }
 }

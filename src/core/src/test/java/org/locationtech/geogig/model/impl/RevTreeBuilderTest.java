@@ -356,25 +356,22 @@ public abstract class RevTreeBuilderTest {
         walk.walk(new PreOrderDiffWalk.AbstractConsumer() {
             String indent = "";
 
-            @Override
-            public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                    @Nullable Bucket left, @Nullable Bucket right) {
+            public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
                 out.printf("%sBUCKET: [%s] %s\n", indent, bucketIndex, right);
                 int indentLength = 2 * (1 + bucketIndex.depthIndex());
                 indent = Strings.padStart("", indentLength, ' ');
                 return true;
             }
 
-            @Override
-            public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                    @Nullable Bucket left, @Nullable Bucket right) {
+            public @Override void endBucket(NodeRef leftParent, NodeRef rightParent,
+                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
                 int indentLength = 2 * (bucketIndex.depthIndex());
                 indent = Strings.padStart("", indentLength, ' ');
                 out.printf("%sEND BUCKET: [%s] %s\n", indent, bucketIndex, right);
             }
 
-            @Override
-            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
                 out.printf("%s%s\n", indent, right.name());
                 return true;
             }

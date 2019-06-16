@@ -15,8 +15,7 @@ import org.locationtech.geogig.porcelain.StatusOp.StatusSummary;
 
 public class StatusOpTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         super.populate(true, points1);
     }
 

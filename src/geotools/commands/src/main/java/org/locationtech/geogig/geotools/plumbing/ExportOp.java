@@ -116,8 +116,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
      * 
      * @return a FeatureCollection with the specified features
      */
-    @Override
-    protected SimpleFeatureStore _call() {
+    protected @Override SimpleFeatureStore _call() {
         final ObjectDatabase database = objectDatabase();
         if (filterFeatureTypeId != null) {
             RevObject filterType = database.getIfPresent(filterFeatureTypeId);
@@ -178,8 +177,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         }
         FeatureCollection<SimpleFeatureType, SimpleFeature> asFeatureCollection = new BaseFeatureCollection<SimpleFeatureType, SimpleFeature>() {
 
-            @Override
-            public FeatureIterator<SimpleFeature> features() {
+            public @Override FeatureIterator<SimpleFeature> features() {
 
                 return new DelegateFeatureIterator<SimpleFeature>(filtered);
             }
@@ -292,8 +290,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             final ObjectId forceMetadataId) {
 
         return Iterators.filter(plainFeatures, new Predicate<SimpleFeature>() {
-            @Override
-            public boolean apply(SimpleFeature input) {
+            public @Override boolean apply(SimpleFeature input) {
                 RevFeatureType type;
                 type = (RevFeatureType) input.getUserData().get(RevFeatureType.class);
                 ObjectId metadataId = type.getId();
@@ -309,8 +306,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             final ObjectId filterFeatureTypeId) {
 
         return Iterators.filter(plainFeatures, new Predicate<SimpleFeature>() {
-            @Override
-            public boolean apply(SimpleFeature input) {
+            public @Override boolean apply(SimpleFeature input) {
                 RevFeatureType type;
                 type = (RevFeatureType) input.getUserData().get(RevFeatureType.class);
                 ObjectId metadataId = type.getId();
@@ -530,8 +526,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             this.defaultMetadataId = defaultMetadataId;
         }
 
-        @Override
-        public boolean apply(Bounded input) {
+        public @Override boolean apply(Bounded input) {
             final ObjectId metadataId = getMetadataId(input);
             Envelope projectedFilter = getProjectedFilter(metadataId);
             boolean applies = input.intersects(projectedFilter);

@@ -54,8 +54,7 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
         super(configdb, config, readOnly);
     }
 
-    @Override
-    public void open() {
+    public @Override void open() {
         if (!isOpen()) {
             super.open();
             Preconditions.checkState(super.dataSource != null);
@@ -68,8 +67,7 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
         }
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         if (isOpen()) {
             super.close();
             try {
@@ -80,15 +78,13 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
         }
     }
 
-    @Override
-    public PGBlobStore getBlobStore() {
+    public @Override PGBlobStore getBlobStore() {
         Preconditions.checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
         return blobStore;
     }
 
-    @Override
-    public GraphDatabase getGraphDatabase() {
+    public @Override GraphDatabase getGraphDatabase() {
         Preconditions.checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
         return new SynchronizedGraphDatabase(graph);

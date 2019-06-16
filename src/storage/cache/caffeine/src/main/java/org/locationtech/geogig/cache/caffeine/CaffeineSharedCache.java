@@ -86,8 +86,7 @@ public class CaffeineSharedCache implements SharedCache {
 
             static final int ESTIMATED_KEY_SIZE = 32;
 
-            @Override
-            public int weigh(CacheKey key, byte[] value) {
+            public @Override int weigh(CacheKey key, byte[] value) {
                 return ESTIMATED_KEY_SIZE + value.length;
             }
 

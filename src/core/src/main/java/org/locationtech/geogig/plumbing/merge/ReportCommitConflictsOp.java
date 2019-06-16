@@ -71,8 +71,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
         return this;
     }
 
-    @Override
-    protected MergeScenarioReport _call() {
+    protected @Override MergeScenarioReport _call() {
 
         Preconditions.checkArgument(consumer != null, "No consumer provided.");
 

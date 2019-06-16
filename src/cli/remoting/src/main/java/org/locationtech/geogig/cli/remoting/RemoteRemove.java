@@ -47,8 +47,7 @@ public class RemoteRemove extends AbstractCommand implements CLICommand {
     /**
      * Executes the remote remove command.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) {
+    public @Override void runInternal(GeogigCLI cli) {
         if (params == null || params.size() != 1) {
             printUsage(cli);
             throw new CommandFailedException();

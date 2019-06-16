@@ -78,8 +78,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
      * @return an iterator to a set of differences between the two trees
      * @see DiffEntry
      */
-    @Override
-    protected AutoCloseableIterator<DiffEntry> _call() {
+    protected @Override AutoCloseableIterator<DiffEntry> _call() {
 
         final Optional<String> ref = Optional.ofNullable(refSpec);
 
@@ -133,8 +132,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
      * 
      * @see #call()
      */
-    @Override
-    public AutoCloseableIterator<DiffEntry> get() {
+    public @Override AutoCloseableIterator<DiffEntry> get() {
         return call();
     }
 

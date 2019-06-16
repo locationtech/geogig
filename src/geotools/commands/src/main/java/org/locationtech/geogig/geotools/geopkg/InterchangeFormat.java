@@ -420,8 +420,7 @@ public class InterchangeFormat {
 
             private int count = 0;
 
-            @Override
-            public RevFeature apply(Change change) {
+            public @Override RevFeature apply(Change change) {
                 progressListener.setProgress(++count);
 
                 @Nullable
@@ -480,8 +479,7 @@ public class InterchangeFormat {
 
             private final RecordToFeature recordToFeature = new RecordToFeature(featureType.type());
 
-            @Override
-            protected Change computeNext() {
+            protected @Override Change computeNext() {
                 try {
                     if (rs.next()) {
                         final String featureId = rs.getString("fid");
@@ -552,8 +550,7 @@ public class InterchangeFormat {
                     .map(PropertyDescriptor::getLocalName).orElse(null);
         }
 
-        @Override
-        public RevFeature apply(ResultSet rs) {
+        public @Override RevFeature apply(ResultSet rs) {
             Feature feature = Feature.build("fakeId", this.type);
             try {
                 for (String attName : attNames) {

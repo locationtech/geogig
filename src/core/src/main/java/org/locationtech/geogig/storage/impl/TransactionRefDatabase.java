@@ -87,18 +87,15 @@ public class TransactionRefDatabase implements RefDatabase {
         return append(TRANSACTIONS_PREFIX, transactionId.toString());
     }
 
-    @Override
-    public void lock() throws TimeoutException {
+    public @Override void lock() throws TimeoutException {
         refDb.lock();
     }
 
-    @Override
-    public void unlock() {
+    public @Override void unlock() {
         refDb.unlock();
     }
 
-    @Override
-    public void open() {
+    public @Override void open() {
         refDb.open();
 
         // copy HEADS
@@ -158,16 +155,14 @@ public class TransactionRefDatabase implements RefDatabase {
      * Releases all the references for this transaction, but does not close the original
      * {@link RefDatabase}
      */
-    @Override
-    public void close() {
+    public @Override void close() {
         refDb.removeAll(this.txNamespace);
     }
 
     /**
      * Gets the requested ref value from {@code transactions/<tx id>/<name>}
      */
-    @Override
-    public String getRef(final String name) {
+    public @Override String getRef(final String name) {
         String internalName;
         String value;
         if (name.startsWith("changed") || name.startsWith("orig")) {
@@ -180,8 +175,7 @@ public class TransactionRefDatabase implements RefDatabase {
         return value;
     }
 
-    @Override
-    public String getSymRef(final String name) {
+    public @Override String getSymRef(final String name) {
         String internalName;
         String value;
         if (name.startsWith("changed") || name.startsWith("orig")) {
@@ -194,15 +188,13 @@ public class TransactionRefDatabase implements RefDatabase {
         return value;
     }
 
-    @Override
-    public void putRef(final String refName, final String refValue) {
+    public @Override void putRef(final String refName, final String refValue) {
         String internalName = toChangedInternal(refName);
         LOGGER.debug("update {} as {}", refName, internalName);
         refDb.putRef(internalName, refValue);
     }
 
-    @Override
-    public void putSymRef(final String name, final String val) {
+    public @Override void putSymRef(final String name, final String val) {
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, val);
         String internalName = toChangedInternal(name);
@@ -210,20 +202,17 @@ public class TransactionRefDatabase implements RefDatabase {
         refDb.putSymRef(internalName, val);
     }
 
-    @Override
-    public String remove(final String refName) {
+    public @Override String remove(final String refName) {
         String internal = toChangedInternal(refName);
         String removedValue = refDb.remove(internal);
         return removedValue;
     }
 
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
         return getAll("");
     }
 
-    @Override
-    public Map<String, String> getAll(final String prefix) {
+    public @Override Map<String, String> getAll(final String prefix) {
         Map<String, String> changed = refDb.getAll(append(this.txChangedNamespace, prefix));
         return toExternal(changed);
     }
@@ -311,8 +300,7 @@ public class TransactionRefDatabase implements RefDatabase {
         return ImmutableSet.copyOf(changes.keySet());
     }
 
-    @Override
-    public Map<String, String> removeAll(String namespace) {
+    public @Override Map<String, String> removeAll(String namespace) {
         final String txMappedNamespace = toChangedInternal(namespace);
         Map<String, String> removed = refDb.removeAll(txMappedNamespace);
         Map<String, String> external = toExternal(removed);
@@ -368,13 +356,11 @@ public class TransactionRefDatabase implements RefDatabase {
         return txValue;
     }
 
-    @Override
-    public boolean isOpen() {
+    public @Override boolean isOpen() {
         return refDb.isOpen();
     }
 
-    @Override
-    public boolean isReadOnly() {
+    public @Override boolean isReadOnly() {
         return refDb.isReadOnly();
     }
 }

@@ -55,8 +55,7 @@ class DBConfig {
         return defaultMetadata;
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof DBConfig)) {
             return false;
         }
@@ -64,13 +63,11 @@ class DBConfig {
         return dbpath.equals(other.dbpath) && readOnly == other.readOnly;
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return 31 * dbpath.hashCode() + (readOnly ? 1 : 0);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return "rocksdb[path: " + dbpath + ", readonly: " + readOnly + "]";
     }
 

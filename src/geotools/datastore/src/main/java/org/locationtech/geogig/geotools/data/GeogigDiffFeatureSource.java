@@ -210,8 +210,7 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
             /**
              * @return {@code true}
              */
-            @Override
-            public boolean isUseProvidedFIDSupported() {
+            public @Override boolean isUseProvidedFIDSupported() {
                 return true;
             }
 
@@ -220,8 +219,7 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
              * @return {@code false} by now, will see how/whether we'll support
              *         {@link Query#getVersion()} later
              */
-            @Override
-            public boolean isVersionSupported() {
+            public @Override boolean isVersionSupported() {
                 return false;
             }
 

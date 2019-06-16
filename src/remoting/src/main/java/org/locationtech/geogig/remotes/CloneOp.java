@@ -103,8 +103,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
      * @return the cloned repository, in an open state
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected Repository _call() {
+    protected @Override Repository _call() {
         checkPreconditions();
         final Repository cloneRepo = createClone();
         try {

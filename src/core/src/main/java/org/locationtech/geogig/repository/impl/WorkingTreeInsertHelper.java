@@ -237,8 +237,7 @@ class WorkingTreeInsertHelper {
             this.target = target;
         }
 
-        @Override
-        public Void call() {
+        public @Override Void call() {
             RevTree tree = builder.build();
 
             Node treeNode;

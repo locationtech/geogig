@@ -264,8 +264,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @return {@code null}
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected TransferSummary _call() {
+    protected @Override TransferSummary _call() {
         final Repository repository = repository();
         final FetchArgs args = argsBuilder.build(repository);
         {
@@ -354,8 +353,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
             // (r) -> r.getType() != REMOVED_REF
             Predicate<RefDiff> fn = new Predicate<RefDiff>() {
-                @Override
-                public boolean apply(RefDiff r) {
+                public @Override boolean apply(RefDiff r) {
                     return r.getType() != REMOVED_REF;
                 }
             };

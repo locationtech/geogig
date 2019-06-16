@@ -23,8 +23,7 @@ import com.google.common.collect.Sets;
 
 public class ConflictsReadWriteOpTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test

@@ -95,8 +95,7 @@ public class FindTreeChild extends AbstractGeoGigOp<Optional<NodeRef>> {
      * @return an {@code Optional} that contains the Node if it was found, or
      *         {@link Optional#empty()} if it wasn't
      */
-    @Override
-    protected Optional<NodeRef> _call() {
+    protected @Override Optional<NodeRef> _call() {
         checkNotNull(childPath, "childPath");
         if (source == null) {
             this.source = objectDatabase();

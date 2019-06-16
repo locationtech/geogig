@@ -74,8 +74,7 @@ public interface GraphDatabase extends Store {
         /**
          * @return a readable form of this edge
          */
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return "" + from + ":" + to;
         }
     }
@@ -106,8 +105,7 @@ public interface GraphDatabase extends Store {
         /**
          * Determine if this {@code GraphNode} is the same as another one.
          */
-        @Override
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (obj == this) {
                 return true;
             }
@@ -123,8 +121,7 @@ public interface GraphDatabase extends Store {
         /**
          * Generate a hash code for this node.
          */
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             return getIdentifier().hashCode();
         }
     };

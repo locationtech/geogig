@@ -66,32 +66,27 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
         return new GeoGigFeatureWriter(new InfiniteFeatureReader(reader), typeRef, workingTree);
     }
 
-    @Override
-    public SimpleFeatureType getFeatureType() {
+    public @Override SimpleFeatureType getFeatureType() {
         return reader.getFeatureType();
     }
 
-    @Override
-    public boolean hasNext() throws IOException {
+    public @Override boolean hasNext() throws IOException {
         return reader.hasNext();
     }
 
-    @Override
-    public SimpleFeature next() throws IOException {
+    public @Override SimpleFeature next() throws IOException {
         this.last = reader.next();
         return last;
     }
 
-    @Override
-    public void remove() throws IOException {
+    public @Override void remove() throws IOException {
         Preconditions.checkState(last != null, "next() hasn't been called");
         String path = typePath;
         String featureId = last.getID();
         workingTree.delete(path, featureId);
     }
 
-    @Override
-    public void write() throws IOException {
+    public @Override void write() throws IOException {
         Preconditions.checkState(last != null, "next() hasn't been called");
         String parentTreePath = typePath;
         Feature lastF = GT.adapt(this.featureType, last);
@@ -101,8 +96,7 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
         workingTree.insert(fi);
     }
 
-    @Override
-    public void close() throws IOException {
+    public @Override void close() throws IOException {
         //
     }
 
@@ -118,18 +112,15 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
             this.newFeaturesBuilder = new SimpleFeatureBuilder(reader.getFeatureType());
         }
 
-        @Override
-        public boolean hasNext() throws IOException {
+        public @Override boolean hasNext() throws IOException {
             return reader.hasNext();
         }
 
-        @Override
-        public SimpleFeatureType getFeatureType() {
+        public @Override SimpleFeatureType getFeatureType() {
             return reader.getFeatureType();
         }
 
-        @Override
-        public SimpleFeature next()
+        public @Override SimpleFeature next()
                 throws IOException, IllegalArgumentException, NoSuchElementException {
             if (reader.hasNext()) {
                 return reader.next();
@@ -138,8 +129,7 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
             return feature;
         }
 
-        @Override
-        public void close() throws IOException {
+        public @Override void close() throws IOException {
             reader.close();
         }
     }

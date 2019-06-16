@@ -44,8 +44,7 @@ public class SendPackOp extends AbstractGeoGigOp<List<RefDiff>> {
 
     private CommandFactory targetRepo;
 
-    @Override
-    protected List<RefDiff> _call() {
+    protected @Override List<RefDiff> _call() {
         final PackRequest request = getRequest();
         final CommandFactory target = getTargetRepo();
 

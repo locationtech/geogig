@@ -93,8 +93,7 @@ public class Reset extends AbstractCommand implements CLICommand {
      * @param cli
      * @see org.locationtech.geogig.cli.AbstractCommand#runInternal(org.locationtech.geogig.cli.GeogigCLI)
      */
-    @Override
-    public void runInternal(GeogigCLI cli) {
+    public @Override void runInternal(GeogigCLI cli) {
         final GeoGIG geogig = cli.getGeogig();
 
         ResetMode mode = resolveResetMode();

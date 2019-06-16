@@ -19,23 +19,19 @@ public abstract class AbstractStore implements Store {
         this.readOnly = readOnly;
     }
 
-    @Override
-    public void open() {
+    public @Override void open() {
         open = true;
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         open = false;
     }
 
-    @Override
-    public boolean isOpen() {
+    public @Override boolean isOpen() {
         return open;
     }
 
-    @Override
-    public boolean isReadOnly() {
+    public @Override boolean isReadOnly() {
         return readOnly;
     }
 

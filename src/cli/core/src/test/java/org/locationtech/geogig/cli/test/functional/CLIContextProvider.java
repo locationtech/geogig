@@ -44,8 +44,7 @@ import cucumber.runtime.java.StepDefAnnotation;
 public class CLIContextProvider {
 
     private static ThreadLocal<CLIContextProvider> threadLocal = new ThreadLocal<CLIContextProvider>() {
-        @Override
-        protected CLIContextProvider initialValue() {
+        protected @Override CLIContextProvider initialValue() {
             return new CLIContextProvider();
         }
     };

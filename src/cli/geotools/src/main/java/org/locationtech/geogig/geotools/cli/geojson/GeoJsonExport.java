@@ -76,8 +76,7 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
     /**
      * Executes the export command using the provided options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
         if (args.isEmpty()) {
             printUsage(cli);

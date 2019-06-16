@@ -67,8 +67,7 @@ public class Checkout extends AbstractCommand implements CLICommand {
     @Parameter(names = "--theirs", description = "When checking out paths from the index, check out 'theirs' version for unmerged paths")
     private boolean theirs;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         final GeoGIG geogig = cli.getGeogig();
         checkParameter(branchOrStartPoint.size() != 0 || !paths.isEmpty(),
                 "no branch or paths specified");

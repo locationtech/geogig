@@ -149,18 +149,15 @@ class GeogigSimpleFeature implements SimpleFeature {
         }
     }
 
-    @Override
-    public FeatureId getIdentifier() {
+    public @Override FeatureId getIdentifier() {
         return id;
     }
 
-    @Override
-    public String getID() {
+    public @Override String getID() {
         return id.getID();
     }
 
-    @Override
-    public Object getAttribute(int index) throws IndexOutOfBoundsException {
+    public @Override Object getAttribute(int index) throws IndexOutOfBoundsException {
         // @TODO: reoptimize
 
         // if (node != null && index == defaultGeomIndex && defaultGeomIsPoint
@@ -182,8 +179,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         return value;
     }
 
-    @Override
-    public Object getAttribute(String name) {
+    public @Override Object getAttribute(String name) {
         Integer index = nameToRevTypeIndex.get(name);
         if (index == null) {
             return null;
@@ -191,18 +187,15 @@ class GeogigSimpleFeature implements SimpleFeature {
         return getAttribute(index.intValue());
     }
 
-    @Override
-    public Object getAttribute(Name name) {
+    public @Override Object getAttribute(Name name) {
         return getAttribute(name.getLocalPart());
     }
 
-    @Override
-    public int getAttributeCount() {
+    public @Override int getAttributeCount() {
         return featureType.getAttributeCount();
     }
 
-    @Override
-    public List<Object> getAttributes() {
+    public @Override List<Object> getAttributes() {
         final int attributeCount = getAttributeCount();
         List<Object> atts = new ArrayList<Object>(attributeCount);
         for (int i = 0; i < attributeCount; i++) {
@@ -211,8 +204,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         return atts;
     }
 
-    @Override
-    public Object getDefaultGeometry() {
+    public @Override Object getDefaultGeometry() {
         // should be specified in the index as the default key (null)
         Integer idx = nameToRevTypeIndex.get(null);
         Object defaultGeometry = idx == null ? null : getAttribute(idx.intValue());
@@ -230,18 +222,15 @@ class GeogigSimpleFeature implements SimpleFeature {
         return defaultGeometry;
     }
 
-    @Override
-    public SimpleFeatureType getFeatureType() {
+    public @Override SimpleFeatureType getFeatureType() {
         return featureType;
     }
 
-    @Override
-    public SimpleFeatureType getType() {
+    public @Override SimpleFeatureType getType() {
         return featureType;
     }
 
-    @Override
-    public void setAttribute(int index, Object value) throws IndexOutOfBoundsException {
+    public @Override void setAttribute(int index, Object value) throws IndexOutOfBoundsException {
         // first do conversion
         Class<?> binding = getFeatureType().getDescriptor(index).getType().getBinding();
         Object converted = Converters.convert(value, binding);
@@ -257,8 +246,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         state.set(index, converted);
     }
 
-    @Override
-    public void setAttribute(String name, Object value) {
+    public @Override void setAttribute(String name, Object value) {
         final Integer revTypeIndex = nameToRevTypeIndex.get(name);
         if (revTypeIndex == null) {
             throw new IllegalAttributeException(null, "Unknown attribute " + name);
@@ -266,25 +254,21 @@ class GeogigSimpleFeature implements SimpleFeature {
         setAttribute(revTypeIndex.intValue(), value);
     }
 
-    @Override
-    public void setAttribute(Name name, Object value) {
+    public @Override void setAttribute(Name name, Object value) {
         setAttribute(name.getLocalPart(), value);
     }
 
-    @Override
-    public void setAttributes(List<Object> values) {
+    public @Override void setAttributes(List<Object> values) {
         for (int i = 0; i < values.size(); i++) {
             setAttribute(i, values.get(i));
         }
     }
 
-    @Override
-    public void setAttributes(Object[] values) {
+    public @Override void setAttributes(Object[] values) {
         setAttributes(Arrays.asList(values));
     }
 
-    @Override
-    public void setDefaultGeometry(Object geometry) {
+    public @Override void setDefaultGeometry(Object geometry) {
         Preconditions.checkArgument(geometry == null || geometry instanceof Geometry);
         Integer geometryIndex = nameToRevTypeIndex.get(null);
         if (geometryIndex != null) {
@@ -292,8 +276,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         }
     }
 
-    @Override
-    public BoundingBox getBounds() {
+    public @Override BoundingBox getBounds() {
         CoordinateReferenceSystem crs = featureType.getCoordinateReferenceSystem();
         Envelope bounds = ReferencedEnvelope.create(crs);
         state.getBounds(bounds);
@@ -322,8 +305,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         return (BoundingBox) bounds;
     }
 
-    @Override
-    public GeometryAttribute getDefaultGeometryProperty() {
+    public @Override GeometryAttribute getDefaultGeometryProperty() {
         GeometryDescriptor geometryDescriptor = featureType.getGeometryDescriptor();
         GeometryAttribute geometryAttribute = null;
         if (geometryDescriptor != null) {
@@ -334,8 +316,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         return geometryAttribute;
     }
 
-    @Override
-    public void setDefaultGeometryProperty(GeometryAttribute geometryAttribute) {
+    public @Override void setDefaultGeometryProperty(GeometryAttribute geometryAttribute) {
         if (geometryAttribute == null) {
             setDefaultGeometry(null);
         } else {
@@ -343,18 +324,15 @@ class GeogigSimpleFeature implements SimpleFeature {
         }
     }
 
-    @Override
-    public Collection<Property> getProperties() {
+    public @Override Collection<Property> getProperties() {
         return new AttributeList();
     }
 
-    @Override
-    public Collection<Property> getProperties(Name name) {
+    public @Override Collection<Property> getProperties(Name name) {
         return getProperties(name.getLocalPart());
     }
 
-    @Override
-    public Collection<Property> getProperties(String name) {
+    public @Override Collection<Property> getProperties(String name) {
         final Integer idx = nameToRevTypeIndex.get(name);
         if (idx != null) {
             // cast temporarily to a plain collection to avoid type problems with generics
@@ -365,13 +343,11 @@ class GeogigSimpleFeature implements SimpleFeature {
         }
     }
 
-    @Override
-    public Property getProperty(Name name) {
+    public @Override Property getProperty(Name name) {
         return getProperty(name.getLocalPart());
     }
 
-    @Override
-    public Property getProperty(String name) {
+    public @Override Property getProperty(String name) {
         AttributeDescriptor descriptor = featureType.getDescriptor(name);
         if (descriptor == null) {
             return null;
@@ -386,13 +362,11 @@ class GeogigSimpleFeature implements SimpleFeature {
         }
     }
 
-    @Override
-    public Collection<? extends Property> getValue() {
+    public @Override Collection<? extends Property> getValue() {
         return getProperties();
     }
 
-    @Override
-    public void setValue(Collection<Property> values) {
+    public @Override void setValue(Collection<Property> values) {
         int index = 0;
         for (Property p : values) {
             setAttribute(index, p.getValue());
@@ -401,16 +375,14 @@ class GeogigSimpleFeature implements SimpleFeature {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public void setValue(Object newValue) {
+    public @Override void setValue(Object newValue) {
         setValue((Collection<Property>) newValue);
     }
 
     /**
      * @see org.opengis.feature.Attribute#getDescriptor()
      */
-    @Override
-    public AttributeDescriptor getDescriptor() {
+    public @Override AttributeDescriptor getDescriptor() {
         return new AttributeDescriptorImpl(featureType, featureType.getName(), 0, Integer.MAX_VALUE,
                 true, null);
     }
@@ -419,18 +391,15 @@ class GeogigSimpleFeature implements SimpleFeature {
      * @return same name than this feature's {@link SimpleFeatureType}
      * @see org.opengis.feature.Property#getName()
      */
-    @Override
-    public Name getName() {
+    public @Override Name getName() {
         return featureType.getName();
     }
 
-    @Override
-    public boolean isNillable() {
+    public @Override boolean isNillable() {
         return true;
     }
 
-    @Override
-    public Map<Object, Object> getUserData() {
+    public @Override Map<Object, Object> getUserData() {
         if (userData == null) {
             userData = Maps.newHashMap();
         }
@@ -453,8 +422,7 @@ class GeogigSimpleFeature implements SimpleFeature {
      * 
      * @return <code>true</code> if the object is equal, <code>false</code> otherwise.
      */
-    @Override
-    public boolean equals(Object obj) {
+    public @Override boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
@@ -493,8 +461,7 @@ class GeogigSimpleFeature implements SimpleFeature {
      */
     class AttributeList extends AbstractList<Property> {
 
-        @Override
-        public Property get(int index) {
+        public @Override Property get(int index) {
             AttributeDescriptor descriptor = featureType.getDescriptor(index);
             if (descriptor instanceof GeometryDescriptor) {
                 return new SimpleGeometryAttribute(index);
@@ -502,20 +469,17 @@ class GeogigSimpleFeature implements SimpleFeature {
             return new Attribute(index);
         }
 
-        @Override
-        public Attribute set(int index, Property element) {
+        public @Override Attribute set(int index, Property element) {
             setAttribute(index, element.getValue());
             return null;
         }
 
-        @Override
-        public int size() {
+        public @Override int size() {
             return getAttributeCount();
         }
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(getType().getName().getLocalPart());
         sb.append('=');
@@ -533,29 +497,24 @@ class GeogigSimpleFeature implements SimpleFeature {
             this.index = index;
         }
 
-        @Override
-        public Identifier getIdentifier() {
+        public @Override Identifier getIdentifier() {
             return null;
         }
 
-        @Override
-        public AttributeDescriptor getDescriptor() {
+        public @Override AttributeDescriptor getDescriptor() {
             return featureType.getDescriptor(index);
         }
 
-        @Override
-        public AttributeType getType() {
+        public @Override AttributeType getType() {
             return featureType.getType(index);
         }
 
-        @Override
-        public Name getName() {
+        public @Override Name getName() {
             return getDescriptor().getName();
         }
 
         @SuppressWarnings("unchecked")
-        @Override
-        public Map<Object, Object> getUserData() {
+        public @Override Map<Object, Object> getUserData() {
             // lazily create the user data holder
             if (attributeUserData == null)
                 attributeUserData = new HashMap[getAttributeCount()];
@@ -565,18 +524,15 @@ class GeogigSimpleFeature implements SimpleFeature {
             return attributeUserData[index];
         }
 
-        @Override
-        public Object getValue() {
+        public @Override Object getValue() {
             return getAttribute(this.index);
         }
 
-        @Override
-        public boolean isNillable() {
+        public @Override boolean isNillable() {
             return getDescriptor().isNillable();
         }
 
-        @Override
-        public void setValue(Object newValue) {
+        public @Override void setValue(Object newValue) {
             setAttribute(this.index, newValue);
         }
 
@@ -585,8 +541,7 @@ class GeogigSimpleFeature implements SimpleFeature {
          * 
          * @return hashCode for this object.
          */
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             Object value = getValue();
             return 37 * getDescriptor().hashCode() + (37 * (value == null ? 0 : value.hashCode()));
         }
@@ -598,8 +553,7 @@ class GeogigSimpleFeature implements SimpleFeature {
          * 
          * @return whether other is equal to this attribute Type.
          */
-        @Override
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -617,13 +571,11 @@ class GeogigSimpleFeature implements SimpleFeature {
             return Utilities.equals(getIdentifier(), other.getIdentifier());
         }
 
-        @Override
-        public void validate() {
+        public @Override void validate() {
             Types.validate(getDescriptor(), getValue());
         }
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append(": ");
             sb.append(getDescriptor().getName().getLocalPart());
             if (!getDescriptor().getName().getLocalPart()
@@ -648,18 +600,15 @@ class GeogigSimpleFeature implements SimpleFeature {
             super(index);
         }
 
-        @Override
-        public GeometryType getType() {
+        public @Override GeometryType getType() {
             return (GeometryType) super.getType();
         }
 
-        @Override
-        public GeometryDescriptor getDescriptor() {
+        public @Override GeometryDescriptor getDescriptor() {
             return (GeometryDescriptor) super.getDescriptor();
         }
 
-        @Override
-        public BoundingBox getBounds() {
+        public @Override BoundingBox getBounds() {
             ReferencedEnvelope bounds = new ReferencedEnvelope(
                     featureType.getCoordinateReferenceSystem());
             Object value = getAttribute(index);
@@ -669,19 +618,16 @@ class GeogigSimpleFeature implements SimpleFeature {
             return bounds;
         }
 
-        @Override
-        public void setBounds(BoundingBox bounds) {
+        public @Override void setBounds(BoundingBox bounds) {
             // do nothing, this property is strictly derived. Shall throw unsupported operation
             // exception?
         }
 
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             return 17 * super.hashCode();
         }
 
-        @Override
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -719,8 +665,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         return typeAttNameToRevTypeIndex;
     }
 
-    @Override
-    public void validate() throws IllegalAttributeException {
+    public @Override void validate() throws IllegalAttributeException {
         for (int i = 0; i < getAttributeCount(); i++) {
             AttributeDescriptor descriptor = getType().getDescriptor(i);
             Types.validate(descriptor, getAttribute(i));

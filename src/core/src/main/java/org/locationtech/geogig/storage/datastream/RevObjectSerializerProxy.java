@@ -74,15 +74,13 @@ public class RevObjectSerializerProxy implements RevObjectSerializer {
         this.writer = supportedFormats[maxFormatCode];
     }
 
-    @Override
-    public void write(RevObject o, OutputStream out) throws IOException {
+    public @Override void write(RevObject o, OutputStream out) throws IOException {
         final int storageVersionHeader = maxFormatCode;
         out.write(storageVersionHeader);
         writer.write(o, out);
     }
 
-    @Override
-    public RevObject read(ObjectId id, InputStream in) throws IOException {
+    public @Override RevObject read(ObjectId id, InputStream in) throws IOException {
         final int serialVersionHeader = in.read();
         assert serialVersionHeader >= 0 && serialVersionHeader <= maxFormatCode;
         final RevObjectSerializer serializer = serializer(id, serialVersionHeader);
@@ -90,8 +88,7 @@ public class RevObjectSerializerProxy implements RevObjectSerializer {
         return revObject;
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) {
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) {
         final int serialVersionHeader = data[offset] & 0xFF;
         assert serialVersionHeader >= 0 && serialVersionHeader <= maxFormatCode;
         final RevObjectSerializer serializer = serializer(id, serialVersionHeader);
@@ -138,8 +135,7 @@ public class RevObjectSerializerProxy implements RevObjectSerializer {
         }
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         StringBuilder sb = new StringBuilder("Proxy[");
         for (RevObjectSerializer f : supportedFormats) {
             sb.append(f.getDisplayName()).append(", ");

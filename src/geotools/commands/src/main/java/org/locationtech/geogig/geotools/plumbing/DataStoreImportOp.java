@@ -319,8 +319,7 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
         return this;
     }
 
-    @Override
-    protected T _call() {
+    protected @Override T _call() {
         SymRef originalHead = null;
         if (root != null) {
             Preconditions.checkArgument(

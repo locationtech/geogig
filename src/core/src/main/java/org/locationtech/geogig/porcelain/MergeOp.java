@@ -186,8 +186,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
      * 
      * @return always {@code true}
      */
-    @Override
-    protected MergeReport _call() throws RuntimeException {
+    protected @Override MergeReport _call() throws RuntimeException {
         if (abort) {
             return abort();
         }

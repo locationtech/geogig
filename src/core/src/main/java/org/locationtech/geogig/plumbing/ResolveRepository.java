@@ -18,8 +18,7 @@ import org.locationtech.geogig.repository.Repository;
  */
 public class ResolveRepository extends AbstractGeoGigOp<Repository> {
 
-    @Override
-    protected Repository _call() {
+    protected @Override Repository _call() {
         return repository();
     }
 }

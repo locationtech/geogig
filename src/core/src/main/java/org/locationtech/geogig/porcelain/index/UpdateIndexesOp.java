@@ -57,8 +57,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
      * 
      * @return a list of {@link Index} objects that represent updated indexes
      */
-    @Override
-    protected List<Index> _call() {
+    protected @Override List<Index> _call() {
         checkNotNull(rootRefSpec, "rootRefSpec not provided");
 
         final Ref branchRef = this.rootRefSpec;

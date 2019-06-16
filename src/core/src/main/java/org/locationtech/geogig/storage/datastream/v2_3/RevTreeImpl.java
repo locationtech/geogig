@@ -36,47 +36,39 @@ class RevTreeImpl implements RevTree {
      * 
      * @see AbstractRevObject#equals(Object)
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof RevTree)) {
             return false;
         }
         return id.equals(((RevTree) o).getId());
     }
 
-    @Override
-    public ObjectId getId() {
+    public @Override ObjectId getId() {
         return id;
     }
 
-    @Override
-    public long size() {
+    public @Override long size() {
         return RevTreeFormat.size(data);
     }
 
-    @Override
-    public int numTrees() {
+    public @Override int numTrees() {
         return RevTreeFormat.numChildTrees(data);
     }
 
-    @Override
-    public ImmutableList<Node> trees() {
+    public @Override ImmutableList<Node> trees() {
         return RevTreeFormat.trees(data);
     }
 
-    @Override
-    public ImmutableList<Node> features() {
+    public @Override ImmutableList<Node> features() {
         return RevTreeFormat.features(data);
     }
 
     @Deprecated
-    @Override
-    public ImmutableSortedMap<Integer, Bucket> buckets() {
+    public @Override ImmutableSortedMap<Integer, Bucket> buckets() {
         return RevTreeFormat.buckets(data);
     }
 
-    @Override
-    public Iterable<Bucket> getBuckets() {
+    public @Override Iterable<Bucket> getBuckets() {
         return buckets().values();
     }
 }

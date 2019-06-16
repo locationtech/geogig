@@ -32,8 +32,7 @@ import com.google.inject.Scopes;
  */
 public class MemoryModule extends AbstractModule {
 
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
         // TODO: bind to HeapConfigDatabase
         // bind(ConfigDatabase.class).to(HeapConfigDatabase.class).in(Scopes.SINGLETON);
         bind(ConfigDatabase.class).to(IniFileConfigDatabase.class).in(Scopes.SINGLETON);

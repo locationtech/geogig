@@ -88,8 +88,7 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
             "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
         checkParameter(geoJSONList != null && !geoJSONList.isEmpty(), "No GeoJSON specified");
         checkParameter(geomName == null || !geomNameAuto,

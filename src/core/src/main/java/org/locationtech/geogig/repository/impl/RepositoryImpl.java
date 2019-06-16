@@ -98,20 +98,17 @@ public class RepositoryImpl implements Repository {
         this.context = context;
     }
 
-    @Override
-    public void addListener(RepositoryListener listener) {
+    public @Override void addListener(RepositoryListener listener) {
         if (!this.listeners.contains(listener)) {
             this.listeners.add(listener);
         }
     }
 
-    @Override
-    public boolean isOpen() {
+    public @Override boolean isOpen() {
         return open;
     }
 
-    @Override
-    public void open() throws RepositoryConnectionException {
+    public @Override void open() throws RepositoryConnectionException {
         if (isOpen()) {
             return;
         }
@@ -141,8 +138,7 @@ public class RepositoryImpl implements Repository {
     /**
      * Closes the repository.
      */
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
         if (!isOpen()) {
             return;
         }
@@ -177,8 +173,7 @@ public class RepositoryImpl implements Repository {
         }
     }
 
-    @Override
-    public URI getLocation() {
+    public @Override URI getLocation() {
         return repositoryLocation;
     }
 
@@ -188,8 +183,7 @@ public class RepositoryImpl implements Repository {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    @Override
-    public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
         return context.command(commandClass);
     }
 
@@ -199,8 +193,7 @@ public class RepositoryImpl implements Repository {
      * @param id the ID of the blob in the object database
      * @return true if the blob exists with the parameter ID, false otherwise
      */
-    @Override
-    public boolean blobExists(final ObjectId id) {
+    public @Override boolean blobExists(final ObjectId id) {
         return context().objectDatabase().exists(id);
     }
 
@@ -208,8 +201,7 @@ public class RepositoryImpl implements Repository {
      * @param revStr the string to parse
      * @return the parsed {@link Ref}, or {@link Optional#empty()} if it did not parse.
      */
-    @Override
-    public Optional<Ref> getRef(final String revStr) {
+    public @Override Optional<Ref> getRef(final String revStr) {
         Optional<Ref> ref = command(RefParse.class).setName(revStr).call();
         return ref;
     }
@@ -218,8 +210,7 @@ public class RepositoryImpl implements Repository {
      * @return the {@link Ref} pointed to by HEAD, or {@link Optional#empty()} if it could not be
      *         resolved.
      */
-    @Override
-    public Optional<Ref> getHead() {
+    public @Override Optional<Ref> getHead() {
         return getRef(Ref.HEAD);
     }
 
@@ -229,8 +220,7 @@ public class RepositoryImpl implements Repository {
      * @param id the id to look for
      * @return true if the object was found, false otherwise
      */
-    @Override
-    public boolean commitExists(final ObjectId id) {
+    public @Override boolean commitExists(final ObjectId id) {
         try {
             RevObject revObject = context().objectDatabase().get(id);
             return revObject instanceof RevCommit;
@@ -245,8 +235,7 @@ public class RepositoryImpl implements Repository {
      * @param commitId the {@code ObjectId} for the commit
      * @return the {@code RevCommit}
      */
-    @Override
-    public RevCommit getCommit(final ObjectId commitId) {
+    public @Override RevCommit getCommit(final ObjectId commitId) {
         RevCommit commit = context().objectDatabase().getCommit(commitId);
 
         return commit;
@@ -258,8 +247,7 @@ public class RepositoryImpl implements Repository {
      * @param id the ID of the tree in the object database
      * @return true if the tree exists with the parameter ID, false otherwise
      */
-    @Override
-    public boolean treeExists(final ObjectId id) {
+    public @Override boolean treeExists(final ObjectId id) {
         try {
             context().objectDatabase().getTree(id);
         } catch (IllegalArgumentException e) {
@@ -272,8 +260,7 @@ public class RepositoryImpl implements Repository {
     /**
      * @return the {@link ObjectId} of the root tree
      */
-    @Override
-    public ObjectId getRootTreeId() {
+    public @Override ObjectId getRootTreeId() {
         // find the root tree
         ObjectId commitId = command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
         if (commitId.isNull()) {
@@ -289,8 +276,7 @@ public class RepositoryImpl implements Repository {
      * @param contentId the {@link ObjectId} of the feature to get
      * @return the {@link RevFeature} that was found in the object database
      */
-    @Override
-    public RevFeature getFeature(final ObjectId contentId) {
+    public @Override RevFeature getFeature(final ObjectId contentId) {
 
         RevFeature revFeature = context().objectDatabase().getFeature(contentId);
 
@@ -301,8 +287,7 @@ public class RepositoryImpl implements Repository {
      * @return the existing {@link RevTree} pointed to by HEAD, or a new {@code RevTree} if it did
      *         not exist
      */
-    @Override
-    public RevTree getOrCreateHeadTree() {
+    public @Override RevTree getOrCreateHeadTree() {
         Optional<ObjectId> headTreeId = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
         if (!headTreeId.isPresent()) {
             return RevTree.EMPTY;
@@ -314,8 +299,7 @@ public class RepositoryImpl implements Repository {
      * @param treeId the tree to retrieve
      * @return the {@link RevTree} referred to by the given {@link ObjectId}
      */
-    @Override
-    public RevTree getTree(ObjectId treeId) {
+    public @Override RevTree getTree(ObjectId treeId) {
         return command(RevObjectParse.class).setObjectId(treeId).call(RevTree.class).get();
     }
 
@@ -324,8 +308,7 @@ public class RepositoryImpl implements Repository {
      * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#empty()} if
      *         it wasn't found
      */
-    @Override
-    public Optional<Node> getRootTreeChild(String path) {
+    public @Override Optional<Node> getRootTreeChild(String path) {
         Optional<NodeRef> nodeRef = command(FindTreeChild.class).setChildPath(path).call();
         if (nodeRef.isPresent()) {
             return Optional.of(nodeRef.get().getNode());
@@ -342,8 +325,7 @@ public class RepositoryImpl implements Repository {
      * @return an {@link Optional} of the {@link Node} for the child path, or
      *         {@link Optional#empty()} if it wasn't found
      */
-    @Override
-    public Optional<Node> getTreeChild(RevTree tree, String childPath) {
+    public @Override Optional<Node> getTreeChild(RevTree tree, String childPath) {
         Optional<NodeRef> nodeRef = command(FindTreeChild.class).setParent(tree)
                 .setChildPath(childPath).call();
         if (nodeRef.isPresent()) {
@@ -358,8 +340,7 @@ public class RepositoryImpl implements Repository {
      * 
      * @return the depth
      */
-    @Override
-    public Optional<Integer> getDepth() {
+    public @Override Optional<Integer> getDepth() {
         int repoDepth = 0;
         Optional<Map<String, String>> depthResult = command(ConfigOp.class)
                 .setAction(ConfigAction.CONFIG_GET).setName(DEPTH_CONFIG_KEY).call();
@@ -379,33 +360,27 @@ public class RepositoryImpl implements Repository {
     /**
      * @return true if this is a sparse (mapped) clone.
      */
-    @Override
-    public boolean isSparse() {
+    public @Override boolean isSparse() {
         return blobStore().getBlob(Blobs.SPARSE_FILTER_BLOB_KEY).isPresent();
     }
 
-    @Override
-    public Context context() {
+    public @Override Context context() {
         return context;
     }
 
-    @Override
-    public WorkingTree workingTree() {
+    public @Override WorkingTree workingTree() {
         return context.workingTree();
     }
 
-    @Override
-    public StagingArea index() {
+    public @Override StagingArea index() {
         return context.stagingArea();
     }
 
-    @Override
-    public Platform platform() {
+    public @Override Platform platform() {
         return context.platform();
     }
 
-    @Override
-    public BlobStore blobStore() {
+    public @Override BlobStore blobStore() {
         return context().blobStore();
     }
 

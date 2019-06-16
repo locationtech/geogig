@@ -52,8 +52,7 @@ public class GeopkgPull extends AbstractCommand {
 
     final GeopkgSupport support = new GeopkgSupport();
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
         Repository repository = cli.getGeogig().getRepository();
         File databaseFile = new File(commonArgs.database);

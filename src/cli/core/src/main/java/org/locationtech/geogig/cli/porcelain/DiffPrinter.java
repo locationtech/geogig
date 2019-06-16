@@ -60,8 +60,8 @@ interface DiffPrinter {
 
 class SummaryDiffPrinter implements DiffPrinter {
 
-    @Override
-    public void print(GeoGIG geogig, Console console, DiffEntry entry) throws IOException {
+    public @Override void print(GeoGIG geogig, Console console, DiffEntry entry)
+            throws IOException {
 
         Ansi ansi = AnsiDecorator.newAnsi(console.isAnsiSupported());
 
@@ -127,8 +127,8 @@ class FullDiffPrinter implements DiffPrinter {
         this.noHeader = noHeader;
     }
 
-    @Override
-    public void print(GeoGIG geogig, Console console, DiffEntry diffEntry) throws IOException {
+    public @Override void print(GeoGIG geogig, Console console, DiffEntry diffEntry)
+            throws IOException {
 
         if (!noHeader) {
             summaryPrinter.print(geogig, console, diffEntry);

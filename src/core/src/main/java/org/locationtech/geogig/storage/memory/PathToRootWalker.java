@@ -44,13 +44,11 @@ public class PathToRootWalker implements Iterator<List<Node>> {
         seen = Sets.newHashSet();
     }
 
-    @Override
-    public boolean hasNext() {
+    public @Override boolean hasNext() {
         return !q.isEmpty();
     }
 
-    @Override
-    public List<Node> next() {
+    public @Override List<Node> next() {
         List<Node> curr = Lists.newArrayList();
         List<Node> next = Lists.newArrayList();
 
@@ -70,8 +68,7 @@ public class PathToRootWalker implements Iterator<List<Node>> {
         return seen.contains(node);
     }
 
-    @Override
-    public void remove() {
+    public @Override void remove() {
         throw new UnsupportedOperationException();
     }
 }

@@ -53,8 +53,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
 
     private GeoPackageTestSupport support;
 
-    @Override
-    public void setUpInternal() throws Exception {
+    public @Override void setUpInternal() throws Exception {
         setupCLI();
     }
 
@@ -67,8 +66,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         support = new GeoPackageTestSupport();
     }
 
-    @Override
-    public void tearDownInternal() throws Exception {
+    public @Override void tearDownInternal() throws Exception {
         cli.close();
     }
 

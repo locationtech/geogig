@@ -23,8 +23,7 @@ public class HeapObjectDatabaseConformanceTest extends ObjectDatabaseConformance
 
     public @Rule TestRepository testSupport = new TestRepository();
 
-    @Override
-    protected ObjectDatabase createOpen(boolean readOnly) {
+    protected @Override ObjectDatabase createOpen(boolean readOnly) {
         URI repoURI = testSupport.getRepoURI();
         ObjectDatabase db = resolver.resolveObjectDatabase(repoURI, new Hints().readOnly(readOnly));
         db.open();

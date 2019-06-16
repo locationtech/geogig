@@ -55,8 +55,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         super(dbdir, readOnly);
     }
 
-    @Override
-    public synchronized void open() {
+    public @Override synchronized void open() {
         if (!isOpen()) {
             super.open(Sets.newHashSet("indexMetadata", "indexMappings"));
             this.indexMetadataColumn = super.dbhandle.getColumnFamily("indexMetadata");
@@ -74,9 +73,8 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return sb.toString().getBytes(Charsets.UTF_8);
     }
 
-    @Override
-    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
-            @Nullable Map<String, Object> metadata) {
+    public @Override IndexInfo createIndexInfo(String treeName, String attributeName,
+            IndexType strategy, @Nullable Map<String, Object> metadata) {
         checkWritable();
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
@@ -91,9 +89,8 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return index;
     }
 
-    @Override
-    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
-            Map<String, Object> metadata) {
+    public @Override IndexInfo updateIndexInfo(String treeName, String attributeName,
+            IndexType strategy, Map<String, Object> metadata) {
         return createIndexInfo(treeName, attributeName, strategy, metadata);
     }
 
@@ -103,8 +100,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return index;
     }
 
-    @Override
-    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
+    public @Override Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         checkOpen();
         byte[] indexKey = indexKey(treeName, attributeName);
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -118,8 +114,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return Optional.empty();
     }
 
-    @Override
-    public List<IndexInfo> getIndexInfos(String treeName) {
+    public @Override List<IndexInfo> getIndexInfos(String treeName) {
         checkOpen();
         byte[] indexKey = indexKey(treeName, null);
         List<IndexInfo> indexes = Lists.newArrayList();
@@ -141,8 +136,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return indexes;
     }
 
-    @Override
-    public List<IndexInfo> getIndexInfos() {
+    public @Override List<IndexInfo> getIndexInfos() {
         checkOpen();
         List<IndexInfo> indexes = Lists.newArrayList();
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -157,8 +151,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return indexes;
     }
 
-    @Override
-    public boolean dropIndex(IndexInfo index) {
+    public @Override boolean dropIndex(IndexInfo index) {
         checkOpen();
         byte[] indexKey = indexKey(index.getTreeName(), index.getAttributeName());
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -184,8 +177,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return false;
     }
 
-    @Override
-    public void clearIndex(IndexInfo index) {
+    public @Override void clearIndex(IndexInfo index) {
         checkOpen();
         byte[] mappingKey = computeIndexTreePrefixLookupKey(index.getId());
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -207,8 +199,8 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         }
     }
 
-    @Override
-    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
+    public @Override void addIndexedTree(IndexInfo index, ObjectId originalTree,
+            ObjectId indexedTree) {
         byte[] indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             dbRef.db().put(indexMappingsColumn, indexTreeLookupId, indexedTree.getRawValue());
@@ -217,8 +209,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         }
     }
 
-    @Override
-    public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
+    public @Override Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
         byte[] indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
 
         byte[] indexTreeBytes;

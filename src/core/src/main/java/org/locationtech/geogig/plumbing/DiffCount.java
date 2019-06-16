@@ -110,8 +110,7 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
         return this;
     }
 
-    @Override
-    protected DiffObjectCount _call() {
+    protected @Override DiffObjectCount _call() {
         checkState(oldRefSpec != null || oldTreeId != null || oldTree != null,
                 "old ref spec not provided");
         checkState(newRefSpec != null || newTreeId != null || newTree != null,

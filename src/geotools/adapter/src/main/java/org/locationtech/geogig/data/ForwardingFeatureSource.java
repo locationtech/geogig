@@ -35,73 +35,59 @@ public class ForwardingFeatureSource<T extends FeatureType, F extends Feature>
         this.source = source;
     }
 
-    @Override
-    public Name getName() {
+    public @Override Name getName() {
         return source.getName();
     }
 
-    @Override
-    public ResourceInfo getInfo() {
+    public @Override ResourceInfo getInfo() {
         return source.getInfo();
     }
 
-    @Override
-    public DataAccess<T, F> getDataStore() {
+    public @Override DataAccess<T, F> getDataStore() {
         return source.getDataStore();
     }
 
-    @Override
-    public QueryCapabilities getQueryCapabilities() {
+    public @Override QueryCapabilities getQueryCapabilities() {
         return source.getQueryCapabilities();
     }
 
-    @Override
-    public void addFeatureListener(FeatureListener listener) {
+    public @Override void addFeatureListener(FeatureListener listener) {
         source.addFeatureListener(listener);
     }
 
-    @Override
-    public void removeFeatureListener(FeatureListener listener) {
+    public @Override void removeFeatureListener(FeatureListener listener) {
         source.removeFeatureListener(listener);
     }
 
-    @Override
-    public FeatureCollection<T, F> getFeatures(Filter filter) throws IOException {
+    public @Override FeatureCollection<T, F> getFeatures(Filter filter) throws IOException {
         return source.getFeatures(filter);
     }
 
-    @Override
-    public FeatureCollection<T, F> getFeatures(Query query) throws IOException {
+    public @Override FeatureCollection<T, F> getFeatures(Query query) throws IOException {
         return source.getFeatures(query);
     }
 
-    @Override
-    public FeatureCollection<T, F> getFeatures() throws IOException {
+    public @Override FeatureCollection<T, F> getFeatures() throws IOException {
         return source.getFeatures();
     }
 
-    @Override
-    public T getSchema() {
+    public @Override T getSchema() {
         return source.getSchema();
     }
 
-    @Override
-    public ReferencedEnvelope getBounds() throws IOException {
+    public @Override ReferencedEnvelope getBounds() throws IOException {
         return source.getBounds();
     }
 
-    @Override
-    public ReferencedEnvelope getBounds(Query query) throws IOException {
+    public @Override ReferencedEnvelope getBounds(Query query) throws IOException {
         return source.getBounds(query);
     }
 
-    @Override
-    public int getCount(Query query) throws IOException {
+    public @Override int getCount(Query query) throws IOException {
         return source.getCount(query);
     }
 
-    @Override
-    public Set<Key> getSupportedHints() {
+    public @Override Set<Key> getSupportedHints() {
         return source.getSupportedHints();
     }
 

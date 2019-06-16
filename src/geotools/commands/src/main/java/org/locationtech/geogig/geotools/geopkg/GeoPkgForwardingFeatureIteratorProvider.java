@@ -37,8 +37,7 @@ public class GeoPkgForwardingFeatureIteratorProvider extends ForwardingFeatureIt
      * @return a new feature iterator which transforms the feature ids of imported features
      */
     @SuppressWarnings("rawtypes")
-    @Override
-    public FeatureIterator forwardIterator(FeatureIterator iterator,
+    public @Override FeatureIterator forwardIterator(FeatureIterator iterator,
             SimpleFeatureType featureType) {
         try {
             Map<String, String> fidMappings = metadata.getFidMappings(featureType.getTypeName());
@@ -67,8 +66,7 @@ public class GeoPkgForwardingFeatureIteratorProvider extends ForwardingFeatureIt
 
         }
 
-        @Override
-        public SimpleFeature next() {
+        public @Override SimpleFeature next() {
             SimpleFeature next = super.next();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
             builder.init(next);

@@ -38,8 +38,7 @@ public class RebuildIndex extends AbstractCommand implements CLICommand {
             "--missing-only" }, required = false, description = "Create indexes only missing indexes.")
     private boolean onlyMissing;
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
 
         Repository repo = cli.getGeogig().getRepository();

@@ -58,8 +58,7 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
      * 
      * @see org.locationtech.geogig.storage.ObjectDatabase#close()
      */
-    @Override
-    public void close() {
+    public @Override void close() {
         if (isOpen()) {
             super.close();
             graph.close();
@@ -69,8 +68,7 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     /**
      * Opens the database for use by GeoGig.
      */
-    @Override
-    public void open() {
+    public @Override void open() {
         if (isOpen()) {
             return;
         }
@@ -78,13 +76,11 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
         graph.open();
     }
 
-    @Override
-    public BlobStore getBlobStore() {
+    public @Override BlobStore getBlobStore() {
         return blobs;
     }
 
-    @Override
-    public GraphDatabase getGraphDatabase() {
+    public @Override GraphDatabase getGraphDatabase() {
         return new SynchronizedGraphDatabase(graph);
     }
 
@@ -125,8 +121,7 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
         });
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return getClass().getSimpleName();
     }
 }

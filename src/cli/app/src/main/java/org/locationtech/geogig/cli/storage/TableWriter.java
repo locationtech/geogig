@@ -446,8 +446,7 @@ public class TableWriter extends FilterWriter {
      *
      * @param c Character to write.
      */
-    @Override
-    public void write(final int c) {
+    public @Override void write(final int c) {
         synchronized (lock) {
             if (!multiLinesCells) {
                 switch (c) {
@@ -483,8 +482,7 @@ public class TableWriter extends FilterWriter {
      *
      * @param string String to write.
      */
-    @Override
-    public void write(final String string) {
+    public @Override void write(final String string) {
         write(string, 0, string.length());
     }
 
@@ -496,8 +494,7 @@ public class TableWriter extends FilterWriter {
      * @param offset Offset from which to start writing characters.
      * @param length Number of characters to write.
      */
-    @Override
-    public void write(final String string, int offset, int length) {
+    public @Override void write(final String string, int offset, int length) {
         if (offset < 0 || length < 0 || (offset + length) > string.length()) {
             throw new IndexOutOfBoundsException();
         }
@@ -550,8 +547,7 @@ public class TableWriter extends FilterWriter {
      *
      * @param cbuf Array of characters to be written.
      */
-    @Override
-    public void write(final char cbuf[]) {
+    public @Override void write(final char cbuf[]) {
         write(cbuf, 0, cbuf.length);
     }
 
@@ -563,8 +559,7 @@ public class TableWriter extends FilterWriter {
      * @param offset Offset from which to start writing characters.
      * @param length Number of characters to write.
      */
-    @Override
-    public void write(final char cbuf[], int offset, int length) {
+    public @Override void write(final char cbuf[], int offset, int length) {
         if (offset < 0 || length < 0 || (offset + length) > cbuf.length) {
             throw new IndexOutOfBoundsException();
         }
@@ -696,8 +691,7 @@ public class TableWriter extends FilterWriter {
      *
      * @throws IOException if an output operation failed.
      */
-    @Override
-    public void flush() throws IOException {
+    public @Override void flush() throws IOException {
         synchronized (lock) {
             if (buffer.length() != 0) {
                 nextLine();
@@ -721,8 +715,7 @@ public class TableWriter extends FilterWriter {
      *
      * @throws IOException if an output operation failed.
      */
-    @Override
-    public void close() throws IOException {
+    public @Override void close() throws IOException {
         synchronized (lock) {
             flush();
             out.close();
@@ -892,8 +885,7 @@ public class TableWriter extends FilterWriter {
     }
 
     /** Returns the table content as a string. */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         synchronized (lock) {
             // Flush current cell
             if (buffer.length() > 0) {
@@ -956,8 +948,7 @@ public class TableWriter extends FilterWriter {
         }
 
         /** Returns the cell's content. */
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return text;
         }
     }

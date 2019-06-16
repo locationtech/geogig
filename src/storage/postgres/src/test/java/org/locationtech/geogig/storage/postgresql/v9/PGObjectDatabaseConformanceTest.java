@@ -30,8 +30,7 @@ public class PGObjectDatabaseConformanceTest extends ObjectDatabaseConformanceTe
 
     ConfigDatabase configdb;
 
-    @Override
-    protected PGObjectDatabase createOpen(boolean readOnly) throws IOException {
+    protected @Override PGObjectDatabase createOpen(boolean readOnly) throws IOException {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
 

@@ -83,8 +83,7 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
      * @throws IllegalArgumentException if newBranchName is not specified or if the oldBranchName
      *         specified doesn't exist or if oldBranchName doesn't resolve to a branch
      */
-    @Override
-    protected Ref _call() {
+    protected @Override Ref _call() {
         checkArgument(newBranchName != null, "New branch name not specified");
         checkArgument(!newBranchName.equals(oldBranchName), "Done");
         command(CheckRefFormat.class).setThrowsException(true).setRef(newBranchName)
@@ -123,8 +122,7 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
                 .call();
         // update any sym refs that pointed to the old branch
         final Predicate<Ref> filter = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref input) {
+            public @Override boolean apply(Ref input) {
                 if (input instanceof SymRef) {
                     return true;
                 }

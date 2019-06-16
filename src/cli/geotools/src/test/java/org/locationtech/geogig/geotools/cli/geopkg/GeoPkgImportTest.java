@@ -38,8 +38,7 @@ public class GeoPkgImportTest extends RepositoryTestCase {
 
     private GeoPackageTestSupport support;
 
-    @Override
-    public void setUpInternal() throws Exception {
+    public @Override void setUpInternal() throws Exception {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
@@ -48,8 +47,7 @@ public class GeoPkgImportTest extends RepositoryTestCase {
         support = new GeoPackageTestSupport();
     }
 
-    @Override
-    public void tearDownInternal() throws Exception {
+    public @Override void tearDownInternal() throws Exception {
         cli.close();
     }
 

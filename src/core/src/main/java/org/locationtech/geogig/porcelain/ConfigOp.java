@@ -70,8 +70,7 @@ public class ConfigOp extends AbstractGeoGigOp<Optional<Map<String, String>>> {
         this.configDbOverride = configDb;
     }
 
-    @Override
-    protected ConfigDatabase configDatabase() {
+    protected @Override ConfigDatabase configDatabase() {
         return configDbOverride == null ? super.configDatabase() : configDbOverride;
     }
 
@@ -83,8 +82,7 @@ public class ConfigOp extends AbstractGeoGigOp<Optional<Map<String, String>>> {
      * @throws ConfigException if an error is encountered. More specific information can be found in
      *         the exception's statusCode.
      */
-    @Override
-    protected Optional<Map<String, String>> _call() {
+    protected @Override Optional<Map<String, String>> _call() {
         Preconditions.checkState(action != null, "No config action specified");
         final ConfigDatabase config = configDatabase();
         switch (action) {

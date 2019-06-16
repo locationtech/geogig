@@ -100,8 +100,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
         return this;
     }
 
-    @Override
-    protected DiffSummary<Envelope, Envelope> _call() {
+    protected @Override DiffSummary<Envelope, Envelope> _call() {
         checkArgument(compareStaged && oldVersion == null && oldTree == null || !compareStaged,
                 String.format(
                         "compare index allows only one revision to check against, got %s / %s",
@@ -152,13 +151,11 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
 
             private static final long serialVersionUID = -9218780157089328231L;
 
-            @Override
-            public synchronized void expandToInclude(Envelope other) {
+            public @Override synchronized void expandToInclude(Envelope other) {
                 super.expandToInclude(other);
             }
 
-            @Override
-            public synchronized void expandToInclude(double x, double y) {
+            public @Override synchronized void expandToInclude(double x, double y) {
                 super.expandToInclude(x, y);
             }
         }
@@ -179,8 +176,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
             rightEnv = new ThreadSafeEnvelope();
         }
 
-        @Override
-        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
             Envelope leftHelper = getEnv(left, leftSource);
             Envelope rightHelper = getEnv(right, rightSource);
 
@@ -191,8 +187,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
             return true;
         }
 
-        @Override
-        public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
             Envelope leftHelper = getEnv(left, leftSource);
             Envelope rightHelper = getEnv(right, rightSource);
 
@@ -210,8 +205,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
             return true;
         }
 
-        @Override
-        public void endTree(NodeRef left, NodeRef right) {
+        public @Override void endTree(NodeRef left, NodeRef right) {
             String name = left == null ? right.name() : left.name();
             if (NodeRef.ROOT.equals(name)) {
                 Envelope lbounds = new Envelope(this.leftEnv);
@@ -230,9 +224,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
             }
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                @Nullable Bucket left, @Nullable Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
 
             Envelope leftHelper = getEnv(left, leftParent, leftSource);
             Envelope rightHelper = getEnv(right, rightParent, rightSource);

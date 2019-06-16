@@ -64,8 +64,7 @@ public class LsTree extends AbstractCommand implements CLICommand {
             "--size" }, description = "Print tree size (number of features). If verbose output was requested it takes precedence over size")
     private boolean printSize;
 
-    @Override
-    public void runInternal(final GeogigCLI cli) throws IOException {
+    public @Override void runInternal(final GeogigCLI cli) throws IOException {
         String ref;
         if (refList.isEmpty()) {
             ref = null;
@@ -95,8 +94,7 @@ public class LsTree extends AbstractCommand implements CLICommand {
 
             private NumberFormat numberFormat = NumberFormat.getInstance(Locale.ENGLISH);
 
-            @Override
-            public CharSequence apply(NodeRef input) {
+            public @Override CharSequence apply(NodeRef input) {
                 numberFormat.setGroupingUsed(true);
 
                 StringBuilder sb = new StringBuilder();

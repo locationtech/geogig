@@ -93,8 +93,7 @@ public class Config extends AbstractCommand implements CLICommand {
     /**
      * Executes the config command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         GeoGIG geogig = cli.getGeogig();
         boolean closeIt = geogig == null;

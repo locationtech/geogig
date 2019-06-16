@@ -46,8 +46,7 @@ public class CherryPick extends AbstractCommand implements CLICommand {
     @Parameter(description = "<commitish>...")
     private List<String> commits = Lists.newArrayList();
 
-    @Override
-    public void runInternal(GeogigCLI cli) {
+    public @Override void runInternal(GeogigCLI cli) {
         final GeoGIG geogig = cli.getGeogig();
         checkParameter(commits.size() > 0, "No commits specified.");
         checkParameter(commits.size() < 2, "Too many commits specified.");

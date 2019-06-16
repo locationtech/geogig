@@ -121,8 +121,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         this._liveContext = context;
     }
 
-    @Override
-    public void dispose() {
+    public @Override void dispose() {
         super.dispose();
         if (closeOnDispose) {
             repository.close();
@@ -281,13 +280,11 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return match.orElse(null);
     }
 
-    @Override
-    protected ContentState createContentState(ContentEntry entry) {
+    protected @Override ContentState createContentState(ContentEntry entry) {
         return new GeogigContentState(entry);
     }
 
-    @Override
-    protected List<org.opengis.feature.type.Name> createTypeNames() throws IOException {
+    protected @Override List<org.opengis.feature.type.Name> createTypeNames() throws IOException {
         List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT);
         return typeTrees.stream().map(this::getDescriptorName).collect(Collectors.toList());
     }
@@ -317,8 +314,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return (GeogigFeatureStore) getFeatureSource(typeName);
     }
 
-    @Override
-    protected GeogigFeatureStore createFeatureSource(ContentEntry entry) throws IOException {
+    protected @Override GeogigFeatureStore createFeatureSource(ContentEntry entry)
+            throws IOException {
         return new GeogigFeatureStore(entry);
     }
 
@@ -330,8 +327,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      * geogig commit, and committing the transaction for the created tree to be merged onto the
      * configured branch.
      */
-    @Override
-    public void createSchema(SimpleFeatureType featureType) throws IOException {
+    public @Override void createSchema(SimpleFeatureType featureType) throws IOException {
         if (!allowTransactions) {
             throw new IllegalStateException("Configured head " + refspec
                     + " is not a branch; transactions are not supported.");
@@ -364,18 +360,12 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         }
     }
 
-    // Deliberately leaving the @Override annotation commented out so that the class builds
-    // both against GeoTools 10.x and 11.x (as the method was added to DataStore in 11.x)
-    // @Override
-    public void removeSchema(Name name) throws IOException {
+    public @Override void removeSchema(Name name) throws IOException {
         throw new UnsupportedOperationException(
                 "removeSchema not yet supported by geogig DataStore");
     }
 
-    // Deliberately leaving the @Override annotation commented out so that the class builds
-    // both against GeoTools 10.x and 11.x (as the method was added to DataStore in 11.x)
-    // @Override
-    public void removeSchema(String name) throws IOException {
+    public @Override void removeSchema(String name) throws IOException {
         throw new UnsupportedOperationException(
                 "removeSchema not yet supported by geogig DataStore");
     }

@@ -57,16 +57,14 @@ public abstract class FilteredDiffIterator implements AutoCloseableIterator<Diff
         filtered = false;
     }
 
-    @Override
-    public boolean hasNext() {
+    public @Override boolean hasNext() {
         if (next == null) {
             next = computeNext();
         }
         return next != null;
     }
 
-    @Override
-    public DiffEntry next() {
+    public @Override DiffEntry next() {
         if (next == null && !hasNext()) {
             throw new NoSuchElementException();
         }
@@ -75,8 +73,7 @@ public abstract class FilteredDiffIterator implements AutoCloseableIterator<Diff
         return returnValue;
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         if (source != null) {
             source.close();
         }

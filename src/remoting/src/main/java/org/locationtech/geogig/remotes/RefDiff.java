@@ -98,8 +98,7 @@ public class RefDiff {
         return type;
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return MoreObjects.toStringHelper(RefDiff.class) //
                 .addValue(getType()) //
                 .addValue(oldRef) //

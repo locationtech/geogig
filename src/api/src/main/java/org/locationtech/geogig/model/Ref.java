@@ -233,8 +233,7 @@ public class Ref implements Comparable<Ref> {
      * @param o object to compare against
      * @return whether or not this ref is equal to the target object
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof Ref)) {
             return false;
         }
@@ -245,24 +244,21 @@ public class Ref implements Comparable<Ref> {
     /**
      * @return a hash code for this ref
      */
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return name.hashCode() * objectId.hashCode();
     }
 
     /**
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
-    @Override
-    public int compareTo(Ref o) {
+    public @Override int compareTo(Ref o) {
         return name.compareTo(o.getName());
     }
 
     /**
      * @return the ref represented by a readable string
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return String.format("[%s -> %s]", name, objectId);
     }
 

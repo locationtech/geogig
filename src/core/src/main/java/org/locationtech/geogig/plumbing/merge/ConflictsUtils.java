@@ -69,8 +69,7 @@ public class ConflictsUtils {
         // header value for a NodeRef with default metadataId
         private static final byte PRESENT_WITH_DEFAULT_METADATA = 0x02;
 
-        @Override
-        public void write(DataOutputStream out, DiffEntry e) throws IOException {
+        public @Override void write(DataOutputStream out, DiffEntry e) throws IOException {
             @Nullable
             NodeRef left = e.getOldObject();
             @Nullable
@@ -79,8 +78,7 @@ public class ConflictsUtils {
             write(out, right);
         }
 
-        @Override
-        public DiffEntry read(DataInputStream in) throws IOException {
+        public @Override DiffEntry read(DataInputStream in) throws IOException {
             NodeRef left = readRef(in);
             NodeRef right = readRef(in);
             DiffEntry e = new DiffEntry(left, right);
@@ -159,8 +157,7 @@ public class ConflictsUtils {
 
     private static class FeatureInfoSerializer implements Serializer<FeatureInfo> {
 
-        @Override
-        public void write(DataOutputStream out, FeatureInfo value) throws IOException {
+        public @Override void write(DataOutputStream out, FeatureInfo value) throws IOException {
             String path = value.getPath();
             ObjectId featureTypeId = value.getFeatureTypeId();
             RevFeature feature = value.getFeature();
@@ -169,8 +166,7 @@ public class ConflictsUtils {
             DataStreamRevObjectSerializerV2.INSTANCE.write(feature, out);
         }
 
-        @Override
-        public FeatureInfo read(DataInputStream in) throws IOException {
+        public @Override FeatureInfo read(DataInputStream in) throws IOException {
             String path = in.readUTF();
             ObjectId featureTypeId = MergeStatusBuilder.OID.read(in);
             RevFeature feature = (RevFeature) DataStreamRevObjectSerializerV2.INSTANCE.read(in);

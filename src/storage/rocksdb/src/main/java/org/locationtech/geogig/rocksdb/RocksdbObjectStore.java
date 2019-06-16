@@ -79,8 +79,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         this.dbDirectory = dbdir;
     }
 
-    @Override
-    public synchronized void open() {
+    public @Override synchronized void open() {
         open(Collections.emptySet());
     }
 
@@ -115,8 +114,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         super.open();
     }
 
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
         if (isOpen()) {
             super.close();
             final DBHandle dbhandle = this.dbhandle;
@@ -126,8 +124,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         }
     }
 
-    @Override
-    protected boolean putInternal(ObjectId id, byte[] rawData) {
+    protected @Override boolean putInternal(ObjectId id, byte[] rawData) {
         checkWritable();
         boolean exists;
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -142,8 +139,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return !exists;
     }
 
-    @Override
-    protected InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
+    protected @Override InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
             throws IllegalArgumentException {
 
         byte[] bytes = getRawInternal(id.getRawValue());
@@ -167,8 +163,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         }
     }
 
-    @Override
-    public boolean exists(ObjectId id) {
+    public @Override boolean exists(ObjectId id) {
         checkOpen();
         checkNotNull(id, "argument id is null");
 
@@ -191,8 +186,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return size != RocksDB.NOT_FOUND;
     }
 
-    @Override
-    public void delete(ObjectId objectId) {
+    public @Override void delete(ObjectId objectId) {
         checkNotNull(objectId, "argument objectId is null");
         checkWritable();
         byte[] key = objectId.getRawValue();
@@ -203,13 +197,12 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         }
     }
 
-    @Override
-    public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
+    public @Override Iterator<RevObject> getAll(final Iterable<ObjectId> ids,
+            final BulkOpListener listener) {
         return getAll(ids, listener, RevObject.class);
     }
 
-    @Override
-    public <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
+    public @Override <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
             final BulkOpListener listener, final Class<T> type) {
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
@@ -226,8 +219,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
             private ReadOptions readOps = bulkReadOptions;
 
-            @Override
-            protected T computeNext() {
+            protected @Override T computeNext() {
                 checkOpen();
                 try (RocksDBReference dbRef = dbhandle.getReference()) {
                     while (oids.hasNext()) {
@@ -258,8 +250,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         };
     }
 
-    @Override
-    public void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
+    public @Override void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
         checkNotNull(ids, "argument objectId is null");
         checkNotNull(listener, "argument listener is null");
         checkWritable();
@@ -291,8 +282,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         }
     }
 
-    @Override
-    protected List<ObjectId> lookUpInternal(byte[] idprefix) {
+    protected @Override List<ObjectId> lookUpInternal(byte[] idprefix) {
         checkOpen();
         List<ObjectId> matches = new ArrayList<>(2);
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -360,8 +350,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return new EncodedObject(o.getId(), o.getType(), out.toByteArray());
     }
 
-    @Override
-    public final void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+    public @Override final void putAll(Iterator<? extends RevObject> objects,
+            final BulkOpListener listener) {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
         checkWritable();
@@ -419,8 +409,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return insertedIds.size();
     }
 
-    @Override
-    public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
+    public @Override <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
 
         checkNotNull(refs, "refs is null");
@@ -442,15 +431,13 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
             private ObjectInfo<T> next;
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 closed = true;
                 noderefs = null;
                 valueBuff = null;
             }
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 if (closed) {
                     return false;
                 }
@@ -460,8 +447,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 return next != null;
             }
 
-            @Override
-            public ObjectInfo<T> next() {
+            public @Override ObjectInfo<T> next() {
                 if (closed) {
                     throw new NoSuchElementException("Iterator is closed");
                 }

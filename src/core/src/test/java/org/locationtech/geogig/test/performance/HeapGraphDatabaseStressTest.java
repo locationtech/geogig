@@ -15,8 +15,7 @@ import org.locationtech.geogig.test.TestPlatform;
 
 public class HeapGraphDatabaseStressTest extends AbstractGraphDatabaseStressTest {
 
-    @Override
-    protected GraphDatabase createDatabase(TestPlatform platform) {
+    protected @Override GraphDatabase createDatabase(TestPlatform platform) {
         return new HeapGraphDatabase();
     }
 

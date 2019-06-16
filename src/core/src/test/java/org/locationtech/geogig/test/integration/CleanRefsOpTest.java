@@ -23,8 +23,7 @@ import com.google.common.collect.ImmutableList;
 
 public class CleanRefsOpTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test

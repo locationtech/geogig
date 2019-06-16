@@ -51,8 +51,7 @@ import lombok.NonNull;
 public class UpdateTree extends AbstractGeoGigOp<RevTree> {
 
     private static Ordering<String> REVERSEDEPTH = new Ordering<String>() {
-        @Override
-        public int compare(String left, String right) {
+        public @Override int compare(String left, String right) {
             int c = Integer.compare(NodeRef.depth(right), NodeRef.depth(left));
             if (c == 0) {
                 return left.compareTo(right);
@@ -93,8 +92,7 @@ public class UpdateTree extends AbstractGeoGigOp<RevTree> {
         return this;
     }
 
-    @Override
-    protected RevTree _call() {
+    protected @Override RevTree _call() {
         checkArgument(root != null, "root tree not provided");
         if (childTreeRemoves.isEmpty() && childTreeUpdates.isEmpty()) {
             return root;

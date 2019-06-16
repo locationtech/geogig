@@ -68,8 +68,7 @@ final class PreFilter implements Predicate<Bounded> {
         return filter.evaluate(bounded);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return String.format("PreFilter(%s)", filter);
     }
 

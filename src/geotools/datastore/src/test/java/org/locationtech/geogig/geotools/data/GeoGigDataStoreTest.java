@@ -55,13 +55,11 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     private GeoGigDataStore dataStore;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(repo);
     }
 
-    @Override
-    protected void tearDownInternal() throws Exception {
+    protected @Override void tearDownInternal() throws Exception {
         dataStore.dispose();
         dataStore = null;
     }

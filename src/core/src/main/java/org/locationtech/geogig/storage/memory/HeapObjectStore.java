@@ -246,8 +246,7 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
         checkState(isOpen(), "Database is closed");
 
         Iterator<ObjectInfo<T>> it = new AbstractIterator<ObjectInfo<T>>() {
-            @Override
-            protected ObjectInfo<T> computeNext() {
+            protected @Override ObjectInfo<T> computeNext() {
                 checkState(isOpen(), "Database is closed");
                 NodeRef ref;
                 while ((ref = getNext(refs, null)) != null) {

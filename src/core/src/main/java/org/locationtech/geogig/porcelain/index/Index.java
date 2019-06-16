@@ -57,8 +57,7 @@ public final class Index {
         return indexdb.getTree(indexTree);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o instanceof Index) {
             Index i = (Index) o;
             return info().equals(i.info()) && indexTreeId().equals(i.indexTreeId());
@@ -66,13 +65,11 @@ public final class Index {
         return false;
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return Objects.hash(indexInfo, indexTree);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return String.format("Index(%s) %s on %s(%s)", indexTree.toString().substring(0, 8),
                 indexInfo.getIndexType(), indexInfo.getTreeName(), indexInfo.getAttributeName());
     }

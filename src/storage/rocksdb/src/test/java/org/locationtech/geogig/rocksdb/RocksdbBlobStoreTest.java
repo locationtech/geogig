@@ -16,8 +16,7 @@ import org.locationtech.geogig.storage.impl.TransactionBlobStoreTest;
 
 public class RocksdbBlobStoreTest extends TransactionBlobStoreTest {
 
-    @Override
-    protected TransactionBlobStore createBlobStore(File currentDirectory) {
+    protected @Override TransactionBlobStore createBlobStore(File currentDirectory) {
         RocksdbBlobStore blobStore = new RocksdbBlobStore(currentDirectory, false);
         return blobStore;
     }

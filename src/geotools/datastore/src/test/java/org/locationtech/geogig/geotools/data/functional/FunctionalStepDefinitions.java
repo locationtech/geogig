@@ -654,8 +654,7 @@ public class FunctionalStepDefinitions {
             this.builder = new SimpleFeatureBuilder(type);
         }
 
-        @Override
-        public List<SimpleFeature> call() {
+        public @Override List<SimpleFeature> call() {
             int random;
             final String typeName = type.getTypeName();
             SimpleFeatureStore featureSource;
@@ -717,8 +716,7 @@ public class FunctionalStepDefinitions {
             this.type = type;
         }
 
-        @Override
-        public List<SimpleFeature> call() {
+        public @Override List<SimpleFeature> call() {
             List<SimpleFeature> featureList = Lists.newArrayList();
             try {
                 for (int i = 0; i < numReads; i++) {
@@ -760,8 +758,7 @@ public class FunctionalStepDefinitions {
             this.type = type;
         }
 
-        @Override
-        public List<FeatureId> call() throws Exception {
+        public @Override List<FeatureId> call() throws Exception {
             final List<FeatureId> list = Lists.newArrayList();
             for (int i = 0; i < numEdits; ++i) {
                 list.add(doEdit());

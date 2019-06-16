@@ -28,8 +28,7 @@ public class GeopkgDataStoreAuditImportOp extends DataStoreImportOp<GeopkgImport
         return this;
     }
 
-    @Override
-    protected GeopkgImportResult callInternal() {
+    protected @Override GeopkgImportResult callInternal() {
         GeopkgImportResult auditResult;
         try {
             auditResult = command(GeopkgAuditImport.class).setDatabase(geopackage)

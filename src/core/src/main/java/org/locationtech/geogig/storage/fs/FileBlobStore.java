@@ -71,33 +71,27 @@ public class FileBlobStore implements TransactionBlobStore {
         return repositoryDirectory != null;
     }
 
-    @Override
-    public Optional<byte[]> getBlob(String path) {
+    public @Override Optional<byte[]> getBlob(String path) {
         return getBlob(CURRENT_DIR, path);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String path) {
         return getBlobAsStream(CURRENT_DIR, path);
     }
 
-    @Override
-    public void putBlob(String path, byte[] blob) {
+    public @Override void putBlob(String path, byte[] blob) {
         putBlob(CURRENT_DIR, path, blob);
     }
 
-    @Override
-    public void putBlob(String path, InputStream blob) {
+    public @Override void putBlob(String path, InputStream blob) {
         putBlob(CURRENT_DIR, path, blob);
     }
 
-    @Override
-    public void removeBlob(String path) {
+    public @Override void removeBlob(String path) {
         removeBlob(CURRENT_DIR, path);
     }
 
-    @Override
-    public Optional<byte[]> getBlob(String namespace, String path) {
+    public @Override Optional<byte[]> getBlob(String namespace, String path) {
         File f = toFile(namespace, path);
         byte[] bytes = null;
         if (f.exists()) {
@@ -110,8 +104,7 @@ public class FileBlobStore implements TransactionBlobStore {
         return Optional.ofNullable(bytes);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String namespace, String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String namespace, String path) {
         File f = toFile(namespace, path);
         InputStream in = null;
         if (f.exists()) {
@@ -124,8 +117,7 @@ public class FileBlobStore implements TransactionBlobStore {
         return Optional.ofNullable(in);
     }
 
-    @Override
-    public void putBlob(String namespace, String path, byte[] blob) {
+    public @Override void putBlob(String namespace, String path, byte[] blob) {
         File f = toFile(namespace, path);
         f.getParentFile().mkdirs();
         try {
@@ -135,8 +127,7 @@ public class FileBlobStore implements TransactionBlobStore {
         }
     }
 
-    @Override
-    public void putBlob(String namespace, String path, InputStream blob) {
+    public @Override void putBlob(String namespace, String path, InputStream blob) {
         File f = toFile(namespace, path);
         f.getParentFile().mkdirs();
         try (OutputStream to = new FileOutputStream(f)) {
@@ -146,30 +137,26 @@ public class FileBlobStore implements TransactionBlobStore {
         }
     }
 
-    @Override
-    public void removeBlob(String namespace, String path) {
+    public @Override void removeBlob(String namespace, String path) {
         File f = toFile(namespace, path);
         if (f.exists() && !f.delete()) {
             throw new IllegalStateException("Unable to delete file " + f);
         }
     }
 
-    @Override
-    public void removeBlobs(@NonNull String namespace) {
+    public @Override void removeBlobs(@NonNull String namespace) {
         Path namespacePath = repositoryDirectory.toPath().resolve(namespace);
         File namespaceDir = namespacePath.toFile();
         if (namespaceDir.exists() && namespaceDir.isDirectory()) {
             try {
                 java.nio.file.Files.walkFileTree(namespacePath, new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                    public @Override FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                             throws IOException {
                         java.nio.file.Files.delete(file);
                         return FileVisitResult.CONTINUE;
                     }
 
-                    @Override
-                    public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+                    public @Override FileVisitResult postVisitDirectory(Path dir, IOException exc)
                             throws IOException {
                         java.nio.file.Files.delete(dir);
                         return FileVisitResult.CONTINUE;

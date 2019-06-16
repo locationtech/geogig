@@ -55,8 +55,7 @@ public class ShallowCloneTest extends RemoteRepositoryTestCase {
 
     LinkedList<RevCommit> expectedBranch;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     private void prepareForFetch(boolean doClone) throws Exception {

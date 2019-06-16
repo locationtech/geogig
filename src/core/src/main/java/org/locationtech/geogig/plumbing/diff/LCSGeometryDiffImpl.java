@@ -265,8 +265,7 @@ public class LCSGeometryDiffImpl {
         return sb.toString();
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof LCSGeometryDiffImpl)) {
             return false;
         }

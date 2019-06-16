@@ -208,8 +208,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
      * @return {@code null}
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected PullResult _call() {
+    protected @Override PullResult _call() {
         if (remote == null) {
             setRemote("origin");
         }
@@ -261,8 +260,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
 
                 // () -> localRemoteRef.getObjectId()
                 Supplier<ObjectId> fn = new Supplier<ObjectId>() {
-                    @Override
-                    public ObjectId get() {
+                    public @Override ObjectId get() {
                         return localRemoteRef.getObjectId();
                     }
                 };

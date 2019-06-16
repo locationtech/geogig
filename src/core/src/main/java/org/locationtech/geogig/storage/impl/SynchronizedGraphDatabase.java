@@ -33,8 +33,7 @@ public class SynchronizedGraphDatabase implements GraphDatabase {
         }
     }
 
-    @Override
-    public boolean isReadOnly() {
+    public @Override boolean isReadOnly() {
         return delegate.isReadOnly();
     }
 

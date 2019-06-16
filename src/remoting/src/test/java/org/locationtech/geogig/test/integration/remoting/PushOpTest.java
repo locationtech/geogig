@@ -61,8 +61,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
 
     private Remote remote;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // Commit several features to the remote
         remoteRepo = super.originRepo;
         localRepo = super.localRepo;

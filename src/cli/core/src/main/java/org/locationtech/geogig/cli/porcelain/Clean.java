@@ -41,8 +41,7 @@ public class Clean extends AbstractCommand {
             "-n" }, description = "Don't actually remove anything, just show what would be done.")
     private boolean dryRun;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         final Console console = cli.getConsole();
         final GeoGIG geogig = cli.getGeogig();
 

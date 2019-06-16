@@ -22,8 +22,7 @@ import lombok.NonNull;
  */
 class ConflictInterceptor implements Decorator {
 
-    @Override
-    public boolean canDecorate(Object subject) {
+    public @Override boolean canDecorate(Object subject) {
         if (!(subject instanceof AbstractGeoGigOp)) {
             return false;
         }
@@ -34,8 +33,7 @@ class ConflictInterceptor implements Decorator {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public AbstractGeoGigOp<?> decorate(@NonNull Object subject) {
+    public @Override AbstractGeoGigOp<?> decorate(@NonNull Object subject) {
         AbstractGeoGigOp<?> operation = (AbstractGeoGigOp<?>) subject;
 
         Boolean conflicts = operation.command(ConflictsCheckOp.class).call();

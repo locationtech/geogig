@@ -41,8 +41,7 @@ public class GeopkgDataStoreImportOp extends DataStoreImportOp<RevCommit> {
         return this;
     }
 
-    @Override
-    protected RevCommit callInternal() {
+    protected @Override RevCommit callInternal() {
         final DataStore dataStore = dataStoreSupplier.get();
 
         RevCommit revCommit = null;

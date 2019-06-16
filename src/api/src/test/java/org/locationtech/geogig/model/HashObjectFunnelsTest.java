@@ -64,88 +64,72 @@ public class HashObjectFunnelsTest {
     public void testCommitFunnel() {
         ImmutableList<ObjectId> parents = ImmutableList.of(oid3, oid4);
         RevCommit testCommit = new RevCommit() {
-            @Override
-            public TYPE getType() {
+            public @Override TYPE getType() {
                 return RevObject.TYPE.COMMIT;
             }
 
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return oid1;
             }
 
-            @Override
-            public ObjectId getTreeId() {
+            public @Override ObjectId getTreeId() {
                 return oid2;
             }
 
-            @Override
-            public List<ObjectId> getParentIds() {
+            public @Override List<ObjectId> getParentIds() {
                 return parents;
             }
 
-            @Override
-            public Optional<ObjectId> parentN(int parentIndex) {
+            public @Override Optional<ObjectId> parentN(int parentIndex) {
                 if (parentIndex >= parents.size()) {
                     return Optional.empty();
                 }
                 return Optional.ofNullable(parents.get(parentIndex));
             }
 
-            @Override
-            public RevPerson getAuthor() {
+            public @Override RevPerson getAuthor() {
                 return new RevPerson() {
 
-                    @Override
-                    public Optional<String> getName() {
+                    public @Override Optional<String> getName() {
                         return Optional.of("Test Author");
                     }
 
-                    @Override
-                    public Optional<String> getEmail() {
+                    public @Override Optional<String> getEmail() {
                         return Optional.of("test@author.com");
                     }
 
-                    @Override
-                    public long getTimestamp() {
+                    public @Override long getTimestamp() {
                         return 142L;
                     }
 
-                    @Override
-                    public int getTimeZoneOffset() {
+                    public @Override int getTimeZoneOffset() {
                         return 4;
                     }
                 };
             }
 
-            @Override
-            public RevPerson getCommitter() {
+            public @Override RevPerson getCommitter() {
                 return new RevPerson() {
 
-                    @Override
-                    public Optional<String> getName() {
+                    public @Override Optional<String> getName() {
                         return Optional.of("Test Committer");
                     }
 
-                    @Override
-                    public Optional<String> getEmail() {
+                    public @Override Optional<String> getEmail() {
                         return Optional.of("test@committer.com");
                     }
 
-                    @Override
-                    public long getTimestamp() {
+                    public @Override long getTimestamp() {
                         return 143L;
                     }
 
-                    @Override
-                    public int getTimeZoneOffset() {
+                    public @Override int getTimeZoneOffset() {
                         return 5;
                     }
                 };
             }
 
-            @Override
-            public String getMessage() {
+            public @Override String getMessage() {
                 return "Commit Message";
             }
 
@@ -174,43 +158,35 @@ public class HashObjectFunnelsTest {
 
         RevTree testTree = new RevTree() {
 
-            @Override
-            public TYPE getType() {
+            public @Override TYPE getType() {
                 return RevObject.TYPE.TREE;
             }
 
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return oid1;
             }
 
-            @Override
-            public long size() {
+            public @Override long size() {
                 return 0;
             }
 
-            @Override
-            public int numTrees() {
+            public @Override int numTrees() {
                 return trees.size();
             }
 
-            @Override
-            public List<Node> trees() {
+            public @Override List<Node> trees() {
                 return ImmutableList.copyOf(trees);
             }
 
-            @Override
-            public List<Node> features() {
+            public @Override List<Node> features() {
                 return ImmutableList.copyOf(features);
             }
 
-            @Override
-            public SortedMap<Integer, Bucket> buckets() {
+            public @Override SortedMap<Integer, Bucket> buckets() {
                 return ImmutableSortedMap.copyOf(buckets);
             }
 
-            @Override
-            public Iterable<Bucket> getBuckets() {
+            public @Override Iterable<Bucket> getBuckets() {
                 return buckets.values();
             }
         };
@@ -253,40 +229,33 @@ public class HashObjectFunnelsTest {
         List<Optional<Object>> values = new LinkedList<Optional<Object>>();
 
         RevFeature testFeature = new RevFeature() {
-            @Override
-            public TYPE getType() {
+            public @Override TYPE getType() {
                 return RevObject.TYPE.FEATURE;
             }
 
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return oid1;
             }
 
-            @Override
-            public List<Optional<Object>> getValues() {
+            public @Override List<Optional<Object>> getValues() {
                 return ImmutableList.copyOf(values);
             }
 
-            @Override
-            public int size() {
+            public @Override int size() {
                 return values.size();
             }
 
-            @Override
-            public Optional<Object> get(int index) {
+            public @Override Optional<Object> get(int index) {
                 return values.get(index);
             }
 
-            @Override
-            public void forEach(Consumer<Object> consumer) {
+            public @Override void forEach(Consumer<Object> consumer) {
                 for (int i = 0; i < values.size(); i++) {
                     consumer.accept(values.get(i).orElse(null));
                 }
             }
 
-            @Override
-            public Optional<Geometry> get(int index, GeometryFactory gf) {
+            public @Override Optional<Geometry> get(int index, GeometryFactory gf) {
                 throw new UnsupportedOperationException();
             }
         };
@@ -389,54 +358,44 @@ public class HashObjectFunnelsTest {
     public void testTagFunnel() {
         RevTag testTag = new RevTag() {
 
-            @Override
-            public TYPE getType() {
+            public @Override TYPE getType() {
                 return RevObject.TYPE.TAG;
             }
 
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return oid1;
             }
 
-            @Override
-            public String getName() {
+            public @Override String getName() {
                 return "TagName";
             }
 
-            @Override
-            public String getMessage() {
+            public @Override String getMessage() {
                 return "Tag Message";
             }
 
-            @Override
-            public RevPerson getTagger() {
+            public @Override RevPerson getTagger() {
                 return new RevPerson() {
 
-                    @Override
-                    public Optional<String> getName() {
+                    public @Override Optional<String> getName() {
                         return Optional.of("Test Tagger");
                     }
 
-                    @Override
-                    public Optional<String> getEmail() {
+                    public @Override Optional<String> getEmail() {
                         return Optional.of("test@tagger.com");
                     }
 
-                    @Override
-                    public long getTimestamp() {
+                    public @Override long getTimestamp() {
                         return 142L;
                     }
 
-                    @Override
-                    public int getTimeZoneOffset() {
+                    public @Override int getTimeZoneOffset() {
                         return 4;
                     }
                 };
             }
 
-            @Override
-            public ObjectId getCommitId() {
+            public @Override ObjectId getCommitId() {
                 return oid2;
             }
 
@@ -455,28 +414,23 @@ public class HashObjectFunnelsTest {
         FeatureType featureType = FeatureTypes.createType("http://geogig.points#Points",
                 "sp:String", "ip:Integer", "pp:Point:srid=4326");
         RevFeatureType testFeatureType = new RevFeatureType() {
-            @Override
-            public TYPE getType() {
+            public @Override TYPE getType() {
                 return RevObject.TYPE.FEATURETYPE;
             }
 
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return oid1;
             }
 
-            @Override
-            public FeatureType type() {
+            public @Override FeatureType type() {
                 return featureType;
             }
 
-            @Override
-            public List<PropertyDescriptor> descriptors() {
+            public @Override List<PropertyDescriptor> descriptors() {
                 return ImmutableList.copyOf(featureType.getDescriptors());
             }
 
-            @Override
-            public Name getName() {
+            public @Override Name getName() {
                 return Name.valueOf("http://geogig.points", "Points");
             }
         };

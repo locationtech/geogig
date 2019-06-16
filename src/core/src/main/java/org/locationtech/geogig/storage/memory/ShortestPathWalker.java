@@ -37,8 +37,7 @@ public class ShortestPathWalker implements Iterator<Node> {
 
         nodes = Maps.newHashMap();
         q = new PriorityQueue<CostNode>(100, new Comparator<CostNode>() {
-            @Override
-            public int compare(CostNode o1, CostNode o2) {
+            public @Override int compare(CostNode o1, CostNode o2) {
                 return o1.cost.compareTo(o2.cost);
             }
         });
@@ -51,13 +50,11 @@ public class ShortestPathWalker implements Iterator<Node> {
         return node;
     }
 
-    @Override
-    public boolean hasNext() {
+    public @Override boolean hasNext() {
         return !q.isEmpty();
     }
 
-    @Override
-    public Node next() {
+    public @Override Node next() {
         // grab next node
         CostNode n = q.poll();
 
@@ -82,8 +79,7 @@ public class ShortestPathWalker implements Iterator<Node> {
         return n.node;
     }
 
-    @Override
-    public void remove() {
+    public @Override void remove() {
         throw new UnsupportedOperationException();
     }
 

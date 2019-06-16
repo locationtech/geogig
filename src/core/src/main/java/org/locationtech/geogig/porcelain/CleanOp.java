@@ -61,8 +61,7 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
                 .setFilter(path).call()) {
             final Iterator<DiffEntry> added = filter(unstaged, new Predicate<DiffEntry>() {
 
-                @Override
-                public boolean apply(@Nullable DiffEntry input) {
+                public @Override boolean apply(@Nullable DiffEntry input) {
                     return input.changeType().equals(ChangeType.ADDED);
                 }
             });

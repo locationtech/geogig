@@ -58,8 +58,7 @@ public class Insert extends AbstractCommand implements CLICommand {
 
     private GeoGIG geogig;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         Console console = cli.getConsole();
         geogig = cli.getGeogig();

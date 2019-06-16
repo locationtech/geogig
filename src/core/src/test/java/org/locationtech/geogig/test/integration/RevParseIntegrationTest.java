@@ -49,8 +49,7 @@ public class RevParseIntegrationTest extends RepositoryTestCase {
      * </code>
      * </pre>
      */
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         repo.command(InitOp.class).call();
 
         masterCommit1 = commitAllowEmpty("masterCommit1");

@@ -474,15 +474,13 @@ public abstract class ObjectStoreConformanceTest {
         final List<ObjectId> inserted = new CopyOnWriteArrayList<>();
 
         BulkOpListener listener = new BulkOpListener() {
-            @Override
-            public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+            public @Override void found(ObjectId object, @Nullable Integer storageSizeBytes) {
                 found.add(object);
                 // make sure it's in the database
                 assertNotNull(db.getIfPresent(object));
             }
 
-            @Override
-            public void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
+            public @Override void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
                 inserted.add(object);
                 // make sure it was inserted into the database
                 assertNotNull(db.getIfPresent(object));

@@ -135,8 +135,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
     }
 
-    @Override
-    public void addConflict(@Nullable String ns, final @NonNull Conflict conflict) {
+    public @Override void addConflict(@Nullable String ns, final @NonNull Conflict conflict) {
         final String path = conflict.getPath();
         Preconditions.checkNotNull(path);
 
@@ -174,8 +173,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
     }
 
-    @Override
-    public void addConflicts(@Nullable String ns, @NonNull Iterable<Conflict> conflicts) {
+    public @Override void addConflicts(@Nullable String ns, @NonNull Iterable<Conflict> conflicts) {
         final String namespace = namespace(ns);
 
         final String sql = format(
@@ -215,8 +213,8 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
     }
 
-    @Override
-    public Optional<Conflict> getConflict(@Nullable String namespace, @NonNull String path) {
+    public @Override Optional<Conflict> getConflict(@Nullable String namespace,
+            @NonNull String path) {
         namespace = namespace(namespace);
         final String sql;
         {
@@ -251,8 +249,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         return Optional.ofNullable(conflict);
     }
 
-    @Override
-    public boolean hasConflicts(@Nullable final String namespace) {
+    public @Override boolean hasConflicts(@Nullable final String namespace) {
         final String sql = format(
                 "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE repository = ? AND namespace = ? )",
                 conflictsTable);
@@ -272,8 +269,8 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         return hasConflicts;
     }
 
-    @Override
-    public Iterator<Conflict> getByPrefix(@Nullable String namespace, @Nullable String treePath) {
+    public @Override Iterator<Conflict> getByPrefix(@Nullable String namespace,
+            @Nullable String treePath) {
         return new ConflictsIterator(this, namespace, treePath);
     }
 
@@ -346,8 +343,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
             this.page = nextPage();
         }
 
-        @Override
-        protected Conflict computeNext() {
+        protected @Override Conflict computeNext() {
             if (page.hasNext()) {
                 return page.next();
             }
@@ -371,8 +367,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
     }
 
-    @Override
-    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
+    public @Override long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
         namespace = namespace(namespace);
 
         final String sql;
@@ -409,8 +404,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         return namespace == null ? NULL_NAMESPACE : namespace;
     }
 
-    @Override
-    public void removeConflict(final @Nullable String ns, final String path) {
+    public @Override void removeConflict(final @Nullable String ns, final String path) {
         checkNotNull(path, "path is null");
         final String namespace = namespace(ns);
 
@@ -438,8 +432,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
     }
 
-    @Override
-    public void removeConflicts(final @Nullable String ns, final Iterable<String> paths) {
+    public @Override void removeConflicts(final @Nullable String ns, final Iterable<String> paths) {
         checkNotNull(paths, "paths is null");
         final String namespace = namespace(ns);
 
@@ -474,8 +467,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
     }
 
-    @Override
-    public void removeConflicts(@Nullable final String ns) {
+    public @Override void removeConflicts(@Nullable final String ns) {
         final String namespace = namespace(ns);
         final String sql;
         sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?", conflictsTable);
@@ -499,8 +491,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
     }
 
-    @Override
-    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
         checkNotNull(paths, "paths is null");
 
         Set<String> matches = new HashSet<>();
@@ -541,8 +532,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         return matches;
     }
 
-    @Override
-    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
+    public @Override void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
 
         namespace = namespace(namespace);
 

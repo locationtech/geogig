@@ -36,8 +36,7 @@ public class DiffEntry {
          * Add a new Feature
          */
         ADDED {
-            @Override
-            public int value() {
+            public @Override int value() {
                 return 0;
             }
         },
@@ -46,8 +45,7 @@ public class DiffEntry {
          * Modify an existing Feature
          */
         MODIFIED {
-            @Override
-            public int value() {
+            public @Override int value() {
                 return 1;
             }
         },
@@ -56,8 +54,7 @@ public class DiffEntry {
          * Delete an existing Feature
          */
         REMOVED {
-            @Override
-            public int value() {
+            public @Override int value() {
                 return 2;
             }
         };
@@ -180,8 +177,7 @@ public class DiffEntry {
     /**
      * @return the {@code DiffEntry} in the form of a readable {@code String}
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         StringBuilder sb = new StringBuilder(changeType().toString());
         if (!isAdd()) {
             sb.append(" [").append(oldObject).append("] ");
@@ -252,8 +248,7 @@ public class DiffEntry {
      * 
      * @param o the other object
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof DiffEntry)) {
             return false;
         }
@@ -278,8 +273,7 @@ public class DiffEntry {
     /**
      * Generates a hash code for this entry.
      */
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return Objects.hashCode(oldObject, newObject);
     }
 
@@ -320,8 +314,7 @@ public class DiffEntry {
      */
     public static Comparator<DiffEntry> COMPARATOR = new Comparator<DiffEntry>() {
 
-        @Override
-        public int compare(DiffEntry left, DiffEntry right) {
+        public @Override int compare(DiffEntry left, DiffEntry right) {
             final NodeRef nodeRef1 = left.oldObject().orElse(left.getNewObject());
             final NodeRef nodeRef2 = right.oldObject().orElse(right.getNewObject());
 

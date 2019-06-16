@@ -37,13 +37,11 @@ import com.google.common.collect.Sets;
 @SuppressWarnings("deprecation")
 public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
-    @Override
-    protected RevTreeBuilder createBuiler() {
+    protected @Override RevTreeBuilder createBuiler() {
         return CanonicalTreeBuilder.create(objectStore);
     }
 
-    @Override
-    protected CanonicalTreeBuilder createBuiler(RevTree original) {
+    protected @Override CanonicalTreeBuilder createBuiler(RevTree original) {
         return CanonicalTreeBuilder.create(objectStore, original);
     }
 

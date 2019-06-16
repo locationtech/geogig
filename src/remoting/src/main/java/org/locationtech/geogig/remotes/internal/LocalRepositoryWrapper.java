@@ -37,8 +37,7 @@ class LocalRepositoryWrapper implements RepositoryWrapper {
      * @param objectId the object to look for
      * @return true if the object existed, false otherwise
      */
-    @Override
-    public boolean objectExists(ObjectId objectId) {
+    public @Override boolean objectExists(ObjectId objectId) {
         return objectId.isNull() || localRepository.objectDatabase().exists(objectId);
     }
 
@@ -48,8 +47,7 @@ class LocalRepositoryWrapper implements RepositoryWrapper {
      * @param commit the id of the commit whose parents to retrieve
      * @return a list of parent ids for the commit
      */
-    @Override
-    public List<ObjectId> getParents(ObjectId commitId) {
+    public @Override List<ObjectId> getParents(ObjectId commitId) {
         return localRepository.graphDatabase().getParents(commitId);
     }
 
@@ -59,8 +57,7 @@ class LocalRepositoryWrapper implements RepositoryWrapper {
      * @param commitId the commit id
      * @return the depth, or 0 if the commit was not found
      */
-    @Override
-    public int getDepth(ObjectId commitId) {
+    public @Override int getDepth(ObjectId commitId) {
         return localRepository.graphDatabase().getDepth(commitId);
     }
 
@@ -70,8 +67,7 @@ class LocalRepositoryWrapper implements RepositoryWrapper {
      * @return the depth of the repository, or {@link Optional#empty()} if the repository is not
      *         shallow
      */
-    @Override
-    public Optional<Integer> getRepoDepth() {
+    public @Override Optional<Integer> getRepoDepth() {
         return localRepository.getDepth();
     }
 

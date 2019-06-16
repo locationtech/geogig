@@ -53,8 +53,7 @@ public class MutableTree implements Cloneable {
     private Map<String, MutableTree> childTrees;
 
     public static final Ordering<NodeRef> DEEPEST_LAST_COMPARATOR = new Ordering<NodeRef>() {
-        @Override
-        public int compare(NodeRef o1, NodeRef o2) {
+        public @Override int compare(NodeRef o1, NodeRef o2) {
 
             int depth = Integer.valueOf(depth(o1.path()))
                     .compareTo(Integer.valueOf(depth(o2.path())));
@@ -79,8 +78,7 @@ public class MutableTree implements Cloneable {
         this.childTrees = Maps.newTreeMap();
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         StringBuilder sb = new StringBuilder();
         toString(this, sb, 0);
         return sb.toString();
@@ -101,8 +99,7 @@ public class MutableTree implements Cloneable {
                 .append(node.getObjectId()).append(" (").append(node.getMetadataId()).append(")\n");
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o == this) {
             return true;
         }
@@ -297,8 +294,7 @@ public class MutableTree implements Cloneable {
         return newTree;
     }
 
-    @Override
-    public MutableTree clone() {
+    public @Override MutableTree clone() {
         MutableTree clone = new MutableTree(node);
         for (MutableTree child : this.childTrees.values()) {
             clone.childTrees.put(child.getNode().getName(), child.clone());

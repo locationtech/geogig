@@ -100,8 +100,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
      *         the index and the HEAD, or {@code null} if the operation has been cancelled (as
      *         indicated by the {@link #getProgressListener() progress listener}.
      */
-    @Override
-    protected ObjectId _call() {
+    protected @Override ObjectId _call() {
         Preconditions.checkState(diffSupplier != null, "No diff supplier was provided");
         final ProgressListener progress = getProgressListener();
 

@@ -89,8 +89,7 @@ public class Log extends AbstractCommand implements CLICommand {
      * @throws IOException
      * @see org.locationtech.geogig.cli.AbstractCommand#runInternal(org.locationtech.geogig.cli.GeogigCLI)
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(!(args.summary && args.oneline),
                 "--summary and --oneline cannot be used together");
         checkParameter(!(args.stats && args.oneline),
@@ -255,8 +254,7 @@ public class Log extends AbstractCommand implements CLICommand {
 
     private class OneLineConverter implements LogEntryPrinter {
 
-        @Override
-        public void print(RevCommit commit) throws IOException {
+        public @Override void print(RevCommit commit) throws IOException {
             Ansi ansi = newAnsi(console);
             ansi.fg(Color.YELLOW).a(getIdAsString(commit.getId())).reset();
             String message = Strings.nullToEmpty(commit.getMessage());
@@ -281,8 +279,7 @@ public class Log extends AbstractCommand implements CLICommand {
             this.detail = detail;
         }
 
-        @Override
-        public void print(RevCommit commit) throws IOException {
+        public @Override void print(RevCommit commit) throws IOException {
             Ansi ansi = newAnsi(console);
 
             ansi.a("Commit:  ").fg(Color.YELLOW).a(getIdAsString(commit.getId())).reset().newline();

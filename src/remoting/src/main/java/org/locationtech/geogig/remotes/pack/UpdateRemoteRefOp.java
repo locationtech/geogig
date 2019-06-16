@@ -45,8 +45,7 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
      * {@code refs/heads/<branch>} namespace and returns the list translated to the local
      * repository's remotes namespace (i.e. {@code refs/remotes/<remote>/<branch>}
      */
-    @Override
-    protected List<RefDiff> _call() {
+    protected @Override List<RefDiff> _call() {
         checkArgument(remote != null, "remote not provided");
 
         final List<RefDiff> remoteLocalRefs = this.refUpdates;
@@ -55,16 +54,14 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
 
         // (r) -> !isSymRef(r)
         Predicate<RefDiff> fn = new Predicate<RefDiff>() {
-            @Override
-            public boolean apply(RefDiff r) {
+            public @Override boolean apply(RefDiff r) {
                 return !isSymRef(r);
             }
         };
 
         // (r) -> isSymRef(r)
         Predicate<RefDiff> fn2 = new Predicate<RefDiff>() {
-            @Override
-            public boolean apply(RefDiff r) {
+            public @Override boolean apply(RefDiff r) {
                 return isSymRef(r);
             }
         };

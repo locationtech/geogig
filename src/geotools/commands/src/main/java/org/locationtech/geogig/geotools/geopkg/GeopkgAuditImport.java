@@ -55,8 +55,8 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<GeopkgImportResult> {
         return this;
     }
 
-    @Override
-    protected GeopkgImportResult _call() throws IllegalArgumentException, IllegalStateException {
+    protected @Override GeopkgImportResult _call()
+            throws IllegalArgumentException, IllegalStateException {
         checkArgument(null != geopackageFile, "Geopackage database not provided");
         checkArgument(geopackageFile.exists(), "Database %s does not exist", geopackageFile);
         checkArgument(commitMessage != null, "Commit message not provided");

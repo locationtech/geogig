@@ -113,8 +113,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         verify(difftree).setNewTree(eq(indexTreeId));
     }
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         insertAndAdd(points1, points2, points3);
         commit("inital");
 

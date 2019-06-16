@@ -26,8 +26,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 public class CreatePatchOpTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test

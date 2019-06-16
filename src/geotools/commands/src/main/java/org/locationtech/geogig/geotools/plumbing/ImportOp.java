@@ -155,8 +155,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
      * @return RevTree the new working tree
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    protected RevTree _call() {
+    protected @Override RevTree _call() {
 
         // check preconditions and get the actual list of type names to import
         final String[] typeNames = checkPreconditions();
@@ -423,14 +422,12 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
         return new ForwardingFeatureSource(featureSource) {
 
-            @Override
-            public FeatureCollection getFeatures(Query query) throws IOException {
+            public @Override FeatureCollection getFeatures(Query query) throws IOException {
 
                 final FeatureCollection features = super.getFeatures(query);
                 return new ForwardingFeatureCollection(features) {
 
-                    @Override
-                    public FeatureIterator features() {
+                    public @Override FeatureIterator features() {
 
                         final org.opengis.feature.type.FeatureType featureType = getSchema();
                         final String fidPrefix = featureType.getName().getLocalPart() + ".";
@@ -491,8 +488,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
         }
 
-        @Override
-        public SimpleFeature next() {
+        public @Override SimpleFeature next() {
             SimpleFeature next = super.next();
             if (attributeName == null) {
                 String fid = next.getID();
@@ -542,8 +538,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             // String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
             // return FeatureInfo.insert(rf, featureTypeId, path);
             Function<Feature, FeatureInfo> fn = new Function<Feature, FeatureInfo>() {
-                @Override
-                public FeatureInfo apply(org.opengis.feature.Feature f) {
+                public @Override FeatureInfo apply(org.opengis.feature.Feature f) {
                     org.locationtech.geogig.feature.Feature gigFeature = GT
                             .adapt(featureType.type(), (SimpleFeature) f);
                     RevFeature rf = RevFeature.builder().build(gigFeature);
@@ -699,18 +694,15 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             this.featureType = featureType;
         }
 
-        @Override
-        public SimpleFeatureType getType() {
+        public @Override SimpleFeatureType getType() {
             return featureType;
         }
 
-        @Override
-        public String getID() {
+        public @Override String getID() {
             return fid;
         }
 
-        @Override
-        public FeatureId getIdentifier() {
+        public @Override FeatureId getIdentifier() {
             return new FeatureIdImpl(fid);
         }
     }

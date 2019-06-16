@@ -44,8 +44,7 @@ public class DiffOpTest extends RepositoryTestCase {
 
     private DiffOp diffOp;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         this.diffOp = repo.command(DiffOp.class);
     }
 

@@ -66,8 +66,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         this.dbdir = dbdir;
     }
 
-    @Override
-    public synchronized void open() {
+    public @Override synchronized void open() {
         if (!isOpen()) {
             String dbpath = dbdir.getAbsolutePath();
             DBConfig opts = new DBConfig(dbpath, isReadOnly());
@@ -76,8 +75,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         }
     }
 
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
         if (isOpen()) {
             super.close();
             RocksConnectionManager.INSTANCE.release(dbhandle);
@@ -87,8 +85,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
 
     private static final byte[] NODATA = new byte[0];
 
-    @Override
-    public boolean exists(ObjectId commitId) {
+    public @Override boolean exists(ObjectId commitId) {
         byte[] key = commitId.getRawValue();
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             int size = dbRef.db().get(key, NODATA);
@@ -98,8 +95,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         }
     }
 
-    @Override
-    public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+    public @Override List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         NodeData node = getNodeInternal(commitId, false);
         if (node != null) {
             return ImmutableList.copyOf(node.outgoing);
@@ -107,8 +103,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         return Collections.emptyList();
     }
 
-    @Override
-    public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+    public @Override List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
         NodeData node = getNodeInternal(commitId, false);
         if (node != null) {
             return ImmutableList.copyOf(node.incoming);
@@ -116,8 +111,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         return Collections.emptyList();
     }
 
-    @Override
-    public boolean put(ObjectId commitId, List<ObjectId> parentIds) {
+    public @Override boolean put(ObjectId commitId, List<ObjectId> parentIds) {
         try (WriteBatchWithIndex batch = new WriteBatchWithIndex(); //
                 RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions()) {
@@ -196,8 +190,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         return updated;
     }
 
-    @Override
-    public void map(ObjectId mapped, ObjectId original) {
+    public @Override void map(ObjectId mapped, ObjectId original) {
         NodeData node = getNodeInternal(mapped, false);
         if (node == null) {
             // didn't exist
@@ -211,14 +204,12 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         }
     }
 
-    @Override
-    public ObjectId getMapping(ObjectId commitId) {
+    public @Override ObjectId getMapping(ObjectId commitId) {
         NodeData node = getNodeInternal(commitId, true);
         return node.mappedTo;
     }
 
-    @Override
-    public int getDepth(ObjectId commitId) {
+    public @Override int getDepth(ObjectId commitId) {
         int depth = 0;
 
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -248,8 +239,8 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         return depth;
     }
 
-    @Override
-    public void setProperty(ObjectId commitId, String propertyName, String propertyValue) {
+    public @Override void setProperty(ObjectId commitId, String propertyName,
+            String propertyValue) {
         NodeData node = getNodeInternal(commitId, true);
         node.properties.put(propertyName, propertyValue);
         try {
@@ -259,13 +250,11 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         }
     }
 
-    @Override
-    public GraphNode getNode(ObjectId id) {
+    public @Override GraphNode getNode(ObjectId id) {
         return new RocksGraphNode(getNodeInternal(id, true));
     }
 
-    @Override
-    public void truncate() {
+    public @Override void truncate() {
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             try (RocksIterator it = dbRef.db().newIterator()) {
                 it.seekToFirst();
@@ -340,13 +329,11 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
             this.edges = null;
         }
 
-        @Override
-        public ObjectId getIdentifier() {
+        public @Override ObjectId getIdentifier() {
             return node.id;
         }
 
-        @Override
-        public Iterator<GraphEdge> getEdges(final Direction direction) {
+        public @Override Iterator<GraphEdge> getEdges(final Direction direction) {
             if (edges == null) {
                 edges = new LinkedList<GraphEdge>();
                 Iterator<ObjectId> nodeEdges = node.incoming.iterator();
@@ -367,8 +354,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
             final GraphNode myNode = this;
 
             return Iterators.filter(edges.iterator(), new Predicate<GraphEdge>() {
-                @Override
-                public boolean apply(GraphEdge input) {
+                public @Override boolean apply(GraphEdge input) {
                     switch (direction) {
                     case OUT:
                         return input.getFromNode() == myNode;
@@ -382,8 +368,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
             });
         }
 
-        @Override
-        public boolean isSparse() {
+        public @Override boolean isSparse() {
             return node.isSparse();
         }
 

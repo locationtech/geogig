@@ -105,25 +105,21 @@ abstract class StringTable {
 
         private Index<String> unique = new Index<>();
 
-        @Override
-        public int add(String s) {
+        public @Override int add(String s) {
             int index = unique.getOrAdd(s);
             return index;
         }
 
-        @Override
-        public String get(int index) throws NoSuchElementException {
+        public @Override String get(int index) throws NoSuchElementException {
             String val = unique.get(index);
             return val;
         }
 
-        @Override
-        public int size() {
+        public @Override int size() {
             return unique.size();
         }
 
-        @Override
-        public int get(String value) {
+        public @Override int get(String value) {
             return unique.get(value);
         }
     }
@@ -135,13 +131,11 @@ abstract class StringTable {
             this.table = ImmutableList.copyOf(table);
         }
 
-        @Override
-        public int add(String s) {
+        public @Override int add(String s) {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public String get(int index) throws NoSuchElementException {
+        public @Override String get(int index) throws NoSuchElementException {
             if (index >= table.size()) {
                 throw new NoSuchElementException(
                         "Index out of bounds: " + index + ", max index: " + (table.size() - 1));
@@ -149,13 +143,11 @@ abstract class StringTable {
             return table.get(index);
         }
 
-        @Override
-        public int size() {
+        public @Override int size() {
             return table.size();
         }
 
-        @Override
-        public int get(String value) {
+        public @Override int get(String value) {
             return table.indexOf(value);
         }
     }

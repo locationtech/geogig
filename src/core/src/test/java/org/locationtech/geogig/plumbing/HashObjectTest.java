@@ -71,8 +71,7 @@ public class HashObjectTest extends RepositoryTestCase {
 
     private RevTag tag2;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         featureType1 = RevFeatureType.builder().type(pointsType).build();
         featureType2 = RevFeatureType.builder().type(linesType).build();
         featureType1Duplicate = RevFeatureType.builder().type(pointsType).build();

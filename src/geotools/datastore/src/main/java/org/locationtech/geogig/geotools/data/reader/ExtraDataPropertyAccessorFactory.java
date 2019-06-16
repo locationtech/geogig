@@ -41,21 +41,18 @@ public class ExtraDataPropertyAccessorFactory implements PropertyAccessorFactory
 
     static final ExtraDataPropertyAccesor EXTRA_DATA = new ExtraDataPropertyAccesor();
 
-    @Override
-    public PropertyAccessor createPropertyAccessor(Class<?> type, String xpath, Class<?> target,
-            Hints hints) {
+    public @Override PropertyAccessor createPropertyAccessor(Class<?> type, String xpath,
+            Class<?> target, Hints hints) {
         return EXTRA_DATA;
     }
 
     static class ExtraDataPropertyAccesor implements PropertyAccessor {
 
-        @Override
-        public boolean canHandle(Object object, String xpath, Class<?> target) {
+        public @Override boolean canHandle(Object object, String xpath, Class<?> target) {
             return object instanceof Bounded;
         }
 
-        @Override
-        public <T> T get(Object object, String xpath, @Nullable Class<T> target)
+        public @Override <T> T get(Object object, String xpath, @Nullable Class<T> target)
                 throws IllegalArgumentException {
 
             Bounded b = (Bounded) object;
@@ -86,8 +83,7 @@ public class ExtraDataPropertyAccessorFactory implements PropertyAccessorFactory
             return (T) value;
         }
 
-        @Override
-        public <T> void set(Object object, String xpath, T value, Class<T> target)
+        public @Override <T> void set(Object object, String xpath, T value, Class<T> target)
                 throws IllegalArgumentException {
 
             throw new UnsupportedOperationException();

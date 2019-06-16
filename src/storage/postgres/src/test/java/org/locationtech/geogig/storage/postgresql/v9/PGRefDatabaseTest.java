@@ -39,8 +39,7 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
 
     Environment mainEnvironment;
 
-    @Override
-    protected RefDatabase createDatabase(Platform platform) throws Exception {
+    protected @Override RefDatabase createDatabase(Platform platform) throws Exception {
         mainEnvironment = testConfig.getEnvironment();
         PGStorage.createNewRepo(mainEnvironment);
         URI uri = mainEnvironment.toURI();
@@ -52,15 +51,13 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
     public void testLockSingleRepo() throws Exception {
         PGRefDatabase pgRefDb = PGRefDatabase.class.cast(refDb);
         Callable<Long> lockTask = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 pgRefDb.lockWithTimeout(5);
                 return 0L;
             }
         };
         Callable<Long> unlockTask = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 pgRefDb.unlock();
                 return 0L;
             }
@@ -104,29 +101,25 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
         secondRefDb.open();
         PGRefDatabase firstRefDb = PGRefDatabase.class.cast(refDb);
         Callable<Long> lockFirstRepo = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 firstRefDb.lockWithTimeout(5);
                 return 0L;
             }
         };
         Callable<Long> unlockFirstRepo = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 firstRefDb.unlock();
                 return 0L;
             }
         };
         Callable<Long> lockSecondRepo = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 secondRefDb.lockWithTimeout(5);
                 return 0L;
             }
         };
         Callable<Long> unlockSecondRepo = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 secondRefDb.unlock();
                 return 0L;
             }

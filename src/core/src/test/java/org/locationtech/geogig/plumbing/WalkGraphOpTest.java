@@ -37,42 +37,35 @@ public class WalkGraphOpTest extends RepositoryTestCase {
 
         public List<String> sevents = newCopyOnWriteArrayList();
 
-        @Override
-        public void starTree(NodeRef treeNode) {
+        public @Override void starTree(NodeRef treeNode) {
             events.add(treeNode);
             sevents.add("TREE " + treeNode.name());
         }
 
-        @Override
-        public void featureType(RevFeatureType ftype) {
+        public @Override void featureType(RevFeatureType ftype) {
             events.add(ftype);
             sevents.add("FEATURETYPE " + ftype.getName().getLocalPart());
         }
 
-        @Override
-        public void feature(NodeRef featureNode) {
+        public @Override void feature(NodeRef featureNode) {
             events.add(featureNode);
             sevents.add("FEATURE " + featureNode.name());
         }
 
-        @Override
-        public void endTree(NodeRef treeNode) {
+        public @Override void endTree(NodeRef treeNode) {
             sevents.add("END TREE " + treeNode.name());
         }
 
-        @Override
-        public void endBucket(BucketIndex bucketIndex, Bucket bucket) {
+        public @Override void endBucket(BucketIndex bucketIndex, Bucket bucket) {
             sevents.add("END BUCKET");
         }
 
-        @Override
-        public void commit(RevCommit commit) {
+        public @Override void commit(RevCommit commit) {
             events.add(commit);
             sevents.add("COMMIT " + commit.getMessage());
         }
 
-        @Override
-        public void bucket(BucketIndex bucketIndex, Bucket bucket) {
+        public @Override void bucket(BucketIndex bucketIndex, Bucket bucket) {
             events.add(bucket);
             sevents.add("END BUCKET");
         }
@@ -81,8 +74,7 @@ public class WalkGraphOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // do nothing, call populate() where needed
     }
 

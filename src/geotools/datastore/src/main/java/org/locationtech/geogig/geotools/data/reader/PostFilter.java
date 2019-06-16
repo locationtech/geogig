@@ -26,8 +26,7 @@ final class PostFilter implements Predicate<SimpleFeature> {
         this.filter = filter;
     }
 
-    @Override
-    public boolean apply(SimpleFeature feature) {
+    public @Override boolean apply(SimpleFeature feature) {
         return filter.evaluate(feature);
     }
 

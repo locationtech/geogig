@@ -37,8 +37,7 @@ public class ListIndexes extends AbstractCommand implements CLICommand {
     @Parameter(names = "--tree", description = "Name of the feature tree to list indexes for.")
     private String treeName;
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
 
         Repository repo = cli.getGeogig().getRepository();
@@ -52,8 +51,7 @@ public class ListIndexes extends AbstractCommand implements CLICommand {
 
         Function<IndexInfo, CharSequence> printFunctor = new Function<IndexInfo, CharSequence>() {
 
-            @Override
-            public CharSequence apply(IndexInfo input) {
+            public @Override CharSequence apply(IndexInfo input) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Index [").append(input.getId()).append("]\n");
                 sb.append("  ").append("Feature Type Tree:\t").append(input.getTreeName())

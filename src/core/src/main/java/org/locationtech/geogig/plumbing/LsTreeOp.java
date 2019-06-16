@@ -256,8 +256,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
     /**
      * Implements {@link Supplier#get()} by deferring to {@link #call()}
      */
-    @Override
-    public Iterator<NodeRef> get() {
+    public @Override Iterator<NodeRef> get() {
         return call();
     }
 }

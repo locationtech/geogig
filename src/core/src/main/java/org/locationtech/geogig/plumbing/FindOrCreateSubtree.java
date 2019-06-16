@@ -79,8 +79,7 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
      * 
      * @return the subtree if it was found, or a new one if it wasn't
      */
-    @Override
-    protected RevTree _call() {
+    protected @Override RevTree _call() {
         checkNotNull(parentSupplier, "parent");
         checkNotNull(childPath, "childPath");
 

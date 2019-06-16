@@ -55,26 +55,22 @@ public abstract class TestRepoURIBuilder {
     }
 
     private static final class DefaultTestRepoURIBuilder extends TestRepoURIBuilder {
-        @Override
-        public void before() {
+        public @Override void before() {
 
         }
 
-        @Override
-        public void after() {
+        public @Override void after() {
 
         }
 
-        @Override
-        public URI newRepositoryURI(String name, Platform platform) {
+        public @Override URI newRepositoryURI(String name, Platform platform) {
             final File dir = new File(platform.pwd(), name);
             // dir.mkdir();
             // platform.setWorkingDir(dir);
             return dir.toURI();
         }
 
-        @Override
-        public URI buildRootURI(Platform platform) {
+        public @Override URI buildRootURI(Platform platform) {
             return platform.pwd().toURI();
         }
     }

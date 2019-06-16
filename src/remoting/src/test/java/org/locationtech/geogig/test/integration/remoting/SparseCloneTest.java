@@ -109,8 +109,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         citiesType = FeatureTypes.createType(citiesTypeName.toString(), citiesTypeSpec.split(","));
 
         city1 = feature(citiesType, idC1, "San Francisco", new Integer(200000),

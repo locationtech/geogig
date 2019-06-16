@@ -19,8 +19,7 @@ import com.google.common.base.Suppliers;
 
 public class DiffFeatureTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         populate(true, points1);
         insert(points1_modified);
     }

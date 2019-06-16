@@ -24,8 +24,7 @@ public class ValueAndCommit {
         this.commit = commit;
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return new StringBuilder().append(value.orElse(null)).append('/').append(commit.getId())
                 .toString();
     }

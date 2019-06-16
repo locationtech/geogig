@@ -229,8 +229,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      * @return the list of commits that satisfy the query criteria, most recent first.
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected Iterator<RevCommit> _call() {
+    protected @Override Iterator<RevCommit> _call() {
 
         ObjectId newestCommitId;
         ObjectId oldestCommitId;
@@ -343,8 +342,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          *
          * @return the next {@link RevCommit commit} in the history
          */
-        @Override
-        protected RevCommit computeNext() {
+        protected @Override RevCommit computeNext() {
             if (parents.isEmpty()) {
                 return endOfData();
             } else {
@@ -421,8 +419,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * 
          * @return the next {@link RevCommit commit} in the history
          */
-        @Override
-        protected RevCommit computeNext() {
+        protected @Override RevCommit computeNext() {
             if (lastCommit == null) {
                 lastCommit = tips.pop();
                 return lastCommit;
@@ -505,8 +502,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * 
          * @return the next {@link RevCommit commit} in the history
          */
-        @Override
-        protected RevCommit computeNext() {
+        protected @Override RevCommit computeNext() {
             if (nextCommitId.isPresent()) {
                 RevCommit commit = repo.getCommit(nextCommitId.get());
                 nextCommitId = commit.parentN(0);
@@ -566,8 +562,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * @return {@code true} if the commit satisfies the filter criteria set to this op
          * @see com.google.common.base.Predicate#apply(java.lang.Object)
          */
-        @Override
-        public boolean apply(final RevCommit commit) {
+        public @Override boolean apply(final RevCommit commit) {
             if (toReached) {
                 return false;
             }

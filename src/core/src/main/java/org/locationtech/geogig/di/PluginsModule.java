@@ -33,8 +33,7 @@ import com.google.inject.Scopes;
 
 public class PluginsModule extends AbstractModule {
 
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
 
         bind(ConfigDatabase.class).toProvider(PluginConfigDatabaseProvider.class)
                 .in(Scopes.SINGLETON);
@@ -59,8 +58,7 @@ public class PluginsModule extends AbstractModule {
             this.hints = hints;
         }
 
-        @Override
-        public ConfigDatabase get() {
+        public @Override ConfigDatabase get() {
             Platform platform = context.platform();
 
             Optional<URI> uri = new ResolveGeogigURI(platform, hints).call();

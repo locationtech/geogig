@@ -55,8 +55,7 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
             this.right = right == null ? null : right.getNode();
         }
 
-        @Override
-        public Iterator<Node> iterator() {
+        public @Override Iterator<Node> iterator() {
             return left == null ? singletonIterator(right)
                     : (right == null ? singletonIterator(left) : Iterators.forArray(left, right));
         }
@@ -83,26 +82,22 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
         this.progress = listener;
     }
 
-    @Override
-    public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+    public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
         return !progress.isCanceled();
     }
 
-    @Override
-    public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-            @Nullable Bucket left, @Nullable Bucket right) {
+    public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+            BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
         return !progress.isCanceled();
     }
 
-    @Override
-    public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
+    public @Override void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
         if (NodeRef.ROOT.equals(right.name())) {
             addAll();
         }
     }
 
-    @Override
-    public boolean feature(final @Nullable NodeRef left, final NodeRef right) {
+    public @Override boolean feature(final @Nullable NodeRef left, final NodeRef right) {
         while (!nodes.offer(new Tuple(left, right))) {
             addAll();
         }

@@ -139,8 +139,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         return new File(this.baseDirectory, dbname).getAbsolutePath();
     }
 
-    @Override
-    public void removeConflicts(@Nullable String txId) {
+    public @Override void removeConflicts(@Nullable String txId) {
         if (dbExists(txId)) {
             String hanldeId = txId == null ? NULL_TX_ID : txId;
             DBHandle dbHandle = this.dbsByTransaction.remove(hanldeId);
@@ -193,8 +192,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         return c;
     }
 
-    @Override
-    public boolean hasConflicts(@Nullable String txId) {
+    public @Override boolean hasConflicts(@Nullable String txId) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         boolean hasConflicts = false;
         if (dbRefOpt.isPresent()) {
@@ -208,8 +206,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         return hasConflicts;
     }
 
-    @Override
-    public Optional<Conflict> getConflict(@Nullable String txId, String path) {
+    public @Override Optional<Conflict> getConflict(@Nullable String txId, String path) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         Conflict c = null;
         if (dbRefOpt.isPresent()) {
@@ -220,13 +217,12 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         return Optional.ofNullable(c);
     }
 
-    @Override
-    public Iterator<Conflict> getByPrefix(@Nullable String txId, @Nullable String prefixFilter) {
+    public @Override Iterator<Conflict> getByPrefix(@Nullable String txId,
+            @Nullable String prefixFilter) {
         return new BatchIterator(this, txId, prefixFilter);
     }
 
-    @Override
-    public long getCountByPrefix(@Nullable String txId, @Nullable String treePath) {
+    public @Override long getCountByPrefix(@Nullable String txId, @Nullable String treePath) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return 0L;
@@ -270,13 +266,11 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         return true;
     }
 
-    @Override
-    public void addConflict(@Nullable String txId, Conflict conflict) {
+    public @Override void addConflict(@Nullable String txId, Conflict conflict) {
         addConflicts(txId, Collections.singleton(conflict));
     }
 
-    @Override
-    public void addConflicts(@Nullable String txId, Iterable<Conflict> conflicts) {
+    public @Override void addConflicts(@Nullable String txId, Iterable<Conflict> conflicts) {
         try (RocksDBReference dbRef = getOrCreateDb(txId)) {
             ConflictSerializer serializer = new ConflictSerializer();
             try (WriteBatch batch = new WriteBatch()) {
@@ -295,8 +289,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         }
     }
 
-    @Override
-    public void removeConflict(@Nullable String txId, String path) {
+    public @Override void removeConflict(@Nullable String txId, String path) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return;
@@ -308,8 +301,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         }
     }
 
-    @Override
-    public void removeConflicts(@Nullable String txId, Iterable<String> paths) {
+    public @Override void removeConflicts(@Nullable String txId, Iterable<String> paths) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return;
@@ -327,8 +319,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         }
     }
 
-    @Override
-    public Set<String> findConflicts(@Nullable String txId, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String txId, Set<String> paths) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return ImmutableSet.of();
@@ -348,8 +339,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         return found;
     }
 
-    @Override
-    public void removeByPrefix(@Nullable String txId, @Nullable String pathPrefix) {
+    public @Override void removeByPrefix(@Nullable String txId, @Nullable String pathPrefix) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return;
@@ -432,8 +422,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
 
         }
 
-        @Override
-        protected Conflict computeNext() {
+        protected @Override Conflict computeNext() {
             if (currentBatch.hasNext()) {
                 return currentBatch.next();
             }

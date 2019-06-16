@@ -33,8 +33,7 @@ import org.opengis.filter.expression.PropertyName;
  */
 public class InReplacingFilterVisitor extends DuplicatingFilterVisitor {
 
-    @Override
-    public Object visit(Or filter, Object extraData) {
+    public @Override Object visit(Or filter, Object extraData) {
         List<Filter> complex = new ArrayList<>();
         List<Filter> simple = new ArrayList<>();
         for (Filter f : filter.getChildren()) {

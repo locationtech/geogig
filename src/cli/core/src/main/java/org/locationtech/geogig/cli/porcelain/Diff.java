@@ -83,8 +83,7 @@ public class Diff extends AbstractCommand implements CLICommand {
     /**
      * Executes the diff command with the specified options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(refSpec.size() <= 2, "Commit list is too long :%s", refSpec);
         checkParameter(!(nogeom && summary), "Only one printing mode allowed");
         checkParameter(!(bounds && count), "Only one of --bounds or --count is allowed");

@@ -42,8 +42,7 @@ public class SubProgressListener extends DefaultProgressListener {
     /**
      * Called when a task begins tracking progress.
      */
-    @Override
-    public void started() {
+    public @Override void started() {
         setProgress(0.f);
     }
 
@@ -51,8 +50,7 @@ public class SubProgressListener extends DefaultProgressListener {
      * Called when the task is completed. This will update the progress to the maximum progress
      * value. Also updates the parent progress listener accordingly.
      */
-    @Override
-    public void complete() {
+    public @Override void complete() {
         parentProgressListener.setProgress(start + amount);
         super.complete();
     }
@@ -60,8 +58,7 @@ public class SubProgressListener extends DefaultProgressListener {
     /**
      * @return the current progress of the task
      */
-    @Override
-    public float getProgress() {
+    public @Override float getProgress() {
         return super.getProgress();
     }
 
@@ -70,23 +67,20 @@ public class SubProgressListener extends DefaultProgressListener {
      * 
      * @param progress the new progress
      */
-    @Override
-    public void setProgress(float progress) {
+    public @Override void setProgress(float progress) {
         super.setProgress(progress);
         float percent = progress / getMaxProgress();
         parentProgressListener.setProgress(start + (amount * percent));
     }
 
-    @Override
-    public void setDescription(String format, Object... args) {
+    public @Override void setDescription(String format, Object... args) {
         parentProgressListener.setDescription(format, args);
     }
 
     /**
      * @return the description of the current task
      */
-    @Override
-    public String getDescription() {
+    public @Override String getDescription() {
         return parentProgressListener.getDescription();
     }
 
@@ -95,48 +89,42 @@ public class SubProgressListener extends DefaultProgressListener {
      * 
      * @param maxProgress the new maximum value
      */
-    @Override
-    public void setMaxProgress(float maxProgress) {
+    public @Override void setMaxProgress(float maxProgress) {
         super.setMaxProgress(maxProgress);
     }
 
     /**
      * @return the maximum value of the progress listener
      */
-    @Override
-    public float getMaxProgress() {
+    public @Override float getMaxProgress() {
         return super.getMaxProgress();
     }
 
     /**
      * @return {@code true} if the task is complete
      */
-    @Override
-    public boolean isCompleted() {
+    public @Override boolean isCompleted() {
         return super.isCompleted();
     }
 
     /**
      * Called when the progress listener is no longer needed.
      */
-    @Override
-    public void dispose() {
+    public @Override void dispose() {
         super.dispose();
     }
 
     /**
      * @return {@code true} if the task was cancelled
      */
-    @Override
-    public boolean isCanceled() {
+    public @Override boolean isCanceled() {
         return parentProgressListener.isCanceled();
     }
 
     /**
      * Called to indicate that the current task has been cancelled.
      */
-    @Override
-    public void cancel() {
+    public @Override void cancel() {
         parentProgressListener.cancel();
     }
 }

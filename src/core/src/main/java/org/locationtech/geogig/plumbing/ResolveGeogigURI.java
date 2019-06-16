@@ -55,8 +55,7 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
         }
     }
 
-    @Override
-    protected Platform platform() {
+    protected @Override Platform platform() {
         return this.platform == null ? super.platform() : this.platform;
     }
 
@@ -65,8 +64,7 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
      *         if not inside a working directory
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected Optional<URI> _call() {
+    protected @Override Optional<URI> _call() {
         final Optional<URI> repoLocation;
 
         Optional<Serializable> repoUrl = Optional.empty();

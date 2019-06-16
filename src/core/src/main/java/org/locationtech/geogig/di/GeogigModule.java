@@ -53,8 +53,7 @@ public class GeogigModule extends AbstractModule {
      * 
      * @see com.google.inject.AbstractModule#configure()
      */
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
         bind(Context.class).to(GuiceContext.class).in(Scopes.SINGLETON);
 
         bind(DecoratorProvider.class).in(Scopes.SINGLETON);
@@ -83,8 +82,7 @@ public class GeogigModule extends AbstractModule {
             this.hints = hints;
         }
 
-        @Override
-        public Platform get() {
+        public @Override Platform get() {
             if (resolved == null) {
                 Hints hints = this.hints.get();
                 resolved = (Platform) hints.get(Hints.PLATFORM).orElseGet(DefaultPlatform::new);

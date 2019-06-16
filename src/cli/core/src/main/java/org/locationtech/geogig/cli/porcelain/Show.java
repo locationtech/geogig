@@ -65,8 +65,7 @@ public class Show extends AbstractCommand implements CLICommand {
      * @param cli
      * @see org.locationtech.geogig.cli.CLICommand#run(org.locationtech.geogig.cli.GeogigCLI)
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(!refs.isEmpty(), "A refspec must be specified");
         if (raw) {
             printRaw(cli);

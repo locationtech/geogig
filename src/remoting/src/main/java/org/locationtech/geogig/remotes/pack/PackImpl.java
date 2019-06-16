@@ -148,8 +148,7 @@ class PackImpl implements Pack {
                 // return true;
                 // }
                 Predicate<RevCommit> fn = new Predicate<RevCommit>() {
-                    @Override
-                    public boolean apply(RevCommit c) {
+                    public @Override boolean apply(RevCommit c) {
                         objectReport.addCommit();
                         return true;
                     }
@@ -202,8 +201,7 @@ class PackImpl implements Pack {
 
                 // () -> source.getCommit(parentId)
                 Supplier<RevCommit> fn = new Supplier<RevCommit>() {
-                    @Override
-                    public RevCommit get() {
+                    public @Override RevCommit get() {
                         return source.getCommit(parentId);
                     }
                 };

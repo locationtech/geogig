@@ -56,8 +56,7 @@ public class RevList extends AbstractCommand implements CLICommand {
     /**
      * Executes the revlist command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(!args.commits.isEmpty(), "No starting commit provided");
 
         geogig = cli.getGeogig();

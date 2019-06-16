@@ -174,8 +174,7 @@ public class HashObjectFunnels {
             this.nonNullableFunnel = nonNullableFunnel;
         }
 
-        @Override
-        public void funnel(T from, PrimitiveSink into) {
+        public @Override void funnel(T from, PrimitiveSink into) {
             if (from == null) {
                 NullFunnel.funnel(from, into);
             } else {
@@ -192,8 +191,7 @@ public class HashObjectFunnels {
 
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(Object from, PrimitiveSink into) {
+        public @Override void funnel(Object from, PrimitiveSink into) {
             Funnels.byteArrayFunnel().funnel(NULL_BYTE_CODE, into);
         }
     };
@@ -207,8 +205,7 @@ public class HashObjectFunnels {
 
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(RevObject.TYPE from, PrimitiveSink into) {
+        public @Override void funnel(RevObject.TYPE from, PrimitiveSink into) {
             Funnels.integerFunnel().funnel(from.value(), into);
         }
     };
@@ -217,8 +214,7 @@ public class HashObjectFunnels {
 
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(ObjectId from, PrimitiveSink into) {
+        public @Override void funnel(ObjectId from, PrimitiveSink into) {
             for (int i = 0; i < ObjectId.NUM_BYTES; i++) {
                 into.putByte((byte) from.byteN(i));
             }
@@ -265,8 +261,7 @@ public class HashObjectFunnels {
 
         private static final CommitFunnel INSTANCE = new CommitFunnel();
 
-        @Override
-        public void funnel(RevCommit from, PrimitiveSink into) {
+        public @Override void funnel(RevCommit from, PrimitiveSink into) {
             funnel(into, from.getTreeId(), from.getParentIds(), from.getMessage(), from.getAuthor(),
                     from.getCommitter());
         }
@@ -298,8 +293,7 @@ public class HashObjectFunnels {
 
         private static final TreeFunnel INSTANCE = new TreeFunnel();
 
-        @Override
-        public void funnel(RevTree from, PrimitiveSink into) {
+        public @Override void funnel(RevTree from, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.TREE, into);
             from.forEachTree(n -> NodeFunnel.funnel(n, into));
             from.forEachFeature(n -> NodeFunnel.funnel(n, into));
@@ -343,8 +337,7 @@ public class HashObjectFunnels {
 
         private static final FeatureFunnel INSTANCE = new FeatureFunnel();
 
-        @Override
-        public void funnel(RevFeature from, PrimitiveSink into) {
+        public @Override void funnel(RevFeature from, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
             from.forEach(v -> PropertyValueFunnel.funnel(v, into));
         }
@@ -360,8 +353,7 @@ public class HashObjectFunnels {
 
         public static final FeatureTypeFunnel INSTANCE = new FeatureTypeFunnel();
 
-        @Override
-        public void funnel(RevFeatureType from, PrimitiveSink into) {
+        public @Override void funnel(RevFeatureType from, PrimitiveSink into) {
             funnel(into, from.type());
         }
 
@@ -383,8 +375,7 @@ public class HashObjectFunnels {
 
         public static final TagFunnel INSTANCE = new TagFunnel();
 
-        @Override
-        public void funnel(RevTag from, PrimitiveSink into) {
+        public @Override void funnel(RevTag from, PrimitiveSink into) {
             funnel(into, from.getName(), from.getCommitId(), from.getMessage(), from.getTagger());
         }
 
@@ -402,8 +393,7 @@ public class HashObjectFunnels {
             .of(new Funnel<RevPerson>() {
                 private static final long serialVersionUID = -1L;
 
-                @Override
-                public void funnel(RevPerson from, PrimitiveSink into) {
+                public @Override void funnel(RevPerson from, PrimitiveSink into) {
                     NullableStringFunnel.funnel(from.getName().orElse(null), into);
                     NullableStringFunnel.funnel(from.getEmail().orElse(null), into);
                     Funnels.longFunnel().funnel(from.getTimestamp(), into);
@@ -414,8 +404,7 @@ public class HashObjectFunnels {
     private static final Funnel<Node> NodeFunnel = new Funnel<Node>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(Node ref, PrimitiveSink into) {
+        public @Override void funnel(Node ref, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(ref.getType(), into);
             StringFunnel.funnel((CharSequence) ref.getName(), into);
             ObjectIdFunnel.funnel(ref.getObjectId(), into);
@@ -432,8 +421,7 @@ public class HashObjectFunnels {
     private static final Funnel<Object> PropertyValueFunnel = new Funnel<Object>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(final @Nullable Object value, PrimitiveSink into) {
+        public @Override void funnel(final @Nullable Object value, PrimitiveSink into) {
             final FieldType fieldType = FieldType.forValue(value);
             switch (fieldType) {
             case UNKNOWN:
@@ -552,15 +540,13 @@ public class HashObjectFunnels {
     private static final Funnel<Geometry> GeometryFunnel = new Funnel<Geometry>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(final Geometry geom, final PrimitiveSink into) {
+        public @Override void funnel(final Geometry geom, final PrimitiveSink into) {
 
             CoordinateFilter filter = new CoordinateFilter() {
 
                 static final double SCALE = 1E9D;
 
-                @Override
-                public void filter(Coordinate coord) {
+                public @Override void filter(Coordinate coord) {
                     double x = Math.round(coord.x * SCALE) / SCALE;
                     double y = Math.round(coord.y * SCALE) / SCALE;
                     into.putDouble(x);
@@ -574,8 +560,7 @@ public class HashObjectFunnels {
     private static final Funnel<Name> NameFunnel = new Funnel<Name>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(Name from, PrimitiveSink into) {
+        public @Override void funnel(Name from, PrimitiveSink into) {
             NullableStringFunnel.funnel(from.getNamespaceURI(), into);
             StringFunnel.funnel((CharSequence) from.getLocalPart(), into);
         }
@@ -584,8 +569,7 @@ public class HashObjectFunnels {
     private static final Funnel<PropertyDescriptor> PropertyDescriptorFunnel = new Funnel<PropertyDescriptor>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(PropertyDescriptor descriptor, PrimitiveSink into) {
+        public @Override void funnel(PropertyDescriptor descriptor, PrimitiveSink into) {
 
             final @NonNull Name name = descriptor.getName();
             final @NonNull Name attrTypeName = descriptor.getTypeName();
@@ -623,8 +607,7 @@ public class HashObjectFunnels {
     private static final Funnel<Map<String, ?>> MapPropertyFunnel = new Funnel<Map<String, ?>>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(Map<String, ?> map, final PrimitiveSink into) {
+        public @Override void funnel(Map<String, ?> map, final PrimitiveSink into) {
             if (!(map instanceof SortedMap)) {
                 map = new TreeMap<>(map);
             }

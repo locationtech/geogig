@@ -62,8 +62,7 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
         return this;
     }
 
-    @Override
-    protected Void _call() {
+    protected @Override Void _call() {
         Preconditions.checkState(reference != null, "Reference not provided");
         Preconditions.checkState(listener != null, "Listener not provided");
 
@@ -105,8 +104,7 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
             // used to report feature types only once
             private Set<ObjectId> visitedTypes = new HashSet<ObjectId>();
 
-            @Override
-            public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
                 if (!right.getMetadataId().isNull()) {
                     ObjectId featureTypeId = right.getMetadataId();
                     if (!visitedTypes.contains(featureTypeId)) {
@@ -122,20 +120,17 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
                 return true;
             }
 
-            @Override
-            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
                 listener.feature(right);
                 checkExists(right.getObjectId(), right, odb);
                 return true;
             }
 
-            @Override
-            public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
                 listener.endTree(right);
             }
 
-            @Override
-            public boolean bucket(NodeRef lp, NodeRef rp, BucketIndex bucketIndex,
+            public @Override boolean bucket(NodeRef lp, NodeRef rp, BucketIndex bucketIndex,
                     @Nullable Bucket left, @Nullable Bucket right) {
 
                 listener.bucket(bucketIndex, right);
@@ -143,8 +138,7 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
                 return true;
             }
 
-            @Override
-            public void endBucket(NodeRef lp, NodeRef rp, BucketIndex bucketIndex,
+            public @Override void endBucket(NodeRef lp, NodeRef rp, BucketIndex bucketIndex,
                     @Nullable Bucket left, @Nullable Bucket right) {
 
                 listener.endBucket(bucketIndex, right);

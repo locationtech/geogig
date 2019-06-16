@@ -212,8 +212,7 @@ public class Remote {
      * 
      * @param o the remote to compare against
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o == this) {
             return true;
         }

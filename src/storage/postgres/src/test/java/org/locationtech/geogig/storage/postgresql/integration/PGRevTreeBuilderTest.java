@@ -45,8 +45,7 @@ public class PGRevTreeBuilderTest extends CanonicalTreeBuilderTest {
         }
     }
 
-    @Override
-    protected ObjectStore createObjectStore() {
+    protected @Override ObjectStore createObjectStore() {
         Environment environment = testConfig.getEnvironment();
         PGStorage.createNewRepo(environment);
 

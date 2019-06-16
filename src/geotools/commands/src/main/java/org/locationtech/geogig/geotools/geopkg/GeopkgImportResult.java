@@ -42,8 +42,7 @@ public class GeopkgImportResult implements AutoCloseable {
         this.newMappings = new HashMap<>();
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         newMappings.values().forEach(RocksdbMap::close);
         newMappings.clear();
     }

@@ -33,8 +33,7 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
 
     public static final FormatCommonV2_2 INSTANCE = new FormatCommonV2_2();
 
-    @Override
-    protected void writeBucket(final Bucket bucket, DataOutput data, Envelope envBuff)
+    protected @Override void writeBucket(final Bucket bucket, DataOutput data, Envelope envBuff)
             throws IOException {
 
         writeUnsignedVarInt(bucket.getIndex(), data);
@@ -45,8 +44,8 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
         writeBounds(envBuff, data);
     }
 
-    @Override
-    protected final Bucket readBucketBody(int bucketIndex, DataInput in) throws IOException {
+    protected @Override final Bucket readBucketBody(int bucketIndex, DataInput in)
+            throws IOException {
         ObjectId objectId = readObjectId(in);
         @Nullable
         final Envelope bounds = readBounds(in);
@@ -54,8 +53,7 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public Node readNode(DataInput in) throws IOException {
+    public @Override Node readNode(DataInput in) throws IOException {
         final int typeAndMasks = in.readByte() & 0xFF;
         final int nodeType = typeAndMasks & TYPE_READ_MASK;
         // final int boundsMask = typeAndMasks & BOUNDS_READ_MASK; //unused
@@ -85,8 +83,7 @@ public class FormatCommonV2_2 extends FormatCommonV2_1 {
         return node;
     }
 
-    @Override
-    public void writeNode(Node node, DataOutput data, Envelope env) throws IOException {
+    public @Override void writeNode(Node node, DataOutput data, Envelope env) throws IOException {
         // Encode the node type and the bounds and metadata presence masks in one single byte:
         // - bits 1-3 for the object type (up to 8 types, there are only 5 and no plans to add more)
         // - bits 4-5 bits for the bounds mask

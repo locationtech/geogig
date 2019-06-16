@@ -101,8 +101,7 @@ public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
         return _serverVersion;
     }
 
-    @Override
-    public Optional<String> get(String key) {
+    public @Override Optional<String> get(String key) {
         try {
             return get(new Entry(key), String.class, local());
         } catch (IllegalArgumentException e) {
@@ -110,48 +109,39 @@ public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
         }
     }
 
-    @Override
-    public Optional<String> getGlobal(String key) {
+    public @Override Optional<String> getGlobal(String key) {
         return get(new Entry(key), String.class, global());
     }
 
-    @Override
-    public <T> Optional<T> get(String key, Class<T> c) {
+    public @Override <T> Optional<T> get(String key, Class<T> c) {
         return get(new Entry(key), c, local());
     }
 
-    @Override
-    public <T> Optional<T> getGlobal(String key, Class<T> c) {
+    public @Override <T> Optional<T> getGlobal(String key, Class<T> c) {
         return get(new Entry(key), c, global());
     }
 
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
         return all(local());
     }
 
-    @Override
-    public Map<String, String> getAllGlobal() {
+    public @Override Map<String, String> getAllGlobal() {
         return all(global());
     }
 
-    @Override
-    public Map<String, String> getAllSection(String section) {
+    public @Override Map<String, String> getAllSection(String section) {
         return all(section, local());
     }
 
-    @Override
-    public Map<String, String> getAllSectionGlobal(String section) {
+    public @Override Map<String, String> getAllSectionGlobal(String section) {
         return all(section, global());
     }
 
-    @Override
-    public List<String> getAllSubsections(String section) {
+    public @Override List<String> getAllSubsections(String section) {
         return list(section, local());
     }
 
-    @Override
-    public List<String> getAllSubsectionsGlobal(String section) {
+    public @Override List<String> getAllSubsectionsGlobal(String section) {
         return list(section, global());
     }
 
@@ -160,13 +150,11 @@ public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
      *           changed), this method ensures no other repository in the same database is named the
      *           same as {@code value}, and throws an {@link IllegalArgumentException} if there is.
      */
-    @Override
-    public void put(String key, Object value) {
+    public @Override void put(String key, Object value) {
         put(new Entry(key), value, local());
     }
 
-    @Override
-    public void putGlobal(String key, Object value) {
+    public @Override void putGlobal(String key, Object value) {
         put(new Entry(key), value, global());
     }
 
@@ -177,18 +165,15 @@ public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
         put(entries, local());
     }
 
-    @Override
-    public void remove(String key) {
+    public @Override void remove(String key) {
         remove(new Entry(key), local());
     }
 
-    @Override
-    public void removeGlobal(String key) {
+    public @Override void removeGlobal(String key) {
         remove(new Entry(key), global());
     }
 
-    @Override
-    public void removeSection(String key) {
+    public @Override void removeSection(String key) {
         removeSection(key, local());
     }
 
@@ -216,8 +201,7 @@ public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
         return Environment.GLOBAL_KEY;
     }
 
-    @Override
-    public void removeSectionGlobal(String key) {
+    public @Override void removeSectionGlobal(String key) {
         removeSection(key, global());
     }
 
@@ -501,8 +485,7 @@ public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
         return dataSource;
     }
 
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
         super.close();
         if (dataSource != null) {
             PGStorage.closeDataSource(dataSource);

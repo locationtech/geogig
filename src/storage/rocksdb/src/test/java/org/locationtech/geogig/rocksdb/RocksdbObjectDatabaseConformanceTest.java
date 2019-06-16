@@ -27,8 +27,7 @@ public class RocksdbObjectDatabaseConformanceTest extends ObjectDatabaseConforma
         super.setUp();
     }
 
-    @Override
-    protected RocksdbObjectDatabase createOpen(boolean readOnly) {
+    protected @Override RocksdbObjectDatabase createOpen(boolean readOnly) {
         RocksdbObjectDatabase database = new RocksdbObjectDatabase(dbdir, readOnly);
         database.open();
         return database;

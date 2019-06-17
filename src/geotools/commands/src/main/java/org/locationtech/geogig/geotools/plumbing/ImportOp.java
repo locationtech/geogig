@@ -307,7 +307,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             crs = GT.findKnownCrs(crs);
             return DataUtilities.createSubType(orig, null, crs);
         } catch (Exception e) {
-            LOG.warn("Error looking for known identifier for CRS " + crs, e);
+            LOG.debug("Error looking for known identifier for CRS " + crs, e);
             return orig;
         }
     }

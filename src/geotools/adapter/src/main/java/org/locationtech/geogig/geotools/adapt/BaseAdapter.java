@@ -109,6 +109,12 @@ class BaseAdapter {
             try {
                 crs = org.locationtech.geogig.crs.CRS.decode(srsName);
             } catch (NoSuchElementException e) {
+                // fall back to WKT
+                if (gtCrs instanceof Formattable) {
+                    wkt = ((Formattable) gtCrs).toWKT(Formattable.SINGLE_LINE);
+                } else {
+                    wkt = gtCrs.toWKT();
+                }
                 crs = org.locationtech.geogig.crs.CRS.fromWKT(wkt);
             }
         }

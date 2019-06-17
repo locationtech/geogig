@@ -21,11 +21,14 @@ import java.io.Serializable;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
-import org.geotools.data.DataUtilities;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -35,10 +38,13 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 public class TestHelper {
 
-    private static SimpleFeatureType type(String typeName, String typeSpec) throws SchemaException {
+    private static SimpleFeatureType type(final String typeName, String typeSpec)
+            throws SchemaException {
         // Use the same deafult namespace than SimpleFeatureTypeBuilder
-        typeName = "http://www.opengis.net/gml." + typeName;
-        SimpleFeatureType type = DataUtilities.createType(typeName, typeSpec);
+        String ns = "http://www.opengis.net/gml";
+        FeatureType gigType = FeatureTypes.createType(Name.valueOf(ns, typeName),
+                typeSpec.split(","));
+        SimpleFeatureType type = GT.adapt(gigType);
         return type;
     }
 

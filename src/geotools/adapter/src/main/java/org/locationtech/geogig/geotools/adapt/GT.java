@@ -3,9 +3,11 @@ package org.locationtech.geogig.geotools.adapt;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.jts.geom.Envelope;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
@@ -58,6 +60,22 @@ public @UtilityClass class GT {
             @NonNull org.locationtech.geogig.feature.Feature feature) {
 
         return SF.adapt(featureType, feature);
+    }
+
+    public @NonNull org.opengis.feature.simple.SimpleFeature[] adapt(
+            @NonNull org.locationtech.geogig.feature.Feature... features) {
+
+        SimpleFeature[] sfs = new SimpleFeature[features.length];
+        for (int i = 0; i < features.length; i++) {
+            Feature feature = features[i];
+            SimpleFeature sf = null;
+            if (feature != null) {
+                SimpleFeatureType type = adapt(feature.getType());
+                sf = SF.adapt(type, feature);
+            }
+            sfs[i] = sf;
+        }
+        return sfs;
     }
 
     public static @NonNull org.locationtech.geogig.feature.FeatureType adapt(

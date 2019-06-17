@@ -49,6 +49,7 @@ import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.util.factory.Hints;
 import org.locationtech.geogig.cli.test.functional.TestFeatures;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
 import org.locationtech.geogig.test.TestData;
 import org.opengis.feature.Feature;
@@ -130,8 +131,8 @@ public class GeoPackageTestSupport {
 
         MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
         TestFeatures.setupFeatures();
-        memStore.addFeatures(ImmutableList.of(points1, points2, points3));
-        memStore.addFeatures(ImmutableList.of(lines1, lines2, lines3));
+        memStore.addFeatures(GT.adapt(points1, points2, points3));
+        memStore.addFeatures(GT.adapt(lines1, lines2, lines3));
 
         DataStore gpkgStore = createDataStore(file);
         try {

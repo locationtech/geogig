@@ -16,12 +16,16 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Preconditions;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
+@EqualsAndHashCode(of = { "name", "descriptors" })
 public @Value @Builder class FeatureType {
 
     private static final int UNSET_GEOMETRY_INDEX = Integer.MIN_VALUE;
@@ -35,6 +39,7 @@ public @Value @Builder class FeatureType {
     // unset, -1 once set to mean no geometry attribute
     private @NonFinal @Default int geometryDescriptorIndex = UNSET_GEOMETRY_INDEX;
 
+    @Getter(value = AccessLevel.PRIVATE)
     private final ConcurrentMap<String, Integer> resolvedAttIndexes = new ConcurrentHashMap<>();
 
     public List<PropertyDescriptor> getDescriptors() {
@@ -66,11 +71,21 @@ public @Value @Builder class FeatureType {
                         .map(d -> d.getName().getLocalPart()).collect(Collectors.joining(", "))));
     }
 
+    /**
+     * @return CRS of the default geometry property, or {@code null}
+     */
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return getGeometryDescriptor().map(PropertyDescriptor::getCoordinateReferenceSystem)
                 .orElse(null);
     }
 
+    /**
+     * The default geometry property is either explicitly set when creating the featuretype
+     * instance, or computed as the first geometry property in the descriptors list otherwise.
+     * 
+     * @return the index of the default geometry property, or {@code -1} if no geometry property
+     *         exists at all
+     */
     public int getGeometryDescriptorIndex() {
         if (this.geometryDescriptorIndex == UNSET_GEOMETRY_INDEX) {
             List<PropertyDescriptor> descriptors = getDescriptors();
@@ -81,6 +96,13 @@ public @Value @Builder class FeatureType {
         return this.geometryDescriptorIndex;
     }
 
+    /**
+     * The default geometry property is either explicitly set when creating the featuretype
+     * instance, or computed as the first geometry property in the descriptors list otherwise.
+     * 
+     * @return Optional containing the default geometry property, or {@link Optional#empty() empty}
+     *         if no geometry property exists at all
+     */
     public Optional<PropertyDescriptor> getGeometryDescriptor() {
         int index = getGeometryDescriptorIndex();
         return Optional.ofNullable(index == NO_GEOMETRY_PROPERTY ? null : descriptors.get(index));

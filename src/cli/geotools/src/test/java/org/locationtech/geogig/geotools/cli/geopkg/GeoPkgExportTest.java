@@ -25,6 +25,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.jdbc.JDBCDataStore;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,6 +47,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+@Ignore // REVISIT: ExportOp needs a revamp
 public class GeoPkgExportTest extends RepositoryTestCase {
 
     @Rule

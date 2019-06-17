@@ -17,6 +17,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.geotools.adapt.GT;
@@ -28,6 +29,7 @@ import org.opengis.feature.type.AttributeDescriptor;
 
 import com.google.common.base.Objects;
 
+@Ignore // REVISIT, ExportOp needs a revamp
 public class ExportDiffOpTest extends RepositoryTestCase {
 
     SimpleFeatureType gtPointsType;

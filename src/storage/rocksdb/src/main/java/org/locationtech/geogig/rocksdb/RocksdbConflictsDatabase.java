@@ -10,13 +10,11 @@
 package org.locationtech.geogig.rocksdb;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,10 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
@@ -52,7 +47,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import javax.inject.Inject;
 
 import lombok.NonNull;
 
@@ -65,21 +59,6 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
     private static final String NULL_TX_ID = ".default";
 
     private ConcurrentMap<String/* TxID */, DBHandle> dbsByTransaction = new ConcurrentHashMap<>();
-
-    public @Inject RocksdbConflictsDatabase(@NonNull Platform platform, @Nullable Hints hints) {
-        super(Hints.isRepoReadOnly(hints));
-        Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
-        checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
-        URI uri = repoUriOpt.get();
-        checkArgument("file".equals(uri.getScheme()));
-        this.baseDirectory = new File(new File(uri), "conflicts");
-        if (baseDirectory.exists()) {
-            checkArgument(baseDirectory.isDirectory() && baseDirectory.canWrite());
-        } else {
-            checkState(baseDirectory.mkdir(),
-                    "unable to create " + baseDirectory.getAbsolutePath());
-        }
-    }
 
     public RocksdbConflictsDatabase(@NonNull File baseDirectory) {
         super(false);

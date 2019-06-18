@@ -23,13 +23,6 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>${slf4j.version}</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-core</artifactId>
       <version>${project.version}</version>
@@ -207,6 +200,19 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>minimal</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+          <scope>compile</scope>
+        </dependency>
+      </dependencies>
+    </profile>
     <profile>
       <id>full</id>
       <activation>

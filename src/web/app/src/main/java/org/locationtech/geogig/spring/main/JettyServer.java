@@ -75,7 +75,7 @@ public class JettyServer {
     public void start(boolean async) throws Exception {
         server.setHandler(getServletContextHandler(getContext(), repoProvider));
         server.start();
-        //server.dumpStdErr();
+        // server.dumpStdErr();
         if (!async) {
             server.join();
         }
@@ -88,6 +88,7 @@ public class JettyServer {
     public Server getServer() {
         return this.server;
     }
+
     /**
      * Creates a Web Application Context that uses Spring annotations for configuration.
      *
@@ -111,16 +112,15 @@ public class JettyServer {
         ServletContextHandler contextHandler = new ServletContextHandler();
         // gzip handler
         GzipHandler gzipHandler = new GzipHandler();
-        gzipHandler.addIncludedMimeTypes(
-                MediaType.APPLICATION_JSON_VALUE,
-                MediaType.APPLICATION_XML_VALUE,
-                MediaType.TEXT_XML_VALUE);
+        gzipHandler.addIncludedMimeTypes(MediaType.APPLICATION_JSON_VALUE,
+                MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE);
         contextHandler.setGzipHandler(gzipHandler);
-        //contextHandler.setErrorHandler(null);
+        // contextHandler.setErrorHandler(null);
         contextHandler.setContextPath("/");
         ServletHolder servletHolder = new ServletHolder(new DispatcherServlet(context));
         // configure the Servlet with Multipart support, just use defaults for now
-        servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement((String)null));
+        servletHolder.getRegistration()
+                .setMultipartConfig(new MultipartConfigElement((String) null));
         contextHandler.addServlet(servletHolder, "/");
         contextHandler.addEventListener(new ContextLoaderListener(context));
         // wrap it with our RequestHandler that inserts the repoProvider into the request attributes
@@ -171,8 +171,7 @@ public class JettyServer {
 
         @Override
         public void handle(String target, Request baseRequest, HttpServletRequest request,
-                HttpServletResponse response) throws
-                IOException, ServletException {
+                HttpServletResponse response) throws IOException, ServletException {
             // add the repository provide to the request attributes
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Setting RepositoryProvider on Request to: " + repoProvider);

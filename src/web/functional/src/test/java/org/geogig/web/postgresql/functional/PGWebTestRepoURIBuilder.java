@@ -16,6 +16,8 @@ import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 
+import cucumber.api.Scenario;
+
 /**
  * URI builder for Postgres-backed repositories for web functional tests.
  */
@@ -24,20 +26,19 @@ public final class PGWebTestRepoURIBuilder extends TestRepoURIBuilder {
     private PGTemporaryTestConfig delegate;
 
     @Override
-    public void before() throws Throwable {
+    public void before(Scenario scenario) throws Throwable {
         delegate = new PGTemporaryTestConfig("unused");
         delegate.before();
     }
 
     @Override
-    public void after() {
+    public void after(Scenario scenario) {
         delegate.after();
     }
 
     @Override
     public URI newRepositoryURI(String name, Platform platform) throws URISyntaxException {
-        String repoURI = delegate.newRepoURI(name);
-        URI repoUri = URI.create(repoURI);
+        URI repoUri = delegate.newRepoURI(name);
         return repoUri;
     }
 

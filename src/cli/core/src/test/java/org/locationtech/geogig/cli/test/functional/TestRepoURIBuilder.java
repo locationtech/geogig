@@ -57,12 +57,12 @@ public abstract class TestRepoURIBuilder {
 
     public static TestRepoURIBuilder createDefault() {
 
-        return new DefaultTestRepoURIBuilder();
+        return new MemoryRepoURIBuilder();
     }
 
-    private static final class DefaultTestRepoURIBuilder extends TestRepoURIBuilder {
+    private static final class MemoryRepoURIBuilder extends TestRepoURIBuilder {
 
-        private String contextName;
+        private String contextName = "default";
 
         public @Override void before(Scenario scenario) {
             this.contextName = scenario.getName();
@@ -80,7 +80,7 @@ public abstract class TestRepoURIBuilder {
         }
 
         public @Override URI buildRootURI(Platform platform) {
-            return platform.pwd().toURI();
+            return new MemoryRepositoryResolver().createRootURI(this.contextName);
         }
     }
 

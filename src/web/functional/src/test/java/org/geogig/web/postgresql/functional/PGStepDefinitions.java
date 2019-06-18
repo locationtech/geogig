@@ -12,20 +12,22 @@ package org.geogig.web.postgresql.functional;
 import org.geogig.web.functional.TestRepoURIBuilderProvider;
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 
+import cucumber.api.Scenario;
+
 /**
  * Step definitions to set the postgres repo uri builder.
  */
 public class PGStepDefinitions {
     @cucumber.api.java.Before(order = 1)
-    public void before() throws Throwable {
+    public void before(Scenario scenario) throws Throwable {
         TestRepoURIBuilder builder = new PGWebTestRepoURIBuilder();
-        builder.before();
+        builder.before(scenario);
         TestRepoURIBuilderProvider.setURIBuilder(builder);
     }
 
     @cucumber.api.java.After(order = 10001)
-    public void after() {
-        TestRepoURIBuilderProvider.getURIBuilder().after();
+    public void after(Scenario scenario) {
+        TestRepoURIBuilderProvider.getURIBuilder().after(scenario);
         TestRepoURIBuilderProvider.setURIBuilder(null);
     }
 }

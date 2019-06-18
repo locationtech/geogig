@@ -63,7 +63,10 @@ import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
+import org.locationtech.geogig.cli.test.functional.FileRepoUriBuilder;
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -92,7 +95,6 @@ import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
 import org.locationtech.geogig.test.TestData;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -144,7 +146,7 @@ public class WebAPICucumberHooks {
     @cucumber.api.java.Before
     public void before() throws Exception {
         if (TestRepoURIBuilderProvider.getURIBuilder() == null) {
-            TestRepoURIBuilderProvider.setURIBuilder(TestRepoURIBuilder.createDefault());
+            TestRepoURIBuilderProvider.setURIBuilder(new FileRepoUriBuilder());
         }
 
         // before each Scenario, clear out the opened repository set
@@ -180,10 +182,8 @@ public class WebAPICucumberHooks {
 
     @Given("I have \"([^\"]*)\" that is not managed$")
     public void setupExtraUnMangedRepo(String repoName) throws Exception {
-        context.createUnmanagedRepo(repoName)
-                .init("geogigUser", "repo1_Owner@geogig.org")
-                .loadDefaultData()
-                .getRepo().close();
+        context.createUnmanagedRepo(repoName).init("geogigUser", "repo1_Owner@geogig.org")
+                .loadDefaultData().getRepo().close();
         openedRepos.add(repoName);
     }
 
@@ -551,8 +551,8 @@ public class WebAPICucumberHooks {
         openedRepos.add(repoName);
     }
 
-    private SimpleFeature parseFeature(String featureName) throws Exception {
-        SimpleFeature feature;
+    private Feature parseFeature(String featureName) throws Exception {
+        Feature feature;
         if (featureName.equals("Point.1")) {
             feature = TestData.point1;
         } else if (featureName.equals("Point.2")) {
@@ -1085,7 +1085,7 @@ public class WebAPICucumberHooks {
             SimpleFeatureStore store = (SimpleFeatureStore) gpkgStore.getFeatureSource("Points");
             Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
             store.setTransaction(gttx);
-            store.addFeatures(DataUtilities.collection(TestData.point4));
+            store.addFeatures(DataUtilities.collection(GT.adapt(TestData.point4)));
             gttx.commit();
         } finally {
             gttx.close();
@@ -1137,14 +1137,14 @@ public class WebAPICucumberHooks {
         final String resourceUri = context.replaceVariables(targetURI);
         final String requestContent = context.replaceVariables(content);
         switch (method) {
-            case "PUT":
-                context.callInternal(HttpMethod.PUT, resourceUri, requestContent, contentType);
-                break;
-            case "POST":
-                context.callInternal(HttpMethod.POST, resourceUri, requestContent, contentType);
-                break;
-            default:
-                fail("Unsupported request method: " + method);
+        case "PUT":
+            context.callInternal(HttpMethod.PUT, resourceUri, requestContent, contentType);
+            break;
+        case "POST":
+            context.callInternal(HttpMethod.POST, resourceUri, requestContent, contentType);
+            break;
+        default:
+            fail("Unsupported request method: " + method);
         }
     }
 
@@ -1344,7 +1344,7 @@ public class WebAPICucumberHooks {
         String resourceUri = methodAndURL.substring(idx + 1).trim();
         HttpMethod method = HttpMethod.valueOf(httpMethod);
         // build URL encoded Form
-        context.call(method, resourceUri, "parentDirectory="+systemTempPath(),
+        context.call(method, resourceUri, "parentDirectory=" + systemTempPath(),
                 MediaType.APPLICATION_FORM_URLENCODED_VALUE);
     }
 
@@ -1388,8 +1388,7 @@ public class WebAPICucumberHooks {
         // build URL encoded Form
         StringBuilder form = new StringBuilder();
         form.append("parentDirectory=").append(systemTempPath()).append("&")
-                .append("authorName=GeoGig User&")
-                .append("authorEmail=geogig@geogig.org");
+                .append("authorName=GeoGig User&").append("authorEmail=geogig@geogig.org");
         context.call(method, resourceUri, form.toString(),
                 MediaType.APPLICATION_FORM_URLENCODED_VALUE);
     }
@@ -1440,12 +1439,12 @@ public class WebAPICucumberHooks {
         final ArrayList<String> backendList = new ArrayList<>(2);
         for (String backendToRemove : backends) {
             switch (backendToRemove.trim()) {
-                case "Directory" :
-                    backendList.add("org.locationtech.geogig.repository.impl.FileRepositoryResolver");
-                    break;
-                case "PostgreSQL" :
-                    backendList.add("org.locationtech.geogig.storage.postgresql.PGRepositoryResolver");
-                    break;
+            case "Directory":
+                backendList.add("org.locationtech.geogig.rocksdb.RocksdbRepositoryResolver");
+                break;
+            case "PostgreSQL":
+                backendList.add("org.locationtech.geogig.storage.postgresql.PGRepositoryResolver");
+                break;
             }
         }
         // add the list to the test utility

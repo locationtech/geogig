@@ -34,7 +34,7 @@ Feature: IndexCreate
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
       And the response status should be '201'
-      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repo1 repository's "HEAD:Points" index should have the following features:
           |     index    | 
           |    Point.1   | 
@@ -45,7 +45,7 @@ Feature: IndexCreate
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
       And the response status should be '201'
-      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
@@ -71,7 +71,7 @@ Feature: IndexCreate
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
       And the response status should be '201'
-      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
@@ -84,7 +84,7 @@ Feature: IndexCreate
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
       And the response status should be '201'
-      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repo1 repository's "HEAD:Points" index should have the following features:
           |     index    | 
           |    Point.1   | 
@@ -108,7 +108,7 @@ Feature: IndexCreate
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
       And the response status should be '201'
-      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:

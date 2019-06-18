@@ -13,6 +13,8 @@ import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
@@ -27,7 +29,6 @@ import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Scopes;
 

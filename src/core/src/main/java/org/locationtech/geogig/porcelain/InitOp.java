@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -47,7 +49,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
-import com.google.inject.Inject;
 
 import lombok.AccessLevel;
 import lombok.Setter;

@@ -27,6 +27,8 @@ import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.inject.Inject;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -57,7 +59,6 @@ import org.locationtech.jts.geom.Envelope;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 

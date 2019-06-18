@@ -24,6 +24,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
+import javax.inject.Inject;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
@@ -65,7 +67,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 

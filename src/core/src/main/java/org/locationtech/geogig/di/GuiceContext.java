@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.di;
 
+import javax.inject.Inject;
+
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
@@ -24,7 +26,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import lombok.NonNull;

@@ -114,7 +114,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
+import javax.inject.Inject;
 
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;

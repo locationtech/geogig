@@ -52,7 +52,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
+import javax.inject.Inject;
 
 import lombok.NonNull;
 

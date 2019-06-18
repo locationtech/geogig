@@ -9,7 +9,6 @@ import org.geotools.feature.NameImpl;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.geotools.referencing.wkt.Formattable;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.jts.geom.Envelope;
@@ -49,24 +48,24 @@ class BaseAdapter {
     }
 
     public @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem adapt(
-            org.locationtech.geogig.crs.CoordinateReferenceSystem crs) {
-        if (crs == null) {
+            org.locationtech.geogig.crs.CoordinateReferenceSystem gigCrs) {
+        if (gigCrs == null) {
             return null;
         }
         CoordinateReferenceSystem opengisCrs = null;
-        if (crs.isNull()) {
-            return DefaultEngineeringCRS.GENERIC_2D;
+        if (gigCrs.isNull()) {
+            return null;
         }
-        if (crs.getSrsIdentifier() != null) {
+        if (gigCrs.getSrsIdentifier() != null) {
             try {
-                opengisCrs = CRS.decode(crs.getSrsIdentifier(), true);
+                opengisCrs = CRS.decode(gigCrs.getSrsIdentifier(), true);
             } catch (FactoryException e) {
                 throw new IllegalArgumentException(e);
             }
         }
-        if (opengisCrs == null && crs.getWKT() != null) {
+        if (opengisCrs == null && gigCrs.getWKT() != null) {
             try {
-                opengisCrs = CRS.parseWKT(crs.getWKT());
+                opengisCrs = CRS.parseWKT(gigCrs.getWKT());
             } catch (FactoryException e) {
                 throw new IllegalArgumentException(e);
             }

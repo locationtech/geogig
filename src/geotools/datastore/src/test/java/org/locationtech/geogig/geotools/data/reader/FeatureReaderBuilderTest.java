@@ -34,6 +34,7 @@ import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.factory.Hints;
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.Bounded;
@@ -80,6 +81,10 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
     // spy'ed DiffTree command
     private DiffTree difftree;
+
+    public @BeforeClass static void beforeClass() {
+        System.setProperty("org.geotools.referencing.forceXY", "true");
+    }
 
     /**
      * Validate mockito usage right after a test case so it doesn't reports bad usage on the next
@@ -183,7 +188,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
     @Test
     public void testResultingSchemaFullSchema() {
         FeatureReader<SimpleFeatureType, SimpleFeature> reader = builder.build();
-        assertEquals(pointsType, reader.getFeatureType());
+        assertEquals(pointsType, GT.adapt(reader.getFeatureType()));
     }
 
     @Test

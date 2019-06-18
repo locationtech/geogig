@@ -42,6 +42,8 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
         this.id = null;
     }
 
+    public abstract String getVersion();
+
     public abstract Object getAttribute(int index);
 
     public abstract void setAttribute(int index, Object value);
@@ -83,7 +85,7 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
     public static Feature build(@NonNull String id, @NonNull RevFeatureType type,
             @NonNull ValueArray values) {
         ObjectId oid = values instanceof RevFeature ? ((RevFeature) values).getId() : null;
-        return new FeatureImplLazy(id, type.type(), oid, values);
+        return new FeatureDelegate(id, type.type(), oid, values);
     }
 
     public static Feature build(@NonNull String id, @NonNull FeatureType type, Object... values) {
@@ -99,13 +101,13 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
     public static Feature build(@NonNull String id, @NonNull FeatureType type,
             @NonNull ValueArray values) {
         ObjectId oid = values instanceof RevFeature ? ((RevFeature) values).getId() : null;
-        return new FeatureImplLazy(id, type, oid, values);
+        return new FeatureDelegate(id, type, oid, values);
     }
 
     public static Feature build(@NonNull String id, @NonNull FeatureType type,
             @NonNull ValueArray values, GeometryFactory geometryFactory) {
         ObjectId oid = values instanceof RevFeature ? ((RevFeature) values).getId() : null;
-        return new FeatureImplLazy(id, type, oid, values, geometryFactory);
+        return new FeatureDelegate(id, type, oid, values, geometryFactory);
     }
     //// Iterable
 
@@ -133,23 +135,26 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
     public abstract Feature createCopy(@NonNull String newId);
 
     protected Object validate(int index, Object value) {
-        PropertyDescriptor descriptor = getType().getDescriptor(index);
+        final FeatureType featureType = getType();
+        final PropertyDescriptor descriptor = featureType.getDescriptor(index);
+
+        final Class<?> binding = descriptor.getBinding();
         if (value == null) {
             if (!descriptor.isNillable()) {
                 throw new IllegalArgumentException(
                         String.format("Property %s is not nullable", descriptor.getLocalName()));
             }
-        } else if (!descriptor.getBinding().isAssignableFrom(value.getClass())) {
+        } else if (!binding.isAssignableFrom(value.getClass())) {
             String str = FieldType.forValue(value).toString(value);
             try {
-                value = FieldType.forBinding(descriptor.getBinding()).unmarshall(str);
+                value = FieldType.forBinding(binding).unmarshall(str);
             } catch (IllegalArgumentException e) {
                 throw e;
             } catch (RuntimeException e) {
                 throw new IllegalArgumentException(
                         String.format("Unable to convert value for attribute %s from %s to %s",
                                 descriptor.getLocalName(), value.getClass().getName(),
-                                descriptor.getBinding().getName()),
+                                binding.getName()),
                         e);
             }
         }

@@ -12,6 +12,7 @@ import org.geotools.feature.GeometryAttributeImpl;
 import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.feature.type.Types;
 import org.geotools.filter.identity.FeatureIdImpl;
+import org.geotools.filter.identity.FeatureIdVersionedImpl;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.Converters;
 import org.geotools.util.Utilities;
@@ -60,7 +61,11 @@ public class SimpleFeatureAdapter implements SimpleFeature {
     }
 
     public @Override FeatureId getIdentifier() {
-        return new FeatureIdImpl(feature.getId());
+        String version = feature.getVersion();
+        if (version == null) {
+            return new FeatureIdImpl(feature.getId());
+        }
+        return new FeatureIdVersionedImpl(feature.getId(), version);
     }
 
     public @Override BoundingBox getBounds() {
@@ -177,16 +182,8 @@ public class SimpleFeatureAdapter implements SimpleFeature {
         setAttributes(Arrays.asList(values));
     }
 
-    public @Override Object getAttribute(String name) {
-        return feature.getAttribute(name);
-    }
-
     public @Override void setAttribute(String name, Object value) {
         setAttribute(feature.getType().getAttributeIndex(name), value);
-    }
-
-    public @Override Object getAttribute(Name name) {
-        return feature.getAttribute(GT.adapt(name));
     }
 
     public @Override void setAttribute(Name name, Object value) {
@@ -194,7 +191,22 @@ public class SimpleFeatureAdapter implements SimpleFeature {
     }
 
     public @Override Object getAttribute(int index) throws IndexOutOfBoundsException {
-        return feature.getAttribute(index);
+        return toGT(feature.getAttribute(index));
+    }
+
+    public @Override Object getAttribute(Name name) {
+        return toGT(feature.getAttribute(GT.adapt(name)));
+    }
+
+    public @Override Object getAttribute(String name) {
+        return toGT(feature.getAttribute(name));
+    }
+
+    private Object toGT(Object value) {
+        if (value instanceof org.locationtech.geogig.feature.Feature) {
+            value = GT.adapt((Feature) value);
+        }
+        return value;
     }
 
     public @Override void setAttribute(int index, Object value) throws IndexOutOfBoundsException {
@@ -219,7 +231,9 @@ public class SimpleFeatureAdapter implements SimpleFeature {
             }
         } else if (!binding.isAssignableFrom(value.getClass())) {
             result = Converters.convert(value, binding);
-            if (result == null) {
+            // note: Converters.convert() with a geometry to another geometry class that can't
+            // really be converted to does not fail
+            if (result == null || !binding.isAssignableFrom(result.getClass())) {
                 throw new IllegalAttributeException(String.format(
                         "Unable to convert value for attribute %s from %s to %s",
                         descriptor.getLocalName(), value.getClass().getName(), binding.getName()));

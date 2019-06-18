@@ -26,6 +26,7 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.util.factory.Hints;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.geotools.adapt.GT;
@@ -60,6 +61,10 @@ import com.google.common.collect.Maps;
  *
  */
 public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
+
+    public @BeforeClass static void beforeClass() {
+        System.setProperty("org.geotools.referencing.forceXY", "true");
+    }
 
     private Index createIndex(NodeRef typeRef, String... extraAttributes) {
         List<String> extraAtts = extraAttributes == null ? null : Arrays.asList(extraAttributes);

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
 import org.locationtech.geogig.feature.PropertyDescriptor;
@@ -75,8 +76,13 @@ public class GTSimpleFeatureTypeAdapter extends BaseAdapter {
     }
 
     private @NonNull AttributeType createAttributeType(PropertyDescriptor d) {
-        Name name = adapt(d.getTypeName());
         Class<?> binding = d.getBinding();
+        if (org.locationtech.geogig.feature.Feature.class.equals(binding)) {
+            final @NonNull FeatureType complexBindingType = d.getComplexBindingType();
+            SimpleFeatureType boundType = adapt(complexBindingType);
+            return boundType;
+        }
+        Name name = adapt(d.getTypeName());
         boolean isIdentifiable = false;
         boolean isAbstract = false;
         List<Filter> restrictions = null;
@@ -106,6 +112,12 @@ public class GTSimpleFeatureTypeAdapter extends BaseAdapter {
             crs = adapt(((GeometryDescriptor) d).getCoordinateReferenceSystem());
         }
         builder.coordinateReferenceSystem(crs);
+
+        if (type instanceof SimpleFeatureType) {
+            FeatureType gigType = GT.adapt((SimpleFeatureType) type);
+            builder.complexBindingType(gigType);
+            builder.binding(Feature.class);
+        }
         return builder.build();
     }
 }

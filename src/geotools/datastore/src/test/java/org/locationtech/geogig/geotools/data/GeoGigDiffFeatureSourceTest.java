@@ -18,6 +18,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.FeatureIteratorIterator;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.geotools.adapt.GT;
@@ -42,6 +43,10 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
     private GeoGigDataStore dataStore;
 
     private List<RevCommit> masterBranchCommits, branch1Commits;
+
+    public @BeforeClass static void beforeClass() {
+        System.setProperty("org.geotools.referencing.forceXY", "true");
+    }
 
     protected @Override void setUpInternal() throws Exception {
         masterBranchCommits = new ArrayList<>();
@@ -108,10 +113,13 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
         assertTrue(features.hasNext());
         SimpleFeature diffFeature = features.next();
         assertFalse(features.hasNext());
-        SimpleFeature oldValue = (SimpleFeature) diffFeature.getAttribute("old");
-        SimpleFeature newValue = (SimpleFeature) diffFeature.getAttribute("new");
+        Object oldF = diffFeature.getAttribute("old");
+        Object newF = diffFeature.getAttribute("new");
+        SimpleFeature oldValue = (SimpleFeature) oldF;
+        SimpleFeature newValue = (SimpleFeature) newF;
         assertNull(oldValue);
-        assertEquals(points2.getId(), newValue.getIdentifier());
+        assertEquals(points2.getId(), newValue.getID());
+        assertNotNull(newValue.getIdentifier().getFeatureVersion());
     }
 
     public @Test void testDiffBranchVsMaster() throws IOException {

@@ -97,7 +97,7 @@ public @UtilityClass class GT {
     }
 
     public @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem adapt(
-            @NonNull org.locationtech.geogig.crs.CoordinateReferenceSystem crs) {
+            org.locationtech.geogig.crs.CoordinateReferenceSystem crs) {
         return SFT.adapt(crs);
     }
 

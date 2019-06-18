@@ -23,6 +23,8 @@ public @Value @Builder class PropertyDescriptor {
 
     private CoordinateReferenceSystem coordinateReferenceSystem;
 
+    private FeatureType complexBindingType;
+
     public @NonNull CoordinateReferenceSystem coordinateReferenceSystem() {
         return this.coordinateReferenceSystem == null ? CoordinateReferenceSystem.NULL
                 : this.coordinateReferenceSystem;
@@ -46,8 +48,14 @@ public @Value @Builder class PropertyDescriptor {
             if (Geometry.class.isAssignableFrom(this.binding) && crs == null) {
                 crs = CoordinateReferenceSystem.NULL;
             }
+            if (Feature.class.equals(binding)) {
+                if (null == complexBindingType) {
+                    throw new IllegalStateException(
+                            "Feature binding requires complexBindingType to be set");
+                }
+            }
             return new PropertyDescriptor(name, typeName, binding, nillable, minOccurs, maxOccurs,
-                    crs);
+                    crs, complexBindingType);
         }
     }
 }

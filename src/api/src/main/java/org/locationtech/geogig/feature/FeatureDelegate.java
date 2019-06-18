@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.GeometryFactory;
 
@@ -11,7 +12,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @ToString
-class FeatureImplLazy extends Feature {
+class FeatureDelegate extends Feature {
 
     @SuppressWarnings("unchecked")
     private static final Optional<Object>[] UNINITIALIZED_MUTABLE_STATE = new Optional[0];
@@ -22,13 +23,13 @@ class FeatureImplLazy extends Feature {
 
     private GeometryFactory geometryFactory;
 
-    public FeatureImplLazy(@NonNull String id, @NonNull FeatureType type, ObjectId revision,
+    public FeatureDelegate(@NonNull String id, @NonNull FeatureType type, ObjectId revision,
             @NonNull ValueArray values) {
         super(id, type, revision);
         this.immutableValues = values;
     }
 
-    public FeatureImplLazy(@NonNull String id, @NonNull FeatureType type, ObjectId oid,
+    public FeatureDelegate(@NonNull String id, @NonNull FeatureType type, ObjectId oid,
             @NonNull ValueArray values, GeometryFactory geometryFactory) {
         super(id, type, oid);
         this.immutableValues = values;
@@ -37,6 +38,13 @@ class FeatureImplLazy extends Feature {
 
     private boolean mutable() {
         return this.mutatedValues != UNINITIALIZED_MUTABLE_STATE;
+    }
+
+    public @Override String getVersion() {
+        if (this.immutableValues instanceof RevFeature) {
+            return ((RevFeature) this.immutableValues).getId().toString();
+        }
+        return null;
     }
 
     public @Override Object getAttribute(int index) {
@@ -65,7 +73,7 @@ class FeatureImplLazy extends Feature {
             return this.immutableValues.iterator();
         }
         return new Iterator<Object>() {
-            final int size = FeatureImplLazy.this.getAttributeCount();
+            final int size = FeatureDelegate.this.getAttributeCount();
 
             int curr = 0;
 
@@ -82,7 +90,7 @@ class FeatureImplLazy extends Feature {
     }
 
     public @Override Feature createCopy(@NonNull String newId) {
-        FeatureImplLazy copy = new FeatureImplLazy(newId, getType(), getRevision(),
+        FeatureDelegate copy = new FeatureDelegate(newId, getType(), getRevision(),
                 this.immutableValues, this.geometryFactory);
         if (mutable()) {
             copy.mutatedValues = this.mutatedValues.clone();

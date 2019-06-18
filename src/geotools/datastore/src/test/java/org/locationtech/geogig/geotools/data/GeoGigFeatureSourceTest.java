@@ -38,6 +38,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.IdentityTransform;
 import org.geotools.util.factory.Hints;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
@@ -79,6 +80,10 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     private SimpleFeatureSource linesSource;
 
     private final String namespace = "http://geogig.org/test";
+
+    public @BeforeClass static void beforeClass() {
+        System.setProperty("org.geotools.referencing.forceXY", "true");
+    }
 
     protected @Override void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(repo);
@@ -171,8 +176,8 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
     @Test
     public void testGetSchema() {
-        assertEquals(pointsType, pointsSource.getSchema());
-        assertEquals(linesType, linesSource.getSchema());
+        assertEquals(pointsType, GT.adapt(pointsSource.getSchema()));
+        assertEquals(linesType, GT.adapt(linesSource.getSchema()));
     }
 
     @Test
@@ -315,7 +320,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         Set<List<Object>> expected;
 
         collection = pointsSource.getFeatures();
-        assertEquals(pointsType, collection.getSchema());
+        assertEquals(pointsType, GT.adapt(collection.getSchema()));
 
         actual = Sets.newHashSet();
         for (Feature f : toList(collection)) {
@@ -323,22 +328,21 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
             actual.add(sf.getAttributes());
         }
 
-        expected = ImmutableSet.of(((SimpleFeature) points1).getAttributes(),
-                ((SimpleFeature) points2).getAttributes(),
-                ((SimpleFeature) points3).getAttributes());
+        expected = ImmutableSet.of(points1.getAttributes(), points2.getAttributes(),
+                points3.getAttributes());
 
         assertEquals(expected, actual);
 
         collection = linesSource.getFeatures();
-        assertEquals(linesType, collection.getSchema());
+        assertEquals(linesType, GT.adapt(collection.getSchema()));
 
         actual = Sets.newHashSet();
         for (Feature f : toList(collection)) {
             actual.add(((SimpleFeature) f).getAttributes());
         }
 
-        expected = ImmutableSet.of(((SimpleFeature) lines1).getAttributes(),
-                ((SimpleFeature) lines2).getAttributes(), ((SimpleFeature) lines3).getAttributes());
+        expected = ImmutableSet.of(lines1.getAttributes(), lines2.getAttributes(),
+                lines3.getAttributes());
 
         assertEquals(expected, actual);
     }
@@ -357,7 +361,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         for (SimpleFeature f : toList(collection)) {
             actual.add(f.getAttributes());
         }
-        expected = Collections.singleton(((SimpleFeature) points2).getAttributes());
+        expected = Collections.singleton(points2.getAttributes());
 
         assertEquals(expected, actual);
 
@@ -374,8 +378,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         for (SimpleFeature f : toList(collection)) {
             actual.add(f.getAttributes());
         }
-        expected = ImmutableSet.of(((SimpleFeature) points1).getAttributes(),
-                ((SimpleFeature) points2).getAttributes());
+        expected = ImmutableSet.of(points1.getAttributes(), points2.getAttributes());
 
         assertEquals(expected, actual);
 
@@ -394,8 +397,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         for (SimpleFeature f : toList(collection)) {
             actual.add(f.getAttributes());
         }
-        expected = ImmutableSet.of(((SimpleFeature) points1).getAttributes(),
-                ((SimpleFeature) points2).getAttributes());
+        expected = ImmutableSet.of(points1.getAttributes(), points2.getAttributes());
 
         assertEquals(expected.size(), actual.size());
         assertEquals(expected, actual);
@@ -406,8 +408,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         for (SimpleFeature f : toList(collection)) {
             actual.add(f.getAttributes());
         }
-        expected = ImmutableSet.of(((SimpleFeature) lines2).getAttributes(),
-                ((SimpleFeature) lines3).getAttributes());
+        expected = ImmutableSet.of(lines2.getAttributes(), lines3.getAttributes());
 
         assertEquals(expected, actual);
 

@@ -24,6 +24,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.util.factory.Hints;
 import org.hamcrest.core.IsInstanceOf;
 import org.hamcrest.core.StringContains;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.Feature;
 import org.opengis.feature.IllegalAttributeException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -57,6 +57,10 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     protected GeoGigDataStore dataStore;
 
     protected GeogigFeatureStore points;
+
+    public @BeforeClass static void beforeClass() {
+        System.setProperty("org.geotools.referencing.forceXY", "true");
+    }
 
     protected @Override void setUpInternal() throws Exception {
         dataStore = new GeoGigDataStore(repo);
@@ -121,8 +125,8 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         dataStore.setHead(branchName);
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) points3));
+        collection = DataUtilities
+                .collection(Arrays.asList(GT.adapt(points1), GT.adapt(points2), GT.adapt(points3)));
 
         Transaction tx = new DefaultTransaction();
         points.setTransaction(tx);
@@ -153,8 +157,8 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         dataStore.setHead(head.toString());
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) points3));
+        collection = DataUtilities
+                .collection(Arrays.asList(GT.adapt(points1), GT.adapt(points2), GT.adapt(points3)));
 
         Transaction tx = new DefaultTransaction();
         points.setTransaction(tx);
@@ -300,7 +304,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
 
         expected.expect(IOException.class);
-        expected.expectMessage("is not assignable to");
+        expected.expectMessage("Unable to convert value for attribute pp from");
         points.modifyFeatures("pp", "LINESTRING(1 1, 2 2)", filter);
     }
 
@@ -362,8 +366,8 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     public void testTransactionCommitMessage() throws Exception {
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) points3));
+        collection = DataUtilities
+                .collection(Arrays.asList(GT.adapt(points1), GT.adapt(points2), GT.adapt(points3)));
 
         DefaultTransaction tx = new DefaultTransaction();
         points.setTransaction(tx);
@@ -393,8 +397,8 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     public void testTransactionCommitAuthorAndEmail() throws Exception {
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) points3));
+        collection = DataUtilities
+                .collection(Arrays.asList(GT.adapt(points1), GT.adapt(points2), GT.adapt(points3)));
 
         DefaultTransaction tx = new DefaultTransaction();
         points.setTransaction(tx);
@@ -443,11 +447,12 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         SimpleFeatureType subType = DataUtilities.createSubType(GT.adapt(pointsType),
                 new String[] { "ip" });
         FeatureType gigType = GT.adapt(subType);
-        Feature newFeature = GT.adapt(subType, feature(gigType, "subtype.1", new Integer(-1)));
+        SimpleFeature newFeature = GT.adapt(subType,
+                feature(gigType, "subtype.1", new Integer(-1)));
         newFeature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
 
-        collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) newFeature));
+        collection = DataUtilities
+                .collection(Arrays.asList(GT.adapt(points1), GT.adapt(points2), newFeature));
         List<FeatureId> addFeatures = points.addFeatures(collection);
         assertEquals(3, addFeatures.size());
 
@@ -471,7 +476,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         SimpleFeatureCollection collection = collection(points1, points2, newFeature);
 
         expected.expect(IOException.class);
-        expected.expectMessage("No such attribute:notInOriginalProp");
+        expected.expectMessage("Attribute 'notInOriginalProp' does not exist");
         points.addFeatures(collection);
 
     }

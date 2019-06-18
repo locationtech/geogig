@@ -10,6 +10,7 @@ import java.time.LocalTime;
 import java.util.function.Function;
 
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -26,7 +27,7 @@ public class Marshallers {
 
     private static final PrimitiveArrayMarshaller PRIMITIVE_ARRAY_MARSHALLER = new PrimitiveArrayMarshaller();
 
-    public static Marshaller GEOMETRY_MARSHALLER = new GeometryMarshaller();
+    private static final Marshaller GEOMETRY_MARSHALLER = new GeometryMarshaller();
 
     public static Marshaller toString(Function<String, Object> unmarshaller) {
         return new ToStringMarshaller(unmarshaller);
@@ -69,6 +70,12 @@ public class Marshallers {
 
         private final Function<String, Object> unmarshallFunction;
 
+        protected ToStringMarshaller() {
+            this(s -> {
+                throw new UnsupportedOperationException();
+            });
+        }
+
         protected ToStringMarshaller(@NonNull Function<String, Object> unmarshal) {
             this.unmarshallFunction = unmarshal;
         }
@@ -86,14 +93,21 @@ public class Marshallers {
     private static class GeometryMarshaller extends ToStringMarshaller {
         private static GeometryFactory GF = new GeometryFactory();
 
-        protected GeometryMarshaller() {
-            super(s -> {
-                try {
-                    return new WKTReader(GF).read(s);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+        public @Override @NonNull Object unmarshall(@NonNull String source,
+                @NonNull Class<?> target) {
+            Geometry geometry;
+            try {
+                geometry = new WKTReader(GF).read(source);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            if (!target.isAssignableFrom(geometry.getClass())) {
+                // TODO: create collection wrapper if given a simple geometry and target is
+                // collection?
+                throw new IllegalArgumentException(String.format("%s is not assignable to %s",
+                        geometry.getClass().getName(), target.getName()));
+            }
+            return geometry;
         }
     }
 

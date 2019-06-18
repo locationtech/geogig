@@ -18,6 +18,10 @@ class FeatureImpl extends Feature {
         this.values = new Object[type.getSize()];
     }
 
+    public @Override String getVersion() {
+        return null;
+    }
+
     public @Override Object getAttribute(int index) {
         return values[index];
     }

@@ -11,6 +11,7 @@ package org.locationtech.geogig.data.retrieve;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -18,7 +19,6 @@ import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
-import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
@@ -131,7 +131,7 @@ public class BulkFeatureRetriever {
 
         // function that converts the FeatureInfo a feature of the given schema
         Function<ObjectInfo<RevFeature>, Feature> funcBuildFeature = info -> Feature
-                .build(info.node().getName(), nativeType, info.object());
+                .build(info.node().getName(), nativeType.type(), info.object(), geometryFactory);
         AutoCloseableIterator<ObjectInfo<RevFeature>> fis = getGeoGIGFeatures(refs);
 
         return AutoCloseableIterator.transform(fis, funcBuildFeature);
@@ -203,15 +203,19 @@ public class BulkFeatureRetriever {
     }
 
     private boolean isDiffFeatureType(FeatureType type) {
-        return isFeatureDescriptor(type.getDescriptor("old"))
-                && isFeatureDescriptor(type.getDescriptor("new"));
+        PropertyDescriptor oldFtype;
+        PropertyDescriptor newFtype;
+        try {
+            oldFtype = type.getDescriptor("old");
+            newFtype = type.getDescriptor("new");
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+        return isFeatureDescriptor(oldFtype) && isFeatureDescriptor(newFtype);
     }
 
     private boolean isFeatureDescriptor(PropertyDescriptor descriptor) {
-        if (descriptor == null) {
-            return false;
-        }
-        Class<?> binding = descriptor.getBinding();
+        Class<?> binding = descriptor == null ? null : descriptor.getBinding();
         return Feature.class.equals(binding);
     }
 
@@ -239,20 +243,27 @@ public class BulkFeatureRetriever {
 
     }
 
-    public static FeatureType buildDiffFeatureType(Name typeName, FeatureType nativeFeatureType) {
+    public static FeatureType buildDiffFeatureType(@NonNull Name typeName,
+            @NonNull FeatureType nativeFeatureType) {
 
-        FeatureTypeBuilder builder = FeatureTypes.builder(nativeFeatureType);
+        FeatureTypeBuilder builder = FeatureType.builder();
         builder.add(DIFF_FEATURE_CHANGETYPE_ATTNAME, Integer.class);
 
         PropertyDescriptor oldValDescriptor;
         Name oldName = new Name("old");
-        oldValDescriptor = PropertyDescriptor.builder().name(oldName).typeName(oldName)
-                .binding(Feature.class).minOccurs(1).maxOccurs(1).nillable(true).build();
+        oldValDescriptor = PropertyDescriptor.builder()//
+                .name(oldName).typeName(nativeFeatureType.getName()).minOccurs(1).maxOccurs(1)
+                .nillable(true)//
+                .binding(Feature.class).complexBindingType(nativeFeatureType)//
+                .build();
 
         PropertyDescriptor newValDescriptor;
         Name newName = new Name("new");
-        newValDescriptor = PropertyDescriptor.builder().name(newName).typeName(newName)
-                .binding(Feature.class).minOccurs(1).maxOccurs(1).nillable(true).build();
+        newValDescriptor = PropertyDescriptor.builder()//
+                .name(newName).typeName(nativeFeatureType.getName()).minOccurs(1).maxOccurs(1)
+                .nillable(true)//
+                .binding(Feature.class).complexBindingType(nativeFeatureType)//
+                .build();
 
         builder.add(oldValDescriptor);
         builder.add(newValDescriptor);

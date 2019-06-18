@@ -27,6 +27,10 @@ public class FeatureToDelete extends org.locationtech.geogig.feature.Feature {
         super(id, type);
     }
 
+    public @Override String getVersion() {
+        return null;
+    }
+
     public @Override Iterator<Object> iterator() {
         throw new UnsupportedOperationException();
     }

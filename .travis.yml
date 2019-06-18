@@ -3,7 +3,7 @@ cache:
     - "$HOME/.m2"
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 before_install: 
   - cd src
     #  - sudo apt-get install libspatialite-dev
@@ -26,7 +26,7 @@ before_script:
 script:
   # - mvn -B --no-transfer-progress test -Dfmt.skip=true -Ppostgres,experimental,online
   - ./mvnw -B --no-transfer-progress verify -Dfmt.skip=true -Pexperimental
-services: postgresql
+#services: postgresql
 #addons:
 #  postgresql: "10"
 #  apt:

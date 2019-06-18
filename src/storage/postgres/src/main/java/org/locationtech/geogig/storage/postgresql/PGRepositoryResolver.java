@@ -192,7 +192,7 @@ public class PGRepositoryResolver implements RepositoryResolver {
     }
 
     public @Override ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI, Hints hints) {
-        ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null);
+        ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null, false);
         try {
             return new PGObjectDatabase(configDatabase, hints);
         } catch (URISyntaxException e) {
@@ -201,7 +201,7 @@ public class PGRepositoryResolver implements RepositoryResolver {
     }
 
     public @Override IndexDatabase resolveIndexDatabase(@NonNull URI repoURI, Hints hints) {
-        ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null);
+        ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null, false);
         try {
             return new PGIndexDatabase(configDatabase, hints);
         } catch (URISyntaxException e) {

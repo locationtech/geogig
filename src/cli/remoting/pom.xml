@@ -107,12 +107,5 @@
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <!-- As the default storage provider (see CLIContextBuilder.defaults) -->
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-rocksdb</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 </project>

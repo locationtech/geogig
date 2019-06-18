@@ -53,6 +53,7 @@ Feature: "clone" command
       And the response should contain "Commit1"
       And the response should contain variable "{@ObjectId|localrepo|HEAD~2}"
       
+  @FileSystemReposOnly
   Scenario: Try to clone a remote repository that does not exist
     Given I am in an empty directory
      When I run the command "clone nonexistentrepo ${localrepo}"

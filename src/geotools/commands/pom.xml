@@ -34,6 +34,7 @@
   </build>
   <dependencies>
     <dependency>
+      <!-- For org.locationtech.geogig.geotools.geopkg.RockdbMap. REVISIT, ideally remove this dependency  -->
       <groupId>org.rocksdb</groupId>
       <artifactId>rocksdbjni</artifactId>
     </dependency>

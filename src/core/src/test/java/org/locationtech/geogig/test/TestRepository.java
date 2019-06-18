@@ -40,10 +40,7 @@ public class TestRepository extends ExternalResource {
         return super.apply(base, description);
     }
 
-    /**
-     * Override to tear down your specific external resource.
-     */
-    protected @Override void after() {
+    public @Override void after() {
         Collection<Repository> repos = repositories.values();
         for (Repository repo : repos) {
             closeAndDelete(repo);
@@ -66,6 +63,12 @@ public class TestRepository extends ExternalResource {
     public Repository repository() {
         URI uri = getRepoURI();
         return repositories.computeIfAbsent(uri, this::createAndInitRepository);
+    }
+
+    public Repository getRepo(@NonNull String name) {
+        Repository repository = repositories.get(getRepoURI(name));
+        Preconditions.checkState(repository != null, "Repository %s does not exist");
+        return repository;
     }
 
     public Repository createAndInitRepository(@NonNull String name) {
@@ -128,4 +131,5 @@ public class TestRepository extends ExternalResource {
             }
         }
     }
+
 }

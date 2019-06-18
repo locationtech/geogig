@@ -42,7 +42,7 @@ import com.google.common.collect.Sets;
 
 public class PRHealthCheckOpTest {
 
-    public @Rule TestSupport testSupport = new TestSupport();
+    public @Rule PullRequestsTestSupport testSupport = new PullRequestsTestSupport();
 
     /**
      * <pre>

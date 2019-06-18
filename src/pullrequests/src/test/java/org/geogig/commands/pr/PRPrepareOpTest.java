@@ -37,7 +37,7 @@ import com.google.common.collect.Iterators;
 
 public class PRPrepareOpTest {
 
-    public @Rule TestSupport testSupport = new TestSupport();
+    public @Rule PullRequestsTestSupport testSupport = new PullRequestsTestSupport();
 
     /**
      * <pre>

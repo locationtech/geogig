@@ -22,7 +22,7 @@ import org.locationtech.geogig.test.TestData;
 
 public class PRResolveOpTest {
 
-    public @Rule TestSupport testSupport = new TestSupport();
+    public @Rule PullRequestsTestSupport testSupport = new PullRequestsTestSupport();
 
     private TestData origin;
 

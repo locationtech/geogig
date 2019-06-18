@@ -166,11 +166,11 @@ public class TestData {
 
     private GeogigTransaction transaction = null;
 
-    public TestData(final GeoGIG repo) throws Exception {
+    public TestData(final GeoGIG repo) {
         this.repo = repo.getOrCreateRepository();
     }
 
-    public TestData(final Repository repo) throws Exception {
+    public TestData(final Repository repo) {
         this.repo = repo;
     }
 

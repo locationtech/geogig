@@ -638,25 +638,26 @@
 
     </plugins>
   </build>
+
+  <modules>
+    <module>metadata</module>
+    <module>api</module>
+    <module>core</module>
+    <module>remoting</module>
+    <module>storage</module>
+    <module>pullrequests</module>
+    <module>geotools</module>
+    <module>cli</module>
+  </modules>
+
   <profiles>
     <profile>
-      <id>default</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
+      <id>experimental</id>
       <modules>
-        <module>metadata</module>
-        <module>api</module>
-        <module>core</module>
-        <module>remoting</module>
-        <module>storage</module>
-        <module>pullrequests</module>
-        <module>geotools</module>
-        <module>cli</module>
         <module>experimental</module>
       </modules>
     </profile>
-    <profile>
+   <profile>
       <id>fortify</id>
       <activation>
         <activeByDefault>false</activeByDefault>
@@ -960,12 +961,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>web</id>
-      <modules>
-        <module>web</module>
-      </modules>
     </profile>
   </profiles>
 

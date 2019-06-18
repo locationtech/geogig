@@ -32,7 +32,8 @@ public class DataStoreImportRepresentation extends AsyncCommandRepresentation<Re
     }
 
     @Override
-    protected void writeResultBody(StreamingWriter w, RevCommit result) throws StreamWriterException {
+    protected void writeResultBody(StreamingWriter w, RevCommit result)
+            throws StreamWriterException {
         if (result != null) {
             ResponseWriter out = new ResponseWriter(w, getMediaType());
             out.writeCommit(result, "commit", null, null, null);

@@ -17,6 +17,7 @@ import java.io.Writer;
 public class SendObject extends LegacyRepoResponse {
 
     private long inserted;
+
     private long existing;
 
     public long getInserted() {
@@ -40,6 +41,7 @@ public class SendObject extends LegacyRepoResponse {
     public long getTotal() {
         return inserted + existing;
     }
+
     @Override
     protected void encode(Writer out) {
         // don't need to do anything other than send back the 200 OK

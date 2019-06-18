@@ -32,8 +32,8 @@ public class ManifestControllerTest extends AbstractControllerTest {
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
 
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/manifest");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/manifest");
         perform(get).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(containsString("HEAD refs/heads/master")))

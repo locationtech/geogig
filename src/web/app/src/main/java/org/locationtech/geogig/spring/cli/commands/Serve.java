@@ -22,6 +22,7 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.rest.repository.MultiRepositoryProvider;
@@ -66,13 +67,15 @@ public class Serve extends AbstractCommand {
         RepositoryProvider provider = null;
         if (cli.getGeogig() != null && cli.getGeogig().isOpen()) {
             if (loc != null || multiRepo) {
-                throw new CommandFailedException("Cannot specify a repository or serve multiple repositories from within a repository.");
+                throw new CommandFailedException(
+                        "Cannot specify a repository or serve multiple repositories from within a repository.");
             }
             provider = new SingleRepositoryProvider(cli.getGeogig().getRepository());
         } else {
             URI repoURI = null;
             try {
-                repoURI = RepositoryResolver.resolveRepoUriFromString(cli.getPlatform(), loc == null ? "." : loc);
+                repoURI = RepositoryFinder.INSTANCE.resolveRepoUriFromString(cli.getPlatform(),
+                        loc == null ? "." : loc);
             } catch (URISyntaxException e) {
                 throw new CommandFailedException("Unable to parse the root repository URI.", e);
             }

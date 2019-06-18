@@ -44,10 +44,10 @@ public abstract class AbstractRepositoryController extends AbstractController {
      * @param provider The RepositoryProvider extracted form the request.
      * @param repoName The repository that should exist and be opened.
      * @param response The Response to which an error should be written if the repository does not
-     * exist or is not open.
+     *        exist or is not open.
      *
      * @return true if the provided repository name identifies an existing, open repository, false
-     * otherwise.
+     *         otherwise.
      */
     protected boolean isOpenRepository(RepositoryProvider provider, String repoName,
             HttpServletResponse response) {
@@ -93,8 +93,10 @@ public abstract class AbstractRepositoryController extends AbstractController {
         }
         return null;
     }
+
     /**
      * Validates the supplied ObjectId string.
+     * 
      * @param objectId String representation of the ObjectId to validate.
      * @param response Response to which errors should be written.
      * @param required true if the provided String id must not be null, false otherwise.

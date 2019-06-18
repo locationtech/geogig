@@ -31,17 +31,16 @@ import com.google.gson.JsonObject;
  */
 public class MergeFeatureControllerTest extends AbstractControllerTest {
 
-    private static final String ERROR_MSG =
-            "<response><success>false</success><error>Invalid POST data.</error></response>";
+    private static final String ERROR_MSG = "<response><success>false</success><error>Invalid POST data.</error></response>";
 
     @Test
     public void testEmptyPost() throws Exception {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
 
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/mergefeature").contentType(
-                        MediaType.APPLICATION_JSON).content("{}");
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/mergefeature").contentType(MediaType.APPLICATION_JSON)
+                .content("{}");
         perform(post).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString(ERROR_MSG)));
@@ -56,10 +55,9 @@ public class MergeFeatureControllerTest extends AbstractControllerTest {
         // build JSON payload
         JsonObject json = buildWithoutPath();
 
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/mergefeature")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(getBytes(json));
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/mergefeature").contentType(MediaType.APPLICATION_JSON)
+                .content(getBytes(json));
         perform(post).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString(ERROR_MSG)));
@@ -71,17 +69,16 @@ public class MergeFeatureControllerTest extends AbstractControllerTest {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
-        Optional<RevObject> oursRevObject = repo.command(RevObjectParse.class)
-                .setRefSpec("master").call();
+        Optional<RevObject> oursRevObject = repo.command(RevObjectParse.class).setRefSpec("master")
+                .call();
         String oursId = oursRevObject.get().getId().toString();
 
         // build JSON payload
         JsonObject json = buildWithoutTheirs(oursId);
 
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/mergefeature")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(getBytes(json));
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/mergefeature").contentType(MediaType.APPLICATION_JSON)
+                .content(getBytes(json));
         perform(post).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML));
         repo.close();
@@ -95,10 +92,9 @@ public class MergeFeatureControllerTest extends AbstractControllerTest {
         // build JSON payload
         JsonObject json = buildWithoutOurs();
 
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/mergefeature")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(getBytes(json));
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/mergefeature").contentType(MediaType.APPLICATION_JSON)
+                .content(getBytes(json));
         perform(post).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString(ERROR_MSG)));
@@ -110,18 +106,17 @@ public class MergeFeatureControllerTest extends AbstractControllerTest {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
-        Optional<RevObject> oursRevObject = repo.command(RevObjectParse.class)
-                .setRefSpec("master").call();
+        Optional<RevObject> oursRevObject = repo.command(RevObjectParse.class).setRefSpec("master")
+                .call();
         String oursId = oursRevObject.get().getId().toString();
         Optional<RevObject> theirsRevObject = repo.command(RevObjectParse.class)
                 .setRefSpec("branch1").call();
         String theirsId = theirsRevObject.get().getId().toString();
         // build JSON payload
         JsonObject json = buildJson(oursId, theirsId, "Points/Point.1");
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/mergefeature")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(getBytes(json));
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/mergefeature").contentType(MediaType.APPLICATION_JSON)
+                .content(getBytes(json));
         perform(post).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN));
         repo.close();

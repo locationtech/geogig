@@ -103,7 +103,7 @@ class XMLStreamingWriter implements StreamingWriter {
         writeStartElement(name);
         if (value != null) {
             try {
-                    xml.writeCData(value.toString());
+                xml.writeCData(value.toString());
             } catch (XMLStreamException e) {
                 throw new StreamWriterException(e);
             }
@@ -113,13 +113,15 @@ class XMLStreamingWriter implements StreamingWriter {
 
     @Override
     public void writeStartArray(String name) throws StreamWriterException {
-        // for XML, Arrays are just repeated elements, so no need to start the array here. It should be started in the
+        // for XML, Arrays are just repeated elements, so no need to start the array here. It should
+        // be started in the
         // looping calls to writeStartArrayElement or writeArrayElement.
     }
 
     @Override
     public void writeEndArray() throws StreamWriterException {
-        // for XML, Arrays are just repeated elements, so no need to end the array here. It should be ended in the
+        // for XML, Arrays are just repeated elements, so no need to end the array here. It should
+        // be ended in the
         // looping calls to writeStartArrayElement or writeArrayElement.
     }
 

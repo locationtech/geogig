@@ -54,8 +54,8 @@ import com.google.common.collect.ImmutableMap;
  * </code>
  * </pre>
  * <p>
- * The output of the {@link Export} command when used with the {@code format=gpkg} argument
- * will be produced by the {@link GeopgkExportRepresentation}, which in turn is created by the
+ * The output of the {@link Export} command when used with the {@code format=gpkg} argument will be
+ * produced by the {@link GeopgkExportRepresentation}, which in turn is created by the
  * {@link RepresentationFactory} using the {@link CommandRepresentationFactory} SPI by means of the
  * {@code META-INF/services/org.locationtech.geogig.rest.CommandRepresentationFactory} text file.
  * <p>
@@ -176,21 +176,23 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
         }
 
         @Override
-        protected void writeResultBody(StreamingWriter w, File result) throws StreamWriterException {
+        protected void writeResultBody(StreamingWriter w, File result)
+                throws StreamWriterException {
 
             final String link = "tasks/" + super.cmd.getTaskId() + "/download";
             encodeDownloadURL(w, link);
 
         }
 
-        private void encodeDownloadURL(StreamingWriter w, String link) throws StreamWriterException {
+        private void encodeDownloadURL(StreamingWriter w, String link)
+                throws StreamWriterException {
 
             final MediaType outputFormat = Variants.GEOPKG_MEDIA_TYPE;
 
             w.writeStartElement("atom:link");
             w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
             w.writeAttribute("rel", "alternate");
-            w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, (MediaType)null));
+            w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, (MediaType) null));
             w.writeAttribute("type", outputFormat.toString());
             w.writeEndElement();
         }

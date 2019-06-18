@@ -37,12 +37,11 @@ public class AffectedFeaturesControllerTest extends AbstractControllerTest {
         repoProvider.getTestRepository("repo1").initializeRpository();
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/affectedfeatures");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/affectedfeatures");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
-                .andExpect(content().string(containsString(
-                        "You must specify a commit id.")));
+                .andExpect(content().string(containsString("You must specify a commit id.")));
         repo.close();
     }
 
@@ -52,12 +51,11 @@ public class AffectedFeaturesControllerTest extends AbstractControllerTest {
         repoProvider.getTestRepository("repo1").initializeRpository();
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/affectedfeatures?commitId=1234");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/affectedfeatures?commitId=1234");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
-                .andExpect(content().string(containsString(
-                        "You must specify a valid commit id.")));
+                .andExpect(content().string(containsString("You must specify a valid commit id.")));
         repo.close();
     }
 
@@ -67,9 +65,8 @@ public class AffectedFeaturesControllerTest extends AbstractControllerTest {
         repoProvider.getTestRepository("repo1").initializeRpository();
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get(
-                        "/repos/repo1/repo/affectedfeatures?commitId=0123456789012345678901234567890123456789");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get(
+                "/repos/repo1/repo/affectedfeatures?commitId=0123456789012345678901234567890123456789");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString(
@@ -82,19 +79,19 @@ public class AffectedFeaturesControllerTest extends AbstractControllerTest {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
         // setup TestData with branches: master, branch1 and branch2
-        TestData testData = new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
+        TestData testData = new TestData(repo).init("testGeoGig", "geogig@geogig.org")
+                .loadDefaultData();
         // make a new commit
         testData.addAndCommit("new test commit", TestData.point1_modified);
         // get most recent commit on master
         Iterator<RevCommit> masterCommits = repo.command(LogOp.class).setLimit(1).call();
         assertTrue(masterCommits.hasNext());
         RevCommit masterCommit = masterCommits.next();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get(
-                        "/repos/repo1/repo/affectedfeatures?commitId=" + masterCommit.getId().toString());
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get(
+                "/repos/repo1/repo/affectedfeatures?commitId=" + masterCommit.getId().toString());
         String contentAsString = perform(get).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.TEXT_PLAIN))
-                .andReturn().getResponse().getContentAsString();
+                .andExpect(content().contentType(MediaType.TEXT_PLAIN)).andReturn().getResponse()
+                .getContentAsString();
         // the response should be a valid ObjectId, if the parsing fails the test fails
         ObjectId.valueOf(contentAsString);
         repo.close();

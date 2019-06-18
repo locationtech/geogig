@@ -132,7 +132,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
         JsonObject feature = featureArray.getJsonObject(0);
         assertEquals("ADDED", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point3.getID());
+                TestData.point3.getId());
         assertEquals(path, feature.getString("id"));
         JsonArray geometryArray = feature.getJsonArray("geometry");
         assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
@@ -172,7 +172,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
         JsonObject feature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
         assertEquals(path, feature.getString("id"));
         JsonArray geometryArray = feature.getJsonArray("geometry");
         assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
@@ -214,7 +214,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
         JsonObject feature = featureArray.getJsonObject(0);
         assertEquals("ADDED", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point3.getID());
+                TestData.point3.getId());
         assertEquals(path, feature.getString("id"));
         JsonArray geometryArray = feature.getJsonArray("geometry");
         assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
@@ -234,7 +234,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
         assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
         feature = featureArray.getJsonObject(0);
         assertEquals("ADDED", feature.getString("change"));
-        path = NodeRef.appendChild(TestData.linesType.getTypeName(), TestData.line1.getID());
+        path = NodeRef.appendChild(TestData.linesType.getTypeName(), TestData.line1.getId());
         assertEquals(path, feature.getString("id"));
         geometryArray = feature.getJsonArray("geometry");
         assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());

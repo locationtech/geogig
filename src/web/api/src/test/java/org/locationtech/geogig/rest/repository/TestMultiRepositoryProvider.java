@@ -31,9 +31,9 @@ import com.google.common.base.Throwables;
  * {@link HttpServletRequest} by asking the geoserver's {@link RepositoryManager}
  */
 public class TestMultiRepositoryProvider extends ExternalResource implements RepositoryProvider {
-    
+
     private Map<String, TestRepository> repositories;
-    
+
     @Override
     protected void before() throws Throwable {
         this.repositories = new HashMap<String, TestRepository>();
@@ -123,7 +123,6 @@ public class TestMultiRepositoryProvider extends ExternalResource implements Rep
         }
         return null;
     }
-
 
     @Override
     public String getRepositoryId(String repoName) {

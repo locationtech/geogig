@@ -64,7 +64,7 @@ public class FilteredChanges extends LegacyRepoResponse {
                 }
                 changes.close();
             } catch (IOException ioe) {
-                throw new RuntimeException (ioe);
+                throw new RuntimeException(ioe);
             }
         }
     }
@@ -73,6 +73,5 @@ public class FilteredChanges extends LegacyRepoResponse {
     public MediaType resolveMediaType(MediaType defaultMediaType) {
         return MediaType.APPLICATION_OCTET_STREAM;
     }
-
 
 }

@@ -85,8 +85,8 @@ public class InitRequestUtilTest {
     }
 
     @Test
-    public void testCreateGeoGIG_RepositoryName() throws URISyntaxException, IOException, UnsupportedEncodingException,
-            RepositoryConnectionException {
+    public void testCreateGeoGIG_RepositoryName() throws URISyntaxException, IOException,
+            UnsupportedEncodingException, RepositoryConnectionException {
         Map<String, String> params = Maps.newHashMap();
         Hints hints = InitRequestUtil.createHintsFromParameters("testRepo", params);
 
@@ -138,7 +138,9 @@ public class InitRequestUtilTest {
         Assert.assertEquals("Unexpected URI Scheme", "postgresql", actual.getScheme());
         Assert.assertEquals("Unexpected URI Host", "fakeHost", actual.getHost());
         Assert.assertEquals("Unexpected URI Port", 8899, actual.getPort());
-        Assert.assertEquals("Unexpected URI Path", "/pgDatabaseName/fakeSchema/testRepo", actual.getPath());
-        Assert.assertEquals("Unexpected URI Query", "user=fakeUser&password=fakePassword", actual.getQuery());
+        Assert.assertEquals("Unexpected URI Path", "/pgDatabaseName/fakeSchema/testRepo",
+                actual.getPath());
+        Assert.assertEquals("Unexpected URI Query", "user=fakeUser&password=fakePassword",
+                actual.getQuery());
     }
 }

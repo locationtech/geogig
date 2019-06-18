@@ -51,7 +51,7 @@ public class FilteredChangesController extends AbstractRepositoryController {
     @Autowired
     private LegacyFilteredChangesService legacyFilteredChangesService;
 
-    @RequestMapping(method = {GET, PUT, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { GET, PUT, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(POST.toString()));

@@ -90,8 +90,8 @@ public class DiffTest extends AbstractWebOpTest {
                 "pathFilter", "Points", "showGeometryChanges", "false");
         buildCommand(options).run(testContext.get());
 
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point2.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point2.getId());
 
         RevFeature point2 = RevFeature.builder().build(TestData.point2);
 
@@ -119,8 +119,8 @@ public class DiffTest extends AbstractWebOpTest {
                 "pathFilter", "Points", "showGeometryChanges", "true");
         buildCommand(options).run(testContext.get());
 
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point2.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point2.getId());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));

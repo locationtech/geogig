@@ -107,8 +107,7 @@ public class Merge extends AbstractWebAPICommand {
         MergeOp merge = geogig.command(MergeOp.class);
         merge.setAuthor(authorName.orElse(null), authorEmail.orElse(null));
 
-        final Optional<ObjectId> oid = geogig.command(RevParse.class).setRefSpec(commit)
-                .call();
+        final Optional<ObjectId> oid = geogig.command(RevParse.class).setRefSpec(commit).call();
         if (oid.isPresent()) {
             merge.addCommit(oid.get());
         } else {

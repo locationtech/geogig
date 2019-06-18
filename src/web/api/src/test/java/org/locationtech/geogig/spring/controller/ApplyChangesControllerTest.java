@@ -48,12 +48,11 @@ public class ApplyChangesControllerTest extends AbstractControllerTest {
         repoProvider.getTestRepository("repo1").initializeRpository();
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/applychanges");
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/applychanges");
         perform(post).andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_XML))
-                .andExpect(content().string(containsString(
-                        "<response><success>false</success></response>")));
+                .andExpect(content().contentType(MediaType.APPLICATION_XML)).andExpect(content()
+                        .string(containsString("<response><success>false</success></response>")));
         repo.close();
     }
 
@@ -95,12 +94,11 @@ public class ApplyChangesControllerTest extends AbstractControllerTest {
             changes.write(baos, call);
         }
         // send the bytes
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/applychanges")
-                        .content(baos.toByteArray());
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/applychanges").content(baos.toByteArray());
         String contentAsString = perform(post).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.TEXT_PLAIN))
-                .andReturn().getResponse().getContentAsString();
+                .andExpect(content().contentType(MediaType.TEXT_PLAIN)).andReturn().getResponse()
+                .getContentAsString();
         // if the return value is not an ObjectId, the parsing on the next line will fail the test
         ObjectId.valueOf(contentAsString);
         repo.close();

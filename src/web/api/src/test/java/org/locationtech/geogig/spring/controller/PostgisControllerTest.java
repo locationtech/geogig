@@ -76,7 +76,7 @@ public class PostgisControllerTest extends AbstractControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.task").exists()).andExpect(jsonPath("$.task.id").exists())
                 .andReturn();
-                //.andExpect(jsonPath("$.task.status").value("RUNNING")).andReturn();
+        // .andExpect(jsonPath("$.task.status").value("RUNNING")).andReturn();
 
         String jsonString = result.getResponse().getContentAsString();
         JsonObject rootObject = Json.createReader(new StringReader(jsonString)).readObject();

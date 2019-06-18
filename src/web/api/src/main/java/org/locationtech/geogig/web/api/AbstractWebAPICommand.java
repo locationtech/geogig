@@ -85,7 +85,6 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
         }
     }
 
-
     /**
      * This function either builds a GeoGigTransaction to run commands off of if there is a
      * transactionId to build off of or the GeoGig commandLocator otherwise.

@@ -23,8 +23,6 @@ import java.util.UUID;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.metadata.iso.citation.Citations;
-import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
@@ -74,15 +72,13 @@ import org.locationtech.geogig.web.api.commands.UpdateRef;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.http.MediaType;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
 
 /**
  * Provides a wrapper for writing common GeoGig objects to a provided {@link XMLStreamWriter}.
@@ -399,14 +395,13 @@ public class ResponseWriter {
         for (PropertyDescriptor descriptor : descriptors) {
             out.writeStartArrayElement("attribute");
             writeElement("name", descriptor.getName().toString());
-            writeElement("type", FieldType.forBinding(descriptor.getType().getBinding()).name());
+            writeElement("type", FieldType.forBinding(descriptor.getBinding()).name());
             writeElement("minoccurs", Integer.toString(descriptor.getMinOccurs()));
             writeElement("maxoccurs", Integer.toString(descriptor.getMaxOccurs()));
             writeElement("nillable", Boolean.toString(descriptor.isNillable()));
-            PropertyType attrType = descriptor.getType();
-            if (attrType instanceof GeometryType) {
-                GeometryType gt = (GeometryType) attrType;
-                CoordinateReferenceSystem crs = gt.getCoordinateReferenceSystem();
+            if (descriptor.isGeometryDescriptor()) {
+                org.locationtech.geogig.crs.CoordinateReferenceSystem crs = descriptor
+                        .coordinateReferenceSystem();
                 String crsText = CrsTextSerializer.serialize(crs);
                 writeElement("crs", crsText);
             }
@@ -859,21 +854,14 @@ public class ResponseWriter {
         while (iter.hasNext()) {
             Entry<PropertyDescriptor, AttributeDiff> entry = iter.next();
             out.writeStartArrayElement("diff");
-            PropertyType attrType = entry.getKey().getType();
-            if (attrType instanceof GeometryType) {
+            PropertyDescriptor attrType = entry.getKey();
+            if (attrType.isGeometryDescriptor()) {
                 writeElement("geometry", "true");
-                GeometryType gt = (GeometryType) attrType;
-                CoordinateReferenceSystem crs = gt.getCoordinateReferenceSystem();
-                if (crs != null) {
-                    String crsCode = null;
-                    try {
-                        crsCode = CRS.lookupIdentifier(Citations.EPSG, crs, false);
-                    } catch (FactoryException e) {
-                        crsCode = null;
-                    }
-                    if (crsCode != null) {
-                        writeElement("crs", "EPSG:" + crsCode);
-                    }
+                org.locationtech.geogig.crs.CoordinateReferenceSystem crs = attrType
+                        .coordinateReferenceSystem();
+                if (!crs.isNull()) {
+                    String crsCode = CrsTextSerializer.serialize(crs);
+                    writeElement("crs", crsCode);
                 }
             }
             writeElement("attributename", entry.getKey().getName().toString());
@@ -939,22 +927,10 @@ public class ResponseWriter {
                                     .getDescriptors();
 
                             for (PropertyDescriptor attrib : attribs) {
-                                PropertyType attrType = attrib.getType();
-                                if (attrType instanceof GeometryType) {
-                                    GeometryType gt = (GeometryType) attrType;
-                                    CoordinateReferenceSystem crs = gt
-                                            .getCoordinateReferenceSystem();
-                                    if (crs != null) {
-                                        try {
-                                            crsCode = CRS.lookupIdentifier(Citations.EPSG, crs,
-                                                    false);
-                                        } catch (FactoryException e) {
-                                            crsCode = null;
-                                        }
-                                        if (crsCode != null) {
-                                            crsCode = "EPSG:" + crsCode;
-                                        }
-                                    }
+                                if (attrib.isGeometryDescriptor()) {
+                                    org.locationtech.geogig.crs.CoordinateReferenceSystem crs = attrib
+                                            .coordinateReferenceSystem();
+                                    crsCode = CrsTextSerializer.serialize(crs);
                                     break;
                                 }
                             }
@@ -1077,23 +1053,10 @@ public class ResponseWriter {
                             Collection<PropertyDescriptor> attribs = type.type().getDescriptors();
 
                             for (PropertyDescriptor attrib : attribs) {
-                                PropertyType attrType = attrib.getType();
-                                if (attrType instanceof GeometryType) {
-                                    GeometryType gt = (GeometryType) attrType;
-                                    CoordinateReferenceSystem crs = gt
-                                            .getCoordinateReferenceSystem();
-
-                                    if (crs != null) {
-                                        try {
-                                            crsCode = CRS.lookupIdentifier(Citations.EPSG, crs,
-                                                    false);
-                                        } catch (FactoryException e) {
-                                            crsCode = null;
-                                        }
-                                        if (crsCode != null) {
-                                            crsCode = "EPSG:" + crsCode;
-                                        }
-                                    }
+                                if (attrib.isGeometryDescriptor()) {
+                                    org.locationtech.geogig.crs.CoordinateReferenceSystem crs = attrib
+                                            .coordinateReferenceSystem();
+                                    crsCode = CrsTextSerializer.serialize(crs);
                                     break;
                                 }
                             }
@@ -1174,20 +1137,10 @@ public class ResponseWriter {
                         String crsCode = null;
 
                         for (PropertyDescriptor attrib : attribs) {
-                            PropertyType attrType = attrib.getType();
-                            if (attrType instanceof GeometryType) {
-                                GeometryType gt = (GeometryType) attrType;
-                                CoordinateReferenceSystem crs = gt.getCoordinateReferenceSystem();
-                                if (crs != null) {
-                                    try {
-                                        crsCode = CRS.lookupIdentifier(Citations.EPSG, crs, false);
-                                    } catch (FactoryException e) {
-                                        crsCode = null;
-                                    }
-                                    if (crsCode != null) {
-                                        crsCode = "EPSG:" + crsCode;
-                                    }
-                                }
+                            if (attrib.isGeometryDescriptor()) {
+                                org.locationtech.geogig.crs.CoordinateReferenceSystem crs = attrib
+                                        .coordinateReferenceSystem();
+                                crsCode = CrsTextSerializer.serialize(crs);
                                 break;
                             }
                         }

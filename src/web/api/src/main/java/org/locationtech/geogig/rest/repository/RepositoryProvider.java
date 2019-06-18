@@ -43,7 +43,7 @@ public interface RepositoryProvider {
      *
      * @param repositoryName The name of the repository.
      * @return True if a GeoGig Repository with the supplied name already exists that this provider
-     * can provide, false otherwise.
+     *         can provide, false otherwise.
      */
     public boolean hasGeoGig(final String repositoryName);
 
@@ -85,7 +85,7 @@ public interface RepositoryProvider {
      * @param repoName the Repository's name.
      *
      * @return A UUID associated with the specified Repository, or null if not found or not
-     * applicable.
+     *         applicable.
      */
     public String getRepositoryId(String repoName);
 }

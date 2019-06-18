@@ -208,8 +208,8 @@ public class RevertFeature extends AbstractWebAPICommand {
         builder.treeId(newRoot.getId());
         builder.author(authorName.orElse(null));
         builder.authorEmail(authorEmail.orElse(null));
-        builder.message(commitMessage
-                .orElseGet(() -> "Reverted changes made to " + featurePath + " at " + newCommitId.toString()));
+        builder.message(commitMessage.orElseGet(
+                () -> "Reverted changes made to " + featurePath + " at " + newCommitId.toString()));
 
         RevCommit mapped = builder.build();
         Repository repository = context.getRepository();

@@ -51,8 +51,7 @@ import com.google.common.collect.Sets;
  */
 @RestController
 @RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
-        + "/{repoName}/init",
-        produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
+        + "/{repoName}/init", produces = { APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE })
 public class RepositoryInitController extends AbstractController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryInitController.class);
@@ -60,7 +59,7 @@ public class RepositoryInitController extends AbstractController {
     @Autowired
     private RepositoryInitService repositoryInitService;
 
-    @RequestMapping(method = {GET, POST, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { GET, POST, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(PUT.toString()));
@@ -74,22 +73,18 @@ public class RepositoryInitController extends AbstractController {
         encode(repo, request, response);
     }
 
-    @PutMapping(consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
-    public void initRepositoryFromJsonOrXml(
-            @PathVariable(name = "repoName")String repoName,
-            @RequestBody InitRequest requestBody,
-            HttpServletRequest request, HttpServletResponse response)
-            throws RepositoryConnectionException {
+    @PutMapping(consumes = { APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE })
+    public void initRepositoryFromJsonOrXml(@PathVariable(name = "repoName") String repoName,
+            @RequestBody InitRequest requestBody, HttpServletRequest request,
+            HttpServletResponse response) throws RepositoryConnectionException {
         RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
         encode(repo, request, response);
     }
 
-    @PutMapping(consumes = {APPLICATION_FORM_URLENCODED_VALUE})
-    public void initRepositoryFromForm(
-            @PathVariable(name = "repoName")String repoName,
-            @RequestBody MultiValueMap<String, String> requestBody,
-            HttpServletRequest request, HttpServletResponse response)
-            throws RepositoryConnectionException {
+    @PutMapping(consumes = { APPLICATION_FORM_URLENCODED_VALUE })
+    public void initRepositoryFromForm(@PathVariable(name = "repoName") String repoName,
+            @RequestBody MultiValueMap<String, String> requestBody, HttpServletRequest request,
+            HttpServletResponse response) throws RepositoryConnectionException {
         RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
         encode(repo, request, response);
     }
@@ -106,8 +101,7 @@ public class RepositoryInitController extends AbstractController {
     }
 
     private RepositoryInitRepo initRepo(HttpServletRequest request, String repoName,
-            InitRequest requestBody)
-            throws RepositoryConnectionException {
+            InitRequest requestBody) throws RepositoryConnectionException {
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         if (repoProvider.isPresent()) {
             return repositoryInitService.initRepository(repoProvider.get(), repoName,
@@ -118,8 +112,7 @@ public class RepositoryInitController extends AbstractController {
     }
 
     private RepositoryInitRepo initRepo(HttpServletRequest request, String repoName,
-            MultiValueMap<String, String> requestBody)
-            throws RepositoryConnectionException {
+            MultiValueMap<String, String> requestBody) throws RepositoryConnectionException {
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         if (repoProvider.isPresent()) {
             return repositoryInitService.initRepository(repoProvider.get(), repoName,
@@ -132,30 +125,28 @@ public class RepositoryInitController extends AbstractController {
     // ---- API V2 methods ---- //
     @PutMapping(params = API_V2)
     public RepositoryInitRepo initRepositoryNoBody_v2(
-            @PathVariable(name = "repoName") String repoName,
-            HttpServletRequest request, HttpServletResponse response )
-            throws RepositoryConnectionException {
+            @PathVariable(name = "repoName") String repoName, HttpServletRequest request,
+            HttpServletResponse response) throws RepositoryConnectionException {
         RepositoryInitRepo repo = initRepo(request, repoName);
         response.setStatus(HttpStatus.CREATED.value());
         return repo;
     }
 
-    @PutMapping(params = API_V2, consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    @PutMapping(params = API_V2, consumes = { APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE })
     public RepositoryInitRepo initRepositoryFromJsonOrXml_v2(
-            @PathVariable(name = "repoName")String repoName,
-            @RequestBody InitRequest requestBody, HttpServletRequest request,
-            HttpServletResponse response) throws RepositoryConnectionException {
+            @PathVariable(name = "repoName") String repoName, @RequestBody InitRequest requestBody,
+            HttpServletRequest request, HttpServletResponse response)
+            throws RepositoryConnectionException {
         RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
         response.setStatus(HttpStatus.CREATED.value());
         return repo;
     }
 
-    @PutMapping(params = API_V2, consumes = {APPLICATION_FORM_URLENCODED_VALUE})
+    @PutMapping(params = API_V2, consumes = { APPLICATION_FORM_URLENCODED_VALUE })
     public RepositoryInitRepo initRepositoryFromForm_v2(
-            @PathVariable(name = "repoName")String repoName,
-            @RequestBody MultiValueMap<String, String> requestBody,
-            HttpServletRequest request, HttpServletResponse response)
-            throws RepositoryConnectionException {
+            @PathVariable(name = "repoName") String repoName,
+            @RequestBody MultiValueMap<String, String> requestBody, HttpServletRequest request,
+            HttpServletResponse response) throws RepositoryConnectionException {
         RepositoryInitRepo repo = initRepo(request, repoName, requestBody);
         response.setStatus(HttpStatus.CREATED.value());
         return repo;

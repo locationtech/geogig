@@ -25,18 +25,15 @@ import org.locationtech.geogig.model.ObjectId;
  */
 public abstract class AbstractStreamingWriterTest {
 
-    protected static final String CDATA1 = "\n" +
-            "    Since this is a CDATA section\n" +
-            "    I can use all sorts of reserved characters\n" +
-            "    like > < \" and &\n" +
-            "    or write things like\n" +
-            "    <foo></bar>\n" +
-            "    but my document is still well formed!\n";
+    protected static final String CDATA1 = "\n" + "    Since this is a CDATA section\n"
+            + "    I can use all sorts of reserved characters\n" + "    like > < \" and &\n"
+            + "    or write things like\n" + "    <foo></bar>\n"
+            + "    but my document is still well formed!\n";
 
-    protected static final String CDATA2 = "\n" +
-            "    This is another CDATA section\n";
+    protected static final String CDATA2 = "\n" + "    This is another CDATA section\n";
 
     private StringWriter sink;
+
     private StreamingWriter writer;
 
     protected abstract StreamingWriter createWriter(Writer sink);
@@ -104,7 +101,7 @@ public abstract class AbstractStreamingWriterTest {
     public void testWriteSingleStringElement() throws IOException {
         writer.writeElement("stringElement", "StringValue");
         closeDocument();
-        verify(new String[]{"stringElement"}, "StringValue");
+        verify(new String[] { "stringElement" }, "StringValue");
     }
 
     @Test
@@ -113,7 +110,7 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeElement("stringElement", "StringValue");
         writer.writeEndElement();
         closeDocument();
-        verify(new String[]{"compositeElement", "stringElement"}, "StringValue");
+        verify(new String[] { "compositeElement", "stringElement" }, "StringValue");
     }
 
     @Test
@@ -123,7 +120,7 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "simpleArray"}, new String[]{});
+        verifyArray(new String[] { "root", "simpleArray" }, new String[] {});
     }
 
     @Test
@@ -136,8 +133,8 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "simpleArray"},
-                new String[]{"StringValue1", "StringValue2", "StringValue3"});
+        verifyArray(new String[] { "root", "simpleArray" },
+                new String[] { "StringValue1", "StringValue2", "StringValue3" });
     }
 
     @Test
@@ -145,56 +142,56 @@ public abstract class AbstractStreamingWriterTest {
         // verify that a series of zeros is interpreted as a String, not an int
         writer.writeElement("objectId", ObjectId.NULL);
         closeDocument();
-        verify(new String[]{"objectId"}, "0000000000000000000000000000000000000000");
+        verify(new String[] { "objectId" }, "0000000000000000000000000000000000000000");
     }
 
     @Test
     public void testWriteInteger() throws IOException {
         writer.writeElement("integerElement", Integer.valueOf(17));
         closeDocument();
-        verify(new String[]{"integerElement"}, "17");
+        verify(new String[] { "integerElement" }, "17");
     }
 
     @Test
     public void testWriteLong() throws IOException {
         writer.writeElement("longElement", Long.valueOf("1234567890987"));
         closeDocument();
-        verify(new String[]{"longElement"}, "1234567890987");
+        verify(new String[] { "longElement" }, "1234567890987");
     }
 
     @Test
     public void testWriteFloat() throws IOException {
         writer.writeElement("floatElement", Float.valueOf("1234.56"));
         closeDocument();
-        verify(new String[]{"floatElement"}, "1234.56");
+        verify(new String[] { "floatElement" }, "1234.56");
     }
 
     @Test
     public void testWriteDouble() throws IOException {
         writer.writeElement("doubleElement", Double.valueOf("12345343.55331"));
         closeDocument();
-        verify(new String[]{"doubleElement"}, "12345343.55331");
+        verify(new String[] { "doubleElement" }, "12345343.55331");
     }
 
     @Test
     public void testWriteBigInteger() throws IOException {
         writer.writeElement("bigIntegerElement", BigInteger.TEN);
         closeDocument();
-        verify(new String[]{"bigIntegerElement"}, "10");
+        verify(new String[] { "bigIntegerElement" }, "10");
     }
 
     @Test
     public void testWriteBigDecimal() throws IOException {
         writer.writeElement("bigDecimalElement", new BigDecimal("1.234567890987654321"));
         closeDocument();
-        verify(new String[]{"bigDecimalElement"}, "1.234567890987654321");
+        verify(new String[] { "bigDecimalElement" }, "1.234567890987654321");
     }
 
     @Test
     public void testWriteNull() throws IOException {
         writer.writeElement("nullElement", null);
         closeDocument();
-        verify(new String[]{"nullElement"}, null);
+        verify(new String[] { "nullElement" }, null);
     }
 
     @Test
@@ -206,7 +203,8 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "objectIds"}, new String[]{"0000000000000000000000000000000000000000"});
+        verifyArray(new String[] { "root", "objectIds" },
+                new String[] { "0000000000000000000000000000000000000000" });
     }
 
     @Test
@@ -218,7 +216,7 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "integerArrayElements"}, new String[]{"17", "18"});
+        verifyArray(new String[] { "root", "integerArrayElements" }, new String[] { "17", "18" });
     }
 
     @Test
@@ -230,7 +228,8 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "longArrayElements"}, new String[]{"1234567890987", "1234567890988"});
+        verifyArray(new String[] { "root", "longArrayElements" },
+                new String[] { "1234567890987", "1234567890988" });
     }
 
     @Test
@@ -242,7 +241,8 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "floatArrayElements"}, new String[]{"1234.56", "9876.54"});
+        verifyArray(new String[] { "root", "floatArrayElements" },
+                new String[] { "1234.56", "9876.54" });
     }
 
     @Test
@@ -254,7 +254,8 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "doubleArrayElements"}, new String[]{"12345343.55331", "98765432.12345"});
+        verifyArray(new String[] { "root", "doubleArrayElements" },
+                new String[] { "12345343.55331", "98765432.12345" });
     }
 
     @Test
@@ -266,7 +267,8 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "bigIntegerArrayElements"}, new String[]{"1234567890", "9876543210"});
+        verifyArray(new String[] { "root", "bigIntegerArrayElements" },
+                new String[] { "1234567890", "9876543210" });
     }
 
     @Test
@@ -278,7 +280,8 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "bigDecimalElements"}, new String[]{"1.234567890987654321", "98.76543210"});
+        verifyArray(new String[] { "root", "bigDecimalElements" },
+                new String[] { "1.234567890987654321", "98.76543210" });
     }
 
     @Test
@@ -295,7 +298,7 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "nullArrayElements"}, new String[]{null, null});
+        verifyArray(new String[] { "root", "nullArrayElements" }, new String[] { null, null });
     }
 
     @Test
@@ -311,14 +314,14 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeElement("fakeBooleanElement8", "FAlSE");
         writer.writeEndElement();
         closeDocument();
-        verify(new String[]{"root", "booleanElement1"}, "true");
-        verify(new String[]{"root", "booleanElement2"}, "false");
-        verify(new String[]{"root", "booleanElement3"}, "true");
-        verify(new String[]{"root", "booleanElement4"}, "false");
-        verify(new String[]{"root", "fakeBooleanElement5"}, "True");
-        verify(new String[]{"root", "fakeBooleanElement6"}, "False");
-        verify(new String[]{"root", "fakeBooleanElement7"}, "TRUe");
-        verify(new String[]{"root", "fakeBooleanElement8"}, "FAlSE");
+        verify(new String[] { "root", "booleanElement1" }, "true");
+        verify(new String[] { "root", "booleanElement2" }, "false");
+        verify(new String[] { "root", "booleanElement3" }, "true");
+        verify(new String[] { "root", "booleanElement4" }, "false");
+        verify(new String[] { "root", "fakeBooleanElement5" }, "True");
+        verify(new String[] { "root", "fakeBooleanElement6" }, "False");
+        verify(new String[] { "root", "fakeBooleanElement7" }, "TRUe");
+        verify(new String[] { "root", "fakeBooleanElement8" }, "FAlSE");
     }
 
     @Test
@@ -336,15 +339,15 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "booleans"},
-                new String[]{"true", "false", "true", "false", "True", "False", "TRUe", "FAlSE"});
+        verifyArray(new String[] { "root", "booleans" }, new String[] { "true", "false", "true",
+                "false", "True", "False", "TRUe", "FAlSE" });
     }
 
     @Test
     public void testWriteCDataElement() throws IOException {
         writer.writeCDataElement("CDataElement", CDATA1);
         closeDocument();
-        verify(new String[]{"CDataElement"}, CDATA1);
+        verify(new String[] { "CDataElement" }, CDATA1);
     }
 
     @Test
@@ -356,7 +359,7 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArray(new String[]{"root", "CDataElements"}, new String[]{CDATA1, CDATA2});
+        verifyArray(new String[] { "root", "CDataElements" }, new String[] { CDATA1, CDATA2 });
     }
 
     @Test
@@ -365,7 +368,7 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeCDataElement("CDataElement", null);
         writer.writeEndElement();
         closeDocument();
-        verify(new String[]{"root", "CDataElement"}, null);
+        verify(new String[] { "root", "CDataElement" }, null);
     }
 
     @Test
@@ -377,8 +380,8 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndElement();
         writer.writeEndElement();
         closeDocument();
-        verifyAttribute(new String[]{"root", "attributeElement", "attribute1"}, "value1");
-        verifyAttribute(new String[]{"root", "attributeElement", "attribute2"}, "value2");
+        verifyAttribute(new String[] { "root", "attributeElement", "attribute1" }, "value1");
+        verifyAttribute(new String[] { "root", "attributeElement", "attribute2" }, "value2");
     }
 
     @Test
@@ -394,7 +397,7 @@ public abstract class AbstractStreamingWriterTest {
         writer.writeEndArray();
         writer.writeEndElement();
         closeDocument();
-        verifyArrayElement(new String[]{"root", "arrayElements", "arrayElement1"}, "value1");
-        verifyArrayElement(new String[]{"root", "arrayElements", "arrayElement2"}, "value2");
+        verifyArrayElement(new String[] { "root", "arrayElements", "arrayElement1" }, "value1");
+        verifyArrayElement(new String[] { "root", "arrayElements", "arrayElement2" }, "value2");
     }
 }

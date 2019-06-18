@@ -34,8 +34,7 @@ public class ObjectExistsControllerTest extends AbstractControllerTest {
     public void testMissingOid() throws Exception {
         repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/exists");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get("/repos/repo1/repo/exists");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(containsString("You must specify an object id.")));
@@ -45,8 +44,8 @@ public class ObjectExistsControllerTest extends AbstractControllerTest {
     public void testInvalidOid() throws Exception {
         repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/exists?oid=1234");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/exists?oid=1234");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(containsString("You must specify a valid object id.")));
@@ -56,9 +55,8 @@ public class ObjectExistsControllerTest extends AbstractControllerTest {
     public void testOidNotFound() throws Exception {
         repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get(
-                        "/repos/repo1/repo/exists?oid=0000000000000000000000000000000000000000");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/exists?oid=0000000000000000000000000000000000000000");
         perform(get).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(containsString("0")));
@@ -75,9 +73,8 @@ public class ObjectExistsControllerTest extends AbstractControllerTest {
             RevCommit next = call.next();
             // build the objects API request with the oid String
             String oid = next.getId().toString();
-            MockHttpServletRequestBuilder get =
-                    MockMvcRequestBuilders.get(
-                            "/repos/repo1/repo/exists?oid=" + oid);
+            MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                    .get("/repos/repo1/repo/exists?oid=" + oid);
             perform(get).andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                     .andExpect(content().string(containsString("1")));

@@ -30,8 +30,8 @@ import com.google.common.base.Preconditions;
  * <p>
  * Concrete format options are handled by implementations of {@link DataStoreImportContextService},
  * provided by the {@link DataStoreImportContextServiceFactory}. All
- * {@link DataStoreImportContextService} implementations should be listed in
- * <b> {@code META-INF/services/org.locationtech.geogig.rest.geotools.DataStoreImportContextService}
+ * {@link DataStoreImportContextService} implementations should be listed in <b>
+ * {@code META-INF/services/org.locationtech.geogig.rest.geotools.DataStoreImportContextService}
  * </b>
  * <p>
  * The {@link DataStoreImportContextService} provides the data source where to import from. This
@@ -194,8 +194,8 @@ public class Import extends AbstractWebAPICommand {
         return RequestMethod.POST.equals(method);
     }
 
-    private DataStoreImportOp<?> buildImportOp(
-            final DataStoreImportContextService ctxService, Context context) {
+    private DataStoreImportOp<?> buildImportOp(final DataStoreImportContextService ctxService,
+            Context context) {
         // collect Import parameters
         final String layerTableName = options.getFirstValue(LAYER_KEY);
         final boolean all = layerTableName == null;

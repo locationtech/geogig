@@ -30,6 +30,7 @@ public class Variants {
         geopkgParams.put("type", "geopackage");
         GEOPKG_MEDIA_TYPE = new MediaType(MediaType.APPLICATION_OCTET_STREAM, geopkgParams);
     }
+
     public static Optional<MediaType> getMediaTypeByExtension(HttpServletRequest request,
             List<MediaType> supported) {
         String extension = RESTUtils.getStringAttribute(request, "extension");

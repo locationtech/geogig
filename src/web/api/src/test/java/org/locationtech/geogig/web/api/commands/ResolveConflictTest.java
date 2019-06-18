@@ -50,8 +50,8 @@ public class ResolveConflictTest extends AbstractWebOpTest {
     @Test
     public void testBuildParameters() {
         String someObjectId = RevObjectTestSupport.hashString("object").toString();
-        ParameterSet options = TestParams.of("path", "some/path", "objectid",
-                someObjectId, "transactionId", UUID.randomUUID().toString());
+        ParameterSet options = TestParams.of("path", "some/path", "objectid", someObjectId,
+                "transactionId", UUID.randomUUID().toString());
 
         ResolveConflict op = (ResolveConflict) buildCommand(options);
         assertEquals("some/path", op.path);
@@ -78,7 +78,7 @@ public class ResolveConflictTest extends AbstractWebOpTest {
         Repository geogig = testContext.get().getRepository();
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
@@ -111,7 +111,7 @@ public class ResolveConflictTest extends AbstractWebOpTest {
         testData.checkout("master");
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 

@@ -15,6 +15,7 @@ import static org.locationtech.geogig.test.TestData.point1;
 import static org.locationtech.geogig.test.TestData.pointsType;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.geogig.geotools.adapt.GT;
+import org.locationtech.geogig.geotools.cli.geopkg.MemoryDataStoreWithProvidedFIDSupport;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.geotools.geopkg.GeopkgImportResult;
 import org.locationtech.geogig.model.NodeRef;
@@ -348,8 +351,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = support.createEmptyDatabase();
 
-        MemoryDataStore memStore = TestData.newMemoryDataStore();
-        memStore.addFeatures(ImmutableList.of(TestData.point1));
+        MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
+        memStore.addFeatures(Collections.singletonList(GT.adapt(TestData.point1)));
 
         DataStore gpkgStore = support.createDataStore(file);
         try {
@@ -364,10 +367,10 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init();
         testData.addAndCommit("Initial commit", point1);
-        
+
         repo.command(GeopkgAuditExport.class).setDatabase(file).setSourcePathspec("master:Points")
                 .setTargetTableName("Points").call();
-        
+
         // modify point in the geopackage
         gpkgStore = support.createDataStore(file);
         Transaction gttx = new DefaultTransaction();
@@ -383,7 +386,6 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         }
 
         testData.addAndCommit("Add point2", TestData.point2);
-        
 
         GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
 
@@ -437,8 +439,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = support.createEmptyDatabase();
 
-        MemoryDataStore memStore = TestData.newMemoryDataStore();
-        memStore.addFeatures(ImmutableList.of(TestData.point1));
+        MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
+        memStore.addFeatures(Collections.singletonList(GT.adapt(TestData.point1)));
 
         DataStore gpkgStore = support.createDataStore(file);
         try {
@@ -533,8 +535,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = support.createEmptyDatabase();
 
-        MemoryDataStore memStore = TestData.newMemoryDataStore();
-        memStore.addFeatures(ImmutableList.of(TestData.point1));
+        MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
+        memStore.addFeatures(Collections.singletonList(GT.adapt(TestData.point1)));
 
         DataStore gpkgStore = support.createDataStore(file);
         try {
@@ -630,8 +632,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertFalse("Expected repo to be empty, but has nodes", nodeIterator.hasNext());
     }
 
-    private AsyncContext.AsyncCommand<?> run(Import op) throws InterruptedException,
-            ExecutionException {
+    private AsyncContext.AsyncCommand<?> run(Import op)
+            throws InterruptedException, ExecutionException {
         return run(op, "1");
     }
 

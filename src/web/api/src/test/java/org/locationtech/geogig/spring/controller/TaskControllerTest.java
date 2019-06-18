@@ -265,12 +265,10 @@ public class TaskControllerTest extends AbstractControllerTest {
                 .get(String.format("/tasks/%d/download", taskId));
 
         MvcResult result = perform(taskDownloadRequest).andExpect(status().isOk())
-                .andExpect(content()
-                        .contentTypeCompatibleWith(MediaType.APPLICATION_OCTET_STREAM))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_OCTET_STREAM))
                 .andReturn();
 
-        ObjectId fromResponse = ObjectId
-                .create(result.getResponse().getContentAsByteArray());
+        ObjectId fromResponse = ObjectId.create(result.getResponse().getContentAsByteArray());
         assertEquals(fakeObjectId, fromResponse);
 
     }

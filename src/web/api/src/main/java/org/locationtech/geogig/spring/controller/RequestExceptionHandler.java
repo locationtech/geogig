@@ -81,8 +81,7 @@ public class RequestExceptionHandler extends AbstractController {
     }
 
     private void buildResponse(Exception ex, HttpServletRequest request,
-            HttpServletResponse response,
-            HttpHeaders headers, HttpStatus status) {
+            HttpServletResponse response, HttpHeaders headers, HttpStatus status) {
         for (Entry<String, List<String>> entry : headers.entrySet()) {
             for (String value : entry.getValue()) {
                 response.addHeader(entry.getKey(), value);
@@ -95,6 +94,7 @@ public class RequestExceptionHandler extends AbstractController {
             encodeError(ex2, request, response);
         }
     }
+
     protected final void encodeError(Exception ex, final HttpServletRequest request,
             final HttpServletResponse response) {
         // set the Content-Type

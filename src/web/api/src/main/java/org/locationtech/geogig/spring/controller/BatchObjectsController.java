@@ -51,7 +51,7 @@ public class BatchObjectsController extends AbstractRepositoryController {
     @Autowired
     private LegacyBatchObjectsService legacyBatchObjectsService;
 
-    @RequestMapping(method = {GET, PUT, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { GET, PUT, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(POST.toString()));
@@ -70,8 +70,8 @@ public class BatchObjectsController extends AbstractRepositoryController {
                 return;
             }
             // get the FilteredChanges from the service
-            BatchObjects batchObjects = legacyBatchObjectsService.batchObjects(provider,
-                    repoName, requestInput);
+            BatchObjects batchObjects = legacyBatchObjectsService.batchObjects(provider, repoName,
+                    requestInput);
             // encode to Stream
             encodeToStream(batchObjects, request, response);
         } else {

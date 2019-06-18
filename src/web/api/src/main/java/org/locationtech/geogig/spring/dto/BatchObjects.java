@@ -103,5 +103,4 @@ public class BatchObjects extends LegacyRepoResponse {
         return MediaType.APPLICATION_OCTET_STREAM;
     }
 
-
 }

@@ -25,34 +25,50 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class InitRequest {
 
     public static final String DBHOST = "dbHost";
+
     public static final String DBNAME = "dbName";
+
     public static final String DBPORT = "dbPort";
+
     public static final String DBUSER = "dbUser";
+
     public static final String DBSCHEMA = "dbSchema";
+
     public static final String DBPASSWORD = "dbPassword";
+
     public static final String PARENTDIRECTORY = "parentDirectory";
+
     public static final String AUTHORNAME = "authorName";
+
     public static final String AUTHOREMAIL = "authorEmail";
 
     // Database config
     @XmlElement
     private String dbHost = "localhost";
+
     @XmlElement
     private String dbName;
+
     @XmlElement
     private String dbSchema = "public";
+
     @XmlElement
     private String dbPassword;
+
     @XmlElement
     private String dbUser = "postgres";
+
     @XmlElement
     private int dbPort = 5432;
+
     // File/Directory config
     @XmlElement
     private String parentDirectory;
+
     // Author config
     @XmlElement
     private String authorName;
+
     @XmlElement
     private String authorEmail;
 
@@ -171,15 +187,13 @@ public class InitRequest {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("InitRequest{");
-        sb.append(PARENTDIRECTORY).append(" = ").append(parentDirectory)
-                .append(", ").append(DBHOST).append(" = ").append(dbHost)
-                .append(", ").append(DBPORT).append(" = ").append(dbPort)
-                .append(", ").append(DBNAME).append(" = ").append(dbName)
-                .append(", ").append(DBUSER).append(" = ").append(dbUser)
-                .append(", ").append(DBPASSWORD).append(" = ").append(dbPassword)
-                .append(", ").append(AUTHORNAME).append(" = ").append(authorName)
-                .append(", ").append(AUTHOREMAIL).append(" = ").append(authorEmail)
-                .append('}');
+        sb.append(PARENTDIRECTORY).append(" = ").append(parentDirectory).append(", ").append(DBHOST)
+                .append(" = ").append(dbHost).append(", ").append(DBPORT).append(" = ")
+                .append(dbPort).append(", ").append(DBNAME).append(" = ").append(dbName)
+                .append(", ").append(DBUSER).append(" = ").append(dbUser).append(", ")
+                .append(DBPASSWORD).append(" = ").append(dbPassword).append(", ").append(AUTHORNAME)
+                .append(" = ").append(authorName).append(", ").append(AUTHOREMAIL).append(" = ")
+                .append(authorEmail).append('}');
         return sb.toString();
     }
 

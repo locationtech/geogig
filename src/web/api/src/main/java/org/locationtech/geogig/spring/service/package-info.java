@@ -11,7 +11,7 @@
 /**
  * Package for Spring MVC internal Services for the GeoGig Web API. Objects in this class provide
  * services used by {@linkplain org.locationtech.geogig.spring.controller Controller instances} that
- * can create/obtain {@linkplain org.locationtech.geogig.spring.dto DTO instances} to satisfy
- * GeoGig Web API requests.
+ * can create/obtain {@linkplain org.locationtech.geogig.spring.dto DTO instances} to satisfy GeoGig
+ * Web API requests.
  */
 package org.locationtech.geogig.spring.service;

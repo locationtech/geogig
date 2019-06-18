@@ -38,8 +38,8 @@ public class ObjectsControllerTest extends AbstractControllerTest {
     public void testInvalidId() throws Exception {
         repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/objects/invalid");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/objects/invalid");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString("Invalid hash string")));
@@ -49,9 +49,8 @@ public class ObjectsControllerTest extends AbstractControllerTest {
     public void testIdNotFound() throws Exception {
         repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get(
-                        "/repos/repo1/repo/objects/0000000000000000000000000000000000000000");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/objects/0000000000000000000000000000000000000000");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString("Object does not exist")));
@@ -73,9 +72,8 @@ public class ObjectsControllerTest extends AbstractControllerTest {
             serialFac.write(next, baos);
             // build the objects API request with the oid String
             String oid = next.getId().toString();
-            MockHttpServletRequestBuilder get =
-                    MockMvcRequestBuilders.get(
-                            "/repos/repo1/repo/objects/" + oid);
+            MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                    .get("/repos/repo1/repo/objects/" + oid);
             byte[] contentAsByteArray = perform(get).andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
                     // verify the bytes

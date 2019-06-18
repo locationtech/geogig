@@ -158,8 +158,8 @@ public class LegacyConsoleService extends AbstractRepositoryService {
             output.append(line).append('\n');
             count += line.length();
             if (count >= limit) {
-                output.append("\nNote: output limited to ").append(count)
-                        .append(" characters. Run config web.console.limit <newlimit> to change the current ")
+                output.append("\nNote: output limited to ").append(count).append(
+                        " characters. Run config web.console.limit <newlimit> to change the current ")
                         .append(limit).append(" soft limit.");
                 break;
             }

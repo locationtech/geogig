@@ -26,8 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
-        + "/{repoName}/index",
-        produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
+        + "/{repoName}/index", produces = { APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE })
 public class IndexController extends RepositoryCommandController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexController.class);

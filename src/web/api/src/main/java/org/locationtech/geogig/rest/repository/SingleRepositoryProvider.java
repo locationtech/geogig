@@ -64,7 +64,7 @@ public class SingleRepositoryProvider implements RepositoryProvider {
         } catch (Exception e) {
             Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
-        }finally {
+        } finally {
             this.repo = null;
         }
     }

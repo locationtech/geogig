@@ -56,8 +56,7 @@ import org.springframework.http.HttpStatus;
  */
 public class CommandBuilder {
 
-    private final static Map<String, Supplier<AbstractWebAPICommand>> MAPPINGS =
-            new HashMap<>(36);
+    private final static Map<String, Supplier<AbstractWebAPICommand>> MAPPINGS = new HashMap<>(36);
     static {
         MAPPINGS.put("delete", RequestDeleteRepositoryToken::new);
         MAPPINGS.put("rename", RenameRepository::new);

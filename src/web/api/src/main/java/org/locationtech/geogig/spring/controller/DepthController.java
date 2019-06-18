@@ -47,7 +47,7 @@ public class DepthController extends AbstractRepositoryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DepthController.class);
 
-    @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { PUT, POST, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(GET.toString()));

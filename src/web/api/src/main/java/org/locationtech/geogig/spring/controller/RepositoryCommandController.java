@@ -63,8 +63,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
-        + "/{repoName}",
-        produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
+        + "/{repoName}", produces = { APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE })
 public class RepositoryCommandController extends AbstractController {
 
     public static final String UPLOAD_FILE_KEY = "fileUpload";
@@ -75,12 +74,12 @@ public class RepositoryCommandController extends AbstractController {
     private RepositoryService repositoryService;
 
     @GetMapping
-    public void getRepositoryInfo(@PathVariable String repoName,
-            final HttpServletRequest request, HttpServletResponse response) {
+    public void getRepositoryInfo(@PathVariable String repoName, final HttpServletRequest request,
+            HttpServletResponse response) {
         Optional<RepositoryProvider> repoProvider = getRepoProvider(request);
         if (repoProvider.isPresent()) {
-            RepositoryInfo repositoryInfo =
-                    repositoryService.getRepositoryInfo(repoProvider.get(), repoName);
+            RepositoryInfo repositoryInfo = repositoryService.getRepositoryInfo(repoProvider.get(),
+                    repoName);
             if (repositoryInfo != null) {
                 encode(repositoryInfo, request, response);
             } else {
@@ -106,8 +105,7 @@ public class RepositoryCommandController extends AbstractController {
         if (repoProvider.isPresent()) {
             RepositoryProvider provider = repoProvider.get();
             if (!provider.hasGeoGig(repoName)) {
-                throw new CommandSpecException("No repository to delete.",
-                        HttpStatus.NOT_FOUND);
+                throw new CommandSpecException("No repository to delete.", HttpStatus.NOT_FOUND);
             }
 
             Repository geogig = provider.getGeogig(repoName).get();
@@ -139,8 +137,7 @@ public class RepositoryCommandController extends AbstractController {
 
             }, request, response);
         } else {
-            throw new CommandSpecException("No repository to delete.",
-                    HttpStatus.NOT_FOUND);
+            throw new CommandSpecException("No repository to delete.", HttpStatus.NOT_FOUND);
         }
     }
 
@@ -170,8 +167,7 @@ public class RepositoryCommandController extends AbstractController {
         RequestMethod method = RequestMethod.valueOf(request.getMethod());
         File uploadedFile = null;
         if (file != null) {
-            uploadedFile = File.createTempFile(
-                    "geogig-" + UPLOAD_FILE_KEY + "-", ".tmp");
+            uploadedFile = File.createTempFile("geogig-" + UPLOAD_FILE_KEY + "-", ".tmp");
             uploadedFile.deleteOnExit();
             // copy the upload data
             try (InputStream uploadInputStream = file.getInputStream();

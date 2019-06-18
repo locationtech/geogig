@@ -49,8 +49,8 @@ public class TestParams extends MultiMapParams {
                 File tempFile = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
                 tempFile.deleteOnExit();
                 try (FileOutputStream fos = new FileOutputStream(tempFile);
-                    InputStream bais = new ByteArrayInputStream(fileUploadContents.getBytes(
-                        StandardCharsets.UTF_8))) {
+                        InputStream bais = new ByteArrayInputStream(
+                                fileUploadContents.getBytes(StandardCharsets.UTF_8))) {
                     IOUtils.copy(bais, fos);
                     fos.flush();
                 }

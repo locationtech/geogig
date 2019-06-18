@@ -21,7 +21,6 @@ import javax.json.JsonValue.ValueType;
 
 import com.google.common.collect.Lists;
 
-
 /**
  *
  */

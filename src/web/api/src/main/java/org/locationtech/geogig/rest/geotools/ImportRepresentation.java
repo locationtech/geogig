@@ -33,8 +33,7 @@ public class ImportRepresentation extends AsyncCommandRepresentation<RevTree> {
     }
 
     @Override
-    protected void writeResultBody(StreamingWriter w, RevTree result)
-            throws StreamWriterException {
+    protected void writeResultBody(StreamingWriter w, RevTree result) throws StreamWriterException {
         if (result != null) {
             w.writeStartElement("RevTree");
             w.writeElement("treeId", result.getId().toString());

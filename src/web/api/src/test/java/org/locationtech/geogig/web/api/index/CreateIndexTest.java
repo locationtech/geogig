@@ -75,7 +75,7 @@ public class CreateIndexTest extends AbstractIndexWebOpTest {
 
         buildCommand(options).run(testContext.get());
 
-        Envelope expectedBounds = new Envelope(-90, 90, -180, 180);
+        Envelope expectedBounds = new Envelope(-180, 180, -90, 90);
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
@@ -161,7 +161,7 @@ public class CreateIndexTest extends AbstractIndexWebOpTest {
 
         buildCommand(options).run(testContext.get());
 
-        Envelope expectedBounds = new Envelope(-90, 90, -180, 180);
+        Envelope expectedBounds = new Envelope(-180, 180, -90, 90);
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));

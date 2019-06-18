@@ -43,7 +43,8 @@ public abstract class LegacyRepoResponse extends LegacyResponse {
      * {@link #encode(java.io.Writer, org.springframework.http.MediaType, java.lang.String)} except
      * that this method provides for direct OutputStream writing. This is to allow responses to
      * reuse encoding logic that does not support writing to Writers.
-     * @param outputStream the stream to which to  write this response.
+     * 
+     * @param outputStream the stream to which to write this response.
      * @param format output format.
      * @param baseURL Base URL for encoding relative links.
      */
@@ -55,6 +56,7 @@ public abstract class LegacyRepoResponse extends LegacyResponse {
      * Default encoding logic for Repository Command responses. The default implementation is to
      * simply wrap the OutputStream with a PrintWriter and call {@link #encode(java.io.Writer)}.
      * Subclasses that need access to the OutputStream itself should override this.
+     * 
      * @param out the stream to which to write this response.
      */
     protected void encode(OutputStream out) {

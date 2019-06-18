@@ -55,8 +55,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("authorName", "Tester", "authorEmail",
                 "tester@example.com", "commitMessage", "someCommitMessage", "mergeMessage",
                 "someMergeMessage", "oldCommitId", oldCommitId, "newCommitId", newCommitId, "path",
-                "some/path", "transactionId",
-                UUID.randomUUID().toString());
+                "some/path", "transactionId", UUID.randomUUID().toString());
 
         RevertFeature op = (RevertFeature) buildCommand(options);
         assertEquals("some/path", op.featurePath);
@@ -83,7 +82,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
         RevCommit commit2 = geogig.command(CommitOp.class).setMessage("modify point1").call();
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
@@ -110,15 +109,12 @@ public class RevertFeatureTest extends AbstractWebOpTest {
         testData.checkout("master");
         testData.insert(TestData.point1);
         testData.add();
-        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("point1")
-                .call();
+        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("point1").call();
         testData.insert(TestData.line1);
         testData.add();
-        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("line1")
-                .call();
+        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("line1").call();
 
-        String path = NodeRef.appendChild(TestData.linesType.getTypeName(),
-                TestData.line1.getID());
+        String path = NodeRef.appendChild(TestData.linesType.getTypeName(), TestData.line1.getId());
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
@@ -151,7 +147,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
         RevCommit commit2 = geogig.command(CommitOp.class).setMessage("removed point1").call();
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
@@ -215,7 +211,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
         RevCommit commit3 = geogig.command(CommitOp.class).setMessage("remove point1").call();
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 

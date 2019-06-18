@@ -46,6 +46,10 @@ public @Value @Builder class FeatureType {
         return new ArrayList<>(this.descriptors);
     }
 
+    public String getTypeName() {
+        return getName().getLocalPart();
+    }
+
     public int getSize() {
         return descriptors.size();
     }

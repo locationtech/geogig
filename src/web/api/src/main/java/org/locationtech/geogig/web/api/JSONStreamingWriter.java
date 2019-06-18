@@ -109,14 +109,16 @@ class JSONStreamingWriter implements StreamingWriter {
     }
 
     /**
-     * Writes the supplied content to the stream. Since the JSON stream writing has separate methods for writing data
-     * inside JSON objects as compared to JSON Arrays, we need to branch for each type of write to call the correct
-     * method.
+     * Writes the supplied content to the stream. Since the JSON stream writing has separate methods
+     * for writing data inside JSON objects as compared to JSON Arrays, we need to branch for each
+     * type of write to call the correct method.
      *
-     * @param name      The element identifier/tag to write (only used when in the context of a JsonObject).
-     * @param value     The value to write (used for both JsonObject and JsonArray contexts).
-     * @param isInArray Flag to indicate if the value is being written to a JsonArray context. Should be "true" if the
-     *                  context being written to is a JsonArray, "false" if the context is a JsonObject.
+     * @param name The element identifier/tag to write (only used when in the context of a
+     *        JsonObject).
+     * @param value The value to write (used for both JsonObject and JsonArray contexts).
+     * @param isInArray Flag to indicate if the value is being written to a JsonArray context.
+     *        Should be "true" if the context being written to is a JsonArray, "false" if the
+     *        context is a JsonObject.
      *
      * @throws StreamWriterException Error writing to the output stream.
      */
@@ -139,7 +141,8 @@ class JSONStreamingWriter implements StreamingWriter {
         final String valStr = value.toString();
         // try numbers first
         try {
-            // hack for NULL ObjectId. A series of zeros (i.e. 000000) will parse as Integer value 0, but we want it as
+            // hack for NULL ObjectId. A series of zeros (i.e. 000000) will parse as Integer value
+            // 0, but we want it as
             // a String explicitly or it won't be written to the JSON stream correclty.
             final BigInteger valInt = new BigInteger(valStr);
             if (valInt.compareTo(BigInteger.ZERO) == 0 && valStr.length() > 1) {

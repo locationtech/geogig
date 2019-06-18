@@ -60,7 +60,7 @@ public class RefParse extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
         Optional<Ref> ref = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
-                    .setName(refSpec).call();
+                .setName(refSpec).call();
 
         if (!ref.isPresent()) {
             throw new CommandSpecException("Unable to parse the provided name.");

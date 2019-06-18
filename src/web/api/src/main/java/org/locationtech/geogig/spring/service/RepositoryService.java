@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.feature.PropertyDescriptor;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -41,7 +42,6 @@ import org.locationtech.geogig.spring.dto.RepositoryInfo;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -56,9 +56,9 @@ public class RepositoryService extends AbstractRepositoryService {
         Repository repository = getRepository(provider, repoName);
         if (repository != null && repository.getLocation() != null) {
             RepositoryInfo repoInfo = new RepositoryInfo().setName(repoName).
-                    // the location may need to be masked. Let the Provider do that.
-                    setLocation(provider.getMaskedLocationString(repository, repoName)).
-                    setId(provider.getRepositoryId(repoName));
+            // the location may need to be masked. Let the Provider do that.
+                    setLocation(provider.getMaskedLocationString(repository, repoName))
+                    .setId(provider.getRepositoryId(repoName));
             return repoInfo;
         }
         return null;
@@ -117,8 +117,8 @@ public class RepositoryService extends AbstractRepositoryService {
             final RevCommit revCommit = repository.getCommit(commitId);
             if (revCommit.getParentIds() != null && revCommit.getParentIds().size() > 0) {
                 ObjectId parentId = revCommit.getParentIds().get(0);
-                return repository.command(DiffOp.class)
-                        .setOldVersion(parentId).setNewVersion(commitId).call();
+                return repository.command(DiffOp.class).setOldVersion(parentId)
+                        .setNewVersion(commitId).call();
             }
         }
         return AutoCloseableIterator.emptyIterator();
@@ -158,8 +158,8 @@ public class RepositoryService extends AbstractRepositoryService {
     public RevFeature mergeFeatures(RepositoryProvider provider, String repoName,
             MergeFeatureRequest request) {
         // validty check, shouldn't hit this unless the controller isn't catching these
-        if (request == null || request.getMerges() == null || request.getOurs() == null ||
-                request.getPath() == null || request.getTheirs() == null) {
+        if (request == null || request.getMerges() == null || request.getOurs() == null
+                || request.getPath() == null || request.getTheirs() == null) {
             throw new IllegalArgumentException("Invalid POST data.");
         }
         // get the repo
@@ -177,15 +177,14 @@ public class RepositoryService extends AbstractRepositoryService {
                 // get the RevObject for our Node
                 Optional<RevObject> object = repository.command(RevObjectParse.class)
                         .setObjectId(ourNode.get().getObjectId()).call();
-                Preconditions.checkState(
-                        object.isPresent() && object.get() instanceof RevFeature);
+                Preconditions.checkState(object.isPresent() && object.get() instanceof RevFeature);
 
                 ourFeature = (RevFeature) object.get();
 
                 object = repository.command(RevObjectParse.class)
                         .setObjectId(ourNode.get().getMetadataId()).call();
-                Preconditions.checkState(
-                        object.isPresent() && object.get() instanceof RevFeatureType);
+                Preconditions
+                        .checkState(object.isPresent() && object.get() instanceof RevFeatureType);
 
                 ourFeatureType = (RevFeatureType) object.get();
             }
@@ -195,27 +194,25 @@ public class RepositoryService extends AbstractRepositoryService {
             if (theirNode.isPresent()) {
                 Optional<RevObject> object = repository.command(RevObjectParse.class)
                         .setObjectId(theirNode.get().getObjectId()).call();
-                Preconditions.checkState(
-                        object.isPresent() && object.get() instanceof RevFeature);
+                Preconditions.checkState(object.isPresent() && object.get() instanceof RevFeature);
 
                 theirFeature = (RevFeature) object.get();
 
                 object = repository.command(RevObjectParse.class)
                         .setObjectId(theirNode.get().getMetadataId()).call();
-                Preconditions.checkState(
-                        object.isPresent() && object.get() instanceof RevFeatureType);
+                Preconditions
+                        .checkState(object.isPresent() && object.get() instanceof RevFeatureType);
 
                 theirFeatureType = (RevFeatureType) object.get();
             }
             // ensure feature types are not null
             Preconditions.checkState(ourFeatureType != null || theirFeatureType != null);
             // get the feature builder for the feature to be merged
-            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
-                    (SimpleFeatureType) (ourFeatureType != null ? ourFeatureType.type() :
-                             theirFeatureType.type()));
+            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(GT.adapt(
+                    ourFeatureType != null ? ourFeatureType.type() : theirFeatureType.type()));
             // get an iterator of the feature properties
-            List<PropertyDescriptor> descriptors = (ourFeatureType == null ?
-                    theirFeatureType : ourFeatureType).descriptors();
+            List<PropertyDescriptor> descriptors = (ourFeatureType == null ? theirFeatureType
+                    : ourFeatureType).descriptors();
             // configure the builder
             for (Merge merge : request.getMerges()) {
                 int descriptorIndex = getDescriptorIndex(merge.getAttribute(), descriptors);
@@ -225,23 +222,23 @@ public class RepositoryService extends AbstractRepositoryService {
                     // determine "ours", "theirs" or "value" (should be mutually exclusive)
                     if (Boolean.TRUE.equals(merge.getOurs())) {
                         // take "ours" for this property
-                        featureBuilder.set(descriptor.getName(), ourFeature == null ? null :
-                                 ourFeature.get(descriptorIndex).orElse(null));
+                        featureBuilder.set(descriptor.getLocalName(), ourFeature == null ? null
+                                : ourFeature.get(descriptorIndex).orElse(null));
 
                     } else if (Boolean.TRUE.equals(merge.getTheirs())) {
                         // take "theirs" for this property
-                        featureBuilder.set(descriptor.getName(), theirFeature == null ? null :
-                                theirFeature.get(descriptorIndex).orElse(null));
+                        featureBuilder.set(descriptor.getLocalName(), theirFeature == null ? null
+                                : theirFeature.get(descriptorIndex).orElse(null));
                     } else {
                         // take "value", even if it's null
-                        featureBuilder.set(descriptor.getName(), merge.getValue());
+                        featureBuilder.set(descriptor.getLocalName(), merge.getValue());
                     }
                 }
             }
             // merge the feature
             SimpleFeature feature = featureBuilder
                     .buildFeature(NodeRef.nodeFromPath(request.getPath()));
-            RevFeature revFeature = RevFeature.builder().build(feature);
+            RevFeature revFeature = RevFeature.builder().build(GT.adapt(feature));
             repository.objectDatabase().put(revFeature);
             return revFeature;
         }

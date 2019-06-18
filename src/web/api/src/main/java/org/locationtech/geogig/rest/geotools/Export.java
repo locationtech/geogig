@@ -10,8 +10,6 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import static org.locationtech.geogig.repository.impl.SpatialOps.parseBBOX;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +17,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
@@ -27,6 +26,8 @@ import org.locationtech.geogig.rest.geopkg.GeoPkgExportOutputFormat;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -57,8 +58,8 @@ import com.google.common.base.Supplier;
  * <b>NOTE</b>: export format specializations may add additional format specific arguments.
  * 
  * <p>
- * Usage:
- * {@code GET <repository url>/export[.xml|.json]?format=<format name>[&root=<refspec>][&path=[layerName]+][&bbox=<minx,miny,maxx,maxy,SRS>]}
+ * Usage: {@code GET <repository url>/export[.xml|.json]?format=<format name>[&root=
+ * <refspec>][&path=[layerName]+][&bbox=<minx,miny,maxx,maxy,SRS>]}
  * <p>
  * Usage example:
  * 
@@ -226,4 +227,39 @@ public class Export extends AbstractWebAPICommand {
         public abstract DataStoreExportOp<?> createCommand(final CommandContext context);
     }
 
+    public static ReferencedEnvelope parseBBOX(final @Nullable String bboxArg) {
+        if (bboxArg == null) {
+            return null;
+        }
+        List<String> split = Splitter.on(',').omitEmptyStrings().splitToList(bboxArg);
+        if (split.size() != 5) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid bbox parameter: '%s'. Expected format: <minx,miny,maxx,maxy,CRS>",
+                    bboxArg));
+        }
+        double minx;
+        double miny;
+        double maxx;
+        double maxy;
+        try {
+            minx = Double.parseDouble(split.get(0));
+            miny = Double.parseDouble(split.get(1));
+            maxx = Double.parseDouble(split.get(2));
+            maxy = Double.parseDouble(split.get(3));
+        } catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid bbox parameter: '%s'. Expected format: <minx,miny,maxx,maxy,CRS>",
+                    bboxArg));
+        }
+        final String srs = split.get(4);
+        final CoordinateReferenceSystem crs;
+        try {
+            crs = CRS.decode(srs, true);
+        } catch (FactoryException e) {
+            throw new IllegalArgumentException(String
+                    .format("Invalid bbox parameter: '%s'. Can't parse CRS '%s'", bboxArg, srs));
+        }
+        ReferencedEnvelope env = new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
+        return env;
+    }
 }

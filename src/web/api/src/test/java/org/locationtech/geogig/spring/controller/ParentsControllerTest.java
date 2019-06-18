@@ -36,8 +36,8 @@ public class ParentsControllerTest extends AbstractControllerTest {
     public void testMissingCommitId() throws Exception {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/getparents");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/getparents");
         perform(get).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));
@@ -46,10 +46,10 @@ public class ParentsControllerTest extends AbstractControllerTest {
 
     @Test
     public void testInvalidCommitId() throws Exception {
-        Repository repo =repoProvider.createGeogig("repo1", null);
+        Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/getparents?commitId=1234");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/getparents?commitId=1234");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string("You must specify a valid commit id."));
@@ -60,9 +60,8 @@ public class ParentsControllerTest extends AbstractControllerTest {
     public void testCommitIdNotFound() throws Exception {
         Repository repo = repoProvider.createGeogig("repo1", null);
         repoProvider.getTestRepository("repo1").initializeRpository();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get(
-                        "/repos/repo1/repo/getparents?commitId=0000000000000000000000000000000000000000");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get(
+                "/repos/repo1/repo/getparents?commitId=0000000000000000000000000000000000000000");
         perform(get).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));
@@ -81,9 +80,8 @@ public class ParentsControllerTest extends AbstractControllerTest {
             List<ObjectId> parentIds = next.getParentIds();
             // build the API request
             String oid = next.getId().toString();
-            MockHttpServletRequestBuilder get =
-                    MockMvcRequestBuilders.get(
-                            "/repos/repo1/repo/getparents?commitId=" + oid);
+            MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                    .get("/repos/repo1/repo/getparents?commitId=" + oid);
             String response = perform(get).andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                     // verify the bytes

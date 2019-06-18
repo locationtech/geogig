@@ -45,8 +45,8 @@ public class LegacySendObjectService extends AbstractRepositoryService {
                 .setInserted(ingestResults.getInserted());
         LOGGER.info(String.format(
                 "SendObjectResource: Processed %,d objects.\nInserted: %,d.\nExisting: %,d.\nTime to process: %s.\nStream size: %,d bytes.\n",
-                ingestResults.total(), ingestResults.getInserted(), ingestResults.getExisting(),
-                sw, countingStream.getCount()));
+                ingestResults.total(), ingestResults.getInserted(), ingestResults.getExisting(), sw,
+                countingStream.getCount()));
         return sendObject;
     }
 }

@@ -13,7 +13,9 @@ import java.io.File;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.memory.MemoryDataStore;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.cli.geopkg.GeoPackageTestSupport;
+import org.locationtech.geogig.geotools.cli.geopkg.MemoryDataStoreWithProvidedFIDSupport;
 import org.locationtech.geogig.test.TestData;
 
 import com.google.common.collect.ImmutableList;
@@ -39,10 +41,10 @@ public class GeoPackageWebAPITestSupport extends GeoPackageTestSupport {
 
         File file = createEmptyDatabase();
 
-        MemoryDataStore memStore = TestData.newMemoryDataStore();
-        memStore.addFeatures(ImmutableList.of(TestData.point1, TestData.point2, TestData.point3));
-        memStore.addFeatures(ImmutableList.of(TestData.line1, TestData.line2, TestData.line3));
-        memStore.addFeatures(ImmutableList.of(TestData.poly1, TestData.poly2, TestData.poly3));
+        MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
+        memStore.addFeatures(GT.adapt(TestData.point1, TestData.point2, TestData.point3));
+        memStore.addFeatures(GT.adapt(TestData.line1, TestData.line2, TestData.line3));
+        memStore.addFeatures(GT.adapt(TestData.poly1, TestData.poly2, TestData.poly3));
 
         DataStore gpkgStore = createDataStore(file);
         try {
